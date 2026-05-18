@@ -943,3 +943,139 @@ Feature: EDI DESADV export via postgREST
     And after not more than 1s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_050      | S                |
+
+  @Id:S0468_060
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  Scenario: DESADV export uses M_Product_ASI_Data.EAN_CU as GTIN_CU fallback when GTIN and EAN13_ProductCode are empty
+
+    # Product has NO GTIN (column intentionally omitted so p.gtin = NULL)
+    # M_Product_ASI_Data row carries EAN_CU only (no GTIN, no EAN13_ProductCode).
+    # The COALESCE resolution in get_desadv_packs_json_fn:
+    # COALESCE(dl.gtin_cu=NULL, asi_data.gtin=NULL, asi_data.ean_cu='4012345987654', asi_data.ean13_productcode=NULL, p.gtin=NULL) → '4012345987654'
+    # Without this scenario's coverage, the prior chain would skip EAN_CU and resolve GTIN_CU to NULL.
+    Given metasfresh contains M_Products:
+      | Identifier         | Value                          | Name                          | Description                          |
+      | product_S0468_060  | ean_cuFallbackProductValue     | ean_cuFallbackProductName     | ean_cuFallbackProductDescription     |
+
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier      | M_Product_ID      | C_BPartner_ID | SeqNo | EAN_CU        |
+      | asiData_060     | product_S0468_060 | customer1     | 10    | 4012345987654 |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID      | Name                      |
+      | pm_1_S0468_060          | product_S0468_060 | packingMaterialEanCuTest  |
+    And load M_HU_PackagingCode:
+      | M_HU_PackagingCode_ID       | PackagingCode | HU_UnitType |
+      | huPackagingCode_1_S0468_060 | ISO1          | LU          |
+      | huPackagingCode_2_S0468_060 | CART          | TU          |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID                   |
+      | huPackingLU_S0468_060        |
+      | huPackingTU_S0468_060        |
+      | huPackingVirtualPI_S0468_060 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID         | M_HU_PI_ID                   | HU_UnitType | IsCurrent | M_HU_PackagingCode_ID       |
+      | packingVersionLU_S0468_060 | huPackingLU_S0468_060        | LU          | Y         |                             |
+      | packingVersionTU_S0468_060 | huPackingTU_S0468_060        | TU          | Y         | huPackagingCode_2_S0468_060 |
+      | packingVersionCU_S0468_060 | huPackingVirtualPI_S0468_060 | V           | Y         |                             |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID         | Qty | ItemType | Included_HU_PI_ID     | M_HU_PackingMaterial_ID |
+      | huPiItemLU_S0468_060       | packingVersionLU_S0468_060 | 10  | HU       | huPackingTU_S0468_060 |                         |
+      | huPiItemTU_S0468_060       | packingVersionTU_S0468_060 | 0   | PM       |                       | pm_1_S0468_060          |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID    | M_HU_PI_Item_ID      | M_Product_ID      | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
+      | huAuditProductTU_S0468_060 | huPiItemTU_S0468_060 | product_S0468_060 | 10  | 2025-01-01 | huPackagingCode_1_S0468_060       | gtinPiItemProductEanCu           |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S0468_060 | 5.00     | PCE      |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference   |
+      | o_060      | true    | customer1     | 2025-04-17  | 2025-04-18Z  | ean_cuFallbackRef |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID      | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_060     | o_060      | product_S0468_060 | 100        | huAuditProductTU_S0468_060             |
+
+    And the order identified by o_060 is completed
+    And store order-values in TestContext
+      | C_Order_ID | Column     | REST.Context      |
+      | o_060      | DocumentNo | o_060_DocumentNo  |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 180s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_060    | ol_060                    | N             |
+
+    And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_060                          | D            | true                | false       |
+
+    And after not more than 180s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo       |
+      | s_s_060                          | s_060                 | shipment_S0468_060_ID   | shipment_S0468_060_DocumentNo |
+
+    And reset the SSCC18 code generator's next sequence number back to its actual sequence.
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | d_060                    | customer1                | o_060                 | P                | d_060        |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_060      | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@shipment_S0468_060_ID@"
+    }
+  ]
+}
+    """
+    # Assert that GTIN_CU is resolved from EAN_CU (the new COALESCE fallback layer) because:
+    #   - EDI_DesadvLine.GTIN_CU is NULL (no GTIN set on the desadv line)
+    #   - M_Product_ASI_Data.GTIN is NULL (not provided in fixture)
+    #   - M_Product_ASI_Data.EAN_CU = '4012345987654'  ← this wins
+    #   - M_Product_ASI_Data.EAN13_ProductCode is NULL (not provided in fixture)
+    #   - M_Product.GTIN is NULL (not provided in fixture)
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_DESADV": {
+    "Packings": [
+      {
+        "SeqNo": 1,
+        "LineItems": [
+          {
+            "Line": 10,
+            "DesadvLine": {
+              "Product": {
+                "Name": "ean_cuFallbackProductName",
+                "GTIN_CU": "4012345987654",
+                "Description": "ean_cuFallbackProductDescription",
+                "SupplierProductNo": "ean_cuFallbackProductValue"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "M_InOut_ID": @shipment_S0468_060_ID@,
+    "EDI_Desadv_ID": @d_060@
+  }
+}
+    """
+
+    And after not more than 1s, M_InOut records have the following export status
+      | M_InOut_ID | EDI_ExportStatus |
+      | s_060      | S                |
