@@ -809,6 +809,7 @@ Feature: Empties receives
 
     And the order identified by order is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
@@ -878,6 +879,7 @@ Feature: Empties receives
 
     And the order identified by order is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |

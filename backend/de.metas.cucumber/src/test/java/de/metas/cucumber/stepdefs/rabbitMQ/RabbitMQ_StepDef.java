@@ -33,6 +33,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.impl.EventBusFactory;
 import de.metas.event.remote.rabbitmq.RabbitMQDestinationResolver;
+import de.metas.event.remote.rabbitmq.queues.async_batch.AsyncBatchQueueConfiguration;
 import de.metas.event.remote.rabbitmq.queues.material_dispo.MaterialEventsQueueConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -99,7 +100,13 @@ public class RabbitMQ_StepDef
 	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
 	public void wait_empty_material_queue() throws InterruptedException
 	{
-		waitEmptyMaterialQueue();
+		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+	}
+
+	@And("wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes")
+	public void wait_empty_async_queue() throws InterruptedException
+	{
+		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
 	}
 
 	@Given("rabbitMQ queue is created")
@@ -335,12 +342,12 @@ public class RabbitMQ_StepDef
 									  .build());
 	}
 
-	private void waitEmptyMaterialQueue() throws InterruptedException
+	private void waitEmptyQueueByTopic(@NonNull final String topicName) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis();
 		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
 
-		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(topicName);
 		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
 
 		long messageCount;

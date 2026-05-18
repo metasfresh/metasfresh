@@ -165,6 +165,7 @@ Feature: ASI support in Product BOM rest-api
 
     And the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, AD_EventLog are found
       | AD_EventLog_ID.Identifier | EventName           | SupplyRequiredEvent.M_Product_ID.Identifier |
@@ -284,6 +285,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_SO | order_SO              | product_S2              | 5          |
     And the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -436,6 +438,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_PO | order_PO              | product_S3              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | md_po      | SUPPLY            | PURCHASE                      | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
@@ -459,6 +462,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_SO | order_SO              | product_S3              | 20         | orderLineAttributeSetInstance            |
     And the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -611,6 +615,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_PO | order_PO              | product_S4              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -635,6 +640,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_SO | order_SO              | product_S4              | 20         | orderLineAttributeSetInstance            |
     And the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |

@@ -74,6 +74,7 @@ Feature: Group invoices and credit memos into a single document
       | orderLine_SO | order_SO   | product_SO   | 8          |
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -117,6 +118,7 @@ Feature: Group invoices and credit memos into a single document
       | orderLine_CM | order_CM              | product_SO              | 10         |
     When the order identified by order_CM is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -249,6 +251,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -296,6 +299,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_CM is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -424,6 +428,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -471,6 +476,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_CM is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -585,6 +591,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -714,6 +721,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -814,6 +822,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -915,6 +924,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -1018,6 +1028,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -1155,6 +1166,7 @@ Feature: Group invoices and credit memos into a single document
 
     When the order identified by order_SO is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
