@@ -236,8 +236,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final OrderPayScheduleLine remainder = lines.get(0);
 		assertThat(remainder.getInoutId()).isNull();
 		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
-		// dueAmountActual = full mrBreak share = 70 000 (no receipts → nothing consumed)
-		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("70000.00", EUR));
+		// Pending row → dueAmountActual stays null (only populated when an invoice is linked).
+		// Mirrors the cucumber assertion in 2d94c8df563 (business spec).
+		assertThat(remainder.getDueAmountActual()).isNull();
 		assertThat(remainder.getInvoiceId()).isNull();
 	}
 
@@ -264,7 +265,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		assertThat(r1Line.getInoutId()).isEqualTo(R1_ID);
 		assertThat(r1Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
 		// AC#3 / I-1: DueAmt = R1_VALUE × 70% = 31808 × 70% = 22265.60
-		assertThat(r1Line.getDueAmountActual()).isEqualByComparingTo(Money.of("22265.60", EUR));
+		assertThat(r1Line.getDueAmount()).isEqualByComparingTo(Money.of("22265.60", EUR));
+		// Pending row → dueAmountActual stays null. Mirrors cucumber assertion in 2d94c8df563.
+		assertThat(r1Line.getDueAmountActual()).isNull();
 		assertThat(r1Line.getBaseAmount()).isEqualByComparingTo(R1_VALUE);
 		assertThat(r1Line.getInvoiceId()).isNull();
 
@@ -272,7 +275,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		assertThat(remainder.getInoutId()).isNull();
 		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
 		// I-4: BaseAmt = 100000 - 31808 = 68192; DueAmt = 68192 × 70% = 47734.40
-		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("47734.40", EUR));
+		assertThat(remainder.getDueAmount()).isEqualByComparingTo(Money.of("47734.40", EUR));
+		// Pending remainder → dueAmountActual stays null. Mirrors cucumber assertion in 2d94c8df563.
+		assertThat(remainder.getDueAmountActual()).isNull();
 		assertThat(remainder.getBaseAmount()).isEqualByComparingTo(Money.of("68192.00", EUR));
 	}
 
@@ -367,7 +372,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		assertThat(lines.get(1).getInoutId()).isEqualTo(R2_ID);
 		assertThat(lines.get(1).getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
 		// AC#3 / I-1: DueAmt = R2_VALUE × 70% = 80000 × 70% = 56000.00
-		assertThat(lines.get(1).getDueAmountActual()).isEqualByComparingTo(Money.of("56000.00", EUR));
+		assertThat(lines.get(1).getDueAmount()).isEqualByComparingTo(Money.of("56000.00", EUR));
+		// Pending row → dueAmountActual stays null. Mirrors cucumber assertion in 2d94c8df563.
+		assertThat(lines.get(1).getDueAmountActual()).isNull();
 		assertThat(lines.get(1).getBaseAmount()).isEqualByComparingTo(R2_VALUE);
 
 		// No remainder row
@@ -436,7 +443,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		final OrderPayScheduleLine remainder = lines.get(0);
 		assertThat(remainder.getInoutId()).isNull();
 		assertThat(remainder.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
-		assertThat(remainder.getDueAmountActual()).isEqualByComparingTo(Money.of("70000.00", EUR));
+		assertThat(remainder.getDueAmount()).isEqualByComparingTo(Money.of("70000.00", EUR));
+		// Pending remainder → dueAmountActual stays null. Mirrors cucumber assertion in 2d94c8df563.
+		assertThat(remainder.getDueAmountActual()).isNull();
 	}
 
 	// -----------------------------------------------------------------------
@@ -470,7 +479,8 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 			final OrderPayScheduleLine second = secondResult.get(i);
 			assertThat(second.getInoutId()).isEqualTo(first.getInoutId());
 			assertThat(second.getDueAmount()).isEqualByComparingTo(first.getDueAmount());
-			assertThat(second.getDueAmountActual()).isEqualByComparingTo(first.getDueAmountActual());
+			// dueAmountActual may be null for Pending rows; use isEqualTo (handles null) not isEqualByComparingTo.
+			assertThat(second.getDueAmountActual()).isEqualTo(first.getDueAmountActual());
 			assertThat(second.getStatus()).isEqualTo(first.getStatus());
 		}
 	}
@@ -728,7 +738,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		assertThat(r2Line).as("R2 sub-row must be present").isNotNull();
 		assertThat(r2Line.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
 		// DueAmt = 32000 × 70% = 22400.00
-		assertThat(r2Line.getDueAmountActual()).isEqualByComparingTo(Money.of("22400.00", EUR));
+		assertThat(r2Line.getDueAmount()).isEqualByComparingTo(Money.of("22400.00", EUR));
+		// Pending row → dueAmountActual stays null. Mirrors cucumber assertion in 2d94c8df563.
+		assertThat(r2Line.getDueAmountActual()).isNull();
 
 		final OrderPayScheduleLine remainderLine = mrLines.stream()
 				.filter(l -> l.getInoutId() == null)
@@ -737,7 +749,9 @@ class OrderPayScheduleMaterialReceiptStepServiceTest
 		assertThat(remainderLine).as("Remainder row must be present after R1 reversal").isNotNull();
 		assertThat(remainderLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Pending);
 		// BaseAmt = GrandTotal(100000) - R2(32000) = 68000; DueAmt = 68000 × 70% = 47600.00
-		assertThat(remainderLine.getDueAmountActual()).isEqualByComparingTo(Money.of("47600.00", EUR));
+		assertThat(remainderLine.getDueAmount()).isEqualByComparingTo(Money.of("47600.00", EUR));
+		// Pending remainder → dueAmountActual stays null. Mirrors cucumber assertion in 2d94c8df563.
+		assertThat(remainderLine.getDueAmountActual()).isNull();
 
 		// R1 must NOT appear in the schedule lines
 		final boolean r1Present = mrLines.stream().anyMatch(l -> R1_ID.equals(l.getInoutId()));

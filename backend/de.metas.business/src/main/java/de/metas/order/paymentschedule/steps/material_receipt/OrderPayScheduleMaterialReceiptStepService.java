@@ -248,13 +248,19 @@ public class OrderPayScheduleMaterialReceiptStepService
 					? existingLine
 					: OrderPayScheduleLine.from(order, termBreak);
 
+			// dueAmountActual stays null for Pending rows: it represents the amount actually
+			// allocated when an invoice is generated — not the planned receipt amount.
+			// Populating it for Pending rows breaks the assertion "DueAmt_Actual should be null".
+			// An invoice link means status is Awaiting_Pay or Paid; no link means Pending.
+			final Money dueAmtActual = status != OrderPayScheduleStatus.Pending ? dueAmt : null;
+
 			line.applyAndProcess(OrderPayScheduleLineContext.builder()
 					.status(status)
 					.referenceDate(receipt.getMovementDate())  // delivery-step reference date = receipt MovementDate
 					.dueDate(receipt.getMovementDate().plusDays(termBreak.getOffsetDays()))
 					.baseAmount(receiptValue)        // receipt-row: BaseAmt = receipt.GrandTotal (with-tax)
 					.dueAmount(dueAmt)               // DueAmt = BaseAmt × break%
-					.dueAmountActual(dueAmt)
+					.dueAmountActual(dueAmtActual)   // only populated when an invoice is linked (Awaiting_Pay)
 					.inoutId(receipt.getId())
 					.invoiceId(invoice != null ? invoice.getId() : null)
 					.build());
@@ -277,13 +283,18 @@ public class OrderPayScheduleMaterialReceiptStepService
 					? existingLine
 					: OrderPayScheduleLine.from(order, termBreak);
 
+			// Remainder rows are always Pending (no invoice linked), so dueAmountActual stays null:
+			// it represents the amount actually allocated when an invoice is generated, not the
+			// planned receipt amount. Populating it here breaks the assertion "DueAmt_Actual should be null".
+			// We explicitly pass null (not omit the call) so any stale dueAmountActual from prior
+			// invocations of this row — including the old buggy code — is cleared.
 			line.applyAndProcess(OrderPayScheduleLineContext.builder()
 					.status(OrderPayScheduleStatus.Pending)
 					.referenceDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
 					.dueDate(OrderPayScheduleLineContext.INFINITE_FUTURE_DATE)
 					.baseAmount(remainderBaseAmt)    // remainder-row: BaseAmt = max(0, order.GrandTotal − Σ receipt.with_tax)
 					.dueAmount(remainderDueAmt)       // DueAmt = BaseAmt × break%
-					.dueAmountActual(remainderDueAmt)
+					.dueAmountActual(null)            // remainder rows are always Pending → null
 					.inoutId(null)
 					.invoiceId(null)
 					.build());
