@@ -464,8 +464,16 @@ public class JsonRetrieverService
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
 				.debtorId(bpartner.getDebtorId())
-				.extendedProps(customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(bpartnerRecord)).toMap())
+				.extendedProps(getExtendedPropsOrNull(bpartnerRecord))
 				.build();
+	}
+
+	@Nullable
+	private ImmutableMap<String, Object> getExtendedPropsOrNull(@NonNull final I_C_BPartner bpartnerRecord)
+	{
+		final ImmutableMap<String, Object> extProps =
+				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(bpartnerRecord)).toMap();
+		return extProps.isEmpty() ? null : extProps;
 	}
 
 	private static JsonChangeInfo createJsonChangeInfo(
