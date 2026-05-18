@@ -657,6 +657,7 @@ public class JsonPersisterService
 
 		// wire extendedProps: set custom REST API columns on the saved C_BPartner record
 		if (jsonRequestComposite.getBpartner() != null
+				&& jsonRequestComposite.getBpartner().isExtendedPropsSet()
 				&& jsonRequestComposite.getBpartner().getExtendedProps() != null
 				&& !jsonRequestComposite.getBpartner().getExtendedProps().isEmpty())
 		{
