@@ -2,6 +2,9 @@ package de.metas.datev;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.PeriodRepo;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.data.export.api.IExportDataDestination;
@@ -16,6 +19,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -56,6 +60,8 @@ public class DATEVCsvExporter extends AbstractExporter
 {
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final PeriodRepo periodRepo = SpringContextHolder.instance.getBean(PeriodRepo.class);
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
 	private static final DateTimeFormatter EXTF_TS_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 	private static final DateTimeFormatter EXTF_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -122,6 +128,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		return rowFormatted;
 	}
 
+	@Nullable
 	private Object formatCell(final Object value, final DATEVExportFormatColumn columnFormat)
 	{
 		if (value == null)
@@ -143,6 +150,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 	}
 
+	@Nullable
 	private static String formatDateCell(final Object value, final DateTimeFormatter dateFormatter)
 	{
 		if (value == null)
@@ -156,7 +164,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 		else if (value instanceof TemporalAccessor)
 		{
-			TemporalAccessor temporal = (TemporalAccessor)value;
+			final TemporalAccessor temporal = (TemporalAccessor)value;
 			return dateFormatter.format(temporal);
 		}
 		else
@@ -165,6 +173,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 	}
 
+	@Nullable
 	private static String formatNumberCell(final Object value, final ThreadLocalDecimalFormatter numberFormatter)
 	{
 		if (value == null)
@@ -191,8 +200,9 @@ public class DATEVCsvExporter extends AbstractExporter
 		final CurrencyId acctSchemaCurrencyId = primaryAcctSchema.getCurrencyId();
 		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(acctSchemaCurrencyId);
 
-		// TODO: get fiscal year start from C_Period/C_Year based on accounting schema and period
-		final String fiscalYearStart = String.format("%04d0101", TimeUtil.asLocalDate(dateToTS).getYear());
+		final PeriodId periodId = periodRepo.getPeriodId(datevExport.getC_Period_ID());
+		final LocalDate fiscalYearStartDate = TimeUtil.asLocalDate(calendarBL.getFirstDayOfYear(periodId.getYearId()));
+		final String fiscalYearStart = fiscalYearStartDate.format(EXTF_DATE_FMT);
 
 		final String advisorNumber = datevExport.getAdvisorNumber();
 		final String clientNumber = datevExport.getClientNumber();
