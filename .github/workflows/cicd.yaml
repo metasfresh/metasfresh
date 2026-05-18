@@ -1518,7 +1518,7 @@ jobs:
           name: cucumber-allure-results-${{ matrix.profile }}
           path: cucumber-allure-results/
           if-no-files-found: ignore
-          retention-days: 30
+          retention-days: 7
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1929,7 +1929,7 @@ jobs:
           name: allure-results-frontend-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/allure-results/
           if-no-files-found: ignore
-          retention-days: 30
+          retention-days: 1
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
         if: env.ACT != 'true'
