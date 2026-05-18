@@ -13,36 +13,38 @@ import de.metas.acct.open_items.FAOpenItemsHandler;
 import de.metas.acct.open_items.FAOpenItemsHandlerMatchingKey;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
+import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_MatchInv;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 
 @Component
 @VisibleForTesting
+@RequiredArgsConstructor
 public class MatchInvOIHandler implements FAOpenItemsHandler
 {
 	private static final @NonNull AccountConceptualName NotInvoicedReceipts_Acct = BPartnerGroupAccountType.NotInvoicedReceipts.getAccountConceptualName();
 	private static final @NonNull AccountConceptualName P_InventoryClearing_Acct = ProductAcctType.P_InventoryClearing_Acct.getAccountConceptualName();
 
-	private final ElementValueService elementValueService;
-
-	public MatchInvOIHandler(@NonNull final ElementValueService elementValueService)
-	{
-		this.elementValueService = elementValueService;
-	}
+	@NonNull private final ElementValueService elementValueService;
+	@NonNull private final MatchInvoiceRepository matchInvoiceRepository;
 
 	@Override
 	public @NonNull Set<FAOpenItemsHandlerMatchingKey> getMatchers()
 	{
 		return ImmutableSet.of(
+				FAOpenItemsHandlerMatchingKey.of(NotInvoicedReceipts_Acct, I_M_InOut.Table_Name),
 				FAOpenItemsHandlerMatchingKey.of(NotInvoicedReceipts_Acct, I_M_MatchInv.Table_Name),
+				FAOpenItemsHandlerMatchingKey.of(P_InventoryClearing_Acct, I_C_Invoice.Table_Name),
 				FAOpenItemsHandlerMatchingKey.of(P_InventoryClearing_Acct, I_M_MatchInv.Table_Name)
 		);
 	}
@@ -62,36 +64,50 @@ public class MatchInvOIHandler implements FAOpenItemsHandler
 			return Optional.empty();
 		}
 
-		final I_M_MatchInv matchInvRecord = InterfaceWrapperHelper.load(request.getRecordId(), I_M_MatchInv.class);
-		if (matchInvRecord == null)
-		{
-			throw new AdempiereException("M_MatchInv not found for id=" + request.getRecordId());
-		}
+		final String tableName = request.getTableName();
 
 		if (NotInvoicedReceipts_Acct.equals(accountConceptualName))
 		{
-			final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
-					accountConceptualName,
-					I_M_InOut.Table_Name,
-					matchInvRecord.getM_InOut_ID(),
-					matchInvRecord.getM_InOutLine_ID(),
-					0);
-			return Optional.of(FAOpenItemTrxInfo.clearing(key));
+			if (I_M_InOut.Table_Name.equals(tableName))
+			{
+				final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
+						accountConceptualName, I_M_InOut.Table_Name,
+						request.getRecordId(), request.getLineId(), 0);
+				return Optional.of(FAOpenItemTrxInfo.opening(key));
+			}
+			else if (I_M_MatchInv.Table_Name.equals(tableName))
+			{
+				final MatchInv matchInv = matchInvoiceRepository.getById(MatchInvId.ofRepoId(request.getRecordId()));
+				final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
+						accountConceptualName, I_M_InOut.Table_Name,
+						matchInv.getInoutLineId().getInOutId().getRepoId(),
+						matchInv.getInoutLineId().getInOutLineId().getRepoId(),
+						0);
+				return Optional.of(FAOpenItemTrxInfo.clearing(key));
+			}
 		}
 		else if (P_InventoryClearing_Acct.equals(accountConceptualName))
 		{
-			final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
-					accountConceptualName,
-					I_C_Invoice.Table_Name,
-					matchInvRecord.getC_Invoice_ID(),
-					matchInvRecord.getC_InvoiceLine_ID(),
-					0);
-			return Optional.of(FAOpenItemTrxInfo.clearing(key));
+			if (I_C_Invoice.Table_Name.equals(tableName))
+			{
+				final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
+						accountConceptualName, I_C_Invoice.Table_Name,
+						request.getRecordId(), request.getLineId(), 0);
+				return Optional.of(FAOpenItemTrxInfo.opening(key));
+			}
+			else if (I_M_MatchInv.Table_Name.equals(tableName))
+			{
+				final MatchInv matchInv = matchInvoiceRepository.getById(MatchInvId.ofRepoId(request.getRecordId()));
+				final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
+						accountConceptualName, I_C_Invoice.Table_Name,
+						matchInv.getInvoiceAndLineId().getInvoiceId().getRepoId(),
+						matchInv.getInvoiceAndLineId().getRepoId(),
+						0);
+				return Optional.of(FAOpenItemTrxInfo.clearing(key));
+			}
 		}
-		else
-		{
-			return Optional.empty();
-		}
+
+		return Optional.empty();
 	}
 
 	@Override
