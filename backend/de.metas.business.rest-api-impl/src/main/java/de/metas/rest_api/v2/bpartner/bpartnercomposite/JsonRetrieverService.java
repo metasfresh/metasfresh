@@ -117,7 +117,9 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.TableRecordUtil;
@@ -286,6 +288,7 @@ public class JsonRetrieverService
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final PaymentTermService paymentTermService;
 	private final IncotermsRepository incotermsRepository;
+	private final transient CustomColumnService customColumnService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -302,6 +305,7 @@ public class JsonRetrieverService
 			@NonNull final PaymentTermService paymentTermService,
 			@NonNull final IncotermsRepository incotermsRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final CustomColumnService customColumnService,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
@@ -313,6 +317,7 @@ public class JsonRetrieverService
 		this.paymentTermService = paymentTermService;
 		this.incotermsRepository = incotermsRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.customColumnService = customColumnService;
 		this.identifier = identifier;
 
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
@@ -418,6 +423,8 @@ public class JsonRetrieverService
 
 		final JsonResponseBPGroup jsonBPGroup = toJson(bpartner.getGroupId());
 
+		final de.metas.interfaces.I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.load(bpartner.getId(), de.metas.interfaces.I_C_BPartner.class);
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
@@ -457,6 +464,7 @@ public class JsonRetrieverService
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
 				.debtorId(bpartner.getDebtorId())
+				.extendedProps(customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(bpartnerRecord)).toMap())
 				.build();
 	}
 

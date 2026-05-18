@@ -126,6 +126,7 @@ public class JsonServiceFactory
 				paymentTermService,
 				incotermsRepository,
 				externalReferenceService,
+				customColumnService,
 				identifier);
 	}
 }
