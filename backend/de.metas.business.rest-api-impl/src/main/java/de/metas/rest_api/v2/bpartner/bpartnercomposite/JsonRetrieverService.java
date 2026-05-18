@@ -119,6 +119,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
@@ -471,6 +472,10 @@ public class JsonRetrieverService
 	@Nullable
 	private ImmutableMap<String, Object> getExtendedPropsOrNull(@NonNull final I_C_BPartner bpartnerRecord)
 	{
+		if (POJOWrapper.isHandled(bpartnerRecord))
+		{
+			return null;  // POJOWrapper-backed record (unit-test mode) — no custom columns
+		}
 		final ImmutableMap<String, Object> extProps =
 				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(bpartnerRecord)).toMap();
 		return extProps.isEmpty() ? null : extProps;
