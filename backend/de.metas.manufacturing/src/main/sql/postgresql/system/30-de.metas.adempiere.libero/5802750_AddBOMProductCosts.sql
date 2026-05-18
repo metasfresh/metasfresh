@@ -84,28 +84,6 @@ UPDATE AD_Field SET Name='Kostenpreis aktuell', Description='Der gegenwärtig ve
 /* DDL */  select update_Column_Translation_From_AD_Element(1394)
 ;
 
--- Field: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> Fertigprodukt
--- Column: PP_Product_BOMLine.Parent_Product_ID
--- 2026-05-18T17:41:48.179Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,591897,780240,0,53029,TO_TIMESTAMP('2026-05-18 17:41:48.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'EE01','Y','N','N','N','N','N','N','N','Fertigprodukt',TO_TIMESTAMP('2026-05-18 17:41:48.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2026-05-18T17:41:48.184Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=780240 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2026-05-18T17:41:48.190Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584473)
-;
-
--- 2026-05-18T17:41:48.218Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=780240
-;
-
--- 2026-05-18T17:41:48.225Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(780240)
-;
-
 -- Field: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> Kostenpreis aktuell
 -- Column: PP_Product_BOMLine.CurrentCostPrice
 -- 2026-05-18T17:41:48.343Z
