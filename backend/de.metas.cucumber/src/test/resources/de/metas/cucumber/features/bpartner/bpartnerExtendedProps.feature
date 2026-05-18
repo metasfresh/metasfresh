@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:F9100_Manage_Windows_Tabs_Fields_other
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F9100
 @ghActions:run_on_executor5
 Feature: BPartner v2 REST — extendedProps round-trip
@@ -42,21 +42,16 @@ Feature: BPartner v2 REST — extendedProps round-trip
 }
 """
 
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-xprops001' receives a 'GET' request with the headers from context, expecting status='200'
     Then the metasfresh REST-API responds with
     """
 {
-  "responseItems": [
-    {
-      "bpartnerComposite": {
-        "bpartner": {
-          "extendedProps": {
-            "Phone2": "555-test-phone2",
-            "Description": "test-extended-description"
-          }
-        }
-      }
+  "bpartner": {
+    "extendedProps": {
+      "Phone2": "555-test-phone2",
+      "Description": "test-extended-description"
     }
-  ]
+  }
 }
     """
 
