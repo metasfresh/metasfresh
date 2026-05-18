@@ -139,6 +139,33 @@ public interface I_C_TaxDeclaration
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
+	 * Set Buchungsperiode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Period_ID (int C_Period_ID);
+
+	/**
+	 * Get Buchungsperiode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Period_ID();
+
+	public org.compiere.model.I_C_Period getC_Period();
+
+	public void setC_Period(org.compiere.model.I_C_Period C_Period);
+
+    /** Column definition for C_Period_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclaration.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+    /** Column name C_Period_ID */
+    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -244,6 +271,29 @@ public interface I_C_TaxDeclaration
     public static final String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
+	 * Set Buchungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateAcct (java.sql.Timestamp DateAcct);
+
+	/**
+	 * Get Buchungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateAcct();
+
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -265,6 +315,29 @@ public interface I_C_TaxDeclaration
     public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Belegnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Belegnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocumentNo();
+
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Aktiv.

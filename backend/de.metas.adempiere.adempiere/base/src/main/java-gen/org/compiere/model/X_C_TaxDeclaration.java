@@ -125,6 +125,43 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 		return ii.intValue();
 	}
 
+	/** @param C_Period ignored - columnname is not NoCheck */
+	@Override
+	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
+	}
+
+	@Override
+	public void setC_Period(org.compiere.model.I_C_Period C_Period)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
+	}
+
+	/** Set Buchungsperiode.
+		@param C_Period_ID Buchungsperiode
+	  */
+	@Override
+	public void setC_Period_ID (int C_Period_ID)
+	{
+		if (C_Period_ID < 1)
+			set_Value (COLUMNNAME_C_Period_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+	}
+
+	/** Get Buchungsperiode.
+		@return Buchungsperiode
+	  */
+	@Override
+	public int getC_Period_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Datum von.
 		@param DateFrom 
 		Starting date for a range
@@ -182,6 +219,24 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
 	}
 
+	/** Set Buchungsdatum.
+		@param DateAcct Buchungsdatum
+	  */
+	@Override
+	public void setDateAcct (java.sql.Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Buchungsdatum.
+		@return Buchungsdatum
+	  */
+	@Override
+	public java.sql.Timestamp getDateAcct ()
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -193,9 +248,27 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Belegnummer.
+		@param DocumentNo Belegnummer
+	  */
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	/** Get Belegnummer.
+		@return Belegnummer
+	  */
+	@Override
+	public java.lang.String getDocumentNo ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Verarbeitet.
