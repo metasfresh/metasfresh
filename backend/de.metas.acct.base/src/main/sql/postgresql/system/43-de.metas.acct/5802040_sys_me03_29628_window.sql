@@ -1181,11 +1181,11 @@ SET IsTranslated = 'Y', Name = 'Steuererklärung',
     Updated = NOW(), UpdatedBy = 100
 WHERE AD_Language = 'de_CH' AND AD_Menu_ID = 542323;
 
--- Place new menu entry in the same parent as the old Tax Declaration window (Node_ID=359, Parent_ID=357 = Accounting folder)
+-- Place new menu entry under Finanzbuchhaltung (AD_Menu_ID=278)
 INSERT INTO AD_TreeNodeMM (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Tree_ID, Node_ID, Parent_ID, SeqNo)
 SELECT t.AD_Client_ID, 0, 'Y', NOW(), 100, NOW(), 100,
-    t.AD_Tree_ID, 542323, 357, 999
+    t.AD_Tree_ID, 542323, 278, 12
 FROM AD_Tree t
 WHERE t.AD_Client_ID = 0 AND t.IsActive = 'Y' AND t.IsAllNodes = 'Y' AND t.AD_Table_ID = 116
   AND NOT EXISTS (SELECT 1 FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID = t.AD_Tree_ID AND e.Node_ID = 542323);
