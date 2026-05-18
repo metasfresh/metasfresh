@@ -176,5 +176,5 @@ DELETE FROM AD_Element WHERE AD_Element_ID = 2870
 
 -- DDL: drop the physical column (via db_alter_table so dependent views, if any, are handled).
 -- IF EXISTS makes the migration idempotent against partial-prior-run replays.
-SELECT db_alter_table('C_Tax', 'DROP COLUMN IF EXISTS IsSalesTax')
+SELECT db_alter_table('C_Tax', 'ALTER TABLE C_Tax DROP COLUMN IF EXISTS IsSalesTax;')
 ;
