@@ -28,8 +28,8 @@ import java.util.Set;
 @VisibleForTesting
 public class MatchInvOIHandler implements FAOpenItemsHandler
 {
-	private static final AccountConceptualName NotInvoicedReceipts_Acct = BPartnerGroupAccountType.NotInvoicedReceipts.getAccountConceptualName();
-	private static final AccountConceptualName P_InventoryClearing_Acct = ProductAcctType.P_InventoryClearing_Acct.getAccountConceptualName();
+	private static final @NonNull AccountConceptualName NotInvoicedReceipts_Acct = BPartnerGroupAccountType.NotInvoicedReceipts.getAccountConceptualName();
+	private static final @NonNull AccountConceptualName P_InventoryClearing_Acct = ProductAcctType.P_InventoryClearing_Acct.getAccountConceptualName();
 
 	private final ElementValueService elementValueService;
 
@@ -68,7 +68,7 @@ public class MatchInvOIHandler implements FAOpenItemsHandler
 			throw new AdempiereException("M_MatchInv not found for id=" + request.getRecordId());
 		}
 
-		if (accountConceptualName.isAnyOf(NotInvoicedReceipts_Acct))
+		if (NotInvoicedReceipts_Acct.equals(accountConceptualName))
 		{
 			final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
 					accountConceptualName,
@@ -78,7 +78,7 @@ public class MatchInvOIHandler implements FAOpenItemsHandler
 					0);
 			return Optional.of(FAOpenItemTrxInfo.clearing(key));
 		}
-		else if (accountConceptualName.isAnyOf(P_InventoryClearing_Acct))
+		else if (P_InventoryClearing_Acct.equals(accountConceptualName))
 		{
 			final FAOpenItemKey key = FAOpenItemKey.ofTableRecordLineAndSubLineId(
 					accountConceptualName,
@@ -95,8 +95,12 @@ public class MatchInvOIHandler implements FAOpenItemsHandler
 	}
 
 	@Override
-	public void onGLJournalLineCompleted(final SAPGLJournalLine line) {}
+	public void onGLJournalLineCompleted(final SAPGLJournalLine line)
+	{
+	}
 
 	@Override
-	public void onGLJournalLineReactivated(final SAPGLJournalLine line) {}
+	public void onGLJournalLineReactivated(final SAPGLJournalLine line)
+	{
+	}
 }
