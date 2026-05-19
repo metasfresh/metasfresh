@@ -75,8 +75,6 @@ Feature: Intrastat view M_InOut_V computes weight per commodity group
       | ol_1       | o_intra               | p_intra_1               | 10         |
       | ol_2       | o_intra               | p_intra_2               | 5          |
     When the order identified by o_intra is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- Generate shipment (batch mode: both products merge into one M_InOut) ---
     And after not more than 60s, M_ShipmentSchedules are found:
