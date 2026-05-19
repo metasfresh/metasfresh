@@ -1,3 +1,8 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
+-- Tax Declaration Iter4: tax_declaration_build now reads C_Period_ID instead of legacy
+-- DateFrom/DateTo (which were nulled in 5803160). Period's StartDate/EndDate drive the
+-- Fact_Acct BETWEEN range; build raises an exception if C_Period_ID is NULL.
+
 DROP FUNCTION IF EXISTS de_metas_acct.tax_declaration_build(p_C_TaxDeclaration_ID numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_acct.tax_declaration_build(
