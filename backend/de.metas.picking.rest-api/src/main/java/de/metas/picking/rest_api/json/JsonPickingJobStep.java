@@ -72,13 +72,13 @@ public class JsonPickingJobStep
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
+		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN), line, jsonOpts, getUOMSymbolById);
 
 		final List<JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
 				.stream()
 				.filter(PickingJobStepPickFromKey::isAlternative)
 				.map(step::getPickFrom)
-				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, jsonOpts, getUOMSymbolById))
+				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, line, jsonOpts, getUOMSymbolById))
 				.collect(ImmutableList.toImmutableList());
 
 		// When pickingUnit=TU, convert the step's CU qty to TU count for display.
