@@ -101,3 +101,4 @@ nul
 **/test-results/**/*
 docker-builds/e2e-tests/.env
 *.stackdump
+tmp/
