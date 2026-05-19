@@ -202,7 +202,8 @@ public class JsonRequestBPartner
 
 	@ApiModelProperty(position = 168, //
 			value = "Custom REST-API columns on C_BPartner (AD_Column.IsRestAPICustomColumn='Y'). "
-					+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error.")
+					+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
+					+ "A null or empty value is treated as a no-op; clearing all custom columns is not supported via this field.")
 	private Map<String, Object> extendedProps;
 
 	@ApiModelProperty(hidden = true)
