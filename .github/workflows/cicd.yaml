@@ -509,7 +509,7 @@ jobs:
         with:
           name: junit-results-jest
           path: jest/frontend/*.xml
-          retention-days: 1
+          retention-days: 30
           if-no-files-found: warn
       - name: Generate JUnit HTML for Jest
         if: always()
@@ -1283,7 +1283,7 @@ jobs:
           path: |
             junit/commons/**/*.xml
             junit/backend/**/*.xml
-          retention-days: 1
+          retention-days: 30
           if-no-files-found: warn
       - name: upload camel junit results
         uses: actions/upload-artifact@v4
@@ -1291,7 +1291,7 @@ jobs:
         with:
           name: junit-results-camel
           path: junit/camel/**/*.xml
-          retention-days: 1
+          retention-days: 30
           if-no-files-found: warn
       - name: Merge backend JUnit XML
         if: always()
@@ -1597,7 +1597,7 @@ jobs:
           name: junit-results-cucumber-${{ matrix.profile }}
           path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 30
       # Allure reports uploaded by publish-test-reports job
 
   cucumber-allure-report:
@@ -1866,7 +1866,7 @@ jobs:
           name: junit-results-playwright-mobile
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 30
       # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
@@ -1963,7 +1963,7 @@ jobs:
           name: junit-results-playwright-frontend-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 30
 
   # =============================================================================
   # Merge Frontend Playwright Allure Results from Sharded Runners
