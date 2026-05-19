@@ -42,6 +42,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
@@ -85,12 +87,23 @@ public class EDI_M_InOut_StepDef
 	 * Used to verify aggregated DESADV semantics — e.g. when a shipment aggregates multiple
 	 * source orders, the header POReference should be empty/null when the source orders disagree.
 	 * <p>
-	 * DataTable columns:
+	 * DataTable columns (DataTableRow smart-lookup handles {@code OPT.} prefix automatically):
 	 * <ul>
 	 *     <li>{@code M_InOut_ID} (required, identifier-ref) — the shipment whose linked DESADV is checked</li>
-	 *     <li>{@code OPT.POReference} (optional) — expected header POReference; empty/blank cell means the DESADV's POReference must be null or blank</li>
-	 *     <li>{@code OPT.LineCount} (optional, int) — expected number of active EDI_DesadvLine records on the DESADV</li>
+	 *     <li>{@code POReference} (optional) — expected header POReference; empty/blank cell means the DESADV's POReference must be null or blank</li>
+	 *     <li>{@code LineCount} (optional, int) — expected number of active EDI_DesadvLine records on the DESADV</li>
 	 * </ul>
+	 * <p>
+	 * Example:
+	 * <pre>{@code
+	 * Then the EDI_Desadv linked to M_InOut has the following properties:
+	 *   | M_InOut_ID    | OPT.POReference | OPT.LineCount |
+	 *   | io_S29231_060 |                 | 2             |
+	 * }</pre>
+	 * <p>
+	 * The M_InOut's EDI_Desadv_ID link is created asynchronously by the EDI workpackage processor;
+	 * this step retries the lookup for up to {@value #ASSERT_DESADV_LINKED_TIMEOUT_SEC}s to absorb
+	 * the async-flush race on CI under load.
 	 */
 	@Then("the EDI_Desadv linked to M_InOut has the following properties:")
 	public void assertDesadvLinkedToInOut(@NonNull final DataTable table)
@@ -98,21 +111,35 @@ public class EDI_M_InOut_StepDef
 		DataTableRows.of(table).forEach(this::assertDesadvLinkedToInOut);
 	}
 
+	private static final int ASSERT_DESADV_LINKED_TIMEOUT_SEC = 60;
+
 	private void assertDesadvLinkedToInOut(@NonNull final DataTableRow row)
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.create(
 				row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable),
 				I_M_InOut.class);
-		InterfaceWrapperHelper.refresh(inout);
 
-		final int desadvId = inout.getEDI_Desadv_ID();
-		assertThat(desadvId)
-				.as("M_InOut %s should have EDI_Desadv_ID set", row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID))
-				.isGreaterThan(0);
+		final int desadvId;
+		try
+		{
+			desadvId = StepDefUtil.tryAndWaitForItem(
+					ASSERT_DESADV_LINKED_TIMEOUT_SEC,
+					1000,
+					() -> {
+						InterfaceWrapperHelper.refresh(inout);
+						final int currentDesadvId = inout.getEDI_Desadv_ID();
+						return currentDesadvId > 0 ? Optional.of(currentDesadvId) : Optional.empty();
+					});
+		}
+		catch (final InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("Interrupted while waiting for M_InOut.EDI_Desadv_ID", e);
+		}
 
 		final I_EDI_Desadv desadv = InterfaceWrapperHelper.load(desadvId, I_EDI_Desadv.class);
 
-		row.getAsOptionalString("OPT." + I_EDI_Desadv.COLUMNNAME_POReference).ifPresent(expectedPO -> {
+		row.getAsOptionalString(I_EDI_Desadv.COLUMNNAME_POReference).ifPresent(expectedPO -> {
 			final String expectedNorm = Check.isBlank(expectedPO) ? null : expectedPO.trim();
 			final String actualNorm = Check.isBlank(desadv.getPOReference()) ? null : desadv.getPOReference().trim();
 			assertThat(actualNorm)
@@ -120,7 +147,7 @@ public class EDI_M_InOut_StepDef
 					.isEqualTo(expectedNorm);
 		});
 
-		row.getAsOptionalBigDecimal("OPT.LineCount").ifPresent(expectedCount -> {
+		row.getAsOptionalBigDecimal("LineCount").ifPresent(expectedCount -> {
 			final long actualCount = queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvId)
