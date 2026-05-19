@@ -31,18 +31,24 @@ import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class EDI_M_InOut_StepDef
 {
 	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final M_InOut_StepDefData inoutTable;
 
 	@Then("^after not more than (.*)s, M_InOut records have the following export status$")
@@ -72,6 +78,58 @@ public class EDI_M_InOut_StepDef
 	public void enqueue_edi_export_shipment(@NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach(this::enqueue_edi_export_shipment);
+	}
+
+	/**
+	 * Assert that the EDI_Desadv referenced by the given M_InOut has expected properties.
+	 * Used to verify aggregated DESADV semantics — e.g. when a shipment aggregates multiple
+	 * source orders, the header POReference should be empty/null when the source orders disagree.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code M_InOut_ID} (required, identifier-ref) — the shipment whose linked DESADV is checked</li>
+	 *     <li>{@code OPT.POReference} (optional) — expected header POReference; empty/blank cell means the DESADV's POReference must be null or blank</li>
+	 *     <li>{@code OPT.LineCount} (optional, int) — expected number of active EDI_DesadvLine records on the DESADV</li>
+	 * </ul>
+	 */
+	@Then("the EDI_Desadv linked to M_InOut has the following properties:")
+	public void assertDesadvLinkedToInOut(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(this::assertDesadvLinkedToInOut);
+	}
+
+	private void assertDesadvLinkedToInOut(@NonNull final DataTableRow row)
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.create(
+				row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable),
+				I_M_InOut.class);
+		InterfaceWrapperHelper.refresh(inout);
+
+		final int desadvId = inout.getEDI_Desadv_ID();
+		assertThat(desadvId)
+				.as("M_InOut %s should have EDI_Desadv_ID set", row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID))
+				.isGreaterThan(0);
+
+		final I_EDI_Desadv desadv = InterfaceWrapperHelper.load(desadvId, I_EDI_Desadv.class);
+
+		row.getAsOptionalString("OPT." + I_EDI_Desadv.COLUMNNAME_POReference).ifPresent(expectedPO -> {
+			final String expectedNorm = Check.isBlank(expectedPO) ? null : expectedPO.trim();
+			final String actualNorm = Check.isBlank(desadv.getPOReference()) ? null : desadv.getPOReference().trim();
+			assertThat(actualNorm)
+					.as("Header POReference for EDI_Desadv %s", desadvId)
+					.isEqualTo(expectedNorm);
+		});
+
+		row.getAsOptionalBigDecimal("OPT.LineCount").ifPresent(expectedCount -> {
+			final long actualCount = queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvId)
+					.create()
+					.count();
+			assertThat(actualCount)
+					.as("Number of EDI_DesadvLine records for EDI_Desadv %s", desadvId)
+					.isEqualTo(expectedCount.longValueExact());
+		});
 	}
 
 	private void enqueue_edi_export_shipment(@NonNull final DataTableRow row)

@@ -377,3 +377,82 @@ Feature: EDI DESADV — one DESADV per shipment, aggregating multiple source ord
       | Identifier    | C_Order_ID.Identifier | SumDeliveredInStockingUOM | SumOrderedInStockingUOM |
       | desadv_050_A  | o_S29231_050_A        | 0                         | 5                       |
       | desadv_050_B  | o_S29231_050_B        | 0                         | 5                       |
+
+
+  @from:cucumber
+  @Id:S29231_060
+  Scenario: Two orders with different POReferences aggregated into a single shipment — one DESADV with empty header POReference
+
+    Given add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue     |
+      | extCfg_S29231_060                   | RabbitMQ | ediDesadv_S29231_060    |
+
+    And metasfresh contains M_Products:
+      | Identifier     |
+      | p_S29231_060_A |
+      | p_S29231_060_B |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S29231_060 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_060 | ps_S29231_060      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S29231_060 | pl_S29231_060  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
+      | plv_S29231_060         | p_S29231_060_A | 10.0     | PCE      | Normal                        |
+      | plv_S29231_060         | p_S29231_060_B | 10.0     | PCE      | Normal                        |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | IsCustomer | M_PricingSystem_ID |
+      | bp_S29231_060 | Y          | ps_S29231_060      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID | IsBillToDefault | IsShipTo |
+      | loc_060    | 9900002923106 | bp_S29231_060 | true            | true     |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | IsEdiOneEDIDesadvPerShipment | EdiDESADV_ExternalSystem_Config_ID |
+      | bp_S29231_060 | true                 | 9900002923106         | E                    | true                         | extCfg_S29231_060                  |
+
+    # Two orders with different POReferences — same BPartner, location, warehouse → eligible for shipment aggregation
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | o_S29231_060_A | true    | bp_S29231_060 | 2026-05-14  | PO-HOTEL    |
+      | o_S29231_060_B | true    | bp_S29231_060 | 2026-05-14  | PO-INDIA    |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID     | M_Product_ID   | QtyEntered |
+      | ol_S29231_060_A | o_S29231_060_A | p_S29231_060_A | 5          |
+      | ol_S29231_060_B | o_S29231_060_B | p_S29231_060_B | 5          |
+
+    When the order identified by o_S29231_060_A is completed
+    And the order identified by o_S29231_060_B is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ss_S29231_060_A | ol_S29231_060_A | N             |
+      | ss_S29231_060_B | ol_S29231_060_B | N             |
+
+    # Batch — both schedules enqueued in ONE workpackage so the shipment generator merges them into a single M_InOut
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S29231_060_A       |
+      | ss_S29231_060_B       |
+
+    # Look up the InOut from each schedule — the second call asserts the alias still resolves
+    # to the same M_InOut (one shipment covering both schedules)
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S29231_060_A       | io_S29231_060 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S29231_060_B       | io_S29231_060 |
+
+    # One shipment → one DESADV → exactly one pack
+    And after not more than 60s, there are exactly 1 EDI_Desadv_Pack records
+
+    # The DESADV linked to the single shipment has empty header POReference (source orders disagree)
+    # and two lines (one per source order line)
+    And the EDI_Desadv linked to M_InOut has the following properties:
+      | M_InOut_ID    | OPT.POReference | OPT.LineCount |
+      | io_S29231_060 |                 | 2             |
