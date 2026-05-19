@@ -11,8 +11,8 @@ INSERT INTO AD_Val_Rule (
 )
 VALUES (
     0, 0, 540787 /*From ID Server*/,
-    'C_Year_ID IN (SELECT y.C_Year_ID FROM C_Year y WHERE y.C_Calendar_ID = (SELECT a.C_Calendar_ID FROM C_AcctSchema a WHERE a.C_AcctSchema_ID = @C_AcctSchema_ID@))',
-    'de.metas.acct', 'Y', 'C_Period for TaxDeclaration by AcctSchema', 'S',
+    'C_Year_ID IN (SELECT y.C_Year_ID FROM C_Year y WHERE y.C_Calendar_ID = getC_Calendar_ID(@AD_Client_ID@, @AD_Org_ID@))',
+    'de.metas.acct', 'Y', 'C_Period for TaxDeclaration', 'S',
     NOW(), 100, NOW(), 100
 );
 
