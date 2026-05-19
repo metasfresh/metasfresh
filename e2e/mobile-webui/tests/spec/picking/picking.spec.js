@@ -11,6 +11,9 @@ import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
+import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
+import { ErrorToast } from '../../utils/dialogs/ErrorToast';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async ({
                                     language = 'en_US',
@@ -668,12 +671,28 @@ test('Scan invalid HU QR code and recover', async ({ page }, testInfo) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-    await expectErrorToast('Scanning non-existent HU QR code', async () => {
-        await PickingJobScreen.pickHU({
-            qrCode: 'HU#1#{"id":"00000000000000000000000000000000-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"}}',
-            isScanDirectly: true,
-        });
-    });
+    // Bypass expectErrorToast (see commit 8588b5c7152 — trolley.spec.js fix). Its Promise.race
+    // races React's toast render and is brittle under CI load — the historical failure mode here
+    // was a global-timeout exhaustion (extended to 180s in gh#23119, still flaky). Instead, wait
+    // for the POST round-trip explicitly, assert the backend contract (4xx) and the toast text
+    // directly via Playwright's auto-retrying expect. Cannot reuse pickHU here because it then
+    // tries to fill GetQuantityDialog which never opens for an invalid HU.
+    const fakeHuQrCode = 'HU#1#{"id":"00000000000000000000000000000000-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"}}';
+    const postPromise = page.waitForResponse(
+        (r) => r.url().endsWith('/picking/nextEligibleLineToPack') && r.request().method() === 'POST'
+    );
+    await BarcodeScannerComponent.type(fakeHuQrCode);
+    const postResponse = await postPromise;
+    expect(postResponse.status()).toBeGreaterThanOrEqual(400);
+    // Generic toast-presence check — the backend's AdempiereException is surfaced by the
+    // frontend's extractUserFriendlyErrorMessageFromAxiosError as the generic
+    // `error.PleaseTryAgain` fallback because Spring's error JSON doesn't match the
+    // expected `data.errors[0].message` shape. Asserting on the specific text would be brittle.
+    // Coverage parity with the original expectErrorToast (no validator) is preserved.
+    await expect(page.getByRole('alert')).toBeVisible({ timeout: 5000 });
+    // Dismiss the toast so the next step()'s automatic error-toast watchdog doesn't trip on it.
+    // The original `expectErrorToast` wrapper handled this implicitly via currentErrorWatcherId.
+    await ErrorToast.closePopup();
 
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });

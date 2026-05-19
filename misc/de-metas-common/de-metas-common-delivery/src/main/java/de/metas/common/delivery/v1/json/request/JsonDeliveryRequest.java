@@ -48,6 +48,7 @@ public class JsonDeliveryRequest
 	@NonNull String id = UUID.randomUUID().toString();
 	int deliveryOrderId;
 	@NonNull JsonAddress pickupAddress;
+	@Nullable JsonContact pickupContact;
 	@NonNull String pickupDate;
 	@NonNull String timeFrom;
 	@NonNull String timeTo;

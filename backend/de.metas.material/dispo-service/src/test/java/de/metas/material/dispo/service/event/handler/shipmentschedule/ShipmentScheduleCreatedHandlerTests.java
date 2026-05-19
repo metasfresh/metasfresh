@@ -164,6 +164,38 @@ public class ShipmentScheduleCreatedHandlerTests
 		return event.getShipmentScheduleId();
 	}
 
+	@Test
+	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	{
+		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(createProductDescriptor())
+						.customerId(BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(toWarehouseId)
+						.build())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(BigDecimal.TEN)
+						.orderedQuantityDelta(BigDecimal.TEN)
+						.reservedQuantity(new BigDecimal("20"))
+						.reservedQuantityDelta(new BigDecimal("20"))
+						.build())
+				.shipmentScheduleId(shipmentScheduleId)
+				.documentLineDescriptor(OrderLineDescriptor.builder()
+						.orderLineId(orderLineId)
+						.orderId(30)
+						.build())
+				.isDropShipWarehouse(true)
+				.build();
+
+		shipmentScheduleCreatedHandler.handleEvent(event);
+
+		// short-circuit: no MD_Candidate records must have been created
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
 	{
 		return ShipmentScheduleCreatedEvent.builder()

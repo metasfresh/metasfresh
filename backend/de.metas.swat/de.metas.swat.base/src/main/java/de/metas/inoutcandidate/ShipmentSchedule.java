@@ -37,6 +37,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -123,5 +124,11 @@ public class ShipmentSchedule
 		final ImmutableAttributeSet shipmentScheduleAsi = asiBL.getImmutableAttributeSetById(getAttributeSetInstanceId());
 
 		return nonNullTargetAsiIds.stream().map(asiBL::getImmutableAttributeSetById).anyMatch(shipmentScheduleAsi::containsAttributeValues);
+	}
+
+	@Nullable
+	public UserId getShipContactUserId()
+	{
+		return shipContactId != null ? shipContactId.getUserId() : null;
 	}
 }

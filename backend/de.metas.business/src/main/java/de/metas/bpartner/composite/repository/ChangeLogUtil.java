@@ -86,6 +86,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_SalesPartnerCode, BPartner.SALES_PARTNER_CODE)
 			.put(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, BPartner.C_BPARTNER_SALES_REP_ID)
 			.put(I_C_BPartner.COLUMNNAME_InternalName, BPartner.INTERNAL_NAME)
+			.put(I_C_BPartner.COLUMNNAME_IsDiscountPrinted, BPartner.DISCOUNT_PRINTED)
 			.put(I_C_BPartner.COLUMNNAME_PaymentRule, BPartner.PAYMENT_RULE)
 			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)

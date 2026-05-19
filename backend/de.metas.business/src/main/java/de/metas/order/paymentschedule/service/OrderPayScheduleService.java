@@ -130,6 +130,8 @@ public class OrderPayScheduleService
 	@NonNull
 	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId) {return orderPayScheduleRepository.getByOrderId(orderId);}
 
+	public void save(@NonNull final OrderPaySchedule orderPaySchedule) {orderPayScheduleRepository.save(orderPaySchedule);}
+
 	public void deleteByOrderId(@NonNull final OrderId orderId) {orderPayScheduleRepository.deleteByOrderId(orderId);}
 
 	@Nullable OrderSchedulingContext extractContext(final @NotNull org.compiere.model.I_C_Order orderRecord)

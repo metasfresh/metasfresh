@@ -12,6 +12,8 @@ SELECT
     (CASE WHEN fa.amtacctdr != 0 THEN fa2.amtacctcr ELSE fa2.amtacctdr END)                                                               AS amt,
     (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.c_currency_id END)                                                            AS c_currency_id,
     (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN (CASE WHEN fa.amtacctdr != 0 THEN fa2.amtsourcecr ELSE fa2.amtsourcedr END) END) AS amtsource,
+    fa.CurrencyRate,
+    cur.iso_code                                                                                                                          AS Currency,
     --
     -- Document Info
     fa.dateacct,
@@ -40,6 +42,7 @@ SELECT
     COALESCE(fa2.fact_acct_id, fa.fact_acct_id)                                                                                           AS id
 FROM Fact_Acct fa
          LEFT OUTER JOIN Fact_Acct fa2 ON (fa2.counterpart_fact_acct_id = fa.fact_acct_id)
+         JOIN C_Currency cur ON cur.c_currency_id = fa.c_currency_id
 WHERE fa.counterpart_fact_acct_id IS NULL
-AND (fa2.counterpart_fact_acct_id IS NOT NULL OR ((fa2.amtacctcr!= 0) OR (fa2.amtacctdr!= 0)))
+  AND (fa2.counterpart_fact_acct_id IS NOT NULL OR ((fa2.amtacctcr != 0) OR (fa2.amtacctdr != 0)))
 ;

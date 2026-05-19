@@ -163,7 +163,8 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_TU_GTIN": null,
           "Product_Buyer_ProductNo": null,
           "Product_Supplier_TU_GTIN": null,
-          "Product_Supplier_ProductNo": "postgRESTExportProductValue"
+          "Product_Supplier_ProductNo": "postgRESTExportProductValue",
+          "Product_DepositType": null
         }
       ],
       "Sums": [
@@ -179,6 +180,72 @@ Feature: EDI INVOIC export via postgREST
         }
       ],
       "Version": "0.2"
+    }
+  ]
+}
+    """
+
+  @Id:S0467_020
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+  Scenario: INVOIC JSON export exposes Product_DepositType for the line product (me03#29557)
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier        | Value                    | Name                    | Description                    | DepositType |
+      | product_S0467_020 | depositTypeProductValue  | depositTypeProductName  | depositTypeProductDescription  | NRC         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S0467_020 | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier            | REST.Context             | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS0467_020 | salesInvoiceS0467_020_ID | customer1     | Ausgangsrechnung        | S0467_020  | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID          | M_Product_ID      | QtyInvoiced |
+      | salesInvoiceS0467_020 | product_S0467_020 | 1 PCE       |
+    And the invoice identified by salesInvoiceS0467_020 is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@salesInvoiceS0467_020_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @salesInvoiceS0467_020_ID@,
+      "Invoice_DocumentNo": "S0467_020",
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Product_Name": "depositTypeProductName",
+          "Product_Supplier_ProductNo": "depositTypeProductValue",
+          "Product_DepositType": "NRC"
+        }
+      ]
     }
   ]
 }
@@ -429,7 +496,8 @@ Feature: EDI INVOIC export via postgREST
           "Product_Buyer_TU_GTIN": null,
           "Product_Buyer_ProductNo": null,
           "Product_Supplier_TU_GTIN": null,
-          "Product_Supplier_ProductNo": "@productValue@"
+          "Product_Supplier_ProductNo": "@productValue@",
+          "Product_DepositType": null
         }
       ],
       "Sums": [

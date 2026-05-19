@@ -108,6 +108,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
+		// dropship-warehouse transactions bypass material-disposition entirely —
+		// the goods are shipped supplier → customer and never reach our warehouse.
+		if (event.isDropShipWarehouse())
+		{
+			return;
+		}
+
 		final List<Candidate> candidates = createCandidatesForTransactionEvent(event);
 		for (final Candidate candidate : candidates)
 		{

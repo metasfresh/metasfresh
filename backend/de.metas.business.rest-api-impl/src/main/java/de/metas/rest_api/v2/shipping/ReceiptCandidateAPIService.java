@@ -281,7 +281,7 @@ class ReceiptCandidateAPIService
 			@Nullable final String commodityNumber)
 	{
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.stocked(product.isStocked())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))

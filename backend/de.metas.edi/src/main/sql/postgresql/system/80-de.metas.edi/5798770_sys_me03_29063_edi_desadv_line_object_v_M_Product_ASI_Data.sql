@@ -1,13 +1,17 @@
--- Required view for desadv line objects
-CREATE OR REPLACE VIEW "de.metas.edi".edi_desadv_line_object_v AS
+-- me03#29063: Update edi_desadv_line_object_v to use M_Product_ASI_Data instead of C_BPartner_Product
+-- for GTIN/ProductNo resolution. Uses content-based ASI subset matching via IsASIAttributesKeySubset().
+
+DROP VIEW IF EXISTS "de.metas.edi".edi_desadv_line_object_v$new;
+
+CREATE OR REPLACE VIEW "de.metas.edi".edi_desadv_line_object_v$new AS
 SELECT dl.edi_desadvline_id,
        JSONB_BUILD_OBJECT(
                'Product', JSONB_BUILD_OBJECT(
                    'SupplierProductNo', p.value,
                    'Name', p.name,
                    'Description', p.Description,
-                   'BuyerProductNo', COALESCE(dl.ProductNo,bpp.productno),
-                   'GTIN_CU', COALESCE(dl.GTIN_CU, bpp.gtin, bpp.ean_cu, p.gtin),
+                   'BuyerProductNo', COALESCE(dl.ProductNo, asi_data.productno),
+                   'GTIN_CU', COALESCE(dl.GTIN_CU, asi_data.gtin, p.gtin),
                    'GTIN_TU', COALESCE(dl.GTIN_TU, pip.gtin),
                    'NetWeight', p.weight,
                    'GrossWeight', p.grossweight,
@@ -44,12 +48,27 @@ FROM edi_desadvline dl
     ORDER BY c_bpartner_id NULLS LAST
     LIMIT 1 ) pip ON TRUE
 
-    -- Joins for the bpartner-product with the desadv's bpartner
+    -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
+    -- Note: when `iol` has no matching row (unshipped desadv line), iol.m_attributesetinstance_id is NULL
+    -- and only wildcard records (m_attributesetinstance_id IS NULL in M_Product_ASI_Data) will match.
+    -- This is acceptable: unshipped lines are rare and always use the buyer-level wildcard GTIN.
          LEFT JOIN LATERAL (
-    SELECT gtin, ean_cu, productno
-    FROM c_bpartner_product
+    SELECT gtin, productno
+    FROM m_product_asi_data
     WHERE isactive = 'Y'
       AND m_product_id = p.m_product_id
-      AND c_bpartner_id = d.c_bpartner_id
-    LIMIT 1 ) bpp ON TRUE
+      AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
+      AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
+    ORDER BY seqno
+    LIMIT 1 ) asi_data ON TRUE
 ;
+
+SELECT db_alter_view(
+    '"de.metas.edi".edi_desadv_line_object_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('edi_desadv_line_object_v$new')
+       AND views.table_schema = 'de.metas.edi')
+);
+
+DROP VIEW IF EXISTS "de.metas.edi".edi_desadv_line_object_v$new;
