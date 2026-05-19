@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.spi.model;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -35,10 +36,11 @@ import java.math.BigDecimal;
 public class DeliveryOrderItem
 {
 	@Nullable DeliveryOrderItemId id;
-	Money unitPrice;
-	Money totalValue;
-	String productName;
-	String productValue;
-	BigDecimal totalWeightInKg;
-	Quantity shippedQuantity;
+	@NonNull Money unitPrice;
+	@NonNull Money totalValue;
+	@NonNull String productName;
+	@NonNull String productValue;
+	@Nullable String customsTariff;
+	@NonNull BigDecimal totalWeightInKg;
+	@NonNull Quantity shippedQuantity;
 }

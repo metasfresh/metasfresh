@@ -1,6 +1,8 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
@@ -12,6 +14,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
@@ -20,6 +23,8 @@ import java.util.stream.Collector;
 @ToString
 public class OrderPaySchedule
 {
+	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
+
 	@NonNull @Getter OrderId orderId;
 	@NonNull @Getter private final ImmutableList<OrderPayScheduleLine> lines;
 
@@ -71,17 +76,50 @@ public class OrderPaySchedule
 			if (line.getStatus().isPending())
 			{
 				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
-				final DueDateAndStatus dueDateAndStatus = context.computeDueDate(termBreak);
+				final OrderPayScheduleLineContext dueDateAndStatus = context.computeDueDate(termBreak);
 				line.applyAndProcess(dueDateAndStatus);
 			}
 		}
 	}
 
-	public void markAsPaid(final OrderPayScheduleId orderPayScheduleId)
+	public void applyAndProcess(final OrderPayScheduleId lineId, final OrderPayScheduleLineContext context)
 	{
-		final OrderPayScheduleLine line = getLineById(orderPayScheduleId);
+		final OrderPayScheduleLine line = getLineById(lineId);
+		line.applyAndProcess(context);
+	}
 
-		final DueDateAndStatus dueDateAndStatus = DueDateAndStatus.paid(line.getDueDate());
-		line.applyAndProcess(dueDateAndStatus);
+	public void markAsPending(final OrderPayScheduleId lineId)
+	{
+		applyAndProcess(lineId, OrderPayScheduleLineContext.pending());
+	}
+
+	public void markAsAwaitingPayment(final OrderPayScheduleId lineId, @NonNull final LocalDate dueDate, @NonNull final Money dueAmtActual)
+	{
+		applyAndProcess(lineId, OrderPayScheduleLineContext.awaitingPayment(dueDate, dueAmtActual));
+	}
+
+	public void markAsPaid(final OrderPayScheduleId lineId)
+	{
+		final OrderPayScheduleLine line = getLineById(lineId);
+		applyAndProcess(lineId, OrderPayScheduleLineContext.paid(line.getDueDate()));
+	}
+
+	public Optional<OrderPayScheduleLine> getSingleLCLine()
+	{
+		final ImmutableList<OrderPayScheduleLine> lcLines = lines.stream()
+				.filter(OrderPayScheduleLine::isLetterOfCreditDate)
+				.collect(ImmutableList.toImmutableList());
+		if (lcLines.isEmpty())
+		{
+			return Optional.empty();  // no LC break in payment term — no-op
+		}
+		else if (lcLines.size() > 1)
+		{
+			throw new AdempiereException(MSG_MultipleLCBreaksUnsupported, orderId);
+		}
+		else
+		{
+			return Optional.of(lcLines.get(0));
+		}
 	}
 }

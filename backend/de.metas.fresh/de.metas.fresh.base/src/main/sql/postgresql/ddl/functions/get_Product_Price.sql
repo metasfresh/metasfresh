@@ -43,7 +43,7 @@ DECLARE
     priceListVersion record;
 BEGIN
     --get m_pricelist
-    SELECT * FROM m_pricelist INTO priceList;
+    SELECT * FROM m_pricelist WHERE M_PriceList_ID = p_priceListId INTO priceList;
     --get m_pricelist_version
     SELECT *
     FROM M_PriceList_Version

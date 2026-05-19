@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvId;
@@ -48,6 +46,8 @@ import de.metas.process.ProcessInfo;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.asidata.ProductASIData;
+import de.metas.product.asidata.ProductASIDataRepository;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -70,7 +70,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Product;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
@@ -94,7 +94,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class DesadvBL
 {
-	private final static Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
+	private final static Logger logger = LogManager.getLogger(DesadvBL.class);
 
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 	private static final String SYS_CONFIG_MATCH_USING_ORDER_ID = "de.metas.edi.desadv.MatchUsingC_Order_ID";
@@ -109,8 +109,6 @@ public class DesadvBL
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -122,6 +120,7 @@ public class DesadvBL
 	@NonNull private final transient EDIDesadvPackService ediDesadvPackService;
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
+	@NonNull private final ProductASIDataRepository productASIDataRepository;
 
 	@VisibleForTesting
 	public static DesadvBL newInstanceForUnitTesting()
@@ -131,7 +130,8 @@ public class DesadvBL
 		return SpringContextHolder.getBeanOrSupply(DesadvBL.class,
 				() -> new DesadvBL(EDIDesadvPackService.newInstanceForUnitTesting(),
 						EDIDesadvInOutLineDAO.newInstanceForUnitTesting(),
-						EDIBPartnerConfigService.newInstanceForUnitTesting())
+						EDIBPartnerConfigService.newInstanceForUnitTesting(),
+						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)))
 		);
 	}
 
@@ -215,7 +215,6 @@ public class DesadvBL
 
 		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
 		final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
-		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(buyerBPartnerId);
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, orderRecord);
 		newDesadvLine.setEDI_Desadv(desadvRecord);
@@ -249,36 +248,28 @@ public class DesadvBL
 		newDesadvLine.setProductDescription(orderLineRecord.getProductDescription());
 
 		final I_M_Product product = productDAO.getById(productId);
-		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 		//
-		// set infos from C_BPartner_Product
-		final I_C_BPartner_Product bPartnerProduct = bPartnerProductDAO.retrieveBPartnerProductAssociation(buyerBPartner, product, orgId);
-		// Don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments.
-		// Instead, just don't set the values and let the user fix it in the DESADV window later on
-		if (bPartnerProduct != null)
-		{
-			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
-			newDesadvLine.setGTIN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getGTIN(), product.getGTIN()));
-			newDesadvLine.setUPC_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getUPC(), product.getUPC()));
-			newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(bPartnerProduct.getEAN_CU(), product.getUPC()/*no EAN on M_Product; UPC plays both roles*/));
+		// set infos from M_Product_ASI_Data (ASI-aware, content-based subset matching)
+		final AttributeSetInstanceId orderLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID());
+		final ProductASIData asiData = productASIDataRepository.retrieveBestMatch(productId, buyerBPartnerId, orderLineAsiId);
 
-			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
-			{
-				// fallback for product description
-				newDesadvLine.setProductDescription(bPartnerProduct.getProductDescription());
-			}
-			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
-			{
-				// fallback for product description
-				newDesadvLine.setProductDescription(bPartnerProduct.getProductName());
-			}
-		}
-		else
+		newDesadvLine.setProductNo(asiData != null ? asiData.getProductNo() : null);
+		newDesadvLine.setGTIN_CU(CoalesceUtil.firstNotBlank(
+				asiData != null ? asiData.getGtin() : null,
+				product.getGTIN()));
+		newDesadvLine.setUPC_CU(CoalesceUtil.firstNotBlank(
+				asiData != null ? asiData.getUpc() : null,
+				product.getUPC()));
+		newDesadvLine.setEAN_CU(CoalesceUtil.firstNotBlank(
+				asiData != null ? asiData.getEanCU() : null,
+				product.getUPC()/*no EAN on M_Product; UPC plays both roles*/));
+
+		if (Check.isEmpty(newDesadvLine.getProductDescription(), true) && asiData != null)
 		{
-			newDesadvLine.setGTIN_CU(product.getGTIN());
-			newDesadvLine.setUPC_CU(product.getUPC());
-			newDesadvLine.setEAN_CU(product.getUPC()/*no EAN on M_Product; UPC plays both roles*/);
+			newDesadvLine.setProductDescription(CoalesceUtil.firstNotBlank(
+					asiData.getProductDescription(),
+					asiData.getProductName()));
 		}
 
 		if (Check.isBlank(newDesadvLine.getProductDescription()))
@@ -320,6 +311,8 @@ public class DesadvBL
 
 		// When the shipment schedule is closed, the effective ordered qty is whatever was delivered
 		// (no more deliveries expected). This mirrors ShipmentScheduleEffectiveBL.computeQtyOrdered().
+		// Note: any QtyOrdered_Override on a closed schedule is intentionally ignored —
+		// "closed" means "we are done, use actual delivered as the final ordered qty".
 		if (schedule.isClosed())
 		{
 			return schedule.getQtyDelivered();

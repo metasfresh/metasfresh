@@ -3,7 +3,7 @@ package de.metas.order.paymentschedule.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.DueDateAndStatus;
+import de.metas.order.paymentschedule.OrderPayScheduleLineContext;
 import de.metas.order.paymentschedule.OrderSchedulingContext;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -92,7 +92,7 @@ class OrderPayScheduleCreateCommand
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final Money dueAmount)
 	{
-		final DueDateAndStatus result = context.computeDueDate(termBreak);
+		final OrderPayScheduleLineContext result = context.computeDueDate(termBreak);
 
 		return OrderPayScheduleCreateRequest.Line.builder()
 				.dueDate(result.getDueDate())

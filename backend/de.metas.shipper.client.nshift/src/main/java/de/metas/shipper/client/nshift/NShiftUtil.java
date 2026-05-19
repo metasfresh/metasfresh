@@ -22,6 +22,7 @@
 
 package de.metas.shipper.client.nshift;
 
+import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
@@ -33,7 +34,9 @@ import javax.annotation.Nullable;
 @UtilityClass
 public class NShiftUtil
 {
-	public static JsonAddress.JsonAddressBuilder buildNShiftAddressBuilder(@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress, @NonNull final JsonAddressKind kind)
+	public static JsonAddress.JsonAddressBuilder buildNShiftAddressBuilder(@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress,
+																		   @Nullable final JsonContact contact,
+																		   @NonNull final JsonAddressKind kind)
 	{
 		String street1 = commonAddress.getStreet();
 		if (Check.isNotBlank(commonAddress.getHouseNo()))
@@ -41,7 +44,7 @@ public class NShiftUtil
 			street1 = street1 + " " + commonAddress.getHouseNo();
 		}
 
-		return JsonAddress.builder()
+		final JsonAddress.JsonAddressBuilder addressBuilder = JsonAddress.builder()
 				.kind(kind)
 				.name1(commonAddress.getCompanyName1())
 				.name2(commonAddress.getCompanyName2())
@@ -50,27 +53,19 @@ public class NShiftUtil
 				.postCode(commonAddress.getZipCode())
 				.city(commonAddress.getCity())
 				.countryCode(commonAddress.getCountry());
-	}
 
-	public static JsonAddress.JsonAddressBuilder buildNShiftReceiverAddress(
-			@NonNull final de.metas.common.delivery.v1.json.JsonAddress deliveryAddress,
-			@Nullable final de.metas.common.delivery.v1.json.JsonContact deliveryContact)
-	{
-
-		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = buildNShiftAddressBuilder(deliveryAddress, JsonAddressKind.RECEIVER);
-
-		if (deliveryContact != null)
+		if (contact != null)
 		{
-			if (Check.isNotBlank(deliveryContact.getPhone()))
+			if (Check.isNotBlank(contact.getPhone()))
 			{
-				receiverAddressBuilder.phone(deliveryContact.getPhone());
+				addressBuilder.phone(contact.getPhone());
 			}
-			if (Check.isNotBlank(deliveryContact.getEmailAddress()))
+			if (Check.isNotBlank(contact.getEmailAddress()))
 			{
-				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
+				addressBuilder.email(contact.getEmailAddress());
 			}
 		}
-		return receiverAddressBuilder;
-	}
 
+		return addressBuilder;
+	}
 }

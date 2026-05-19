@@ -89,6 +89,32 @@ public class ReceiptsScheduleCreatedHandlerTest
 		handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
 	}
 
+	@Test
+	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	{
+		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent
+				.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.orderLineDescriptor(OrderLineDescriptor.builder()
+						.orderId(30)
+						.orderLineId(40)
+						.docTypeId(50)
+						.orderBPartnerId(60)
+						.build())
+				.receiptScheduleId(RECEIPT_SCHEDULE_ID)
+				.vendorId(80)
+				.reservedQuantity(new BigDecimal("10"))
+				.isDropShipWarehouse(true)
+				.build()
+				.validate();
+
+		receiptsScheduleCreatedHandler.handleEvent(event);
+
+		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
 	static void handleEvent_ReceiptScheduleCreatedEvent_performTest(@NonNull final ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler)
 	{
 		final MaterialDescriptor eventMaterialDescriptor = newMaterialDescriptor().withDate(NOW);

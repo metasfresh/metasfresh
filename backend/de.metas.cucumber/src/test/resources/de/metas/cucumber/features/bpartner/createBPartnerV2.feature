@@ -34,7 +34,8 @@ Feature: create or update BPartner v2
                "language":"de",
                "url":null,
                "group":"test-group",
-                "vatId": "vatId_BPartner001"
+                "vatId": "vatId_BPartner001",
+               "discountPrinted":true
             },
             "locations":{
                "requestItems":[
@@ -102,8 +103,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | Lookup_label |
-      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | DIVISION_A   |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | Lookup_label | OPT.IsDiscountPrinted |
+      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | DIVISION_A   | Y                     |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId        |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | null               |
@@ -133,7 +134,8 @@ Feature: create or update BPartner v2
                "language":"de",
                "url":"url_updated",
                "group":"test-group",
-               "vatId":null
+               "vatId":null,
+               "discountPrinted":false
             }
          }
       }
@@ -145,8 +147,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was updated for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsDiscountPrinted |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      | N                     |
 
   Scenario: Update a BPartner contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code

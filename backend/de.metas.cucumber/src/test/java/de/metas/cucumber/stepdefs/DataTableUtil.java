@@ -53,6 +53,10 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
+	/**
+	 * Internal placeholder for the literal "null" token in DataTable cells.
+	 * Step defs should use {@link #nullToken2Null} or {@link #isNullPlaceholder} instead of comparing against this constant directly.
+	 */
 	public static final String NULL_STRING = "null";
 
 	/**
@@ -201,7 +205,19 @@ public class DataTableUtil
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
-		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
+		return isNullPlaceholder(value) ? null : value;
+	}
+
+	/**
+	 * Returns {@code true} when the given DataTable cell value represents the null placeholder
+	 * (either blank/empty or the literal string {@code "null"}).
+	 * Use this in step defs instead of comparing against {@link #NULL_STRING} directly.
+	 *
+	 * @see #nullToken2Null
+	 */
+	public boolean isNullPlaceholder(@Nullable final String value)
+	{
+		return Check.isBlank(value) || NULL_STRING.equals(value);
 	}
 
 	@NonNull

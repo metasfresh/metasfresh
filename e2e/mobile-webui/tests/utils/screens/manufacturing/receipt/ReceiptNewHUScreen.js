@@ -28,4 +28,8 @@ export const ReceiptNewHUScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
+    expectTUTargetNotPresent: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Expect TU target "${tuPIItemProductTestId}" not present`, async () => {
+        await ReceiptNewHUScreen.expectVisible();
+        await expect(page.getByTestId(tuPIItemProductTestId)).toHaveCount(0);
+    }),
 };

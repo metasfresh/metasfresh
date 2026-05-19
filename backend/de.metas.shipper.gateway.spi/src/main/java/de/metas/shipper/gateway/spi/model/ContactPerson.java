@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 public class ContactPerson
 {
 	@NonNull String name;
+	@Nullable String department;
 	@Nullable PhoneNumber phone;
 	@Nullable String emailAddress;
 	@Nullable String simplePhoneNumber;
@@ -45,12 +46,14 @@ public class ContactPerson
 	@Jacksonized
 	private ContactPerson(
 			@NonNull final String name,
+			@Nullable final String department,
 			@Nullable final PhoneNumber phone,
 			@Nullable final String simplePhoneNumber,
 			@Nullable final String emailAddress,
 			@Nullable final String languageCode)
 	{
 		this.name = name;
+		this.department = department;
 		this.phone = phone;
 		this.simplePhoneNumber = simplePhoneNumber;
 		this.emailAddress = emailAddress;
