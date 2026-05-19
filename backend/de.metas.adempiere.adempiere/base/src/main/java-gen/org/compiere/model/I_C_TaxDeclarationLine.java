@@ -191,6 +191,29 @@ public interface I_C_TaxDeclarationLine
     public static final String COLUMNNAME_C_VAT_Code_ID = "C_VAT_Code_ID";
 
 	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVATCode (java.lang.String VATCode);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATCode();
+
+    /** Column definition for VATCode */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationLine.class, "VATCode", null);
+    /** Column name VATCode */
+    public static final String COLUMNNAME_VATCode = "VATCode";
+
+	/**
 	 * Set Amount Type.
 	 *
 	 * <br>Type: String

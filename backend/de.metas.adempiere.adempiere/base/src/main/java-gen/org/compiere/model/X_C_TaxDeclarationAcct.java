@@ -504,28 +504,22 @@ public class X_C_TaxDeclarationAcct extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
-	/** Set C_VAT_Code_ID.
-		@param C_VAT_Code_ID VAT Code
+	/** Set VATCode.
+		@param VATCode VAT Code
 	  */
 	@Override
-	public void setC_VAT_Code_ID (int C_VAT_Code_ID)
+	public void setVATCode (java.lang.String VATCode)
 	{
-		if (C_VAT_Code_ID < 1)
-			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
-		else
-			set_Value (COLUMNNAME_C_VAT_Code_ID, Integer.valueOf(C_VAT_Code_ID));
+		set_Value (COLUMNNAME_VATCode, VATCode);
 	}
 
-	/** Get C_VAT_Code_ID.
+	/** Get VATCode.
 		@return VAT Code
 	  */
 	@Override
-	public int getC_VAT_Code_ID ()
+	public java.lang.String getVATCode ()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_VAT_Code_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_VATCode);
 	}
 
 	/** Set AmountType.

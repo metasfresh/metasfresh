@@ -222,6 +222,24 @@ public class X_C_TaxDeclarationLine extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
+	/** Set VATCode.
+		@param VATCode VAT Code
+	  */
+	@Override
+	public void setVATCode (java.lang.String VATCode)
+	{
+		set_Value (COLUMNNAME_VATCode, VATCode);
+	}
+
+	/** Get VATCode.
+		@return VAT Code
+	  */
+	@Override
+	public java.lang.String getVATCode ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VATCode);
+	}
+
 	/** Set AmountType.
 		@param AmountType Amount Type
 	  */
