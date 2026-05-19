@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -140,6 +141,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -164,6 +166,7 @@ public class OrderBL implements IOrderBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -1508,5 +1511,19 @@ public class OrderBL implements IOrderBL
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 
+	}
+
+	@Override
+	public int getMaxPurchaseTransportDays(@NonNull final I_C_Order order)
+	{
+		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		return orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(line -> ProductId.ofRepoIdOrNull(line.getM_Product_ID()))
+				.filter(Objects::nonNull)
+				.mapToInt(productId -> bpartnerProductEffectiveBL.get().getPurchaseTransportDays(vendorId, productId, orgId))
+				.max()
+				.orElse(0);
 	}
 }

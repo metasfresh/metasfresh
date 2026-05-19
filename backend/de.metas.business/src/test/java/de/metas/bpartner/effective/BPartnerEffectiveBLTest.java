@@ -344,6 +344,25 @@ public class BPartnerEffectiveBLTest
 		assertEquals("TestPoIncotermsLocation3", poIncoterms.getLocationEffective());
 	}
 
+	@Test
+	public void getPurchaseTransportDays_noValueOnBPartner_returns0()
+	{
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(0);
+	}
+
+	@Test
+	public void getPurchaseTransportDays_valueSetOnBPartner_returnsValue()
+	{
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setPO_TransportDays(5);
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(5);
+	}
+
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
 	private BPartnerId setupTest(
 			@Nullable final PricingSystemId bpartner_PricingSystemId,
