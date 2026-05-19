@@ -196,19 +196,19 @@ VALUES (0, 0, 549512 /*From ID Server*/, 547771,
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
     Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 555374 /*From ID Server*/, 549485,
-    NOW(), 100, 'Y', 'dates', 20, 'default', NOW(), 100);
+    NOW(), 100, 'Y', 'dates', 20, 'primary', NOW(), 100);
 
 -- 8c. Flags group — right column (must start with IsActive per layout rules)
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
     Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 555375 /*From ID Server*/, 549512,
-    NOW(), 100, 'Y', 'flags', 10, 'default', NOW(), 100);
+    NOW(), 100, 'Y', 'flags', 10, 'primary', NOW(), 100);
 
 -- 8d. Org group — right column, below flags
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
     Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 555376 /*From ID Server*/, 549512,
-    NOW(), 100, 'Y', 'org', 20, 'default', NOW(), 100);
+    NOW(), 100, 'Y', 'org', 20, 'primary', NOW(), 100);
 
 -- 8e. Reorganise existing AD_UI_Elements
 
