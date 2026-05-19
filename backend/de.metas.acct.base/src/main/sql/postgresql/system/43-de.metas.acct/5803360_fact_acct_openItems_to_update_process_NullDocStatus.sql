@@ -1,3 +1,27 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/fact_acct_openItems_to_update_process.sql
+--
+-- Fix: accept Fact_Acct rows with DocStatus IS NULL in the open-items aggregation.
+--
+-- Background:
+--   M_MatchInv and M_MatchPO have no DocStatus column at all; Doc.isDocStatusValidForPosting()
+--   explicitly accepts null DocStatus for these documents, and AcctDocRequiredServicesFacade
+--   writes NULL into Fact_Acct.DocStatus for their posting rows.
+--   The previous filter "WHERE fa.docstatus IN ('CO', 'CL')" therefore silently dropped every
+--   MatchInv/MatchPO clearing entry from the per-key aggregation. As a result, postings that
+--   should reconcile (e.g. NotInvoicedReceipts_Acct opening on M_InOut paired with the
+--   MatchInv clearing) stayed at IsOpenItemsReconciled='N' with OI_OpenAmount = the opening
+--   amount, even after the MatchInv-side OpenItemKey was correctly aligned with the opening's
+--   key (PR https://github.com/metasfresh/metasfresh/pull/24004).
+--
+--   Reversed/voided rows (DocStatus IN ('RE','VO')) are still excluded.
+--
+-- Data fix:
+--   After replacing the function, enqueue every OpenItemKey that has at least one Fact_Acct
+--   row with DocStatus IS NULL, so the background watcher reprocesses them with the corrected
+--   filter and the stuck IsOpenItemsReconciled / OI_OpenAmount / OI_OpenAmountSource values
+--   are recomputed.
+
+
 DROP FUNCTION IF EXISTS de_metas_acct.fact_acct_openItems_to_update_process(
     p_BatchSize integer
 )
@@ -85,4 +109,17 @@ BEGIN
     RETURN v_count; -- i.e. now many records were processed
 END;
 $BODY$
+;
+
+
+--
+-- Data fix: enqueue every OpenItemKey that has at least one Fact_Acct row with DocStatus IS NULL.
+-- The background watcher picks these up and reprocesses them with the corrected filter.
+INSERT INTO "de_metas_acct".fact_acct_openItems_to_update(openitemkey, c_acctschema_id, postingtype, account_id)
+SELECT DISTINCT fa.openitemkey, fa.c_acctschema_id, fa.postingtype, fa.account_id
+FROM fact_acct fa
+WHERE fa.openitemkey IS NOT NULL
+  AND fa.openitemkey IN (SELECT DISTINCT openitemkey
+                         FROM fact_acct
+                         WHERE openitemkey IS NOT NULL AND docstatus IS NULL)
 ;
