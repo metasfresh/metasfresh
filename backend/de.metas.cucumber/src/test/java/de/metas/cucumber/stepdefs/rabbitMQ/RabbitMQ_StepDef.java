@@ -100,13 +100,13 @@ public class RabbitMQ_StepDef
 	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
 	public void wait_empty_material_queue() throws InterruptedException
 	{
-		MaterialEventQueueDrainer.drainQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 	}
 
 	@And("wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes")
 	public void wait_empty_async_queue() throws InterruptedException
 	{
-		MaterialEventQueueDrainer.drainQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
+		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
 	}
 
 	@Given("rabbitMQ queue is created")
@@ -342,4 +342,35 @@ public class RabbitMQ_StepDef
 									  .build());
 	}
 
+	private void waitEmptyQueueByTopic(@NonNull final String topicName) throws InterruptedException
+	{
+		final long nowMillis = System.currentTimeMillis();
+		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
+
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(topicName);
+		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
+
+		long messageCount;
+		do
+		{
+			//noinspection BusyWait
+			Thread.sleep(1000);
+
+			final QueueInformation queueInformation = Optional.ofNullable(rabbitAdmin.getQueueInfo(queueName))
+					.orElseThrow(() -> new AdempiereException("Queue does not exist!")
+							.appendParametersToMessage()
+							.setParameter("QueueName", queueName));
+
+			messageCount = queueInformation.getMessageCount();
+		}
+		while (messageCount > 0 && deadLineMillis > System.currentTimeMillis());
+
+		if (messageCount > 0)
+		{
+			throw new AdempiereException("Queue has not been entirely processed in 5 minutes !")
+					.appendParametersToMessage()
+					.setParameter("QueueName", queueName)
+					.setParameter("messageCount", messageCount);
+		}
+	}
 }

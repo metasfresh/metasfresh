@@ -34,7 +34,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.rabbitMQ.MaterialEventQueueDrainer;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -528,12 +527,6 @@ public class C_Order_StepDef
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		logger.info("Order {} was completed", order);
-
-		// Auto-drain the material and async RabbitMQ queues so downstream poll steps
-		// (`C_Invoice_Candidate are found`, `MD_Candidates are found`, …) observe a
-		// settled DB state rather than racing the async event chain that order completion
-		// kicks off. The historical "drain after create" pattern, applied implicitly.
-		MaterialEventQueueDrainer.drainMaterialAndAsyncQueuesUninterruptibly();
 	}
 
 	@Given("generate PO from SO is invoked with parameters:")
