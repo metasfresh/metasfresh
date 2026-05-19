@@ -808,7 +808,6 @@ Feature: Empties receives
       | orderLine  | order                 | purchaseProduct         | 10         |
 
     And the order identified by order is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ReceiptSchedule are found:
@@ -878,7 +877,6 @@ Feature: Empties receives
       | orderLine  | order                 | purchaseProduct         | 10         |
 
     And the order identified by order is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ReceiptSchedule are found:

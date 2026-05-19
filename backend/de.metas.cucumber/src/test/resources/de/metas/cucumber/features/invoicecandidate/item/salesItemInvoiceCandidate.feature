@@ -52,7 +52,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -108,7 +107,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -171,7 +169,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -235,7 +232,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -303,7 +299,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -371,7 +366,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -435,7 +429,6 @@ Feature: Product items invoice candidates: shipments
       | ol_1       | o_1                   | p_1                     | 100        |
 
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     Then after not more than 60s, M_ShipmentSchedules are found:
@@ -496,7 +489,6 @@ Feature: Product items invoice candidates: shipments
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
