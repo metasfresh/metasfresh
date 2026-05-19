@@ -110,6 +110,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -638,14 +639,7 @@ public class JsonPersisterService
 				bpartnerComposite,
 				resultBuilder.isNewBPartner(),
 				parentSyncAdvise);
-		if (anythingWasSynced.isTrue())
-		{
-			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(resultBuilder.isNewBPartner() ? SyncOutcome.CREATED : SyncOutcome.UPDATED);
-		}
-		else
-		{
-			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(SyncOutcome.NOTHING_DONE);
-		}
+
 		resultBuilder.setJsonResponseContactUpsertItems(syncJsonToContacts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> identifierToLocationResponse = syncJsonToLocations(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
@@ -656,6 +650,7 @@ public class JsonPersisterService
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// wire extendedProps: set custom REST API columns on the saved C_BPartner record
+		boolean customColumnsWritten = false;
 		if (jsonRequestComposite.getBpartner() != null
 				&& jsonRequestComposite.getBpartner().isExtendedPropsSet()
 				&& jsonRequestComposite.getBpartner().getExtendedProps() != null
@@ -664,10 +659,23 @@ public class JsonPersisterService
 			final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.load(
 					bpartnerComposite.getBpartner().getId(),
 					I_C_BPartner.class);
-			customColumnService.setCustomColumns(
-					InterfaceWrapperHelper.getPO(bpartnerRecord),
-					jsonRequestComposite.getBpartner().getExtendedProps());
-			InterfaceWrapperHelper.save(bpartnerRecord);
+			if (!POJOWrapper.isHandled(bpartnerRecord))
+			{
+				customColumnService.setCustomColumns(
+						InterfaceWrapperHelper.getPO(bpartnerRecord),
+						jsonRequestComposite.getBpartner().getExtendedProps());
+				InterfaceWrapperHelper.save(bpartnerRecord);
+				customColumnsWritten = true;
+			}
+		}
+
+		if (anythingWasSynced.isTrue() || customColumnsWritten)
+		{
+			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(resultBuilder.isNewBPartner() ? SyncOutcome.CREATED : SyncOutcome.UPDATED);
+		}
+		else
+		{
+			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(SyncOutcome.NOTHING_DONE);
 		}
 
 		//
