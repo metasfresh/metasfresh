@@ -40,6 +40,7 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -183,6 +184,14 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_Journal());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.C_TaxDeclaration());
+	}
+
+	@Override
+	protected void registerTabCallouts(final ITabCalloutFactory tabCalloutsRegistry)
+	{
+		tabCalloutsRegistry.registerTabCalloutForTable(
+				org.compiere.model.I_C_TaxDeclaration.Table_Name,
+				de.metas.acct.callout.C_TaxDeclaration_TabCallout.class);
 	}
 
 	@Override
