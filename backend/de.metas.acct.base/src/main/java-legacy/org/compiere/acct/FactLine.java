@@ -15,9 +15,9 @@ import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.acct.factacct_userchanges.FactAcctChanges;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
-import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
@@ -1537,7 +1537,7 @@ public class FactLine
 		}
 
 		this.taxId = taxId;
-		this.vatCode = computeVATCode(null, null).map(VATCode::getCode).orElse(null);
+		applyVATCodeMatchingResponse(computeVATCode(null, null));
 	}
 
 	/**
@@ -1548,7 +1548,7 @@ public class FactLine
 	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
 	{
 		this.taxId = taxId;
-		this.vatCode = computeVATCode(isSOTrxOverride, null).map(VATCode::getCode).orElse(null);
+		applyVATCodeMatchingResponse(computeVATCode(isSOTrxOverride, null));
 	}
 
 	public void setVatCode(@Nullable final String vatCode)
@@ -1556,7 +1556,7 @@ public class FactLine
 		this.vatCode = vatCode;
 	}
 
-	private Optional<VATCode> computeVATCode(@Nullable final Boolean isSOTrxOverride, @Nullable final VATCodeAmountType amountType)
+	private Optional<VATCodeMatchingResponse> computeVATCode(@Nullable final Boolean isSOTrxOverride, @Nullable final VATCodeAmountType amountType)
 	{
 		if (taxId == null)
 		{
@@ -1579,16 +1579,20 @@ public class FactLine
 	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, @NonNull final VATCodeAmountType amountType)
 	{
 		this.taxId = taxId;
-		this.vatCode = computeVATCode(null, amountType).map(VATCode::getCode).orElse(null);
-		this.vatCodeAmountType = this.vatCode != null ? amountType : null;
+		applyVATCodeMatchingResponse(computeVATCode(null, amountType));
 	}
 
 	/** Sets the tax and resolves the VAT code, overriding IsSOTrx and filtering by amountType. */
 	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride, @NonNull final VATCodeAmountType amountType)
 	{
 		this.taxId = taxId;
-		this.vatCode = computeVATCode(isSOTrxOverride, amountType).map(VATCode::getCode).orElse(null);
-		this.vatCodeAmountType = this.vatCode != null ? amountType : null;
+		applyVATCodeMatchingResponse(computeVATCode(isSOTrxOverride, amountType));
+	}
+
+	private void applyVATCodeMatchingResponse(@NonNull final Optional<VATCodeMatchingResponse> response)
+	{
+		this.vatCode = response.map(r -> r.getVatCode().getCode()).orElse(null);
+		this.vatCodeAmountType = response.map(VATCodeMatchingResponse::getVatCodeAmountType).orElse(null);
 	}
 
 	public void updateFAOpenItemTrxInfo()
