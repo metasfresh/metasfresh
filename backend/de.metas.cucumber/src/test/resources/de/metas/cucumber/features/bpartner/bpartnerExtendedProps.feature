@@ -56,6 +56,9 @@ Feature: BPartner v2 REST — extendedProps round-trip
     """
 
   Scenario: BPartner upsert rejects extendedProps key whose column is not IsRestAPICustomColumn=Y
+    And update AD_Column:
+      | TableName  | ColumnName      | OPT.IsRestAPICustomColumn |
+      | C_BPartner | DeliveryViaRule | false                     |
     And the metasfresh cache is reset
     And we wait for 2000 ms
 
