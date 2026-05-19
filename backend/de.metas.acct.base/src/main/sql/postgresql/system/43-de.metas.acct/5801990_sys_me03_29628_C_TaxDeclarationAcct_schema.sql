@@ -15,13 +15,15 @@ INSERT INTO AD_Column (
     AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Table_ID, AD_Element_ID, ColumnName, FieldLength, IsKey, IsParent, IsMandatory,
     IsTranslated, IsIdentifier, SeqNo, IsEncrypted, IsUpdateable, IsSelectionColumn,
-    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
+    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version,
+    PersonalDataCategory
 )
 VALUES (
-    592514, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592514 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100,
     820, 542958, 'C_VAT_Code_ID', 10,
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
-    19, 'N', 'N', 'Y', 'D', 0
+    19, 'N', 'N', 'Y', 'D', 0,
+    'NP'
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, c.AD_Column_ID, COALESCE(etrl.Name, e.Name), 'N', c.AD_Client_ID, c.AD_Org_ID, c.Created, c.CreatedBy, c.Updated, c.UpdatedBy, 'Y'
@@ -38,13 +40,15 @@ INSERT INTO AD_Column (
     AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Table_ID, AD_Element_ID, ColumnName, FieldLength, IsKey, IsParent, IsMandatory,
     IsTranslated, IsIdentifier, SeqNo, IsEncrypted, IsUpdateable, IsSelectionColumn,
-    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
+    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version,
+    PersonalDataCategory
 )
 VALUES (
-    592515, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592515 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100,
     820, 1602, 'AmountType', 1,
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
-    10, 'N', 'N', 'Y', 'D', 0
+    10, 'N', 'N', 'Y', 'D', 0,
+    'NP'
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, c.AD_Column_ID, COALESCE(etrl.Name, e.Name), 'N', c.AD_Client_ID, c.AD_Org_ID, c.Created, c.CreatedBy, c.Updated, c.UpdatedBy, 'Y'
@@ -61,13 +65,15 @@ INSERT INTO AD_Column (
     AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Table_ID, AD_Element_ID, ColumnName, FieldLength, IsKey, IsParent, IsMandatory,
     IsTranslated, IsIdentifier, SeqNo, IsEncrypted, IsUpdateable, IsSelectionColumn,
-    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
+    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version,
+    PersonalDataCategory
 )
 VALUES (
-    592516, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592516 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100,
     820, 126, 'AD_Table_ID', 10,
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
-    19, 'N', 'N', 'Y', 'D', 0
+    19, 'N', 'N', 'Y', 'D', 0,
+    'NP'
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, c.AD_Column_ID, COALESCE(etrl.Name, e.Name), 'N', c.AD_Client_ID, c.AD_Org_ID, c.Created, c.CreatedBy, c.Updated, c.UpdatedBy, 'Y'
@@ -84,13 +90,15 @@ INSERT INTO AD_Column (
     AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Table_ID, AD_Element_ID, ColumnName, FieldLength, IsKey, IsParent, IsMandatory,
     IsTranslated, IsIdentifier, SeqNo, IsEncrypted, IsUpdateable, IsSelectionColumn,
-    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
+    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version,
+    PersonalDataCategory
 )
 VALUES (
-    592517, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592517 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100,
     820, 538, 'Record_ID', 10,
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
-    11, 'N', 'N', 'Y', 'D', 0
+    11, 'N', 'N', 'Y', 'D', 0,
+    'NP'
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, c.AD_Column_ID, COALESCE(etrl.Name, e.Name), 'N', c.AD_Client_ID, c.AD_Org_ID, c.Created, c.CreatedBy, c.Updated, c.UpdatedBy, 'Y'
@@ -107,13 +115,15 @@ INSERT INTO AD_Column (
     AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Table_ID, AD_Element_ID, ColumnName, FieldLength, IsKey, IsParent, IsMandatory,
     IsTranslated, IsIdentifier, SeqNo, IsEncrypted, IsUpdateable, IsSelectionColumn,
-    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
+    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version,
+    PersonalDataCategory
 )
 VALUES (
-    592518, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592518 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100,
     820, 1738, 'Line_ID', 10,
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
-    11, 'N', 'N', 'Y', 'D', 0
+    11, 'N', 'N', 'Y', 'D', 0,
+    'NP'
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, c.AD_Column_ID, COALESCE(etrl.Name, e.Name), 'N', c.AD_Client_ID, c.AD_Org_ID, c.Created, c.CreatedBy, c.Updated, c.UpdatedBy, 'Y'
@@ -130,13 +140,15 @@ INSERT INTO AD_Column (
     AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     AD_Table_ID, AD_Element_ID, ColumnName, FieldLength, IsKey, IsParent, IsMandatory,
     IsTranslated, IsIdentifier, SeqNo, IsEncrypted, IsUpdateable, IsSelectionColumn,
-    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
+    AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version,
+    PersonalDataCategory
 )
 VALUES (
-    592519, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592519 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100,
     820, 1367, 'Amount', 0,
     'N', 'N', 'N', 'N', 'N', 0, 'N', 'N', 'N',
-    12, 'N', 'N', 'Y', 'D', 0
+    12, 'N', 'N', 'Y', 'D', 0,
+    'NP'
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, c.AD_Column_ID, COALESCE(etrl.Name, e.Name), 'N', c.AD_Client_ID, c.AD_Org_ID, c.Created, c.CreatedBy, c.Updated, c.UpdatedBy, 'Y'

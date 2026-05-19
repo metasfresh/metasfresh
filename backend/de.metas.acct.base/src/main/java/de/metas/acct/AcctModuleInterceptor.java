@@ -87,6 +87,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final FAOpenItemsService faOpenItemsService;
 
 	private final ICurrentCostsRepository currentCostsRepository;
+	private final de.metas.acct.interceptor.C_TaxDeclaration taxDeclarationInterceptor;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
@@ -96,7 +97,8 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			@NonNull final ProductActivityProvider productActivityProvider,
 			@NonNull final ICurrentCostsRepository currentCostsRepository,
 			@NonNull final FAOpenItemsService faOpenItemsService,
-			@NonNull final FactAcctLogService factAcctLogService)
+			@NonNull final FactAcctLogService factAcctLogService,
+			@NonNull final de.metas.acct.interceptor.C_TaxDeclaration taxDeclarationInterceptor)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
@@ -104,6 +106,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		this.currentCostsRepository = currentCostsRepository;
 		this.faOpenItemsService = faOpenItemsService;
 		this.factAcctLogService = factAcctLogService;
+		this.taxDeclarationInterceptor = taxDeclarationInterceptor;
 	}
 
 	@Override
@@ -167,7 +170,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalBatch());
 		//
-		engine.addModelValidator(new de.metas.acct.interceptor.C_TaxDeclaration());
+		engine.addModelValidator(taxDeclarationInterceptor);
 		//
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_Distribution());
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_DistributionLine());
