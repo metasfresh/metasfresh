@@ -448,11 +448,18 @@ Feature: EDI DESADV — one DESADV per shipment, aggregating multiple source ord
       | M_ShipmentSchedule_ID | M_InOut_ID    |
       | ss_S29231_060_B       | io_S29231_060 |
 
-    # One shipment → one DESADV → exactly one pack
-    And after not more than 60s, there are exactly 1 EDI_Desadv_Pack records
+    # One shipment → one DESADV → two DesadvLines (one per source orderLine).
+    # Pack count is two because EDIDesadvPackService.createOrExtendPacks creates one pack
+    # per inOutLine in the no-HU configuration of this test (createPackUsingJustInOutLine
+    # is invoked once per call; "extend" only kicks in for the HU path). With HUs configured
+    # in production data the two inOutLines could share a single LU and produce one pack —
+    # but this scenario does not set up HUs.
+    And after not more than 60s, there are exactly 2 EDI_Desadv_Pack records
 
-    # The DESADV linked to the single shipment has empty header POReference (source orders disagree)
-    # and two lines (one per source order line)
+    # The single DESADV linked to the shipment has empty header POReference (source orders disagree)
+    # and exactly two DesadvLines (one per source orderLine — me03#29231 per-shipment mode
+    # allocates a DESADV-scoped Line via MAX(Line)+10 so the per-order Line=10 collision
+    # observed pre-fix is gone).
     And the EDI_Desadv linked to M_InOut has the following properties:
       | M_InOut_ID    | OPT.POReference | OPT.LineCount |
       | io_S29231_060 |                 | 2             |
