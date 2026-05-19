@@ -86,7 +86,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -1190,21 +1189,16 @@ public class DesadvBL
 
 	public boolean isOneDesadvPerShipment(@NonNull final I_EDI_Desadv desadv)
 	{
-		if(sysConfigBL.getBooleanValue(SYS_CONFIG_OneDesadvPerShipment, false))
-		{
-			return true;
-		}
-
 		final BPartnerId bPartnerId = getEffectiveDropshipPartnerId(desadv);
-		return ediBpartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId);
-
+		return ediBpartnerConfigService.isDESADVOneDesadvPerShipment(bPartnerId);
 	}
 
 	/**
 	 * Recomputes the DESADV export status based on the statuses of all linked shipments (M_InOut).
 	 * <p>
-	 * This applies only when {@link #isOneDesadvPerShipment(I_EDI_Desadv)} returns true
-	 * (either via sysconfig or when using ExternalSystem for this BPartner).
+	 * This applies only when {@link #isOneDesadvPerShipment(I_EDI_Desadv)} returns true,
+	 * i.e. the recipient BPartner has {@code IsEdiOneEDIDesadvPerShipment='Y'} and
+	 * {@code EdiDESADVSendingMode='E'} (ExternalSystem) with a configured external-system parent.
 	 * In this mode, each shipment is exported individually, so the DESADV status is derived from
 	 * the aggregate of all shipment statuses, rather than being set manually.
 	 * <p>
