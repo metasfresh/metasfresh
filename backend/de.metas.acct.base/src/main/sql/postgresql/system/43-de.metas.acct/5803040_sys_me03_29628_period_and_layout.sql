@@ -292,3 +292,13 @@ UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592
 UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592558; -- C_Period_ID
 UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592509; -- C_AcctSchema_ID
 UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=14465;  -- Processed
+
+-- ==========================================================================================
+-- Section 10: Move Steuererklärung menu node under Finanzen (WebUI visible subtree)
+-- AD_Role 540024 (WebUI) has Root_Menu_ID=1000007; Finanzen (1000015) is a child of that root.
+-- Node 542323 was previously under Finanzbuchhaltung (278) which is at the tree root (Parent_ID=0)
+-- and therefore outside the WebUI role's menu subtree, making it invisible in the frontend.
+-- ==========================================================================================
+UPDATE AD_TreeNodeMM
+SET Parent_ID=1000015, SeqNo=53, Updated=NOW(), UpdatedBy=100
+WHERE Node_ID=542323 AND AD_Tree_ID=10;
