@@ -27,6 +27,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -230,7 +231,27 @@ public class PickingJobUnPickCommand
 	{
 		return HUTransformService.builder()
 				.huQRCodesService(huService.getHuQRCodesService())
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
 				.build();
+	}
+
+	/**
+	 * Collects all reserved VHU IDs from all steps being un-picked into a single set.
+	 * This intentionally gives the {@link de.metas.handlingunits.allocation.transfer.HUTransformService}
+	 * wider permission than strictly necessary (i.e. all steps rather than just the current one),
+	 * because the same service instance is reused for the entire un-pick batch and all steps
+	 * are being reversed in the same transaction.
+	 * <p>
+	 * The resulting {@link HUTransformService} instance is single-use: it is created by
+	 * {@link #newHUTransformService()} for this un-pick batch only and must not be reused
+	 * for unrelated operations, as it would carry over the wider VHU exemption.
+	 */
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return unpickInstructionsMap.keySet().stream()
+				.map(HUReservationDocRef::ofPickingJobStepId)
+				.flatMap(docRef -> huService.getVHUIdsByDocumentRef(docRef).stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

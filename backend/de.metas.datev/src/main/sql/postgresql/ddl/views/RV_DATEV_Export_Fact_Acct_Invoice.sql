@@ -1,3 +1,6 @@
+DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
+;
+
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax    char(1),
     p_IsSwitchCreditMemo        char(1),
@@ -18,8 +21,11 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
             (
                 dr_account                           varchar,
                 cr_account                           varchar,
+                BP_Account_Place                     text,
                 Amt                                  numeric,
+                grossamt                             numeric,
                 Currency                             char(3),
+                currencyrate                         numeric,
                 AmtSource                            numeric,
                 TaxAmtSource                         numeric,
                 c_tax_id                             numeric,
@@ -27,7 +33,7 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
                 vatcode                              varchar,
                 dateacct                             timestamp,
                 datetrx                              timestamp,
-                documentno                           varchar,
+                documentno                           text,
                 c_doctype_id                         numeric,
                 c_doctype_name                       varchar,
                 IsSOTrx                              char(1),
@@ -36,6 +42,7 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
                 BPValue                              varchar,
                 BPName                               varchar,
                 description                          text,
+                AdditionalDescription                text,
                 c_acctschema_id                      numeric,
                 postingtype                          char(1),
                 c_invoice_id                         numeric,
@@ -54,44 +61,55 @@ BEGIN
 
     DROP TABLE IF EXISTS tmp_DATEV_Export_Fact_Acct_Invoice;
 
-    CREATE TABLE tmp_DATEV_Export_Fact_Acct_Invoice AS
+    CREATE TEMPORARY TABLE tmp_DATEV_Export_Fact_Acct_Invoice AS
 
-    SELECT ev_dr.value                                                                          AS dr_account,
-           ev_cr.value                                                                          AS cr_account,
+    SELECT ev_dr.value                               AS dr_account,
+           ev_cr.value                               AS cr_account,
            (CASE
                 WHEN fa.docbasetype IN ('ARI', 'APC') THEN 'DR'
                 WHEN fa.docbasetype IN ('API', 'ARC') THEN 'CR'
-            END)                                                                                AS BP_Account_Place,
-           COALESCE(SUM(fa.Amt), 0)                                                             AS Amt,
-           (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id) AS Currency,
-           SUM(fa.AmtSource)                                                                    AS AmtSource,
-           SUM(fa.TaxAmtSource)                                                                 AS TaxAmtSource,
-           fa.c_tax_id                                                                          AS c_tax_id,
-           tax.rate                                                                             AS c_tax_rate,
+                                                      ELSE ''
+            END)                                     AS BP_Account_Place,
+           COALESCE(SUM(fa.Amt), 0)                  AS Amt,
+           fa.Currency,
+           fa.CurrencyRate,
+           SUM(fa.AmtSource)                         AS AmtSource,
+           SUM(fa.TaxAmtSource)                      AS TaxAmtSource,
+           ROUND(SUM(CASE
+                         WHEN tax.rate > 0 THEN fa.Amt * (1 + tax.rate / 100)
+                                           ELSE fa.Amt
+                     END), 2)                        AS grossamt,
+           fa.c_tax_id                               AS c_tax_id,
+           tax.rate                                  AS c_tax_rate,
            fa.vatcode,
            fa.dateacct,
            fa.datetrx,
            fa.documentno,
-           fa.c_doctype_id                                                                      AS c_doctype_id,
-           dt.name                                                                              AS c_doctype_name,
-           dt.issotrx                                                                           AS IsSOTrx,
+           fa.c_doctype_id                           AS c_doctype_id,
+           dt.name                                   AS c_doctype_name,
+           dt.issotrx                                AS IsSOTrx,
            fa.docbasetype,
            fa.c_bpartner_id,
-           bp.Value                                                                             AS BPValue,
-           bp.Name                                                                              AS BPName,
-           STRING_AGG(DISTINCT fa.description, ', ')                                            AS description,
+           bp.Value                                  AS BPValue,
+           bp.Name                                   AS BPName,
+           STRING_AGG(DISTINCT fa.description, ', ') AS description,
+           COALESCE(
+                   SUBSTRING(bp.name FROM 1 FOR 60),
+                   'Beleg ' || REGEXP_REPLACE(fa.documentno, '^.*-', '')
+           )                                         AS AdditionalDescription,
            fa.c_acctschema_id,
            fa.postingtype,
            fa.c_invoice_id,
-           i.poreference                                                                        AS poreference,
-                        paymentTermDueDate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE)     AS duedate,
+           i.poreference                             AS poreference,
+
+                   i.duedate::TIMESTAMP WITH TIME ZONE                                                                                      AS duedate,
            fa.ad_client_id,
            fa.ad_org_id,
            fa.c_activity_id,
-           a.name                                                                               AS ActivityName,
-           MIN(fa.id)                                                                           AS rv_datev_export_fact_acct_invoice_id,
-           NULLIF(TRIM(bp.debtorid::varchar), '')                                               AS BP_debtorId,
-           NULLIF(TRIM(bp.creditorid::varchar), '')                                             AS BP_creditorId
+           a.name                                    AS ActivityName,
+           MIN(fa.id)                                AS rv_datev_export_fact_acct_invoice_id,
+           NULLIF(TRIM(bp.debtorid::VARCHAR), '')    AS BP_debtorId,
+           NULLIF(TRIM(bp.creditorid::VARCHAR), '')  AS BP_creditorId
     FROM (SELECT
               --
               -- DR/CR Accounts:
@@ -99,20 +117,25 @@ BEGIN
               fa.cr_account_id,
               --
               -- Amounts:
-              fa.amt                                                                                                                                                    AS Amt,
-              fa.c_currency_id                                                                                                                                          AS C_Currency_ID,
-              fa.amtsource                                                                                                                                              AS AmtSource,
+              fa.amt                                    AS Amt,
+              fa.c_currency_id                          AS C_Currency_ID,
+              fa.amtsource                              AS AmtSource,
+              fa.Currency,
+              fa.CurrencyRate,
               --
               -- Tax Amounts
-              (SELECT SUM(il.TaxAmtInfo) FROM c_invoiceline il WHERE il.c_invoice_id = fa.record_id AND il.c_invoiceline_id = fa.line_id AND il.c_tax_id = fa.c_tax_id) AS TaxAmtSource,
+              (SELECT SUM(il.TaxAmtInfo)
+               FROM c_invoiceline il
+               WHERE il.c_invoice_id = fa.record_id
+                 AND il.c_invoiceline_id = fa.line_id
+                 AND il.c_tax_id = fa.c_tax_id)         AS TaxAmtSource,
               fa.c_tax_id,
               fa.vatcode,
-
               --
               -- Document Info
               fa.dateacct,
               fa.datetrx,
-              fa.documentno,
+              REGEXP_REPLACE(fa.documentno, '^.*-', '') AS documentno,
               fa.c_doctype_id,
               fa.docbasetype,
               fa.c_bpartner_id,
@@ -124,46 +147,63 @@ BEGIN
               --
               -- Document ref
               -- fa.ad_table_id,
-              fa.record_id                                                                                                                                              AS c_invoice_id,
+              fa.record_id                              AS c_invoice_id,
               fa.line_id,
               fa.ad_client_id,
               fa.ad_org_id,
               fa.c_activity_id,
               fa.id
-          FROM RV_DATEV_Fact_Acct_Source fa
+          FROM rv_datev_fact_acct_source fa
           WHERE TRUE
             AND fa.ad_table_id = 318 -- C_Invoice
             -- If not p_IsOneLinePerInvoiceTax then skip tax account bookings because taxamt is already incorporated in the other lines
-            AND (p_IsOneLinePerInvoiceTax = 'N'
-              OR NOT (fa.line_id IS NULL AND fa.c_tax_id IS NOT NULL)
-              )
-             --
-         ) fa
-             LEFT OUTER JOIN C_ElementValue ev_dr ON (ev_dr.C_ElementValue_ID = fa.DR_Account_ID)
-             LEFT OUTER JOIN C_ElementValue ev_cr ON (ev_cr.C_ElementValue_ID = fa.CR_Account_ID)
+            AND (
+              p_IsOneLinePerInvoiceTax = 'N'
+                  OR NOT (
+                  fa.line_id IS NULL
+                      AND fa.c_tax_id IS NOT NULL
+                  )
+              )) fa
+             LEFT OUTER JOIN C_ElementValue ev_dr ON ev_dr.C_ElementValue_ID = fa.DR_Account_ID
+             LEFT OUTER JOIN C_ElementValue ev_cr ON ev_cr.C_ElementValue_ID = fa.CR_Account_ID
              LEFT OUTER JOIN C_Tax tax ON tax.C_Tax_ID = fa.C_Tax_ID
              LEFT OUTER JOIN C_Activity a ON a.c_activity_id = fa.c_activity_id
              LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = fa.C_BPartner_ID
              LEFT OUTER JOIN C_DocType dt ON dt.C_DocType_ID = fa.C_DocType_ID
              LEFT OUTER JOIN C_Invoice i ON i.C_Invoice_ID = fa.C_Invoice_ID
     WHERE (p_IsSOTrx IS NULL OR (p_IsSOTrx = dt.issotrx))
-    GROUP BY fa.dr_account_id, ev_dr.value, ev_dr.name,
-             fa.cr_account_id, ev_cr.value, ev_cr.name,
+    GROUP BY fa.dr_account_id,
+             ev_dr.value,
+             ev_dr.name,
+             fa.cr_account_id,
+             ev_cr.value,
+             ev_cr.name,
              fa.c_currency_id,
-             fa.c_tax_id, tax.rate,
+             fa.Currency,
+             fa.CurrencyRate,
+             fa.c_tax_id,
+             tax.rate,
              fa.vatcode,
              fa.dateacct,
              fa.datetrx,
              fa.documentno,
-             fa.c_doctype_id, dt.name, dt.issotrx,
+             fa.c_doctype_id,
+             dt.name,
+             dt.issotrx,
              fa.docbasetype,
-             fa.c_bpartner_id, bp.Value, bp.Name,
+             fa.c_bpartner_id,
+             bp.Value,
+             bp.Name,
              fa.c_acctschema_id,
              fa.postingtype,
-             fa.c_invoice_id, i.poreference, i.c_paymentterm_id, i.dateinvoiced,
+             fa.c_invoice_id,
+			 i.poreference,
+			 i.duedate,
+             i.dateinvoiced,
              fa.ad_client_id,
              fa.ad_org_id,
-             fa.c_activity_id, a.name,
+             fa.c_activity_id,
+             a.name,
              -- aggregate only if p_IsOneLinePerInvoiceTax=Y:
              (CASE WHEN p_IsOneLinePerInvoiceTax = 'Y' THEN 0 ELSE fa.id END),
              bp.debtorid,
@@ -171,15 +211,17 @@ BEGIN
 
     -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
     -- Important: Perform this update after the dr_account and cr_account were switched for credit memos to make sure the accounts are already in the correct place.
-    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET dr_account=t.BP_debtorId WHERE t.docbasetype = 'ARI' AND t.BP_debtorId IS NOT NULL;
-    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET cr_account=t.BP_debtorId WHERE t.docbasetype = 'ARC' AND t.BP_debtorId IS NOT NULL;
-    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET cr_account=t.BP_creditorId WHERE t.docbasetype = 'API' AND t.BP_creditorId IS NOT NULL;
-    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET dr_account=t.BP_creditorId WHERE t.docbasetype = 'APC' AND t.BP_creditorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET dr_account = t.BP_debtorId WHERE t.docbasetype = 'ARI' AND t.BP_debtorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET cr_account = t.BP_debtorId WHERE t.docbasetype = 'ARC' AND t.BP_debtorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET cr_account = t.BP_creditorId WHERE t.docbasetype = 'API' AND t.BP_creditorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET dr_account = t.BP_creditorId WHERE t.docbasetype = 'APC' AND t.BP_creditorId IS NOT NULL;
 
     IF p_IsSwitchCreditMemo = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
         SET Amt              = t.Amt * (-1),
+            AmtSource        = t.AmtSource * (-1),
             TaxAmtSource     = t.TaxAmtSource * (-1),
+            grossamt         =t.grossamt * (-1),
             dr_account       = t.cr_account,
             cr_account       = t.dr_account,
             BP_Account_Place = (CASE
@@ -200,47 +242,60 @@ BEGIN
     IF p_IsNegateInboundAmounts = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
         SET Amt          = t.Amt * (-1),
+            AmtSource    = t.AmtSource * (-1),
+            grossamt     =t.grossamt * (-1),
             TaxAmtSource = t.TaxAmtSource * (-1)
+
         WHERE t.docbasetype IN ('APC', 'ARI');
     END IF;
 
-    RETURN QUERY SELECT t.dr_account,
-                        t.cr_account,
-                        t.Amt,
-                        t.Currency,
-                        t.AmtSource,
-                        t.TaxAmtSource,
-                        t.c_tax_id,
-                        t.c_tax_rate,
-                        t.vatcode,
-                        t.dateacct,
-                        t.datetrx,
-                        t.documentno,
-                        t.c_doctype_id,
-                        t.c_doctype_name,
-                        t.IsSOTrx,
-                        t.docbasetype,
-                        t.c_bpartner_id,
-                        t.BPValue,
-                        t.BPName,
-                        t.description,
-                        t.c_acctschema_id,
-                        t.postingtype,
-                        t.c_invoice_id,
-                        t.poreference,
-                        t.duedate,
-                        t.ad_client_id,
-                        t.ad_org_id,
-                        t.c_activity_id,
-                        t.ActivityName,
-                        t.rv_datev_export_fact_acct_invoice_id
-                 FROM tmp_DATEV_Export_Fact_Acct_Invoice t;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
+    SET BP_Account_Place = (CASE
+                                WHEN t.BP_Account_Place = 'DR' THEN 'S'
+                                WHEN t.BP_Account_Place = 'CR' THEN 'H'
+                                                               ELSE ''
+                            END);
+
+    RETURN QUERY
+        SELECT t.dr_account,
+               t.cr_account,
+               t.BP_Account_Place::text,
+               t.Amt,
+               t.grossamt,
+               t.Currency,
+               t.CurrencyRate,
+               t.AmtSource,
+               t.TaxAmtSource,
+               t.c_tax_id,
+               t.c_tax_rate,
+               t.vatcode,
+               t.dateacct,
+               t.datetrx,
+               t.documentno,
+               t.c_doctype_id,
+               t.c_doctype_name,
+               t.IsSOTrx,
+               t.docbasetype,
+               t.c_bpartner_id,
+               t.BPValue,
+               t.BPName,
+               t.description,
+               t.AdditionalDescription,
+               t.c_acctschema_id,
+               t.postingtype,
+               t.c_invoice_id,
+               t.poreference,
+               t.duedate,
+               t.ad_client_id,
+               t.ad_org_id,
+               t.c_activity_id,
+               t.ActivityName,
+               t.rv_datev_export_fact_acct_invoice_id
+        FROM tmp_DATEV_Export_Fact_Acct_Invoice t;
 
 END;
 $BODY$
 ;
-
-
 
 --
 --
@@ -252,5 +307,3 @@ CREATE OR REPLACE VIEW RV_DATEV_Export_Fact_Acct_Invoice AS
 SELECT *
 FROM RV_DATEV_Export_Fact_Acct_Invoice()
 ;
-
-

@@ -23,11 +23,14 @@
 
 package de.metas.shipper.client.nshift.json.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -61,4 +64,12 @@ public class JsonShipmentResponseLabel
 
 	@JsonProperty("Tag")
 	String tag;
+
+	@JsonIgnore
+	@Nullable
+	public static byte[] extractLabel(@Nullable final JsonShipmentResponseLabel label) {
+		return (label == null || label.getContent() == null)
+				? null
+				: label.getContent().getBytes();
+	}
 }

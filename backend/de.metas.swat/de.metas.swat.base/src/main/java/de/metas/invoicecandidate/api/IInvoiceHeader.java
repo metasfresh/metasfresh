@@ -110,4 +110,7 @@ public interface IInvoiceHeader
 
 	@Nullable
 	ExternalSystemId getExternalSystemId();
+
+	@Nullable
+	LocalDate getOverrideDueDate();
 }

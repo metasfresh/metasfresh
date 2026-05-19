@@ -43,7 +43,7 @@ SELECT i.description                                                            
        i.documentno                                                                     AS documentno,
        i.poreference                                                                    AS reference,
        i.dateinvoiced                                                                   AS dateinvoiced,
-       paymenttermduedate(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE) AS DueDate,
+       i.DueDate::timestamp WITH TIME ZONE                                              AS DueDate,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'VATaxID') = 'N' THEN
                bp.VATaxID

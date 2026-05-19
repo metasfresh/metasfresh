@@ -41,6 +41,7 @@ public interface IInvoicingParams
 	String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
 	String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
 	String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
+	String PARA_IsInvoiceManualRule = "IsInvoiceManualRule";
 	String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
 	String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
 	String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
@@ -48,8 +49,9 @@ public interface IInvoicingParams
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
 	String PARA_IsDeliveryDateAsInvoiceDate = "IsDeliveryDateAsInvoiceDate";
+	String PARA_OverrideDueDate = "OverrideDueDate";
 
-	
+
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
 	 */
@@ -66,6 +68,13 @@ public interface IInvoicingParams
 	boolean isIgnoreInvoiceSchedule();
 
 	/**
+	 * @return {@code true} if the enqueuer shall include invoice candidates whose effective {@link de.metas.order.InvoiceRule}
+	 * is {@link de.metas.order.InvoiceRule#Manual}. Decoupled from {@link #isIgnoreInvoiceSchedule()} so the user can
+	 * trigger Manual-rule invoicing without bypassing the schedule for the other rule types.
+	 */
+	boolean isInvoiceManualRule();
+
+	/**
 	 * @return date invoiced to be set to all invoice candidates, right before enqueueing them.
 	 */
 	LocalDate getDateInvoiced();
@@ -79,6 +88,11 @@ public interface IInvoicingParams
 	 * @return POReference to be set to all invoice candidates, right before enqueueing them.
 	 */
 	String getPOReference();
+
+	/**
+	 * @return override due date to be used for the invoice (when the payment term allows overriding).
+	 */
+	LocalDate getOverrideDueDate();
 
 	/**
 	 * Gets total net amount to invoice checksum (i.e. sum of all IC's let net amount to invoice, without considering the currency).
@@ -142,8 +156,13 @@ public interface IInvoicingParams
 		{
 			result.put(InvoicingParams.PARA_POReference, getPOReference());
 		}
+		if (getOverrideDueDate() != null)
+		{
+			result.put(InvoicingParams.PARA_OverrideDueDate, getOverrideDueDate());
+		}
 
 		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
+		result.put(InvoicingParams.PARA_IsInvoiceManualRule, isInvoiceManualRule());
 		result.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());

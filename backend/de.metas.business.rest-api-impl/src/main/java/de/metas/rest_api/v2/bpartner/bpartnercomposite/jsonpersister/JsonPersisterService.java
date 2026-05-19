@@ -969,6 +969,18 @@ public class JsonPersisterService
 			bpartner.setMemo(jsonBPartner.getMemo());
 		}
 
+		if (jsonBPartner.isDiscountPrintedSet())
+		{
+			if (jsonBPartner.getDiscountPrinted() == null)
+			{
+				logger.debug("Ignoring boolean property \"discountPrinted\" : null ");
+			}
+			else
+			{
+				bpartner.setDiscountPrinted(jsonBPartner.getDiscountPrinted());
+			}
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 

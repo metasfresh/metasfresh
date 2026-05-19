@@ -76,7 +76,6 @@ class ExternalSystemEndpointTest
 				.id(ExternalSystemEndpointId.ofRepoId(2))
 				.value("SftpEndpoint")
 				.transportType(TransportType.SFTP)
-				.authType(EndpointAuthType.Basic)
 				.sftpHost("sftp.example.com")
 				.sftpPort(22)
 				.sftpUsername("sftpuser")
@@ -107,7 +106,6 @@ class ExternalSystemEndpointTest
 				.id(ExternalSystemEndpointId.ofRepoId(3))
 				.value("SftpEndpoint")
 				.transportType(TransportType.SFTP)
-				.authType(EndpointAuthType.Basic)
 				.sftpHost("sftp.example.com")
 				.sftpPort(22)
 				.sftpUsername("sftpuser")
@@ -133,5 +131,6 @@ class ExternalSystemEndpointTest
 		// HTTP-specific fields are null
 		assertThat(json.getEndpointUrl()).isNull();
 		assertThat(json.getMethod()).isNull();
+		assertThat(json.getAuthType()).isNull();
 	}
 }

@@ -8,6 +8,7 @@ import { load } from 'redux-localstorage-simple';
 import { setupCounterpart } from './utils/translations';
 import { setupOfflineModeDetector } from './services/offlineModeDetector';
 import { setupServiceWorker } from './services/serviceWorker/serviceWorkerRegistration';
+import { installMutatingApiTraceIdInterceptor } from './utils/ui_trace/mutatingApiInterceptor';
 
 import './assets/index.scss';
 import '@fortawesome/fontawesome-free/js/all.min';
@@ -16,6 +17,7 @@ import { logErrorToBackend } from './api/applications';
 import ErrorScreen from './components/ErrorScreen';
 
 setupCounterpart();
+installMutatingApiTraceIdInterceptor();
 
 export const globalStore = store(load());
 

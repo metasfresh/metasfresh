@@ -28,10 +28,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
@@ -49,9 +49,10 @@ import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -62,7 +63,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -81,11 +81,13 @@ public class M_InOut
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final PickingJobService pickingJobService;
@@ -141,6 +143,7 @@ public class M_InOut
 		emptyPickingSlots(shipment);
 		generateEmptiesMovementForEmptiesInOut(shipment);
 		updateAttributes(shipment);
+		huInOutBL.setReceivedDateOnReceiptHUs(shipment);
 	}
 
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
@@ -158,10 +161,27 @@ public class M_InOut
 		}
 
 		final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(shipment);
+		final HUAttributeUpdateRequest request = HUAttributeUpdateRequest.builder()
+				.attributeCode(AttributeConstants.WarrantyStartDate)
+				.attributeValue(shipment.getMovementDate())
+				.build();
 		for (final I_M_HU hu : hus)
 		{
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
+			huAttributesBL.updateHUAttributeRecursive(hu, request);
 		}
+	}
+
+	/**
+	 * Stamps {@code HU_DateReceived} on every receipt line's ASI before completion. The framework currently
+	 * invokes interceptor methods within the same class+timing in declaration order, so this method —
+	 * declared before {@link #validateCustomerReturns(I_M_InOut)} — runs first; HUs subsequently created by
+	 * {@code CustomerReturnHUsCreateCommand} inherit the date via the existing line-ASI → HU propagation.
+	 * Complementary to {@link IHUInOutBL#setReceivedDateOnReceiptHUs(I_M_InOut)} at AFTER_COMPLETE.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void setReceivedDateOnReceiptLineASIs(@NonNull final I_M_InOut inout)
+	{
+		huInOutBL.setReceivedDateOnReceiptLineASIs(inout);
 	}
 
 	private void setHUStatusShippedForShipment(final I_M_InOut shipment)
@@ -276,9 +296,6 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void assertReActivationAllowed(final I_M_InOut inout)
 	{
-		//
-		// Services
-
 		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
 		if (!hasHUAssignments) // reactivation is allowed if there are no HU assignments
 		{
@@ -296,9 +313,47 @@ public class M_InOut
 		// Receipt
 		else
 		{
+			if (inOutBL.isVendorReturn(inout))
+			{
+				return;
+			}
 			// TODO: destroy the HUs
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void processReturnsReactivation(final I_M_InOut inout)
+	{
+		//
+		// Shipment or customer return
+		if (inout.isSOTrx())
+		{
+			if (inOutBL.isCustomerReturn(inout))
+			{
+				inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+						.forEach(huShipmentAssignmentBL::reactivateCustomerReturnLine);
+			}
+			// TODO: change HUStatus from Shipped back to Picked
+			// check the calls of de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.setHUStatus(IHUContext, I_M_HU, boolean)
+			return;
+		}
+
+		final boolean hasHUAssignments = huShipmentAssignmentBL.hasHUAssignments(inout);
+		if (!hasHUAssignments) // nothing to do if there are no HU assignments
+		{
+			return;
+		}
+
+		//
+		// Receipt or vendor return
+		if (inOutBL.isVendorReturn(inout))
+		{
+			huAssignmentBL.unassignAllHUs(inout);
+			inOutBL.retrieveLines(inout, de.metas.inout.model.I_M_InOutLine.class)
+					.forEach(huShipmentAssignmentBL::reactivateVendorReturnLine);
+		}
+
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -424,36 +479,22 @@ public class M_InOut
 				.execute();
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
-	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	public void reverseReturn(@NonNull final de.metas.handlingunits.model.I_M_InOut returnedInOut)
 	{
-		if (!returnsServiceFacade.isVendorReturn(returnInOut))
+		if (!returnsServiceFacade.isVendorReturn(returnedInOut))
 		{
 			return; // nothing to do
 		}
 
-		final String snapshotId = returnInOut.getSnapshot_UUID();
-		if (Check.isEmpty(snapshotId, true))
+		final InOutId inOutId = InOutId.ofRepoIdOrNull(returnedInOut.getReversal_ID());
+		if (inOutId == null)
 		{
-			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
-		}
-
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
-
-		if (hus.isEmpty())
-		{
-			// nothing to do.
 			return;
 		}
+		final I_M_InOut returnReversalInOut = inOutBL.getById(inOutId);
 
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
-		snapshotDAO.restoreHUs()
-				.setContext(context)
-				.setSnapshotId(snapshotId)
-				.setDateTrx(returnInOut.getMovementDate())
-				.setReferencedModel(returnInOut)
-				.addModels(hus)
-				.restoreFromSnapshot();
+		huShipmentAssignmentBL.moveAssignments(returnedInOut, returnReversalInOut);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })

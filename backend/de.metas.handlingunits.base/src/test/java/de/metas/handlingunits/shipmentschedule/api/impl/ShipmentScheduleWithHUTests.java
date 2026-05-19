@@ -1,11 +1,17 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.IAttributeValueListener;
+import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
+import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
+import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -20,15 +26,29 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+import org.compiere.util.NamePair;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
@@ -351,5 +371,257 @@ public class ShipmentScheduleWithHUTests
 
 		InterfaceWrapperHelper.save(sched);
 		return sched;
+	}
+
+	// -------------------------------------------------------------------
+	// Tests for mergeAttributeValues
+	// -------------------------------------------------------------------
+
+	@Nested
+	class MergeAttributeValuesTests
+	{
+		@Test
+		void schedASI_takes_precedence_over_HU()
+		{
+			final IAttributeValue huAttr = stubAttributeValue(1, "P17", "", true);
+			final IAttributeValue schedAttr = stubAttributeValue(1, "P13", "", true);
+
+			// When IsHUAttributeOverridesASI=N (schedule wins)
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttr),
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.SCHEDULE_ASI_ALWAYS_WINS);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P13");
+		}
+
+		@Test
+		void huOverridesASI_when_configured()
+		{
+			final IAttributeValue huAttr = stubAttributeValue(1, "P17", "", true);
+			final IAttributeValue schedAttr = stubAttributeValue(1, "P13", "", true);
+
+			// When IsHUAttributeOverridesASI=Y (HU wins — default/backward compatible)
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttr),
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P17");
+		}
+
+		@Test
+		void schedASI_without_HU()
+		{
+			final IAttributeValue schedAttr = stubAttributeValue(1, "P13", "", true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Collections.emptyList(),
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P13");
+		}
+
+		@Test
+		void emptySchedASI_falls_back_to_HU()
+		{
+			final IAttributeValue huAttr = stubAttributeValue(1, "P17", "", true);
+			// schedule ASI value equals the empty value -> should be treated as empty
+			final IAttributeValue schedAttr = stubAttributeValue(1, "", "", true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttr),
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P17");
+		}
+
+		@Test
+		void emptySchedASI_and_no_HU()
+		{
+			// schedule ASI value equals the empty value, and no HU attribute -> nothing in result
+			final IAttributeValue schedAttr = stubAttributeValue(1, "", "", true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Collections.emptyList(),
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void noSchedASI_uses_HU()
+		{
+			final IAttributeValue huAttr = stubAttributeValue(1, "P17", "", true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttr),
+					Collections.emptyList(),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P17");
+		}
+
+		@Test
+		void partial_empty_merges()
+		{
+			// Attribute A (id=1): schedASI="P13", HU="P17" -> schedASI wins
+			// Attribute B (id=2): schedASI=empty, HU="K1" -> HU wins (fallback)
+			final IAttributeValue huAttrA = stubAttributeValue(1, "P17", "", true);
+			final IAttributeValue huAttrB = stubAttributeValue(2, "K1", "", true);
+			final IAttributeValue schedAttrA = stubAttributeValue(1, "P13", "", true);
+			final IAttributeValue schedAttrB = stubAttributeValue(2, "", "", true);
+
+			// With IsHUAttributeOverridesASI=N for both: schedule ASI wins for A (non-empty), HU wins for B (empty schedule)
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttrA, huAttrB),
+					Arrays.asList(schedAttrA, schedAttrB),
+					ShipmentScheduleWithHU.SCHEDULE_ASI_ALWAYS_WINS);
+
+			assertThat(result).hasSize(2);
+
+			// Find by attribute ID and verify values
+			final IAttributeValue resultA = result.stream()
+					.filter(av -> av.getM_Attribute().getM_Attribute_ID() == 1)
+					.findFirst().orElseThrow(() -> new AssertionError("Attribute A not found"));
+			final IAttributeValue resultB = result.stream()
+					.filter(av -> av.getM_Attribute().getM_Attribute_ID() == 2)
+					.findFirst().orElseThrow(() -> new AssertionError("Attribute B not found"));
+
+			assertThat(resultA.getValue()).isEqualTo("P13"); // schedule wins (non-empty)
+			assertThat(resultB.getValue()).isEqualTo("K1");  // HU wins (schedule is empty)
+		}
+
+		@Test
+		void schedASI_with_null_value_falls_back_to_HU()
+		{
+			final IAttributeValue huAttr = stubAttributeValue(1, "P17", null, true);
+			// schedule ASI value is null, empty value is also null -> treated as empty
+			final IAttributeValue schedAttr = stubAttributeValue(1, null, null, true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttr),
+					Arrays.asList(schedAttr),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).hasSize(1);
+			assertThat(result.get(0).getValue()).isEqualTo("P17");
+		}
+
+		@Test
+		void schedASI_adds_attribute_not_present_in_HU()
+		{
+			// HU has attribute A, schedule ASI has attribute B (no overlap) -> both in result
+			final IAttributeValue huAttrA = stubAttributeValue(1, "P17", "", true);
+			final IAttributeValue schedAttrB = stubAttributeValue(2, "K1", "", true);
+
+			final ImmutableList<IAttributeValue> result = ShipmentScheduleWithHU.mergeAttributeValues(
+					Arrays.asList(huAttrA),
+					Arrays.asList(schedAttrB),
+					ShipmentScheduleWithHU.HU_ALWAYS_WINS);
+
+			assertThat(result).hasSize(2);
+			final IAttributeValue resultA = result.stream().filter(av -> av.getM_Attribute().getM_Attribute_ID() == 1).findFirst().orElse(null);
+			final IAttributeValue resultB = result.stream().filter(av -> av.getM_Attribute().getM_Attribute_ID() == 2).findFirst().orElse(null);
+			assertThat(resultA).isNotNull();
+			assertThat(resultB).isNotNull();
+			assertThat(resultA.getValue()).isEqualTo("P17");
+			assertThat(resultB.getValue()).isEqualTo("K1");
+		}
+
+		/**
+		 * Creates a stub {@link IAttributeValue} with the given attribute ID, value, empty value, and useInASI flag.
+		 * Uses POJOWrapper-backed {@link I_M_Attribute} instances from the test environment.
+		 */
+		private IAttributeValue stubAttributeValue(
+				final int attributeId,
+				@Nullable final Object value,
+				@Nullable final Object emptyValue,
+				final boolean useInASI)
+		{
+			final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+			attribute.setM_Attribute_ID(attributeId);
+			attribute.setValue("Attr" + attributeId);
+			attribute.setName("Attr" + attributeId);
+			saveRecord(attribute);
+
+			return new StubAttributeValue(attribute, value, emptyValue, useInASI);
+		}
+	}
+
+	/**
+	 * Minimal stub implementation of {@link IAttributeValue} for unit-testing the merge logic.
+	 * Only the methods actually used by {@link ShipmentScheduleWithHU#mergeAttributeValues} are implemented;
+	 * the rest throw {@link UnsupportedOperationException}.
+	 */
+	private static class StubAttributeValue implements IAttributeValue
+	{
+		private final I_M_Attribute attribute;
+		private final Object value;
+		private final Object emptyValue;
+		private final boolean useInASI;
+
+		StubAttributeValue(
+				@NonNull final I_M_Attribute attribute,
+				@Nullable final Object value,
+				@Nullable final Object emptyValue,
+				final boolean useInASI)
+		{
+			this.attribute = attribute;
+			this.value = value;
+			this.emptyValue = emptyValue;
+			this.useInASI = useInASI;
+		}
+
+		@Override public I_M_Attribute getM_Attribute() { return attribute; }
+		@Override public Object getValue() { return value; }
+		@Override @Nullable public Object getEmptyValue() { return emptyValue; }
+		@Override public boolean isUseInASI() { return useInASI; }
+		@Override public boolean isEmpty() { return java.util.Objects.equals(value, emptyValue); }
+		@Override public AttributeCode getAttributeCode() { return AttributeCode.ofString(attribute.getValue()); }
+
+		// --- Below: not needed for the merge logic, throw UnsupportedOperationException ---
+		@Override public String getAttributeValueType() { throw new UnsupportedOperationException(); }
+		@Override public void setValue(final IAttributeValueContext ctx, final Object val) { throw new UnsupportedOperationException(); }
+		@Override public Object getValueInitial() { throw new UnsupportedOperationException(); }
+		@Override public void setValueInitial(final Object valueInitial) { throw new UnsupportedOperationException(); }
+		@Override public BigDecimal getValueAsBigDecimal() { throw new UnsupportedOperationException(); }
+		@Override public int getValueAsInt() { throw new UnsupportedOperationException(); }
+		@Override public BigDecimal getValueInitialAsBigDecimal() { throw new UnsupportedOperationException(); }
+		@Override public String getValueAsString() { throw new UnsupportedOperationException(); }
+		@Override public String getValueInitialAsString() { throw new UnsupportedOperationException(); }
+		@Override public Date getValueAsDate() { throw new UnsupportedOperationException(); }
+		@Override public Date getValueInitialAsDate() { throw new UnsupportedOperationException(); }
+		@Override public boolean isNumericValue() { throw new UnsupportedOperationException(); }
+		@Override public boolean isStringValue() { throw new UnsupportedOperationException(); }
+		@Override public boolean isDateValue() { throw new UnsupportedOperationException(); }
+		@Override public String getPropagationType() { throw new UnsupportedOperationException(); }
+		@Override public IAttributeAggregationStrategy retrieveAggregationStrategy() { throw new UnsupportedOperationException(); }
+		@Override public IAttributeSplitterStrategy retrieveSplitterStrategy() { throw new UnsupportedOperationException(); }
+		@Override public IAttributeValueCallout getAttributeValueCallout() { throw new UnsupportedOperationException(); }
+		@Override public IAttributeValueGenerator getAttributeValueGeneratorOrNull() { throw new UnsupportedOperationException(); }
+		@Override public IHUAttributeTransferStrategy retrieveTransferStrategy() { throw new UnsupportedOperationException(); }
+		@Override public void addAttributeValueListener(final IAttributeValueListener listener) { throw new UnsupportedOperationException(); }
+		@Override public void removeAttributeValueListener(final IAttributeValueListener listener) { throw new UnsupportedOperationException(); }
+		@Override public boolean isList() { throw new UnsupportedOperationException(); }
+		@Override public List<? extends NamePair> getAvailableValues() { throw new UnsupportedOperationException(); }
+		@Override public IAttributeValuesProvider getAttributeValuesProvider() { throw new UnsupportedOperationException(); }
+		@Override public I_C_UOM getC_UOM() { throw new UnsupportedOperationException(); }
+		@Override public boolean isReadonlyUI() { throw new UnsupportedOperationException(); }
+		@Override public boolean isDisplayedUI() { throw new UnsupportedOperationException(); }
+		@Override public boolean isMandatory() { throw new UnsupportedOperationException(); }
+		@Override public boolean isOnlyIfInProductAttributeSet() { throw new UnsupportedOperationException(); }
+		@Override public int getDisplaySeqNo() { throw new UnsupportedOperationException(); }
+		@Override public boolean isDefinedByTemplate() { throw new UnsupportedOperationException(); }
+		@Override public NamePair getNullAttributeValue() { throw new UnsupportedOperationException(); }
+		@Override public boolean isNew() { throw new UnsupportedOperationException(); }
 	}
 }

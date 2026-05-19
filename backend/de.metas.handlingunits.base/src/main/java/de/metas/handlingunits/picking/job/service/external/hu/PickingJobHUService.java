@@ -227,6 +227,10 @@ public class PickingJobHUService
 
 	public HuId getHuIdByQRCode(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCode(huQRCode);}
 
+	public Optional<HuId> getHuIdByQRCodeIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode);}
+
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode);}
+
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req) {return inventoryService.createInventoryForMissingQty(req);}
 
 	public PickFromHUsSupplier newPickFromHUsSupplier()
@@ -270,6 +274,15 @@ public class PickingJobHUService
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToPick)
 	{
+		return extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, ImmutableSet.of());
+	}
+
+	public HuId extractTopLevelCUIfNeeded(
+			@NonNull final HuId pickFromHUId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
 		// Not a top level CU
@@ -289,13 +302,17 @@ public class PickingJobHUService
 			return pickFromHUId;
 		}
 
-		final I_M_HU extractedCU = HUTransformService.newInstance()
+		final I_M_HU extractedCU = HUTransformService.builder()
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 						.sourceHU(pickFromHU)
 						.productId(productId)
 						.qtyCU(qtyToPick)
 						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
+								? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+								: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
@@ -334,6 +351,11 @@ public class PickingJobHUService
 				.collect(ImmutableSet.toImmutableSet());
 
 		huReservationService.deleteReservationsByDocumentRefs(reservationDocRefs);
+	}
+
+	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	{
+		return huReservationService.getVHUIdsByDocumentRef(documentRef);
 	}
 
 	@Nullable

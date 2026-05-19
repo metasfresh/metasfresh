@@ -67,7 +67,10 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 .m2-local/**
 
 # this is ignored to prevent pusing debug snapshots
- **/*.snap.debug
+**/*.snap.debug
+
+# environment files (may contain secrets or local overrides)
+**/.env
 
 # github related
 .github/merge_to_master

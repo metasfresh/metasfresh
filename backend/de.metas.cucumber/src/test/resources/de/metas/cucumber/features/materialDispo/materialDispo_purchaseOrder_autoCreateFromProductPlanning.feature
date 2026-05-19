@@ -355,6 +355,10 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
       | pc_1       | o_1                     | ol_1                        | p_1                     |
       | pc_2       | o_1                     | ol_2                        | p_2                     |
 
+    # Drain the material event queue so the debouncer handler runs before the alloc poll.
+    # Without this, CI-runner contention occasionally exhausts the 120 s poll budget below.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     # The debouncer waits for the quiet period, then creates POs — both candidates get an alloc
     And after not more than 120s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
@@ -457,6 +461,10 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
       | Identifier | C_OrderSO_ID.Identifier | C_OrderLineSO_ID.Identifier | M_Product_ID.Identifier |
       | pc_1       | o_1                     | ol_1                        | p_1                     |
       | pc_2       | o_1                     | ol_2                        | p_2                     |
+
+    # Drain the material event queue so the debouncer handler runs before the alloc poll.
+    # Without this, CI-runner contention occasionally exhausts the 120 s poll budget below.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # The debouncer waits for the quiet period, then creates POs — one per vendor
     And after not more than 120s, C_PurchaseCandidate_Alloc are found

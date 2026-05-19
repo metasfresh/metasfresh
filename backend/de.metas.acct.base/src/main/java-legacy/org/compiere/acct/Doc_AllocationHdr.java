@@ -40,6 +40,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -691,7 +692,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 				if (fl != null)
 				{
-					fl.setTaxIdAndUpdateVatCode(taxId);
+					fl.setTaxIdAndUpdateVatCode(taxId, VATCodeAmountType.Net);
 					if (payment != null)
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
@@ -1134,8 +1135,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			if (line.isCreditMemoInvoice())
 			{
-				// ARC (or ARC reversal): DR to clear receivable
-				factLineBuilder.setAmtSource(allocatedAmt, null);
+				// ARC (or ARC reversal): DR to clear the CM's receivable (CR on invoice side).
+				// allocatedAmt is negative for the original CM and positive for the reversal,
+				// so we negate to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(allocatedAmt.negate(), null);
 			}
 			else
 			{
@@ -1148,13 +1151,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			if (line.isCreditMemoInvoice())
 			{
-				// APC (or APC reversal): CR to clear liability
-				factLineBuilder.setAmtSource(null, allocatedAmt.negate());
+				// APC (or APC reversal): CR to clear the CM's liability (DR on invoice side).
+				// allocatedAmt is positive for the original CM and negative for the reversal,
+				// so we use it directly (without negate) to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(null, allocatedAmt);
 			}
 			else
 			{
-				// API: DR to clear liability
-				factLineBuilder.setAmtSource(allocatedAmt, null);
+				// API (or API reversal): DR to clear the invoice's liability (CR on invoice side).
+				// allocatedAmt is negative for the original invoice and positive for the reversal,
+				// so we negate to get the correct clearing sign per Line_ID.
+				factLineBuilder.setAmtSource(allocatedAmt.negate(), null);
 			}
 		}
 
@@ -1542,20 +1549,26 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						if (isDiscountExpense)
 						{
 							// DR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId)
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								final boolean netIsSOTrx = services
+										.findIsSOTrxByCode(taxFactAcct.getVATCode(), as.getId(), taxId)
+										.orElseGet(line::isSOTrxInvoice);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
+							}
 
 							// CR
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1564,20 +1577,26 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						else
 						{
 							// DR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId)
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								final boolean netIsSOTrx = services
+										.findIsSOTrxByCode(taxFactAcct.getVATCode(), as.getId(), taxId)
+										.orElseGet(line::isSOTrxInvoice);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
+							}
 
 							// CR
 							fact.createLine()
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
@@ -1606,19 +1625,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(taxAmtAdjustment, null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
 
 							// CR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment)
-									.setC_Tax_ID(taxId)
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								final boolean netIsSOTrx = services
+										.findIsSOTrxByCode(taxFactAcct.getVATCode(), as.getId(), taxId)
+										.orElseGet(line::isSOTrxInvoice);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
+							}
 
 						}
 						// Discount revenue
@@ -1629,19 +1654,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setDocLine(line)
 									.setAccount(taxAcct)
 									.setAmt(taxAmtAdjustment.negate(), null)
-									.setC_Tax_ID(taxId)
+									.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 									.alsoAddZeroLine()
 									.additionalDescription(description)
 									.buildAndAdd();
 
 							// CR
-							fact.createLine()
+							final FactLine discountFl = fact.createLine()
 									.setDocLine(line)
 									.setAccount(discountAcct)
 									.setAmt(null, taxAmtAdjustment.negate())
-									.setC_Tax_ID(taxId)
 									.additionalDescription(description)
 									.buildAndAdd();
+							if (discountFl != null)
+							{
+								final boolean netIsSOTrx = services
+										.findIsSOTrxByCode(taxFactAcct.getVATCode(), as.getId(), taxId)
+										.orElseGet(line::isSOTrxInvoice);
+								discountFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
+							}
 
 						}
 					}
@@ -1665,20 +1696,26 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						result.add(fact);
 
 						//DR
-						fact.createLine()
+						final FactLine writeOffFl = fact.createLine()
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(taxAmtAdjustment, null)
-								.setC_Tax_ID(taxId)
 								.additionalDescription(description)
 								.buildAndAdd();
+						if (writeOffFl != null)
+						{
+							final boolean netIsSOTrx = services
+									.findIsSOTrxByCode(taxFactAcct.getVATCode(), as.getId(), taxId)
+									.orElseGet(line::isSOTrxInvoice);
+							writeOffFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
+						}
 
 						// CR
 						fact.createLine()
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(null, taxAmtAdjustment)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
@@ -1701,19 +1738,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setDocLine(line)
 								.setAccount(taxAcct)
 								.setAmt(amountCMAdjusted, null)
-								.setC_Tax_ID(taxId)
+								.setC_Tax_ID(taxId).vatCode(taxFactAcct.getVATCode())
 								.alsoAddZeroLine()
 								.additionalDescription(description)
 								.buildAndAdd();
 
 						// CR
-						fact.createLine()
+						final FactLine writeOffFl = fact.createLine()
 								.setDocLine(line)
 								.setAccount(writeOffAccount)
 								.setAmt(null, amountCMAdjusted)
-								.setC_Tax_ID(taxId)
 								.additionalDescription(description)
 								.buildAndAdd();
+						if (writeOffFl != null)
+						{
+							final boolean netIsSOTrx = services
+									.findIsSOTrxByCode(taxFactAcct.getVATCode(), as.getId(), taxId)
+									.orElseGet(line::isSOTrxInvoice);
+							writeOffFl.setTaxIdAndUpdateVatCode(taxId, netIsSOTrx, VATCodeAmountType.Net);
+						}
 					}
 				}
 			}                // WriteOff

@@ -60,6 +60,12 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
+	public boolean isInvoiceManualRule()
+	{
+		return params.getParameterAsBool(PARA_IsInvoiceManualRule);
+	}
+
+	@Override
 	public boolean isUpdateLocationAndContactForInvoice()
 	{
 		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
@@ -87,6 +93,12 @@ public class InvoicingParams implements IInvoicingParams
 	public String getPOReference()
 	{
 		return params.getParameterAsString(PARA_POReference);
+	}
+
+	@Override
+	public LocalDate getOverrideDueDate()
+	{
+		return params.getParameterAsLocalDate(PARA_OverrideDueDate);
 	}
 
 	@Override

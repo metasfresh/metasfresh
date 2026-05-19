@@ -3,11 +3,16 @@ import GS1BarcodeParser from 'gs1-barcode-parser-mod';
 /**
  * Parse GRAI from a GS1 barcode string containing AI 8003.
  *
- * AI 8003 format: 0{companyPrefix}{assetType}{checkDigit}{serial}
- * - Leading 0 (1 digit)
- * - Company prefix + asset type = 13 digits
- * - Check digit = 1 digit (position 14)
- * - Serial = variable length
+ * Per GS1 General Specifications, AI 8003 (GRAI) has a fixed-length asset
+ * reference of 14 digits after the AI: 1 padding digit + 13-digit asset
+ * reference (GS1 Company Prefix + Item Reference + check digit at the end).
+ * An optional alphanumeric serial (0..16 chars) may follow.
+ *
+ * Returned in the GS1 EPCIS "Pure Identity" URI canonical form
+ * `companyPrefix(7).assetType(5).serial` — the GS1 check digit at GTIN-13
+ * position 13 is dropped from the canonical to match `urn:epc:id:grai:`.
+ * Kept in sync with the backend parser in
+ * `de.metas.handlingunits.grai.GRAI.parseGS1AI8003`.
  *
  * @param {string} barcodeString - Raw barcode string
  * @returns {string|null} Dot-separated GRAI or null
@@ -20,13 +25,15 @@ export const parseGraiFromGs1Barcode = (barcodeString) => {
     if (!graiElement) return null;
 
     const graiData = '' + graiElement.data;
-    // AI 8003 data: starts with 0, then 13 digits (company prefix + asset type), then check digit, then serial
+    // Minimum meaningful length: 14 (asset reference) + 1 (at least one serial char) = 15.
     if (graiData.length < 15) return null;
 
-    // The leading 0 is an indicator digit
-    const base = graiData.substring(1, 14); // 13 digits: company prefix + asset type
-    // Position 14 (index 14) is the check digit — skip it
-    const serial = graiData.substring(15);
+    // Position 0: padding digit (skip)
+    // Positions 1-12: 12-digit asset reference base (company prefix + asset type, no check digit)
+    // Position 13: GS1 check digit (skip — not part of the EPCIS Pure Identity URI canonical)
+    // Position 14+: serial reference
+    const base = graiData.substring(1, 13);
+    const serial = graiData.substring(14);
 
     // For GRAI, the company prefix is typically 7 digits (GS1 standard for most European prefixes)
     // We use a heuristic: GS1 prefixes starting with 76 (Switzerland) are 7 digits

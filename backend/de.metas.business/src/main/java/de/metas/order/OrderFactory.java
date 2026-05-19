@@ -43,7 +43,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -193,16 +192,6 @@ public class OrderFactory
 			final OrderLineBuilder orderLineBuilder = new OrderLineBuilder(this);
 			orderLineBuilders.add(orderLineBuilder);
 			return orderLineBuilder;
-		}
-	}
-
-	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
-	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
-		{
-			return orderLineBuilders.stream()
-					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
-					.findFirst();
 		}
 	}
 

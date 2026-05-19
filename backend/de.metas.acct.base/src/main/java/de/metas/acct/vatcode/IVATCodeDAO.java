@@ -1,6 +1,8 @@
 package de.metas.acct.vatcode;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -45,4 +47,24 @@ public interface IVATCodeDAO extends ISingletonService
 
 	@NonNull
 	VatCodeId getIdByCodeAndOrgId(@NonNull String code, @NonNull OrgId orgId);
+
+	/**
+	 * @return true if there is any active {@link VATCode} record for the given accounting schema and tax.
+	 */
+	boolean existsForAcctSchemaAndTax(@NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
+
+	/**
+	 * Create a new {@link VATCode} record.
+	 */
+	@NonNull
+	VATCode createVATCode(@NonNull CreateVATCodeRequest request);
+
+	/**
+	 * Returns the IsSOTrx flag of the C_VAT_Code record that has the given VATCode string.
+	 * Used to derive the correct IsSOTrx for Net VAT code lookup when the tax leg's IsSOTrx
+	 * differs from the document's (e.g. reverse-charge T_Due_Acct within a purchase allocation).
+	 *
+	 * @return Optional.empty() if no record found or if the record's IsSOTrx is blank
+	 */
+	Optional<Boolean> findIsSOTrxByCode(@NonNull String vatCode, @NonNull AcctSchemaId acctSchemaId, @NonNull TaxId taxId);
 }

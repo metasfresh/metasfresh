@@ -525,6 +525,21 @@ public class PickingJobPickCommand
 		return Optional.ofNullable(this._stepId);
 	}
 
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return getReservationDocRef()
+				.map(huService::getVHUIdsByDocumentRef)
+				.orElseGet(ImmutableSet::of);
+	}
+
+	private Optional<HUReservationDocRef> getReservationDocRef()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getStepIdIfExists().map(HUReservationDocRef::ofPickingJobStepId),
+				() -> getShipmentScheduleInfo().getSalesOrderLineId().map(HUReservationDocRef::ofSalesOrderLineId)
+		);
+	}
+
 	private PickingJobStepId createStep()
 	{
 		final PickingJobStepId newStepId = pickingJobRepository.newPickingJobStepId();
@@ -882,7 +897,9 @@ public class PickingJobPickCommand
 			@NonNull final I_M_HU pickFromHU,
 			@NonNull final QtyTU qtyToPickTUs)
 	{
-		final HUTransformService huTransformService = HUTransformService.newInstance();
+		final HUTransformService huTransformService = HUTransformService.builder()
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
+				.build();
 
 		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
 		final LUTUResult result;
@@ -980,6 +997,7 @@ public class PickingJobPickCommand
 						.documentRef(getLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
+						.allowedReservedVhuIds(getAllowedReservedVhuIds())
 						.build()
 		);
 	}

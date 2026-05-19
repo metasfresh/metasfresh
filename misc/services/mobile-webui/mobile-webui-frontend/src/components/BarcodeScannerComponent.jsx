@@ -145,6 +145,10 @@ const BarcodeScannerComponent = ({
   });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
+    if (!scannedBarcode?.trim()) {
+      uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
+      return;
+    }
     inputTextRef?.current?.select();
 
     const scanningStatus = scanningStatusRef.current;
@@ -237,7 +241,8 @@ const BarcodeScannerComponent = ({
 
   const handleInputTextKeyPress = (e) => {
     if (e.key === 'Enter') {
-      const scannedBarcode = e.target.value;
+      const scannedBarcode = e.target.value?.trim();
+      if (!scannedBarcode) return;
 
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
@@ -262,6 +267,8 @@ const BarcodeScannerComponent = ({
           type="hidden" inputs cannot receive focus, so Android InputConnection is never established
           and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
           IME-compatible while remaining invisible to the user. (me03#28834) */}
+      {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
+          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
       {!isProcessing && (
         <input
           id="input-text"
@@ -278,7 +285,7 @@ const BarcodeScannerComponent = ({
           data-testid={testId ?? 'qrCode-input'}
         />
       )}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      <video key="video" ref={videoRef} width="100%" height="100%" />
     </div>
   );
 };
