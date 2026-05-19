@@ -1,35 +1,18 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
--- Function for desadv lines with no pack.
--- Builds the JSON for desadv lines that have no edi_desadv_pack_item: both unshipped lines
--- (must still appear in DESADV with qty 0) and shipped-but-not-packed lines.
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_lines_no_pack_json_fn.sql
 --
--- Note: the per-line JSON object was previously assembled via the view
--- edi_desadv_line_object_v. That view had an unguarded LEFT JOIN to m_inoutline and
--- produced row multiplication (and inconsistent GTIN resolution) when one edi_desadvline
--- mapped to multiple m_inoutline rows. The same logic is now inlined here with
--- LATERAL + LIMIT 1 on m_inoutline to guarantee exactly one row per desadv line — the
--- pattern that get_desadv_packs_json_fn already used to side-step the same view.
+-- me03#29063: Add EAN_CU fallback to GTIN_CU resolution in the no-pack DESADV function,
+-- mirroring the change applied to get_desadv_packs_json_fn in script 5802910.
+-- When the customer fills only EAN_CU on a Merkmalsdaten row (no GTIN, no EAN13_ProductCode)
+-- the DESADV JSON GTIN_CU for unshipped / shipped-but-not-packed lines now picks it up
+-- instead of returning NULL.
+--
+-- Resolution chain for GTIN_CU (identical to the packs function):
+--   1. EDI_DesadvLine.gtin_cu                (explicit value from DESADV creation)
+--   2. M_Product_ASI_Data.gtin               (ASI/BPartner-specific GTIN override)
+--   3. M_Product_ASI_Data.ean_cu             (NEW — buyer-specific EAN_CU, same role as GTIN_CU)
+--   4. M_Product_ASI_Data.ean13_productcode  (EAN13 fallback on the same record)
+--   5. M_Product.gtin                        (base product GTIN)
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE

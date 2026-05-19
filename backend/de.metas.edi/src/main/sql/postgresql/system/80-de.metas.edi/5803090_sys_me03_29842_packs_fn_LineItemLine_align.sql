@@ -1,7 +1,33 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+--
+-- Align swift_eagle_release with soft_panda_release's LineItemLine addition.
+--
+-- Background:
+--   * PR #23964 (soft_panda_release me03#29842) added a 'LineItemLine' key to
+--     LineItem.DesadvLine in the DESADV-JSON packs function. Migration
+--     5802760_sys_gh29842_desadv_LineItemLine.sql.
+--   * PR #23995 (swift_eagle_release me03#29063) added an 'asi_data.ean_cu'
+--     fallback to the GTIN_CU resolution chain in the same function, with a
+--     body that predated the LineItemLine addition on this branch. Migration
+--     5802910_sys_me03_29063_packs_fn_ean_cu_fallback.sql.
+--   * When swift_eagle_release is merged into new_dawn_uat (or any branch that
+--     already has 5802760), migrations run in prefix order: 5802760 first,
+--     5802910 second. The second CREATE OR REPLACE then wipes the LineItemLine
+--     key the first one added — cucumber profile5 fails (caught by PR #24005).
+--   * Fix in PR #24005 itself: an extra migration on the merge branch
+--     re-creates the function with the consolidated body. But that only fixes
+--     ONE merge; every subsequent swift_eagle_release -> new_dawn_uat merge
+--     would need the same patch.
+--
+-- This migration applies the same body permanently on swift_eagle_release so
+-- swift_eagle_release's own copy of get_desadv_packs_json_fn already emits
+-- LineItemLine. Future merges become no-ops on this front.
+--
+-- Effect on swift_eagle customers:
+--   The 'LineItemLine' JSON key is additive — recipients that don't read it
+--   are unaffected. swift_eagle's downstream EDIFACT converters can ignore the
+--   new key without any handling change.
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -165,7 +191,7 @@ BEGIN
                                'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
                                'IsSubArticle', ia.is_sub_article,
                                'MainArticleLine',
-                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line END
+                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line ELSE NULL END
                        ) ORDER BY ia.is_sub_article, ia.pi_line
                ) AS items_data
         FROM items_assigned ia
