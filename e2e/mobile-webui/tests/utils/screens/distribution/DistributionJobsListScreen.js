@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -109,25 +109,6 @@ export const DistributionJobsListScreen = {
         await dropAllButton.tap();
         await DistributionJobsDropAllScreen.waitForScreen();
         await DistributionJobsDropAllScreen.dropAll({ dropToQRCode })
-    }),
-
-    clickReleaseTrolleyButton: async () => await test.step(`${NAME} - Click 'Release trolley' footer button`, async () => {
-        await page.getByTestId('release-trolley-button').tap();
-    }),
-
-    expectReleaseTrolleyButtonVisible: async ({ visible }) => await test.step(`${NAME} - Expect release-trolley-button visible=${visible}`, async () => {
-        const btn = page.getByTestId('release-trolley-button');
-        if (visible) {
-            await expect(btn).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
-        } else {
-            await expect(btn).not.toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
-        }
-    }),
-
-    expectTrolleyScanScreen: async () => await test.step(`${NAME} - Expect trolley scan screen (no trolley held)`, async () => {
-        // After release, the screen returns to the trolley-scan state.
-        // The barcode scanner input (#input-text) should be attached, waiting for a trolley scan.
-        await page.locator('#input-text').waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 };
 

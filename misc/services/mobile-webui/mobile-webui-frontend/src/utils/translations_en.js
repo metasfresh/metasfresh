@@ -49,9 +49,6 @@ const translations = {
     workplace: 'Workplace',
     workstation: 'Workstation',
     trolley: 'Trolley',
-    releaseTrolley: {
-      buttonCaption: 'Release trolley',
-    },
   },
   login: {
     submitButton: 'Login',
