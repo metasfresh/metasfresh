@@ -1,7 +1,19 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+--
+-- me03#29063: Add EAN_CU fallback to GTIN_CU resolution in the packs function.
+-- M_Product_ASI_Data.EAN_CU is the buyer-specific Consumer-Unit EAN. Modern EAN-13/EAN-14
+-- codes ARE GTINs; the two columns exist for historical reasons. When the user fills only
+-- EAN_CU on a Merkmalsdaten row (no GTIN, no EAN13_ProductCode) the DESADV JSON GTIN_CU
+-- used to come back NULL because asi_data.ean_cu was neither SELECTed in the LATERAL nor
+-- in the COALESCE. This migration adds it as the second-priority fallback after asi_data.gtin.
+--
+-- Resolution chain for GTIN_CU:
+--   1. EDI_DesadvLine.gtin_cu                (explicit value from DESADV creation)
+--   2. M_Product_ASI_Data.gtin               (ASI/BPartner-specific GTIN override)
+--   3. M_Product_ASI_Data.ean_cu             (NEW — buyer-specific EAN_CU, same role as GTIN_CU)
+--   4. M_Product_ASI_Data.ean13_productcode  (EAN13 fallback on the same record)
+--   5. M_Product.gtin                        (base product GTIN)
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -157,7 +169,6 @@ BEGIN
                                        'OrderPOReference', o.poreference,
                                        'OrderDocumentNo', o.documentno,
                                        'DesadvLine', dl.line,
-                                       'LineItemLine', ia.pi_line,
                                        'IsDeliveryClosed', COALESCE(diol.desadvlinetotalqtydelivered >= COALESCE(dl.qtyordered_override, dl.qtyordered), true)
                                ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
@@ -165,7 +176,7 @@ BEGIN
                                'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
                                'IsSubArticle', ia.is_sub_article,
                                'MainArticleLine',
-                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line END
+                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line ELSE NULL END
                        ) ORDER BY ia.is_sub_article, ia.pi_line
                ) AS items_data
         FROM items_assigned ia

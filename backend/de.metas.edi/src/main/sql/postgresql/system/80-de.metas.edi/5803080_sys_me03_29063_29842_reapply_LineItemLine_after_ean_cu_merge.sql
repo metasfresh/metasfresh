@@ -1,7 +1,27 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+--
+-- Merge-reconciliation: re-create get_desadv_packs_json_fn with BOTH the LineItemLine
+-- key from PR #23964 (soft_panda_release me03#29842) AND the ean_cu fallback from
+-- PR #23995 (swift_eagle_release me03#29063).
+--
+-- Why this migration exists:
+--   * 5802760_sys_gh29842_desadv_LineItemLine.sql (soft_panda_release)
+--       CREATE OR REPLACE FUNCTION ...  — adds 'LineItemLine'
+--   * 5802910_sys_me03_29063_packs_fn_ean_cu_fallback.sql (swift_eagle_release)
+--       CREATE OR REPLACE FUNCTION ...  — adds 'ean_cu' fallback, but the body it
+--       carries was forked off swift_eagle_release BEFORE 5802760 existed there,
+--       so it does NOT contain 'LineItemLine'.
+--   When swift_eagle_release is merged into new_dawn_uat (PR #24005), migrations run
+--   in prefix order: 5802760 first, 5802910 second. The second CREATE OR REPLACE
+--   wipes the LineItemLine key the first one added. The DDL file in the merged tree
+--   is fine (git auto-merged both edits, they touched different lines), but the
+--   database state after migrations diverges from the DDL file.
+--
+--   This script (5803080 > 5802910) re-creates the function with the consolidated
+--   body so the DB matches the DDL file. Future merges from swift_eagle_release into
+--   new_dawn_uat will be no-ops as long as the swift_eagle_release version of the
+--   function does not regress on LineItemLine.
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
