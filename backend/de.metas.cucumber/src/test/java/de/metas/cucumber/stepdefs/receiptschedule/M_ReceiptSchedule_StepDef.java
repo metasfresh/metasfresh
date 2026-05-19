@@ -183,6 +183,10 @@ public class M_ReceiptSchedule_StepDef
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
 				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isIsClosed()).as("IsClosed").isEqualTo(isClosed));
 
+		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(isDeliveryStop -> softly.assertThat(receiptSchedule.isDeliveryStop()).as("IsDeliveryStop").isEqualTo(isDeliveryStop));
+
 		row.getAsOptionalString(COLUMNNAME_ExternalHeaderId)
 						.ifPresent(externalHeaderId -> softly.assertThat(receiptSchedule.getExternalHeaderId()).as(COLUMNNAME_ExternalHeaderId).isEqualTo(externalHeaderId));
 
@@ -274,6 +278,10 @@ public class M_ReceiptSchedule_StepDef
 		// to prevent that we continue before updates are finished
 		// on order complete (also after reactivating), we update async, but without any invalidation we could check like on shipment schedules
 		row.getAsOptionalBigDecimal(COLUMNNAME_QtyOrdered).ifPresent(qtyOrdered -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_QtyOrdered, qtyOrdered));
+		// IsDeliveryStop is updated asynchronously by the M_Shipment_Constraint interceptor — include it in the
+		// polling query so the load step waits for the expected value (gh#28631).
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(isDeliveryStop -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop));
 
 		final I_M_ReceiptSchedule receiptSchedule = queryBuilder.create().firstOnly(I_M_ReceiptSchedule.class);
 		if (receiptSchedule == null)
