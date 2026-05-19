@@ -28,7 +28,7 @@ INSERT INTO AD_Column (
 VALUES (
     592556 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
     818, 290, 'DocumentNo', 30, 'N', 'N', 'N',
-    'N', 'N', 0, 'N', 'Y', 'N',
+    'N', 'N', 0, 'N', 'Y', 'Y',
     10, 'N', 'N', 'Y', 'de.metas.acct', 0
 );
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -79,7 +79,7 @@ INSERT INTO AD_Column (
 VALUES (
     592558 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
     818, 206, 'C_Period_ID', 10, 'N', 'N', 'N',
-    'N', 'N', 0, 'N', 'Y', 'N',
+    'N', 'N', 0, 'N', 'Y', 'Y',
     19, 'N', 'N', 'Y', 'de.metas.acct', 0,
     540787
 );
@@ -212,11 +212,11 @@ VALUES (0, 0, 555376 /*From ID Server*/, 549512,
 
 -- 8e. Reorganise existing AD_UI_Elements
 
--- AD_Org_ID (651165): move to org group in right column
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555376, SeqNo=10, Updated=NOW() WHERE AD_UI_Element_ID=651165;
+-- AD_Org_ID (651165): move to org group in right column; show in grid at SeqNoGrid=50
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555376, SeqNo=10, IsDisplayedGrid='Y', SeqNoGrid=50, Updated=NOW() WHERE AD_UI_Element_ID=651165;
 
--- IsActive (651166): move to flags group (first element — required by layout rules)
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=10, Updated=NOW() WHERE AD_UI_Element_ID=651166;
+-- IsActive (651166): move to flags group (first element — required by layout rules); hide from grid
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=10, IsDisplayedGrid='N', SeqNoGrid=999, Updated=NOW() WHERE AD_UI_Element_ID=651166;
 
 -- DateFrom (651167): keep in primary group but hide from both form and grid
 UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651167;
@@ -227,17 +227,17 @@ UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedG
 -- DateTrx (651169): same
 UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651169;
 
--- C_AcctSchema_ID (651170): stays in primary group — update SeqNo to 20 (after DocumentNo=10)
-UPDATE AD_UI_Element SET SeqNo=20, Updated=NOW() WHERE AD_UI_Element_ID=651170;
+-- C_AcctSchema_ID (651170): stays in primary group — update SeqNo to 20 (after DocumentNo=10); show in grid at SeqNoGrid=30
+UPDATE AD_UI_Element SET SeqNo=20, IsDisplayedGrid='Y', SeqNoGrid=30, Updated=NOW() WHERE AD_UI_Element_ID=651170;
 
--- Description (651171): stays in primary group — SeqNo=30
-UPDATE AD_UI_Element SET SeqNo=30, Updated=NOW() WHERE AD_UI_Element_ID=651171;
+-- Description (651171): stays in primary group — SeqNo=30; hide from grid
+UPDATE AD_UI_Element SET SeqNo=30, IsDisplayedGrid='N', SeqNoGrid=999, Updated=NOW() WHERE AD_UI_Element_ID=651171;
 
--- Processed (651172): move to flags group
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=20, Updated=NOW() WHERE AD_UI_Element_ID=651172;
+-- Processed (651172): move to flags group; show in grid at SeqNoGrid=40
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=20, IsDisplayedGrid='Y', SeqNoGrid=40, Updated=NOW() WHERE AD_UI_Element_ID=651172;
 
--- Processing (651173): move to flags group
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=30, Updated=NOW() WHERE AD_UI_Element_ID=651173;
+-- Processing (651173): move to flags group but hide from both form and grid
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651173;
 
 -- 8f. Insert new AD_UI_Elements for the 3 new fields
 
@@ -252,7 +252,7 @@ VALUES (0, 780251 /*From ID Server*/, 0, 549256,
     555313, 651697 /*From ID Server*/, 'F',
     NOW(), 100, 'Y', 'N',
     'Y', 'Y', 'N',
-    'Document No', 10, 5, 0,
+    'Document No', 10, 10, 0,
     NOW(), 100);
 
 -- C_Period_ID (651698): dates group, SeqNo=10
@@ -266,7 +266,7 @@ VALUES (0, 780253 /*From ID Server*/, 0, 549256,
     555374, 651698 /*From ID Server*/, 'F',
     NOW(), 100, 'Y', 'N',
     'Y', 'Y', 'N',
-    'Period', 10, 55, 0,
+    'Period', 10, 20, 0,
     NOW(), 100);
 
 -- DateAcct (651699): dates group, SeqNo=20
@@ -279,6 +279,16 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
 VALUES (0, 780252 /*From ID Server*/, 0, 549256,
     555374, 651699 /*From ID Server*/, 'F',
     NOW(), 100, 'Y', 'N',
-    'Y', 'Y', 'N',
-    'Date Acct', 20, 57, 0,
+    'Y', 'N', 'N',
+    'Date Acct', 20, 999, 0,
     NOW(), 100);
+
+-- ==========================================================================================
+-- Section 9: Default filter columns (IsSelectionColumn)
+-- Target: DocumentNo, C_Period_ID, C_AcctSchema_ID, Processed, AD_Org_ID
+-- AD_Org_ID (14453) already has IsSelectionColumn='Y' — no change needed
+-- ==========================================================================================
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592556; -- DocumentNo
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592558; -- C_Period_ID
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592509; -- C_AcctSchema_ID
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=14465;  -- Processed
