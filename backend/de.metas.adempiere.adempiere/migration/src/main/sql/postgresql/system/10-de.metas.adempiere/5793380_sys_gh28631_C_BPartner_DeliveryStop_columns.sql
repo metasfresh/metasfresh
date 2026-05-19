@@ -6,7 +6,7 @@
 -- ==========================================================================
 INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                         ColumnName, EntityType, Name, PrintName, Description)
-VALUES (584648, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
+VALUES (584648 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         'DeliveryStopReason', 'D', 'Lieferstopp Grund', 'Lieferstopp Grund', 'Grund für die Liefer-/Auftragssperre');
 
 INSERT INTO AD_Element_Trl (AD_Element_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
@@ -48,17 +48,16 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        FieldLength, IsMandatory, IsUpdateable, DefaultValue,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsSelectionColumn,
                        IsAlwaysUpdateable, PersonalDataCategory)
-VALUES (592208, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
+VALUES (592208 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         0, 'de.metas.inoutcandidate', 291, 543441, 20,
         'IsDeliveryStop', 'Lieferstopp', 'Liefer-/Auftragssperre',
         1, 'Y', 'Y', 'N',
         'N', 'N', 'N', 'N', 'N',
         'N', 'NP');
 
--- Physical column
-ALTER TABLE C_BPartner ADD COLUMN IF NOT EXISTS IsDeliveryStop CHAR(1) DEFAULT 'N';
-UPDATE C_BPartner SET IsDeliveryStop = 'N' WHERE IsDeliveryStop IS NULL;
-ALTER TABLE C_BPartner ALTER COLUMN IsDeliveryStop SET NOT NULL;
+-- Physical column. Atomic via db_alter_table to avoid PG15 multi-statement trigger error.
+/* DDL */ SELECT public.db_alter_table('C_BPartner', 'ALTER TABLE public.C_BPartner ADD COLUMN IF NOT EXISTS IsDeliveryStop CHAR(1) DEFAULT ''N'' CHECK (IsDeliveryStop IN (''Y'',''N'')) NOT NULL')
+;
 
 -- ==========================================================================
 -- 3. AD_Column: C_BPartner.DeliveryStopReason
@@ -69,12 +68,13 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        FieldLength, IsMandatory, IsUpdateable, DefaultValue,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsSelectionColumn,
                        IsAlwaysUpdateable, PersonalDataCategory)
-VALUES (592209, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
+VALUES (592209 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         0, 'de.metas.inoutcandidate', 291, 584648, 10,
         'DeliveryStopReason', 'Lieferstopp Grund', 'Grund für die Liefer-/Auftragssperre',
         200, 'N', 'Y', NULL,
         'N', 'N', 'N', 'N', 'N',
         'N', 'NP');
 
--- Physical column
-ALTER TABLE C_BPartner ADD COLUMN IF NOT EXISTS DeliveryStopReason VARCHAR(200);
+-- Physical column (nullable; reason is mandatory only via AD_Field MandatoryLogic when IsDeliveryStop=Y)
+/* DDL */ SELECT public.db_alter_table('C_BPartner', 'ALTER TABLE public.C_BPartner ADD COLUMN IF NOT EXISTS DeliveryStopReason VARCHAR(200)')
+;

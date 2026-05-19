@@ -11,17 +11,17 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        FieldLength, IsMandatory, IsUpdateable, DefaultValue,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsSelectionColumn,
                        IsAlwaysUpdateable, PersonalDataCategory)
-VALUES (592210, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
+VALUES (592210 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         0, 'de.metas.inoutcandidate', 540845, 1474, 20,
-        'IsManual', 'Manuell', 'Dies ist ein manueller Vorgang',
+        'IsManual', 'Manuell',
+        'Kennzeichnet Sperren, die durch das Setzen von ''Liefer-/Auftragssperre'' am Geschäftspartner entstanden sind (im Unterschied zu vom System per Mahnung erzeugten Einträgen). Wird automatisch gepflegt.',
         1, 'Y', 'Y', 'N',
         'N', 'N', 'N', 'N', 'N',
         'N', 'NP');
 
--- Physical column
-ALTER TABLE M_Shipment_Constraint ADD COLUMN IF NOT EXISTS IsManual CHAR(1) DEFAULT 'N';
-UPDATE M_Shipment_Constraint SET IsManual = 'N' WHERE IsManual IS NULL;
-ALTER TABLE M_Shipment_Constraint ALTER COLUMN IsManual SET NOT NULL;
+-- Physical column. Atomic via db_alter_table to avoid PG15 multi-statement trigger error.
+/* DDL */ SELECT public.db_alter_table('M_Shipment_Constraint', 'ALTER TABLE public.M_Shipment_Constraint ADD COLUMN IF NOT EXISTS IsManual CHAR(1) DEFAULT ''N'' CHECK (IsManual IN (''Y'',''N'')) NOT NULL')
+;
 
 -- ==========================================================================
 -- 2. AD_Column: M_Shipment_Constraint.DeliveryStopReason (reuses AD_Element 584648)
@@ -32,15 +32,17 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        FieldLength, IsMandatory, IsUpdateable, DefaultValue,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsSelectionColumn,
                        IsAlwaysUpdateable, PersonalDataCategory)
-VALUES (592211, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
+VALUES (592211 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         0, 'de.metas.inoutcandidate', 540845, 584648, 10,
-        'DeliveryStopReason', 'Lieferstopp Grund', 'Grund für die Liefer-/Auftragssperre',
+        'DeliveryStopReason', 'Lieferstopp Grund',
+        'Begründung der Liefer-/Auftragssperre. Bei manuellen Sperren wird der am Geschäftspartner eingegebene Text gespiegelt; bei vom System (z.B. Mahnung) erzeugten Sperren wird der Hinweis programmatisch befüllt.',
         200, 'N', 'Y', NULL,
         'N', 'N', 'N', 'N', 'N',
         'N', 'NP');
 
--- Physical column
-ALTER TABLE M_Shipment_Constraint ADD COLUMN IF NOT EXISTS DeliveryStopReason VARCHAR(200);
+-- Physical column (nullable)
+/* DDL */ SELECT public.db_alter_table('M_Shipment_Constraint', 'ALTER TABLE public.M_Shipment_Constraint ADD COLUMN IF NOT EXISTS DeliveryStopReason VARCHAR(200)')
+;
 
 -- ==========================================================================
 -- 3. Performance index on Bill_BPartner_ID

@@ -3,18 +3,18 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.inoutcandidate.api.IShipmentConstraintsDAO;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
 import de.metas.util.Services;
 
@@ -41,8 +41,13 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_M_Shipment_Constraint.class)
+@Component
 public class M_Shipment_Constraint
 {
+	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+	private final IShipmentConstraintsDAO shipmentConstraintsDAO = Services.get(IShipmentConstraintsDAO.class);
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void invalidateShipmentSchedules(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
@@ -52,8 +57,7 @@ public class M_Shipment_Constraint
 			return;
 		}
 
-		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.flagSegmentForRecompute(affectedStorageSegments);
+		shipmentScheduleInvalidateBL.flagSegmentForRecompute(affectedStorageSegments);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
@@ -65,21 +69,10 @@ public class M_Shipment_Constraint
 			return;
 		}
 
-		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
-
 		for (final int bpartnerId : affectedBPartnerIds)
 		{
 			final boolean isDeliveryStop = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(bpartnerId) > 0;
-
-			Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_ReceiptSchedule.class)
-					.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID, bpartnerId)
-					.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
-					.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop)
-					.create()
-					.updateDirectly()
-					.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop)
-					.execute();
+			shipmentConstraintsDAO.updateReceiptScheduleDeliveryStopForBPartner(bpartnerId, isDeliveryStop);
 		}
 	}
 
@@ -101,7 +94,7 @@ public class M_Shipment_Constraint
 		return bpartnerIds;
 	}
 
-	private static final Set<IShipmentScheduleSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
+	private static Set<IShipmentScheduleSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
 		final Set<IShipmentScheduleSegment> storageSegments = new LinkedHashSet<>();
 		if (changeType.isNewOrChange())

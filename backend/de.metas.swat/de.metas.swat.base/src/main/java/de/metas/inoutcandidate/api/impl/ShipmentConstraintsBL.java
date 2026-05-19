@@ -1,16 +1,18 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.base.Preconditions;
+import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.inoutcandidate.api.IShipmentConstraintsDAO;
+import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
+import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.proxy.Cached;
 
-import com.google.common.base.Preconditions;
-
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
-import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -36,8 +38,10 @@ import de.metas.util.Services;
 
 public class ShipmentConstraintsBL implements IShipmentConstraintsBL
 {
+	private final IShipmentConstraintsDAO shipmentConstraintsDAO = Services.get(IShipmentConstraintsDAO.class);
+
 	@Override
-	public void createConstraint(final ShipmentConstraintCreateRequest request)
+	public void createConstraint(@NonNull final ShipmentConstraintCreateRequest request)
 	{
 		final I_M_Shipment_Constraint constraintPO = InterfaceWrapperHelper.newInstance(I_M_Shipment_Constraint.class);
 		constraintPO.setBill_BPartner_ID(request.getBillPartnerId());
@@ -49,6 +53,11 @@ public class ShipmentConstraintsBL implements IShipmentConstraintsBL
 		if (request.isDeliveryStop())
 		{
 			constraintPO.setIsDeliveryStop(true);
+		}
+
+		if (request.getReason() != null)
+		{
+			constraintPO.setDeliveryStopReason(request.getReason());
 		}
 
 		InterfaceWrapperHelper.save(constraintPO);
@@ -74,5 +83,46 @@ public class ShipmentConstraintsBL implements IShipmentConstraintsBL
 				.endOrderBy()
 				.create()
 				.firstId();
+	}
+
+	@Override
+	public void createOrUpdateManualDeliveryStop(final int billBPartnerId, final int adOrgId, @Nullable final String reason)
+	{
+		Preconditions.checkArgument(billBPartnerId > 0, "billBPartnerId > 0");
+
+		final I_M_Shipment_Constraint existing = shipmentConstraintsDAO.retrieveManualConstraint(billBPartnerId);
+
+		if (existing != null)
+		{
+			existing.setDeliveryStopReason(reason);
+			if (!existing.isActive())
+			{
+				existing.setIsActive(true);
+			}
+			InterfaceWrapperHelper.save(existing);
+		}
+		else
+		{
+			final I_M_Shipment_Constraint constraint = InterfaceWrapperHelper.newInstance(I_M_Shipment_Constraint.class);
+			constraint.setBill_BPartner_ID(billBPartnerId);
+			constraint.setIsDeliveryStop(true);
+			constraint.setIsManual(true);
+			constraint.setDeliveryStopReason(reason);
+			constraint.setAD_Org_ID(adOrgId);
+			InterfaceWrapperHelper.save(constraint);
+		}
+	}
+
+	@Override
+	public void deactivateManualDeliveryStop(final int billBPartnerId)
+	{
+		Preconditions.checkArgument(billBPartnerId > 0, "billBPartnerId > 0");
+
+		final I_M_Shipment_Constraint existing = shipmentConstraintsDAO.retrieveManualConstraint(billBPartnerId);
+		if (existing != null && existing.isActive())
+		{
+			existing.setIsActive(false);
+			InterfaceWrapperHelper.save(existing);
+		}
 	}
 }

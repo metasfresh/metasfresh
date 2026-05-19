@@ -9,6 +9,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
@@ -48,12 +49,12 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		// engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initialized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
-		engine.addModelValidator(new M_Shipment_Constraint(), client);
+		// engine.addModelValidator(new M_Shipment_Constraint(), client); initialized by spring (@Component)
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		//engine.addModelValidator(new M_InOut_Shipment(), client); // converted to spring bean
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
-		engine.addModelValidator(new C_BPartner_DeliveryStop(), client);
+		// engine.addModelValidator(new C_BPartner_DeliveryStop(), client); initialized by spring (@Component)
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
 
@@ -83,6 +84,9 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 	private void setupCaching()
 	{
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_M_ShipmentSchedule.Table_Name);
+		// Manual delivery-stops set on one node must be visible cluster-wide so that order completion
+		// is blocked everywhere as soon as ShipmentConstraintsBL.getDeliveryStopShipmentConstraintId is re-asked.
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_M_Shipment_Constraint.Table_Name);
 	}
 
 	@VisibleForTesting

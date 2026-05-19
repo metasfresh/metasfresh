@@ -376,8 +376,24 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * <p>
 	 * At this point we assume that we have a thread inherited transaction.
 	 */
-	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
+	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parametersIn)
 	{
+		// gh#28631: drop any delivery-stopped receipt schedules before doing any HU work.
+		// This is the central HU receipt entry point — gating here covers manual-run, async-run,
+		// and shipper-transportation callers.
+		final List<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> kept = parametersIn.getReceiptSchedules().stream()
+				.filter(rs -> !rs.isDeliveryStop())
+				.collect(Collectors.toList());
+
+		if (kept.isEmpty())
+		{
+			return Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(false);
+		}
+
+		final CreateReceiptsParameters parameters = kept.size() == parametersIn.getReceiptSchedules().size()
+				? parametersIn
+				: parametersIn.toBuilder().receiptSchedules(kept).build();
+
 		final List<I_M_ReceiptSchedule> receiptSchedules = createList(parameters.getReceiptSchedules(), I_M_ReceiptSchedule.class);
 
 		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds() != null

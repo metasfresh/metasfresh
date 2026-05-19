@@ -45,6 +45,7 @@ public class C_Order
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
@@ -63,11 +64,10 @@ public class C_Order
 			return;
 		}
 
-		final int deliveryStopShipmentConstraintId = Services.get(IShipmentConstraintsBL.class).getDeliveryStopShipmentConstraintId(partnerIdToCheck);
-		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-		if (isDeliveryStop)
+		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(partnerIdToCheck);
+		if (deliveryStopShipmentConstraintId > 0)
 		{
-			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop)
+			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop, partnerIdToCheck, deliveryStopShipmentConstraintId)
 					.markAsUserValidationError();
 		}
 	}
