@@ -146,6 +146,16 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+	public int retrieveMaxDesadvLineLineNo(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.create()
+				.maxInt(I_EDI_DesadvLine.COLUMNNAME_Line);
+	}
+
+	@Override
 	public int retrieveMaxDesadvPackSeqNo(@NonNull final EDIDesadvId desadvId)
 	{
 		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
