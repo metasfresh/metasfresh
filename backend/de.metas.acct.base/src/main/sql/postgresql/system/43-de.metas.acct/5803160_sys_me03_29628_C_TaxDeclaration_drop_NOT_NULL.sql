@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: drop NOT NULL + IsMandatory on DateFrom/DateTo/DateTrx
+-- Tax Declaration: drop NOT NULL + IsMandatory on DateFrom/DateTo/DateTrx
 -- These legacy date-range columns are hidden from the UI (5803040) and replaced
 -- by C_Period_ID + DateAcct. The physical NOT NULL prevented saving new records.
 

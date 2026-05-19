@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: expose C_TaxDeclaration_Build process in the document's Actions menu
+-- Tax Declaration: expose C_TaxDeclaration_Build process in the document's Actions menu
 -- AD_Table_Process row links AD_Table 818 (C_TaxDeclaration) <-> AD_Process 585615 (Build)
 -- with WEBUI_DocumentAction='Y' so it shows in SingleDocumentActionsMenu.
 

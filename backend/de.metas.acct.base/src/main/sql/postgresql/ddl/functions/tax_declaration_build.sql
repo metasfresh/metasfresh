@@ -12,6 +12,7 @@ DECLARE
     v_C_AcctSchema_ID   numeric;
     v_AD_Client_ID      numeric;
     v_AD_Org_ID         numeric;
+    v_C_Currency_ID     numeric;
     v_Processed         char(1);
     --
     v_LineMap           record;
@@ -27,14 +28,17 @@ BEGIN
            td.C_AcctSchema_ID,
            td.AD_Client_ID,
            td.AD_Org_ID,
-           td.Processed
+           td.Processed,
+           acs.C_Currency_ID
     INTO
         v_C_Period_ID,
         v_C_AcctSchema_ID,
         v_AD_Client_ID,
         v_AD_Org_ID,
-        v_Processed
+        v_Processed,
+        v_C_Currency_ID
     FROM C_TaxDeclaration td
+    JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = td.C_AcctSchema_ID
     WHERE td.C_TaxDeclaration_ID = p_C_TaxDeclaration_ID;
 
     IF NOT FOUND THEN
@@ -49,8 +53,8 @@ BEGIN
         RAISE EXCEPTION 'tax_declaration_build: C_TaxDeclaration (ID=%) is already Processed=Y — cannot rebuild', p_C_TaxDeclaration_ID;
     END IF;
 
-    RAISE NOTICE 'tax_declaration_build: Building declaration ID=% (C_Period_ID=%, C_AcctSchema_ID=%)',
-        p_C_TaxDeclaration_ID, v_C_Period_ID, v_C_AcctSchema_ID;
+    RAISE NOTICE 'tax_declaration_build: Building declaration ID=% (AD_Client_ID=%, C_Period_ID=%, C_AcctSchema_ID=%)',
+        p_C_TaxDeclaration_ID, v_AD_Client_ID, v_C_Period_ID, v_C_AcctSchema_ID;
 
     -- =========================================================
     -- Phase 1 — Pre-clear existing snapshot rows
@@ -64,8 +68,8 @@ BEGIN
     -- =========================================================
     -- Phase 2 — Snapshot: INSERT C_TaxDeclarationAcct from Fact_Acct
     -- Authoritative carriers from Fact_Acct: VATCode (string) + VATCodeAmountType.
-    -- Both are written by the per-leg matcher at posting time; no LEFT JOIN to
-    -- C_VAT_Code needed here (avoids ambiguity when same VATCode has both N+T rows).
+    -- Both are written by the per-leg matcher at posting time (no LEFT JOIN to
+    -- C_VAT_Code needed → avoids ambiguity when same VATCode has both N+T rows).
     -- =========================================================
     INSERT INTO C_TaxDeclarationAcct (
         C_TaxDeclarationAcct_ID,
@@ -107,10 +111,13 @@ BEGIN
         fa.Line_ID,
         fa.Description
     FROM Fact_Acct fa
-    WHERE fa.C_Period_ID      = v_C_Period_ID
+    WHERE fa.AD_Client_ID     = v_AD_Client_ID
+      AND fa.C_Period_ID      = v_C_Period_ID
       AND fa.C_AcctSchema_ID  = v_C_AcctSchema_ID
       AND fa.VATCode          IS NOT NULL
       AND fa.IsActive         = 'Y';
+      -- AD_Org_ID intentionally NOT filtered — open question whether a declaration on a
+      -- specific org should aggregate only that org's Fact_Acct rows or the whole client.
 
     GET DIAGNOSTICS v_acctRowCount = ROW_COUNT;
     RAISE NOTICE 'tax_declaration_build: Inserted % C_TaxDeclarationAcct row(s)', v_acctRowCount;
@@ -118,8 +125,7 @@ BEGIN
     -- =========================================================
     -- Phase 3a — Aggregate: INSERT C_TaxDeclarationLine
     -- Aggregation key: VATCode (string) + AmountType. C_VAT_Code_ID is a nice-to-have
-    -- pulled from any matching acct row.
-    -- C_Currency_ID comes from C_AcctSchema, not from Fact_Acct.
+    -- looked up via the C_VAT_Code master (LEFT JOIN: NULL when no master matches).
     -- =========================================================
     FOR v_LineMap IN
         WITH aggregated AS (
@@ -168,15 +174,13 @@ BEGIN
             0,
             p_C_TaxDeclaration_ID,
             agg.LineNo,
-            acs.C_Currency_ID,
+            v_C_Currency_ID,
             agg.VATCode,
             agg.C_VAT_Code_ID,
             agg.AmountType,
             agg.TotalAmount,
             agg.LineCount
         FROM aggregated agg
-        CROSS JOIN C_AcctSchema acs
-        WHERE acs.C_AcctSchema_ID = v_C_AcctSchema_ID
         RETURNING C_TaxDeclarationLine_ID, VATCode, AmountType
     LOOP
         -- Phase 3b — Backfill: link each Acct row to its Line by VATCode + AmountType

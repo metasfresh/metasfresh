@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: rename C_TaxDeclaration_Build process (AD_Process_ID=585615)
+-- Tax Declaration: rename C_TaxDeclaration_Build process (AD_Process_ID=585615)
 -- DE base: "Zeilen erstellen" (was "Steuererklärung aufbauen" — not ERP-idiomatic)
 -- EN trl:  "Create lines" (was "Build Tax Declaration")
 -- Description added (was empty)

@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: add AD_Sequence for DocumentNo auto-assign on C_TaxDeclaration
+-- Tax Declaration: add AD_Sequence for DocumentNo auto-assign on C_TaxDeclaration
 -- PO framework requires an AD_Sequence named "DocumentNo_<TableName>" when IsUseDocSequence='Y'.
 
 INSERT INTO AD_Sequence (

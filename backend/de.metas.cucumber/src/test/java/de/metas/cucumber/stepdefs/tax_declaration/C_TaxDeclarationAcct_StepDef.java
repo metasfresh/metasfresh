@@ -26,7 +26,6 @@ import de.metas.acct.tax.TaxDeclarationId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -41,12 +40,12 @@ import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.I_C_TaxDeclarationAcct;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class C_TaxDeclarationAcct_StepDef
 {
 	@NonNull private final C_TaxDeclaration_StepDefData taxDeclarationTable;
-	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -55,13 +54,17 @@ public class C_TaxDeclarationAcct_StepDef
 	 * Assert that {@link I_C_TaxDeclarationAcct} contains rows for the given documents with correct fields.
 	 * Other rows in the snapshot (for documents not listed in the DataTable) are ignored.
 	 *
+	 * <p>The build function inserts <b>one snapshot row per Fact_Acct row</b>, so a single document
+	 * (AD_Table_ID + Record_ID) can produce multiple Acct rows (e.g. Net leg + Tax leg of the same
+	 * invoice). Each DataTable row asserts exactly one Acct row matched by (VATCode, AmountType,
+	 * Amount) on the document.
+	 *
 	 * <p><b>Required DataTable columns:</b>
 	 * <ul>
 	 *   <li>{@code Record_ID} — document identifier; resolved via
 	 *       {@link IdentifiersResolver#getTableRecordReference(StepDefDataIdentifier)} to get
 	 *       {@code AD_Table_ID + Record_ID}</li>
-	 *   <li>{@code C_VAT_Code_ID} — identifier of a {@link de.metas.acct.vatcode.VATCode}
-	 *       in {@link C_VAT_Code_StepDefData}</li>
+	 *   <li>{@code VATCode} — expected VATCode string (e.g. {@code sales19})</li>
 	 *   <li>{@code AmountType} — expected AmountType value ({@code T} or {@code N})</li>
 	 *   <li>{@code Amount} — expected Amount (AmtAcctDr - AmtAcctCr), e.g. {@code -190}</li>
 	 * </ul>
@@ -69,8 +72,9 @@ public class C_TaxDeclarationAcct_StepDef
 	 * <p><b>Example:</b>
 	 * <pre>{@code
 	 * Then the C_TaxDeclarationAcct for declaration 'td1' contains entries for documents:
-	 *   | Record_ID | C_VAT_Code_ID | AmountType | Amount |
-	 *   | invoice   | sales19       | T          | -190   |
+	 *   | Record_ID | VATCode  | AmountType | Amount |
+	 *   | invoice   | sales19  | N          | -1000  |
+	 *   | invoice   | sales19  | T          | -190   |
 	 * }</pre>
 	 */
 	@Then("the C_TaxDeclarationAcct for declaration {string} contains entries for documents:")
@@ -99,35 +103,36 @@ public class C_TaxDeclarationAcct_StepDef
 		final int adTableId = adTableDAO.retrieveAdTableId(ref.getTableName()).getRepoId();
 		final int recordId = ref.getRecord_ID();
 
-		final I_C_TaxDeclarationAcct acctRow = queryBL.createQueryBuilder(I_C_TaxDeclarationAcct.class)
-				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, declId.getRepoId())
+		final String expectedVatCode = row.getAsString("VATCode");
+		final String expectedAmountType = row.getAsString("AmountType");
+		final BigDecimal expectedAmount = new BigDecimal(row.getAsString("Amount"));
+
+		// A document can produce multiple Acct rows (e.g. Net leg + Tax leg). Match by (VATCode, AmountType).
+		final List<I_C_TaxDeclarationAcct> candidates = queryBL.createQueryBuilder(I_C_TaxDeclarationAcct.class)
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, declId)
 				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_VATCode, expectedVatCode)
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_AmountType, expectedAmountType)
 				.create()
-				.firstOnly(I_C_TaxDeclarationAcct.class);
+				.list(I_C_TaxDeclarationAcct.class);
 
 		final String context = "C_TaxDeclarationAcct for declaration=" + declId.getRepoId()
-				+ ", document=" + ref.getTableName() + "/" + recordId;
+				+ ", document=" + ref.getTableName() + "/" + recordId
+				+ ", VATCode=" + expectedVatCode
+				+ ", AmountType=" + expectedAmountType;
 
-		softly.assertThat(acctRow)
-				.as(context + ": row must exist")
-				.isNotNull();
+		softly.assertThat(candidates)
+				.as(context + ": exactly one row must match")
+				.hasSize(1);
 
-		if (acctRow == null)
+		if (candidates.size() != 1)
 		{
-			return; // skip field assertions — SoftAssertions will report the null
+			return;
 		}
 
-		final int expectedVatCodeId = vatCodeTable.get(row.getAsIdentifier("C_VAT_Code_ID")).getVatCodeId().getRepoId();
-		softly.assertThat(acctRow.getC_VAT_Code_ID())
-				.as(context + ": C_VAT_Code_ID")
-				.isEqualTo(expectedVatCodeId);
+		final I_C_TaxDeclarationAcct acctRow = candidates.get(0);
 
-		softly.assertThat(acctRow.getAmountType())
-				.as(context + ": AmountType")
-				.isEqualTo(row.getAsString("AmountType"));
-
-		final BigDecimal expectedAmount = new BigDecimal(row.getAsString("Amount"));
 		softly.assertThat(acctRow.getAmount())
 				.as(context + ": Amount")
 				.isEqualByComparingTo(expectedAmount);

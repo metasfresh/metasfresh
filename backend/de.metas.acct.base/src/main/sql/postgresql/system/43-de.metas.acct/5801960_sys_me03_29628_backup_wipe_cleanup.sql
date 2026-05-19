@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: backup tables, wipe legacy data, remove obsolete Jasper AD entries
+-- Tax Declaration: backup tables, wipe legacy data, remove obsolete Jasper AD entries
 
 -- Backups (must run before any schema changes)
 SELECT backup_table('c_taxdeclaration',     '_iter4_29628');

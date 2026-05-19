@@ -1,5 +1,5 @@
 -- 2026-05-12 Teo Sarca <teo.sarca@metasfresh.com>
--- Task 4: Tax Declaration Iter4 — C_TaxDeclarationAcct schema migration
+-- Task 4: Tax Declaration — C_TaxDeclarationAcct schema migration
 -- Drop FK on Fact_Acct_ID (keep as plain integer), add 6 new columns + indexes
 
 -- ===== Section 1: Drop FK constraint on Fact_Acct_ID =====

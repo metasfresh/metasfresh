@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: backfill Fact_Acct.VATCodeAmountType for pre-existing rows.
+-- Tax Declaration: backfill Fact_Acct.VATCodeAmountType for pre-existing rows.
 --
 -- After 5803380 added the column, all NEW Fact_Acct rows written by the per-leg matcher
 -- carry both VATCode + VATCodeAmountType (see FactLine.setTaxIdAndUpdateVatCode +

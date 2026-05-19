@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: add VATCode string column to C_TaxDeclarationLine + C_TaxDeclarationAcct
+-- Tax Declaration: add VATCode string column to C_TaxDeclarationLine + C_TaxDeclarationAcct
 --
 -- Fact_Acct.VATCode is the authoritative string carrier of the VAT code (Mark's design).
 -- C_VAT_Code_ID is only a "nice to have" link to the master record; aggregation must work

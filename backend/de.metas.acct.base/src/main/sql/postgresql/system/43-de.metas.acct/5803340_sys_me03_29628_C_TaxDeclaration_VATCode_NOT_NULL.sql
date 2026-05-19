@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: VATCode is mandatory on C_TaxDeclarationLine + C_TaxDeclarationAcct
+-- Tax Declaration: VATCode is mandatory on C_TaxDeclarationLine + C_TaxDeclarationAcct
 -- (Mark's design: VATCode is the authoritative aggregation key; rows without it have no
 -- place in a tax declaration). Clean up any pre-existing rows that lack a VATCode (created
 -- before 5803320 added the column), then SET NOT NULL.

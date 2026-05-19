@@ -1,4 +1,4 @@
--- 2026-05-12 Tax Declaration Iter4 — C_TaxDeclaration schema
+-- 2026-05-12 Tax Declaration — C_TaxDeclaration schema
 -- Remove Name column, add C_AcctSchema_ID (mandatory), add period-uniqueness index
 
 -- 1. Remove Name column from AD_Column

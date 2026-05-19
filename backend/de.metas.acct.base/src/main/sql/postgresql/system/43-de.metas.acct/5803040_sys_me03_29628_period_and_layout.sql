@@ -1,4 +1,4 @@
--- Tax Declaration Iter4+: add C_Period_ID, DateAcct, DocumentNo + 2-column header layout
+-- Tax Declaration: add C_Period_ID, DateAcct, DocumentNo + 2-column header layout
 -- Adds a period picker; hides the DateFrom/DateTo/DateTrx range fields from UI.
 
 -- ==========================================================================================

@@ -25,12 +25,6 @@ public class TaxDeclarationId implements RepoIdAware
 		return repoId > 0 ? new TaxDeclarationId(repoId) : null;
 	}
 
-	@Nullable
-	public static TaxDeclarationId ofRepoIdOrNull(@Nullable final Integer repoId)
-	{
-		return repoId != null && repoId > 0 ? new TaxDeclarationId(repoId) : null;
-	}
-
 	public static int toRepoId(@Nullable final TaxDeclarationId taxDeclarationId)
 	{
 		return taxDeclarationId != null ? taxDeclarationId.repoId : -1;

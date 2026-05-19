@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: add Fact_Acct.VATCodeAmountType column.
+-- Tax Declaration: add Fact_Acct.VATCodeAmountType column.
 --
 -- Until now, the AmountType (Net/Tax) discriminator lived only on C_VAT_Code. The
 -- per-leg matcher knows the AmountType at posting time (filtered C_VAT_Code lookup

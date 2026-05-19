@@ -1,4 +1,4 @@
--- Tax Declaration Iter4 fix: only the top-left UI element group should be 'primary'.
+-- Tax Declaration fix: only the top-left UI element group should be 'primary'.
 -- Migration 5803040 incorrectly created all 3 new groups (dates, flags, org) with
 -- UIStyle='primary' too. Clear UIStyle on the non-top-left groups.
 

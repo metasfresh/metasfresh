@@ -1,5 +1,5 @@
 -- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
--- Tax Declaration Iter4 (Mark's explicit request): filter Fact_Acct by C_Period_ID
+-- Tax Declaration: filter Fact_Acct by C_Period_ID
 -- directly instead of derived DateFrom/DateTo BETWEEN range. Fact_Acct.C_Period_ID
 -- is the authoritative period assignment of the posting — exact match, no edge
 -- cases on period start/end vs DateAcct.

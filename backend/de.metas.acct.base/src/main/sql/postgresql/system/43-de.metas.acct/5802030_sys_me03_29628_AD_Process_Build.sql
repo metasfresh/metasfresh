@@ -1,5 +1,5 @@
 -- 2026-05-12
--- Tax Declaration Iter4 — AD_Process for C_TaxDeclaration_Build + AD_Message already-processed guard
+-- Tax Declaration — AD_Process for C_TaxDeclaration_Build + AD_Message already-processed guard
 
 -- INSERT AD_Process for C_TaxDeclaration_Build
 INSERT INTO AD_Process
@@ -75,13 +75,13 @@ SET IsTranslated = 'Y',
 WHERE AD_Language = 'en_US' AND AD_Message_ID = 545682;
 
 -- Wire the Processing button column (C_TaxDeclaration.Processing, col 14464) to the new process.
--- The old process AD_Process_ID=336 (C_TaxDeclaration_CreateLines) had its Java class deleted in Iter4.
+-- The old process AD_Process_ID=336 (C_TaxDeclaration_CreateLines) had its Java class deleted in the previous iteration.
 UPDATE AD_Column
 SET AD_Process_ID = 585615, Updated = TIMESTAMP '2026-05-19 00:00:00', UpdatedBy = 100
 WHERE AD_Column_ID = 14464;
 
 -- Inactivate the legacy C_TaxDeclaration_CreateLines process (AD_Process_ID=336).
--- Its Java class org.adempiere.acct.process.C_TaxDeclaration_CreateLines was removed in Iter4;
+-- Its Java class org.adempiere.acct.process.C_TaxDeclaration_CreateLines was removed in the previous iteration;
 -- the health check fails when it tries to instantiate it.
 UPDATE AD_Process
 SET IsActive = 'N', Updated = TIMESTAMP '2026-05-19 00:00:00', UpdatedBy = 100

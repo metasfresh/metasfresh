@@ -1538,7 +1538,6 @@ public class FactLine
 
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(null, null).map(VATCode::getCode).orElse(null);
-		this.vatCodeAmountType = null;
 	}
 
 	/**
@@ -1550,13 +1549,11 @@ public class FactLine
 	{
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(isSOTrxOverride, null).map(VATCode::getCode).orElse(null);
-		this.vatCodeAmountType = null;
 	}
 
 	public void setVatCode(@Nullable final String vatCode)
 	{
 		this.vatCode = vatCode;
-		this.vatCodeAmountType = null;
 	}
 
 	private Optional<VATCode> computeVATCode(@Nullable final Boolean isSOTrxOverride, @Nullable final VATCodeAmountType amountType)

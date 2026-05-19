@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: drop C_VAT_Code_ID from C_TaxDeclarationAcct entirely.
+-- Tax Declaration: drop C_VAT_Code_ID from C_TaxDeclarationAcct entirely.
 -- Rationale: VATCode (string) + AmountType are the authoritative carriers; for the
 -- per-Fact_Acct detail snapshot we don't need the FK to the master record.
 -- (C_TaxDeclarationLine keeps C_VAT_Code_ID as a nice-to-have aggregated reference.)

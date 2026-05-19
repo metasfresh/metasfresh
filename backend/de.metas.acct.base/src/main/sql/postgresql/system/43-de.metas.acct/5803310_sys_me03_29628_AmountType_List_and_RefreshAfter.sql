@@ -1,4 +1,4 @@
--- Tax Declaration Iter4 fixes:
+-- Tax Declaration fixes:
 --
 -- 1. AmountType columns on C_TaxDeclarationLine + C_TaxDeclarationAcct were created
 --    as String (AD_Reference_ID=10) with no reference list. They mirror C_VAT_Code.AmountType

@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: C_TaxDeclarationLine schema migration
+-- Tax Declaration: C_TaxDeclarationLine schema migration
 -- Drop 13 legacy columns, add 4 new columns (C_VAT_Code_ID, AmountType, Amount, LineCount), add unique index
 
 -- ============================================================================

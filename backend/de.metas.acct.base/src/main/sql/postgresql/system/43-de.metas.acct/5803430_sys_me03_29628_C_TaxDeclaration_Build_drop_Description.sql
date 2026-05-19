@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: drop the description from the C_TaxDeclaration_Build process.
+-- Tax Declaration: drop the description from the C_TaxDeclaration_Build process.
 -- The auto-generated technical description added in 5803210 wasn't useful; the process
 -- name alone ("Zeilen erstellen" / "Create lines") is self-explanatory.
 

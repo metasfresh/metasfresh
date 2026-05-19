@@ -1,4 +1,4 @@
--- Tax Declaration Iter4: change C_TaxDeclaration.C_Period_ID widget from Table Direct (19)
+-- Tax Declaration: change C_TaxDeclaration.C_Period_ID widget from Table Direct (19)
 -- to Search (30). The Search widget gives a richer picker (typeahead + open in a separate
 -- panel) which is better for browsing periods than the inline dropdown of Table Direct.
 -- AD_Val_Rule 540787 (filter to AcctSchema's calendar) is preserved by leaving

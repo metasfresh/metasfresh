@@ -1,5 +1,5 @@
 -- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
--- Tax Declaration Iter4: source AmountType from fa.VATCodeAmountType (Fact_Acct).
+-- Tax Declaration: source AmountType from fa.VATCodeAmountType (Fact_Acct).
 --
 -- Previously the function did LEFT JOIN C_VAT_Code to derive AmountType. That's
 -- ambiguous under Strategy B coding (same VATCode for N+T rows: LEFT JOIN matches
