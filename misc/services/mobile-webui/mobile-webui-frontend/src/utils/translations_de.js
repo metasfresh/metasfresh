@@ -52,6 +52,9 @@ const translations = {
     workplace: 'Arbeitsplatz',
     workstation: 'Arbeitsstation',
     trolley: 'Wagen',
+    releaseTrolley: {
+      buttonCaption: 'Wagen freigeben',
+    },
   },
   login: {
     submitButton: 'Login',
