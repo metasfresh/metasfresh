@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0180_System_Administration
-@allure.label.feature:F9100
+@allure.label.feature:F9100_Manage_Windows_Tabs_Fields_other
 @ghActions:run_on_executor5
 Feature: BPartner v2 REST — extendedProps round-trip
 
