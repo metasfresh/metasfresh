@@ -118,7 +118,7 @@ class JsonPickingJobStepPickFromTest
 
 		final PickingJobStepPickedToHU pickedHU = PickingJobStepPickedToHU.builder()
 				.pickFromHUId(HuId.ofRepoId(123))
-				.actualPickedHU(buildDummyHUInfo(uomEach))
+				.actualPickedHU(buildDummyHUInfo())
 				.qtyPicked(twelveCUs)
 				.createdAt(Instant.now())
 				.build();
@@ -127,7 +127,7 @@ class JsonPickingJobStepPickFromTest
 				.actualPickedHUs(ImmutableList.of(pickedHU))
 				.build();
 
-		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo, uomEach);
+		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo);
 		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
 		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("TU");
 
@@ -171,7 +171,7 @@ class JsonPickingJobStepPickFromTest
 				.qtyRejected(QtyRejectedWithReason.of(twelveCUs, QtyRejectedReasonCode.ofCode("DAMAGED")))
 				.build();
 
-		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo, uomEach);
+		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo);
 		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
 		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("TU");
 
@@ -201,7 +201,7 @@ class JsonPickingJobStepPickFromTest
 
 		final PickingJobStepPickedToHU pickedHU = PickingJobStepPickedToHU.builder()
 				.pickFromHUId(HuId.ofRepoId(123))
-				.actualPickedHU(buildDummyHUInfo(uomEach))
+				.actualPickedHU(buildDummyHUInfo())
 				.qtyPicked(twelveCUs)
 				.createdAt(Instant.now())
 				.build();
@@ -210,7 +210,7 @@ class JsonPickingJobStepPickFromTest
 				.actualPickedHUs(ImmutableList.of(pickedHU))
 				.build();
 
-		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo, uomEach);
+		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo);
 		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
 		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("EA");
 
@@ -251,7 +251,7 @@ class JsonPickingJobStepPickFromTest
 		Mockito.when(line.getPackingInfo()).thenReturn(packingInfo);
 
 		// Build main pickFrom with no pickedTo
-		final PickingJobStepPickFrom mainPickFrom = buildPickFrom(null, uomEach);
+		final PickingJobStepPickFrom mainPickFrom = buildPickFrom(null);
 
 		// Build alternative pickFrom with 4 CU picked
 		final PickingJobPickFromAlternativeId altId = PickingJobPickFromAlternativeId.ofRepoId(42);
@@ -259,7 +259,7 @@ class JsonPickingJobStepPickFromTest
 
 		final PickingJobStepPickedToHU altPickedHU = PickingJobStepPickedToHU.builder()
 				.pickFromHUId(HuId.ofRepoId(456))
-				.actualPickedHU(buildDummyHUInfo(uomEach))
+				.actualPickedHU(buildDummyHUInfo())
 				.qtyPicked(fourCUs)
 				.createdAt(Instant.now())
 				.build();
@@ -274,7 +274,7 @@ class JsonPickingJobStepPickFromTest
 						.id(LocatorId.ofRepoId(1, 100))
 						.caption("loc1")
 						.build())
-				.pickFromHU(buildDummyHUInfo(uomEach))
+				.pickFromHU(buildDummyHUInfo())
 				.pickedTo(altPickedTo)
 				.build();
 
@@ -308,8 +308,7 @@ class JsonPickingJobStepPickFromTest
 	// -----------------------------------------------------------------------
 
 	private static PickingJobStepPickFrom buildPickFrom(
-			final PickingJobStepPickedTo pickedTo,
-			final I_C_UOM uomEach)
+			final PickingJobStepPickedTo pickedTo)
 	{
 		return PickingJobStepPickFrom.builder()
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
@@ -317,12 +316,12 @@ class JsonPickingJobStepPickFromTest
 						.id(LocatorId.ofRepoId(1, 100))
 						.caption("loc1")
 						.build())
-				.pickFromHU(buildDummyHUInfo(uomEach))
+				.pickFromHU(buildDummyHUInfo())
 				.pickedTo(pickedTo)
 				.build();
 	}
 
-	private static HUInfo buildDummyHUInfo(@SuppressWarnings("unused") final I_C_UOM uomEach)
+	private static HUInfo buildDummyHUInfo()
 	{
 		final HUQRCode qrCode = HUQRCode.builder()
 				.id(HUQRCodeUniqueId.random())

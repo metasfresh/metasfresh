@@ -34,7 +34,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Function;
@@ -57,17 +56,9 @@ public class JsonPickingJobStep
 	@NonNull List<JsonPickingJobStepPickFrom> pickFromAlternatives;
 
 	public static JsonPickingJobStep of(
-			final PickingJobStep step,
-			final JsonOpts jsonOpts,
-			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
-	{
-		return of(step, null, jsonOpts, getUOMSymbolById);
-	}
-
-	public static JsonPickingJobStep of(
-			final PickingJobStep step,
-			@Nullable final PickingJobLine line,
-			final JsonOpts jsonOpts,
+			@NonNull final PickingJobStep step,
+			@NonNull final PickingJobLine line,
+			@NonNull final JsonOpts jsonOpts,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
@@ -85,7 +76,7 @@ public class JsonPickingJobStep
 		// The step stores qtyToPick in CU (base UOM), but the frontend/user should see TU count.
 		final String uom;
 		final BigDecimal qtyToPick;
-		if (line != null && line.getPickingUnit().isTU())
+		if (line.getPickingUnit().isTU())
 		{
 			uom = "TU";
 			qtyToPick = line.getPackingInfo()

@@ -39,8 +39,8 @@ public class JsonPickingJobStepPickFrom
 	@NonNull List<JsonPickingJobStepPickFromHU> actuallyPickedHUs;
 
 	public static JsonPickingJobStepPickFrom of(
-			final PickingJobStepPickFrom pickFrom,
-			@Nullable final PickingJobLine line,
+			@NonNull final PickingJobStepPickFrom pickFrom,
+			@NonNull final PickingJobLine line,
 			@NonNull final JsonOpts jsonOpts,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
 	{
@@ -55,13 +55,13 @@ public class JsonPickingJobStepPickFrom
 		{
 			final QtyRejectedWithReason qtyRejected = pickedTo.getQtyRejected();
 
-			final BigDecimal qtyPickedToSerialize = convertToDisplayUnit(pickedTo.getQtyPicked(), line);
-			final BigDecimal qtyRejectedToSerialize = qtyRejected != null
+			final BigDecimal qtyPickedToSerializeBD = convertToDisplayUnit(pickedTo.getQtyPicked(), line);
+			final BigDecimal qtyRejectedToSerializeBD = qtyRejected != null
 					? convertToDisplayUnit(qtyRejected.toQuantity(), line)
 					: null;
 
-			builder.qtyPicked(qtyPickedToSerialize)
-					.qtyRejected(qtyRejectedToSerialize)
+			builder.qtyPicked(qtyPickedToSerializeBD)
+					.qtyRejected(qtyRejectedToSerializeBD)
 					.qtyRejectedReasonCode(qtyRejected != null ? qtyRejected.getReasonCode().getCode() : null)
 					.pickedCatchWeight(toJsonQuantity(pickedTo.getCatchWeight(), jsonOpts, getUOMSymbolById))
 					.actuallyPickedHUs(pickedTo.stream()
@@ -79,9 +79,9 @@ public class JsonPickingJobStepPickFrom
 	@NonNull
 	private static BigDecimal convertToDisplayUnit(
 			@NonNull final Quantity qtyCUs,
-			@Nullable final PickingJobLine line)
+			@NonNull final PickingJobLine line)
 	{
-		if (line == null || !line.getPickingUnit().isTU())
+		if (!line.getPickingUnit().isTU())
 		{
 			return qtyCUs.toBigDecimal();
 		}
