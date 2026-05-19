@@ -8,7 +8,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
@@ -22,10 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TrolleyService
 {
-	private static final String SYSCONFIG_INCLUDE_HOLDER_NAME = "de.metas.workflow.rest_api.TrolleyService.IncludeHolderNameInConflictError";
-
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
@@ -46,7 +42,8 @@ public class TrolleyService
 			final UserId currentHolderUserId = userId2locator.inverse().get(locatorQRCode);
 			if (currentHolderUserId != null && !currentHolderUserId.equals(userId))
 			{
-				throw buildTrolleyAlreadyAssignedException(currentHolderUserId, locatorQRCode);
+				final String holderName = userDAO.retrieveUserFullName(currentHolderUserId);
+				throw TrolleyAlreadyAssignedException.forNamedConflict(holderName, locatorQRCode);
 			}
 			userId2locator.put(userId, locatorQRCode);
 		}
@@ -68,21 +65,5 @@ public class TrolleyService
 		{
 			return Optional.ofNullable(userId2locator.get(userId));
 		}
-	}
-
-	private TrolleyAlreadyAssignedException buildTrolleyAlreadyAssignedException(
-			@NonNull final UserId currentHolderUserId,
-			@NonNull final LocatorQRCode locatorQRCode)
-	{
-		final boolean includeHolderName = sysConfigBL.getBooleanValue(SYSCONFIG_INCLUDE_HOLDER_NAME, false);
-		if (includeHolderName)
-		{
-			final String holderName = userDAO.retrieveUserFullName(currentHolderUserId);
-			if (!holderName.trim().isEmpty())
-			{
-				return TrolleyAlreadyAssignedException.forNamedConflict(holderName, locatorQRCode);
-			}
-		}
-		return TrolleyAlreadyAssignedException.forGenericConflict(locatorQRCode);
 	}
 }

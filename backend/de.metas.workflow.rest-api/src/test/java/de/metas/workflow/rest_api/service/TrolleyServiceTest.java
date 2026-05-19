@@ -2,6 +2,7 @@ package de.metas.workflow.rest_api.service;
 
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -28,6 +29,7 @@ class TrolleyServiceTest
 
 	private LocatorScannedCodeResolverService resolver;
 	private IWarehouseDAO warehouseDAO;
+	private IUserDAO userDAO;
 	private TrolleyService service;
 
 	private ScannedCode scannedCode;
@@ -44,6 +46,12 @@ class TrolleyServiceTest
 		when(warehouse.isInTransit()).thenReturn(true);
 		when(warehouseDAO.getById(LOCATOR_ID.getWarehouseId())).thenReturn(warehouse);
 		Services.registerService(IWarehouseDAO.class, warehouseDAO);
+
+		// Mock user lookup — TrolleyService now always resolves the holder's name on conflict.
+		userDAO = mock(IUserDAO.class);
+		when(userDAO.retrieveUserFullName(USER_A)).thenReturn("Alice");
+		when(userDAO.retrieveUserFullName(USER_B)).thenReturn("Bob");
+		Services.registerService(IUserDAO.class, userDAO);
 
 		// Mock resolver — resolves a fixed ScannedCode to a fixed LocatorQRCode
 		resolver = mock(LocatorScannedCodeResolverService.class);
