@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link DesadvBL#applyAggregatedHeader} and the static helper methods.
@@ -189,5 +191,117 @@ class DesadvBL_applyAggregatedHeader_Test
 		assertThat(desadv.getMovementDate()).isEqualTo(movementDate);
 		// DateOrdered should be from order, not movement date
 		assertThat(desadv.getDateOrdered()).isEqualTo(orderDate);
+	}
+
+	@Test
+	void twoOrders_differentCurrencies_throws()
+	{
+		// me03#29231 — C_Currency_ID must agree across all source orders aggregated into one DESADV.
+		// If they disagree (real anomaly — same BPartner under different price-list currencies), fail loudly
+		// rather than silently picking one. Covers the C-3 review finding (deterministic-currency contract).
+		final I_C_Order orderEur = newOrder("PO-INDIA", "S", ts(2026, 1, 10), 101 /*EUR*/, 0, 0, 0, 0);
+		final I_C_Order orderUsd = newOrder("PO-INDIA", "S", ts(2026, 1, 10), 102 /*USD*/, 0, 0, 0, 0);
+
+		final I_M_InOut inOut = newInOut(99, 98, "P", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+
+		assertThatThrownBy(() -> DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderEur, orderUsd)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Currency_ID")
+				.hasMessageContaining("2 distinct");
+	}
+
+	@Test
+	void twoOrders_sameCurrency_keepsIt()
+	{
+		final I_C_Order orderA = newOrder("PO-JULIET", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+		final I_C_Order orderB = newOrder("PO-JULIET", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+
+		final I_M_InOut inOut = newInOut(99, 98, "P", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+		DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderA, orderB));
+
+		assertThat(desadv.getC_Currency_ID()).isEqualTo(101);
+	}
+
+	@Test
+	void twoOrders_differentDropShipPartners_fallsBackToInOutBPartner()
+	{
+		final I_C_Order orderA = newOrder("PO-KILO", "S", ts(2026, 1, 10), 101, 0, 0, 60, 61);
+		final I_C_Order orderB = newOrder("PO-KILO", "S", ts(2026, 1, 10), 101, 0, 0, 70, 71);
+
+		final I_M_InOut inOut = newInOut(99, 98, "P", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+		DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderA, orderB));
+
+		assertThat(desadv.getDropShip_BPartner_ID()).isEqualTo(99); // falls back to inOut.C_BPartner_ID
+		assertThat(desadv.getDropShip_Location_ID()).isEqualTo(98); // falls back to inOut.C_BPartner_Location_ID
+	}
+
+	@Test
+	void twoOrders_sameDropShipPartner_keepsIt()
+	{
+		final I_C_Order orderA = newOrder("PO-LIMA", "S", ts(2026, 1, 10), 101, 0, 0, 80, 81);
+		final I_C_Order orderB = newOrder("PO-LIMA", "S", ts(2026, 1, 10), 101, 0, 0, 80, 81);
+
+		final I_M_InOut inOut = newInOut(99, 98, "P", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+		DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderA, orderB));
+
+		assertThat(desadv.getDropShip_BPartner_ID()).isEqualTo(80);
+		assertThat(desadv.getDropShip_Location_ID()).isEqualTo(81);
+	}
+
+	@Test
+	void twoOrders_differentDeliveryViaRule_fallsBackToInOutsRule()
+	{
+		final I_C_Order orderA = newOrder("PO-MIKE", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+		final I_C_Order orderB = newOrder("PO-MIKE", "P", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+
+		final I_M_InOut inOut = newInOut(99, 98, "D", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+		DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderA, orderB));
+
+		assertThat(desadv.getDeliveryViaRule()).isEqualTo("D"); // falls back to inOut.DeliveryViaRule
+	}
+
+	@Test
+	void twoOrders_differentBillTo_fallsBackToInOutLocation()
+	{
+		// me03#29231 — Bill_Location_ID disagree → falls back to inOut.C_BPartner_Location_ID.
+		// Covers the C-3 review finding (Bill_Location_ID determinism).
+		final I_C_Order orderA = newOrder("PO-NOVEMBER", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+		orderA.setC_BPartner_ID(99);
+		orderA.setC_BPartner_Location_ID(110); // bill-to falls back to C_BPartner_Location_ID=110
+		final I_C_Order orderB = newOrder("PO-NOVEMBER", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+		orderB.setC_BPartner_ID(99);
+		orderB.setC_BPartner_Location_ID(120); // bill-to falls back to C_BPartner_Location_ID=120
+
+		final I_M_InOut inOut = newInOut(99, 98, "P", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+		DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderA, orderB));
+
+		assertThat(desadv.getBill_Location_ID()).isEqualTo(98); // falls back to inOut.C_BPartner_Location_ID
+	}
+
+	@Test
+	void twoOrders_sameBillTo_keepsIt()
+	{
+		final I_C_Order orderA = newOrder("PO-OSCAR", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+		orderA.setC_BPartner_ID(99);
+		orderA.setC_BPartner_Location_ID(130);
+		orderA.setBill_BPartner_ID(99);
+		orderA.setBill_Location_ID(130);
+		final I_C_Order orderB = newOrder("PO-OSCAR", "S", ts(2026, 1, 10), 101, 0, 0, 0, 0);
+		orderB.setC_BPartner_ID(99);
+		orderB.setC_BPartner_Location_ID(130);
+		orderB.setBill_BPartner_ID(99);
+		orderB.setBill_Location_ID(130);
+
+		final I_M_InOut inOut = newInOut(99, 98, "P", ts(2026, 3, 22));
+		final I_EDI_Desadv desadv = newDesadv();
+		DesadvBL.applyAggregatedHeader(desadv, inOut, ImmutableList.of(orderA, orderB));
+
+		assertThat(desadv.getBill_Location_ID()).isEqualTo(130);
 	}
 }

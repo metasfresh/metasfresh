@@ -80,10 +80,16 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
@@ -212,12 +218,43 @@ public class DesadvBL
 			return existingDesadvLine; // done
 		}
 
+		// Legacy (order-scoped) DESADV: there is exactly one source C_Order, so orderLine.Line is unique
+		// within this DESADV by construction. Reuse it as the DesadvLine.Line.
+		return createNewDesadvLine(orderRecord, desadvRecord, orderLineRecord, orderLineRecord.getLine());
+	}
+
+	/**
+	 * me03#29231 — per-shipment-mode entry point. ALWAYS creates a fresh {@link I_EDI_DesadvLine} for the given
+	 * {@code orderLineRecord}, allocating a DESADV-scoped {@code Line} number ({@code MAX(Line)+10 WHERE EDI_Desadv_ID=desadvId}).
+	 * <p>
+	 * Required because in shipment-aggregation mode, two source orders' orderLines can both carry {@code Line=10}
+	 * ({@code MOrderLine.beforeSave} assigns {@code COALESCE(MAX(Line),0)+10} per {@code C_Order}). The legacy
+	 * {@link #retrieveOrCreateDesadvLine} would lookup by {@code (EDI_Desadv_ID, Line)} only and alias the second
+	 * orderLine onto the first orderLine's DesadvLine — producing 1 DesadvLine + N packs against a DESADV that
+	 * should carry N DesadvLines.
+	 */
+	private I_EDI_DesadvLine createFreshDesadvLineForShipmentMode(
+			@NonNull final I_C_Order orderRecord,
+			@NonNull final I_EDI_Desadv desadvRecord,
+			@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadvRecord.getEDI_Desadv_ID());
+		final int freshLineNo = desadvDAO.retrieveMaxDesadvLineLineNo(desadvId) + 10;
+		return createNewDesadvLine(orderRecord, desadvRecord, orderLineRecord, freshLineNo);
+	}
+
+	private I_EDI_DesadvLine createNewDesadvLine(
+			@NonNull final I_C_Order orderRecord,
+			@NonNull final I_EDI_Desadv desadvRecord,
+			@NonNull final I_C_OrderLine orderLineRecord,
+			final int desadvLineNo)
+	{
 		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
 		final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, orderRecord);
 		newDesadvLine.setEDI_Desadv(desadvRecord);
-		newDesadvLine.setLine(orderLineRecord.getLine());
+		newDesadvLine.setLine(desadvLineNo);
 
 		newDesadvLine.setOrderLine(orderLineRecord.getLine());
 		newDesadvLine.setOrderPOReference(orderRecord.getPOReference());
@@ -361,17 +398,11 @@ public class DesadvBL
 	@Nullable
 	public I_EDI_Desadv createDesadvForInOut(@NonNull final I_M_InOut inOut)
 	{
-		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
-		final ImmutableSet<OrderId> sourceOrderIds = inOutLines.stream()
-				.mapToInt(I_M_InOutLine::getC_OrderLine_ID)
-				.filter(id -> id > 0)
-				.mapToObj(id -> OrderLineId.ofRepoId(id))
-				.map(orderLineId -> orderDAO.getOrderLineById(orderLineId).getC_Order_ID())
-				.map(OrderId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final List<I_C_Order> sourceOrders = sourceOrderIds.stream()
-				.map(orderId -> InterfaceWrapperHelper.create(orderDAO.getById(orderId), I_C_Order.class))
+		// me03#29231 — single DAO call replaces the N+1 walk over inOutLines.
+		// IInOutDAO.retrieveSourceOrders does the InOutLine → OrderLine → Order join in one round-trip.
+		final List<I_C_Order> sourceOrders = inOutDAO.retrieveSourceOrders(inOut)
+				.stream()
+				.map(o -> InterfaceWrapperHelper.create(o, I_C_Order.class))
 				.collect(ImmutableList.toImmutableList());
 
 		Check.assumeNotEmpty(sourceOrders, "Shipment {} has no source orders — cannot create a DESADV", inOut.getM_InOut_ID());
@@ -406,8 +437,8 @@ public class DesadvBL
 		desadv.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		desadv.setC_BPartner_Location_ID(inOut.getC_BPartner_Location_ID());
 
-		// --- POReference: distinct-or-empty
-		desadv.setPOReference(singleValueOrEmpty(sourceOrders, I_C_Order::getPOReference));
+		// --- POReference: distinct-or-null
+		desadv.setPOReference(singleValueOrNull(sourceOrders, I_C_Order::getPOReference));
 
 		// --- DeliveryViaRule: distinct-or-from-inout
 		desadv.setDeliveryViaRule(singleValueOrFallback(
@@ -419,9 +450,10 @@ public class DesadvBL
 		// --- MovementDate: authoritative on shipment
 		desadv.setMovementDate(inOut.getMovementDate());
 
-		// --- C_Currency_ID: from the shipment's main order (all orders share via price list)
-		final I_C_Order mainOrder = sourceOrders.get(0);
-		desadv.setC_Currency_ID(mainOrder.getC_Currency_ID());
+		// --- C_Currency_ID: all source orders aggregated into one DESADV must agree on currency
+		// (they all ship to the same BPartner under the same price list). If they disagree it is a real anomaly
+		// that would produce a silently-wrong DESADV total; fail loudly instead of silently picking one.
+		desadv.setC_Currency_ID(singleIntOrThrow(sourceOrders, I_C_Order::getC_Currency_ID, "C_Currency_ID"));
 
 		// --- HandOver_* and DropShip_*: distinct-or-fallback-to-BPartner
 		desadv.setHandOver_Partner_ID(singleIntOrFallback(
@@ -433,64 +465,100 @@ public class DesadvBL
 		desadv.setDropShip_Location_ID(singleIntOrFallback(
 				sourceOrders, I_C_Order::getDropShip_Location_ID, inOut.getC_BPartner_Location_ID()));
 
-		// --- Bill_Location_ID: from the main order
-		// Inline the getBillToLocationId logic to keep this helper static (avoids Services lookup in unit tests).
-		// Logic mirrors OrderBL.getBillToLocationId: prefer Bill_* fields; fall back to C_BPartner_* fields.
-		final BPartnerLocationAndCaptureId billToLocationIdExplicit = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
-				mainOrder.getBill_BPartner_ID(),
-				mainOrder.getBill_Location_ID(),
-				mainOrder.getBill_Location_Value_ID());
-		final BPartnerLocationAndCaptureId billToLocationIdFallback = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
-				mainOrder.getC_BPartner_ID(),
-				mainOrder.getC_BPartner_Location_ID(),
-				mainOrder.getC_BPartner_Location_Value_ID());
-		final BPartnerLocationAndCaptureId billToLocationId = billToLocationIdExplicit != null
-				? billToLocationIdExplicit
-				: billToLocationIdFallback;
-		desadv.setBill_Location_ID(BPartnerLocationAndCaptureId.toBPartnerLocationRepoId(billToLocationId));
+		// --- Bill_Location_ID: per-order Bill_* lookup (with fallback to the order's C_BPartner_Location_*) reduced
+		// across the source orders. If all orders compute the same effective bill-to → use it; otherwise fall back
+		// to the shipment's location. Mirrors the HandOver_*/DropShip_* fallback semantics.
+		desadv.setBill_Location_ID(singleBillLocationIdOrFallback(sourceOrders, inOut.getC_BPartner_Location_ID()));
 	}
 
 	@VisibleForTesting
-	static @Nullable String singleValueOrEmpty(
+	static @Nullable String singleValueOrNull(
 			@NonNull final List<I_C_Order> orders,
-			@NonNull final java.util.function.Function<I_C_Order, String> extract)
+			@NonNull final Function<I_C_Order, String> extract)
 	{
-		final java.util.Set<String> distinct = orders.stream().map(extract).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toSet());
+		final Set<String> distinct = orders.stream().map(extract).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toSet());
 		return distinct.size() == 1 ? distinct.iterator().next() : null;
 	}
 
 	@VisibleForTesting
 	static @NonNull String singleValueOrFallback(
 			@NonNull final List<I_C_Order> orders,
-			@NonNull final java.util.function.Function<I_C_Order, String> extract,
+			@NonNull final Function<I_C_Order, String> extract,
 			@NonNull final String fallback)
 	{
-		final java.util.Set<String> distinct = orders.stream().map(extract).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toSet());
+		final Set<String> distinct = orders.stream().map(extract).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toSet());
 		return distinct.size() == 1 ? distinct.iterator().next() : fallback;
 	}
 
 	@VisibleForTesting
 	static int singleIntOrFallback(
 			@NonNull final List<I_C_Order> orders,
-			@NonNull final java.util.function.ToIntFunction<I_C_Order> extract,
+			@NonNull final ToIntFunction<I_C_Order> extract,
 			final int fallback)
 	{
-		final java.util.Set<Integer> distinct = orders.stream().mapToInt(extract).filter(v -> v > 0).boxed().collect(Collectors.toSet());
+		final Set<Integer> distinct = orders.stream().mapToInt(extract).filter(v -> v > 0).boxed().collect(Collectors.toSet());
+		return distinct.size() == 1 ? distinct.iterator().next() : fallback;
+	}
+
+	/**
+	 * me03#29231 — strict variant for fields that MUST agree across all source orders (e.g. C_Currency_ID).
+	 * Throws an {@link IllegalArgumentException} when the orders disagree, instead of silently picking one.
+	 */
+	@VisibleForTesting
+	static int singleIntOrThrow(
+			@NonNull final List<I_C_Order> orders,
+			@NonNull final ToIntFunction<I_C_Order> extract,
+			@NonNull final String fieldName)
+	{
+		final Set<Integer> distinct = orders.stream().mapToInt(extract).filter(v -> v > 0).boxed().collect(Collectors.toSet());
+		Check.assume(distinct.size() == 1,
+				"All source orders aggregated into one DESADV must share the same {} — found {} distinct value(s): {}",
+				fieldName, distinct.size(), distinct);
+		return distinct.iterator().next();
+	}
+
+	/**
+	 * me03#29231 — compute the effective Bill_Location_ID per source order (preferring Bill_* fields, falling back to
+	 * C_BPartner_* fields, mirroring {@code OrderBL.getBillToLocationId}). If all source orders compute to the same
+	 * value, return it; otherwise fall back to {@code fallback}.
+	 * <p>
+	 * Inlined here (rather than calling {@code OrderBL}) to keep this helper static and free of {@code Services} lookups
+	 * — important for the unit tests in {@code DesadvBL_applyAggregatedHeader_Test}.
+	 */
+	@VisibleForTesting
+	static int singleBillLocationIdOrFallback(
+			@NonNull final List<I_C_Order> orders,
+			final int fallback)
+	{
+		final Set<Integer> distinct = orders.stream()
+				.map(o -> {
+					final BPartnerLocationAndCaptureId explicit = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+							o.getBill_BPartner_ID(),
+							o.getBill_Location_ID(),
+							o.getBill_Location_Value_ID());
+					final BPartnerLocationAndCaptureId fallbackBill = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+							o.getC_BPartner_ID(),
+							o.getC_BPartner_Location_ID(),
+							o.getC_BPartner_Location_Value_ID());
+					return BPartnerLocationAndCaptureId.toBPartnerLocationRepoId(explicit != null ? explicit : fallbackBill);
+				})
+				.filter(id -> id > 0)
+				.collect(Collectors.toSet());
 		return distinct.size() == 1 ? distinct.iterator().next() : fallback;
 	}
 
 	@VisibleForTesting
-	static @Nullable java.sql.Timestamp singleValueOrEarliest(
+	static @Nullable Timestamp singleValueOrEarliest(
 			@NonNull final List<I_C_Order> orders,
-			@NonNull final java.util.function.Function<I_C_Order, java.sql.Timestamp> extract)
+			@NonNull final Function<I_C_Order, Timestamp> extract)
 	{
-		final List<java.sql.Timestamp> values = orders.stream().map(extract).filter(java.util.Objects::nonNull).collect(Collectors.toList());
+		final List<Timestamp> values = orders.stream().map(extract).filter(Objects::nonNull).collect(Collectors.toList());
 		if (values.isEmpty())
 		{
 			return null;
 		}
-		final java.util.Set<java.sql.Timestamp> distinct = new java.util.HashSet<>(values);
-		return distinct.size() == 1 ? values.get(0) : values.stream().min(java.sql.Timestamp::compareTo).orElse(null);
+		final Set<Timestamp> distinct = new HashSet<>(values);
+		return distinct.size() == 1 ? values.get(0) : values.stream().min(Timestamp::compareTo).orElse(null);
 	}
 
 	@Nullable
@@ -513,6 +581,8 @@ public class DesadvBL
 		{
 			// legacy path: find DESADV via the main order link, or fall back to the order-side creator
 			final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
+			Check.assumeNotNull(order, "C_Order_ID={} on M_InOut_ID={} must resolve to a non-null C_Order",
+					inOut.getC_Order_ID(), inOut.getM_InOut_ID());
 			if (order.getEDI_Desadv_ID() > 0)
 			{
 				desadv = order.getEDI_Desadv();
@@ -557,14 +627,16 @@ public class DesadvBL
 
 			if (oneDesadvPerShipment)
 			{
-				// me03#29231 — In per-shipment mode, always resolve (or create) the DesadvLine for the current DESADV.
-				// The order line's EDI_DesadvLine_ID may already point to a prior shipment's DESADV; we must
-				// create a fresh DesadvLine linked to the current desadv so packs land on the right DESADV header.
+				// me03#29231 — In per-shipment mode, always create a FRESH DesadvLine linked to the current DESADV.
+				// Two source orders' orderLines can both carry Line=10 (MOrderLine.beforeSave assigns Line per C_Order),
+				// so the legacy retrieveOrCreateDesadvLine — which matches by (EDI_Desadv_ID, Line) only — would alias the
+				// second orderLine onto the first orderLine's DesadvLine. createFreshDesadvLineForShipmentMode allocates a
+				// DESADV-scoped Line (MAX(Line)+10) for each orderLine.
 				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class);
 				if (!orderLine.isPackagingMaterial())
 				{
 					final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
-					final I_EDI_DesadvLine desadvLine = retrieveOrCreateDesadvLine(order, desadv, orderLine);
+					final I_EDI_DesadvLine desadvLine = createFreshDesadvLineForShipmentMode(order, desadv, orderLine);
 					orderLine.setEDI_DesadvLine(desadvLine);
 					InterfaceWrapperHelper.save(orderLine);
 				}
