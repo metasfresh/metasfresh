@@ -90,11 +90,7 @@ BEGIN
                bpl_ship_drop.gln                      AS drop_gln_ship,
                bpl_ship_drop.gln_gcpLength            AS drop_gcplength_ship,
                d.handover_location_id,
-               -- desadv_documentno = BGM document number of the DESADV message (= M_InOut.DocumentNo),
-               -- not EDI_Desadv.DocumentNo. EDI_Desadv is 1:1 per ORDER and would be identical across
-               -- partial shipments, breaking the EPCIS bizTransaction reference. NULL when no DESADV
-               -- exists for this shipment.
-               CASE WHEN io.edi_desadv_id IS NOT NULL THEN io.documentno END AS desadv_documentno,
+               d.documentno                           AS desadv_documentno,
                d.poreference                          AS desadv_poreference
         FROM m_inout io
                  LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
