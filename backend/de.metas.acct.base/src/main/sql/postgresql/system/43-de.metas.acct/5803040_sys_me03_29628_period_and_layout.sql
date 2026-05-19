@@ -13,7 +13,7 @@ VALUES (
     0, 0, 540787 /*From ID Server*/,
     'C_Year_ID IN (SELECT y.C_Year_ID FROM C_Year y WHERE y.C_Calendar_ID = getC_Calendar_ID(@AD_Client_ID@, @AD_Org_ID@))',
     'de.metas.acct', 'Y', 'C_Period for TaxDeclaration', 'S',
-    NOW(), 100, NOW(), 100
+    TIMESTAMP '2026-05-19 00:00:00', 100, TIMESTAMP '2026-05-19 00:00:00', 100
 );
 
 -- ==========================================================================================
@@ -26,7 +26,7 @@ INSERT INTO AD_Column (
     AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
 )
 VALUES (
-    592556 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592556 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 0, TIMESTAMP '2026-05-19 00:00:00', 0,
     818, 290, 'DocumentNo', 30, 'N', 'N', 'N',
     'N', 'N', 0, 'N', 'Y', 'Y',
     10, 'N', 'N', 'Y', 'de.metas.acct', 0
@@ -51,7 +51,7 @@ INSERT INTO AD_Column (
     AD_Reference_ID, IsAlwaysUpdateable, IsAutocomplete, IsAllowLogging, EntityType, Version
 )
 VALUES (
-    592557 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592557 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 0, TIMESTAMP '2026-05-19 00:00:00', 0,
     818, 263, 'DateAcct', 7, 'N', 'N', 'N',
     'N', 'N', 0, 'N', 'Y', 'N',
     15, 'N', 'N', 'Y', 'de.metas.acct', 0
@@ -77,7 +77,7 @@ INSERT INTO AD_Column (
     AD_Val_Rule_ID
 )
 VALUES (
-    592558 /*From ID Server*/, 0, 0, 'Y', NOW(), 0, NOW(), 0,
+    592558 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-19 00:00:00', 0, TIMESTAMP '2026-05-19 00:00:00', 0,
     818, 206, 'C_Period_ID', 10, 'N', 'N', 'N',
     'N', 'N', 0, 'N', 'Y', 'Y',
     19, 'N', 'N', 'Y', 'de.metas.acct', 0,
@@ -119,10 +119,10 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
 VALUES (0, 592556, 780251 /*From ID Server*/, 0, 549256,
-    NOW(), 100, 30, 'de.metas.acct',
+    TIMESTAMP '2026-05-19 00:00:00', 100, 30, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
-    'Document No', NOW(), 100);
+    'Document No', TIMESTAMP '2026-05-19 00:00:00', 100);
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name,
     IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name,
@@ -140,10 +140,10 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
 VALUES (0, 592557, 780252 /*From ID Server*/, 0, 549256,
-    NOW(), 100, 20, 'de.metas.acct',
+    TIMESTAMP '2026-05-19 00:00:00', 100, 20, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
-    'Date Acct', NOW(), 100);
+    'Date Acct', TIMESTAMP '2026-05-19 00:00:00', 100);
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name,
     IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name,
@@ -161,10 +161,10 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
 VALUES (0, 592558, 780253 /*From ID Server*/, 0, 549256,
-    NOW(), 100, 20, 'de.metas.acct',
+    TIMESTAMP '2026-05-19 00:00:00', 100, 20, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
-    'Period', NOW(), 100);
+    'Period', TIMESTAMP '2026-05-19 00:00:00', 100);
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name,
     IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name,
@@ -190,54 +190,54 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND l.IsBaseLanguage = 'N'
 INSERT INTO AD_UI_Column (AD_Client_ID, AD_Org_ID, AD_UI_Column_ID, AD_UI_Section_ID,
     Created, CreatedBy, IsActive, SeqNo, Updated, UpdatedBy)
 VALUES (0, 0, 549512 /*From ID Server*/, 547771,
-    NOW(), 100, 'Y', 20, NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 20, TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- 8b. Dates group — left column, below primary group
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
     Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 555374 /*From ID Server*/, 549485,
-    NOW(), 100, 'Y', 'dates', 20, 'primary', NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 'dates', 20, 'primary', TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- 8c. Flags group — right column (must start with IsActive per layout rules)
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
     Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 555375 /*From ID Server*/, 549512,
-    NOW(), 100, 'Y', 'flags', 10, 'primary', NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 'flags', 10, 'primary', TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- 8d. Org group — right column, below flags
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
     Created, CreatedBy, IsActive, Name, SeqNo, UIStyle, Updated, UpdatedBy)
 VALUES (0, 0, 555376 /*From ID Server*/, 549512,
-    NOW(), 100, 'Y', 'org', 20, 'primary', NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 'org', 20, 'primary', TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- 8e. Reorganise existing AD_UI_Elements
 
 -- AD_Org_ID (651165): move to org group in right column; show in grid at SeqNoGrid=50
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555376, SeqNo=10, IsDisplayedGrid='Y', SeqNoGrid=50, Updated=NOW() WHERE AD_UI_Element_ID=651165;
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555376, SeqNo=10, IsDisplayedGrid='Y', SeqNoGrid=50, Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651165;
 
 -- IsActive (651166): move to flags group (first element — required by layout rules); hide from grid
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=10, IsDisplayedGrid='N', SeqNoGrid=999, Updated=NOW() WHERE AD_UI_Element_ID=651166;
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=10, IsDisplayedGrid='N', SeqNoGrid=999, Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651166;
 
 -- DateFrom (651167): keep in primary group but hide from both form and grid
-UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651167;
+UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651167;
 
 -- DateTo (651168): same
-UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651168;
+UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651168;
 
 -- DateTrx (651169): same
-UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651169;
+UPDATE AD_UI_Element SET SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651169;
 
 -- C_AcctSchema_ID (651170): stays in primary group — update SeqNo to 20 (after DocumentNo=10); show in grid at SeqNoGrid=30
-UPDATE AD_UI_Element SET SeqNo=20, IsDisplayedGrid='Y', SeqNoGrid=30, Updated=NOW() WHERE AD_UI_Element_ID=651170;
+UPDATE AD_UI_Element SET SeqNo=20, IsDisplayedGrid='Y', SeqNoGrid=30, Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651170;
 
 -- Description (651171): stays in primary group — SeqNo=30; hide from grid
-UPDATE AD_UI_Element SET SeqNo=30, IsDisplayedGrid='N', SeqNoGrid=999, Updated=NOW() WHERE AD_UI_Element_ID=651171;
+UPDATE AD_UI_Element SET SeqNo=30, IsDisplayedGrid='N', SeqNoGrid=999, Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651171;
 
 -- Processed (651172): move to flags group; show in grid at SeqNoGrid=40
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=20, IsDisplayedGrid='Y', SeqNoGrid=40, Updated=NOW() WHERE AD_UI_Element_ID=651172;
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=20, IsDisplayedGrid='Y', SeqNoGrid=40, Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651172;
 
 -- Processing (651173): move to flags group but hide from both form and grid
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=NOW() WHERE AD_UI_Element_ID=651173;
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=555375, SeqNo=999, SeqNoGrid=999, IsDisplayed='N', IsDisplayedGrid='N', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_UI_Element_ID=651173;
 
 -- 8f. Insert new AD_UI_Elements for the 3 new fields
 
@@ -250,10 +250,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     Updated, UpdatedBy)
 VALUES (0, 780251 /*From ID Server*/, 0, 549256,
     555313, 651697 /*From ID Server*/, 'F',
-    NOW(), 100, 'Y', 'N',
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Document No', 10, 10, 0,
-    NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- C_Period_ID (651698): dates group, SeqNo=10
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
@@ -264,10 +264,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     Updated, UpdatedBy)
 VALUES (0, 780253 /*From ID Server*/, 0, 549256,
     555374, 651698 /*From ID Server*/, 'F',
-    NOW(), 100, 'Y', 'N',
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Period', 10, 20, 0,
-    NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- DateAcct (651699): dates group, SeqNo=20
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
@@ -278,27 +278,39 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     Updated, UpdatedBy)
 VALUES (0, 780252 /*From ID Server*/, 0, 549256,
     555374, 651699 /*From ID Server*/, 'F',
-    NOW(), 100, 'Y', 'N',
+    TIMESTAMP '2026-05-19 00:00:00', 100, 'Y', 'N',
     'Y', 'N', 'N',
     'Date Acct', 20, 999, 0,
-    NOW(), 100);
+    TIMESTAMP '2026-05-19 00:00:00', 100);
 
 -- ==========================================================================================
 -- Section 9: Default filter columns (IsSelectionColumn)
 -- Target: DocumentNo, C_Period_ID, C_AcctSchema_ID, Processed, AD_Org_ID
 -- AD_Org_ID (14453) already has IsSelectionColumn='Y' — no change needed
 -- ==========================================================================================
-UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592556; -- DocumentNo
-UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592558; -- C_Period_ID
-UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=592509; -- C_AcctSchema_ID
-UPDATE AD_Column SET IsSelectionColumn='Y', Updated=NOW() WHERE AD_Column_ID=14465;  -- Processed
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=592556; -- DocumentNo
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=592558; -- C_Period_ID
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=592509; -- C_AcctSchema_ID
+UPDATE AD_Column SET IsSelectionColumn='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=14465;  -- Processed
 
 -- ==========================================================================================
--- Section 10: Move Steuererklärung menu node under Finanzen (WebUI visible subtree)
+-- Section 10: IsMandatory — C_Period_ID and DateAcct are required fields
+-- C_AcctSchema_ID is already IsMandatory='Y' from migration 5801970.
+-- ==========================================================================================
+UPDATE AD_Column SET IsMandatory='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=592558; -- C_Period_ID
+UPDATE AD_Column SET IsMandatory='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=592557; -- DateAcct
+
+-- ==========================================================================================
+-- Section 11: IsUseDocSequence — DocumentNo is auto-generated from document type sequence
+-- ==========================================================================================
+UPDATE AD_Column SET IsUseDocSequence='Y', Updated=TIMESTAMP '2026-05-19 00:00:00' WHERE AD_Column_ID=592556; -- DocumentNo
+
+-- ==========================================================================================
+-- Section 12: Move Steuererklärung menu node under Finanzen (WebUI visible subtree)
 -- AD_Role 540024 (WebUI) has Root_Menu_ID=1000007; Finanzen (1000015) is a child of that root.
 -- Node 542323 was previously under Finanzbuchhaltung (278) which is at the tree root (Parent_ID=0)
 -- and therefore outside the WebUI role's menu subtree, making it invisible in the frontend.
 -- ==========================================================================================
 UPDATE AD_TreeNodeMM
-SET Parent_ID=1000015, SeqNo=53, Updated=NOW(), UpdatedBy=100
+SET Parent_ID=1000015, SeqNo=53, Updated=TIMESTAMP '2026-05-19 00:00:00', UpdatedBy=100
 WHERE Node_ID=542323 AND AD_Tree_ID=10;

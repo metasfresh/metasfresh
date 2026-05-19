@@ -179,6 +179,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalBatch());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_Journal());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.C_TaxDeclaration());
 	}
 
 	@Override
