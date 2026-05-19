@@ -1,30 +1,8 @@
-package de.metas.material.dispo.service.event.handler.receiptschedule;
-
-import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
-import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
-import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
-import lombok.NonNull;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static java.math.BigDecimal.ZERO;
-
 /*
  * #%L
  * metasfresh-material-dispo-service
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,10 +20,38 @@ import static java.math.BigDecimal.ZERO;
  * #L%
  */
 
+package de.metas.material.dispo.service.event.handler.receiptschedule;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
+import de.metas.util.Loggables;
+import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.ZERO;
+
 abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceiptScheduleEvent>
 		implements MaterialEventHandler<T>
 {
-
+	private static final Logger logger = LogManager.getLogger(ReceiptsScheduleCreatedOrUpdatedHandler.class);
+	
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
@@ -61,8 +67,9 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 	{
 		// dropship-warehouse receipt-schedules bypass material-disposition entirely —
 		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isDropShipWarehouse())
+		if (event.isIgnoreInMaterialDispo())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Ignoring event with isIgnoreInMaterialDispo=true");
 			return;
 		}
 
@@ -92,6 +99,7 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 	}
 
+	@Nullable
 	private Candidate retrieveExistingSupplyCandidateOrNull(@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		final CandidatesQuery query = createCandidatesQuery(event);

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-event
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.event.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,28 +43,6 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.metas.material.event.MaterialEventConstants.M_SHIPMENTSCHEDULE_TABLE_NAME;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-/*
- * #%L
- * metasfresh-manufacturing-event-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @EqualsAndHashCode(callSuper = false)
 @Getter
 @ToString
@@ -61,7 +61,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final DocumentLineDescriptor documentLineDescriptor;
 
-	private final boolean isDropShipWarehouse;
+	private final boolean ignoreInMaterialDispo;
 
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
@@ -70,7 +70,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 			@NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
 			final int shipmentScheduleId,
 			@Nullable final DocumentLineDescriptor documentLineDescriptor,
-			final boolean isDropShipWarehouse)
+			final boolean ignoreInMaterialDispo)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
@@ -78,7 +78,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.shipmentScheduleDetail = shipmentScheduleDetail;
 		this.documentLineDescriptor = documentLineDescriptor;
-		this.isDropShipWarehouse = isDropShipWarehouse;
+		this.ignoreInMaterialDispo = ignoreInMaterialDispo;
 	}
 
 	@NonNull

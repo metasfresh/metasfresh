@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +39,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -133,4 +134,6 @@ public interface IWarehouseBL extends ISingletonService
 	ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue);
 
 	List<I_M_Locator> getActiveLocatorsByValue(@NotNull String locatorValue);
+
+	boolean isIgnoreInMaterialDispo(@Nullable WarehouseId warehouseId);
 }

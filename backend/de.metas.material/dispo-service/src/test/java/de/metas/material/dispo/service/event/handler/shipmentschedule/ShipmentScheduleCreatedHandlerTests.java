@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
@@ -44,28 +66,6 @@ import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * metasfresh-material-dispo-service
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ShipmentScheduleCreatedHandlerTests
@@ -187,7 +187,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						.orderLineId(orderLineId)
 						.orderId(30)
 						.build())
-				.isDropShipWarehouse(true)
+				.isIgnoreInMaterialDispo(true)
 				.build();
 
 		shipmentScheduleCreatedHandler.handleEvent(event);

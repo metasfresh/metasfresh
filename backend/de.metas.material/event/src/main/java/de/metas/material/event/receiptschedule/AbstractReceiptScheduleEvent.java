@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-event
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.event.receiptschedule;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,34 +42,11 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.metas.material.event.MaterialEventConstants.M_RECEIPTSCHEDULE_TABLE_NAME;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-/*
- * #%L
- * metasfresh-manufacturing-event-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @EqualsAndHashCode(callSuper = false)
 @Getter
 @ToString
 public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 {
-
 	private final EventDescriptor eventDescriptor;
 
 	private final MaterialDescriptor materialDescriptor;
@@ -61,7 +60,7 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	private final int receiptScheduleId;
 
-	private final boolean isDropShipWarehouse;
+	private final boolean isIgnoreInMaterialDispo;
 
 	public AbstractReceiptScheduleEvent(
 			@NonNull final EventDescriptor eventDescriptor,
@@ -70,7 +69,7 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId,
-			final boolean isDropShipWarehouse)
+			final boolean isIgnoreInMaterialDispo)
 	{
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.receiptScheduleId = receiptScheduleId;
@@ -78,7 +77,7 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 		this.materialDescriptor = materialDescriptor;
 		this.oldReceiptScheduleData = oldReceiptScheduleData;
 		this.reservedQuantity = reservedQuantity;
-		this.isDropShipWarehouse = isDropShipWarehouse;
+		this.isIgnoreInMaterialDispo = isIgnoreInMaterialDispo;
 	}
 
 	public abstract BigDecimal getOrderedQuantityDelta();

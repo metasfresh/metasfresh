@@ -1,25 +1,8 @@
-package de.metas.material.event.receiptschedule;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.OrderLineDescriptor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
-import java.math.BigDecimal;
-
 /*
  * #%L
  * metasfresh-material-event
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +19,23 @@ import java.math.BigDecimal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.material.event.receiptschedule;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+
+import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -66,7 +66,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("receiptScheduleId") final int receiptScheduleId,
 			@JsonProperty("vendorId") final int vendorId,
-			@JsonProperty("isDropShipWarehouse") final boolean isDropShipWarehouse
+			@JsonProperty("isIgnoreInMaterialDispo") final boolean isIgnoreInMaterialDispo
 	)
 	{
 		super(eventDescriptor,
@@ -75,7 +75,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
 				receiptScheduleId,
-				isDropShipWarehouse);
+				isIgnoreInMaterialDispo);
 
 		this.purchaseCandidateRepoId = purchaseCandidateRepoId;
 		this.orderLineDescriptor = orderLineDescriptor;
