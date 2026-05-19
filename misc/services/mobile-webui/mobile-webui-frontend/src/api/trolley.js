@@ -26,7 +26,7 @@ export const useCurrentTrolley = ({ applicationId }) => {
       return postCurrentTrolley({ scannedCode }).then((data) => setTrolley(data?.trolley ?? null));
     },
     clearTrolley: () => {
-      return deleteCurrentTrolley().then(() => setTrolley(null));
+      setTrolley(null);
     },
   };
 };
@@ -37,8 +37,4 @@ export const getCurrentTrolleyInfo = () => {
 
 export const postCurrentTrolley = ({ scannedCode }) => {
   return axios.post(`${trolleyAPIBase}`, { scannedCode }).then(unboxAxiosResponse);
-};
-
-export const deleteCurrentTrolley = () => {
-  return axios.delete(`${trolleyAPIBase}`).then(unboxAxiosResponse);
 };

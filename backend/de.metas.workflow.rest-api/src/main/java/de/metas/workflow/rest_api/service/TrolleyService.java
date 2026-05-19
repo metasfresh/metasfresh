@@ -3,7 +3,6 @@ package de.metas.workflow.rest_api.service;
 import com.google.common.collect.HashBiMap;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import java.util.Optional;
 public class TrolleyService
 {
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	private final HashBiMap<UserId, LocatorQRCode> userId2locator = HashBiMap.create();
@@ -39,24 +37,10 @@ public class TrolleyService
 
 		synchronized (userId2locator)
 		{
-			final UserId currentHolderUserId = userId2locator.inverse().get(locatorQRCode);
-			if (currentHolderUserId != null && !currentHolderUserId.equals(userId))
-			{
-				final String holderName = userDAO.retrieveUserFullName(currentHolderUserId);
-				throw TrolleyAlreadyAssignedException.forNamedConflict(holderName, locatorQRCode);
-			}
-			userId2locator.put(userId, locatorQRCode);
+			userId2locator.forcePut(userId, locatorQRCode);
 		}
 
 		return locatorQRCode;
-	}
-
-	public void clearCurrent(@NonNull final UserId userId)
-	{
-		synchronized (userId2locator)
-		{
-			userId2locator.remove(userId);
-		}
 	}
 
 	public Optional<LocatorQRCode> getCurrent(@NonNull final UserId userId)

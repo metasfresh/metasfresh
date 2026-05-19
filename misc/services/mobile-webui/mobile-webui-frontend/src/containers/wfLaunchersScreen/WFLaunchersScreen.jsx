@@ -19,7 +19,6 @@ import { useLaunchers } from './useLaunchers';
 import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
 import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
 import { useCurrentTrolley } from '../../api/trolley';
-import { toastError } from '../../utils/toast';
 
 const WFLaunchersScreen = () => {
   const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
@@ -120,9 +119,7 @@ const WFLaunchersScreen = () => {
     return (
       <div className="container launchers-container">
         <BarcodeScannerComponent
-          onResolvedResult={({ scannedBarcode }) =>
-            setTrolleyByScannedCode(scannedBarcode).catch((axiosError) => toastError({ axiosError }))
-          }
+          onResolvedResult={({ scannedBarcode }) => setTrolleyByScannedCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
           continuousRunning={true}
         />
@@ -147,7 +144,7 @@ const WFLaunchersScreen = () => {
           additionalCssClass="action-button"
           typeFASIconName="fa-solid fa-cart-shopping"
           caption={trolley?.caption ?? trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
-          onClick={() => clearTrolley().catch((axiosError) => toastError({ axiosError }))}
+          onClick={() => clearTrolley()}
           testId="scanTrolley-button"
         />
       )}
@@ -182,15 +179,6 @@ const WFLaunchersScreen = () => {
           );
         })}
       {isLaunchersLoading && <Spinner />}
-      {isTrolleyRequired && trolley && (
-        <ButtonWithIndicator
-          captionKey="general.releaseTrolley.buttonCaption"
-          testId="release-trolley-button"
-          isDanger
-          onClick={() => clearTrolley().catch((axiosError) => toastError({ axiosError }))}
-          additionalCssClass="action-button"
-        />
-      )}
     </div>
   );
 };
