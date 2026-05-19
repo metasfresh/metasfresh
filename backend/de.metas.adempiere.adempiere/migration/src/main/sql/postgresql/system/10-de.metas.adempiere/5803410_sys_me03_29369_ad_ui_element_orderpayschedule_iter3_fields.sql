@@ -20,19 +20,27 @@
 --   - M_InOut_ID    (AD_Field 777442) — the linked receipt
 --   - C_Invoice_ID  (AD_Field 777444) — the linked partial/final invoice
 --
--- BaseAmt (777440), ReferenceDate (777477), IsPaid (777479) are intentionally
--- omitted from this script — they have AD_Field rows with IsDisplayed='Y' so
--- they show in the form view; in the grid, the legacy ReferenceDateType / DueDate
--- / IsActive columns already convey equivalent info. If the customer asks for
--- them later, a follow-up script adds the AD_UI_Element pairs analogously.
---
 -- Placement: AD_UI_ElementGroup 553584 ("main" — the grid-column group).
 -- SeqNoGrid chosen to slot between existing legacy columns without disrupting
 -- the established layout:
 --   - DueAmt_Actual at SeqNoGrid=65 → between DueAmt (60) and DueDate (70)
 --   - M_InOut_ID    at SeqNoGrid=85 → between Status (80) and IsActive (90)
 --   - C_Invoice_ID  at SeqNoGrid=87 → right after M_InOut_ID
+--
+-- DEFENSIVE-INSERT pattern (per CI failure 2026-05-19 run 26126803865):
+-- Earlier iter-3/iter-2 AD_Field scripts (e.g. 5799510 for 777250) used
+-- `SELECT FROM AD_Tab WHERE AD_Tab_ID=548450` with an `AND NOT EXISTS` guard so
+-- that on seed DBs where AD_Tab 548450 is not yet present the AD_Field row is
+-- silently skipped. That silent skip propagates: when this script later tries
+-- to INSERT an AD_UI_Element referencing AD_Field 777250, the FK constraint
+-- "adfield_aduielement" violates because the row doesn't exist on that seed.
+-- Solution: use INSERT...SELECT...WHERE EXISTS so the AD_UI_Element row is only
+-- created if the referenced AD_Field already exists on the target DB. On seeds
+-- where the AD_Field is present (full iter-3-aware seeds), all 3 UI elements
+-- are created. On seeds where any AD_Field is missing, that one element is
+-- silently skipped (matching the same defensive pattern as 5799510 itself).
 
+-- DueAmt_Actual (AD_Field 777250)
 INSERT INTO AD_UI_Element (
     AD_UI_Element_ID,
     AD_Client_ID, AD_Org_ID, IsActive,
@@ -42,34 +50,64 @@ INSERT INTO AD_UI_Element (
     IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, SeqNo_SideList,
     IsAdvancedField, AD_UI_ElementType,
     IsAllowFiltering, IsMultiline
-) VALUES
--- DueAmt_Actual
-(651704 /*From ID Server*/,
- 0, 0, 'Y',
- TO_TIMESTAMP('2026-05-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
- TO_TIMESTAMP('2026-05-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
- 553584 /*main grid*/, 548450 /*Zahlungsplan*/, 777250 /*AD_Field DueAmt_Actual*/,
- 'Tatsächlich fälliger Betrag', 65, 65,
- 'N', 'Y', 'N', 0,
- 'N', 'F',
- 'N', 'N'),
--- M_InOut_ID
-(651705 /*From ID Server*/,
- 0, 0, 'Y',
- TO_TIMESTAMP('2026-05-20 09:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
- TO_TIMESTAMP('2026-05-20 09:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
- 553584 /*main grid*/, 548450 /*Zahlungsplan*/, 777442 /*AD_Field M_InOut_ID*/,
- 'Wareneingang', 85, 85,
- 'N', 'Y', 'N', 0,
- 'N', 'F',
- 'N', 'N'),
--- C_Invoice_ID
-(651706 /*From ID Server*/,
- 0, 0, 'Y',
- TO_TIMESTAMP('2026-05-20 09:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
- TO_TIMESTAMP('2026-05-20 09:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
- 553584 /*main grid*/, 548450 /*Zahlungsplan*/, 777444 /*AD_Field C_Invoice_ID*/,
- 'Rechnung', 87, 87,
- 'N', 'Y', 'N', 0,
- 'N', 'F',
- 'N', 'N');
+)
+SELECT
+    651704 /*From ID Server*/,
+    0, 0, 'Y',
+    TO_TIMESTAMP('2026-05-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    TO_TIMESTAMP('2026-05-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    553584 /*main grid*/, 548450 /*Zahlungsplan*/, 777250 /*AD_Field DueAmt_Actual*/,
+    'Tatsächlich fälliger Betrag', 65, 65,
+    'N', 'Y', 'N', 0,
+    'N', 'F',
+    'N', 'N'
+WHERE EXISTS (SELECT 1 FROM AD_Field WHERE AD_Field_ID = 777250)
+  AND NOT EXISTS (SELECT 1 FROM AD_UI_Element WHERE AD_UI_Element_ID = 651704);
+
+-- M_InOut_ID (AD_Field 777442)
+INSERT INTO AD_UI_Element (
+    AD_UI_Element_ID,
+    AD_Client_ID, AD_Org_ID, IsActive,
+    Created, CreatedBy, Updated, UpdatedBy,
+    AD_UI_ElementGroup_ID, AD_Tab_ID, AD_Field_ID,
+    Name, SeqNo, SeqNoGrid,
+    IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, SeqNo_SideList,
+    IsAdvancedField, AD_UI_ElementType,
+    IsAllowFiltering, IsMultiline
+)
+SELECT
+    651705 /*From ID Server*/,
+    0, 0, 'Y',
+    TO_TIMESTAMP('2026-05-20 09:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    TO_TIMESTAMP('2026-05-20 09:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    553584 /*main grid*/, 548450 /*Zahlungsplan*/, 777442 /*AD_Field M_InOut_ID*/,
+    'Wareneingang', 85, 85,
+    'N', 'Y', 'N', 0,
+    'N', 'F',
+    'N', 'N'
+WHERE EXISTS (SELECT 1 FROM AD_Field WHERE AD_Field_ID = 777442)
+  AND NOT EXISTS (SELECT 1 FROM AD_UI_Element WHERE AD_UI_Element_ID = 651705);
+
+-- C_Invoice_ID (AD_Field 777444)
+INSERT INTO AD_UI_Element (
+    AD_UI_Element_ID,
+    AD_Client_ID, AD_Org_ID, IsActive,
+    Created, CreatedBy, Updated, UpdatedBy,
+    AD_UI_ElementGroup_ID, AD_Tab_ID, AD_Field_ID,
+    Name, SeqNo, SeqNoGrid,
+    IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, SeqNo_SideList,
+    IsAdvancedField, AD_UI_ElementType,
+    IsAllowFiltering, IsMultiline
+)
+SELECT
+    651706 /*From ID Server*/,
+    0, 0, 'Y',
+    TO_TIMESTAMP('2026-05-20 09:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    TO_TIMESTAMP('2026-05-20 09:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
+    553584 /*main grid*/, 548450 /*Zahlungsplan*/, 777444 /*AD_Field C_Invoice_ID*/,
+    'Rechnung', 87, 87,
+    'N', 'Y', 'N', 0,
+    'N', 'F',
+    'N', 'N'
+WHERE EXISTS (SELECT 1 FROM AD_Field WHERE AD_Field_ID = 777444)
+  AND NOT EXISTS (SELECT 1 FROM AD_UI_Element WHERE AD_UI_Element_ID = 651706);
