@@ -1,3 +1,11 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
+-- Tax Declaration Iter4: aggregate by VATCode string (Mark's design).
+-- - Fact_Acct.VATCode is now copied verbatim into C_TaxDeclarationAcct.VATCode and
+--   C_TaxDeclarationLine.VATCode (the authoritative carrier).
+-- - C_VAT_Code is LEFT JOINed (was INNER JOIN) so Fact_Acct entries whose VATCode
+--   has no matching master record are kept; C_VAT_Code_ID and AmountType become NULL.
+-- - Aggregation key shifts from (C_VAT_Code_ID, AmountType) to (VATCode, AmountType).
+
 DROP FUNCTION IF EXISTS de_metas_acct.tax_declaration_build(p_C_TaxDeclaration_ID numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_acct.tax_declaration_build(
