@@ -1,31 +1,19 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_500_v_view.sql
+--
+-- me03#29063: Add EAN_CU fallback to Buyer_GTIN_CU resolution in the INVOIC view,
+-- matching the change applied to the DESADV functions (scripts 5802910 / 5802920).
+-- When the customer fills only EAN_CU on a Merkmalsdaten row (no GTIN), Buyer_GTIN_CU
+-- now picks it up before falling all the way back to the supplier-side base M_Product.GTIN.
+-- The separate Buyer_EAN_CU output column is unchanged.
+--
+-- Resolution chain for Buyer_GTIN_CU:
+--   1. M_Product_ASI_Data.GTIN     (ASI/BPartner-specific GTIN override)
+--   2. M_Product_ASI_Data.EAN_CU   (NEW — buyer-specific EAN_CU on the same row)
+--   3. M_Product.GTIN              (base product GTIN)
 
--- View: public.edi_cctop_invoic_500_v
+DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
 
-DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v
-;
-
-CREATE OR REPLACE VIEW edi_cctop_invoic_500_v AS
+CREATE OR REPLACE VIEW edi_cctop_invoic_500_v$new AS
 SELECT SUM(il.qtyEntered)                                                        AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
@@ -162,12 +150,19 @@ GROUP BY il.c_invoice_id,
          il.c_orderline_id,
          pip.UPC, pip.GTIN, pip.EAN_TU, asi_data.GTIN, asi_data.EAN_CU, p.GTIN,
          il.C_UOM_BPartner_ID, il.externalids, ol.externalseqno
-ORDER BY COALESCE(ol.line, il.line)
-;
+ORDER BY COALESCE(ol.line, il.line);
+
+SELECT db_alter_view(
+    'edi_cctop_invoic_500_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('edi_cctop_invoic_500_v$new'))
+);
+
+DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
 
 COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
 task 09182: in OrderPOReference and OrderLine we show reference and line for the original order, but fall back to the invoice''s own reference and line if there is no order(line).
-'
-;
+';
