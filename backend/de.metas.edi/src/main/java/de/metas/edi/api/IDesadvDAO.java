@@ -134,6 +134,13 @@ public interface IDesadvDAO extends ISingletonService
 	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
 
 	/**
+	 * @return the max {@link I_EDI_DesadvLine#COLUMNNAME_Line} value for the given desadvId, or {@code 0} if no lines exist.
+	 *         Used by the per-shipment DESADV path (me03#29231) to allocate fresh, DESADV-scoped Line numbers when
+	 *         aggregating multiple source orders whose order-scoped Line numbers can collide.
+	 */
+	int retrieveMaxDesadvLineLineNo(@NonNull EDIDesadvId desadvId);
+
+	/**
 	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_SeqNo} value for the given desadvId.
 	 */
 	int retrieveMaxDesadvPackSeqNo(@NonNull EDIDesadvId desadvId);
