@@ -3,6 +3,8 @@ package de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.JsonTestId;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -19,10 +21,6 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -38,10 +36,10 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
@@ -51,7 +49,6 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -98,7 +95,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 			final QtyTU qtyTUs = computeQtyTUsRequired(finishedGoodsReceiveLine, tuPIItemProduct);
 
 			result.add(JsonPackingInstructions.builder()
-					.caption(tuPIItemProduct.getName())
+					.caption(Objects.requireNonNull(tuPIItemProduct.getName()))
 					.packingInstructionsId(tuPackingInstructionsId)
 					.finishedGoodsReceiveLineId(finishedGoodsReceiveLineId)
 					.numberOfHUs(qtyTUs.toInt())
@@ -137,13 +134,14 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 		return JsonTestId.ofString("pi-" + packingInstructionsId.getRepoId());
 	}
 
+	@NonNull
 	private List<I_M_HU_PI_Item_Product> getTUPIItemProducts(final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine, final @Nullable BPartnerId customerId)
 	{
 		return huPIItemProductDAO.retrieveTUs(
 				Env.getCtx(),
 				finishedGoodsReceiveLine.getProductId(),
 				customerId,
-				false);
+				finishedGoodsReceiveLine.getCatchWeightUOMId() != null);
 	}
 
 	private HuPackingInstructionsId getTUPackingInstructionsId(final I_M_HU_PI_Item_Product tuPIItemProduct)
@@ -152,12 +150,15 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 		return handlingUnitsBL.getPackingInstructionsId(tuPackingInstructionsItemId);
 	}
 
-	private QtyTU computeQtyTUsRequired(final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine, final I_M_HU_PI_Item_Product tuPIItemProduct)
+	QtyTU computeQtyTUsRequired(
+			final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine,
+			final @NonNull I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
-		final UomId uomId = UomId.ofRepoId(tuPIItemProduct.getC_UOM_ID());
-		final Quantity qtyCusPerTU = Quantitys.of(tuPIItemProduct.getQty(), uomId);
-		final Quantity qtyCUs = uomConversionBL.convertQuantityTo(finishedGoodsReceiveLine.getQtyToReceive(), finishedGoodsReceiveLine.getProductId(), uomId);
-		return QtyTU.ofBigDecimal(qtyCUs.toBigDecimal().divide(qtyCusPerTU.toBigDecimal(), 0, RoundingMode.UP));
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProduct huPIItemProduct = huPIItemProductDAO.getById(tuPIItemProductId);
+		return huPIItemProduct.computeQtyTUsOfTotalCUs(
+				finishedGoodsReceiveLine.getQtyToReceive(),
+				finishedGoodsReceiveLine.getProductId());
 	}
 
 	@Override

@@ -62,9 +62,8 @@ public class OrgInfo
 	@NonNull
 	OrgImagesMap imagesMap;
 
-	@Nullable
-	WFResponsibleId workflowResponsibleId;
-	BPartnerLocationId orgBPartnerLocationId;
+	@Nullable WFResponsibleId workflowResponsibleId;
+	@Nullable BPartnerLocationId orgBPartnerLocationId;
 	String reportsPathPrefix;
 	ZoneId timeZone;
 

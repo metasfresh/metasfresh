@@ -140,8 +140,8 @@ BEGIN
                                                'SupplierProductNo', p.value,
                                                'Name', p.name,
                                                'Description', p.description,
-                                               'BuyerProductNo', COALESCE(dl.productno, bpp.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, bpp.gtin, bpp.ean_cu, p.gtin),
+                                               'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
+                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
                                                'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
                                                'NetWeight', p.weight,
                                                'GrossWeight', p.grossweight,
@@ -181,15 +181,17 @@ BEGIN
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
             -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- BPartner product lookup
+            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (
-            SELECT gtin, ean_cu, productno
-            FROM c_bpartner_product
+            SELECT gtin, ean13_productcode, productno
+            FROM m_product_asi_data
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id
-              AND c_bpartner_id = d.c_bpartner_id
+              AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
+              AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
+            ORDER BY seqno
             LIMIT 1
-            ) bpp ON TRUE
+            ) asi_data ON TRUE
             -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin

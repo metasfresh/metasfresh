@@ -22,7 +22,7 @@ public enum DistributionJobSortingField implements ReferenceListAwareEnum
 	@NonNull private final String code;
 	@NonNull private final DDOrderQuery.OrderByField ddOrderQueryOrderByField;
 
-	public static DistributionJobSortingField ofCode(final String code) {return index.ofCode(code);}
+	public static DistributionJobSortingField ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	public static DistributionJobSortingField ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 }

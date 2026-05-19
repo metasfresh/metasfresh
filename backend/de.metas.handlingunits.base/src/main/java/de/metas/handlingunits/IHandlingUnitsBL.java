@@ -334,6 +334,18 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
 
+	/**
+	 * Returns the HU items of the given HU filtered by the given item type. Delegates to
+	 * {@link IHandlingUnitsDAO#retrieveItems(I_M_HU, HUItemType)}.
+	 */
+	List<I_M_HU_Item> retrieveItems(I_M_HU hu, HUItemType type);
+
+	/**
+	 * Returns the PI items of the given PI version, optionally filtered for the given partner.
+	 * Delegates to {@link IHandlingUnitsDAO#retrievePIItems(I_M_HU_PI_Version, BPartnerId)}.
+	 */
+	List<I_M_HU_PI_Item> retrievePIItems(I_M_HU_PI_Version piVersion, @Nullable BPartnerId bpartnerId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

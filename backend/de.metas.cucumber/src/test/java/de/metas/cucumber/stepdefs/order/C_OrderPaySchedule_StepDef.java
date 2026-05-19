@@ -25,7 +25,9 @@ package de.metas.cucumber.stepdefs.order;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.money.Money;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
@@ -34,6 +36,7 @@ import de.metas.order.paymentschedule.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -43,10 +46,18 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm_Break;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Step definitions for {@code C_OrderPaySchedule} / {@link OrderPayScheduleLine} assertions.
+ *
+ * @see C_OrderPaySchedule_StepDefData
+ */
 @RequiredArgsConstructor
 public class C_OrderPaySchedule_StepDef
 {
@@ -55,6 +66,27 @@ public class C_OrderPaySchedule_StepDef
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final C_OrderPaySchedule_StepDefData orderPayScheduleTable;
 
+	/**
+	 * Verifies the full set of pay-schedule lines for an order, matched by payment-term break identifier.
+	 *
+	 * <p>Required DataTable columns:
+	 * <ul>
+	 *   <li>{@code C_PaymentTerm_Break_ID} — identifier of the break (required)</li>
+	 * </ul>
+	 * Optional DataTable columns:
+	 * <ul>
+	 *   <li>{@code DueAmt} — planned due amount</li>
+	 *   <li>{@code DueDate} — due date</li>
+	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} enum name</li>
+	 * </ul>
+	 *
+	 * <pre>{@code
+	 * Then the order identified by po has following pay schedules
+	 *   | C_PaymentTerm_Break_ID | DueAmt    | Status  |
+	 *   | ptb_lc                 | 20596.32  | Pending |
+	 *   | ptb_del                | 48058.08  | Pending |
+	 * }</pre>
+	 */
 	@And("^the order identified by (.*) has following pay schedules$")
 	public void verifyOrderPaySchedules(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
 	{
@@ -75,6 +107,64 @@ public class C_OrderPaySchedule_StepDef
 		assertThat(actualIds).as("actual pay schedule IDs").isEqualTo(expectedIds);
 	}
 
+	/**
+	 * Verifies pay-schedule lines for an order matched by {@link ReferenceDateType}.
+	 * This step is used for split-payment LC scenarios (TC1-TC4) where lines are
+	 * identified by their reference-date type rather than a specific break identifier.
+	 *
+	 * <p>Required DataTable columns:
+	 * <ul>
+	 *   <li>{@code ReferenceDateType} — DB code ({@code LC} / {@code OD} / {@code IV} / {@code BL} / {@code ET}).
+	 *       Resolved via {@code ReferenceListAwareEnums.ofNullableCode} — use the code, not the enum name.</li>
+	 * </ul>
+	 * Optional DataTable columns:
+	 * <ul>
+	 *   <li>{@code DueAmt} — planned due amount</li>
+	 *   <li>{@code Status} — {@link OrderPayScheduleStatus} DB code: {@code PR} (Pending), {@code WP} (Awaiting_Pay), {@code P} (Paid)</li>
+	 *   <li>{@code DueAmt_Actual} — actual due amount from the proforma invoice;
+	 *       use {@code null} to assert the column is NULL/zero.</li>
+	 * </ul>
+	 *
+	 * <pre>{@code
+	 * Then the order identified by po has following pay schedule lines by ReferenceDateType
+	 *   | ReferenceDateType | DueAmt   | DueAmt_Actual | Status |
+	 *   | LC                | 20596.32 | 20596.32      | WP     |
+	 *   | OD                | 48058.08 | null          | WP     |
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) has following pay schedule lines by ReferenceDateType$")
+	public void verifyOrderPaySchedulesByRefDateType(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
+	{
+		final OrderId orderId = orderTable.getId(orderIdentifier);
+		// Reload from the service each time to get the latest DB state (Status, DueAmt_Actual, etc.)
+		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId)
+				.orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ReferenceDateType referenceDateType = row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.class)
+					.orElseThrow(() -> new AdempiereException("Column 'ReferenceDateType' is required"));
+
+			final List<OrderPayScheduleLine> matchingLines = paySchedule.getLines().stream()
+					.filter(line -> line.getReferenceDateType() == referenceDateType)
+					.collect(Collectors.toList());
+
+			if (matchingLines.isEmpty())
+			{
+				throw new AdempiereException("No pay schedule line found for ReferenceDateType=" + referenceDateType + " in orderId=" + orderId);
+			}
+			if (matchingLines.size() > 1)
+			{
+				throw new AdempiereException("Multiple pay schedule lines found for ReferenceDateType=" + referenceDateType + " in orderId=" + orderId);
+			}
+
+			final OrderPayScheduleLine payScheduleLine = matchingLines.get(0);
+			verifyOrderPayScheduleExtended(row, payScheduleLine);
+
+			row.getAsOptionalIdentifier()
+					.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
+		});
+	}
+
 	private void verifyOrderPaySchedule(@NonNull final DataTableRow row, @NonNull final OrderPayScheduleLine payScheduleLine)
 	{
 		SharedTestContext.put("payScheduleLine", payScheduleLine);
@@ -92,5 +182,46 @@ public class C_OrderPaySchedule_StepDef
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
+	}
+
+	/**
+	 * Extended verification that additionally supports {@code DueAmt_Actual} (nullable) and
+	 * {@code ReferenceDateType} columns.  Used by {@link #verifyOrderPaySchedulesByRefDateType}.
+	 */
+	private void verifyOrderPayScheduleExtended(@NonNull final DataTableRow row, @NonNull final OrderPayScheduleLine payScheduleLine)
+	{
+		SharedTestContext.put("payScheduleLine", payScheduleLine);
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
+		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
+		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
+
+		// DueAmt_Actual: "null" in the feature means assert NULL; a numeric value asserts equality.
+		row.getAsOptionalString(I_C_OrderPaySchedule.COLUMNNAME_DueAmt_Actual)
+				.ifPresent(rawValue -> {
+					final Money actual = payScheduleLine.getDueAmtActual();
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(actual == null || actual.isZero())
+								.as("DueAmt_Actual should be null/zero but was: " + actual)
+								.isTrue();
+					}
+					else
+					{
+						final BigDecimal expected = new BigDecimal(rawValue);
+						softly.assertThat(actual).as("DueAmt_Actual").isNotNull();
+						if (actual != null)
+						{
+							softly.assertThat(actual.toBigDecimal()).as("DueAmt_Actual").isEqualByComparingTo(expected);
+						}
+					}
+				});
+
+		softly.assertAll();
 	}
 }

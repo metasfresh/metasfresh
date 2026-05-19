@@ -66,6 +66,8 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final boolean directMovementWarehouse;
 
+	private final boolean isDropShipWarehouse;
+
 	private final int ppOrderId;
 	private final int ppOrderLineId;
 
@@ -92,6 +94,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final int inventoryLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse,
+			final boolean isDropShipWarehouse,
 			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId", transactionId);
@@ -118,6 +121,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.inventoryLineId = inventoryLineId;
 
 		this.directMovementWarehouse = directMovementWarehouse;
+		this.isDropShipWarehouse = isDropShipWarehouse;
 	}
 
 	/**

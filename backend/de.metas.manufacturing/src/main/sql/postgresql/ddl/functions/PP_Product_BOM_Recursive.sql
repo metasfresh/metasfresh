@@ -60,7 +60,6 @@ $BODY$
 					then (select bom.PP_Product_BOM_ID from PP_Product_BOM bom
 						where bom.M_Product_ID=bomLineProduct.M_Product_ID
 						and bom.IsActive='Y'
-						and bom.Value=bomLineProduct.Value
                         AND (bom.validto >= NOW() OR bom.validto IS NULL)
                         ORDER BY bom.validfrom DESC, bom.PP_Product_BOM_ID DESC
 						limit 1)

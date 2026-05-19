@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,10 +20,21 @@
  * #L%
  */
 
-package de.metas.banking.payment;
+package de.metas.cucumber.stepdefs.shipper;
 
-public enum PaySelectionLineType
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+
+public class Carrier_ShipmentOrder_StepDefData extends StepDefData<DeliveryOrder>
+		implements StepDefDataGetIdAware<DeliveryOrderId, DeliveryOrder>
 {
-	Order,
-	Invoice
+	public Carrier_ShipmentOrder_StepDefData()
+	{
+		super(DeliveryOrder.class);
+	}
+
+	@Override
+	public DeliveryOrderId extractIdFromRecord(final DeliveryOrder record) {return record.getId();}
 }

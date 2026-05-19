@@ -37,8 +37,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -52,7 +50,6 @@ import static de.metas.common.util.CoalesceUtil.firstNotBlank;
 public class C_Order
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -64,21 +61,6 @@ public class C_Order
 		if (deliveryViaRule != null)
 		{
 			order.setDeliveryViaRule(deliveryViaRule.getCode());
-		}
-	}
-
-	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_IsDropShip })
-	public void setDropShipWarehouse(final I_C_Order order, final ICalloutField field)
-	{
-		if (!order.isDropShip())
-		{
-			return;
-		}
-
-		final WarehouseId warehouseId = warehouseAdvisor.evaluateOrderWarehouse(order);
-		if (warehouseId != null)
-		{
-			order.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
 	}
 

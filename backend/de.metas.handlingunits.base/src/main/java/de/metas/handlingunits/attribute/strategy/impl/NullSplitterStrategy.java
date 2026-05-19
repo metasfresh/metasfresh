@@ -35,7 +35,10 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
  */
 public final class NullSplitterStrategy implements IAttributeSplitterStrategy
 {
-	public static final transient NullSplitterStrategy instance = new NullSplitterStrategy();
+	public static NullSplitterStrategy newInstance()
+	{
+		return new NullSplitterStrategy();
+	}
 
 	private NullSplitterStrategy()
 	{

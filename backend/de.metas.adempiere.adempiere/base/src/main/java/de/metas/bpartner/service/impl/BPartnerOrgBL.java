@@ -28,6 +28,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -36,6 +37,7 @@ import static de.metas.util.Check.assume;
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public I_C_BPartner retrieveLinkedBPartner(final I_AD_Org org)
@@ -85,7 +87,22 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 				.firstOnly(I_C_BPartner.class);
 	}
 
+	@Nullable
 	@Override
+	public I_C_BPartner_Location retrieveOrgBPLocation(@NonNull final OrgId orgId)
+	{
+		final BPartnerLocationId orgBPLocationId = retrieveOrgBPLocationId(orgId);
+		if (orgBPLocationId == null)
+		{
+			return null;
+		}
+
+		return bpartnerDAO.getBPartnerLocationByIdEvenInactive(orgBPLocationId);
+	}
+
+
+	@Override
+	@Nullable
 	public I_C_Location retrieveOrgLocation(@NonNull final OrgId orgId)
 	{
 		final BPartnerLocationId orgBPLocationId = retrieveOrgBPLocationId(orgId);
@@ -94,7 +111,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(orgBPLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(orgBPLocationId);
 		if (bpLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
 		{
 			return bpLocation.getC_Location();

@@ -1,15 +1,6 @@
 package de.metas.datev.process;
 
-import java.io.ByteArrayOutputStream;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Joiner;
-
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.impl.JdbcExporterBuilder;
 import de.metas.datev.DATEVCsvExporter;
@@ -18,6 +9,7 @@ import de.metas.datev.DATEVExportFormatRepository;
 import de.metas.datev.model.I_DATEV_Export;
 import de.metas.datev.model.I_DATEV_ExportFormat;
 import de.metas.datev.model.I_DATEV_ExportLine;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -25,7 +17,15 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+
+import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 
 /*
  * #%L
@@ -37,12 +37,12 @@ import org.springframework.core.io.ByteArrayResource;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,11 +51,16 @@ import org.springframework.core.io.ByteArrayResource;
 
 public class DATEV_ExportFile extends JavaProcess implements IProcessPrecondition
 {
+	private static final AdMessageKey MSG_EXT_NoDATEVConfig = AdMessageKey.of("DATEV_ExportFile_EXT_NoDATEVConfig");
+
 	@Autowired
 	private DATEVExportFormatRepository exportFormatRepo;
 
 	@Param(parameterName = I_DATEV_ExportFormat.COLUMNNAME_DATEV_ExportFormat_ID, mandatory = true)
 	private int datevExportFormatId;
+
+	@Param(parameterName = "ExportEXTF", mandatory = true)
+	private boolean isExportEXTF;
 
 	public DATEV_ExportFile()
 	{
@@ -83,11 +88,17 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 		final DATEVExportFormat exportFormat = exportFormatRepo.getById(datevExportFormatId);
 		final I_DATEV_Export datevExport = getRecord(I_DATEV_Export.class);
 
+		if (isExportEXTF && datevExport.getDATEV_Export_Config_ID() <= 0)
+		{
+			throw new AdempiereException(MSG_EXT_NoDATEVConfig);
+		}
+
 		final IExportDataSource dataSource = createDataSource(exportFormat, datevExport.getDATEV_Export_ID());
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		DATEVCsvExporter.builder()
 				.exportFormat(exportFormat)
+				.datevExport(isExportEXTF ? datevExport : null)
 				.dataSource(dataSource)
 				.build()
 				.export(out);
@@ -108,7 +119,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 				.addEqualsWhereClause(I_DATEV_ExportLine.COLUMNNAME_DATEV_Export_ID, datevExportId)
 				.addEqualsWhereClause(I_DATEV_ExportLine.COLUMNNAME_IsActive, true)
 				.addOrderBy(I_DATEV_ExportLine.COLUMNNAME_DocumentNo)
-		        .addOrderBy(I_DATEV_ExportLine.COLUMNNAME_DATEV_ExportLine_ID);
+				.addOrderBy(I_DATEV_ExportLine.COLUMNNAME_DATEV_ExportLine_ID);
 
 		exportFormat
 				.getColumns()

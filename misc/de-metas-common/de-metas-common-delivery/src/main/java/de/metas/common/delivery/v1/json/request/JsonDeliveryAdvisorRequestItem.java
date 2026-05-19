@@ -38,5 +38,7 @@ public class JsonDeliveryAdvisorRequestItem
 {
 	int numberOfItems;
 	@NonNull BigDecimal grossWeightKg;
+	@NonNull String productName;
+	@NonNull String productValue;
 	@Nullable JsonPackageDimensions packageDimensions;
 }
