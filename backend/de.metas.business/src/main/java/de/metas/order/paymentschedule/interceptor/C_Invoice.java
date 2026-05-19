@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -95,5 +96,44 @@ public class C_Invoice
 		// is honoured during the receipt→invoice lookup — without this, the reversed invoice still
 		// appears as CO in the DB and the receipt sub-row is not properly reset to PR/null.
 		materialReceiptStepService.recomputeDeliveryStepsAfterInvoiceReversed(orderId, invoiceRecord);
+	}
+
+	/**
+	 * Fires on AFTER_CHANGE when {@code C_Invoice.IsPaid} flips.
+	 *
+	 * <p>The semantic event is "the invoice's paid status changed". Both directions are
+	 * covered: N→Y (a payment was allocated to the invoice) and Y→N (the allocation
+	 * was reversed). The BL sub-row's {@code Status} must follow the linked invoice's
+	 * paid state — {@code Awaiting_Pay} when the invoice is unpaid, {@code Paid}
+	 * when it is paid. {@link OrderPayScheduleMaterialReceiptStepService#computeOrderPayScheduleStatus}
+	 * reads {@code invoice.isPaid()}; we just need to call the recompute when that
+	 * flag flips so the schedule catches up.
+	 *
+	 * <p>Why AFTER_CHANGE on {@code C_Invoice} and not AFTER_COMPLETE on
+	 * {@code C_AllocationHdr}: the chain is {@code C_AllocationHdr} completion →
+	 * {@code de.metas.invoice.interceptor.C_AllocationHdr.testInvoiceAllocation0}
+	 * runs {@code invoiceBL.testAllocation(invoice, ...)} which updates
+	 * {@code C_Invoice.IsPaid}. Hooking at the {@code IsPaid} change is one step
+	 * downstream and one less enumeration (no allocation lines to walk).
+	 *
+	 * <p>The DocStatus=IP threading trick is not needed here — by the time AFTER_CHANGE
+	 * fires, the invoice's {@code IsPaid} is already saved in the DB; the no-arg
+	 * {@code recomputeDeliverySteps(orderId)} reads fresh DB state.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Invoice.COLUMNNAME_IsPaid)
+	public void onIsPaidChanged(@NonNull final I_C_Invoice invoiceRecord)
+	{
+		final RegularInvoice regularInvoice = regularInvoiceService.fromRecordIfRegularInvoice(invoiceRecord).orElse(null);
+		if (regularInvoice == null)
+		{
+			return;
+		}
+
+		final OrderId orderId = regularInvoice.getOrderId();
+		if (!proformaAllocRepo.existsByOrder(orderId))
+		{
+			return;
+		}
+		materialReceiptStepService.recomputeDeliverySteps(orderId);
 	}
 }
