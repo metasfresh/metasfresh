@@ -100,6 +100,7 @@ public class FactLine
 
 	@Nullable @Getter private TaxId taxId;
 	@Nullable @Getter private String vatCode;
+	@Nullable @Getter private VATCodeAmountType vatCodeAmountType;
 
 	@Getter private final TableRecordReference docRecordRef;
 	@Getter @Setter private int Line_ID;
@@ -1281,6 +1282,7 @@ public class FactLine
 			//setC_UOM_ID(fact.getC_UOM_ID());
 			this.taxId = TaxId.ofRepoIdOrNull(fact.getC_Tax_ID());
 			this.vatCode = fact.getVATCode();
+			this.vatCodeAmountType = VATCodeAmountType.ofNullableCode(fact.getVATCodeAmountType());
 			this.orgId = OrgId.ofRepoIdOrAny(fact.getAD_Org_ID());
 			this.C_OrderSO_ID = OrderId.ofRepoIdOrNull(fact.getC_OrderSO_ID());
 			this.C_BPartner2_ID = BPartnerId.ofRepoIdOrNull(fact.getC_BPartner2_ID());
@@ -1536,7 +1538,7 @@ public class FactLine
 
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(null, null).map(VATCode::getCode).orElse(null);
-
+		this.vatCodeAmountType = null;
 	}
 
 	/**
@@ -1548,11 +1550,13 @@ public class FactLine
 	{
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(isSOTrxOverride, null).map(VATCode::getCode).orElse(null);
+		this.vatCodeAmountType = null;
 	}
 
 	public void setVatCode(@Nullable final String vatCode)
 	{
 		this.vatCode = vatCode;
+		this.vatCodeAmountType = null;
 	}
 
 	private Optional<VATCode> computeVATCode(@Nullable final Boolean isSOTrxOverride, @Nullable final VATCodeAmountType amountType)
@@ -1579,6 +1583,7 @@ public class FactLine
 	{
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(null, amountType).map(VATCode::getCode).orElse(null);
+		this.vatCodeAmountType = this.vatCode != null ? amountType : null;
 	}
 
 	/** Sets the tax and resolves the VAT code, overriding IsSOTrx and filtering by amountType. */
@@ -1586,6 +1591,7 @@ public class FactLine
 	{
 		this.taxId = taxId;
 		this.vatCode = computeVATCode(isSOTrxOverride, amountType).map(VATCode::getCode).orElse(null);
+		this.vatCodeAmountType = this.vatCode != null ? amountType : null;
 	}
 
 	public void updateFAOpenItemTrxInfo()

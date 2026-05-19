@@ -535,6 +535,7 @@ public class AcctDocRequiredServicesFacade
 		//
 		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
 		record.setVATCode(factLine.getVatCode());
+		record.setVATCodeAmountType(factLine.getVatCodeAmountType() != null ? factLine.getVatCodeAmountType().getCode() : null);
 		//
 		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
 		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());

@@ -1,3 +1,15 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
+-- Tax Declaration Iter4: source AmountType from fa.VATCodeAmountType (Fact_Acct).
+--
+-- Previously the function did LEFT JOIN C_VAT_Code to derive AmountType. That's
+-- ambiguous under Strategy B coding (same VATCode for N+T rows: LEFT JOIN matches
+-- both → row duplication). Fact_Acct.VATCodeAmountType is now the authoritative
+-- carrier (the per-leg matcher writes it alongside VATCode).
+--
+-- Phase 2: drop LEFT JOIN, read fa.VATCodeAmountType directly.
+-- Phase 3a (Line aggregation): keep LEFT JOIN to C_VAT_Code for the nice-to-have
+-- C_VAT_Code_ID, but disambiguate it now with AmountType in the join condition.
+
 DROP FUNCTION IF EXISTS de_metas_acct.tax_declaration_build(p_C_TaxDeclaration_ID numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_acct.tax_declaration_build(
