@@ -23,6 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -33,6 +34,10 @@ import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
+import de.metas.handlingunits.picking.job.model.PickingJobProgress;
+import de.metas.handlingunits.picking.job.model.PickingJobStep;
+import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
@@ -45,6 +50,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -175,6 +181,126 @@ class JsonPickingJobStepPickFromTest
 
 		// Assert
 		assertThat(json.getQtyRejected()).isEqualByComparingTo("6");
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (c): pickingUnit=CU → qtyPicked passes through unchanged
+	// -----------------------------------------------------------------------
+
+	@Test
+	void qtyPicked_isNotConverted_whenPickingUnit_isCU()
+	{
+		// Arrange
+		final I_C_UOM uomEach = buildUomEach();
+		final ProductId productId = ProductId.ofRepoId(1001);
+		final Quantity twelveCUs = Quantity.of(BigDecimal.valueOf(12), uomEach);
+
+		// line reports CU — no TU conversion expected
+		final PickingJobLine line = Mockito.mock(PickingJobLine.class);
+		Mockito.when(line.getPickingUnit()).thenReturn(PickingUnit.CU);
+
+		final PickingJobStepPickedToHU pickedHU = PickingJobStepPickedToHU.builder()
+				.pickFromHUId(HuId.ofRepoId(123))
+				.actualPickedHU(buildDummyHUInfo(uomEach))
+				.qtyPicked(twelveCUs)
+				.createdAt(Instant.now())
+				.build();
+
+		final PickingJobStepPickedTo pickedTo = PickingJobStepPickedTo.builder()
+				.actualPickedHUs(ImmutableList.of(pickedHU))
+				.build();
+
+		final PickingJobStepPickFrom pickFrom = buildPickFrom(pickedTo, uomEach);
+		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
+		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("EA");
+
+		// Act
+		final JsonPickingJobStepPickFrom json =
+				JsonPickingJobStepPickFrom.of(pickFrom, line, jsonOpts, getUOMSymbolById);
+
+		// Assert — raw CU value passes through; packingInfo must not have been consulted
+		assertThat(json.getQtyPicked()).isEqualByComparingTo("12");
+		Mockito.verify(line, Mockito.never()).getPackingInfo();
+	}
+
+	// -----------------------------------------------------------------------
+	// Test (d): JsonPickingJobStep.of end-to-end — alternative pickFrom with TU conversion
+	// -----------------------------------------------------------------------
+
+	@Test
+	void qtyPicked_inAlternativePickFrom_isMappedFromCuToTu()
+	{
+		// Arrange
+		final I_C_UOM uomEach = buildUomEach();
+		final ProductId productId = ProductId.ofRepoId(1001);
+		// 4 CU @ 2 CU/TU → expect 2 TU
+		final Quantity fourCUs = Quantity.of(BigDecimal.valueOf(4), uomEach);
+		final Quantity twoCUsPerTU = Quantity.of(BigDecimal.valueOf(2), uomEach);
+
+		final HUPIItemProduct packingInfo = HUPIItemProduct.builder()
+				.id(HUPIItemProductId.ofRepoId(999))
+				.name(TranslatableStrings.constant("2 per TU"))
+				.piItemId(HuPackingInstructionsItemId.ofRepoId(888))
+				.productId(productId)
+				.qtyCUsPerTU(twoCUsPerTU)
+				.build();
+
+		final PickingJobLine line = Mockito.mock(PickingJobLine.class);
+		Mockito.when(line.getPickingUnit()).thenReturn(PickingUnit.TU);
+		Mockito.when(line.getProductId()).thenReturn(productId);
+		Mockito.when(line.getPackingInfo()).thenReturn(packingInfo);
+
+		// Build main pickFrom with no pickedTo
+		final PickingJobStepPickFrom mainPickFrom = buildPickFrom(null, uomEach);
+
+		// Build alternative pickFrom with 4 CU picked
+		final PickingJobPickFromAlternativeId altId = PickingJobPickFromAlternativeId.ofRepoId(42);
+		final PickingJobStepPickFromKey altKey = PickingJobStepPickFromKey.alternative(altId);
+
+		final PickingJobStepPickedToHU altPickedHU = PickingJobStepPickedToHU.builder()
+				.pickFromHUId(HuId.ofRepoId(456))
+				.actualPickedHU(buildDummyHUInfo(uomEach))
+				.qtyPicked(fourCUs)
+				.createdAt(Instant.now())
+				.build();
+
+		final PickingJobStepPickedTo altPickedTo = PickingJobStepPickedTo.builder()
+				.actualPickedHUs(ImmutableList.of(altPickedHU))
+				.build();
+
+		final PickingJobStepPickFrom altPickFrom = PickingJobStepPickFrom.builder()
+				.pickFromKey(altKey)
+				.pickFromLocator(LocatorInfo.builder()
+						.id(LocatorId.ofRepoId(1, 100))
+						.caption("loc1")
+						.build())
+				.pickFromHU(buildDummyHUInfo(uomEach))
+				.pickedTo(altPickedTo)
+				.build();
+
+		// Mock PickingJobStep
+		final Quantity twoCUs = Quantity.of(BigDecimal.valueOf(2), uomEach);
+		final PickingJobStep step = Mockito.mock(PickingJobStep.class);
+		Mockito.when(step.getId()).thenReturn(PickingJobStepId.ofRepoId(1));
+		Mockito.when(step.getProgress()).thenReturn(PickingJobProgress.IN_PROGRESS);
+		Mockito.when(step.getProductId()).thenReturn(productId);
+		Mockito.when(step.getProductValueAndName()).thenReturn(
+				ProductValueAndName.of("VAL-001", TranslatableStrings.constant("Test product")));
+		Mockito.when(step.getQtyToPick()).thenReturn(twoCUs);
+		Mockito.when(step.getPickFromKeys()).thenReturn(
+				ImmutableSet.of(PickingJobStepPickFromKey.MAIN, altKey));
+		Mockito.when(step.getPickFrom(PickingJobStepPickFromKey.MAIN)).thenReturn(mainPickFrom);
+		Mockito.when(step.getPickFrom(altKey)).thenReturn(altPickFrom);
+
+		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
+		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("TU");
+
+		// Act
+		final JsonPickingJobStep json = JsonPickingJobStep.of(step, line, jsonOpts, getUOMSymbolById);
+
+		// Assert — one alternative; 4 CU @ 2 CU/TU = 2 TU
+		assertThat(json.getPickFromAlternatives()).hasSize(1);
+		assertThat(json.getPickFromAlternatives().get(0).getQtyPicked()).isEqualByComparingTo("2");
 	}
 
 	// -----------------------------------------------------------------------
