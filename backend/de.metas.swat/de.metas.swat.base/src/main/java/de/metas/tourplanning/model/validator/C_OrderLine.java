@@ -24,6 +24,10 @@ public class C_OrderLine
 	public void updatePreparationDate(@NonNull final I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		if (order.isSOTrx())
+		{
+			return;
+		}
 		orderDeliveryDayBL.setPreparationDateAndTour(order, /* fallbackToDatePromised= */ true);
 		orderBL.save(order);
 	}
