@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +47,9 @@ public class M_Shipment_Constraint
 {
 	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
 	private final IShipmentConstraintsDAO shipmentConstraintsDAO = Services.get(IShipmentConstraintsDAO.class);
-	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	// IShipmentScheduleInvalidateBL impl is a Spring @Service with a required-args constructor (PickingBOMService),
+	// so we MUST resolve it via the Spring context, not via Services.get(...) which only handles default-constructor services.
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = SpringContextHolder.instance.getBean(IShipmentScheduleInvalidateBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void invalidateShipmentSchedules(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
