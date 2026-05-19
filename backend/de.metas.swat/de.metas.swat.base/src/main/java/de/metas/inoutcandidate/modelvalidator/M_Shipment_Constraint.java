@@ -11,7 +11,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentConstraintsDAO;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -45,7 +44,6 @@ import de.metas.util.Services;
 @Component
 public class M_Shipment_Constraint
 {
-	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
 	private final IShipmentConstraintsDAO shipmentConstraintsDAO = Services.get(IShipmentConstraintsDAO.class);
 	// IShipmentScheduleInvalidateBL impl is a Spring @Service with a required-args constructor (PickingBOMService),
 	// so we MUST resolve it via the Spring context, not via Services.get(...) which only handles default-constructor services.
@@ -74,7 +72,10 @@ public class M_Shipment_Constraint
 
 		for (final int bpartnerId : affectedBPartnerIds)
 		{
-			final boolean isDeliveryStop = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(bpartnerId) > 0;
+			// MUST use the DAO's trx-aware, uncached lookup here — we run inside the constraint-save
+			// transaction and need to see the just-saved row. IShipmentConstraintsBL.getDeliveryStopShipmentConstraintId
+			// uses newOutOfTrx() + @Cached and would miss in-flight changes (gh#28631 TC-4).
+			final boolean isDeliveryStop = shipmentConstraintsDAO.hasActiveDeliveryStopConstraint(bpartnerId);
 			shipmentConstraintsDAO.updateReceiptScheduleDeliveryStopForBPartner(bpartnerId, isDeliveryStop);
 		}
 	}

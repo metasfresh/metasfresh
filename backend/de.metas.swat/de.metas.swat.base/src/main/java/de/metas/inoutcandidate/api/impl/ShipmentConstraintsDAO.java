@@ -49,6 +49,23 @@ public class ShipmentConstraintsDAO implements IShipmentConstraintsDAO
 	}
 
 	@Override
+	public boolean hasActiveDeliveryStopConstraint(final int billBPartnerId)
+	{
+		// Trx-aware (thread-inherited) and uncached: must see constraint rows just saved in the current
+		// transaction (e.g. by the C_BPartner_DeliveryStop interceptor) so the M_Shipment_Constraint
+		// model interceptor can propagate the correct IsDeliveryStop value to M_ReceiptSchedule.
+		// IShipmentConstraintsBL#getDeliveryStopShipmentConstraintId(int) uses newOutOfTrx() + @Cached
+		// and therefore cannot be used from inside that interceptor — it would miss the in-flight row.
+		return queryBL
+				.createQueryBuilder(I_M_Shipment_Constraint.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId)
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_IsDeliveryStop, true)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public int updateReceiptScheduleDeliveryStopForBPartner(final int bpartnerId, final boolean isDeliveryStop)
 	{
 		return queryBL

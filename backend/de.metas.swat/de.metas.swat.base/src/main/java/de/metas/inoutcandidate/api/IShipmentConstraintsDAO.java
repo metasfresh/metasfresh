@@ -38,6 +38,17 @@ public interface IShipmentConstraintsDAO extends ISingletonService
 	I_M_Shipment_Constraint retrieveManualConstraint(int billBPartnerId);
 
 	/**
+	 * Returns {@code true} iff at least one active {@code M_Shipment_Constraint} row with
+	 * {@code IsDeliveryStop=Y} exists for the given Bill-BPartner.
+	 * <p>
+	 * Runs trx-aware (thread-inherited) and uncached, so it is safe to call from inside a
+	 * model interceptor right after a constraint row was saved in the same transaction — unlike
+	 * {@link IShipmentConstraintsBL#getDeliveryStopShipmentConstraintId(int)} which is cached
+	 * and runs out-of-transaction (suitable only for queries against committed state).
+	 */
+	boolean hasActiveDeliveryStopConstraint(int billBPartnerId);
+
+	/**
 	 * Updates {@link de.metas.inoutcandidate.model.I_M_ReceiptSchedule#COLUMNNAME_IsDeliveryStop} for all
 	 * unprocessed receipt schedules of the given BPartner whose flag currently differs from {@code isDeliveryStop}.
 	 *
