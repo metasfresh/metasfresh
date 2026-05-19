@@ -94,6 +94,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -107,8 +108,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -144,6 +148,7 @@ public class JsonPersisterService
 	private final transient BPGroupService bpGroupService;
 	private final transient CurrencyRepository currencyRepository;
 	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final transient CustomColumnService customColumnService;
 
 	/**
 	 * A unique indentifier for this instance.
@@ -160,6 +165,7 @@ public class JsonPersisterService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
+			@NonNull final CustomColumnService customColumnService,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -170,6 +176,7 @@ public class JsonPersisterService
 		this.bpGroupService = bpGroupService;
 		this.currencyRepository = currencyRepository;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		this.customColumnService = customColumnService;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
@@ -632,14 +639,7 @@ public class JsonPersisterService
 				bpartnerComposite,
 				resultBuilder.isNewBPartner(),
 				parentSyncAdvise);
-		if (anythingWasSynced.isTrue())
-		{
-			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(resultBuilder.isNewBPartner() ? SyncOutcome.CREATED : SyncOutcome.UPDATED);
-		}
-		else
-		{
-			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(SyncOutcome.NOTHING_DONE);
-		}
+
 		resultBuilder.setJsonResponseContactUpsertItems(syncJsonToContacts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> identifierToLocationResponse = syncJsonToLocations(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
@@ -648,6 +648,35 @@ public class JsonPersisterService
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
+
+		// wire extendedProps: set custom REST API columns on the saved C_BPartner record
+		boolean customColumnsWritten = false;
+		if (jsonRequestComposite.getBpartner() != null
+				&& jsonRequestComposite.getBpartner().isExtendedPropsSet()
+				&& jsonRequestComposite.getBpartner().getExtendedProps() != null
+				&& !jsonRequestComposite.getBpartner().getExtendedProps().isEmpty())
+		{
+			final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.load(
+					bpartnerComposite.getBpartner().getId(),
+					I_C_BPartner.class);
+			if (!POJOWrapper.isHandled(bpartnerRecord))
+			{
+				customColumnService.setCustomColumns(
+						InterfaceWrapperHelper.getPO(bpartnerRecord),
+						jsonRequestComposite.getBpartner().getExtendedProps());
+				InterfaceWrapperHelper.save(bpartnerRecord);
+				customColumnsWritten = true;
+			}
+		}
+
+		if (anythingWasSynced.isTrue() || customColumnsWritten)
+		{
+			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(resultBuilder.isNewBPartner() ? SyncOutcome.CREATED : SyncOutcome.UPDATED);
+		}
+		else
+		{
+			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(SyncOutcome.NOTHING_DONE);
+		}
 
 		//
 		// supplement the metasfreshiId which we now have after the "save()"

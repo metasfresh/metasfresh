@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
@@ -199,6 +200,15 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean discountPrintedSet;
 
+	@ApiModelProperty(position = 168, //
+			value = "Custom REST-API columns on C_BPartner (AD_Column.IsRestAPICustomColumn='Y'). "
+					+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
+					+ "A null or empty value is treated as a no-op; clearing all custom columns is not supported via this field.")
+	private Map<String, Object> extendedProps;
+
+	@ApiModelProperty(hidden = true)
+	private boolean extendedPropsSet;
+
 	@ApiModelProperty(position = 170, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
@@ -351,5 +361,11 @@ public class JsonRequestBPartner
 	{
 		this.discountPrinted = discountPrinted;
 		this.discountPrintedSet = true;
+	}
+
+	public void setExtendedProps(@Nullable final Map<String, Object> extendedProps)
+	{
+		this.extendedProps = extendedProps;
+		this.extendedPropsSet = true;
 	}
 }
