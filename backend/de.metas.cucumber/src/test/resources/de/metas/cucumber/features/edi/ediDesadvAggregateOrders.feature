@@ -463,3 +463,118 @@ Feature: EDI DESADV — one DESADV per shipment, aggregating multiple source ord
     And the EDI_Desadv linked to M_InOut has the following properties:
       | M_InOut_ID    | OPT.POReference | OPT.LineCount |
       | io_S29231_060 |                 | 2             |
+
+
+  @from:cucumber
+  @Id:S29231_070
+  Scenario: Two orders into one shipment with HU packing — one LU pack with one TU pack-item per source orderLine
+  ## Models the customer's real production setup (me03#29231):
+  ## - Two orders from EDI, each carrying its own Kd-Bestellnummer (POReference) and product.
+  ## - Warehouse aggregates both orders into a single shipment AND packs both products into
+  ##   one shared LU (pallet), with one TU per orderLine (one product per TU).
+  ## - DESADV must reflect: 1 EDI_Desadv (per-shipment), 2 EDI_DesadvLines (one per source
+  ##   orderLine), 1 EDI_Desadv_Pack (the LU with SSCC18), 2 pack-items (one per TU).
+  ##
+  ## The EDIDesadvPackService.createOrExtendPacks "extend" branch is the one that produces a
+  ## single LU pack across multiple inOutLines: when two inOutLines map to the same top-level
+  ## M_HU (the LU), the second call extends the first pack instead of creating a new one.
+
+    Given add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue  |
+      | extCfg_S29231_070                   | RabbitMQ | ediDesadv_S29231_070 |
+
+    And metasfresh contains M_Products:
+      | Identifier     |
+      | p_S29231_070_A |
+      | p_S29231_070_B |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S29231_070 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_070 | ps_S29231_070      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S29231_070 | pl_S29231_070  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID.InternalName |
+      | plv_S29231_070         | p_S29231_070_A | 10.0     | PCE      | Normal                        |
+      | plv_S29231_070         | p_S29231_070_B | 10.0     | PCE      | Normal                        |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | IsCustomer | M_PricingSystem_ID |
+      | bp_S29231_070 | Y          | ps_S29231_070      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID | IsBillToDefault | IsShipTo |
+      | loc_070    | 9900002923107 | bp_S29231_070 | true            | true     |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | IsEdiOneEDIDesadvPerShipment | EdiDESADV_ExternalSystem_Config_ID |
+      | bp_S29231_070 | true                 | 9900002923107         | E                    | true                         | extCfg_S29231_070                  |
+
+    # HU packing instruction hierarchy: one LU type (capacity = 10 TUs), one TU type (PM).
+    # Both products share the same TU template; capacity per TU = order qty (5 PCE) so each
+    # orderLine fills exactly one TU.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | pi_LU_S29231_070  |
+      | pi_TU_S29231_070  |
+      | pi_VHU_S29231_070 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_070  | pi_LU_S29231_070  | LU          | Y         |
+      | piv_TU_S29231_070  | pi_TU_S29231_070  | TU          | Y         |
+      | piv_VHU_S29231_070 | pi_VHU_S29231_070 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID    | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_S29231_070  | piv_LU_S29231_070  | 10  | HU       | pi_TU_S29231_070  |
+      | pii_TU_S29231_070  | piv_TU_S29231_070  | 0   | PM       |                    |
+    # One M_HU_PI_Item_Product per product, both pointing to the SAME TU template — this is
+    # what lets the warehouse mix the two products into one shared LU.
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID   | Qty | ValidFrom  |
+      | pip_S29231_070_A        | pii_TU_S29231_070 | p_S29231_070_A | 5   | 2020-01-01 |
+      | pip_S29231_070_B        | pii_TU_S29231_070 | p_S29231_070_B | 5   | 2020-01-01 |
+
+    # Two orders with different POReferences (Kd-Bestellnummern) — same BPartner, location, warehouse →
+    # eligible for shipment aggregation.
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | o_S29231_070_A | true    | bp_S29231_070 | 2026-05-14  | PO-PAPA     |
+      | o_S29231_070_B | true    | bp_S29231_070 | 2026-05-14  | PO-QUEBEC   |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID     | M_Product_ID   | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S29231_070_A | o_S29231_070_A | p_S29231_070_A | 5          | pip_S29231_070_A        |
+      | ol_S29231_070_B | o_S29231_070_B | p_S29231_070_B | 5          | pip_S29231_070_B        |
+
+    When the order identified by o_S29231_070_A is completed
+    And the order identified by o_S29231_070_B is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ss_S29231_070_A | ol_S29231_070_A | N             |
+      | ss_S29231_070_B | ol_S29231_070_B | N             |
+
+    # Batch — both schedules enqueued in ONE workpackage so the shipment generator merges
+    # them into a single M_InOut. With matching TU template both inOutLines should end up
+    # under one shared LU.
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S29231_070_A       |
+      | ss_S29231_070_B       |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S29231_070_A       | io_S29231_070 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S29231_070_B       | io_S29231_070 |
+
+    # ── Customer expectation ──
+    # The shared LU produces exactly ONE EDI_Desadv_Pack; the two TUs (one per inOutLine) become
+    # two pack-items underneath. The two source orderLines yield two EDI_DesadvLines on the
+    # single DESADV (DESADV-scoped Line numbers 10 and 20 via the me03#29231 fresh-line allocator).
+    And after not more than 60s, there are exactly 1 EDI_Desadv_Pack records
+
+    And the EDI_Desadv linked to M_InOut has the following properties:
+      | M_InOut_ID    | OPT.POReference | OPT.LineCount |
+      | io_S29231_070 |                 | 2             |
