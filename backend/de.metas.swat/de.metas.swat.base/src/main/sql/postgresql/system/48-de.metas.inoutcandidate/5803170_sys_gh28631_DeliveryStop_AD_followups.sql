@@ -112,16 +112,17 @@ SELECT update_FieldTranslation_From_AD_Name_Element(584890);
 
 -- B.1 AD_Field — IsDeliveryStop on M_ReceiptSchedule (column 592212),
 --     reuse shared AD_Element 543441 via AD_Column (no AD_Name_ID override).
+-- NOTE: IsCentrallyMaintained lives on AD_Column, not AD_Field — do not list it here.
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Tab_ID, AD_Column_ID,
                       Name, Description,
-                      IsDisplayed, IsReadOnly, IsSameLine, IsEncrypted, IsCentrallyMaintained,
+                      IsDisplayed, IsReadOnly, IsSameLine, IsEncrypted,
                       IsFieldOnly, IsHeading, EntityType, DisplayLength)
 VALUES (780254 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0,
         548451, 592212,
         'Lieferstopp',
         'Liefer-/Auftragssperre für diesen Wareneingangs-Disponenten. Wird systemseitig aus M_Shipment_Constraint propagiert und kann hier nicht bearbeitet werden.',
-        'Y', 'Y', 'N', 'N', 'Y',
+        'Y', 'Y', 'N', 'N',
         'N', 'N', 'de.metas.inoutcandidate', 1);
 
 -- Translation skeleton (synced from AD_Element by the propagation function below).
