@@ -82,7 +82,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -389,7 +391,9 @@ public class DesadvBL
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
-		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
+		// Sequences are built lazily per DESADV so that pack sequence numbers are independent
+		// across source-order DESADVs when a shipment covers multiple orders.
+		final Map<EDIDesadvId, EDIDesadvPackService.Sequences> sequencesByDesadv = new HashMap<>();
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
@@ -398,7 +402,25 @@ public class DesadvBL
 			{
 				continue; // the DESADV-Line needs to relate to an orderline to make sense
 			}
-			addInOutLine(inOutLine, recipientBPartnerId, sequences);
+
+			// Resolve the DESADV for this inOutLine via its order line → desadv line → desadv header.
+			// Falls back to the shipment-level desadv when no desadv line is set on the order line
+			// (addInOutLine will early-return in that case, so the sequences value is unused).
+			final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class);
+			final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
+			final EDIDesadvId lineDesadvId;
+			if (desadvLineId != null)
+			{
+				final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
+				lineDesadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+			}
+			else
+			{
+				lineDesadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
+			}
+			final EDIDesadvPackService.Sequences lineSequences = sequencesByDesadv.computeIfAbsent(lineDesadvId, ediDesadvPackService::createSequences);
+
+			addInOutLine(inOutLine, recipientBPartnerId, lineSequences);
 		}
 		return desadv;
 	}
