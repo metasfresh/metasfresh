@@ -25,7 +25,9 @@ package de.metas.handlingunits.inout.returns.customer;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -193,6 +195,20 @@ public class CustomerReturnHUsCreateCommand
 
 	private List<I_M_HU> copyOriginHUs(@NonNull final List<I_M_HU> originHUs)
 	{
-		throw new UnsupportedOperationException("not yet implemented");
+		final LocatorId returnLocatorId = warehousesRepo.getLocatorIdByRepoId(returnLine.getM_Locator_ID());
+
+		final ImmutableList<HuId> originHuIds = originHUs.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		final CopyHUsResponse copyResponse = handlingUnitsBL.copyAsPlannedHUs()
+				.huIdsToCopy(originHuIds)
+				.targetLocatorId(returnLocatorId)
+				.build()
+				.execute();
+
+		return copyResponse.getItems().stream()
+				.map(CopyHUsResponse.CopyHUsResponseItem::getNewHU)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

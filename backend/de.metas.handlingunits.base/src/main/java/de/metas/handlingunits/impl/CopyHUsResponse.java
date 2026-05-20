@@ -36,6 +36,8 @@ public class CopyHUsResponse
 {
 	@NonNull @Singular ImmutableList<CopyHUsResponseItem> items;
 
+	public ImmutableList<CopyHUsResponseItem> getItems() {return items;}
+
 	public I_M_HU getSingleNewHU() {return getSingleItem().getNewHU();}
 
 	public CopyHUsResponseItem getSingleItem() {return CollectionUtils.singleElement(items);}
