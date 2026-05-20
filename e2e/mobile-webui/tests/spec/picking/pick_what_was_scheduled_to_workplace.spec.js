@@ -170,6 +170,10 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
 
         await ApplicationsListScreen.startPickingApplication();
         await PickingJobsListScreen.waitForScreen();
+        // Filter to SO1.documentNo before startJob — symmetric with workplace1 branch above (line 98).
+        // Without this, the workplace2 launcher list shows every accumulated job from earlier tests
+        // in the suite and the .tap() on the SO1 button races visibility under the 120s test budget.
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
         const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
         await PickingJobScreen.waitForScreen();
