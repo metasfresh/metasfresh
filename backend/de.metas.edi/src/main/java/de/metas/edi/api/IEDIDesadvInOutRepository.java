@@ -1,0 +1,39 @@
+/*
+ * #%L
+ * de.metas.edi
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.edi.api;
+
+import de.metas.inout.InOutId;
+import lombok.NonNull;
+
+/**
+ * Repository for the {@code EDI_Desadv_M_InOut} junction table that records
+ * which DESADVs are associated with a given shipment.
+ */
+public interface IEDIDesadvInOutRepository
+{
+	/**
+	 * Creates a row in {@code EDI_Desadv_M_InOut} linking the given DESADV to the given shipment.
+	 * If a row already exists for the {@code (desadvId, inOutId)} pair, the method does nothing (idempotent).
+	 */
+	void assignDesadvToInOut(@NonNull EDIDesadvId desadvId, @NonNull InOutId inOutId);
+}
