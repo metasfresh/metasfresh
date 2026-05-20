@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -44,9 +45,15 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.handlingunits.trace.HUAccessService;
+import de.metas.handlingunits.trace.HUTraceEventsService;
+import de.metas.handlingunits.trace.HUTraceForReturnedQtyRequest;
+import de.metas.inout.InOutId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -58,9 +65,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -125,7 +134,51 @@ public class CustomerReturnHUsCreateCommand
 		// after HUAssignments are copied in de.metas.handlingunits.model.validator.M_InOut.destroyHandlingUnitsForReversedInboundMovements
 		createdHUs.forEach(createdHU -> huAssignmentBL.assignHU(returnLine, createdHU, false, ITrx.TRXNAME_ThreadInherited));
 
+		if (!originHUsForCopy.isEmpty())
+		{
+			createTraceRecordsForCopiedHUs(createdHUs);
+		}
+
 		return createdHUs;
+	}
+
+	private void createTraceRecordsForCopiedHUs(@NonNull final List<I_M_HU> copiedTopLevelHUs)
+	{
+		final HUTraceEventsService huTraceEventsService = SpringContextHolder.instance.getBean(HUTraceEventsService.class);
+		final HUAccessService huAccessService = SpringContextHolder.instance.getBean(HUAccessService.class);
+
+		final InOutId customerReturnId = InOutId.ofRepoId(returnLine.getM_InOut_ID());
+		final I_M_InOut returnHeader = InterfaceWrapperHelper.load(returnLine.getM_InOut_ID(), I_M_InOut.class);
+		final OrgId orgId = OrgId.ofRepoId(returnLine.getAD_Org_ID());
+
+		for (final I_M_HU copiedTopLevelHU : copiedTopLevelHUs)
+		{
+			final HuId topLevelReturnedHUId = HuId.ofRepoId(copiedTopLevelHU.getM_HU_ID());
+
+			for (final I_M_HU copiedVHU : handlingUnitsBL.getVHUs(copiedTopLevelHU))
+			{
+				final HuId sourceVhuId = HuId.ofRepoId(copiedVHU.getClonedFrom_HU_ID());
+
+				huAccessService.retrieveProductAndQty(copiedVHU).ifPresent(productAndQty -> {
+					final ProductId productId = productAndQty.getLeft();
+					final Quantity qty = productAndQty.getRight();
+
+					final HUTraceForReturnedQtyRequest request = HUTraceForReturnedQtyRequest.builder()
+							.returnedVirtualHU(copiedVHU)
+							.topLevelReturnedHUId(topLevelReturnedHUId)
+							.sourceShippedVHUIds(ImmutableSet.of(sourceVhuId))
+							.customerReturnId(customerReturnId)
+							.docStatus(returnHeader.getDocStatus())
+							.eventTime(Instant.now())
+							.orgId(orgId)
+							.productId(productId)
+							.qty(qty)
+							.build();
+
+					huTraceEventsService.createAndAddFor(request);
+				});
+			}
+		}
 	}
 
 	private List<I_M_HU> createLUTUs()
