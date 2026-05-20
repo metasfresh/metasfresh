@@ -22,16 +22,20 @@
 
 package de.metas.order.paymentschedule.interceptor;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.proforma.ProformaOrderAllocRepository;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.referenced_docs.regular_invoice.OrderPayScheduleRegularInvoiceService;
 import de.metas.order.paymentschedule.referenced_docs.regular_invoice.RegularInvoice;
 import de.metas.order.paymentschedule.steps.material_receipt.OrderPayScheduleMaterialReceiptStepService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -44,6 +48,8 @@ public class C_Invoice
 	@NonNull private final OrderPayScheduleRegularInvoiceService regularInvoiceService;
 	@NonNull private final OrderPayScheduleMaterialReceiptStepService materialReceiptStepService;
 	@NonNull private final ProformaOrderAllocRepository proformaAllocRepo;
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * Fires on AFTER_COMPLETE only.
@@ -129,34 +135,10 @@ public class C_Invoice
 			return;
 		}
 
-		// Skip when the invoice is reversed (Reversal_ID > 0), being voided, or
-		// not yet Completed/Closed.
-		//
-		// Reversal-cascade case (cucumber TC #16 / #17 / #25):
-		//   MInvoice.reverseCorrectIt() first reverses the M_MatchInv records
-		//   linking the invoice to its receipts, THEN reverses the C_AllocationHdr
-		//   which flips C_Invoice.IsPaid Y→N — triggering this @ModelChange.
-		//   At THAT moment the invoice's DocStatus may still be 'CO' in the DB
-		//   (DocStatus = 'RE' is saved later in the same flow), so the
-		//   isCompletedOrClosed() check alone passes — BUT the M_MatchInv link
-		//   used by OrderPayScheduleRegularInvoiceService#getByReceipt is already
-		//   gone, so the lookup returns no invoice and the recompute computes
-		//   the BL row status as Pending. The OrderPayScheduleLine state machine
-		//   then rejects the direct Paid → Pending transition with
-		//   "Cannot change status from Paid to Pending" at applyAndProcess:134.
-		//
-		// The invoice's Reversal_ID is set by reverseCorrectIt() before the
-		// allocation cascade runs, so it's a reliable in-transaction marker that
-		// the invoice is mid-reversal. AFTER_REVERSECORRECT on the invoice will
-		// fire onReverse() above and use the recompute variant that threads the
-		// in-memory reversed invoice through so the Paid → Pending transition
-		// is properly handled.
-		//
-		// IP/Drafted case:
-		//   The IsPaid flip happened while the invoice is still mid-completion
-		//   (DocStatus=IP). Nothing useful to recompute yet — onComplete will
-		//   run shortly with the right threading.
-		if (!regularInvoice.isCompletedOrClosed() || invoiceRecord.getReversal_ID() > 0)
+		// Skip when the invoice is being reversed or not yet Completed/Closed
+		// at the time we see it. This is a fast preliminary check — we re-verify
+		// with a fresh DB read inside the after-commit block below.
+		if (!regularInvoice.isCompletedOrClosed())
 		{
 			return;
 		}
@@ -166,6 +148,63 @@ public class C_Invoice
 		{
 			return;
 		}
-		materialReceiptStepService.recomputeDeliverySteps(orderId);
+
+		final InvoiceId invoiceId = regularInvoice.getId();
+
+		// Defer the actual recompute via runAfterCommit so that by the time it
+		// runs, MInvoice.reverseCorrectIt() (when applicable) has fully completed
+		// including the Reversal_ID writes and DocStatus → RE update.
+		//
+		// Why the deferral is needed (cucumber TC #16 / #17 / #25):
+		//   MInvoice.reverseCorrectIt() runs in this order:
+		//     1) AllocationHdr.reverseCorrectIt() — reverses M_MatchInv +
+		//        C_AllocationHdr → triggers the existing
+		//        de.metas.invoice.interceptor.C_AllocationHdr after-commit hook
+		//        which calls invoiceBL.testAllocation(invoice) — that flips
+		//        C_Invoice.IsPaid Y→N and fires THIS @ModelChange.
+		//     2) Lines 1412 / 1455: setReversal_ID on counterpart and original
+		//        invoice; DocStatus → RE.
+		//
+		//   At step (1) the invoice's Reversal_ID is still 0 and DocStatus is
+		//   still 'CO' on the in-memory `invoiceRecord`, so a same-stack-frame
+		//   check on Reversal_ID can't tell us "this invoice is mid-reversal".
+		//   Worse, M_MatchInv has already been reversed by this point, so the
+		//   no-arg recomputeDeliverySteps(orderId) lookup via getByReceipt
+		//   finds no invoice for receipts that previously matched → status
+		//   computed as Pending → OrderPayScheduleLine.applyAndProcess line 134
+		//   rejects the direct Paid → Pending transition.
+		//
+		//   By contrast, in the after-commit block, the OUTERMOST transaction
+		//   (the one driving the MInvoice.reverseCorrectIt() call) has fully
+		//   committed — meaning steps (1) and (2) are both visible in the DB.
+		//   A fresh DB read of the invoice then carries the final state, and
+		//   our Reversal_ID guard reliably detects the reversal scenario.
+		trxManager.runAfterCommit(() -> {
+			final I_C_Invoice freshInvoice = invoiceBL.getById(invoiceId);
+
+			// If the invoice is reversed (or voided), the AFTER_REVERSECORRECT
+			// path via onReverse() above has already done the right thing using
+			// recomputeDeliveryStepsAfterInvoiceReversed which threads the
+			// reversed invoice through. Don't double-recompute.
+			if (freshInvoice.getReversal_ID() > 0)
+			{
+				return;
+			}
+
+			// Re-check DocStatus from the fresh DB record; the in-memory record
+			// from the @ModelChange may have been stale.
+			final String docStatus = freshInvoice.getDocStatus();
+			if (!"CO".equals(docStatus) && !"CL".equals(docStatus))
+			{
+				return;
+			}
+
+			// Plain payment-only reversal (invoice itself stays CO, only the
+			// payment-side allocation was reversed → invoice.IsPaid flipped
+			// Y→N): this is the case we WANT to handle — recompute the BL row
+			// so it transitions Paid → Awaiting_Pay. Also the regular N→Y case
+			// from a fresh payment.
+			materialReceiptStepService.recomputeDeliverySteps(orderId);
+		});
 	}
 }
