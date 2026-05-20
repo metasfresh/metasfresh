@@ -32,6 +32,7 @@ import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -84,6 +85,9 @@ public class CustomerReturnHUsCreateCommand
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final SpringContextHolder.Lazy<HUTraceEventsService> huTraceEventsServiceLazy = SpringContextHolder.lazyBean(HUTraceEventsService.class);
+	private final SpringContextHolder.Lazy<HUAccessService> huAccessServiceLazy = SpringContextHolder.lazyBean(HUAccessService.class);
 
 	private final I_M_InOutLine returnLine;
 	private final boolean isOnlyCreateCUs;
@@ -121,8 +125,7 @@ public class CustomerReturnHUsCreateCommand
 			if (isOnlyCreateCUs || hupiItemProductId == null || hupiItemProductId.isVirtualHU())
 			{
 				createdHUs = ImmutableList.of(createCUs());
-
-	        }
+			}
 			else
 			{
 				createdHUs = createLUTUs();
@@ -144,12 +147,10 @@ public class CustomerReturnHUsCreateCommand
 
 	private void createTraceRecordsForCopiedHUs(@NonNull final List<I_M_HU> copiedTopLevelHUs)
 	{
-		final HUTraceEventsService huTraceEventsService = SpringContextHolder.instance.getBean(HUTraceEventsService.class);
-		final HUAccessService huAccessService = SpringContextHolder.instance.getBean(HUAccessService.class);
-
 		final InOutId customerReturnId = InOutId.ofRepoId(returnLine.getM_InOut_ID());
-		final I_M_InOut returnHeader = InterfaceWrapperHelper.load(returnLine.getM_InOut_ID(), I_M_InOut.class);
+		final I_M_InOut returnHeader = huInOutBL.getById(customerReturnId, I_M_InOut.class);
 		final OrgId orgId = OrgId.ofRepoId(returnLine.getAD_Org_ID());
+		final Instant movementDate = returnHeader.getMovementDate().toInstant();
 
 		for (final I_M_HU copiedTopLevelHU : copiedTopLevelHUs)
 		{
@@ -159,23 +160,20 @@ public class CustomerReturnHUsCreateCommand
 			{
 				final HuId sourceVhuId = HuId.ofRepoId(copiedVHU.getClonedFrom_HU_ID());
 
-				huAccessService.retrieveProductAndQty(copiedVHU).ifPresent(productAndQty -> {
-					final ProductId productId = productAndQty.getLeft();
-					final Quantity qty = productAndQty.getRight();
-
+				huAccessServiceLazy.get().retrieveProductAndQty(copiedVHU).ifPresent(productAndQty -> {
 					final HUTraceForReturnedQtyRequest request = HUTraceForReturnedQtyRequest.builder()
 							.returnedVirtualHU(copiedVHU)
 							.topLevelReturnedHUId(topLevelReturnedHUId)
 							.sourceShippedVHUIds(ImmutableSet.of(sourceVhuId))
 							.customerReturnId(customerReturnId)
 							.docStatus(returnHeader.getDocStatus())
-							.eventTime(Instant.now())
+							.eventTime(movementDate)
 							.orgId(orgId)
-							.productId(productId)
-							.qty(qty)
+							.productId(productAndQty.getLeft())
+							.qty(productAndQty.getRight())
 							.build();
 
-					huTraceEventsService.createAndAddFor(request);
+					huTraceEventsServiceLazy.get().createAndAddFor(request);
 				});
 			}
 		}

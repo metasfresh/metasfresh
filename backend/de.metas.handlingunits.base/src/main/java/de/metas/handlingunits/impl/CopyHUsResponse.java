@@ -27,6 +27,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -34,9 +35,7 @@ import lombok.Value;
 @Builder
 public class CopyHUsResponse
 {
-	@NonNull @Singular ImmutableList<CopyHUsResponseItem> items;
-
-	public ImmutableList<CopyHUsResponseItem> getItems() {return items;}
+	@Getter @NonNull @Singular ImmutableList<CopyHUsResponseItem> items;
 
 	public I_M_HU getSingleNewHU() {return getSingleItem().getNewHU();}
 

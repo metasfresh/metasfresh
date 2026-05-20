@@ -149,8 +149,9 @@ public class ReturnsServiceFacade
 				continue;
 			}
 
-			final List<I_M_HU> originNonVirtualHUs = getOriginNonVirtualHUs(returnLine);
-			final boolean useCopyPath = !originNonVirtualHUs.isEmpty() && isFullQtyReturn(returnLine);
+			final boolean isFullQty = isFullQtyReturn(returnLine);
+			final List<I_M_HU> originNonVirtualHUs = isFullQty ? getOriginNonVirtualHUs(returnLine) : ImmutableList.of();
+			final boolean useCopyPath = !originNonVirtualHUs.isEmpty();
 
 			CustomerReturnHUsCreateCommand.builder()
 					.returnLine(returnLine)
@@ -189,7 +190,7 @@ public class ReturnsServiceFacade
 
 		final InOutLineId originLineId = InOutLineId.ofRepoId(originInOutLineRepoId);
 		final I_M_InOutLine originLine = huInOutBL.getLineById(originLineId);
-		return returnLine.getQtyEntered().compareTo(originLine.getQtyEntered()) == 0;
+		return returnLine.getMovementQty().compareTo(originLine.getMovementQty()) == 0;
 	}
 
 	private boolean isSkipReturnLine(final I_M_InOutLine returnLine)
