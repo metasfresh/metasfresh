@@ -79,6 +79,11 @@ public class BPartnerEffectiveBL
 		return getByRecord(bpartnerDAO.getById(bPartnerId));
 	}
 
+	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
+	{
+		return getById(bPartnerId).getPurchaseTransportDays();
+	}
+
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
 	{
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
@@ -176,6 +181,9 @@ public class BPartnerEffectiveBL
 				I_C_BPartner::getPO_IncotermLocation,
 				I_C_BP_Group::getPO_IncotermLocation,
 				bPartnerBuilder::poIncoterms);
+
+		bPartnerBuilder.purchaseTransportDays(
+				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
 
 		return bPartnerBuilder.build();
 	}

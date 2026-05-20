@@ -68,6 +68,9 @@ public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
 
+	/** Returns max(PurchaseTransportDays across all order lines), or 0 if there are no lines or no transport days. */
+	int getMaxPurchaseTransportDays(I_C_Order order);
+
 	/**
 	 * Sets price list if there is a price list for the given order's location and pricing system.
 	 * <p>

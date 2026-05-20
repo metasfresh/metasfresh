@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -140,6 +141,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -172,8 +174,9 @@ public class OrderBL implements IOrderBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
-	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -1515,5 +1518,24 @@ public class OrderBL implements IOrderBL
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 
+	}
+
+	@Override
+	public int getMaxPurchaseTransportDays(@NonNull final I_C_Order order)
+	{
+		if(order.isSOTrx())
+		{
+			return 0;
+		}
+
+		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		return orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(line -> ProductId.ofRepoIdOrNull(line.getM_Product_ID()))
+				.filter(Objects::nonNull)
+				.mapToInt(productId -> bpartnerProductEffectiveBL.get().getPurchaseTransportDays(vendorId, productId, orgId))
+				.max()
+				.orElse(0);
 	}
 }

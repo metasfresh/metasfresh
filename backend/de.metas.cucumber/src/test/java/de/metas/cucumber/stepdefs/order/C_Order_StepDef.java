@@ -351,10 +351,9 @@ public class C_Order_StepDef
 		final Instant preparationDate = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_PreparationDate).orElse(null);
 		final Instant datePromised = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised).orElse(null);
 
-		final Instant preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
-		if (preparationDateToBeSet != null)
+		if (preparationDate != null)
 		{
-			order.setPreparationDate(Timestamp.from(preparationDateToBeSet));
+			order.setPreparationDate(Timestamp.from(preparationDate));
 		}
 
 		final Instant datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
@@ -955,6 +954,14 @@ public class C_Order_StepDef
 								.as("LC_Date for Identifier=%s", identifierStr)
 								.isEqualTo(expectedDate);
 					}
+				});
+
+		row.getAsOptionalLocalDate(COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getPreparationDate(), zoneId))
+							.as("PreparationDate for Identifier=%s", identifierStr)
+							.isEqualTo(preparationDate);
 				});
 
 		softly.assertAll();
