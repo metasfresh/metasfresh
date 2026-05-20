@@ -129,6 +129,25 @@ public class C_Invoice
 			return;
 		}
 
+		// Skip when the invoice is not Completed/Closed.
+		// Two cases to guard:
+		// (1) The invoice is being reversed/voided. AFTER_REVERSECORRECT on this
+		//     invoice will fire onReverse() above which calls
+		//     recomputeDeliveryStepsAfterInvoiceReversed — that variant threads
+		//     the reversed invoice through so the state machine accepts the
+		//     Paid → Pending transition. Letting this @ModelChange double-fire
+		//     attempts Paid → Pending without that threading and the
+		//     OrderPayScheduleLine state machine throws
+		//     "Cannot change status from Paid to Pending"
+		//     (cucumber TC #16 / TC #17 / TC #25).
+		// (2) The IsPaid flip happened while the invoice is still mid-completion
+		//     (DocStatus=IP). Nothing useful to recompute yet — onComplete will
+		//     run shortly with the right threading.
+		if (!regularInvoice.isCompletedOrClosed())
+		{
+			return;
+		}
+
 		final OrderId orderId = regularInvoice.getOrderId();
 		if (!proformaAllocRepo.existsByOrder(orderId))
 		{
