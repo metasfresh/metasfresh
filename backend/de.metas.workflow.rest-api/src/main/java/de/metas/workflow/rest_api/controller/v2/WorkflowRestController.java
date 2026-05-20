@@ -44,6 +44,7 @@ import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonScan
 import de.metas.workflow.rest_api.controller.v2.json.JsonGetCurrentTrolleyResponse;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
+import de.metas.workflow.rest_api.controller.v2.json.JsonTrolleyPendingWorkResponse;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetCurrentTrolley;
@@ -59,6 +60,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.service.TrolleyPendingWorkService;
 import de.metas.workflow.rest_api.service.TrolleyService;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
@@ -93,6 +95,7 @@ public class WorkflowRestController
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final WorkflowRestAPIService workflowRestAPIService;
+	@NonNull private final TrolleyPendingWorkService trolleyPendingWorkService;
 	@NonNull private final TrolleyService trolleyService;
 
 	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
@@ -376,5 +379,11 @@ public class WorkflowRestController
 	{
 		trolleyService.clearCurrent(Env.getLoggedUserId());
 		return JsonGetCurrentTrolleyResponse.EMPTY;
+	}
+
+	@GetMapping("/trolley/pending-work")
+	public JsonTrolleyPendingWorkResponse getTrolleyPendingWork()
+	{
+		return trolleyPendingWorkService.summarize(Env.getLoggedUserId());
 	}
 }
