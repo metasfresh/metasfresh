@@ -223,36 +223,38 @@ Feature: Customer Return from Shipment
 
     When the order identified by order_CR4 is completed
 
-    # Step 3: Shipment
+    # Step 3: Put stock into the warehouse with the LU structure so that on-the-fly pick can pick it
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID        |
+      | inventory_CR4  | warehouseStd   | 2022-06-10   | product_CR   | 0 PCE   | 10 PCE   | piItemProduct_CR4       | huLU_CR4      | inventoryLU_CR4 |
+
+    # Step 4: Shipment — on-the-fly pick will grab the LU stock HU
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier   | C_OrderLine_ID | IsToRecompute |
       | schedule_CR4 | orderLine_CR4  | N             |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | schedule_CR4          | D            | true                | false       |
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
+      | schedule_CR4          | D            | true                | false       | true                                |
 
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID   |
       | schedule_CR4          | shipment_CR4 |
 
-    # Step 4: Verify shipment HU is LU (precondition)
+    # Step 5: Verify shipment has HUs assigned (precondition)
     And load HUs assigned to M_InOut
-      | M_InOut_ID   | M_HU_ID        |
-      | shipment_CR4 | shipmentLU_CR4 |
+      | M_InOut_ID   | M_HU_ID      |
+      | shipment_CR4 | shipmentHU_CR4 |
 
-    And validate M_HUs:
-      | M_HU_ID        | M_HU_PI_ID |
-      | shipmentLU_CR4 | huLU_CR4   |
-
-    # Step 5: Full-qty customer return
+    # Step 6: Full-qty customer return
     And generate customer return from shipment
       | M_InOut_ID   | CustomerReturn_ID  |
       | shipment_CR4 | customerReturn_CR4 |
 
     And the return inOut identified by customerReturn_CR4 is completed
 
-    # Step 6: Verify return HU is LU-structured (copied from origin)
+    # Step 7: Verify return HU is LU-structured (copied from origin)
+    # RED: return currently does not copy the LU packing structure
     And load HUs assigned to M_InOut
       | M_InOut_ID         | M_HU_ID      |
       | customerReturn_CR4 | returnLU_CR4 |
