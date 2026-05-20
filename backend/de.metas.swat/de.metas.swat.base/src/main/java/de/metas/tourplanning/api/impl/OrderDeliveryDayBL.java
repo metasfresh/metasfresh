@@ -36,6 +36,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private static final Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -120,7 +121,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			final ZonedDateTime fallbackBase;
 			if (soTrx.isPurchase())
 			{
-				final int maxTransportDays = Services.get(IOrderBL.class).getMaxPurchaseTransportDays(order);
+				final int maxTransportDays = orderBL.getMaxPurchaseTransportDays(order);
 				fallbackBase = datePromised.minusDays(maxTransportDays);
 			}
 			else

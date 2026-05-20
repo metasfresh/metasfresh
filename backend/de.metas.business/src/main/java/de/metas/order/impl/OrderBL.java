@@ -166,7 +166,6 @@ public class OrderBL implements IOrderBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -175,8 +174,9 @@ public class OrderBL implements IOrderBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
-	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -1516,6 +1516,11 @@ public class OrderBL implements IOrderBL
 	@Override
 	public int getMaxPurchaseTransportDays(@NonNull final I_C_Order order)
 	{
+		if(order.isSOTrx())
+		{
+			return 0;
+		}
+
 		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		return orderDAO.retrieveOrderLines(order)

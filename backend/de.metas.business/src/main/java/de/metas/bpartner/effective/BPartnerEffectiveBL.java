@@ -81,8 +81,7 @@ public class BPartnerEffectiveBL
 
 	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
 	{
-		final Integer days = getById(bPartnerId).getPurchaseTransportDays();
-		return days != null ? days : 0;
+		return getById(bPartnerId).getPurchaseTransportDays();
 	}
 
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
@@ -184,7 +183,7 @@ public class BPartnerEffectiveBL
 				bPartnerBuilder::poIncoterms);
 
 		bPartnerBuilder.purchaseTransportDays(
-				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(null));
+				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
 
 		return bPartnerBuilder.build();
 	}
