@@ -67,7 +67,13 @@ public interface IAggregator
 	 * that is shared across every header-aggregation bucket. When ICIOLs of one IC are split across multiple
 	 * invoice headers (e.g. via the "Per each shipment/receipt" header aggregation attribute), each bucket
 	 * mutates the same map, so the residual qty seen by subsequent buckets reflects what was already allocated.
-	 * The default implementation is a no-op for aggregators that don't track per-IC residual qty.
+	 * <p>
+	 * The default implementation is a no-op — appropriate for aggregators that don't track per-IC residual qty
+	 * (because they aggregate at a coarser granularity than the IC).
+	 * <p>
+	 * <b>Implementors that DO track per-IC residual qty MUST override this method</b> and use the supplied map
+	 * instead of building their own, otherwise the same over-allocation bug fixed for {@link DefaultAggregator}
+	 * resurfaces. Wrapper aggregators must forward the call to the wrapped instance.
 	 */
 	default void setSharedIc2QtyInvoiceable(@Nullable Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedMap){}
 

@@ -1,10 +1,15 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00702.1_Header_Aggregation
+@allure.label.feature:F00702_Header_Aggregation
 @ghActions:run_on_executor3
-Feature: One order, two shipments, two invoices — each invoice carries only its own shipment's qty
-  Regression guard. Three scenarios that ALL must produce two invoices,
-  where each invoice carries only the qty of its own shipment (never the qty of both shipments).
+Feature: One order — multiple shipments — invoicing across the supported header-aggregation shapes
+  Regression guard for the supported invoicing shapes when one order is shipped in multiple steps.
+  Three "partial-invoice" scenarios (A–C) exercise C_Invoice_Candidate_Close_PartiallyInvoiced=N
+  and each must produce two invoices that each carry only their own shipment's qty.
+  Two "all-at-once" scenarios (D–E) exercise C_Invoice_Candidate_Close_PartiallyInvoiced=Y:
+  D produces one invoice with one line per shipment (default aggregation),
+  E produces one invoice per shipment via the "Per each shipment/receipt" attribute
+  (this is the shape that originally surfaced the bug fixed in this branch).
 
   Background:
     Given infrastructure and metasfresh are running

@@ -203,6 +203,9 @@ public class DefaultAggregator implements IAggregator
 		// to make sure that we don't invoice more that the invoice candidate allows us to.
 		// When the engine supplies a shared map, we use it so that allocations from earlier
 		// buckets are visible here; otherwise fall back to a local map for stand-alone callers.
+		// IMPORTANT: must be built BEFORE the bucket-removal loop below — the fallback
+		// createInvoiceableQtysMap() iterates aggKey2iciol.values() to seed every IC; later in
+		// the loop those entries are removed via aggKey2iciol.remove(aggKey).
 		final Map<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable =
 				sharedIc2QtyInvoiceable != null ? sharedIc2QtyInvoiceable : createInvoiceableQtysMap();
 
