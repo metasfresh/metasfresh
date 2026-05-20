@@ -42,3 +42,7 @@ export const postCurrentTrolley = ({ scannedCode }) => {
 export const deleteCurrentTrolley = () => {
   return axios.delete(`${trolleyAPIBase}`).then(unboxAxiosResponse);
 };
+
+export const getTrolleyPendingWork = () => {
+  return axios.get(`${trolleyAPIBase}/pending-work`).then(unboxAxiosResponse);
+};
