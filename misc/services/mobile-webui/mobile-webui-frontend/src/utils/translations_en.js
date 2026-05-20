@@ -51,6 +51,11 @@ const translations = {
     trolley: 'Trolley',
     releaseTrolley: {
       buttonCaption: 'Release trolley',
+      confirmTitle: 'Release trolley?',
+      confirmBodyWithJobs:
+        'You have {{openJobsCount}} unfinished distribution job(s). Releasing the trolley will abort them and return the picked items to their source warehouse.',
+      confirmYes: 'Release and abort',
+      confirmNo: 'Cancel',
     },
   },
   login: {

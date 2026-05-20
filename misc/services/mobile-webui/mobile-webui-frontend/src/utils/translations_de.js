@@ -54,6 +54,11 @@ const translations = {
     trolley: 'Wagen',
     releaseTrolley: {
       buttonCaption: 'Wagen freigeben',
+      confirmTitle: 'Wagen freigeben?',
+      confirmBodyWithJobs:
+        'Sie haben {{openJobsCount}} unfertige Distributionsauftrag/-aufträge. Beim Freigeben des Wagens werden diese abgebrochen und die kommissionierten Mengen zurück ins Quelllager bewegt.',
+      confirmYes: 'Freigeben und abbrechen',
+      confirmNo: 'Abbrechen',
     },
   },
   login: {
