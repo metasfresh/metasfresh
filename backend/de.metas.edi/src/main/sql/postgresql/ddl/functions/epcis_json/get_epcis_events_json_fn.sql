@@ -379,10 +379,18 @@ BEGIN
                        WHEN ctx.drop_gln_desadv IS NOT NULL THEN ctx.drop_gcplength_desadv
                                                             ELSE ctx.drop_gcplength_ship
                    END,
-               -- me03#29231: DESADV references array (empty array if no DESADV linked via junction)
+               -- me03#29231: DESADV references — scalar (first/representative) AND array.
+               -- The scalar field stays for backward compatibility with existing consumers
+               -- (e.g. epcis_ft_export.js in scriptedadapter, which reads `data.desadvReference`
+               -- as a presence flag). The array carries all N source-order DESADV DocumentNos
+               -- for multi-source-order shipments. Consumers that want full multi-order
+               -- visibility iterate the array.
+                   'desadvReference', (ctx.desadv_documentnos ->> 0),
                    'desadvReferences', COALESCE(ctx.desadv_documentnos, '[]'::jsonb),
-               -- me03#29231: PO references array; fallback to InOut header POReference for
-               --             shipments not yet backfilled into the junction (data migration window)
+               -- me03#29231: PO references — scalar + array, same backward-compat pattern.
+               -- Scalar fallback to InOut header POReference for shipments not yet
+               -- backfilled into the junction (data migration window).
+                   'poReference', COALESCE((ctx.desadv_poreferences ->> 0), ctx.poreference),
                    'poReferences', COALESCE(ctx.desadv_poreferences,
                                             CASE WHEN ctx.poreference IS NOT NULL
                                                  THEN jsonb_build_array(ctx.poreference)
