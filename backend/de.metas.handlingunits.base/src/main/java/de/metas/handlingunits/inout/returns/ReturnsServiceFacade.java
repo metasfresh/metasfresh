@@ -149,9 +149,13 @@ public class ReturnsServiceFacade
 				continue;
 			}
 
+			final List<I_M_HU> originNonVirtualHUs = getOriginNonVirtualHUs(returnLine);
+			final boolean useCopyPath = !originNonVirtualHUs.isEmpty() && isFullQtyReturn(returnLine);
+
 			CustomerReturnHUsCreateCommand.builder()
 					.returnLine(returnLine)
-					.isOnlyCreateCUs(true)
+					.isOnlyCreateCUs(!useCopyPath)
+					.originHUsForCopy(useCopyPath ? originNonVirtualHUs : ImmutableList.of())
 					.build()
 					.execute();
 		}
