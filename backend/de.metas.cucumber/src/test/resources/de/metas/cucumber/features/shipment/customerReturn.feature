@@ -254,7 +254,6 @@ Feature: Customer Return from Shipment
     And the return inOut identified by customerReturn_CR4 is completed
 
     # Step 7: Verify return HU is LU-structured (copied from origin)
-    # RED: return currently does not copy the LU packing structure
     And load HUs assigned to M_InOut
       | M_InOut_ID         | M_HU_ID      |
       | customerReturn_CR4 | returnLU_CR4 |
