@@ -129,21 +129,34 @@ public class C_Invoice
 			return;
 		}
 
-		// Skip when the invoice is not Completed/Closed.
-		// Two cases to guard:
-		// (1) The invoice is being reversed/voided. AFTER_REVERSECORRECT on this
-		//     invoice will fire onReverse() above which calls
-		//     recomputeDeliveryStepsAfterInvoiceReversed — that variant threads
-		//     the reversed invoice through so the state machine accepts the
-		//     Paid → Pending transition. Letting this @ModelChange double-fire
-		//     attempts Paid → Pending without that threading and the
-		//     OrderPayScheduleLine state machine throws
-		//     "Cannot change status from Paid to Pending"
-		//     (cucumber TC #16 / TC #17 / TC #25).
-		// (2) The IsPaid flip happened while the invoice is still mid-completion
-		//     (DocStatus=IP). Nothing useful to recompute yet — onComplete will
-		//     run shortly with the right threading.
-		if (!regularInvoice.isCompletedOrClosed())
+		// Skip when the invoice is reversed (Reversal_ID > 0), being voided, or
+		// not yet Completed/Closed.
+		//
+		// Reversal-cascade case (cucumber TC #16 / #17 / #25):
+		//   MInvoice.reverseCorrectIt() first reverses the M_MatchInv records
+		//   linking the invoice to its receipts, THEN reverses the C_AllocationHdr
+		//   which flips C_Invoice.IsPaid Y→N — triggering this @ModelChange.
+		//   At THAT moment the invoice's DocStatus may still be 'CO' in the DB
+		//   (DocStatus = 'RE' is saved later in the same flow), so the
+		//   isCompletedOrClosed() check alone passes — BUT the M_MatchInv link
+		//   used by OrderPayScheduleRegularInvoiceService#getByReceipt is already
+		//   gone, so the lookup returns no invoice and the recompute computes
+		//   the BL row status as Pending. The OrderPayScheduleLine state machine
+		//   then rejects the direct Paid → Pending transition with
+		//   "Cannot change status from Paid to Pending" at applyAndProcess:134.
+		//
+		// The invoice's Reversal_ID is set by reverseCorrectIt() before the
+		// allocation cascade runs, so it's a reliable in-transaction marker that
+		// the invoice is mid-reversal. AFTER_REVERSECORRECT on the invoice will
+		// fire onReverse() above and use the recompute variant that threads the
+		// in-memory reversed invoice through so the Paid → Pending transition
+		// is properly handled.
+		//
+		// IP/Drafted case:
+		//   The IsPaid flip happened while the invoice is still mid-completion
+		//   (DocStatus=IP). Nothing useful to recompute yet — onComplete will
+		//   run shortly with the right threading.
+		if (!regularInvoice.isCompletedOrClosed() || invoiceRecord.getReversal_ID() > 0)
 		{
 			return;
 		}
