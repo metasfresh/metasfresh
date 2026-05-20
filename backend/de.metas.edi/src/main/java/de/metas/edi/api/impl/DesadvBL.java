@@ -14,6 +14,7 @@ import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.IEDIDesadvInOutRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.model.I_C_Order;
@@ -121,6 +122,7 @@ public class DesadvBL
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
 	@NonNull private final ProductASIDataRepository productASIDataRepository;
+	@NonNull private final IEDIDesadvInOutRepository ediDesadvInOutRepository;
 
 	@VisibleForTesting
 	public static DesadvBL newInstanceForUnitTesting()
@@ -131,7 +133,8 @@ public class DesadvBL
 				() -> new DesadvBL(EDIDesadvPackService.newInstanceForUnitTesting(),
 						EDIDesadvInOutLineDAO.newInstanceForUnitTesting(),
 						EDIBPartnerConfigService.newInstanceForUnitTesting(),
-						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)))
+						new ProductASIDataRepository(Services.get(org.adempiere.ad.dao.IQueryBL.class)),
+						new EDIDesadvInOutRepository())
 		);
 	}
 
@@ -380,6 +383,9 @@ public class DesadvBL
 		}
 
 		inOut.setEDI_Desadv(desadv);
+		ediDesadvInOutRepository.assignDesadvToInOut(
+				EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()),
+				InOutId.ofRepoId(inOut.getM_InOut_ID()));
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
