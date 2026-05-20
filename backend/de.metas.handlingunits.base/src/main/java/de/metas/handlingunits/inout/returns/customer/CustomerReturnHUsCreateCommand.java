@@ -66,7 +66,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -86,24 +85,28 @@ public class CustomerReturnHUsCreateCommand
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final SpringContextHolder.Lazy<HUTraceEventsService> huTraceEventsServiceLazy = SpringContextHolder.lazyBean(HUTraceEventsService.class);
-	private final SpringContextHolder.Lazy<HUAccessService> huAccessServiceLazy = SpringContextHolder.lazyBean(HUAccessService.class);
 
 	private final I_M_InOutLine returnLine;
 	private final boolean isOnlyCreateCUs;
 	@NonNull private final ImmutableList<I_M_HU> originHUsForCopy;
+	@NonNull private final HUTraceEventsService huTraceEventsService;
+	@NonNull private final HUAccessService huAccessService;
 
 	@Builder
 	private CustomerReturnHUsCreateCommand(
 			@NonNull final I_M_InOutLine returnLine,
 			final boolean isOnlyCreateCUs,
-			@Nullable final List<I_M_HU> originHUsForCopy)
+			@Nullable final List<I_M_HU> originHUsForCopy,
+			@NonNull final HUTraceEventsService huTraceEventsService,
+			@NonNull final HUAccessService huAccessService)
 	{
 		this.returnLine = returnLine;
 		this.isOnlyCreateCUs = isOnlyCreateCUs;
 		this.originHUsForCopy = originHUsForCopy != null
 				? ImmutableList.copyOf(originHUsForCopy)
 				: ImmutableList.of();
+		this.huTraceEventsService = huTraceEventsService;
+		this.huAccessService = huAccessService;
 	}
 
 	public List<I_M_HU> execute()
@@ -160,7 +163,7 @@ public class CustomerReturnHUsCreateCommand
 			{
 				final HuId sourceVhuId = HuId.ofRepoId(copiedVHU.getClonedFrom_HU_ID());
 
-				huAccessServiceLazy.get().retrieveProductAndQty(copiedVHU).ifPresent(productAndQty -> {
+				huAccessService.retrieveProductAndQty(copiedVHU).ifPresent(productAndQty -> {
 					final HUTraceForReturnedQtyRequest request = HUTraceForReturnedQtyRequest.builder()
 							.returnedVirtualHU(copiedVHU)
 							.topLevelReturnedHUId(topLevelReturnedHUId)
@@ -173,7 +176,7 @@ public class CustomerReturnHUsCreateCommand
 							.qty(productAndQty.getRight())
 							.build();
 
-					huTraceEventsServiceLazy.get().createAndAddFor(request);
+					huTraceEventsService.createAndAddFor(request);
 				});
 			}
 		}

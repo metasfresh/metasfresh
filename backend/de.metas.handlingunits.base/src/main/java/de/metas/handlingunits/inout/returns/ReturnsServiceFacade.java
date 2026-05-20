@@ -36,10 +36,13 @@ import de.metas.handlingunits.inout.returns.vendor.MultiVendorHUReturnsInOutProd
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.trace.HUAccessService;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -51,17 +54,14 @@ import java.util.Map;
  * Main class for all material returns related services
  */
 @Service
+@RequiredArgsConstructor
 public class ReturnsServiceFacade
 {
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
-
-	public ReturnsServiceFacade(
-			@NonNull final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer)
-	{
-		this.customerReturnsWithoutHUsProducer = customerReturnsWithoutHUsProducer;
-	}
+	@NonNull private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
+	@NonNull private final HUTraceEventsService huTraceEventsService;
+	@NonNull private final HUAccessService huAccessService;
 
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
@@ -157,6 +157,8 @@ public class ReturnsServiceFacade
 					.returnLine(returnLine)
 					.isOnlyCreateCUs(!useCopyPath)
 					.originHUsForCopy(useCopyPath ? originNonVirtualHUs : ImmutableList.of())
+					.huTraceEventsService(huTraceEventsService)
+					.huAccessService(huAccessService)
 					.build()
 					.execute();
 		}
