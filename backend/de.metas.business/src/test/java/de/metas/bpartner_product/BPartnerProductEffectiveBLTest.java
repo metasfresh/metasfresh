@@ -26,9 +26,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,10 +51,7 @@ public class BPartnerProductEffectiveBLTest
 	@Test
 	public void getPurchaseTransportDays_bpartnerProductHasValue_returnsBPartnerProductValue()
 	{
-		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		vendor.setPO_TransportDays(3);
-		saveRecord(vendor);
-		final BPartnerId vendorId = BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
+		final BPartnerId vendorId = createVendor(3);
 
 		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
 		bpartnerProduct.setC_BPartner_ID(vendorId.getRepoId());
@@ -68,10 +65,7 @@ public class BPartnerProductEffectiveBLTest
 	@Test
 	public void getPurchaseTransportDays_bpartnerProductHasNoValue_fallsBackToBPartner()
 	{
-		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		vendor.setPO_TransportDays(3);
-		saveRecord(vendor);
-		final BPartnerId vendorId = BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
+		final BPartnerId vendorId = createVendor(3);
 
 		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
 		bpartnerProduct.setC_BPartner_ID(vendorId.getRepoId());
@@ -85,10 +79,7 @@ public class BPartnerProductEffectiveBLTest
 	@Test
 	public void getPurchaseTransportDays_noBPartnerProduct_fallsBackToBPartner()
 	{
-		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		vendor.setPO_TransportDays(5);
-		saveRecord(vendor);
-		final BPartnerId vendorId = BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
+		final BPartnerId vendorId = createVendor(5);
 
 		// no C_BPartner_Product record at all
 		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDays(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).isEqualTo(5);
@@ -97,11 +88,23 @@ public class BPartnerProductEffectiveBLTest
 	@Test
 	public void getPurchaseTransportDays_noBPartnerProductNoBPartnerValue_returns0()
 	{
-		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		// PO_TransportDays not set → null in DB
-		saveRecord(vendor);
-		final BPartnerId vendorId = BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
+		final BPartnerId vendorId = createVendor(null);
 
 		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDays(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).isEqualTo(0);
+	}
+
+	private BPartnerId createVendor(final Integer poTransportDays)
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		vendor.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		if (poTransportDays != null)
+		{
+			vendor.setPO_TransportDays(poTransportDays);
+		}
+		saveRecord(vendor);
+		return BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
 	}
 }

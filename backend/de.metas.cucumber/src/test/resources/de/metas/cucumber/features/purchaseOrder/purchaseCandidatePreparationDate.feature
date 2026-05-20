@@ -33,6 +33,13 @@ Feature: Purchase candidate — PreparationDate propagated to generated PO
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_so      | plv_so                 | product      | 10.00    | PCE               | Normal                        |
       | pp_po      | plv_po                 | product      | 10.00    | PCE               | Normal                        |
+    ## VendorProductInfoService.getVendorProductInfos only considers vendors with a PO_DiscountSchema_ID
+    And metasfresh contains M_DiscountSchemas:
+      | Identifier | Name              | DiscountType | ValidFrom  |
+      | ds         | po_transport_days | F            | 2022-01-01 |
+    And metasfresh contains M_DiscountSchemaBreaks:
+      | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
+      | dsb        | ds                  | product      | ps                    | 10    | Y                      | P         | 0          | 0             |
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | IsCreatePlan | IsPurchased | IsDocComplete |
       | ppln       | product      | true         | Y           | true          |
@@ -43,8 +50,8 @@ Feature: Purchase candidate — PreparationDate propagated to generated PO
       | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | customerLocation | customer      | Y               | Y               |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_TransportDays |
-      | vendor     | Y        | N          | ps                 | 5                |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_TransportDays | PO_DiscountSchema_ID |
+      | vendor     | Y        | N          | ps                 | 5                | ds                   |
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation | vendor        | Y               | Y               |

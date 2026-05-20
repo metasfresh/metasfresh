@@ -347,7 +347,11 @@ public class BPartnerEffectiveBLTest
 	@Test
 	public void getPurchaseTransportDays_noValueOnBPartner_returns0()
 	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
 		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		saveRecord(partner);
 
 		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(0);
@@ -356,7 +360,11 @@ public class BPartnerEffectiveBLTest
 	@Test
 	public void getPurchaseTransportDays_valueSetOnBPartner_returnsValue()
 	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
 		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		partner.setPO_TransportDays(5);
 		saveRecord(partner);
 
