@@ -322,3 +322,209 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- 2026-05-19T06:23:27.652Z
 UPDATE AD_Column SET ColumnSQL='(computeProductBOMCost(     (PP_Product_BOM.PP_Product_BOM_ID),     now()::date,     (select ci.C_AcctSchema1_ID from AD_ClientInfo ci where PP_Product_BOM.AD_Client_ID = ci.AD_Client_ID),     (select M_CostElement_ID from M_CostElement where IsActive=''Y'' and CostElementType=''M'' and exists (select 1 from C_AcctSchema cas where cas.CostingMethod = M_CostElement.CostingMethod     and cas.C_AcctSchema_ID=(select ci.C_AcctSchema1_ID from AD_ClientInfo ci where PP_Product_BOM.AD_Client_ID = ci.AD_Client_ID))),     (PP_Product_BOM.AD_Client_ID),     (PP_Product_BOM.AD_Org_ID)     ))',Updated=TO_TIMESTAMP('2026-05-19 06:23:27.651000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592552
 ;
+
+
+-- 2026-05-20T15:25:45.121Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584893,0,'BOMCost',TO_TIMESTAMP('2026-05-20 15:25:44.044000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Stücklistenkosten','D','Y','Stücklistenkosten','Stücklistenkosten',TO_TIMESTAMP('2026-05-20 15:25:44.044000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-05-20T15:25:45.134Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584893 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: BOMCost
+-- 2026-05-20T15:25:50.062Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-20 15:25:50.062000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584893 AND AD_Language in ('de_CH', 'de_DE')
+;
+
+-- 2026-05-20T15:25:50.070Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584893,'de_CH')
+;
+
+-- 2026-05-20T15:25:50.070Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584893,'de_DE')
+;
+
+-- Element: BOMCost
+-- 2026-05-20T15:26:42.910Z
+UPDATE AD_Element_Trl SET Description='BOM Cost', IsTranslated='Y', Name='BOM Cost', PrintName='BOM Cost',Updated=TO_TIMESTAMP('2026-05-20 15:26:42.910000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584893 AND AD_Language='en_US'
+;
+
+-- 2026-05-20T15:26:42.910Z
+UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-20T15:26:43.400Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584893,'en_US')
+;
+
+-- Column: PP_Product_BOM.BOMCost
+-- 2026-05-20T15:26:54.432Z
+UPDATE AD_Column SET AD_Element_ID=584893, ColumnName='BOMCost', Description='Stücklistenkosten', Help=NULL, Name='Stücklistenkosten',Updated=TO_TIMESTAMP('2026-05-20 15:26:54.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592552
+;
+
+-- 2026-05-20T15:26:54.435Z
+UPDATE AD_Column_Trl trl SET Name='Stücklistenkosten' WHERE AD_Column_ID=592552 AND AD_Language='de_DE'
+;
+
+-- 2026-05-20T15:26:54.436Z
+UPDATE AD_Field SET Name='Stücklistenkosten', Description='Stücklistenkosten', Help=NULL WHERE AD_Column_ID=592552
+;
+
+-- 2026-05-20T15:26:54.438Z
+/* DDL */  select update_Column_Translation_From_AD_Element(584893)
+;
+
+-- 2026-05-20T15:28:20.354Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584894,0,'BOMComponentCost',TO_TIMESTAMP('2026-05-20 15:28:20.107000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Komponentenkosten','D','Y','Komponentenkosten','Komponentenkosten',TO_TIMESTAMP('2026-05-20 15:28:20.107000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-05-20T15:28:20.359Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584894 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: BOMComponentCost
+-- 2026-05-20T15:28:35.432Z
+UPDATE AD_Element_Trl SET Description='Component cost', IsTranslated='Y', Name='Component cost', PrintName='Component cost',Updated=TO_TIMESTAMP('2026-05-20 15:28:35.431000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584894 AND AD_Language='en_US'
+;
+
+-- 2026-05-20T15:28:35.436Z
+UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-05-20T15:28:35.643Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584894,'en_US')
+;
+
+-- Element: BOMComponentCost
+-- 2026-05-20T15:28:38.313Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-20 15:28:38.313000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584894 AND AD_Language in ('de_CH', 'de_DE')
+;
+
+-- 2026-05-20T15:28:38.315Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584894,'de_CH')
+;
+
+-- 2026-05-20T15:28:38.315Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584894,'de_DE')
+;
+
+-- Column: PP_Product_BOMLine.BOMComponentCost
+-- 2026-05-20T15:29:33.891Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592576,584894,0,37,53019,'XX','BOMComponentCost',TO_TIMESTAMP('2026-05-20 15:29:33.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Komponentenkosten','EE01',0,14,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Komponentenkosten',0,0,TO_TIMESTAMP('2026-05-20 15:29:33.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2026-05-20T15:29:33.895Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=592576 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2026-05-20T15:29:33.972Z
+/* DDL */  select update_Column_Translation_From_AD_Element(584894)
+;
+
+-- Column: PP_Product_BOM.BOMCost
+-- Column SQL (old): (computeProductBOMCost(     (PP_Product_BOM.PP_Product_BOM_ID),     now()::date,     (select ci.C_AcctSchema1_ID from AD_ClientInfo ci where PP_Product_BOM.AD_Client_ID = ci.AD_Client_ID),     (select M_CostElement_ID from M_CostElement where IsActive='Y' and CostElementType='M' and exists (select 1 from C_AcctSchema cas where cas.CostingMethod = M_CostElement.CostingMethod     and cas.C_AcctSchema_ID=(select ci.C_AcctSchema1_ID from AD_ClientInfo ci where PP_Product_BOM.AD_Client_ID = ci.AD_Client_ID))),     (PP_Product_BOM.AD_Client_ID),     (PP_Product_BOM.AD_Org_ID)     ))
+-- 2026-05-20T15:38:06.393Z
+UPDATE AD_Column SET ColumnSQL='(computeCurentBOMProductCost((PP_Product_BOM.PP_Product_BOM_ID), now()::date ))',Updated=TO_TIMESTAMP('2026-05-20 15:38:06.392000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592552
+;
+
+-- Column: PP_Product_BOMLine.BOMComponentCost
+-- 2026-05-20T15:39:53.361Z
+UPDATE AD_Column SET ColumnSQL='(computeCurentBOMProductCost(     (PP_Product_BOMLine.PP_Product_BOM_ID),     (now()::date)))', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2026-05-20 15:39:53.361000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592576
+;
+
+-- Column: PP_Product_BOMLine.BOMComponentCost
+-- Column SQL (old): (computeCurentBOMProductCost(     (PP_Product_BOMLine.PP_Product_BOM_ID),     (now()::date)))
+-- 2026-05-20T16:28:00.097Z
+UPDATE AD_Column SET ColumnSQL='(computeCurentBOMLineProductCost(     (PP_Product_BOMLine.PP_Product_BOMLine_ID),     (now()::date)))',Updated=TO_TIMESTAMP('2026-05-20 16:28:00.096000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592576
+;
+
+
+-- Field: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> Komponentenkosten
+-- Column: PP_Product_BOMLine.BOMComponentCost
+-- 2026-05-20T16:33:30.052Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,592576,780258,0,53029,0,TO_TIMESTAMP('2026-05-20 16:33:29.863000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Komponentenkosten',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Komponentenkosten',0,0,220,0,1,1,TO_TIMESTAMP('2026-05-20 16:33:29.863000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-05-20T16:33:30.064Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=780258 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-05-20T16:33:30.070Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584894)
+;
+
+-- 2026-05-20T16:33:30.076Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=780258
+;
+
+-- 2026-05-20T16:33:30.084Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(780258)
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 20 -> cost.Komponentenkosten
+-- Column: PP_Product_BOMLine.BOMComponentCost
+-- 2026-05-20T16:33:57.191Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,780258,0,53029,555369,651708,'F',TO_TIMESTAMP('2026-05-20 16:33:57.057000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Komponentenkosten','Y','N','N','Y','N','N','N',0,'Komponentenkosten',30,0,0,TO_TIMESTAMP('2026-05-20 16:33:57.057000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 20 -> cost.Komponentenkosten
+-- Column: PP_Product_BOMLine.BOMComponentCost
+-- 2026-05-20T16:34:07.479Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.479000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=651708
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Qty Attribute
+-- Column: PP_Product_BOMLine.Qty_Attribute_ID
+-- 2026-05-20T16:34:07.485Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.484000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=552447
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.% Ausschuss
+-- Column: PP_Product_BOMLine.Scrap
+-- 2026-05-20T16:34:07.491Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.491000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544412
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Maßeinheit
+-- Column: PP_Product_BOMLine.C_UOM_ID
+-- 2026-05-20T16:34:07.497Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.497000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544401
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Menge Konsumentenlabel
+-- Column: PP_Product_BOMLine.CULabelQuanitity
+-- 2026-05-20T16:34:07.504Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.504000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=552311
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Inhaltsstoffe Unterstückliste anzeigen
+-- Column: PP_Product_BOMLine.ShowSubBOMIngredients
+-- 2026-05-20T16:34:07.509Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.509000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=552312
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Issue Method
+-- Column: PP_Product_BOMLine.IssueMethod
+-- 2026-05-20T16:34:07.516Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.516000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544416
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Jedes Produkt zuteilbar
+-- Column: PP_Product_BOMLine.IsAllowIssuingAnyProduct
+-- 2026-05-20T16:34:07.523Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=620374
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Aktiv
+-- Column: PP_Product_BOMLine.IsActive
+-- 2026-05-20T16:34:07.528Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.528000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544405
+;
+
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenbestandteile(53029,EE01) -> main -> 10 -> default.Sektion
+-- Column: PP_Product_BOMLine.AD_Org_ID
+-- 2026-05-20T16:34:07.534Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP('2026-05-20 16:34:07.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=547353
+;
+
