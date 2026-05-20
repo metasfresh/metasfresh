@@ -70,6 +70,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -162,6 +163,8 @@ public interface IInvoiceBL extends ISingletonService
 	List<I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	List<I_C_InvoiceLine> getLinesByInvoiceIds(Set<InvoiceId> invoiceIds);
 
 	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 

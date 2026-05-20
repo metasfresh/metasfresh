@@ -101,4 +101,6 @@ public class InvoiceAndLineId implements RepoIdAware
 			throw new AdempiereException("InvoiceId does not match for " + this + ". Expected invoiceId was " + expectedInvoiceId);
 		}
 	}
+
+	public InvoiceLineId toInvoiceLineId() {return InvoiceLineId.ofRepoId(getRepoId());}
 }

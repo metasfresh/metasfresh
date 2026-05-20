@@ -794,27 +794,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set CreateDta.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCreateDta (@Nullable java.lang.String CreateDta);
-
-	/**
-	 * Get CreateDta.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCreateDta();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_CreateDta = new ModelColumn<>(I_C_Invoice.class, "CreateDta", null);
-	String COLUMNNAME_CreateDta = "CreateDta";
-
-	/**
 	 * Set Create From ....
 	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
@@ -1114,6 +1093,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+	 * Set Due Date.
+	 * Date when the payment is due
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+
+	/**
+	 * Get Due Date.
+	 * Date when the payment is due
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDueDate();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_DueDate = new ModelColumn<>(I_C_Invoice.class, "DueDate", null);
+	String COLUMNNAME_DueDate = "DueDate";
+
+	/**
 	 * Set Dunning Grace Date.
 	 *
 	 * <br>Type: Date
@@ -1133,29 +1135,6 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_DunningGrace = new ModelColumn<>(I_C_Invoice.class, "DunningGrace", null);
 	String COLUMNNAME_DunningGrace = "DunningGrace";
-
-	/**
-	 * Set Due Date.
-	 * Date when the payment is due without deductions or discount
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDueDate (@Nullable java.sql.Timestamp DueDate);
-
-	/**
-	 * Get Due Date.
-	 * Date when the payment is due without deductions or discount
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getDueDate();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_DueDate = new ModelColumn<>(I_C_Invoice.class, "DueDate", null);
-	String COLUMNNAME_DueDate = "DueDate";
 
 	/**
 	 * Set eMail.
@@ -1468,6 +1447,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_Invoice.class, "IsPaid", null);
 	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
+	 * Set Teilrechnung.
+	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartialInvoice (@Nullable java.lang.String IsPartialInvoice);
+
+	/**
+	 * Get Teilrechnung.
+	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPartialInvoice();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPartialInvoice = new ModelColumn<>(I_C_Invoice.class, "IsPartialInvoice", null);
+	String COLUMNNAME_IsPartialInvoice = "IsPartialInvoice";
 
 	/**
 	 * Set Partially Paid.
