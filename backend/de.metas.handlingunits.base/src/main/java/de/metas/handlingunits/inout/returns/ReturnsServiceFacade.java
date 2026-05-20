@@ -23,6 +23,8 @@
 package de.metas.handlingunits.inout.returns;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnHUsCreateCommand;
@@ -34,29 +36,32 @@ import de.metas.handlingunits.inout.returns.vendor.MultiVendorHUReturnsInOutProd
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.trace.HUAccessService;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main class for all material returns related services
  */
 @Service
+@RequiredArgsConstructor
 public class ReturnsServiceFacade
 {
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
-
-	public ReturnsServiceFacade(
-			@NonNull final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer)
-	{
-		this.customerReturnsWithoutHUsProducer = customerReturnsWithoutHUsProducer;
-	}
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
+	@NonNull private final HUTraceEventsService huTraceEventsService;
+	@NonNull private final HUAccessService huAccessService;
 
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
@@ -144,12 +149,50 @@ public class ReturnsServiceFacade
 				continue;
 			}
 
+			final boolean isFullQty = isFullQtyReturn(returnLine);
+			final List<I_M_HU> originNonVirtualHUs = isFullQty ? getOriginNonVirtualHUs(returnLine) : ImmutableList.of();
+			final boolean useCopyPath = !originNonVirtualHUs.isEmpty();
+
 			CustomerReturnHUsCreateCommand.builder()
 					.returnLine(returnLine)
-					.isOnlyCreateCUs(true)
+					.isOnlyCreateCUs(!useCopyPath)
+					.originHUsForCopy(useCopyPath ? originNonVirtualHUs : ImmutableList.of())
+					.huTraceEventsService(huTraceEventsService)
+					.huAccessService(huAccessService)
 					.build()
 					.execute();
 		}
+	}
+
+	private List<I_M_HU> getOriginNonVirtualHUs(@NonNull final I_M_InOutLine returnLine)
+	{
+		final int originInOutLineRepoId = returnLine.getReturn_Origin_InOutLine_ID();
+		if (originInOutLineRepoId <= 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final InOutLineId originLineId = InOutLineId.ofRepoId(originInOutLineRepoId);
+		final Map<InOutLineId, List<I_M_HU>> husByLineId =
+				huInOutBL.retrieveShippedHUsByShipmentLineId(ImmutableSet.of(originLineId));
+		final List<I_M_HU> originHUs = husByLineId.getOrDefault(originLineId, ImmutableList.of());
+
+		return originHUs.stream()
+				.filter(hu -> !handlingUnitsBL.isVirtual(hu))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isFullQtyReturn(@NonNull final I_M_InOutLine returnLine)
+	{
+		final int originInOutLineRepoId = returnLine.getReturn_Origin_InOutLine_ID();
+		if (originInOutLineRepoId <= 0)
+		{
+			return false;
+		}
+
+		final InOutLineId originLineId = InOutLineId.ofRepoId(originInOutLineRepoId);
+		final I_M_InOutLine originLine = huInOutBL.getLineById(originLineId);
+		return returnLine.getMovementQty().compareTo(originLine.getMovementQty()) == 0;
 	}
 
 	private boolean isSkipReturnLine(final I_M_InOutLine returnLine)

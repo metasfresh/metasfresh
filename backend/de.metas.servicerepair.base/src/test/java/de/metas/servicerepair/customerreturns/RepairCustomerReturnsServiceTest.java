@@ -25,8 +25,11 @@ package de.metas.servicerepair.customerreturns;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnInOutRecordFactory;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
+import de.metas.handlingunits.trace.HUAccessService;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.mockito.Mockito;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,7 +56,10 @@ class RepairCustomerReturnsServiceTest
 
 		final CustomerReturnInOutRecordFactory customerReturnRepository = new CustomerReturnInOutRecordFactory();
 		final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer = new CustomerReturnsWithoutHUsProducer(customerReturnRepository);
-		final ReturnsServiceFacade returnsServiceFacade = new ReturnsServiceFacade(customerReturnsWithoutHUsProducer);
+		final ReturnsServiceFacade returnsServiceFacade = new ReturnsServiceFacade(
+				customerReturnsWithoutHUsProducer,
+				Mockito.mock(HUTraceEventsService.class),
+				Mockito.mock(HUAccessService.class));
 		final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository = new AlreadyShippedHUsInPreviousSystemRepository();
 		repairCustomerReturnsService = new RepairCustomerReturnsService(returnsServiceFacade, alreadyShippedHUsInPreviousSystemRepository);
 
