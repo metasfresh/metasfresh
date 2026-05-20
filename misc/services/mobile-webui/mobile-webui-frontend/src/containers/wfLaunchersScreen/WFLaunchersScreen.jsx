@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useFacets, useFilters } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
+import Dialog from '../../components/dialogs/Dialog';
+import DialogButton from '../../components/dialogs/DialogButton';
 import { toQRCodeDisplayable } from '../../utils/qrCode/hu';
 import WFLaunchersFilterButton from './filters/WFLaunchersFilterButton';
 import { updateHeaderEntry } from '../../actions/HeaderActions';
@@ -18,7 +20,7 @@ import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { useLaunchers } from './useLaunchers';
 import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
 import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
-import { useCurrentTrolley } from '../../api/trolley';
+import { getTrolleyPendingWork, useCurrentTrolley } from '../../api/trolley';
 import { toastError } from '../../utils/toast';
 
 const WFLaunchersScreen = () => {
@@ -36,6 +38,29 @@ const WFLaunchersScreen = () => {
   const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode, clearTrolley } = useCurrentTrolley({
     applicationId,
   });
+  const [confirmRelease, setConfirmRelease] = useState(null);
+
+  const handleReleaseTrolleyClick = () => {
+    getTrolleyPendingWork()
+      .then((pending) => {
+        const openJobsCount = pending?.totalOpenJobs ?? 0;
+        if (openJobsCount > 0) {
+          setConfirmRelease({ openJobsCount });
+        } else {
+          return clearTrolley();
+        }
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
+
+  const handleConfirmReleaseYes = () => {
+    setConfirmRelease(null);
+    clearTrolley().catch((axiosError) => toastError({ axiosError }));
+  };
+
+  const handleConfirmReleaseNo = () => {
+    setConfirmRelease(null);
+  };
   const filters = useFilters({ applicationId });
   const facets = useFacets({ applicationId });
   const { isLaunchersLoading, launchers, filterByQRCode, actions } = useLaunchers({
@@ -187,9 +212,34 @@ const WFLaunchersScreen = () => {
           captionKey="general.releaseTrolley.buttonCaption"
           testId="release-trolley-button"
           isDanger
-          onClick={() => clearTrolley().catch((axiosError) => toastError({ axiosError }))}
+          onClick={handleReleaseTrolleyClick}
           additionalCssClass="action-button"
         />
+      )}
+      {confirmRelease != null && (
+        <Dialog className="yes-no-dialog" testId="release-trolley-confirm-modal">
+          <strong>{trl('general.releaseTrolley.confirmTitle')}</strong>
+          <p>
+            {trl('general.releaseTrolley.confirmBodyWithJobs').replace(
+              '{{openJobsCount}}',
+              confirmRelease.openJobsCount
+            )}
+          </p>
+          <div className="buttons is-centered">
+            <DialogButton
+              captionKey="general.releaseTrolley.confirmYes"
+              testId="release-trolley-confirm-yes"
+              className="is-danger"
+              onClick={handleConfirmReleaseYes}
+            />
+            <DialogButton
+              captionKey="general.releaseTrolley.confirmNo"
+              testId="release-trolley-confirm-no"
+              className="is-success"
+              onClick={handleConfirmReleaseNo}
+            />
+          </div>
+        </Dialog>
       )}
     </div>
   );
