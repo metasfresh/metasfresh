@@ -130,9 +130,13 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
       | ssA_S29231            | io_S29231_100   |
 
     # Wait for DESADV pack records to be written (async, triggered by M_InOut BEFORE_COMPLETE)
+    # IsManual_IPA_SSCC18=true: this scenario does not set up M_HU_Attribute SSCC18 (no
+    # real picked-LU); EDIDesadvPackService.createPackUsingJustInOutLine synthesises the SSCC
+    # and sets IsManual_IPA_SSCC18=true. Pack-side SSCC sourced-from-LU is exercised
+    # separately in ediDesadvAggregateHU.feature.
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID |
-      | packA_S29231       |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 |
+      | packA_S29231       | true                |
 
     # ─── CORE ASSERTION (TC1 falsifiable predicate) ───────────────────────────
     # After the Option-A junction fix the view must return exactly 2 rows for the
@@ -219,9 +223,10 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
       | M_ShipmentSchedule_ID | M_InOut_ID    |
       | ss_S29231_110         | io_S29231_110 |
 
+    # IsManual_IPA_SSCC18=true: no M_HU_Attribute SSCC18 in this scenario — see TC1 note.
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID |
-      | pack_S29231_110    |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 |
+      | pack_S29231_110    | true                |
 
     # ─── CORE ASSERTION (TC2 regression predicate) ────────────────────────────
     # View must still return exactly 1 row for the single-order case.
@@ -351,9 +356,10 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
       | ssA_S29231_120        | io_S29231_120   |
 
     # Wait for DESADV pack records
+    # IsManual_IPA_SSCC18=true: no M_HU_Attribute SSCC18 in this scenario — see TC1 note.
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID |
-      | packA_S29231_120   |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 |
+      | packA_S29231_120   | true                |
 
     # ─── CORE ASSERTION (TC3 falsifiable predicate) ───────────────────────────
     # View must return exactly 3 rows — one per source-order DESADV.
