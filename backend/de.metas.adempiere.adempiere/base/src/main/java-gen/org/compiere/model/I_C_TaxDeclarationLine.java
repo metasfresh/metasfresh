@@ -85,64 +85,6 @@ public interface I_C_TaxDeclarationLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zuordnungs-Position.
-	 * Allocation Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_AllocationLine_ID (int C_AllocationLine_ID);
-
-	/**
-	 * Get Zuordnungs-Position.
-	 * Allocation Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_AllocationLine_ID();
-
-	public org.compiere.model.I_C_AllocationLine getC_AllocationLine();
-
-	public void setC_AllocationLine(org.compiere.model.I_C_AllocationLine C_AllocationLine);
-
-    /** Column definition for C_AllocationLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_AllocationLine> COLUMN_C_AllocationLine_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_AllocationLine>(I_C_TaxDeclarationLine.class, "C_AllocationLine_ID", org.compiere.model.I_C_AllocationLine.class);
-    /** Column name C_AllocationLine_ID */
-    public static final String COLUMNNAME_C_AllocationLine_ID = "C_AllocationLine_ID";
-
-	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_BPartner>(I_C_TaxDeclarationLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set Währung.
 	 * The Currency for this record
 	 *
@@ -170,122 +112,6 @@ public interface I_C_TaxDeclarationLine
     public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_Currency>(I_C_TaxDeclarationLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_DocType_ID (int C_DocType_ID);
-
-	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_DocType>(I_C_TaxDeclarationLine.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
-	 * Set Rechnung.
-	 * Invoice Identifier
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Invoice_ID (int C_Invoice_ID);
-
-	/**
-	 * Get Rechnung.
-	 * Invoice Identifier
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Invoice_ID();
-
-	public org.compiere.model.I_C_Invoice getC_Invoice();
-
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
-
-    /** Column definition for C_Invoice_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_Invoice>(I_C_TaxDeclarationLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
-    /** Column name C_Invoice_ID */
-    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/**
-	 * Set Rechnungsposition.
-	 * Invoice Detail Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID);
-
-	/**
-	 * Get Rechnungsposition.
-	 * Invoice Detail Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_InvoiceLine_ID();
-
-	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine();
-
-	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
-
-    /** Column definition for C_InvoiceLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_InvoiceLine>(I_C_TaxDeclarationLine.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
-    /** Column name C_InvoiceLine_ID */
-    public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
-
-	/**
-	 * Set Steuer.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Steuer.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Tax_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax();
-
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
-
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_C_Tax>(I_C_TaxDeclarationLine.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_ID */
-    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Set Steuererklärung.
@@ -342,6 +168,121 @@ public interface I_C_TaxDeclarationLine
     public static final String COLUMNNAME_C_TaxDeclarationLine_ID = "C_TaxDeclarationLine_ID";
 
 	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_VAT_Code_ID (int C_VAT_Code_ID);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_VAT_Code_ID();
+
+    /** Column definition for C_VAT_Code_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_C_VAT_Code_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationLine.class, "C_VAT_Code_ID", null);
+    /** Column name C_VAT_Code_ID */
+    public static final String COLUMNNAME_C_VAT_Code_ID = "C_VAT_Code_ID";
+
+	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVATCode (java.lang.String VATCode);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATCode();
+
+    /** Column definition for VATCode */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationLine.class, "VATCode", null);
+    /** Column name VATCode */
+    public static final String COLUMNNAME_VATCode = "VATCode";
+
+	/**
+	 * Set Amount Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAmountType (java.lang.String AmountType);
+
+	/**
+	 * Get Amount Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAmountType();
+
+    /** Column definition for AmountType */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_AmountType = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationLine.class, "AmountType", null);
+    /** Column name AmountType */
+    public static final String COLUMNNAME_AmountType = "AmountType";
+
+	/**
+	 * Set Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAmount (java.math.BigDecimal Amount);
+
+	/**
+	 * Get Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAmount();
+
+    /** Column definition for Amount */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_Amount = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationLine.class, "Amount", null);
+    /** Column name Amount */
+    public static final String COLUMNNAME_Amount = "Amount";
+
+	/**
+	 * Set Line Count.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLineCount (java.math.BigDecimal LineCount);
+
+	/**
+	 * Get Line Count.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getLineCount();
+
+    /** Column definition for LineCount */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_LineCount = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclarationLine.class, "LineCount", null);
+    /** Column name LineCount */
+    public static final String COLUMNNAME_LineCount = "LineCount";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -372,31 +313,6 @@ public interface I_C_TaxDeclarationLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Buchungsdatum.
-	 * Accounting Date
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateAcct (java.sql.Timestamp DateAcct);
-
-	/**
-	 * Get Buchungsdatum.
-	 * Accounting Date
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateAcct();
-
-    /** Column definition for DateAcct */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "DateAcct", null);
-    /** Column name DateAcct */
-    public static final String COLUMNNAME_DateAcct = "DateAcct";
-
-	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -418,60 +334,6 @@ public interface I_C_TaxDeclarationLine
     public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Document No.
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
-
-	/**
-	 * Get Document No.
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDocumentNo();
-
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
-
-	/**
-	 * Set Journal-Position.
-	 * Hauptbuchjournal-Position
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setGL_JournalLine_ID (int GL_JournalLine_ID);
-
-	/**
-	 * Get Journal-Position.
-	 * Hauptbuchjournal-Position
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getGL_JournalLine_ID();
-
-	public org.compiere.model.I_GL_JournalLine getGL_JournalLine();
-
-	public void setGL_JournalLine(org.compiere.model.I_GL_JournalLine GL_JournalLine);
-
-    /** Column definition for GL_JournalLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_GL_JournalLine> COLUMN_GL_JournalLine_ID = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, org.compiere.model.I_GL_JournalLine>(I_C_TaxDeclarationLine.class, "GL_JournalLine_ID", org.compiere.model.I_GL_JournalLine.class);
-    /** Column name GL_JournalLine_ID */
-    public static final String COLUMNNAME_GL_JournalLine_ID = "GL_JournalLine_ID";
 
 	/**
 	 * Set Aktiv.
@@ -499,56 +361,6 @@ public interface I_C_TaxDeclarationLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Manuell.
-	 * This is a manual process
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsManual (boolean IsManual);
-
-	/**
-	 * Get Manuell.
-	 * This is a manual process
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isManual();
-
-    /** Column definition for IsManual */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_IsManual = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "IsManual", null);
-    /** Column name IsManual */
-    public static final String COLUMNNAME_IsManual = "IsManual";
-
-	/**
-	 * Set Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsSOTrx (boolean IsSOTrx);
-
-	/**
-	 * Get Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isSOTrx();
-
-    /** Column definition for IsSOTrx */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_IsSOTrx = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "IsSOTrx", null);
-    /** Column name IsSOTrx */
-    public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
 	 * Set Zeile Nr..
 	 * Unique line for this document
 	 *
@@ -572,56 +384,6 @@ public interface I_C_TaxDeclarationLine
     public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "Line", null);
     /** Column name Line */
     public static final String COLUMNNAME_Line = "Line";
-
-	/**
-	 * Set Steuerbetrag.
-	 * Tax Amount for a document
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setTaxAmt (java.math.BigDecimal TaxAmt);
-
-	/**
-	 * Get Steuerbetrag.
-	 * Tax Amount for a document
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getTaxAmt();
-
-    /** Column definition for TaxAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_TaxAmt = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "TaxAmt", null);
-    /** Column name TaxAmt */
-    public static final String COLUMNNAME_TaxAmt = "TaxAmt";
-
-	/**
-	 * Set Bezugswert.
-	 * Base for calculating the tax amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setTaxBaseAmt (java.math.BigDecimal TaxBaseAmt);
-
-	/**
-	 * Get Bezugswert.
-	 * Base for calculating the tax amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getTaxBaseAmt();
-
-    /** Column definition for TaxBaseAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object> COLUMN_TaxBaseAmt = new org.adempiere.model.ModelColumn<I_C_TaxDeclarationLine, Object>(I_C_TaxDeclarationLine.class, "TaxBaseAmt", null);
-    /** Column name TaxBaseAmt */
-    public static final String COLUMNNAME_TaxBaseAmt = "TaxBaseAmt";
 
 	/**
 	 * Get Aktualisiert.
