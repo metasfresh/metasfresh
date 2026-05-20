@@ -22,6 +22,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -48,10 +49,10 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.user.UserId;
@@ -459,10 +460,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final Boolean isPartialInvoiceIntent = invoiceHeader.getIsPartialInvoice();
 			if (isPartialInvoiceIntent != null)
 			{
-				InterfaceWrapperHelper.setValue(
-						invoice,
-						org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice,
-						isPartialInvoiceIntent ? "Y" : "N");
+				invoice.setIsPartialInvoice(IsPartialInvoice.fromValue(isPartialInvoiceIntent).toCode());
 			}
 
 			// Save and return the invoice
@@ -579,9 +577,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-													final String trxName)
+		                                            final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+		                                            final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+		                                            final String trxName)
 		{
 			createdLines = new ArrayList<>();
 

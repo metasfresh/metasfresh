@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1487092758L;
+	private static final long serialVersionUID = -1413846951L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -1021,16 +1021,25 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsBoolean(COLUMNNAME_IsPaid);
 	}
 
+	/** 
+	 * IsPartialInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPARTIALINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPARTIALINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISPARTIALINVOICE_No = "N";
 	@Override
-	public void setIsPartialInvoice (final boolean IsPartialInvoice)
+	public void setIsPartialInvoice (final @Nullable java.lang.String IsPartialInvoice)
 	{
 		set_Value (COLUMNNAME_IsPartialInvoice, IsPartialInvoice);
 	}
 
 	@Override
-	public boolean isPartialInvoice() 
+	public java.lang.String getIsPartialInvoice() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPartialInvoice);
+		return get_ValueAsString(COLUMNNAME_IsPartialInvoice);
 	}
 
 	@Override

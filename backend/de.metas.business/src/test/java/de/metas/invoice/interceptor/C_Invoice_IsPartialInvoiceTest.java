@@ -115,8 +115,7 @@ class C_Invoice_IsPartialInvoiceTest
 
 		interceptor.defaultIsPartialInvoiceFromDocType(invoice);
 
-		final String storedValue = InterfaceWrapperHelper.<String>getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
-		assertThat(IsPartialInvoice.fromCode(storedValue)).isEqualTo(IsPartialInvoice.Yes);
+		assertThat(IsPartialInvoice.fromCode(invoice.getIsPartialInvoice())).isEqualTo(IsPartialInvoice.Yes);
 	}
 
 	/**
@@ -135,8 +134,7 @@ class C_Invoice_IsPartialInvoiceTest
 
 		interceptor.defaultIsPartialInvoiceFromDocType(invoice);
 
-		final String storedValue = InterfaceWrapperHelper.<String>getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
-		assertThat(IsPartialInvoice.fromCode(storedValue)).isEqualTo(IsPartialInvoice.No);
+		assertThat(IsPartialInvoice.fromCode(invoice.getIsPartialInvoice())).isEqualTo(IsPartialInvoice.No);
 	}
 
 	/**
@@ -157,13 +155,12 @@ class C_Invoice_IsPartialInvoiceTest
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
-		InterfaceWrapperHelper.setValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice, "Y"); // caller explicitly set to "Partial"
+		invoice.setIsPartialInvoice(IsPartialInvoice.Yes.toCode());
 
 		interceptor.defaultIsPartialInvoiceFromDocType(invoice);
 
 		// must remain Y (caller wins, doctype is ignored)
-		final String storedValue = InterfaceWrapperHelper.<String>getValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice).orElse(null);
-		assertThat(IsPartialInvoice.fromCode(storedValue)).isEqualTo(IsPartialInvoice.Yes);
+		assertThat(IsPartialInvoice.fromCode(invoice.getIsPartialInvoice())).isEqualTo(IsPartialInvoice.Yes);
 	}
 
 	// -------------------------------------------------------------------------

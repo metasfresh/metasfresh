@@ -16,6 +16,7 @@ import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.matchinv.MatchInvQuery;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
@@ -253,7 +254,7 @@ public class OrderPayScheduleRegularInvoiceService
 		return RegularInvoice.builder()
 				.id(invoiceId)
 				.orderId(orderId)
-				.isPartialInvoice(invoiceRecord.isPartialInvoice())
+				.isPartialInvoice(IsPartialInvoice.fromValue(invoiceRecord.getIsPartialInvoice()).isYes())
 				.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID()))
 				.dateInvoiced(TimeUtil.asLocalDateNonNull(invoiceRecord.getDateInvoiced()))

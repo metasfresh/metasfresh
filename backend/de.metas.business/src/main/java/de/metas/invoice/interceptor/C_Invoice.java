@@ -15,6 +15,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.due_date.InvoiceDueDateProviderService;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
@@ -65,7 +66,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
-	/** Error key for the readonly-after-Complete guard on IsPartialInvoice. */
+	/**
+	 * Error key for the readonly-after-Complete guard on IsPartialInvoice.
+	 */
 	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
 
 	@NonNull private final PaymentReservationService paymentReservationService;
@@ -129,13 +132,8 @@ public class C_Invoice // 03771
 		if (docTypeId != null)
 		{
 			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
-			// Read the raw column value to preserve the Y / N / NULL tri-state — the boolean
-			// accessor docType.isPartialInvoice() would collapse N and NULL into the same false.
-			// The PO layer stores YesNo columns as Boolean (after JDBC materialisation) or String
-			// (when explicitly set via setValue); IsPartialInvoice.fromValue handles both.
-			final de.metas.invoice.IsPartialInvoice docTypeIntent = de.metas.invoice.IsPartialInvoice.fromValue(
-					InterfaceWrapperHelper.getValue(docType, org.compiere.model.I_C_DocType.COLUMNNAME_IsPartialInvoice).orElse(null));
-			InterfaceWrapperHelper.setValue(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice, docTypeIntent.toCode());
+			final IsPartialInvoice docTypeIntent = IsPartialInvoice.fromValue(docType.getIsPartialInvoice());
+			invoice.setIsPartialInvoice(docTypeIntent.toCode());
 		}
 		// else: no doctype → leave NULL (= NA = legacy behaviour in closePartiallyInvoiced_InvoiceCandidates)
 	}

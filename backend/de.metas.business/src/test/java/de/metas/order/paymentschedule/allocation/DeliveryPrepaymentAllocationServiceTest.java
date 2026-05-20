@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -34,6 +33,7 @@ import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvCollection;
 import de.metas.invoice.matchinv.MatchInvId;
@@ -136,7 +136,9 @@ class DeliveryPrepaymentAllocationServiceTest
 
 	private I_C_UOM uom;
 
-	/** Receipt value used by the current test, tracked by {@link #stubReceiptValue}. */
+	/**
+	 * Receipt value used by the current test, tracked by {@link #stubReceiptValue}.
+	 */
 	private Money currentReceiptValue;
 
 	private OrderPayScheduleRegularInvoiceService service;
@@ -387,7 +389,7 @@ class DeliveryPrepaymentAllocationServiceTest
 		when(invoiceRecord.isSOTrx()).thenReturn(false); // Purchase invoice
 		when(invoiceRecord.isFinancial()).thenReturn(true);
 		when(invoiceRecord.getDocStatus()).thenReturn(DocStatus.Completed.getCode());
-		when(invoiceRecord.isPartialInvoice()).thenReturn(isPartialInvoice);
+		when(invoiceRecord.getIsPartialInvoice()).thenReturn(isPartialInvoice ? IsPartialInvoice.Yes.toCode() : IsPartialInvoice.No.toCode());
 
 		return invoiceRecord;
 	}

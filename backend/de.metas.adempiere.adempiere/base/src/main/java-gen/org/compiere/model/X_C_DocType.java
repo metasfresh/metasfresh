@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 597287855L;
+	private static final long serialVersionUID = 80621533L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -685,16 +685,25 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		return get_ValueAsBoolean(COLUMNNAME_IsOverwriteSeqOnComplete);
 	}
 
+	/** 
+	 * IsPartialInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPARTIALINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPARTIALINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISPARTIALINVOICE_No = "N";
 	@Override
-	public void setIsPartialInvoice (final boolean IsPartialInvoice)
+	public void setIsPartialInvoice (final @Nullable java.lang.String IsPartialInvoice)
 	{
 		set_Value (COLUMNNAME_IsPartialInvoice, IsPartialInvoice);
 	}
 
 	@Override
-	public boolean isPartialInvoice() 
+	public java.lang.String getIsPartialInvoice() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPartialInvoice);
+		return get_ValueAsString(COLUMNNAME_IsPartialInvoice);
 	}
 
 	@Override
