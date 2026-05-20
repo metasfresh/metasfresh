@@ -15,10 +15,15 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TrolleyServiceTest
@@ -30,6 +35,8 @@ class TrolleyServiceTest
 	private LocatorScannedCodeResolverService resolver;
 	private IWarehouseDAO warehouseDAO;
 	private IUserDAO userDAO;
+	private TrolleyReleaseListener listenerA;
+	private TrolleyReleaseListener listenerB;
 	private TrolleyService service;
 
 	private ScannedCode scannedCode;
@@ -53,6 +60,10 @@ class TrolleyServiceTest
 		when(userDAO.retrieveUserFullName(USER_B)).thenReturn("Bob");
 		Services.registerService(IUserDAO.class, userDAO);
 
+		// Mock release listeners — TrolleyService now invokes them before clearing the mapping.
+		listenerA = mock(TrolleyReleaseListener.class);
+		listenerB = mock(TrolleyReleaseListener.class);
+
 		// Mock resolver — resolves a fixed ScannedCode to a fixed LocatorQRCode
 		resolver = mock(LocatorScannedCodeResolverService.class);
 		scannedCode = ScannedCode.ofString("CART-1");
@@ -63,7 +74,7 @@ class TrolleyServiceTest
 		final LocatorScannedCodeResolverResult resolved = LocatorScannedCodeResolverResult.found(locatorQRCode);
 		when(resolver.resolve(scannedCode)).thenReturn(resolved);
 
-		service = new TrolleyService(resolver);
+		service = new TrolleyService(resolver, Arrays.asList(listenerA, listenerB));
 	}
 
 	@Test
@@ -100,5 +111,25 @@ class TrolleyServiceTest
 		// user has no trolley — must not throw
 		service.clearCurrent(USER_A);
 		assertThat(service.getCurrent(USER_A)).isEmpty();
+	}
+
+	@Test
+	void clearCurrent_invokesAllReleaseListenersThenClearsMapping()
+	{
+		service.setCurrent(USER_A, scannedCode);
+		service.clearCurrent(USER_A);
+		verify(listenerA).onTrolleyReleased(USER_A);
+		verify(listenerB).onTrolleyReleased(USER_A);
+		assertThat(service.getCurrent(USER_A)).isEmpty();
+	}
+
+	@Test
+	void clearCurrent_rollsBackMappingWhenAnyListenerThrows()
+	{
+		service.setCurrent(USER_A, scannedCode);
+		doThrow(new RuntimeException("boom")).when(listenerB).onTrolleyReleased(USER_A);
+		// trxManager wraps the RuntimeException in AdempiereException; assert by message content.
+		assertThatThrownBy(() -> service.clearCurrent(USER_A)).hasMessageContaining("boom");
+		assertThat(service.getCurrent(USER_A)).isPresent();
 	}
 }
