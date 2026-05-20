@@ -233,6 +233,11 @@ public class DistributionRestService
 				.distributionJobHUReservationService(distributionJobHUReservationService);
 	}
 
+	public List<DistributionJob> loadActiveJobsAssignedToUser(@NonNull final UserId responsibleId)
+	{
+		return newLoader().loadByQuery(DistributionJobQueries.ddOrdersAssignedToUser(responsibleId));
+	}
+
 	public void abortAll(@NonNull final UserId responsibleId)
 	{
 		final List<DistributionJob> jobs = newLoader().loadByQuery(DistributionJobQueries.ddOrdersAssignedToUser(responsibleId));
