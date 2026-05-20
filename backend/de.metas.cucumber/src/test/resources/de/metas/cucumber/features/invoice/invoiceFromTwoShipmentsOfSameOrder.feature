@@ -3,7 +3,7 @@
 @allure.label.feature:F00702.1_Header_Aggregation
 @ghActions:run_on_executor3
 Feature: One order, two shipments, two invoices — each invoice carries only its own shipment's qty
-  Regression guard for mf15#4139 / me03#29921. Three scenarios that ALL must produce two invoices,
+  Regression guard. Three scenarios that ALL must produce two invoices,
   where each invoice carries only the qty of its own shipment (never the qty of both shipments).
 
   Background:
