@@ -40,9 +40,6 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
         {
 			setC_AcctSchema_ID (0);
 			setC_TaxDeclaration_ID (0);
-			setDateFrom (new Timestamp( System.currentTimeMillis() ));
-			setDateTo (new Timestamp( System.currentTimeMillis() ));
-			setDateTrx (new Timestamp( System.currentTimeMillis() ));
 			setProcessed (false);
         } */
     }
@@ -160,63 +157,6 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Datum von.
-		@param DateFrom 
-		Starting date for a range
-	  */
-	@Override
-	public void setDateFrom (java.sql.Timestamp DateFrom)
-	{
-		set_Value (COLUMNNAME_DateFrom, DateFrom);
-	}
-
-	/** Get Datum von.
-		@return Starting date for a range
-	  */
-	@Override
-	public java.sql.Timestamp getDateFrom () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFrom);
-	}
-
-	/** Set Datum bis.
-		@param DateTo 
-		End date of a date range
-	  */
-	@Override
-	public void setDateTo (java.sql.Timestamp DateTo)
-	{
-		set_Value (COLUMNNAME_DateTo, DateTo);
-	}
-
-	/** Get Datum bis.
-		@return End date of a date range
-	  */
-	@Override
-	public java.sql.Timestamp getDateTo () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTo);
-	}
-
-	/** Set Vorgangsdatum.
-		@param DateTrx 
-		Transaction Date
-	  */
-	@Override
-	public void setDateTrx (java.sql.Timestamp DateTrx)
-	{
-		set_Value (COLUMNNAME_DateTrx, DateTrx);
-	}
-
-	/** Get Vorgangsdatum.
-		@return Transaction Date
-	  */
-	@Override
-	public java.sql.Timestamp getDateTrx () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
 	}
 
 	/** Set Buchungsdatum.

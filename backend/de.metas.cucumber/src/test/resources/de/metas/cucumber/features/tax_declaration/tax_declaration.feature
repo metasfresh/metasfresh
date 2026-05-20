@@ -70,20 +70,20 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
 
-    # Verify C_VAT_Code_ID is set on T_Due_Acct row before building declaration
+    # Verify VATCode is set on T_Due_Acct row before building declaration
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
-      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
-      | *                     |           |           |          |               | invoice   |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | VATCode | Record_ID |
+      | T_Due_Acct            |           | 190       | tax19    | sales19 | invoice   |
+      | *                     |           |           |          |         | invoice   |
 
     And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | DateFrom   | DateTo     |
-      | td1        | acctSchema      | 2024-01-01 | 2024-01-31 |
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td1        | acctSchema      | 2024-01-15 |
 
     When the tax declaration 'td1' is built
 
     Then the C_TaxDeclarationAcct for declaration 'td1' contains entries for documents:
-      | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+      | Record_ID | VATCode  | AmountType | Amount |
       | invoice   | sales19       | T          | -190   |
 
 
@@ -121,14 +121,14 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And Wait until documents invoice is posted
 
     And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | DateFrom   | DateTo     |
-      | td1        | acctSchema      | 2024-01-01 | 2024-01-31 |
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td1        | acctSchema      | 2024-01-15 |
 
     When the tax declaration 'td1' is built
     When the tax declaration 'td1' is built
 
     Then the C_TaxDeclarationAcct for declaration 'td1' contains entries for documents:
-      | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+      | Record_ID | VATCode  | AmountType | Amount |
       | invoice   | sales19       | T          | -190   |
 
 
@@ -177,13 +177,13 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And Wait until documents invoiceB is posted
 
     And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | DateFrom   | DateTo     |
-      | td11       | acctSchema      | 2024-01-01 | 2024-01-31 |
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td11       | acctSchema      | 2024-01-15 |
 
     When the tax declaration 'td11' is built
 
     # Each invoice must map to its own VAT code — no cross-contamination
     Then the C_TaxDeclarationAcct for declaration 'td11' contains entries for documents:
-      | Record_ID | C_VAT_Code_ID | AmountType | Amount |
+      | Record_ID | VATCode  | AmountType | Amount |
       | invoiceA  | salesVatA     | T          | -190   |
       | invoiceB  | salesVatB     | T          | -70    |

@@ -36,12 +36,15 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.util.TimeUtil;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @RequiredArgsConstructor
@@ -59,8 +62,9 @@ public class C_TaxDeclaration_StepDef
 	 * <ul>
 	 *   <li>{@code Identifier} — step-def reference key</li>
 	 *   <li>{@code C_AcctSchema_ID} — identifier of a {@link I_C_AcctSchema} in {@link C_AcctSchema_StepDefData}</li>
-	 *   <li>{@code DateFrom} — start date, format {@code yyyy-MM-dd}</li>
-	 *   <li>{@code DateTo} — end date, format {@code yyyy-MM-dd}</li>
+	 *   <li>{@code Date} — any date inside the period (format {@code yyyy-MM-dd}); the period
+	 *       of the AcctSchema's calendar covering this date is selected and assigned to
+	 *       {@code C_Period_ID}, plus the period's end date is stored in {@code DateAcct}</li>
 	 * </ul>
 	 *
 	 * <p><b>Optional columns:</b>
@@ -71,8 +75,8 @@ public class C_TaxDeclaration_StepDef
 	 * <p><b>Example:</b>
 	 * <pre>{@code
 	 * Given metasfresh contains C_TaxDeclaration:
-	 *   | Identifier | C_AcctSchema_ID | DateFrom   | DateTo     |
-	 *   | td1        | acctSchema      | 2024-01-01 | 2024-01-31 |
+	 *   | Identifier | C_AcctSchema_ID | Date       |
+	 *   | td1        | acctSchema      | 2024-01-15 |
 	 * }</pre>
 	 */
 	@Given("metasfresh contains C_TaxDeclaration:")
@@ -84,13 +88,20 @@ public class C_TaxDeclaration_StepDef
 	private void createTaxDeclaration(@NonNull final DataTableRow row)
 	{
 		final I_C_AcctSchema acctSchema = resolveAcctSchema(row);
+		final Timestamp dateTs = TimeUtil.asTimestamp(LocalDate.parse(row.getAsString("Date")));
+		final I_C_Period period = queryBL.createQueryBuilder(I_C_Period.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_Period.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateTs)
+				.addCompareFilter(I_C_Period.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateTs)
+				.orderBy(I_C_Period.COLUMNNAME_StartDate)
+				.create()
+				.firstOnlyNotNull(I_C_Period.class);
 
 		final I_C_TaxDeclaration decl = InterfaceWrapperHelper.newInstance(I_C_TaxDeclaration.class);
 		decl.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		decl.setC_AcctSchema_ID(acctSchema.getC_AcctSchema_ID());
-		decl.setDateFrom(TimeUtil.asTimestamp(LocalDate.parse(row.getAsString("DateFrom"))));
-		decl.setDateTo(TimeUtil.asTimestamp(LocalDate.parse(row.getAsString("DateTo"))));
-		decl.setDateTrx(TimeUtil.asTimestamp(LocalDate.parse(row.getAsString("DateFrom"))));
+		decl.setC_Period_ID(period.getC_Period_ID());
+		decl.setDateAcct(TimeUtil.asTimestamp(period.getEndDate()));
 		row.getAsOptionalString("Description").ifPresent(decl::setDescription);
 		InterfaceWrapperHelper.saveRecord(decl);
 
