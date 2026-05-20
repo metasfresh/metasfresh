@@ -71,10 +71,12 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And Wait until documents invoice is posted
 
     # Verify VATCode is set on T_Due_Acct row before building declaration
+    # (`C_VAT_Code_ID` column is the cucumber identifier; the matcher resolves it to
+    # the actual VATCode string via vatCodeTable — see FactAcctMatchersFactory#extractVatCode)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | VATCode | Record_ID |
-      | T_Due_Acct            |           | 190       | tax19    | sales19 | invoice   |
-      | *                     |           |           |          |         | invoice   |
+      | AccountConceptualName | AmtAcctDr | AmtAcctCr | C_Tax_ID | C_VAT_Code_ID | Record_ID |
+      | T_Due_Acct            |           | 190       | tax19    | sales19       | invoice   |
+      | *                     |           |           |          |               | invoice   |
 
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       |
