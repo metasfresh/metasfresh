@@ -60,6 +60,7 @@ import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
 import java.util.List;
+import javax.annotation.Nullable;
 
 
 public class CustomerReturnHUsCreateCommand
@@ -75,15 +76,19 @@ public class CustomerReturnHUsCreateCommand
 
 	private final I_M_InOutLine returnLine;
 	private final boolean isOnlyCreateCUs;
+	@NonNull private final ImmutableList<I_M_HU> originHUsForCopy;
 
 	@Builder
 	private CustomerReturnHUsCreateCommand(
 			@NonNull final I_M_InOutLine returnLine,
-			final boolean isOnlyCreateCUs
-	)
+			final boolean isOnlyCreateCUs,
+			@Nullable final List<I_M_HU> originHUsForCopy)
 	{
 		this.returnLine = returnLine;
 		this.isOnlyCreateCUs = isOnlyCreateCUs;
+		this.originHUsForCopy = originHUsForCopy != null
+				? ImmutableList.copyOf(originHUsForCopy)
+				: ImmutableList.of();
 	}
 
 	public List<I_M_HU> execute()
@@ -95,15 +100,22 @@ public class CustomerReturnHUsCreateCommand
 	private List<I_M_HU> createHUsForReturnLine()
 	{
 		final List<I_M_HU> createdHUs;
-		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
-		if (isOnlyCreateCUs || hupiItemProductId == null || hupiItemProductId.isVirtualHU())
+		if (!originHUsForCopy.isEmpty())
 		{
-			createdHUs = ImmutableList.of(createCUs());
-
-        }
+			createdHUs = copyOriginHUs(originHUsForCopy);
+		}
 		else
 		{
-			createdHUs = createLUTUs();
+			final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
+			if (isOnlyCreateCUs || hupiItemProductId == null || hupiItemProductId.isVirtualHU())
+			{
+				createdHUs = ImmutableList.of(createCUs());
+
+	        }
+			else
+			{
+				createdHUs = createLUTUs();
+			}
 		}
 
 		// huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs) sets isTransferPackingMaterials true
@@ -177,5 +189,10 @@ public class CustomerReturnHUsCreateCommand
 		final PlainProductStorage productStorage = new PlainProductStorage(productId, uom, qty);
 
 		return new GenericAllocationSourceDestination(productStorage, returnLine);
+	}
+
+	private List<I_M_HU> copyOriginHUs(@NonNull final List<I_M_HU> originHUs)
+	{
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 }
