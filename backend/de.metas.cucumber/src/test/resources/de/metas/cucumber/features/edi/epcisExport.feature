@@ -252,3 +252,124 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     Then the EPCIS JSON has:
       | warehouseValue | desadvReference |
       | StdWarehouse   | notNull         |
+
+
+  @from:cucumber
+  @Id:S29231_130
+  @design_pending
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  Scenario: S29231_130 — Two orders, one batched shipment → EPCIS desadvReferences[] and poReferences[] arrays of size 2
+  ## me03#29231 — TC4: Asserts that the EPCIS event JSON produced by get_epcis_events_json_fn
+  ## for a 2-source-order shipment carries desadvReferences[] and poReferences[] as jsonb arrays
+  ## of size 2 (not scalars, not nulls). This directly validates the Option-A junction design
+  ## decision documented in the function header comment.
+  ## Tagged @design_pending: if the receiver-side parser requires a different shape, only
+  ## Tasks 15 (SQL function) and this scenario need to change.
+    Given metasfresh contains M_Products:
+      | Identifier      | GTIN          |
+      | p_S29231_130    | 4060000000130 |
+    And metasfresh contains M_PricingSystems
+      | Identifier      |
+      | ps_S29231_130   |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_130   | ps_S29231_130      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID  |
+      | plv_S29231_130  | pl_S29231_130   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_130         | p_S29231_130  | 10.0     | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient
+    And metasfresh contains C_BPartners:
+      | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S29231_130   | Y          | ps_S29231_130      | 9900000291300 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID   | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | bp_S29231_130   | true                 | 9900000291300         |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID  | M_Product_ID  |
+      | bp_S29231_130  | p_S29231_130  |
+
+    # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID          |
+      | pi_LU_S29231_130    |
+      | pi_TU_S29231_130    |
+      | pi_VHU_S29231_130   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_130   | pi_LU_S29231_130    | LU          | Y         |
+      | piv_TU_S29231_130   | pi_TU_S29231_130    | TU          | Y         |
+      | piv_VHU_S29231_130  | pi_VHU_S29231_130   | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   |
+      | pii_LU_S29231_130   | piv_LU_S29231_130   | 20  | HU       | pi_TU_S29231_130    |
+      | pii_TU_S29231_130   | piv_TU_S29231_130   | 0   | PM       |                     |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S29231_130          | pii_TU_S29231_130 | p_S29231_130  | 10  | 2020-01-01 |
+
+    # Order A — distinct POReference → its own EDI_Desadv
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference               |
+      | oA_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | PO_A_S29231_130_@Date@    |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olA_S29231_130| oA_S29231_130 | p_S29231_130  | 10         | pip_S29231_130          |
+
+    When the order identified by oA_S29231_130 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dA_S29231_130            | bp_S29231_130            | oA_S29231_130         | P                |
+
+    # Order B — distinct POReference → its own EDI_Desadv
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference               |
+      | oB_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | PO_B_S29231_130_@Date@    |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olB_S29231_130| oB_S29231_130 | p_S29231_130  | 10         | pip_S29231_130          |
+
+    When the order identified by oB_S29231_130 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dB_S29231_130            | bp_S29231_130            | oB_S29231_130         | P                |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ssA_S29231_130  | olA_S29231_130  | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ssB_S29231_130  | olB_S29231_130  | N             |
+
+    # Batch-generate ONE shipment covering both schedules
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ssA_S29231_130        |
+      | ssB_S29231_130        |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID      |
+      | ssA_S29231_130        | io_S29231_130   |
+
+    # Wait for DESADV pack records to be written (async)
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID |
+      | packA_S29231_130   |
+
+    # ─── CORE ASSERTION (TC4: EPCIS desadvReferences[] / poReferences[] arrays) ──────
+    # The EPCIS function must return ONE event document with desadvReferences[] of size 2
+    # and poReferences[] of size 2 — one element per source-order DESADV.
+    When the EPCIS JSON export function is called for M_InOut identified by io_S29231_130
+    Then the EPCIS JSON array field has:
+      | field            | expectedSize |
+      | desadvReferences | 2            |
+      | poReferences     | 2            |

@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.edi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import io.cucumber.datatable.DataTable;
@@ -35,6 +36,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -281,6 +285,52 @@ public class EPCIS_JSON_Export_StepDef
 			row.getAsOptionalString("uom")
 					.ifPresent(expected -> assertThat(item.path("uom").asText())
 							.as("item uom").isEqualTo(expected));
+		});
+	}
+
+	/**
+	 * Validates jsonb-array fields in the EPCIS JSON that carry arrays of string values.
+	 * Used for me03#29231 TC4: desadvReferences[] and poReferences[] arrays.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>field</b> — (required) name of the top-level array field (e.g. {@code desadvReferences}, {@code poReferences})<br>
+	 *   <b>expectedSize</b> — (required) expected number of elements in the array<br>
+	 *   <b>containsValue</b> — (optional) a value that must appear somewhere in the array<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON array field has:
+	 *   | field             | expectedSize | containsValue     |
+	 *   | desadvReferences  | 2            | DESADV-2026-00001 |
+	 *   | poReferences      | 2            | PO_A_S29231       |
+	 * </pre>
+	 */
+	@Then("the EPCIS JSON array field has:")
+	public void validateArrayField(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
+
+		DataTableRows.of(dataTable).forEach(row -> assertEpcisArrayField(row));
+	}
+
+	private void assertEpcisArrayField(@NonNull final DataTableRow row)
+	{
+		final String field = row.getAsString("field");
+		final int expectedSize = row.getAsInt("expectedSize");
+
+		final JsonNode arrayNode = lastEpcisResult.path(field);
+		assertThat(arrayNode.isArray())
+				.as("EPCIS JSON field '%s' must be a JSON array", field).isTrue();
+		assertThat(arrayNode.size())
+				.as("EPCIS JSON array '%s' must have %d element(s)", field, expectedSize)
+				.isEqualTo(expectedSize);
+
+		row.getAsOptionalString("containsValue").ifPresent(expected -> {
+			final List<String> actualValues = new ArrayList<>();
+			arrayNode.forEach(el -> actualValues.add(el.asText()));
+			assertThat(actualValues)
+					.as("EPCIS JSON array '%s' must contain '%s'", field, expected)
+					.contains(expected);
 		});
 	}
 
