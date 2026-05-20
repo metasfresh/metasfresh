@@ -307,3 +307,211 @@ Feature: One order, two shipments, two invoices — each invoice carries only it
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | QtyOrdered | QtyDelivered | QtyInvoiced |
       | ic_1                              | 0            | 10         | 10           | 10          |
+
+  # ============================================================================
+  # SCENARIO D — supported header aggregation outcome: "one invoice with one
+  # line per InOutLine" (default behaviour). 1 order line, 2 partial shipments,
+  # invoice ONCE after both are shipped. Result: one C_Invoice with two
+  # C_InvoiceLine rows, one per shipment line (qty 4 and qty 6).
+  #
+  # Runs with the customer's IC-close sysconfig ON (C_Invoice_Candidate_Close_
+  # PartiallyInvoiced=Y) — the all-at-once invoice flow is unaffected by it
+  # because there's no partial invoice in this scenario.
+  # ============================================================================
+  @from:cucumber
+  @Id:MF4139_04
+  Scenario: D — ship both, then one invoice with one line per shipment line
+
+    # Override Background "off" → keep the customer's default on.
+    And set sys config boolean value true for sys config C_Invoice_Candidate_Close_PartiallyInvoiced
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DeliveryRule | DateOrdered | PreparationDate      |
+      | so_1       | true    | customer_1    | wh_1           | F            | 2024-05-10  | 2024-05-09T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_1      | so_1       | p_1          | 10         |
+    And the order identified by so_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | sol_1                     | N             |
+
+    # ---------- First partial shipment: 4 PCE (no invoicing yet) ----------
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_1                            | 4                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+
+    And metasfresh has date and time 2024-05-15T08:00:00+02:00[Europe/Berlin]
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment_1            | s_s_1                            | D                 | Y                  |
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine_1            | shipment_1            | p_1                     | 4           | true      |
+
+    And recompute shipment schedules
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # ---------- Second partial shipment: 6 PCE (still no invoicing) ----------
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_1                            | 6                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+
+    And metasfresh has date and time 2024-05-25T08:00:00+02:00[Europe/Berlin]
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment_1, shipment_2 | s_s_1                            | D                 | Y                  |
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine_2            | shipment_2            | p_1                     | 6           | true      |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # IC carries the cumulative delivery of both shipments.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | sol_1                     | 10           |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | QtyOrdered | QtyDelivered | QtyInvoiced |
+      | ic_1                              | 10           | 10         | 10           | 0           |
+
+    # With the default header + line aggregation, one C_Invoice is produced
+    # with TWO C_InvoiceLine rows — one per InOutLine, carrying that line's qty.
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_1                              | invoice_1               |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine_1               | invoice_1               | p_1                     | 4           | true      |
+      | invoiceLine_2               | invoice_1               | p_1                     | 6           | true      |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | QtyOrdered | QtyDelivered | QtyInvoiced |
+      | ic_1                              | 0            | 10         | 10           | 10          |
+
+  # ============================================================================
+  # SCENARIO E — supported header aggregation outcome: "one invoice per shipment"
+  # Same shape as D (1 order line, 2 partial shipments, invoice ONCE) but the
+  # BPartner is configured with a C_Aggregation that includes the "Per each
+  # shipment/receipt" attribute (C_Aggregation_Attribute_ID=540001, maps to
+  # M_InOut_ID). Result: ONE invoice PER shipment — two C_Invoice rows, one
+  # carrying qty 4 (shipment_1), the other qty 6 (shipment_2).
+  #
+  # Runs with C_Invoice_Candidate_Close_PartiallyInvoiced=Y (customer config).
+  # ============================================================================
+  @from:cucumber
+  @Id:MF4139_05
+  Scenario: E — ship both, then one invoice per shipment via aggregation config
+
+    # Override Background "off" → keep the customer's default on.
+    And set sys config boolean value true for sys config C_Invoice_Candidate_Close_PartiallyInvoiced
+
+    # Build a custom C_Aggregation that inherits the standard one (ID=1000000)
+    # and adds the "Per each shipment/receipt" attribute (ID=540001).
+    And metasfresh contains C_Aggregations:
+      | Identifier  | Name                        | TableName           | EntityType                | OPT.AggregationUsageLevel |
+      | aggPerShip  | perShipment_MF4139          | C_Invoice_Candidate | de.metas.invoicecandidate | H                         |
+    And load C_Aggregations:
+      | Identifier | C_Aggregation_ID |
+      | aggStd     | 1000000          |
+    And load C_Aggregation_Attributes:
+      | Identifier | C_Aggregation_Attribute_ID |
+      | attrInOut  | 540001                     |
+    And metasfresh contains C_AggregationItems:
+      | Identifier | C_Aggregation_ID.Identifier | EntityType                | Type | OPT.Included_Aggregation_ID.Identifier | OPT.C_Aggregation_Attribute_ID.Identifier |
+      | aggI_std   | aggPerShip                  | de.metas.invoicecandidate | INC  | aggStd                                 | null                                      |
+      | aggI_io    | aggPerShip                  | de.metas.invoicecandidate | ATR  | null                                   | attrInOut                                 |
+
+    # Assign the custom aggregation to our BPartner.
+    And update C_BPartner:
+      | Identifier | OPT.SO_Invoice_Aggregation_ID.Identifier |
+      | customer_1 | aggPerShip                               |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | M_Warehouse_ID | DeliveryRule | DateOrdered | PreparationDate      |
+      | so_1       | true    | customer_1    | wh_1           | F            | 2024-05-10  | 2024-05-09T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_1      | so_1       | p_1          | 10         |
+    And the order identified by so_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | sol_1                     | N             |
+
+    # ---------- First partial shipment: 4 PCE (no invoicing yet) ----------
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_1                            | 4                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+
+    And metasfresh has date and time 2024-05-15T08:00:00+02:00[Europe/Berlin]
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment_1            | s_s_1                            | D                 | Y                  |
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine_1            | shipment_1            | p_1                     | 4           | true      |
+
+    And recompute shipment schedules
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # ---------- Second partial shipment: 6 PCE (still no invoicing) ----------
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_1                            | 6                         |
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+
+    And metasfresh has date and time 2024-05-25T08:00:00+02:00[Europe/Berlin]
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment_1, shipment_2 | s_s_1                            | D                 | Y                  |
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine_2            | shipment_2            | p_1                     | 6           | true      |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # IC carries the cumulative delivery of both shipments.
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_1                              | sol_1                     | 10           |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | QtyOrdered | QtyDelivered | QtyInvoiced |
+      | ic_1                              | 10           | 10         | 10           | 0           |
+
+    # With "Per each shipment/receipt" in the aggregation key, a single
+    # invoice run produces TWO invoices — one per shipment. invoice_1 covers
+    # shipment_1 (qty 4); invoice_2 covers shipment_2 (qty 6).
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_1                              |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | ic_1                              | invoice_1, invoice_2    |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine_1               | invoice_1               | p_1                     | 4           | true      |
+      | invoiceLine_2               | invoice_2               | p_1                     | 6           | true      |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | QtyOrdered | QtyDelivered | QtyInvoiced |
+      | ic_1                              | 0            | 10         | 10           | 10          |

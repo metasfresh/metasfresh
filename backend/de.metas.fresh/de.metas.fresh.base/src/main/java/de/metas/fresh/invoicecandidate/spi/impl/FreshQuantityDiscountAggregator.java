@@ -34,6 +34,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.Money;
@@ -104,6 +105,14 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	public void setMatchInvoiceService(final MatchInvoiceService matchInvoiceService)
 	{
 		this.defaultAggregator.setMatchInvoiceService(matchInvoiceService);
+	}
+
+	@Override
+	public void setSharedIc2QtyInvoiceable(@javax.annotation.Nullable final java.util.Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedMap)
+	{
+		// Forward the engine-supplied shared map to the wrapped DefaultAggregator so that allocations
+		// in this bucket reduce what subsequent buckets see.
+		this.defaultAggregator.setSharedIc2QtyInvoiceable(sharedMap);
 	}
 
 	/**

@@ -23,13 +23,17 @@ package de.metas.invoicecandidate.spi;
  */
 
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.quantity.StockQtyAndUOMQty;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -57,6 +61,15 @@ public interface IAggregator
 	void setContext(Properties ctx, String trxName);
 
 	default void setMatchInvoiceService(MatchInvoiceService matchInvoiceService){}
+
+	/**
+	 * Install an externally-supplied map of {@code C_Invoice_Candidate_ID → qty left to invoice}
+	 * that is shared across every header-aggregation bucket. When ICIOLs of one IC are split across multiple
+	 * invoice headers (e.g. via the "Per each shipment/receipt" header aggregation attribute), each bucket
+	 * mutates the same map, so the residual qty seen by subsequent buckets reflects what was already allocated.
+	 * The default implementation is a no-op for aggregators that don't track per-IC residual qty.
+	 */
+	default void setSharedIc2QtyInvoiceable(@Nullable Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedMap){}
 
 
 	/**

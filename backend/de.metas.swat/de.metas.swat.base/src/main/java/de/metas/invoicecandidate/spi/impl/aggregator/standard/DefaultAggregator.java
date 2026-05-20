@@ -44,6 +44,7 @@ import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -74,10 +75,27 @@ public class DefaultAggregator implements IAggregator
 	 */
 	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<>();
 
+	/**
+	 * When set, {@link #aggregate()} uses this externally-supplied map instead of building
+	 * its own via {@link #createInvoiceableQtysMap()}. The engine populates a single shared
+	 * map and threads it through every bucket's aggregator, so allocations in one bucket
+	 * reduce what subsequent buckets see — preventing over-allocation when ICIOLs of one IC
+	 * are split across multiple invoice headers (e.g. via the "Per each shipment/receipt"
+	 * header aggregation attribute).
+	 */
+	@Nullable
+	private Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedIc2QtyInvoiceable;
+
 	@Override
 	public void setMatchInvoiceService(final MatchInvoiceService matchInvoiceService)
 	{
 		this.matchInvoiceService = matchInvoiceService;
+	}
+
+	@Override
+	public void setSharedIc2QtyInvoiceable(@Nullable final Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedMap)
+	{
+		this.sharedIc2QtyInvoiceable = sharedMap;
 	}
 
 	@Override
@@ -182,8 +200,11 @@ public class DefaultAggregator implements IAggregator
 		final List<IInvoiceCandAggregate> invoiceCandAggregates = new ArrayList<>();
 
 		// ic2QtyInvoiceable keeps track of the qty that we have left to invoice,
-		// to make sure that we don't invoice more that the invoice candidate allows us to
-		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable = createInvoiceableQtysMap();
+		// to make sure that we don't invoice more that the invoice candidate allows us to.
+		// When the engine supplies a shared map, we use it so that allocations from earlier
+		// buckets are visible here; otherwise fall back to a local map for stand-alone callers.
+		final Map<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable =
+				sharedIc2QtyInvoiceable != null ? sharedIc2QtyInvoiceable : createInvoiceableQtysMap();
 
 		for (final String aggKey : new ArrayList<>(aggKey2iciol.keySet()))
 		{

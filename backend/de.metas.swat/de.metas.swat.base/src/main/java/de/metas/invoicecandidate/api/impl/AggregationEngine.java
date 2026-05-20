@@ -55,6 +55,10 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -83,6 +87,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,6 +152,15 @@ public final class AggregationEngine
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
+	/**
+	 * Tracks every IC added to this engine, so we can build a single shared
+	 * {@code ic2QtyInvoiceable} map at {@link #aggregate()} time and thread it through every
+	 * bucket's line aggregator. Without sharing, ICIOLs of one IC split across multiple invoice
+	 * headers (e.g. via the "Per each shipment/receipt" header aggregation attribute) over-allocate
+	 * because each bucket starts fresh from {@code ic.getQtyToInvoice()}.
+	 */
+	private final HashMap<InvoiceCandidateId, I_C_Invoice_Candidate> seenIcs = new HashMap<>();
 
 	@Builder
 	private AggregationEngine(
@@ -294,6 +308,13 @@ public final class AggregationEngine
 			@Nullable final I_C_InvoiceCandidate_InOutLine iciol,
 			final boolean isLastIcIol)
 	{
+		// Remember every IC we see; aggregate() will build the shared ic2QtyInvoiceable
+		// map from these and pass it to every line aggregator. putIfAbsent: the first call
+		// for an IC carries the freshest pre-aggregation snapshot (the engine doesn't refresh
+		// the record before aggregate() runs), and any subsequent ICIOL calls for the same
+		// IC must not displace it.
+		seenIcs.putIfAbsent(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()), icRecord);
+
 		final I_M_InOutLine icInOutLine = iciol == null ? null : iciol.getM_InOutLine();
 		final InOutId inoutId = icInOutLine != null ? InOutId.ofRepoIdOrNull(icInOutLine.getM_InOut_ID()) : null;
 
@@ -672,8 +693,22 @@ public final class AggregationEngine
 	{
 		final List<IInvoiceHeader> invoiceHeaders = new ArrayList<>();
 
+		// Build a shared "qty left to invoice per IC" map seeded with every IC's QtyToInvoice
+		// and thread it through every bucket's line aggregator before that bucket aggregates.
+		// Buckets are processed in insertion order (key2headerAndAggregators is a LinkedHashMap),
+		// and each bucket's aggregate() reduces the shared map via subtractQtyInvoiceable. So
+		// when ICIOLs of one IC are split across multiple invoice headers, each later bucket
+		// sees the residual left after earlier buckets consumed their share — instead of always
+		// seeing the IC's full QtyToInvoice and over-allocating.
+		final Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedIc2QtyInvoiceable = buildSharedIc2QtyInvoiceable();
+
 		for (final InvoiceHeaderAndLineAggregators headerAndAggregators : key2headerAndAggregators.values())
 		{
+			for (final IAggregator lineAggregator : headerAndAggregators.getLineAggregators())
+			{
+				lineAggregator.setSharedIc2QtyInvoiceable(sharedIc2QtyInvoiceable);
+			}
+
 			final IInvoiceHeader invoiceHeader = aggregate(headerAndAggregators);
 
 			final ILoggable loggable = Loggables.get();
@@ -692,6 +727,30 @@ public final class AggregationEngine
 		}
 
 		return invoiceHeaders;
+	}
+
+	/**
+	 * Builds a single {@code ic2QtyInvoiceable} map covering every IC the engine has seen,
+	 * seeded with each IC's effective {@code QtyToInvoice}. Threaded into each bucket's
+	 * {@link de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator} so that
+	 * allocations in one bucket reduce what subsequent buckets see.
+	 */
+	private Map<InvoiceCandidateId, StockQtyAndUOMQty> buildSharedIc2QtyInvoiceable()
+	{
+		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> map = new HashMap<>();
+		for (final Map.Entry<InvoiceCandidateId, I_C_Invoice_Candidate> entry : seenIcs.entrySet())
+		{
+			final I_C_Invoice_Candidate ic = entry.getValue();
+			final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+			final UomId icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
+			// task 08507 (same rationale as DefaultAggregator.createInvoiceableQtysMap()):
+			// ic.getQtyToInvoice() is already the "effective" qty (override-aware).
+			final StockQtyAndUOMQty qtyToInvoice = StockQtyAndUOMQtys.create(
+					ic.getQtyToInvoice(), productId,
+					ic.getQtyToInvoiceInUOM(), icUomId);
+			map.put(entry.getKey(), qtyToInvoice);
+		}
+		return map;
 	}
 
 	/**
