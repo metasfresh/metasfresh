@@ -61,7 +61,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final DocumentLineDescriptor documentLineDescriptor;
 
-	private final boolean ignoreInMaterialDispo;
+	private final boolean isIgnoreInMaterialDispo;
 
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
@@ -70,7 +70,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 			@NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
 			final int shipmentScheduleId,
 			@Nullable final DocumentLineDescriptor documentLineDescriptor,
-			final boolean ignoreInMaterialDispo)
+			final boolean isIgnoreInMaterialDispo)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
@@ -78,7 +78,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.shipmentScheduleDetail = shipmentScheduleDetail;
 		this.documentLineDescriptor = documentLineDescriptor;
-		this.ignoreInMaterialDispo = ignoreInMaterialDispo;
+		this.isIgnoreInMaterialDispo = isIgnoreInMaterialDispo;
 	}
 
 	@NonNull

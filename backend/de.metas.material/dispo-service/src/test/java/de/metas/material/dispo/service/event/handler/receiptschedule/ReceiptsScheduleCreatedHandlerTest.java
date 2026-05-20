@@ -90,7 +90,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 	}
 
 	@Test
-	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent
 				.builder()
@@ -111,7 +111,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 
 		receiptsScheduleCreatedHandler.handleEvent(event);
 
-		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition — no candidates of any type are created.
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 

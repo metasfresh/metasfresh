@@ -161,10 +161,15 @@ public interface MaterialEvent
 	EventDescriptor getEventDescriptor();
 
 	/**
-	 * If {@code true}, then the material-dispo handlers won't handle this event. 
+	 * If {@code true}, then the material-dispo handlers won't handle this event.
+	 * <p>
+	 * {@code @JsonIgnore} on the default: events that carry the flag explicitly (transactions,
+	 * shipment/receipt schedules) re-declare it in their constructor with {@code @JsonProperty},
+	 * which restores serialization for those types. All other event types stay unaffected.
 	 */
-	default boolean isIgnoreInMaterialDispo() { return false; };
-	
+	@JsonIgnore
+	default boolean isIgnoreInMaterialDispo() { return false; }
+
 	/**
 	 * Implement to provide accurate event data, like name & parent object
 	 */

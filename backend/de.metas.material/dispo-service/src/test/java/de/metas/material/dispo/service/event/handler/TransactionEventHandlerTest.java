@@ -118,7 +118,7 @@ public class TransactionEventHandlerTest
 	}
 
 	@Test
-	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
 		final CandidateChangeService candidateChangeHandler = Mockito.mock(CandidateChangeService.class);
 		final CandidateRepositoryRetrieval candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
@@ -137,7 +137,8 @@ public class TransactionEventHandlerTest
 
 		transactionEventHandler.handleEvent(event);
 
-		// dropship-warehouse transactions bypass material-disposition entirely — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition (MRP_Exclude=Y, or a dropship warehouse without
+		// an explicit MRP_Exclude value) — no candidates of any type are created.
 		Mockito.verifyZeroInteractions(candidateChangeHandler);
 		Mockito.verifyZeroInteractions(candidateRepository);
 	}
