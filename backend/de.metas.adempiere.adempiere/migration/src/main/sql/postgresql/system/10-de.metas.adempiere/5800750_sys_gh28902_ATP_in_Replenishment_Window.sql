@@ -281,6 +281,13 @@ VALUES
      TO_TIMESTAMP('2026-05-04 12:00','YYYY-MM-DD HH24:MI'), 0)
 ;
 
--- Backfill any missing _Trl rows
-SELECT add_missing_translations()
-;
+-- NOTE: The broad `add_missing_translations()` call was removed here.
+-- It iterates over ~69 _Trl tables backfilling rows for any active language,
+-- and on customer DBs with pre-existing duplicate translation entries
+-- (e.g. AD_Window_TRL "Produktgruppe"/"en_GB" present on two AD_Window rows)
+-- it raises a deferred unique_violation at COMMIT time that cannot be caught
+-- by EXCEPTION handlers inside the transaction.
+-- The explicit `INSERT ... NOT EXISTS` blocks above cover this migration's own
+-- AD additions (AD_Element 584821, AD_Column 592461, AD_Field 778036) — the
+-- broad housekeeping backfill is not required for the migration's own intent
+-- and is better handled by a dedicated translations-housekeeping migration.
