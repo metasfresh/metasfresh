@@ -56,7 +56,6 @@ Feature: One order, two shipments, two invoices — each invoice carries only it
   # generate-shipments call. Each shipment → one invoice with qty 4 / 6 — never 10.
   # ============================================================================
   @from:cucumber
-  @Id:MF4139_01
   Scenario: A — 1 order line, 2 partial shipments via QtyToDeliver_Override, 2 invoices
 
     And metasfresh contains C_Orders:
@@ -155,7 +154,6 @@ Feature: One order, two shipments, two invoices — each invoice carries only it
   # invoice it. Each invoice MUST carry only its own line — never both lines.
   # ============================================================================
   @from:cucumber
-  @Id:MF4139_02
   Scenario: B — 1 order with 2 order lines, each shipped + invoiced separately
 
     And metasfresh contains C_Orders:
@@ -228,7 +226,6 @@ Feature: One order, two shipments, two invoices — each invoice carries only it
   # HU's qty.
   # ============================================================================
   @from:cucumber
-  @Id:MF4139_03
   Scenario: C — 1 order line, 2 HUs (4 + 6) each in its own shipment, 2 invoices
 
     And metasfresh contains C_Orders:
@@ -319,7 +316,6 @@ Feature: One order, two shipments, two invoices — each invoice carries only it
   # because there's no partial invoice in this scenario.
   # ============================================================================
   @from:cucumber
-  @Id:MF4139_04
   Scenario: D — ship both, then one invoice with one line per shipment line
 
     # Override Background "off" → keep the customer's default on.
@@ -412,7 +408,6 @@ Feature: One order, two shipments, two invoices — each invoice carries only it
   # Runs with C_Invoice_Candidate_Close_PartiallyInvoiced=Y (customer config).
   # ============================================================================
   @from:cucumber
-  @Id:MF4139_05
   Scenario: E — ship both, then one invoice per shipment via aggregation config
 
     # Override Background "off" → keep the customer's default on.

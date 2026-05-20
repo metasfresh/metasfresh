@@ -236,7 +236,9 @@ public class DefaultAggregator implements IAggregator
 		return invoiceCandAggregates;
 	}
 
-	/** @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced */
+	/**
+	 * @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced
+	 */
 	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> createInvoiceableQtysMap()
 	{
 		// ic2QtyInvoiceable keeps track of the stockQty that we have left to invoice, to make sure that we don't invoice more than the invoice candidate allows us to
