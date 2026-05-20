@@ -141,3 +141,135 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
     Then the M_InOut_Export_EDI_DESADV_JSON_V export view for M_InOut identified by io_S29231_100 has:
       | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier |
       | 2                | 2                 | oA_S29231         | oB_S29231         |
+
+
+  @Id:S29231_120
+  @from:cucumber
+  Scenario: S29231_120 — Three orders, one batched shipment → export view emits three DESADV JSONs (N=3 generalisation)
+  ## me03#29231 — TC3: Generalisation of TC1 to three source orders. All three EDI-configured
+  ## orders for the same BPartner (each with a distinct POReference) are completed and their
+  ## shipment schedules are batched into a single M_InOut. After the Option-A junction fix the
+  ## export view M_InOut_Export_EDI_DESADV_JSON_V must return EXACTLY 3 rows — one per source
+  ## DESADV — each carrying its own POReference and the same IPA_SSCC18.
+
+    # Reuse the same product + pricing system + BPartner as TC1 where possible,
+    # but use fresh identifiers so scenarios are independent.
+    Given metasfresh contains M_Products:
+      | Identifier      |
+      | p_S29231_120    |
+    And metasfresh contains M_PricingSystems
+      | Identifier      |
+      | ps_S29231_120   |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_120   | ps_S29231_120      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID  |
+      | plv_S29231_120  | pl_S29231_120   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_120         | p_S29231_120  | 10.0     | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient
+    And metasfresh contains C_BPartners:
+      | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S29231_120   | Y          | ps_S29231_120      | 9900000291200 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | bp_S29231_120  | true                 | 9900000291200         |
+
+    # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID          |
+      | pi_LU_S29231_120    |
+      | pi_TU_S29231_120    |
+      | pi_VHU_S29231_120   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_120   | pi_LU_S29231_120    | LU          | Y         |
+      | piv_TU_S29231_120   | pi_TU_S29231_120    | TU          | Y         |
+      | piv_VHU_S29231_120  | pi_VHU_S29231_120   | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   |
+      | pii_LU_S29231_120   | piv_LU_S29231_120   | 20  | HU       | pi_TU_S29231_120    |
+      | pii_TU_S29231_120   | piv_TU_S29231_120   | 0   | PM       |                     |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S29231_120          | pii_TU_S29231_120 | p_S29231_120  | 10  | 2020-01-01 |
+
+    # Order A
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference              |
+      | oA_S29231_120 | true    | bp_S29231_120  | 2026-05-20  | PO_A_S29231_120_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olA_S29231_120 | oA_S29231_120 | p_S29231_120  | 10         | pip_S29231_120          |
+
+    When the order identified by oA_S29231_120 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dA_S29231_120            | bp_S29231_120            | oA_S29231_120         | P                |
+
+    # Order B
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference              |
+      | oB_S29231_120 | true    | bp_S29231_120  | 2026-05-20  | PO_B_S29231_120_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olB_S29231_120 | oB_S29231_120 | p_S29231_120  | 10         | pip_S29231_120          |
+
+    When the order identified by oB_S29231_120 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dB_S29231_120            | bp_S29231_120            | oB_S29231_120         | P                |
+
+    # Order C — third order for the N=3 generalisation
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference              |
+      | oC_S29231_120 | true    | bp_S29231_120  | 2026-05-20  | PO_C_S29231_120_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olC_S29231_120 | oC_S29231_120 | p_S29231_120  | 10         | pip_S29231_120          |
+
+    When the order identified by oC_S29231_120 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dC_S29231_120            | bp_S29231_120            | oC_S29231_120         | P                |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # All three shipment schedules must be ready
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ssA_S29231_120  | olA_S29231_120  | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ssB_S29231_120  | olB_S29231_120  | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID  | IsToRecompute |
+      | ssC_S29231_120  | olC_S29231_120  | N             |
+
+    # Batch-generate ONE shipment covering all three schedules
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ssA_S29231_120        |
+      | ssB_S29231_120        |
+      | ssC_S29231_120        |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID      |
+      | ssA_S29231_120        | io_S29231_120   |
+
+    # Wait for DESADV pack records
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID |
+      | packA_S29231_120   |
+
+    # ─── CORE ASSERTION (TC3 falsifiable predicate) ───────────────────────────
+    # View must return exactly 3 rows — one per source-order DESADV.
+    Then the M_InOut_Export_EDI_DESADV_JSON_V export view for M_InOut identified by io_S29231_120 has:
+      | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier |
+      | 3                | 3                 | oA_S29231_120     | oB_S29231_120     |
