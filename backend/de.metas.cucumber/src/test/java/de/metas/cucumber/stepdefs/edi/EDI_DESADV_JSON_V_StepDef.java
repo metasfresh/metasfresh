@@ -33,6 +33,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
@@ -101,6 +102,53 @@ public class EDI_DESADV_JSON_V_StepDef
 
 		// --- validate each DataTable row ------------------------------------
 		DataTableRows.of(dataTable).forEach(row -> assertViewRows(rows, row));
+	}
+
+	/**
+	 * Queries {@code M_InOut_Export_EDI_DESADV_JSON_V} for the given shipment and asserts
+	 * that the view returns exactly 1 row whose {@code EDI_Desadv_ID} and {@code POReference}
+	 * match the given source order. Used for the single-order regression (TC2).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Order_Identifier</b> — (required) step-def identifier of the single source order<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the M_InOut_Export_EDI_DESADV_JSON_V export view for M_InOut identified by io_S29231_110 has exactly 1 row matching:
+	 *   | Order_Identifier |
+	 *   | o_S29231_110     |
+	 * </pre>
+	 */
+	@Then("^the M_InOut_Export_EDI_DESADV_JSON_V export view for M_InOut identified by (.*) has exactly 1 row matching:$")
+	public void assertExportViewSingleRow(
+			@NonNull final String inoutIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final int inoutId = inout.getM_InOut_ID();
+
+		final List<ViewRow> rows = queryViewRows(inoutId);
+
+		assertThat(rows)
+				.as("M_InOut_Export_EDI_DESADV_JSON_V must return exactly 1 row for single-order shipment")
+				.hasSize(1);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String orderIdentifier = row.getAsString("Order_Identifier");
+			final I_C_Order order = orderTable.get(orderIdentifier);
+
+			// Wrap to EDI extension to access EDI_Desadv_ID
+			final de.metas.edi.model.I_C_Order ediOrder =
+					InterfaceWrapperHelper.create(order, de.metas.edi.model.I_C_Order.class);
+
+			assertThat(rows.get(0).ediDesadvId())
+					.as("View row EDI_Desadv_ID must match the order's EDI_Desadv_ID")
+					.isEqualTo(ediOrder.getEDI_Desadv_ID());
+
+			assertThat(rows.get(0).poReference())
+					.as("View row POReference must match the order's POReference")
+					.isEqualTo(order.getPOReference());
+		});
 	}
 
 	// =========================================================================
