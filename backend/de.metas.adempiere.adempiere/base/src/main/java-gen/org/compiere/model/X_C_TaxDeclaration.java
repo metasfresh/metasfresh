@@ -38,11 +38,8 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
       super (ctx, C_TaxDeclaration_ID, trxName);
       /** if (C_TaxDeclaration_ID == 0)
         {
+			setC_AcctSchema_ID (0);
 			setC_TaxDeclaration_ID (0);
-			setDateFrom (new Timestamp( System.currentTimeMillis() ));
-			setDateTo (new Timestamp( System.currentTimeMillis() ));
-			setDateTrx (new Timestamp( System.currentTimeMillis() ));
-			setName (null);
 			setProcessed (false);
         } */
     }
@@ -79,7 +76,7 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 		@return Define the declaration to the tax authorities
 	  */
 	@Override
-	public int getC_TaxDeclaration_ID () 
+	public int getC_TaxDeclaration_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxDeclaration_ID);
 		if (ii == null)
@@ -87,61 +84,97 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 		return ii.intValue();
 	}
 
-	/** Set Datum von.
-		@param DateFrom 
-		Starting date for a range
-	  */
+	/** @param C_AcctSchema ignored - columnname is not NoCheck */
 	@Override
-	public void setDateFrom (java.sql.Timestamp DateFrom)
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_DateFrom, DateFrom);
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
 
-	/** Get Datum von.
-		@return Starting date for a range
-	  */
 	@Override
-	public java.sql.Timestamp getDateFrom () 
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFrom);
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
-	/** Set Datum bis.
-		@param DateTo 
-		End date of a date range
+	/** Set Buchführungs-Schema.
+		@param C_AcctSchema_ID
+		Rules for accounting
 	  */
 	@Override
-	public void setDateTo (java.sql.Timestamp DateTo)
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
-		set_Value (COLUMNNAME_DateTo, DateTo);
+		if (C_AcctSchema_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
-	/** Get Datum bis.
-		@return End date of a date range
+	/** Get Buchführungs-Schema.
+		@return Rules for accounting
 	  */
 	@Override
-	public java.sql.Timestamp getDateTo () 
+	public int getC_AcctSchema_ID ()
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTo);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	/** Set Vorgangsdatum.
-		@param DateTrx 
-		Transaction Date
-	  */
+	/** @param C_Period ignored - columnname is not NoCheck */
 	@Override
-	public void setDateTrx (java.sql.Timestamp DateTrx)
+	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_DateTrx, DateTrx);
+		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
 
-	/** Get Vorgangsdatum.
-		@return Transaction Date
+	@Override
+	public void setC_Period(org.compiere.model.I_C_Period C_Period)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
+	}
+
+	/** Set Buchungsperiode.
+		@param C_Period_ID Buchungsperiode
 	  */
 	@Override
-	public java.sql.Timestamp getDateTrx () 
+	public void setC_Period_ID (int C_Period_ID)
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
+		if (C_Period_ID < 1)
+			set_Value (COLUMNNAME_C_Period_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+	}
+
+	/** Get Buchungsperiode.
+		@return Buchungsperiode
+	  */
+	@Override
+	public int getC_Period_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Buchungsdatum.
+		@param DateAcct Buchungsdatum
+	  */
+	@Override
+	public void setDateAcct (java.sql.Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Buchungsdatum.
+		@return Buchungsdatum
+	  */
+	@Override
+	public java.sql.Timestamp getDateAcct ()
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
 	/** Set Beschreibung.
@@ -155,28 +188,27 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
+	/** Set Belegnummer.
+		@param DocumentNo Belegnummer
 	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
-		set_Value (COLUMNNAME_Name, Name);
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
+	/** Get Belegnummer.
+		@return Belegnummer
 	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getDocumentNo ()
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Verarbeitet.

@@ -302,7 +302,6 @@ public class FlatrateTermDataFactory
 		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
 		tax.setIsDocumentLevel(true);
-		tax.setIsSalesTax(true);
 		tax.setName("test tax");
 		tax.setRate(BigDecimal.valueOf(10));
 		tax.setSOPOType(X_C_Tax.SOPOTYPE_Both);
