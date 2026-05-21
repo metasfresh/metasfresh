@@ -63,7 +63,7 @@ BEGIN
                  ), 2)
     INTO cost
     FROM (SELECT * FROM pp_product_bom_recursive(p_pp_product_bom_id, NULL)) AS bom
-    WHERE bom.depth >= 2;
+    WHERE bom.depth = 2;
 
     RETURN cost;
 END;
@@ -124,7 +124,8 @@ BEGIN
     FROM PP_Product_BOM bom
     WHERE bom.M_Product_ID = v_M_Product_ID
       AND bom.IsActive = 'Y'
-      AND (bom.validto >= NOW() OR bom.validto IS NULL)
+      AND (bom.validto >= p_date OR bom.validto IS NULL)
+      AND (bom.validfrom <= p_date OR bom.validfrom IS NULL)
     ORDER BY
         bom.validfrom DESC
            ,   bom.PP_Product_BOM_ID DESC
@@ -189,8 +190,13 @@ $$;
 
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric)
 ;
+DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric, date)
+;
 
-CREATE OR REPLACE FUNCTION PP_Product_BOM_Recursive_Report(p_PP_Product_BOM_ID numeric)
+CREATE OR REPLACE FUNCTION PP_Product_BOM_Recursive_Report(
+    p_PP_Product_BOM_ID numeric,
+    p_date              date DEFAULT NOW()::date
+)
     RETURNS table
             (
                 Line         text,
@@ -243,7 +249,7 @@ BEGIN
                     WHEN t.pp_product_bom_id > 0 THEN
                         computeCurentBOMProductCost(
                                 p_pp_product_bom_id => t.PP_Product_BOM_ID,
-                                p_date => NOW()::date)
+                                p_date => p_date)
                                                  ELSE
                         (
                             ROUND(
@@ -252,7 +258,7 @@ BEGIN
                                             THEN t.Percentage / 100 * COALESCE(getCurrentCost(
                                                                                        t.m_product_id,
                                                                                        t.c_uom_id,
-                                                                                       NOW()::date,
+                                                                                       p_date,
                                                                                        v_acctschema_id,
                                                                                        v_costelement_id,
                                                                                        v_ad_client_id,
@@ -261,7 +267,7 @@ BEGIN
                                             ELSE t.QtyBOM * COALESCE(getCurrentCost(
                                                                              t.m_product_id,
                                                                              t.c_uom_id,
-                                                                             NOW()::date,
+                                                                             p_date,
                                                                              v_acctschema_id,
                                                                              v_costelement_id,
                                                                              v_ad_client_id,

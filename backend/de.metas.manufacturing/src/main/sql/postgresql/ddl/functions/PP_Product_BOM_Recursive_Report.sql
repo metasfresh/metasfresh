@@ -1,7 +1,12 @@
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric)
 ;
+DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric, date)
+;
 
-CREATE OR REPLACE FUNCTION PP_Product_BOM_Recursive_Report(p_PP_Product_BOM_ID numeric)
+CREATE OR REPLACE FUNCTION PP_Product_BOM_Recursive_Report(
+    p_PP_Product_BOM_ID numeric,
+    p_date              date DEFAULT NOW()::date
+)
     RETURNS table
             (
                 Line         text,
@@ -54,7 +59,7 @@ BEGIN
                     WHEN t.pp_product_bom_id > 0 THEN
                         computeCurentBOMProductCost(
                                 p_pp_product_bom_id => t.PP_Product_BOM_ID,
-                                p_date => NOW()::date)
+                                p_date => p_date)
                                                  ELSE
                         (
                             ROUND(
@@ -63,7 +68,7 @@ BEGIN
                                             THEN t.Percentage / 100 * COALESCE(getCurrentCost(
                                                                                        t.m_product_id,
                                                                                        t.c_uom_id,
-                                                                                       NOW()::date,
+                                                                                       p_date,
                                                                                        v_acctschema_id,
                                                                                        v_costelement_id,
                                                                                        v_ad_client_id,
@@ -72,7 +77,7 @@ BEGIN
                                             ELSE t.QtyBOM * COALESCE(getCurrentCost(
                                                                              t.m_product_id,
                                                                              t.c_uom_id,
-                                                                             NOW()::date,
+                                                                             p_date,
                                                                              v_acctschema_id,
                                                                              v_costelement_id,
                                                                              v_ad_client_id,

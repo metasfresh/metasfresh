@@ -50,7 +50,8 @@ BEGIN
     FROM PP_Product_BOM bom
     WHERE bom.M_Product_ID = v_M_Product_ID
       AND bom.IsActive = 'Y'
-      AND (bom.validto >= NOW() OR bom.validto IS NULL)
+      AND (bom.validto >= p_date OR bom.validto IS NULL)
+      AND (bom.validfrom <= p_date OR bom.validfrom IS NULL)
     ORDER BY
         bom.validfrom DESC
            ,   bom.PP_Product_BOM_ID DESC

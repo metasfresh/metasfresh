@@ -63,7 +63,7 @@ BEGIN
                  ), 2)
     INTO cost
     FROM (SELECT * FROM pp_product_bom_recursive(p_pp_product_bom_id, NULL)) AS bom
-    WHERE bom.depth >= 2;
+    WHERE bom.depth = 2;
 
     RETURN cost;
 END;
