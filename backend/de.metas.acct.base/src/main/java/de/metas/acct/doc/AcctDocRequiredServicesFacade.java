@@ -21,8 +21,8 @@ import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
-import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -471,7 +471,7 @@ public class AcctDocRequiredServicesFacade
 		return warehouseBL.getOrgIdByLocatorRepoId(locatorId);
 	}
 
-	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
+	public Optional<VATCodeMatchingResponse> findVATCode(final VATCodeMatchingRequest request)
 	{
 		return vatCodeDAO.findVATCode(request);
 	}
@@ -535,6 +535,7 @@ public class AcctDocRequiredServicesFacade
 		//
 		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
 		record.setVATCode(factLine.getVatCode());
+		record.setVATCodeAmountType(factLine.getVatCodeAmountType() != null ? factLine.getVatCodeAmountType().getCode() : null);
 		//
 		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
 		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());

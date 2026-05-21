@@ -110,6 +110,62 @@ public interface I_C_TaxDeclaration
     public static final String COLUMNNAME_C_TaxDeclaration_ID = "C_TaxDeclaration_ID";
 
 	/**
+	 * Set Buchführungs-Schema.
+	 * Rules for accounting
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
+
+	/**
+	 * Get Buchführungs-Schema.
+	 * Rules for accounting
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_AcctSchema_ID();
+
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
+
+    /** Column definition for C_AcctSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclaration.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+    /** Column name C_AcctSchema_ID */
+    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+
+	/**
+	 * Set Buchungsperiode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Period_ID (int C_Period_ID);
+
+	/**
+	 * Get Buchungsperiode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Period_ID();
+
+	public org.compiere.model.I_C_Period getC_Period();
+
+	public void setC_Period(org.compiere.model.I_C_Period C_Period);
+
+    /** Column definition for C_Period_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<>(I_C_TaxDeclaration.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+    /** Column name C_Period_ID */
+    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -140,79 +196,27 @@ public interface I_C_TaxDeclaration
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Datum von.
-	 * Starting date for a range
+	 * Set Buchungsdatum.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateFrom (java.sql.Timestamp DateFrom);
+	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Datum von.
-	 * Starting date for a range
+	 * Get Buchungsdatum.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateFrom();
+	public java.sql.Timestamp getDateAcct();
 
-    /** Column definition for DateFrom */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateFrom = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateFrom", null);
-    /** Column name DateFrom */
-    public static final String COLUMNNAME_DateFrom = "DateFrom";
-
-	/**
-	 * Set Datum bis.
-	 * End date of a date range
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateTo (java.sql.Timestamp DateTo);
-
-	/**
-	 * Get Datum bis.
-	 * End date of a date range
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateTo();
-
-    /** Column definition for DateTo */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateTo = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateTo", null);
-    /** Column name DateTo */
-    public static final String COLUMNNAME_DateTo = "DateTo";
-
-	/**
-	 * Set Vorgangsdatum.
-	 * Transaction Date
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateTrx (java.sql.Timestamp DateTrx);
-
-	/**
-	 * Get Vorgangsdatum.
-	 * Transaction Date
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateTrx();
-
-    /** Column definition for DateTrx */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateTrx", null);
-    /** Column name DateTrx */
-    public static final String COLUMNNAME_DateTrx = "DateTrx";
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
 	 * Set Beschreibung.
@@ -238,6 +242,29 @@ public interface I_C_TaxDeclaration
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Belegnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Belegnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocumentNo();
+
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -261,31 +288,6 @@ public interface I_C_TaxDeclaration
     public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 * Alphanumeric identifier of the entity
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getName();
-
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_TaxDeclaration, Object>(I_C_TaxDeclaration.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Verarbeitet.

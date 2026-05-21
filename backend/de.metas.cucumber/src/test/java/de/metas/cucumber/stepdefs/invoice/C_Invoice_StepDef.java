@@ -35,7 +35,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -47,9 +46,9 @@ import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -69,6 +68,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -83,7 +83,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
-import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -519,6 +518,18 @@ public class C_Invoice_StepDef
 		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
 
+		// IsPartialInvoice is a tri-state column (Y / N / null = NA). Read via the
+		// IsPartialInvoice.fromValue(...) helper because the PO layer stores YesNo
+		// column values as Boolean (Y -> TRUE, N -> FALSE, NULL -> null) — a raw
+		// <String>getValue cast throws ClassCastException at runtime. Cucumber's
+		// "-" / "null" tokens map to actual SQL null via DataTableUtil.nullToken2Null.
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+				.ifPresent(expectedRaw -> {
+					final IsPartialInvoice expected = IsPartialInvoice.fromCode(DataTableUtil.nullToken2Null(expectedRaw));
+					final IsPartialInvoice actual = IsPartialInvoice.fromValue(invoice.getIsPartialInvoice());
+					softly.assertThat(actual).as(I_C_Invoice.COLUMNNAME_IsPartialInvoice + " for Identifier=%s", identifierStr).isEqualTo(expected);
+				});
+
 		// payment related
 		{
 			row.getAsOptionalBoolean(COLUMNNAME_IsPaid)
@@ -567,7 +578,7 @@ public class C_Invoice_StepDef
 					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
 					softly.assertThat(invoice.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
 				});
-		
+
 		softly.assertAll();
 	}
 
@@ -890,21 +901,10 @@ public class C_Invoice_StepDef
 			invoice.setDateInvoiced(dateInvoiced);
 		}
 
-		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
-		if (Check.isNotBlank(paymentTerm))
-		{
-			final PaymentTermQuery query = PaymentTermQuery.builder()
-					.orgId(StepDefConstants.ORG_ID)
-					.value(paymentTerm)
-					.build();
-
-			final PaymentTermId paymentTermId = paymentTermRepo.firstIdOnly(query)
-					.orElse(null);
-
-			assertThat(paymentTermId).isNotNull();
-
-			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-		}
+		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
+		// resolve correctly even when the DB record has a unique timestamped Value.
+		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);
 

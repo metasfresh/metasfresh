@@ -2994,6 +2994,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_PricingSystem_ID = "PO_PricingSystem_ID";
 
 	/**
+	 * Set Purchase Transport Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_TransportDays (int PO_TransportDays);
+
+	/**
+	 * Get Purchase Transport Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPO_TransportDays();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_TransportDays = new ModelColumn<>(I_C_BPartner.class, "PO_TransportDays", null);
+	String COLUMNNAME_PO_TransportDays = "PO_TransportDays";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *

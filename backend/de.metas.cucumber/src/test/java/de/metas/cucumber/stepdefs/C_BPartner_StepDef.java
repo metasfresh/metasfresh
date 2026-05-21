@@ -111,6 +111,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_TransportDays;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
@@ -336,6 +337,7 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
 				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+		row.getAsOptionalInt(COLUMNNAME_PO_TransportDays).ifPresent(bPartnerRecord::setPO_TransportDays);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
 				.map(aggregationTable::getId)

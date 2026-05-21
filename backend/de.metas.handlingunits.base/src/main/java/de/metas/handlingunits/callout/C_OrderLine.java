@@ -13,7 +13,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-@Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
