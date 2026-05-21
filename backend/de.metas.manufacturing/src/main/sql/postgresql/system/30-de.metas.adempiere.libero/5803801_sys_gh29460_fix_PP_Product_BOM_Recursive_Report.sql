@@ -1,3 +1,4 @@
+-- Fixes ordering dependency: must run after 5803800_sys_gh29460_fix_PP_Product_BOM_Recursive.sql
 -- Source DDL: backend/de.metas.manufacturing/src/main/sql/postgresql/ddl/functions/PP_Product_BOM_Recursive_Report.sql
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric)
 ;
@@ -57,10 +58,7 @@ BEGIN
                t.Percentage,
                t.UOMSymbol,
                ROUND(
-                       CASE WHEN t.IsQtyPercentage = 'Y'
-                                THEN t.Percentage / 100
-                                ELSE t.QtyBOM
-                           END
+                       t.cumulative_qty
                        *
                        CASE WHEN t.PP_Product_BOM_ID IS NOT NULL
                                 THEN COALESCE(computeCurrentBOMProductCost(t.PP_Product_BOM_ID, p_date), 0)
@@ -74,7 +72,7 @@ BEGIN
                                                       v_ad_org_id
                                               ), 0)
                            END
-                   , 2) AS cost
+                   , 4) AS cost
         FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL) t
         ORDER BY t.path;
 END;

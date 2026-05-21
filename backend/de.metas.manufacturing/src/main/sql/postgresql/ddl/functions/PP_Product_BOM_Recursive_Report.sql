@@ -56,10 +56,7 @@ BEGIN
                t.Percentage,
                t.UOMSymbol,
                ROUND(
-                       CASE WHEN t.IsQtyPercentage = 'Y'
-                                THEN t.Percentage / 100
-                                ELSE t.QtyBOM
-                           END
+                       t.cumulative_qty
                        *
                        CASE WHEN t.PP_Product_BOM_ID IS NOT NULL
                                 THEN COALESCE(computeCurrentBOMProductCost(t.PP_Product_BOM_ID, p_date), 0)
@@ -73,7 +70,7 @@ BEGIN
                                                       v_ad_org_id
                                               ), 0)
                            END
-                   , 2) AS cost
+                   , 4) AS cost
         FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL) t
         ORDER BY t.path;
 END;
