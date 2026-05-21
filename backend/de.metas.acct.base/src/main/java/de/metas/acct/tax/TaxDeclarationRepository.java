@@ -36,29 +36,4 @@ public class TaxDeclarationRepository
 				.create()
 				.deleteDirectly();
 	}
-
-	public boolean hasAnyLines(@NonNull final TaxDeclarationId id)
-	{
-		return queryBL.createQueryBuilder(I_C_TaxDeclarationLine.class)
-				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, id)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.anyMatch();
-	}
-
-	public boolean existsCompletedOverlappingPeriod(
-			@NonNull final TaxDeclarationId selfId,
-			final int acctSchemaId,
-			@SuppressWarnings("unused") final int periodId)
-	{
-		// NOTE: C_Period_ID column is not yet on C_TaxDeclaration model (to be added in a later iter).
-		// Until then, we check for any other completed declaration in the same AcctSchema.
-		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
-				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
-				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
-				.addNotEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID, selfId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.anyMatch();
-	}
 }
