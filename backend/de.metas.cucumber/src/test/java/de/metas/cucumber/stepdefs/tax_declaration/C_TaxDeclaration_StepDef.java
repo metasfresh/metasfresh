@@ -29,23 +29,34 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_TaxDeclaration;
+import org.compiere.model.I_C_TaxDeclarationAcct;
+import org.compiere.model.I_C_TaxDeclarationLine;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class C_TaxDeclaration_StepDef
@@ -54,6 +65,15 @@ public class C_TaxDeclaration_StepDef
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 	@NonNull private final TaxDeclarationService taxDeclarationService = SpringContextHolder.instance.getBean(TaxDeclarationService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+	/**
+	 * Last exception thrown by a {@code @When} step that explicitly catches and stashes errors.
+	 * Asserted (and cleared) by {@link #assertCompletionFailedWithMessage(String)} or
+	 * {@link #assertOperationFailedWithMessage(String)}.
+	 */
+	@Nullable
+	private AdempiereException lastException;
 
 	/**
 	 * Create {@link I_C_TaxDeclaration} records.
@@ -141,5 +161,259 @@ public class C_TaxDeclaration_StepDef
 	{
 		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
 		taxDeclarationService.build(TaxDeclarationId.ofRepoId(decl.getC_TaxDeclaration_ID()));
+	}
+
+	/**
+	 * Complete an existing {@link I_C_TaxDeclaration} via the document engine.
+	 *
+	 * <p>On success the declaration transitions to {@code DocStatus='CO'}, {@code Processed='Y'},
+	 * {@code DocAction='RA'}.  If the handler rejects the completion (e.g. no lines, period overlap)
+	 * the resulting {@link AdempiereException} is stashed and can be asserted by
+	 * {@link #assertCompletionFailedWithMessage(String)}.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When the tax declaration "taxDecl" is completed
+	 * }</pre>
+	 */
+	@When("the tax declaration {string} is completed")
+	public void complete(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		try
+		{
+			documentBL.processEx(decl, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			InterfaceWrapperHelper.refresh(decl);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
+	/**
+	 * Reactivate an existing {@link I_C_TaxDeclaration} via the document engine.
+	 *
+	 * <p>On success the declaration transitions to {@code DocStatus='DR'}, {@code Processed='N'},
+	 * {@code DocAction='CO'}.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When the tax declaration "taxDecl" is reactivated
+	 * }</pre>
+	 */
+	@When("the tax declaration {string} is reactivated")
+	public void reactivate(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		documentBL.processEx(decl, IDocument.ACTION_ReActivate, IDocument.STATUS_Drafted);
+		InterfaceWrapperHelper.refresh(decl);
+	}
+
+	/**
+	 * Assert that a {@link I_C_TaxDeclaration} is in a specific state after complete / reactivate.
+	 *
+	 * <p><b>Required parameters:</b>
+	 * <ul>
+	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
+	 *   <li>{@code processed} — expected value of {@code Processed} column ({@code Y} or {@code N})</li>
+	 *   <li>{@code docStatus} — expected {@code DocStatus} value (e.g. {@code CO}, {@code DR})</li>
+	 *   <li>{@code docAction} — expected {@code DocAction} value (e.g. {@code RA}, {@code CO})</li>
+	 * </ul>
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Then the tax declaration "taxDecl" has Processed='Y' and DocStatus='CO' and DocAction='RA'
+	 * }</pre>
+	 */
+	@Then("the tax declaration {string} has Processed={string} and DocStatus={string} and DocAction={string}")
+	public void assertHeaderState(
+			@NonNull final String identifier,
+			@NonNull final String processed,
+			@NonNull final String docStatus,
+			@NonNull final String docAction)
+	{
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		InterfaceWrapperHelper.refresh(decl);
+
+		final boolean expectedProcessed = "Y".equalsIgnoreCase(processed);
+		assertThat(decl.isProcessed()).as("Processed").isEqualTo(expectedProcessed);
+		assertThat(decl.getDocStatus()).as("DocStatus").isEqualTo(docStatus);
+		assertThat(decl.getDocAction()).as("DocAction").isEqualTo(docAction);
+	}
+
+	/**
+	 * Assert that the most recent {@link #complete(String)} step failed with the given AD_Message key.
+	 *
+	 * <p>The stashed exception is cleared after the assertion so that subsequent steps
+	 * can stash a new one independently.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Then the tax declaration completion fails with message 'TaxDeclaration_NoLinesYet'
+	 * }</pre>
+	 */
+	@Then("the tax declaration completion fails with message {string}")
+	public void assertCompletionFailedWithMessage(@NonNull final String adMessageKey)
+	{
+		assertLastExceptionHasErrorCode(adMessageKey);
+	}
+
+	/**
+	 * Assert that the most recent {@code @When} step that stashes exceptions failed with the given
+	 * AD_Message key.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Then the operation fails with message 'TaxDeclaration_Locked'
+	 * }</pre>
+	 */
+	@Then("the operation fails with message {string}")
+	public void assertOperationFailedWithMessage(@NonNull final String adMessageKey)
+	{
+		assertLastExceptionHasErrorCode(adMessageKey);
+	}
+
+	private void assertLastExceptionHasErrorCode(@NonNull final String expectedErrorCode)
+	{
+		final AdempiereException ex = lastException;
+		lastException = null;
+
+		assertThat(ex)
+				.as("An AdempiereException with errorCode='%s' should have been thrown", expectedErrorCode)
+				.isNotNull();
+		assertThat(ex.getErrorCode())
+				.as("ErrorCode of the exception")
+				.isEqualTo(expectedErrorCode);
+	}
+
+	/**
+	 * Attempt to change the {@code Description} of a {@link I_C_TaxDeclaration} and stash any
+	 * {@link AdempiereException} thrown by the model interceptor.
+	 *
+	 * <p>Use with {@link #assertOperationFailedWithMessage(String)} to verify the lock guard.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When the user attempts to change the Description on tax declaration "taxDecl"
+	 * Then the operation fails with message 'TaxDeclaration_Locked'
+	 * }</pre>
+	 */
+	@When("the user attempts to change the Description on tax declaration {string}")
+	public void attemptChangeDescription(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		try
+		{
+			decl.setDescription("attempt-edit-" + System.currentTimeMillis());
+			InterfaceWrapperHelper.saveRecord(decl);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
+	/**
+	 * Attempt to save a benign field change on any {@link I_C_TaxDeclarationLine} of the given
+	 * declaration and stash any {@link AdempiereException} thrown by the model interceptor.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When the user attempts to edit any C_TaxDeclarationLine of "taxDecl"
+	 * Then the operation fails with message 'TaxDeclaration_Locked'
+	 * }</pre>
+	 */
+	@When("the user attempts to edit any C_TaxDeclarationLine of {string}")
+	public void attemptEditAnyLine(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		final I_C_TaxDeclarationLine line = queryBL.createQueryBuilder(I_C_TaxDeclarationLine.class)
+				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, decl.getC_TaxDeclaration_ID())
+				.create()
+				.first(I_C_TaxDeclarationLine.class);
+		assertThat(line).as("C_TaxDeclarationLine for declaration %s must exist", identifier).isNotNull();
+		try
+		{
+			line.setDescription("attempt-edit-line-" + System.currentTimeMillis());
+			InterfaceWrapperHelper.saveRecord(line);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
+	/**
+	 * Attempt to save a benign field change on any {@link I_C_TaxDeclarationAcct} of the given
+	 * declaration and stash any {@link AdempiereException} thrown by the model interceptor.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When the user attempts to edit any C_TaxDeclarationAcct of "taxDecl"
+	 * Then the operation fails with message 'TaxDeclaration_Locked'
+	 * }</pre>
+	 */
+	@When("the user attempts to edit any C_TaxDeclarationAcct of {string}")
+	public void attemptEditAnyAcct(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		final I_C_TaxDeclarationAcct acct = queryBL.createQueryBuilder(I_C_TaxDeclarationAcct.class)
+				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, decl.getC_TaxDeclaration_ID())
+				.create()
+				.first(I_C_TaxDeclarationAcct.class);
+		assertThat(acct).as("C_TaxDeclarationAcct for declaration %s must exist", identifier).isNotNull();
+		try
+		{
+			acct.setDescription("attempt-edit-acct-" + System.currentTimeMillis());
+			InterfaceWrapperHelper.saveRecord(acct);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
+	/**
+	 * Change the {@code Description} of a {@link I_C_TaxDeclaration} and expect no exception.
+	 * Fails the scenario if an exception is thrown (i.e. if the declaration is still locked).
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * And the user can change the Description on tax declaration "taxDecl" successfully
+	 * }</pre>
+	 */
+	@And("the user can change the Description on tax declaration {string} successfully")
+	public void changeDescriptionAndExpectSuccess(@NonNull final String identifier)
+	{
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		decl.setDescription("post-reactivate-edit-" + System.currentTimeMillis());
+		InterfaceWrapperHelper.saveRecord(decl);
+	}
+
+	/**
+	 * Assert that the {@link I_C_TaxDeclarationLine} rows belonging to the given declaration are
+	 * still present in the database (i.e. reactivation did not purge them).
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * And the C_TaxDeclarationLine rows for "taxDecl" are still present
+	 * }</pre>
+	 */
+	@And("the C_TaxDeclarationLine rows for {string} are still present")
+	public void assertLinesStillPresent(@NonNull final String identifier)
+	{
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		final List<I_C_TaxDeclarationLine> lines = queryBL.createQueryBuilder(I_C_TaxDeclarationLine.class)
+				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, decl.getC_TaxDeclaration_ID())
+				.create()
+				.list(I_C_TaxDeclarationLine.class);
+		assertThat(lines).as("C_TaxDeclarationLine rows for declaration %s must not be empty after reactivation", identifier)
+				.isNotEmpty();
 	}
 }
