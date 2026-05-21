@@ -98,7 +98,6 @@ public class EDIDesadvPackRepository
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());
 		desadvPackRecord.setM_HU_PackagingCode_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeID()));
-		// me03#29945: trim to guard against master-data with stray whitespace
 		// (EDIFACT GIN segment rejects values that don't match ^[0-9]{1,14}$).
 		desadvPackRecord.setGTIN_PackingMaterial(StringUtils.trimBlankToNull(createEDIDesadvPackRequest.getGtinPackingMaterial()));
 

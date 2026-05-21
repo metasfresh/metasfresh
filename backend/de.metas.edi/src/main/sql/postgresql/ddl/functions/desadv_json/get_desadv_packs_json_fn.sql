@@ -116,9 +116,6 @@ BEGIN
                            'M_HU_PackagingCode_Text', pc_lu.packagingcode,
                            'LineItems', COALESCE(items_lat.items_data, '[]'::jsonb),
                            -- Defensive trim: master-data sometimes carries stray whitespace
-                           -- (e.g. ' 4290051000012'); EDIFACT GIN rejects values that don't
-                           -- match ^[0-9]{1,14}$. Trim at emit time so legacy dirty rows
-                           -- in EDI_Desadv_Pack don't break re-exports.
                            'GTIN_PackingMaterial', NULLIF(btrim(ph.gtin_packingmaterial), '')
                    ) ORDER BY ph.seqno
            )
