@@ -37,6 +37,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
@@ -322,9 +323,10 @@ public class DesadvDAO implements IDesadvDAO
 	@NonNull
 	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
 	{
-		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.andCollect(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, I_M_InOut.class)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, statusSet)
 				.create()
 				.list(I_M_InOut.class);
