@@ -9,7 +9,7 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
 ## order's DESADV — rather than the pre-fix behaviour of emitting only the first
 ## source order's DESADV.
 ##
-## TC1 (S29231_100): 2 orders → 1 batched shipment → view returns 2 DESADV JSON rows.
+## TC1 (S29231_100): 2 orders → 1 consolidated shipment → view returns 2 DESADV JSON rows.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -28,11 +28,11 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
 
   @Id:S29231_100
   @from:cucumber
-  Scenario: S29231_100 — Two orders, one batched shipment → export view emits two DESADV JSONs
+  Scenario: S29231_100 — Two orders, one consolidated shipment → export view emits two DESADV JSONs
   ## me03#29231 — TC1: regression test for the multi-source-order DESADV export fix.
   ## Two EDI-configured orders for the same BPartner, each with a distinct POReference,
   ## are completed (creating one EDI_Desadv per order). Their shipment schedules are
-  ## batched into a single M_InOut. After the Option-A junction fix the export view
+  ## consolidated into a single M_InOut. After the Option-A junction fix the export view
   ## M_InOut_Export_EDI_DESADV_JSON_V must return EXACTLY 2 rows for that M_InOut —
   ## one per source-order DESADV — each carrying its own POReference and EDI_Desadv_ID.
 

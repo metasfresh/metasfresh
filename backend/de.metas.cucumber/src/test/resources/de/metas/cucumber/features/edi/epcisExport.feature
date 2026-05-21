@@ -259,7 +259,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @design_pending
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S29231_130 — Two orders, one batched shipment → EPCIS desadvReferences[] and poReferences[] arrays of size 2
+  Scenario: S29231_130 — Two orders, one consolidated shipment → EPCIS desadvReferences[] and poReferences[] arrays of size 2
   ## me03#29231 — TC4: Asserts that the EPCIS event JSON produced by get_epcis_events_json_fn
   ## for a 2-source-order shipment carries desadvReferences[] and poReferences[] as jsonb arrays
   ## of size 2 (not scalars, not nulls). This directly validates the Option-A junction design
