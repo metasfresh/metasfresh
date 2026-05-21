@@ -249,8 +249,8 @@ public class ExternalSystemScriptedExportConversionService
 				.setAD_Process_ID(config.getOutboundDataProcessId())
 				.addParameter(rootKeyColumnName, outboundDataProcessRecordId);
 
-		// me03#29231 — only add EDI_Desadv_ID when supplied (>0). The M_InOut JSON-export process
-		// declares it mandatory; other table exports (e.g. invoice) don't read it.
+		// Only forward EDI_Desadv_ID when supplied (>0). The M_InOut JSON-export process declares
+		// it mandatory; other table exports (e.g. invoice) don't read it.
 		if (ediDesadvId > 0)
 		{
 			outboundProcessInfoBuilder.addParameter(PARAM_EDI_Desadv_ID, ediDesadvId);
@@ -313,8 +313,8 @@ public class ExternalSystemScriptedExportConversionService
 					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
 					.addParameter(PARAM_Record_ID, recordId);
 
-			// me03#29231 — only forward EDI_Desadv_ID when supplied (>0). It's the second filter
-			// needed by the M_InOut JSON-export view to keep expectSingleResult=true.
+			// Only forward EDI_Desadv_ID when supplied (>0). It's the second filter needed by the
+			// M_InOut JSON-export view to keep expectSingleResult=true.
 			if (ediDesadvId > 0)
 			{
 				processInfoBuilder.addParameter(PARAM_EDI_Desadv_ID, ediDesadvId);
