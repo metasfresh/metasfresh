@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -163,6 +164,23 @@ public class InOutDAO implements IInOutDAO
 	{
 		final boolean retrieveAll = true;
 		return retrieveLines(inOut, retrieveAll, I_M_InOutLine.class);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_Order> retrieveSourceOrders(@NonNull final I_M_InOut inOut)
+	{
+		final ImmutableSet<OrderId> orderIds = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
+				.addNotEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, 0)
+				.andCollect(I_M_InOutLine.COLUMN_C_OrderLine_ID, I_C_OrderLine.class)
+				.create()
+				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, Integer.class)
+				.stream()
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return loadByRepoIdAwares(orderIds, I_C_Order.class);
 	}
 
 	@Override

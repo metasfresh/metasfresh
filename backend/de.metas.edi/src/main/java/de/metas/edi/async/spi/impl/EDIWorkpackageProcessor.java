@@ -33,6 +33,7 @@ import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.IDesadvDAO;
+import javax.annotation.Nullable;
 import de.metas.edi.api.impl.EDIBPartnerConfigService;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.api.impl.EDIInOutDAO;
@@ -137,7 +138,15 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				{
 					final I_M_InOut shipment = InterfaceWrapperHelper.create(ediDocument, I_M_InOut.class);
 					final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(ediDocument), clientId);
-					final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+					// Manual M_InOut-triggered export uses the legacy single-FK M_InOut.EDI_Desadv_ID
+					// (lowest source-DESADV-ID winner for consolidated shipments). Canonical multi-DESADV
+					// export uses the EDI_Desadv branch below.
+					final EDIDesadvId shipmentEdiDesadvId = EDIDesadvId.ofRepoIdOrNull(shipment.getEDI_Desadv_ID());
+					if (shipmentEdiDesadvId == null)
+					{
+						Loggables.addLog("EDI export for M_InOut DocumentNo={} has no EDI_Desadv_ID — graceful degradation (legacy record without DESADV link)", shipment.getDocumentNo());
+					}
+					final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID(), shipmentEdiDesadvId);
 					if(result.getPInstanceId() != null)
 					{
 						shipment.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());
@@ -156,7 +165,9 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 					for (final I_M_InOut shipment : shipments)
 					{
 						final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(shipment), clientId);
-						final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+						// Pass (M_InOut_ID, EDI_Desadv_ID) pair so the JSON-export view's per-(inout,desadv)
+						// row is uniquely identified for consolidated multi-DESADV shipments.
+						final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID(), EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
 						InterfaceWrapperHelper.refresh(shipment);
 						if(result.getPInstanceId() != null)
 						{
@@ -189,7 +200,8 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				Loggables.addLog("Exporting ediDocumentNo={} via External System", ediDocument.getDocumentNo());
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(ediDocument, I_C_Invoice.class);
 				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getINVOICExternalSystemParentConfigId(bPartnerId);
-				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID());
+				// Invoice export is unrelated to DESADV — pass null so the EDI_Desadv_ID param is omitted.
+				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID(), null);
 				InterfaceWrapperHelper.refresh(invoice);
 				if(result.getPInstanceId() != null)
 				{
@@ -275,7 +287,8 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	private ExternalSystemInvocationResult exportViaExternalSystem(@NonNull final ExternalSystemParentConfigId externalSystemParentConfigId,
 													@NonNull final AdTableAndClientId adTableAndClientId,
 													@NonNull final I_EDI_Document ediDocument,
-													final int documentRecordId)
+													final int documentRecordId,
+													@Nullable final EDIDesadvId ediDesadvId)
 	{
 		final List<ExternalSystemScriptedExportConversionConfig> configs = externalSystemScriptedExportConversionService.getByParentConfigIdAndTableAndClientId(
 				externalSystemParentConfigId,
@@ -295,9 +308,13 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 
+		// Service signature still uses `int ediDesadvId` because typed-ID would create a circular
+		// dependency (de.metas.externalsystem -> de.metas.edi). The int sentinel "0 = not applicable"
+		// is local to that module boundary; callers within de.metas.edi use the typed ID.
 		return externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAndGetResult(
 				configs.get(0),
 				documentRecordId,
+				ediDesadvId != null ? ediDesadvId.getRepoId() : 0,
 				ExternalSystemErrorContext.EDI);
 	}
 

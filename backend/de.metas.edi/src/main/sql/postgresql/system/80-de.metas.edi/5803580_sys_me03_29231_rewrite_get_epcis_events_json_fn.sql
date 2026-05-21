@@ -1,3 +1,4 @@
+-- DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/epcis_json/get_epcis_events_json_fn.sql
 /*
  * #%L
  * de.metas.edi
@@ -385,13 +386,7 @@ BEGIN
                -- as a presence flag). The array carries all N source-order DESADV DocumentNos
                -- for multi-source-order shipments. Consumers that want full multi-order
                -- visibility iterate the array.
-               --
-               -- Backward-compat fallback: shipments that have the legacy single-FK
-               -- M_InOut.EDI_Desadv_ID populated but no junction row (data migration
-               -- window or auto-generated InOuts whose post-complete validator path
-               -- doesn't write a junction row) still emit the scalar via the
-               -- LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id alias.
-                   'desadvReference', COALESCE((ctx.desadv_documentnos ->> 0), ctx.desadv_documentno),
+                   'desadvReference', (ctx.desadv_documentnos ->> 0),
                    'desadvReferences', COALESCE(ctx.desadv_documentnos, '[]'::jsonb),
                -- me03#29231: PO references — scalar + array, same backward-compat pattern.
                -- Scalar fallback to InOut header POReference for shipments not yet

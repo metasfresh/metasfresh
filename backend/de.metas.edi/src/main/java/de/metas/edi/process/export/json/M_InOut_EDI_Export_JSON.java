@@ -41,11 +41,25 @@ import org.compiere.SpringContextHolder;
 public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 {
 	public static final String PARAM_M_InOut_ID = "M_InOut_ID";
-	
+	public static final String PARAM_EDI_Desadv_ID = "EDI_Desadv_ID";
+
 	private final EDIInOutDAO ediInOutDAO = SpringContextHolder.instance.getBean(EDIInOutDAO.class);
 
 	@Param(parameterName = PARAM_M_InOut_ID, mandatory = true)
 	private int m_inout_id;
+
+	// me03#29231 — for consolidated multi-source-order shipments, one M_InOut links to N DESADVs via
+	// the EDI_Desadv_M_InOut junction. The PostgREST view (M_InOut_Export_EDI_DESADV_JSON_V) emits one
+	// row per (m_inout_id, edi_desadv_id) pair, so we MUST filter by both to keep expectSingleResult=true.
+	// EDIWorkpackageProcessor enqueues one workpackage per (desadv, inout) pair and supplies this parameter.
+	//
+	// Structurally unused in Java logic (mirrors m_inout_id above): the value is injected by the
+	// framework into the ProcessInfo.Param map and consumed by the PostgREST JSONPath substitution
+	// (`@EDI_Desadv_ID/0@`) at the AD_Process level. Removing the @Param declaration would break
+	// the framework's call validation. Code-review T6 / HIGH #2.
+	@SuppressWarnings("unused")
+	@Param(parameterName = PARAM_EDI_Desadv_ID, mandatory = true)
+	private int edi_desadv_id;
 
 	@Override
 	protected I_EDI_Document_Extension loadRecordOutOfTrx()

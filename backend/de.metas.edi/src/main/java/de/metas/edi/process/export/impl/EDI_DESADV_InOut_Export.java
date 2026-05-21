@@ -27,6 +27,7 @@ import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.impl.EDIDesadvInOutRepository;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -42,6 +43,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.exp.CreateAttachmentRequest;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.Collections;
@@ -51,6 +53,7 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 {
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final EDIDesadvInOutRepository ediDesadvInOutRepository = SpringContextHolder.instance.getBean(EDIDesadvInOutRepository.class);
 
 	/**
 	 * EXP_Format.Value for exporting InOut EDI documents
@@ -69,14 +72,20 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		shipment.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
 		InterfaceWrapperHelper.save(shipment);
 
-		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(shipment.getEDI_Desadv_ID()));
-
 		try
 		{
+			// After T8, M_InOut_Desadv_V emits one row per (M_InOut, source-DESADV) pair. Filter by both
+			// columns to uniquely identify THIS workpackage's row; filtering by M_InOut_ID alone would
+			// match N rows for a consolidated multi-DESADV shipment and firstOnly would throw / pick
+			// arbitrarily, emitting wrong EDIFACT content for N-1 of N workpackages.
+			final I_M_InOut_Desadv_V desadvInOut = InterfaceWrapperHelper.create(getDocument(), I_M_InOut_Desadv_V.class);
 			exportEDI(I_M_InOut_Desadv_V.class,
 					  EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT,
 					  I_M_InOut_Desadv_V.Table_Name,
 					  I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID,
+					  desadvInOut.getM_InOut_ID(),
+					  I_M_InOut_Desadv_V.COLUMNNAME_EDI_Desadv_ID,
+					  desadvInOut.getEDI_Desadv_ID(),
 					  CreateAttachmentRequest.builder()
 							  .target(TableRecordReference.of(I_EDI_Desadv.Table_Name, shipment.getEDI_Desadv_ID()))
 							  .attachmentName(EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT + "_" + shipment.getDocumentNo() + ".xml")
@@ -84,13 +93,21 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		}
 		catch (final Exception e)
 		{
-			desadv.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
-			InterfaceWrapperHelper.save(desadv);
+			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
+			final String errorMsg = errorMsgTrl.translate(Env.getAD_Language());
+
+			// Flip status to Error on every DESADV linked to this (potentially consolidated) shipment via the junction table.
+			// A consolidated shipment can carry N DESADVs (one per aggregated order); the shipment-level EDI_Desadv_ID
+			// reflects only one of them and must not be used as the sole status carrier.
+			for (final EDIDesadvId desadvId : ediDesadvInOutRepository.listDesadvsForInOut(InOutId.ofRepoId(shipment.getM_InOut_ID())))
+			{
+				final I_EDI_Desadv desadv = desadvDAO.retrieveById(desadvId);
+				desadv.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
+				InterfaceWrapperHelper.save(desadv);
+			}
 
 			shipment.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
-
-			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
-			shipment.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
+			shipment.setEDIErrorMsg(errorMsg);
 			InterfaceWrapperHelper.save(shipment);
 
 			throw AdempiereException.wrapIfNeeded(e);

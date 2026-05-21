@@ -85,13 +85,44 @@ public abstract class AbstractExport<T extends I_EDI_Document>
 			final String columnName,
 			@Nullable final CreateAttachmentRequest attachResultRequest)
 	{
-		final String whereClause = columnName + "=?";
+		final int recordId = InterfaceWrapperHelper.getId(document);
+		exportEDI(documentType, exportFormatName, tableName, columnName, recordId, null, 0, attachResultRequest);
+	}
+
+	/**
+	 * Two-column filter overload. Used when the source view emits more than one row per primary
+	 * filter (e.g. {@code M_InOut_Desadv_V} after T8 emits N rows per (M_InOut, source-DESADV) pair)
+	 * and a single {@code columnName=?} filter would explode with {@code MoreThanOneRecordFoundException}.
+	 *
+	 * @throws Exception on any error
+	 */
+	protected <DT> void exportEDI(
+			final Class<DT> documentType,
+			final String exportFormatName,
+			final String tableName,
+			final String columnName,
+			final int columnValue,
+			@Nullable final String secondColumnName,
+			final int secondColumnValue,
+			@Nullable final CreateAttachmentRequest attachResultRequest)
+	{
+		final String whereClause;
+		final Object[] parameters;
+		if (secondColumnName != null)
+		{
+			whereClause = columnName + "=? AND " + secondColumnName + "=?";
+			parameters = new Object[]{columnValue, secondColumnValue};
+		}
+		else
+		{
+			whereClause = columnName + "=?";
+			parameters = new Object[]{columnValue};
+		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(document);
 		final String trxName = InterfaceWrapperHelper.getTrxName(document);
-		final int recordId = InterfaceWrapperHelper.getId(document);
 		final DT viewToExport = new Query(ctx, tableName, whereClause, trxName)
-				.setParameters(recordId)
+				.setParameters(parameters)
 				.firstOnly(documentType);
 		final PO viewToExportPO = InterfaceWrapperHelper.getPO(viewToExport);
 		Check.errorIf(viewToExportPO == null, "View {} has no record for document {}", tableName, document);

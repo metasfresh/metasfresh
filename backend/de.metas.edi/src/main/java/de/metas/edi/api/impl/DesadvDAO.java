@@ -25,6 +25,7 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvQuery;
@@ -36,6 +37,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
@@ -146,24 +148,28 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public int retrieveMaxDesadvPackSeqNo(@NonNull final EDIDesadvId desadvId)
+	@NonNull
+	public SimpleSequence retrievePackSeqNoSequence(@NonNull final EDIDesadvId desadvId)
 	{
-		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+		final int maxSeqNo = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.create()
 				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo);
+		return SimpleSequence.builder().initial(maxSeqNo).increment(1).build();
 	}
 
 	@Override
-	public int retrieveMaxDesadvPackItemLine(@NonNull final EDIDesadvId desadvId)
+	@NonNull
+	public SimpleSequence retrievePackItemLineSequence(@NonNull final EDIDesadvId desadvId)
 	{
-		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+		final int maxLine = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.andCollectChildren(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack_Item.class)
 				.create()
 				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
+		return SimpleSequence.builder().initial(maxLine).increment(10).build();
 	}
 
 	@Override
@@ -181,11 +187,15 @@ public class DesadvDAO implements IDesadvDAO
 				.anyMatch();
 	}
 
-	private IQuery<I_M_InOut> createAllInOutsQuery(final I_EDI_Desadv desadv)
+	private IQuery<I_M_InOut> createAllInOutsQuery(@NonNull final I_EDI_Desadv desadv)
 	{
-		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
-				// .addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+		// me03#29231 — for consolidated multi-source-order shipments, M_InOut.EDI_Desadv_ID carries
+		// only the single-FK winner. Enumerate via the EDI_Desadv_M_InOut junction so all source-
+		// DESADV → M_InOut links are visible.
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class, desadv)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, I_M_InOut.class)
 				.create();
 	}
 
@@ -317,9 +327,14 @@ public class DesadvDAO implements IDesadvDAO
 	@NonNull
 	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
 	{
-		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
+		// Pass `desadv` as context-provider so the query inherits the record's AD_Client_ID
+		// (T4 code-review IMPORTANT: async workpackage threads run in system context;
+		// without the provider, EDI_Desadv_M_InOut active-records filter would not apply
+		// client isolation correctly).
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class, desadv)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.andCollect(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, I_M_InOut.class)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, statusSet)
 				.create()
 				.list(I_M_InOut.class);
@@ -327,11 +342,15 @@ public class DesadvDAO implements IDesadvDAO
 
 	@Override
 	@NonNull
-	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutIdAndDesadvId(@NonNull final InOutId shipmentId, @NonNull final EDIDesadvId desadvId)
 	{
+		// Filtering by (M_InOut_ID, EDI_Desadv_ID) is mandatory after T8: the view emits one row per
+		// (shipment, source-DESADV) pair via the EDI_Desadv_M_InOut junction. For consolidated multi-DESADV
+		// shipments, filtering by M_InOut_ID alone would return N rows and firstOnlyNotNull would throw.
 		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId)
+				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.create()
 				.firstOnlyNotNull(I_M_InOut_Desadv_V.class);
 	}
