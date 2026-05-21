@@ -1,31 +1,8 @@
-package de.metas.material.cockpit.view.eventhandler;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.Profiles;
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
-import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest.UpdateMainDataRequestBuilder;
-import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.transactions.AbstractTransactionEvent;
-import de.metas.material.event.transactions.TransactionCreatedEvent;
-import de.metas.material.event.transactions.TransactionDeletedEvent;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.util.Collection;
-
 /*
  * #%L
  * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,11 +20,40 @@ import java.util.Collection;
  * #L%
  */
 
+package de.metas.material.cockpit.view.eventhandler;
+
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
+import de.metas.logging.LogManager;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest.UpdateMainDataRequestBuilder;
+import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.transactions.AbstractTransactionEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Collection;
+
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
 public class TransactionEventHandlerForCockpitRecords
 		implements MaterialEventHandler<AbstractTransactionEvent>
 {
+	private static final Logger logger = LogManager.getLogger(TransactionEventHandlerForCockpitRecords.class);
+	
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -70,8 +76,9 @@ public class TransactionEventHandlerForCockpitRecords
 	{
 		// dropship-warehouse transactions bypass cockpit entirely —
 		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isDropShipWarehouse())
+		if (event.isIgnoreInMaterialDispo())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Ignoring event with isIgnoreInMaterialDispo=true");
 			return;
 		}
 

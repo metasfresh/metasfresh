@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.StringUtils;
 import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.location.CountryId;
@@ -58,6 +59,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -399,4 +401,26 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
 	}
 
+	@Override
+	public boolean isIgnoreInMaterialDispo(@Nullable final WarehouseId warehouseId)
+	{
+		if (warehouseId == null)
+		{
+			return false;
+		}
+
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		if (warehouse == null)
+		{
+			return false;
+		}
+
+		final Boolean mrpExclude = StringUtils.toBooleanOrNull(warehouse.getMRP_Exclude());
+		if (mrpExclude != null)
+		{
+			return mrpExclude;
+		}
+
+		return warehouse.isDropShipWarehouse();
+	}
 }

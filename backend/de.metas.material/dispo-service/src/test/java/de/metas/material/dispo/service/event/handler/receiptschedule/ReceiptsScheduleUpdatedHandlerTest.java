@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
 import com.google.common.collect.ImmutableList;
@@ -36,27 +58,6 @@ import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-/*
- * #%L
- * metasfresh-material-dispo-service
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @ExtendWith(AdempiereTestWatcher.class)
 public class ReceiptsScheduleUpdatedHandlerTest
 {
@@ -85,7 +86,7 @@ public class ReceiptsScheduleUpdatedHandlerTest
 	}
 
 	@Test
-	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent
 				.builder()
@@ -95,13 +96,13 @@ public class ReceiptsScheduleUpdatedHandlerTest
 				.reservedQuantity(new BigDecimal("11"))
 				.reservedQuantityDelta(ONE)
 				.orderedQuantityDelta(ONE)
-				.isDropShipWarehouse(true)
+				.isIgnoreInMaterialDispo(true)
 				.build()
 				.validate();
 
 		receiptsScheduleUpdatedHandler.handleEvent(event);
 
-		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition — no candidates of any type are created.
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 

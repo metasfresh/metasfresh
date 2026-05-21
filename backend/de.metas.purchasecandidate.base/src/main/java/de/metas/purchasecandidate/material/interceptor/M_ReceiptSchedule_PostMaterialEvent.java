@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.purchasecandidate.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.purchasecandidate.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -27,41 +49,16 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Warehouse;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Interceptor(I_M_ReceiptSchedule.class)
 @Component
@@ -75,7 +72,8 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	private final ReplenishInfoRepository replenishInfoRepository;
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	
 	public M_ReceiptSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
@@ -196,6 +194,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptSchedule.getC_OrderLine_ID());
 		final PurchaseCandidateId purchaseCandidateIdOrNull = purchaseCandidateRepository.getIdByPurchaseOrderLineIdOrNull(orderLineId);
+		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule));
 
 		return ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
@@ -204,7 +203,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)))
+				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 				.build();
 	}
 
@@ -223,13 +222,14 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
+		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule));
 
 		final ReceiptScheduleUpdatedEvent.ReceiptScheduleUpdatedEventBuilder receiptScheduleUpdatedEventBuilder = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)));
+				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo);
 
 		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
@@ -322,6 +322,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
+		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule));
 
 		return ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
@@ -329,7 +330,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)))
+				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 				.build();
 	}
 
@@ -348,16 +349,5 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				// .customerId() we don't have the *customer* ID
 				.quantity(orderedQuantity)
 				.build();
-	}
-
-	private boolean getIsDropShipWarehouse(@Nullable final WarehouseId warehouseId)
-	{
-		if (warehouseId == null)
-		{
-			return false;
-		}
-
-		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-		return warehouse != null && warehouse.isDropShipWarehouse();
 	}
 }

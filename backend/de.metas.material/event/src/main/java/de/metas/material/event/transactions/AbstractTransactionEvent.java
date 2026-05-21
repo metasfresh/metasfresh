@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-event
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.event.transactions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,28 +45,6 @@ import java.util.Map;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-/*
- * #%L
- * metasfresh-manufacturing-event-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @EqualsAndHashCode(callSuper = false)
 @Getter
 @ToString
@@ -66,7 +66,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final boolean directMovementWarehouse;
 
-	private final boolean isDropShipWarehouse;
+	private final boolean isIgnoreInMaterialDispo;
 
 	private final int ppOrderId;
 	private final int ppOrderLineId;
@@ -94,7 +94,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final int inventoryLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse,
-			final boolean isDropShipWarehouse,
+			final boolean isIgnoreInMaterialDispo,
 			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId", transactionId);
@@ -121,7 +121,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.inventoryLineId = inventoryLineId;
 
 		this.directMovementWarehouse = directMovementWarehouse;
-		this.isDropShipWarehouse = isDropShipWarehouse;
+		this.isIgnoreInMaterialDispo = isIgnoreInMaterialDispo;
 	}
 
 	/**
