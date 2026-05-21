@@ -1033,9 +1033,9 @@ public class DesadvBL
 	}
 
 	@NonNull
-	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutIdAndDesadvId(@NonNull final InOutId shipmentId, @NonNull final EDIDesadvId desadvId)
 	{
-		return desadvDAO.getInOutDesadvByInOutId(shipmentId);
+		return desadvDAO.getInOutDesadvByInOutIdAndDesadvId(shipmentId, desadvId);
 	}
 
 	@NonNull

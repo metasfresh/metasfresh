@@ -130,8 +130,15 @@ public interface IDesadvDAO extends ISingletonService
 	@NonNull
 	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
 
+	/**
+	 * Loads the per-(shipment, source-DESADV) view row.
+	 * <p>
+	 * After T8 ({@code 5803870_sys_me03_29231_M_InOut_Desadv_V_via_junction.sql}) the view emits N rows
+	 * per consolidated shipment (one per source DESADV). Filtering only by {@code M_InOut_ID} explodes
+	 * with {@code MoreThanOneRecordFoundException}, so callers must pass the (inout, desadv) pair.
+	 */
 	@NonNull
-	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
+	I_M_InOut_Desadv_V getInOutDesadvByInOutIdAndDesadvId(@NonNull InOutId shipmentId, @NonNull EDIDesadvId desadvId);
 
 	/**
 	 * Returns a {@link de.metas.common.util.SimpleSequence} seeded at the current max

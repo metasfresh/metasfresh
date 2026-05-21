@@ -31,6 +31,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.ValidationState;
@@ -493,7 +494,16 @@ public class EDIDocumentBL
 			final String tableIdentifier = I_M_InOut.COLUMNNAME_M_InOut_ID;
 			verifyRecordId(recordId, tableIdentifier);
 
-			final I_M_InOut_Desadv_V desadvInOut = desadvBL.getInOutDesadvByInOutId(InOutId.ofRepoId(recordId));
+			// The shipment carries an EDI_Desadv_ID that points at the (single, for this RPL branch) source-DESADV.
+			// After T8, M_InOut_Desadv_V emits one row per (M_InOut, EDI_Desadv) pair, so we must filter by both
+			// columns; filtering by M_InOut_ID alone would explode on consolidated multi-DESADV shipments.
+			final I_M_InOut shipment = InterfaceWrapperHelper.create(ctx, recordId, I_M_InOut.class, trxName);
+			final EDIDesadvId shipmentDesadvId = EDIDesadvId.ofRepoIdOrNull(shipment.getEDI_Desadv_ID());
+			if (shipmentDesadvId == null)
+			{
+				throw new AdempiereException("@NotFound@ @EDI_Desadv_ID@ for M_InOut_ID=" + recordId);
+			}
+			final I_M_InOut_Desadv_V desadvInOut = desadvBL.getInOutDesadvByInOutIdAndDesadvId(InOutId.ofRepoId(recordId), shipmentDesadvId);
 			export = new EDI_DESADV_InOut_Export(desadvInOut, tableIdentifier, clientId);
 		}
 		else

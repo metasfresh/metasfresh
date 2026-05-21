@@ -342,11 +342,15 @@ public class DesadvDAO implements IDesadvDAO
 
 	@Override
 	@NonNull
-	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutIdAndDesadvId(@NonNull final InOutId shipmentId, @NonNull final EDIDesadvId desadvId)
 	{
+		// Filtering by (M_InOut_ID, EDI_Desadv_ID) is mandatory after T8: the view emits one row per
+		// (shipment, source-DESADV) pair via the EDI_Desadv_M_InOut junction. For consolidated multi-DESADV
+		// shipments, filtering by M_InOut_ID alone would return N rows and firstOnlyNotNull would throw.
 		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId)
+				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.create()
 				.firstOnlyNotNull(I_M_InOut_Desadv_V.class);
 	}
