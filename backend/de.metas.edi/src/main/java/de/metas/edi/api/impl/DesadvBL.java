@@ -354,42 +354,18 @@ public class DesadvBL
 	@Nullable
 	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(@NonNull final I_M_InOut inOut)
 	{
-		final I_EDI_Desadv desadv;
-
-		if (inOut.getC_Order_ID() > 0)
-		{
-			final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
-			if (order.getEDI_Desadv_ID() > 0)
-			{
-				desadv = order.getEDI_Desadv();
-			}
-			else
-			{
-				desadv = addToDesadvCreateForOrderIfNotExist(order);
-				InterfaceWrapperHelper.save(order);
-			}
-		}
-		else if (Check.isNotBlank(inOut.getPOReference()))
-		{
-			desadv = desadvDAO.retrieveMatchingDesadvOrNull(buildEDIDesadvQuery(inOut));
-		}
-		else
-		{
-			desadv = null;
-		}
-
-		if (desadv == null)
-		{
-			return null;
-		}
-
-		inOut.setEDI_Desadv(desadv);
-		ediDesadvInOutRepository.assignDesadvToInOut(
-				EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()),
-				InOutId.ofRepoId(inOut.getM_InOut_ID()));
-
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
+		// me03#29231: Walk the inOutLines FIRST and derive the set of source DESADVs from the
+		// orderLine → desadvLine → desadv chain. The legacy path was to first resolve a single
+		// DESADV via M_InOut.C_Order_ID (or POReference) and use that as `inOut.EDI_Desadv`, then
+		// — only if non-null — walk the lines. For consolidated shipments where the InOut has
+		// no C_Order_ID (Broken-Path #1 in PLAN_ARCH.md), the legacy path early-returned and
+		// never built the junction rows, leaving the export with zero source DESADVs. Walking
+		// the lines first makes the per-line desadv-line links the authoritative source of truth
+		// and lets the C_Order_ID branch act as a pure fallback for 1-order shipments where the
+		// order completed before any desadvLine was wired up.
+		//
 		// Sequences are built lazily per DESADV so that pack sequence numbers are independent
 		// across source-order DESADVs when a shipment covers multiple orders.
 		final Map<EDIDesadvId, EDIDesadvPackService.Sequences> sequencesByDesadv = new HashMap<>();
@@ -403,37 +379,81 @@ public class DesadvBL
 			}
 
 			// Resolve the DESADV for this inOutLine via its order line → desadv line → desadv header.
-			// Falls back to the shipment-level desadv when no desadv line is set on the order line
-			// (addInOutLine will early-return in that case, so the sequences value is unused).
+			// When the order line has no EDI_DesadvLine_ID set, this line cannot contribute to any
+			// source DESADV (addInOutLine would early-return anyway), so we skip it here.
 			final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class);
 			final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
-			final EDIDesadvId lineDesadvId;
-			if (desadvLineId != null)
+			if (desadvLineId == null)
 			{
-				final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
-				lineDesadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+				continue;
 			}
-			else
-			{
-				lineDesadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
-			}
+			final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
+			final EDIDesadvId lineDesadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+
 			final EDIDesadvPackService.Sequences lineSequences = sequencesByDesadv.computeIfAbsent(lineDesadvId, ediDesadvPackService::createSequences);
 
 			addInOutLine(inOutLine, recipientBPartnerId, lineSequences);
 		}
 
+		// me03#29231: The set of distinct source DESADVs collected from the line walk is the
+		// authoritative state for consolidated shipments. If non-empty, the lowest source-DESADV-ID
+		// wins as the "primary" written to M_InOut.EDI_Desadv (legacy single-DESADV header link);
+		// the junction table carries the full set. If the line walk produced no source DESADV
+		// (e.g. a 1-order shipment whose order completed before any desadvLine was wired up),
+		// fall back to the legacy C_Order_ID / POReference resolution.
+		final I_EDI_Desadv primary;
+		if (!sequencesByDesadv.isEmpty())
+		{
+			final EDIDesadvId primaryId = sequencesByDesadv.keySet().stream()
+					.min(java.util.Comparator.comparingInt(EDIDesadvId::getRepoId))
+					.orElseThrow(() -> new AdempiereException("sequencesByDesadv unexpectedly empty"));
+			primary = desadvDAO.retrieveById(primaryId);
+		}
+		else if (inOut.getC_Order_ID() > 0)
+		{
+			final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
+			if (order.getEDI_Desadv_ID() > 0)
+			{
+				primary = order.getEDI_Desadv();
+			}
+			else
+			{
+				primary = addToDesadvCreateForOrderIfNotExist(order);
+				InterfaceWrapperHelper.save(order);
+			}
+		}
+		else if (Check.isNotBlank(inOut.getPOReference()))
+		{
+			primary = desadvDAO.retrieveMatchingDesadvOrNull(buildEDIDesadvQuery(inOut));
+		}
+		else
+		{
+			primary = null;
+		}
+
+		if (primary == null)
+		{
+			return null;
+		}
+
+		inOut.setEDI_Desadv(primary);
+		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
+		// Eager assignDesadvToInOut for the primary covers the case where sequencesByDesadv is empty
+		// (e.g. 1-order shipment with no desadvLines): the junction row still gets written so the
+		// export view sees exactly one source DESADV. assignDesadvToInOut is idempotent, so repeating
+		// it inside the loop below for the same primary is safe.
+		ediDesadvInOutRepository.assignDesadvToInOut(
+				EDIDesadvId.ofRepoId(primary.getEDI_Desadv_ID()),
+				inOutId);
+
 		// For consolidated multi-source-order shipments, write a junction row (EDI_Desadv_M_InOut) for
 		// every distinct source DESADV that contributed lines to this M_InOut, so that the export
-		// view (M_InOut_Export_EDI_DESADV_JSON_V) emits one row per source DESADV. The eager
-		// assignDesadvToInOut call above covers the M_InOut.C_Order_ID-derived DESADV even when
-		// it had zero contributing lines; assignDesadvToInOut is idempotent, so repeating it here
-		// is safe.
-		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
+		// view (M_InOut_Export_EDI_DESADV_JSON_V) emits one row per source DESADV.
 		for (final EDIDesadvId perLineDesadvId : sequencesByDesadv.keySet())
 		{
 			ediDesadvInOutRepository.assignDesadvToInOut(perLineDesadvId, inOutId);
 		}
-		return desadv;
+		return primary;
 	}
 
 	private void addInOutLine(
