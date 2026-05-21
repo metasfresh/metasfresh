@@ -1,7 +1,11 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+--
+-- me03#29945: Trim GTIN_PackingMaterial and GTIN_TU_PackingMaterial at emit time.
+-- Master data sometimes carries stray whitespace (e.g. ' 4290051000012'); the
+-- EDIFACT GIN segment validator rejects values that don't match ^[0-9]{1,14}$.
+-- Trimming on emit protects re-exports of legacy dirty rows in EDI_Desadv_Pack
+-- without requiring a one-off data migration to reach every affected install.
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -31,7 +35,6 @@ BEGIN
           AND epi.isactive = 'Y'
     ),
          main_per_group AS (
-             -- The main line in each comp group = the one with the lowest order_line
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id,
                  edi_desadvline_id AS main_desadvline_id,
@@ -41,7 +44,6 @@ BEGIN
              ORDER BY comp_group_id, order_line
          ),
          pack_with_role AS (
-             -- Enrich each pack_item with its role (main vs sub-article)
              SELECT ep.edi_desadv_pack_id,
                     ep.seqno,
                     ep.ipa_sscc18,
@@ -78,9 +80,6 @@ BEGIN
                AND ep.isactive = 'Y'
          ),
          main_packs AS (
-             -- Identify the main pack per compensation group
-             -- (the pack containing the main article item, i.e. lowest order_line).
-             -- Uses DISTINCT ON to pick one main pack per group regardless of seqno ordering.
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id, edi_desadv_pack_id AS main_pack_id
              FROM pack_with_role
@@ -88,7 +87,6 @@ BEGIN
              ORDER BY comp_group_id, seqno
          ),
          items_assigned AS (
-             -- Sub-article items are reassigned to the main pack in their compensation group
              SELECT pwr.*,
                     CASE
                         WHEN pwr.is_sub_article THEN mp.main_pack_id
@@ -98,7 +96,6 @@ BEGIN
                       LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
          ),
          pack_header AS (
-             -- Use the main pack's header info (SSCC, packaging code) for each effective_pack_id
              SELECT DISTINCT ON (ia.effective_pack_id)
                  ia.effective_pack_id,
                  ep.seqno,
@@ -116,6 +113,9 @@ BEGIN
                            'M_HU_PackagingCode_Text', pc_lu.packagingcode,
                            'LineItems', COALESCE(items_lat.items_data, '[]'::jsonb),
                            -- Defensive trim: master-data sometimes carries stray whitespace
+                           -- (e.g. ' 4290051000012'); EDIFACT GIN rejects values that don't
+                           -- match ^[0-9]{1,14}$. Trim at emit time so legacy dirty rows
+                           -- in EDI_Desadv_Pack don't break re-exports.
                            'GTIN_PackingMaterial', NULLIF(btrim(ph.gtin_packingmaterial), '')
                    ) ORDER BY ph.seqno
            )
@@ -124,9 +124,6 @@ BEGIN
              LEFT JOIN m_hu_packagingcode pc_lu
                        ON pc_lu.m_hu_packagingcode_id = ph.m_hu_packagingcode_id
              LEFT JOIN LATERAL (
-        -- Build LineItems JSON per effective pack.
-        -- Inlines the edi_desadv_line_object_v logic using ia.m_inoutline_id
-        -- to get the correct orderline/order context (avoiding 1:N multiplication).
         SELECT JSONB_AGG(
                        JSONB_BUILD_OBJECT(
                                'BestBeforeDate', ia.bestbeforedate,
@@ -142,7 +139,7 @@ BEGIN
                                                'Name', p.name,
                                                'Description', p.description,
                                                'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, p.gtin),
+                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
                                                'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
                                                'NetWeight', p.weight,
                                                'GrossWeight', p.grossweight,
@@ -176,15 +173,12 @@ BEGIN
                  JOIN "de.metas.edi".edi_uom_object_v dl_uom ON dl_uom.c_uom_id = dl.c_uom_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v inv_uom ON inv_uom.c_uom_id = dl.c_uom_invoice_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v gw_uom ON gw_uom.c_uom_id = p.grossweight_uom_id
-            -- Use pack_item's m_inoutline_id for 1:1 join (not desadvline-level N:M)
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = ia.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
-            -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (
-            SELECT gtin, ean_cu, ean13_productcode, productno
+            SELECT gtin, ean13_productcode, productno
             FROM m_product_asi_data
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id
@@ -193,7 +187,6 @@ BEGIN
             ORDER BY seqno
             LIMIT 1
             ) asi_data ON TRUE
-            -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin
             FROM m_hu_pi_item_product
