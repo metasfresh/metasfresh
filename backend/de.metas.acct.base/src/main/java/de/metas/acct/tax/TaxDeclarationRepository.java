@@ -36,4 +36,28 @@ public class TaxDeclarationRepository
 				.create()
 				.deleteDirectly();
 	}
+
+	public boolean hasAnyLines(@NonNull final TaxDeclarationId id)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxDeclarationLine.class)
+				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, id)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	public boolean existsCompletedOverlappingPeriod(
+			@NonNull final TaxDeclarationId selfId,
+			final int acctSchemaId,
+			final int periodId)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_Period_ID, periodId)
+				.addNotEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID, selfId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
 }
