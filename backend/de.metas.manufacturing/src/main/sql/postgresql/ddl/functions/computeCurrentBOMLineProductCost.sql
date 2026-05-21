@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS computeCurentBOMLineProductCost(
+DROP FUNCTION IF EXISTS computeCurrentBOMLineProductCost(
     p_pp_product_bomline_id numeric,
     p_date                  date
 );
 
-CREATE OR REPLACE FUNCTION computeCurentBOMLineProductCost(
+CREATE OR REPLACE FUNCTION computeCurrentBOMLineProductCost(
     p_pp_product_bomline_id numeric,
     p_date                  date
 )

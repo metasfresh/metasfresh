@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS computeCurentBOMProductCost(p_pp_product_bom_id numeric,
+DROP FUNCTION IF EXISTS computeCurrentBOMProductCost(p_pp_product_bom_id numeric,
                                                     p_date              date)
 ;
 
-CREATE FUNCTION computeCurentBOMProductCost(
+CREATE OR REPLACE FUNCTION computeCurrentBOMProductCost(
     p_pp_product_bom_id numeric,
     p_date              date
 )
@@ -72,12 +72,12 @@ $$
 
 
 
-DROP FUNCTION IF EXISTS computeCurentBOMLineProductCost(
+DROP FUNCTION IF EXISTS computeCurrentBOMLineProductCost(
     p_pp_product_bomline_id numeric,
     p_date                  date
 );
 
-CREATE OR REPLACE FUNCTION computeCurentBOMLineProductCost(
+CREATE OR REPLACE FUNCTION computeCurrentBOMLineProductCost(
     p_pp_product_bomline_id numeric,
     p_date                  date
 )
@@ -158,7 +158,7 @@ BEGIN
     -- Determine the unit cost: either from sub-BOM or from cost element
     IF v_PP_Product_BOM_ID IS NOT NULL THEN
         -- Sub-assembly: get the cost of the sub-BOM (cost per 1 unit)
-        v_sub_bom_cost := computeCurentBOMProductCost(v_PP_Product_BOM_ID, p_date);
+        v_sub_bom_cost := computeCurrentBOMProductCost(v_PP_Product_BOM_ID, p_date);
     ELSE
         -- Leaf component: get current cost per unit
         v_sub_bom_cost := COALESCE(getCurrentCost(
@@ -247,7 +247,7 @@ BEGIN
                t.UOMSymbol,
                (CASE
                     WHEN t.pp_product_bom_id > 0 THEN
-                        computeCurentBOMProductCost(
+                        computeCurrentBOMProductCost(
                                 p_pp_product_bom_id => t.PP_Product_BOM_ID,
                                 p_date => p_date)
                                                  ELSE

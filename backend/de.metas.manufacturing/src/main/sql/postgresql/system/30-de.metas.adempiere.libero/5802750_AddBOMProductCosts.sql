@@ -425,18 +425,18 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Column: PP_Product_BOM.BOMCost
 -- Column SQL (old): (computeProductBOMCost(     (PP_Product_BOM.PP_Product_BOM_ID),     now()::date,     (select ci.C_AcctSchema1_ID from AD_ClientInfo ci where PP_Product_BOM.AD_Client_ID = ci.AD_Client_ID),     (select M_CostElement_ID from M_CostElement where IsActive='Y' and CostElementType='M' and exists (select 1 from C_AcctSchema cas where cas.CostingMethod = M_CostElement.CostingMethod     and cas.C_AcctSchema_ID=(select ci.C_AcctSchema1_ID from AD_ClientInfo ci where PP_Product_BOM.AD_Client_ID = ci.AD_Client_ID))),     (PP_Product_BOM.AD_Client_ID),     (PP_Product_BOM.AD_Org_ID)     ))
 -- 2026-05-20T15:38:06.393Z
-UPDATE AD_Column SET ColumnSQL='(computeCurentBOMProductCost((PP_Product_BOM.PP_Product_BOM_ID), now()::date ))',Updated=TO_TIMESTAMP('2026-05-20 15:38:06.392000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592552
+UPDATE AD_Column SET ColumnSQL='(computeCurrentBOMProductCost((PP_Product_BOM.PP_Product_BOM_ID), now()::date ))',Updated=TO_TIMESTAMP('2026-05-20 15:38:06.392000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592552
 ;
 
 -- Column: PP_Product_BOMLine.BOMComponentCost
 -- 2026-05-20T15:39:53.361Z
-UPDATE AD_Column SET ColumnSQL='(computeCurentBOMProductCost(     (PP_Product_BOMLine.PP_Product_BOM_ID),     (now()::date)))', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2026-05-20 15:39:53.361000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592576
+UPDATE AD_Column SET ColumnSQL='(computeCurrentBOMProductCost(     (PP_Product_BOMLine.PP_Product_BOM_ID),     (now()::date)))', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2026-05-20 15:39:53.361000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592576
 ;
 
 -- Column: PP_Product_BOMLine.BOMComponentCost
--- Column SQL (old): (computeCurentBOMProductCost(     (PP_Product_BOMLine.PP_Product_BOM_ID),     (now()::date)))
+-- Column SQL (old): (computeCurrentBOMProductCost(     (PP_Product_BOMLine.PP_Product_BOM_ID),     (now()::date)))
 -- 2026-05-20T16:28:00.097Z
-UPDATE AD_Column SET ColumnSQL='(computeCurentBOMLineProductCost(     (PP_Product_BOMLine.PP_Product_BOMLine_ID),     (now()::date)))',Updated=TO_TIMESTAMP('2026-05-20 16:28:00.096000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592576
+UPDATE AD_Column SET ColumnSQL='(computeCurrentBOMLineProductCost(     (PP_Product_BOMLine.PP_Product_BOMLine_ID),     (now()::date)))',Updated=TO_TIMESTAMP('2026-05-20 16:28:00.096000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592576
 ;
 
 
