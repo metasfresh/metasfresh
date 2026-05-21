@@ -193,7 +193,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
 # ############################################################################################################################################
 # TC-D3 — Complete + Reactivate roundtrip: built declaration completes, reactivates, retains snapshot.
-# Lock is enforced by AD_Tab.ReadOnlyLogic='@Processed@=Y' (WebUI) — see migration 5803970.
+# Lock is enforced by AD_Tab.ReadOnlyLogic='@Processed@=Y' (WebUI).
 # ############################################################################################################################################
   @Id:S0467_TD_030
   @from:cucumber

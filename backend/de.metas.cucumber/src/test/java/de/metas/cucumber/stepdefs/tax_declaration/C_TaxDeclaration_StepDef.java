@@ -62,7 +62,7 @@ public class C_TaxDeclaration_StepDef
 {
 	@NonNull private final C_TaxDeclaration_StepDefData taxDeclarationTable;
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
-	@NonNull private final TaxDeclarationService taxDeclarationService = SpringContextHolder.instance.getBean(TaxDeclarationService.class);
+	@NonNull private final SpringContextHolder.Lazy<TaxDeclarationService> taxDeclarationService = SpringContextHolder.instance.lazyBean(TaxDeclarationService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
@@ -159,7 +159,7 @@ public class C_TaxDeclaration_StepDef
 	public void the_tax_declaration_is_built(@NonNull final String identifier)
 	{
 		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
-		taxDeclarationService.build(TaxDeclarationId.ofRepoId(decl.getC_TaxDeclaration_ID()));
+		taxDeclarationService.get().build(TaxDeclarationId.ofRepoId(decl.getC_TaxDeclaration_ID()));
 	}
 
 	/**

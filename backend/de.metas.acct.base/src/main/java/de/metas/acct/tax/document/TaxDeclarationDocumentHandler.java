@@ -8,6 +8,7 @@ import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_TaxDeclaration;
@@ -15,17 +16,13 @@ import org.compiere.util.TimeUtil;
 
 import java.time.LocalDate;
 
+@RequiredArgsConstructor
 public class TaxDeclarationDocumentHandler implements DocumentHandler
 {
 	private static final AdMessageKey MSG_NoLinesYet    = AdMessageKey.of("TaxDeclaration_NoLinesYet");
 	private static final AdMessageKey MSG_PeriodOverlap = AdMessageKey.of("TaxDeclaration_PeriodOverlap");
 
 	@NonNull private final TaxDeclarationRepository repo;
-
-	public TaxDeclarationDocumentHandler(@NonNull final TaxDeclarationRepository repo)
-	{
-		this.repo = repo;
-	}
 
 	@Override
 	public String getSummary(final DocumentTableFields docFields)
