@@ -46,6 +46,16 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 	@Param(parameterName = PARAM_Record_ID)
 	private String outboundDataProcessRecordId;
 
+	// me03#29231 — for consolidated multi-source-order shipments, one M_InOut links to N DESADVs via
+	// the EDI_Desadv_M_InOut junction. The M_InOut JSON-export view emits one row per (m_inout_id,
+	// edi_desadv_id) pair, so the JSON-export process must be invoked with both filters. This param
+	// is forwarded to that process by ExternalSystemScriptedExportConversionService#getParameters.
+	// Optional here: only the M_InOut JSON-export process declares it as mandatory; other table
+	// exports (e.g. invoice) ignore it.
+	public static final String PARAM_EDI_Desadv_ID = "EDI_Desadv_ID";
+	@Param(parameterName = PARAM_EDI_Desadv_ID)
+	private int ediDesadvId;
+
 	@Param(parameterName = PARAM_ERROR_CONTEXT)
 	private String errorContext;
 
@@ -76,6 +86,7 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 				externalSystemScriptedExportConversionConfig,
 				getProcessInfo().getCtx(),
 				outboundDataProcessRecordId,
+				ediDesadvId,
 				errorContext);
 	}
 

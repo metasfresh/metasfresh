@@ -137,7 +137,12 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				{
 					final I_M_InOut shipment = InterfaceWrapperHelper.create(ediDocument, I_M_InOut.class);
 					final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(ediDocument), clientId);
-					final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+					// me03#29231 (Broken-Path #2, manual M_InOut trigger): graceful degradation — the legacy
+					// single-FK M_InOut.EDI_Desadv_ID (set to the lowest source-DESADV-ID for consolidated
+					// shipments by DesadvBL refactor T1) is used so this path emits one DESADV (the lowest-ID
+					// winner). Documented as OOS-1 in T12. The canonical async flow (EDI_Desadv branch below)
+					// is the supported path for consolidated multi-DESADV shipments.
+					final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID(), shipment.getEDI_Desadv_ID());
 					if(result.getPInstanceId() != null)
 					{
 						shipment.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());
@@ -156,7 +161,9 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 					for (final I_M_InOut shipment : shipments)
 					{
 						final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(shipment), clientId);
-						final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+						// me03#29231 — pass (M_InOut_ID, EDI_Desadv_ID) pair so the JSON-export view's
+						// per-(inout,desadv) row is uniquely identified. Fixes Broken-Path #4.
+						final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID(), desadv.getEDI_Desadv_ID());
 						InterfaceWrapperHelper.refresh(shipment);
 						if(result.getPInstanceId() != null)
 						{
@@ -189,7 +196,8 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				Loggables.addLog("Exporting ediDocumentNo={} via External System", ediDocument.getDocumentNo());
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(ediDocument, I_C_Invoice.class);
 				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getINVOICExternalSystemParentConfigId(bPartnerId);
-				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID());
+				// Invoice export is unrelated to DESADV — pass 0 so the EDI_Desadv_ID param is omitted.
+				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID(), 0);
 				InterfaceWrapperHelper.refresh(invoice);
 				if(result.getPInstanceId() != null)
 				{
@@ -275,7 +283,8 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	private ExternalSystemInvocationResult exportViaExternalSystem(@NonNull final ExternalSystemParentConfigId externalSystemParentConfigId,
 													@NonNull final AdTableAndClientId adTableAndClientId,
 													@NonNull final I_EDI_Document ediDocument,
-													final int documentRecordId)
+													final int documentRecordId,
+													final int ediDesadvId)
 	{
 		final List<ExternalSystemScriptedExportConversionConfig> configs = externalSystemScriptedExportConversionService.getByParentConfigIdAndTableAndClientId(
 				externalSystemParentConfigId,
@@ -298,6 +307,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		return externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAndGetResult(
 				configs.get(0),
 				documentRecordId,
+				ediDesadvId,
 				ExternalSystemErrorContext.EDI);
 	}
 

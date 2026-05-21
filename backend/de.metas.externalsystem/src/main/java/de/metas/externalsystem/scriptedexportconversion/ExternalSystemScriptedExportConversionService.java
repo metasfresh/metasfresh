@@ -75,6 +75,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIP
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
+import static de.metas.externalsystem.process.InvokeScriptedExportConversionAction.PARAM_EDI_Desadv_ID;
 import static de.metas.externalsystem.process.InvokeScriptedExportConversionAction.PARAM_Record_ID;
 import static org.compiere.util.Env.getCtx;
 
@@ -117,7 +118,7 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
-		return getParameters(config, context, outboundDataProcessRecordId, null);
+		return getParameters(config, context, outboundDataProcessRecordId, 0, null);
 	}
 
 	@NonNull
@@ -125,6 +126,7 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId,
+			final int ediDesadvId,
 			@Nullable final String errorContext)
 	{
 
@@ -133,7 +135,7 @@ public class ExternalSystemScriptedExportConversionService
 
 		final Map<String, String> parameters = new HashMap<>();
 
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
+		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId, ediDesadvId));
 		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, outboundEndpointData);
 		final String tableName = tableDAO.retrieveTableName(config.getTableId());
@@ -235,16 +237,26 @@ public class ExternalSystemScriptedExportConversionService
 	private String getOutboundProcessResponse(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			@NonNull final Properties context,
-			@NonNull final String outboundDataProcessRecordId)
+			@NonNull final String outboundDataProcessRecordId,
+			final int ediDesadvId)
 	{
 		final String rootTableName = tableDAO.retrieveTableName(config.getTableId());
 		final String rootKeyColumnName = columnBL.getSingleKeyColumn(rootTableName);
 
-		final ProcessExecutor processExecutor = ProcessInfo.builder()
+		final ProcessInfo.ProcessInfoBuilder outboundProcessInfoBuilder = ProcessInfo.builder()
 				.setCtx(context)
 				.setRecord(TableRecordReference.of(config.getTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
 				.setAD_Process_ID(config.getOutboundDataProcessId())
-				.addParameter(rootKeyColumnName, outboundDataProcessRecordId)
+				.addParameter(rootKeyColumnName, outboundDataProcessRecordId);
+
+		// me03#29231 — only add EDI_Desadv_ID when supplied (>0). The M_InOut JSON-export process
+		// declares it mandatory; other table exports (e.g. invoice) don't read it.
+		if (ediDesadvId > 0)
+		{
+			outboundProcessInfoBuilder.addParameter(PARAM_EDI_Desadv_ID, ediDesadvId);
+		}
+
+		final ProcessExecutor processExecutor = outboundProcessInfoBuilder
 				.buildAndPrepareExecution()
 				.executeSync();
 
@@ -280,13 +292,14 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
-		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, 0, null).getExceptions();
 	}
 
 	@NonNull
 	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId,
+			final int ediDesadvId,
 			@Nullable final ExternalSystemErrorContext errorContext)
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
@@ -299,6 +312,13 @@ public class ExternalSystemScriptedExportConversionService
 					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
 					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
 					.addParameter(PARAM_Record_ID, recordId);
+
+			// me03#29231 — only forward EDI_Desadv_ID when supplied (>0). It's the second filter
+			// needed by the M_InOut JSON-export view to keep expectSingleResult=true.
+			if (ediDesadvId > 0)
+			{
+				processInfoBuilder.addParameter(PARAM_EDI_Desadv_ID, ediDesadvId);
+			}
 
 			if (errorContext != null)
 			{
