@@ -84,7 +84,7 @@ BEGIN
     -- Determine the unit cost: either from sub-BOM or from cost element
     IF v_PP_Product_BOM_ID IS NOT NULL THEN
         -- Sub-assembly: get the cost of the sub-BOM (cost per 1 unit)
-        v_sub_bom_cost := computeCurentBOMProductCost(v_PP_Product_BOM_ID, p_date);
+        v_sub_bom_cost := computeCurrentBOMProductCost(v_PP_Product_BOM_ID, p_date);
     ELSE
         -- Leaf component: get current cost per unit
         v_sub_bom_cost := COALESCE(getCurrentCost(
