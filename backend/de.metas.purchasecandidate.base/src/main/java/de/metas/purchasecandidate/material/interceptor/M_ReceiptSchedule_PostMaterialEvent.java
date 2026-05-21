@@ -49,7 +49,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -72,7 +71,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	private final ReplenishInfoRepository replenishInfoRepository;
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	
 	public M_ReceiptSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -194,7 +192,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptSchedule.getC_OrderLine_ID());
 		final PurchaseCandidateId purchaseCandidateIdOrNull = purchaseCandidateRepository.getIdByPurchaseOrderLineIdOrNull(orderLineId);
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule));
 
 		return ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
@@ -203,7 +200,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 				.build();
 	}
 
@@ -222,14 +218,12 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule));
 
 		final ReceiptScheduleUpdatedEvent.ReceiptScheduleUpdatedEventBuilder receiptScheduleUpdatedEventBuilder = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.minMaxDescriptor(minMaxDescriptor)
-				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo);
+				.minMaxDescriptor(minMaxDescriptor);
 
 		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
@@ -322,7 +316,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	{
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule));
 
 		return ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
@@ -330,7 +323,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
-				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 				.build();
 	}
 

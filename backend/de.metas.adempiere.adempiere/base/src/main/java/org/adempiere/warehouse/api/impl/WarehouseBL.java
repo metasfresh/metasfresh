@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.common.util.StringUtils;
 import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.ExplainedOptional;
@@ -71,6 +72,12 @@ public class WarehouseBL implements IWarehouseBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+
+	private final CCache<WarehouseId, Boolean> ignoreInMaterialDispoCache =
+			CCache.<WarehouseId, Boolean>builder()
+					.tableName(I_M_Warehouse.Table_Name)
+					.initialCapacity(64)
+					.build();
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -409,6 +416,11 @@ public class WarehouseBL implements IWarehouseBL
 			return false;
 		}
 
+		return ignoreInMaterialDispoCache.getOrLoad(warehouseId, this::computeIsIgnoreInMaterialDispo);
+	}
+
+	private boolean computeIsIgnoreInMaterialDispo(@NonNull final WarehouseId warehouseId)
+	{
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		if (warehouse == null)
 		{
@@ -416,11 +428,6 @@ public class WarehouseBL implements IWarehouseBL
 		}
 
 		final Boolean mrpExclude = StringUtils.toBooleanOrNull(warehouse.getMRP_Exclude());
-		if (mrpExclude != null)
-		{
-			return mrpExclude;
-		}
-
-		return warehouse.isDropShipWarehouse();
+		return mrpExclude != null ? mrpExclude : warehouse.isDropShipWarehouse();
 	}
 }

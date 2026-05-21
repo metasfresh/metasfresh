@@ -51,7 +51,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +75,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	private final ShipmentScheduleReferencedLineFactory referencedLineFactory;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final ReplenishInfoRepository replenishInfoRepository;
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	public M_ShipmentSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -174,7 +172,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
 		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
@@ -190,7 +187,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
-				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 				.build();
 	}
 
@@ -207,8 +203,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
 
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
-
 		final ShipmentScheduleUpdatedEvent.ShipmentScheduleUpdatedEventBuilder shipmentScheduleUpdatedEventBuilder = ShipmentScheduleUpdatedEvent.builder();
 
 		shipmentScheduleUpdatedEventBuilder
@@ -216,8 +210,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
-				.minMaxDescriptor(minMaxDescriptor)
-				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo);
+				.minMaxDescriptor(minMaxDescriptor);
 
 		setShipmentScheduleDetail(shipmentScheduleUpdatedEventBuilder, materialDescriptor, shipmentSchedule);
 
@@ -292,7 +285,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
 
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 
 		return ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
@@ -304,7 +296,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 						.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
 						.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 				.build();
 	}
 

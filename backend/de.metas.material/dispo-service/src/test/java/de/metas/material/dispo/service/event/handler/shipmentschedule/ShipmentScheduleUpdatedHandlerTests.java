@@ -43,15 +43,20 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
@@ -74,6 +79,8 @@ public class ShipmentScheduleUpdatedHandlerTests
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ShipmentScheduleCreatedHandlerTests.ensureWarehouseExists(toWarehouseId);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -110,6 +117,8 @@ public class ShipmentScheduleUpdatedHandlerTests
 	@Test
 	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = createWarehouse("Y");
+
 		final ShipmentScheduleUpdatedEvent event = ShipmentScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -117,7 +126,7 @@ public class ShipmentScheduleUpdatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.customerId(BPARTNER_ID)
 						.quantity(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.warehouseId(excludedWarehouseId)
 						.build())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 						.orderedQuantity(BigDecimal.TEN)
@@ -130,12 +139,19 @@ public class ShipmentScheduleUpdatedHandlerTests
 						.orderLineId(86)
 						.orderId(30)
 						.build())
-				.isIgnoreInMaterialDispo(true)
 				.build();
 
 		shipmentScheduleUpdatedHandler.handleEvent(event);
 
 		// short-circuit: no MD_Candidate records must have been created
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 }

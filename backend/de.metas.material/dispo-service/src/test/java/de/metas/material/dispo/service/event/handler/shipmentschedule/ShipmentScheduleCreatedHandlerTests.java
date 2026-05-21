@@ -51,8 +51,12 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,6 +90,8 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ensureWarehouseExists(toWarehouseId);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -167,6 +173,8 @@ public class ShipmentScheduleCreatedHandlerTests
 	@Test
 	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = createExcludedWarehouse();
+
 		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -174,7 +182,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.customerId(BPARTNER_ID)
 						.quantity(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.warehouseId(excludedWarehouseId)
 						.build())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 						.orderedQuantity(BigDecimal.TEN)
@@ -187,13 +195,28 @@ public class ShipmentScheduleCreatedHandlerTests
 						.orderLineId(orderLineId)
 						.orderId(30)
 						.build())
-				.isIgnoreInMaterialDispo(true)
 				.build();
 
 		shipmentScheduleCreatedHandler.handleEvent(event);
 
 		// short-circuit: no MD_Candidate records must have been created
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
+
+	private static WarehouseId createExcludedWarehouse()
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude("Y");
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
+	static void ensureWarehouseExists(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(warehouse);
 	}
 
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()

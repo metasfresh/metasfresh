@@ -1,7 +1,9 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -25,9 +27,13 @@ import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.organization.IOrgDAO;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +68,9 @@ import java.util.Optional;
 public final class PPOrderCreatedHandler
 		implements MaterialEventHandler<PPOrderCreatedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCreatedHandler.class);
+
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeService;
 	private final MainDataRequestHandler mainDataRequestHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
@@ -93,6 +102,16 @@ public final class PPOrderCreatedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderCreatedEvent event)
 	{
+		final WarehouseId warehouseId = event.getPpOrder().getPpOrderData().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
+
 		handlePPOrderCreatedEvent(event);
 	}
 

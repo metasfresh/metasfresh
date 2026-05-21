@@ -39,6 +39,8 @@ import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,7 @@ public class TransactionEventHandlerForCockpitRecords
 	
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	public TransactionEventHandlerForCockpitRecords(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
@@ -74,11 +77,13 @@ public class TransactionEventHandlerForCockpitRecords
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		// dropship-warehouse transactions bypass cockpit entirely —
-		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isIgnoreInMaterialDispo())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Ignoring event with isIgnoreInMaterialDispo=true");
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

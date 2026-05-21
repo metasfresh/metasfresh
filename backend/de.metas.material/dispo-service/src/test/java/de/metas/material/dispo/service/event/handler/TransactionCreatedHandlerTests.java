@@ -20,6 +20,9 @@ import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionC
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -76,6 +79,7 @@ public class TransactionCreatedHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
 
 		candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
 

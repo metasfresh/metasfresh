@@ -139,6 +139,15 @@ public class M_Warehouse_StepDef
 					warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
 					warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
 
+					// MRP_Exclude is a Yes/No reference stored as "Y" / "N" / null on the warehouse record.
+					// "Y" → warehouse is excluded from material disposition (no MD_Candidate rows are created
+					// for events on this warehouse); "N" → explicitly included (overrides legacy IsDropShipWarehouse);
+					// null / omitted → fall back to IsDropShipWarehouse semantics. See WarehouseBL.isIgnoreInMaterialDispo.
+					row.getAsOptionalString(I_M_Warehouse.COLUMNNAME_MRP_Exclude)
+							.map(de.metas.util.StringUtils::trimBlankToNull)
+							.filter(java.util.Objects::nonNull)
+							.ifPresent(warehouseRecord::setMRP_Exclude);
+
 					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_PP_Plant_ID)
 							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
 							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));

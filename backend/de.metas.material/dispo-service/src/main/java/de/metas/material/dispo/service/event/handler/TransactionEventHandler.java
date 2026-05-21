@@ -61,6 +61,9 @@ import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
@@ -86,6 +89,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 {
 	private static final Logger logger = LogManager.getLogger(TransactionEventHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService postMaterialEventService;
@@ -109,11 +113,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		// dropship-warehouse transactions bypass material-disposition entirely —
-		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isIgnoreInMaterialDispo())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Ignoring event with isIgnoreInMaterialDispo=true");
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

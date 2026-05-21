@@ -66,16 +66,14 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("reservedQuantityDelta") final BigDecimal reservedQuantityDelta,
-			@JsonProperty("receiptScheduleId") final int receiptScheduleId,
-			@JsonProperty("isIgnoreInMaterialDispo") final boolean isIgnoreInMaterialDispo)
+			@JsonProperty("receiptScheduleId") final int receiptScheduleId)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
 				oldReceiptScheduleData,
 				minMaxDescriptor,
 				reservedQuantity,
-				receiptScheduleId,
-				isIgnoreInMaterialDispo);
+				receiptScheduleId);
 
 		this.orderedQuantityDelta = orderedQuantityDelta;
 		this.reservedQuantityDelta = reservedQuantityDelta;

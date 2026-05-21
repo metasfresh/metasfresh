@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.ddordercandidate;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -21,10 +23,14 @@ import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.product.ResourceId;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -34,6 +40,9 @@ import java.util.function.Consumer;
 abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrderCandidateEvent>
 		implements MaterialEventHandler<T>
 {
+	private static final Logger logger = LogManager.getLogger(DDOrderCandidateAdvisedOrCreatedHandler.class);
+
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWrite;
 	@NonNull protected final CandidateChangeService candidateChangeHandler;
@@ -88,9 +97,29 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 		}
 	}
 
-	@NonNull
+	@Nullable
 	protected final CandidatesGroup createAndProcessCandidates(final AbstractDDOrderCandidateEvent event)
 	{
+		final WarehouseId supplyWarehouseId = extractWarehouseId(event, CandidateType.SUPPLY);
+		final WarehouseId demandWarehouseId = extractWarehouseId(event, CandidateType.DEMAND);
+
+		if (warehouseBL.isIgnoreInMaterialDispo(supplyWarehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring SUPPLY candidate creation in {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse); skipping DD-order-candidate pair",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(supplyWarehouseId));
+			return null;
+		}
+		if (warehouseBL.isIgnoreInMaterialDispo(demandWarehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring DEMAND candidate creation in {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse); skipping DD-order-candidate pair",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(demandWarehouseId));
+			return null;
+		}
+
 		//
 		// create or update the supply candidate
 		final Candidate supplyCandidate = createOrUpdateCandidate(event, CandidateType.SUPPLY, null);

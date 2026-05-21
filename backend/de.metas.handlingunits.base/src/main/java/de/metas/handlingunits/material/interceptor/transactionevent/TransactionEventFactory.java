@@ -83,34 +83,32 @@ public final class TransactionEventFactory
 
 	public List<MaterialEvent> createEventsForTransaction(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final ImmutableList.Builder<MaterialEvent> result = ImmutableList.builder();
 
 		if (transaction.getInoutLineId() != null)
 		{
-			result.addAll(inOutLineEventCreator.createEventsForInOutLine(transaction, deleted, isIgnoreInMaterialDispo));
+			result.addAll(inOutLineEventCreator.createEventsForInOutLine(transaction, deleted));
 		}
 		else if (transaction.getCostCollectorId() != null)
 		{
-			result.addAll(createEventForCostCollector(transaction, deleted, isIgnoreInMaterialDispo));
+			result.addAll(createEventForCostCollector(transaction, deleted));
 		}
 		else if (transaction.getMovementLineId() != null)
 		{
-			result.addAll(createEventForMovementLine(transaction, deleted, isIgnoreInMaterialDispo));
+			result.addAll(createEventForMovementLine(transaction, deleted));
 		}
 		else if (transaction.getInventoryLineId() != null)
 		{
-			result.add(createEventForInventoryLine(transaction, deleted, isIgnoreInMaterialDispo));
+			result.add(createEventForInventoryLine(transaction, deleted));
 		}
 		return result.build();
 	}
 
 	private List<MaterialEvent> createEventForCostCollector(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final I_PP_Cost_Collector costCollector = ppCostCollectorBL.getById(transaction.getCostCollectorId());
 
@@ -139,7 +137,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.ppOrderId(costCollector.getPP_Order_ID())
 						.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
 						.build();
@@ -170,7 +167,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptorEff)
 						.huOnHandQtyChangeDescriptors(huDescriptorsEff)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.ppOrderId(costCollector.getPP_Order_ID())
 						.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
 						.minMaxDescriptor(minMaxDescriptor)
@@ -183,8 +179,7 @@ public final class TransactionEventFactory
 
 	private List<MaterialEvent> createEventForMovementLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -217,7 +212,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.ddOrderId(ddOrderId)
 						.ddOrderLineId(movementLine.getDD_OrderLine_ID())
 						.build();
@@ -232,7 +226,6 @@ public final class TransactionEventFactory
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.ddOrderId(ddOrderId)
 						.ddOrderLineId(movementLine.getDD_OrderLine_ID())
 						.minMaxDescriptor(minMaxDescriptor)
@@ -246,8 +239,7 @@ public final class TransactionEventFactory
 	@NonNull
 	private MaterialEvent createEventForInventoryLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -283,7 +275,6 @@ public final class TransactionEventFactory
 					.transactionId(transaction.getTransactionId())
 					.materialDescriptor(materialDescriptor)
 					.directMovementWarehouse(directMovementWarehouse)
-					.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
@@ -298,7 +289,6 @@ public final class TransactionEventFactory
 					.transactionId(transaction.getTransactionId())
 					.materialDescriptor(materialDescriptor)
 					.directMovementWarehouse(directMovementWarehouse)
-					.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 					.minMaxDescriptor(minMaxDescriptor)
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();

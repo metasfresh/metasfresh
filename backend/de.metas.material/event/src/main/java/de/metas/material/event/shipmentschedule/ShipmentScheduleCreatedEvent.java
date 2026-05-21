@@ -54,8 +54,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("shipmentScheduleDetail") @NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor,
-			@JsonProperty("isIgnoreInMaterialDispo") final boolean isIgnoreInMaterialDispo)
+			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
 		super(
 				eventDescriptor,
@@ -63,8 +62,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 				minMaxDescriptor,
 				shipmentScheduleDetail,
 				shipmentScheduleId,
-				documentLineDescriptor,
-				isIgnoreInMaterialDispo);
+				documentLineDescriptor);
 	}
 
 	@Override

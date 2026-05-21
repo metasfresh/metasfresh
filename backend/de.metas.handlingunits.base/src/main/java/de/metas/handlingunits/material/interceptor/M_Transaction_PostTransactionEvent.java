@@ -34,7 +34,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -46,7 +45,6 @@ import java.util.List;
 public class M_Transaction_PostTransactionEvent
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final PostMaterialEventService materialEventService;
 	private final TransactionEventFactory transactionEventCreator;
@@ -83,9 +81,8 @@ public class M_Transaction_PostTransactionEvent
 
 	private void createAndPostEventsNow(@NonNull final TransactionDescriptor transaction, final boolean deleted)
 	{
-		final boolean isIgnoreInMaterialDispo = warehouseBL.isIgnoreInMaterialDispo(transaction.getWarehouseId());
-		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted, isIgnoreInMaterialDispo);
-		
+		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
+
 		for (final MaterialEvent event : events)
 		{
 			// Use enqueueEventNow because this method runs inside a runAfterCommit callback,

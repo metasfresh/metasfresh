@@ -37,8 +37,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.PPOrderId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,6 +114,13 @@ public class PPOrderCreatedHandlerTests
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		// Pre-create the warehouse so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		{
+			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+			org.adempiere.model.InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, intermediateWarehouseId.getRepoId());
+			saveRecord(warehouse);
+		}
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -240,6 +250,30 @@ public class PPOrderCreatedHandlerTests
 					.allSatisfy(d -> assertThat(d.getM_ShipmentSchedule_ID()).isEqualTo(SHIPMENT_SCHEDULE_ID));
 		}
 
+	}
+
+	@Test
+	public void handleEvent_excludedWarehouse_shortCircuits()
+	{
+		final I_M_Warehouse excludedWarehouse = newInstance(I_M_Warehouse.class);
+		excludedWarehouse.setMRP_Exclude("Y");
+		saveRecord(excludedWarehouse);
+		final WarehouseId excludedWarehouseId = WarehouseId.ofRepoId(excludedWarehouse.getM_Warehouse_ID());
+
+		final PPOrderCreatedEvent baseEvent = createPPOrderCreatedEvent(30, MaterialDispoGroupId.ofInt(40));
+		final PPOrder rebuilt = baseEvent.getPpOrder().toBuilder()
+				.ppOrderData(baseEvent.getPpOrder().getPpOrderData().toBuilder()
+						.warehouseId(excludedWarehouseId)
+						.build())
+				.build();
+		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
+				.eventDescriptor(baseEvent.getEventDescriptor())
+				.ppOrder(rebuilt)
+				.build();
+
+		ppOrderCreatedHandler.handleEvent(event);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 
 	@Test

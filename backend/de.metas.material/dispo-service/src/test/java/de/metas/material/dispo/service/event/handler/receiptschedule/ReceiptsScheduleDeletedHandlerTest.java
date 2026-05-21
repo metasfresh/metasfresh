@@ -36,8 +36,12 @@ import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
+import de.metas.material.event.commons.MaterialDescriptor;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +50,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,6 +68,8 @@ public class ReceiptsScheduleDeletedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ReceiptsScheduleCreatedHandlerTest.ensureWarehouseExists(de.metas.material.event.EventTestHelper.WAREHOUSE_ID);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -78,13 +86,20 @@ public class ReceiptsScheduleDeletedHandlerTest
 	@Test
 	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = ReceiptsScheduleCreatedHandlerTest.createWarehouse("Y");
+
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(createProductDescriptor())
+						.customerId(BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(excludedWarehouseId)
+						.build())
 				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
 				.reservedQuantity(new BigDecimal("10"))
-				.isIgnoreInMaterialDispo(true)
 				.build();
 
 		receiptsScheduleDeletedHandler.handleEvent(event);

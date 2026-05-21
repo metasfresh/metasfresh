@@ -37,6 +37,9 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -51,6 +54,7 @@ public class ReceiptsScheduleDeletedHandler
 {
 	private static final Logger logger = LogManager.getLogger(ReceiptsScheduleDeletedHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
@@ -71,11 +75,13 @@ public class ReceiptsScheduleDeletedHandler
 	@Override
 	public void handleEvent(@NonNull final ReceiptScheduleDeletedEvent event)
 	{
-		// dropship-warehouse receipt-schedules bypass material-disposition entirely —
-		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isIgnoreInMaterialDispo())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Ignoring event with isIgnoreInMaterialDispo=true");
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

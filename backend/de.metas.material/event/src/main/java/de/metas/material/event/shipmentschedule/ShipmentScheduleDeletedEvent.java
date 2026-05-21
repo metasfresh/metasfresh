@@ -50,8 +50,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleDetail") final ShipmentScheduleDetail shipmentScheduleDetail,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("isIgnoreInMaterialDispo") final boolean isIgnoreInMaterialDispo)
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
 		super(
 				eventDescriptor,
@@ -59,8 +58,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				shipmentScheduleDetail,
 				shipmentScheduleId,
-				null,
-				isIgnoreInMaterialDispo);
+				null);
 	}
 
 	@Override

@@ -40,6 +40,9 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +74,8 @@ public class ReceiptsScheduleUpdatedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ReceiptsScheduleCreatedHandlerTest.ensureWarehouseExists(de.metas.material.event.EventTestHelper.WAREHOUSE_ID);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -88,15 +93,22 @@ public class ReceiptsScheduleUpdatedHandlerTest
 	@Test
 	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = ReceiptsScheduleCreatedHandlerTest.createWarehouse("Y");
+
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(de.metas.material.event.EventTestHelper.createProductDescriptor())
+						.customerId(de.metas.material.event.EventTestHelper.BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(excludedWarehouseId)
+						.build())
 				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
 				.reservedQuantity(new BigDecimal("11"))
 				.reservedQuantityDelta(ONE)
 				.orderedQuantityDelta(ONE)
-				.isIgnoreInMaterialDispo(true)
 				.build()
 				.validate();
 

@@ -231,3 +231,38 @@ Feature: material dispo reacts to forecast docactions
   # NOTE: Forecast "close" doc-action is NOT supported.
   # Completed forecast documents cannot be changed (would cause Material Dispo inconsistencies).
   # Therefore there is no "close" scenario here.
+
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
+  @me03_29657
+  Scenario: A forecast on an MRP_Exclude warehouse produces no STOCK_UP candidate (me03#29657)
+    # ForecastCreatedHandler consults IWarehouseBL.isIgnoreInMaterialDispo(warehouseId) per forecast line.
+    # The M_ForecastLine model interceptor (de.metas.business: M_ForecastLine.updateFieldsFromHeader)
+    # forces every line to inherit the header warehouse, so per-line warehouse differences are not
+    # observable end-to-end via the model. We therefore drive two separate forecasts — one on a regular
+    # warehouse, one on a warehouse with MRP_Exclude=Y — and verify that only the regular forecast
+    # produces an MD_Candidate.
+    Given metasfresh contains M_Products:
+      | Identifier | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | standard_category                    |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | MRP_Exclude |
+      | wh_ok          |             |
+      | wh_excl        | Y           |
+    And metasfresh contains M_Forecasts:
+      | Identifier | Name      | DatePromised | M_Warehouse_ID |
+      | f_ok       | regular   | 2021-04-17   | wh_ok          |
+      | f_excl     | excluded  | 2021-04-17   | wh_excl        |
+    And metasfresh contains M_ForecastLines:
+      | M_Forecast_ID | M_Product_ID | Qty | M_Warehouse_ID | C_UOM_ID.X12DE355 |
+      | f_ok          | p_1          | 10  | wh_ok          | PCE               |
+      | f_excl        | p_1          | 99  | wh_excl        | PCE               |
+    When the forecast identified by f_ok is completed
+    And the forecast identified by f_excl is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    # Only one STOCK_UP candidate is expected — the one for the wh_ok forecast.
+    # The wh_excl forecast is short-circuited by the warehouse check inside ForecastCreatedHandler.
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  | 0                      |

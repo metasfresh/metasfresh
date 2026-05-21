@@ -39,6 +39,9 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -50,7 +53,8 @@ import java.util.Collection;
 public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<ShipmentScheduleCreatedEvent>
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleCreatedHandler.class);
-	
+
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 
@@ -74,11 +78,13 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 	@Override
 	public void handleEvent(@NonNull final ShipmentScheduleCreatedEvent event)
 	{
-		// dropship-warehouse shipment-schedules bypass material-disposition entirely —
-		// the C_Order_DropshipPO interceptor creates a direct SO→PO instead of going through MD_Candidate.
-		if (event.isIgnoreInMaterialDispo())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Ignoring event with isIgnoreInMaterialDispo=true");
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

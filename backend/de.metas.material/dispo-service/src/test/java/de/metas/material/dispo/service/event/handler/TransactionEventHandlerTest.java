@@ -39,13 +39,23 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -57,6 +67,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TransactionEventHandlerTest
 {
 	private DimensionService dimensionService = Mockito.mock(DimensionService.class);
+
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+	}
 
 	@Test
 	public void createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity()
@@ -128,18 +145,34 @@ public class TransactionEventHandlerTest
 				candidateRepository,
 				Mockito.mock(PostMaterialEventService.class));
 
+		final WarehouseId excludedWarehouseId = createWarehouse("Y");
+
+		final MaterialDescriptor descriptor = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(excludedWarehouseId)
+				.customerId(BPARTNER_ID)
+				.quantity(BigDecimal.TEN)
+				.date(NOW)
+				.build();
+
 		final TransactionCreatedEvent event = TransactionCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(descriptor)
 				.transactionId(1)
-				.isIgnoreInMaterialDispo(true)
 				.build();
 
 		transactionEventHandler.handleEvent(event);
 
-		// Warehouse is excluded from material-disposition (MRP_Exclude=Y, or a dropship warehouse without
-		// an explicit MRP_Exclude value) — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition (MRP_Exclude=Y) — no candidates of any type are created.
 		Mockito.verifyZeroInteractions(candidateChangeHandler);
 		Mockito.verifyZeroInteractions(candidateRepository);
+	}
+
+	private static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 }

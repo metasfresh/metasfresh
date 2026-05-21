@@ -22,8 +22,10 @@
 
 package de.metas.material.dispo.service.event.handler.foreacast;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -33,8 +35,13 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +52,9 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class ForecastDeletedHandler implements MaterialEventHandler<ForecastDeletedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(ForecastDeletedHandler.class);
+
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull
@@ -69,6 +79,16 @@ public class ForecastDeletedHandler implements MaterialEventHandler<ForecastDele
 
 	private void deleteCandidates(@NonNull final ForecastLine forecastLine)
 	{
+		final WarehouseId lineWarehouseId = forecastLine.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(lineWarehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring forecast line {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo)",
+					forecastLine.getForecastLineId(),
+					WarehouseId.toRepoId(lineWarehouseId));
+			return;
+		}
+
 		final CandidatesQuery query = CandidatesQuery
 				.builder()
 				.type(CandidateType.STOCK_UP)

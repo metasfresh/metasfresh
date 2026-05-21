@@ -43,17 +43,25 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,6 +78,8 @@ public class ReceiptsScheduleCreatedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ensureWarehouseExists(de.metas.material.event.EventTestHelper.WAREHOUSE_ID);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -92,10 +102,20 @@ public class ReceiptsScheduleCreatedHandlerTest
 	@Test
 	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = createWarehouse("Y");
+
+		final MaterialDescriptor descriptor = MaterialDescriptor.builder()
+				.date(NOW)
+				.productDescriptor(createProductDescriptor())
+				.customerId(BPARTNER_ID)
+				.quantity(BigDecimal.TEN)
+				.warehouseId(excludedWarehouseId)
+				.build();
+
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(descriptor)
 				.orderLineDescriptor(OrderLineDescriptor.builder()
 						.orderId(30)
 						.orderLineId(40)
@@ -105,7 +125,6 @@ public class ReceiptsScheduleCreatedHandlerTest
 				.receiptScheduleId(RECEIPT_SCHEDULE_ID)
 				.vendorId(80)
 				.reservedQuantity(new BigDecimal("10"))
-				.isIgnoreInMaterialDispo(true)
 				.build()
 				.validate();
 
@@ -113,6 +132,21 @@ public class ReceiptsScheduleCreatedHandlerTest
 
 		// Warehouse is excluded from material-disposition — no candidates of any type are created.
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
+	static WarehouseId createWarehouse(@Nullable final String mrpExclude)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude(mrpExclude);
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
+	static void ensureWarehouseExists(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(warehouse);
 	}
 
 	static void handleEvent_ReceiptScheduleCreatedEvent_performTest(@NonNull final ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler)

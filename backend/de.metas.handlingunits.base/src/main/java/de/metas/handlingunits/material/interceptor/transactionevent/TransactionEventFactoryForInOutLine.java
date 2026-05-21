@@ -75,26 +75,24 @@ public class TransactionEventFactoryForInOutLine
 
 	public List<MaterialEvent> createEventsForInOutLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final boolean shipment = X_M_Transaction.MOVEMENTTYPE_CustomerReturns.equals(transaction.getMovementType())
 				|| X_M_Transaction.MOVEMENTTYPE_CustomerShipment.equals(transaction.getMovementType());
 
 		if (shipment)
 		{
-			return createEventsForShipment(transaction, deleted, isIgnoreInMaterialDispo);
+			return createEventsForShipment(transaction, deleted);
 		}
 		else
 		{
-			return createEventsForReceipt(transaction, deleted, isIgnoreInMaterialDispo);
+			return createEventsForReceipt(transaction, deleted);
 		}
 	}
 
 	private List<MaterialEvent> createEventsForShipment(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -156,7 +154,6 @@ public class TransactionEventFactoryForInOutLine
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.build();
 			}
 			else
@@ -170,7 +167,6 @@ public class TransactionEventFactoryForInOutLine
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
@@ -181,8 +177,7 @@ public class TransactionEventFactoryForInOutLine
 
 	private List<MaterialEvent> createEventsForReceipt(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isIgnoreInMaterialDispo)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -226,7 +221,6 @@ public class TransactionEventFactoryForInOutLine
 						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
 						.receiptId(receiptLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.build();
 			}
 			else
@@ -239,7 +233,6 @@ public class TransactionEventFactoryForInOutLine
 						.receiptId(receiptLineId)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isIgnoreInMaterialDispo(isIgnoreInMaterialDispo)
 						.build();
 			}
 			events.add(event);
