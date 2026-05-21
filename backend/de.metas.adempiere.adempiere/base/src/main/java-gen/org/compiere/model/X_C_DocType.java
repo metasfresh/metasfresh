@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 80621533L;
+	private static final long serialVersionUID = 970352650L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -25,7 +25,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
     {
       super (ctx, rs, trxName);
     }
-
 
 	/** Load Meta Data */
 	@Override
@@ -327,6 +326,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_AnalysisReport = "QMA";
 	/** APProFormaInvoice = APF */
 	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
+	/** Tax Declaration = TXD */
+	public static final String DOCBASETYPE_TaxDeclaration = "TXD";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -685,25 +686,16 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		return get_ValueAsBoolean(COLUMNNAME_IsOverwriteSeqOnComplete);
 	}
 
-	/** 
-	 * IsPartialInvoice AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISPARTIALINVOICE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISPARTIALINVOICE_Yes = "Y";
-	/** No = N */
-	public static final String ISPARTIALINVOICE_No = "N";
 	@Override
-	public void setIsPartialInvoice (final @Nullable java.lang.String IsPartialInvoice)
+	public void setIsPartialInvoice (final boolean IsPartialInvoice)
 	{
 		set_Value (COLUMNNAME_IsPartialInvoice, IsPartialInvoice);
 	}
 
 	@Override
-	public java.lang.String getIsPartialInvoice() 
+	public boolean isPartialInvoice() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsPartialInvoice);
+		return get_ValueAsBoolean(COLUMNNAME_IsPartialInvoice);
 	}
 
 	@Override
@@ -780,6 +772,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
+
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public org.compiere.util.KeyNamePair getKeyNamePair() 
+    {
+        return org.compiere.util.KeyNamePair.of(get_ID(), getName());
+    }
 
 	@Override
 	public void setName (final java.lang.String Name)

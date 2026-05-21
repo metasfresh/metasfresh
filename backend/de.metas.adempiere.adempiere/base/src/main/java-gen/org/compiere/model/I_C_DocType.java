@@ -12,8 +12,8 @@ public interface I_C_DocType
 
 	String Table_Name = "C_DocType";
 
-//	/** AD_Table_ID=217 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	/** AD_Table_ID=217 */
+	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -773,21 +773,21 @@ public interface I_C_DocType
 	 * Set Teilrechnung.
 	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPartialInvoice (@Nullable java.lang.String IsPartialInvoice);
+	void setIsPartialInvoice (boolean IsPartialInvoice);
 
 	/**
 	 * Get Teilrechnung.
 	 * Wenn aktiviert, ist diese Rechnung eine Teilrechnung.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsPartialInvoice();
+	boolean isPartialInvoice();
 
 	ModelColumn<I_C_DocType, Object> COLUMN_IsPartialInvoice = new ModelColumn<>(I_C_DocType.class, "IsPartialInvoice", null);
 	String COLUMNNAME_IsPartialInvoice = "IsPartialInvoice";
