@@ -29,6 +29,14 @@ export const InventoryJobScreen = {
         await InventoryScanScreen.countHU({ locatorQRCode, huQRCode, expectQtyBooked, qtyCount, attributes });
     }),
 
+    openScanHUStep: async ({ locatorQRCode }) => await step(`${NAME} - Navigate to Scan HU step`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await InventoryScanScreen.waitForScreen();
+        await InventoryScanScreen.waitForPanel('ScanLocator');
+        await InventoryScanScreen.typeQRCode(locatorQRCode);
+        await InventoryScanScreen.waitForPanel('ScanHU');
+    }),
+
     expectLineButton: async ({ productId, locatorId, qtyBooked, qtyCount }) => await test.step(`${NAME} - Expect job button by productId=${productId}, locatorId=${locatorId}`, async () => {
         const lineButton = await page.getByTestId(`line-P${productId}-L${locatorId}-button`);
         const lineButtonDetails = await lineButton.locator('.button-details');

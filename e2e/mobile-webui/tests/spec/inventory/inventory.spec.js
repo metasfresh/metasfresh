@@ -5,6 +5,9 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
 import { InventoryJobScreen } from '../../utils/screens/inventory/InventoryJobScreen';
+import { InventoryScanScreen } from '../../utils/screens/inventory/InventoryScanScreen';
+import { expectErrorToast } from '../../utils/common';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -94,4 +97,54 @@ test('Simple inventory test', async ({ page }) => {
         },
     });
 
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan locator QR code where HU is expected in inventory → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5310');
+    allure.story('Inventory - Scan errors');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('inventory');
+    await InventoryJobsListScreen.waitForScreen();
+    await InventoryJobsListScreen.startJob({ index: 1 });
+    await InventoryJobScreen.openScanHUStep({ locatorQRCode: masterdata.warehouses.wh.locatorQRCode });
+
+    await expectErrorToast('Scan locator QR code where HU is expected', async () => {
+        await InventoryScanScreen.typeQRCode(masterdata.warehouses.wh.locatorQRCode);
+        await InventoryScanScreen.waitForPanel('FillData');
+    }, ({ textContent }) => {
+        expect(textContent).toContain('locator');
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan unrecognized barcode where HU is expected in inventory → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5310');
+    allure.story('Inventory - Scan errors');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('inventory');
+    await InventoryJobsListScreen.waitForScreen();
+    await InventoryJobsListScreen.startJob({ index: 1 });
+    await InventoryJobScreen.openScanHUStep({ locatorQRCode: masterdata.warehouses.wh.locatorQRCode });
+
+    await expectErrorToast('Scan unrecognized barcode where HU is expected', async () => {
+        await InventoryScanScreen.typeQRCode('TOTALLY_UNKNOWN_FORMAT_XYZ');
+        await InventoryScanScreen.waitForPanel('FillData');
+    }, ({ textContent }) => {
+        expect(textContent).toContain('not recognized');
+    });
 });
