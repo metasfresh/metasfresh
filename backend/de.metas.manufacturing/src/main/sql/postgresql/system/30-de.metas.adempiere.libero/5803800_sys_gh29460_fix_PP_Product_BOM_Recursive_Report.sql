@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.manufacturing/src/main/sql/postgresql/ddl/functions/PP_Product_BOM_Recursive_Report.sql
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric)
 ;
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric, date)
