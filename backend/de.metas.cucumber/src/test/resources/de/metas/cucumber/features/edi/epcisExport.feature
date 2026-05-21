@@ -360,12 +360,13 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_ShipmentSchedule_ID | M_InOut_ID      |
       | ssA_S29231_130        | io_S29231_130   |
 
-    # Wait for DESADV pack records to be written (async).
+    # Consolidated multi-source-order shipment: one pack per source DESADV.
     # IsManual_IPA_SSCC18=true: this scenario does not set up M_HU_Attribute SSCC18 — the
     # no-HU createPackUsingJustInOutLine path synthesises the SSCC and sets IsManual=true.
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 |
-      | packA_S29231_130   | true                |
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
+      | packA_S29231_130   | dA_S29231_130            | true                |
+      | packB_S29231_130   | dB_S29231_130            | true                |
 
     # ─── CORE ASSERTION (TC4: EPCIS desadvReferences[] / poReferences[] arrays) ──────
     # The EPCIS function must return ONE event document with desadvReferences[] of size 2

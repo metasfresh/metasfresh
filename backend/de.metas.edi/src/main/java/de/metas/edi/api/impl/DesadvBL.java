@@ -423,7 +423,7 @@ public class DesadvBL
 			addInOutLine(inOutLine, recipientBPartnerId, lineSequences);
 		}
 
-		// For multi-source-order batched shipments, write a junction row (EDI_Desadv_M_InOut) for
+		// For consolidated multi-source-order shipments, write a junction row (EDI_Desadv_M_InOut) for
 		// every distinct source DESADV that contributed lines to this M_InOut, so that the export
 		// view (M_InOut_Export_EDI_DESADV_JSON_V) emits one row per source DESADV. The eager
 		// assignDesadvToInOut call above covers the M_InOut.C_Order_ID-derived DESADV even when

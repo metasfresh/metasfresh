@@ -541,7 +541,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				.isEqualTo(4);
 
 		// ── Junction-N assertion (commit 2bd2ca906f4) ─────────────────────────
-		// For a multi-source-order batched shipment, one junction row must exist per source DESADV.
+		// For a consolidated multi-source-order shipment, one junction row must exist per source DESADV.
 		// Falsifies the pre-2bd2ca906f4 behaviour of writing only ONE junction row (Order-A's).
 		final List<I_EDI_Desadv_M_InOut> junctionRows = POJOLookupMap.get().getRecords(I_EDI_Desadv_M_InOut.class);
 		assertThat(junctionRows)

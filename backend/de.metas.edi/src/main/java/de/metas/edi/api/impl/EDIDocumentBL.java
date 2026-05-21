@@ -41,6 +41,7 @@ import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
+import de.metas.edi.model.I_M_InOutLine;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
@@ -50,6 +51,7 @@ import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -98,6 +100,7 @@ public class EDIDocumentBL
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
     @NonNull private final DesadvBL desadvBL;
@@ -317,19 +320,19 @@ public class EDIDocumentBL
 	{
 		final List<Exception> feedback = new ArrayList<>();
 
-		if (Check.isEmpty(shipment.getPOReference()))
+		if (Check.isBlank(shipment.getPOReference()))
 		{
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentPOReference", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
 
-		// me03#29231 (multi-source-order batched shipments): when M_InOutLines come from
-		// multiple source orders, the legacy interceptor M_InOutLine.unsetM_InOut_C_Order_ID
-		// nulls out M_InOut.C_Order_ID. POReference survives (set from the first source
-		// order by InOutProducerFromShipmentScheduleWithHU). DesadvBL.addToDesadvCreateForInOutIfNotExist
-		// already handles the C_Order_ID==0 case via its POReference-based fallback path —
-		// this validator must match, otherwise no DESADV/pack is created for batched shipments.
+		// me03#29231 (consolidated multi-source-order shipments): when M_InOutLines come
+		// from multiple source orders, the legacy interceptor M_InOutLine.unsetM_InOut_C_Order_ID
+		// nulls out M_InOut.C_Order_ID. The shipment is still EDI-valid as long as the
+		// M_InOutLines reference C_OrderLines (the per-line orderlines carry the source
+		// orders; DesadvBL.addToDesadvCreateForInOutIfNotExist resolves DESADVs via
+		// orderLine.EDI_DesadvLine_ID).
 		if (OrderId.ofRepoIdOrNull(shipment.getC_Order_ID()) == null
-				&& Check.isEmpty(shipment.getPOReference()))
+				&& !hasInOutLineWithOrderLine(shipment))
 		{
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentOrder", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
@@ -340,6 +343,13 @@ public class EDIDocumentBL
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		return feedback;
+	}
+
+	private boolean hasInOutLineWithOrderLine(@NonNull final I_M_InOut shipment)
+	{
+		return inOutDAO.retrieveLines(shipment, I_M_InOutLine.class)
+				.stream()
+				.anyMatch(line -> line.getC_OrderLine_ID() > 0);
 	}
 
 	public List<Exception> isValidDesAdv(@NonNull final I_EDI_Desadv desadvRecord)
