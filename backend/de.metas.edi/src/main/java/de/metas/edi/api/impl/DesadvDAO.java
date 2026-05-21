@@ -187,11 +187,15 @@ public class DesadvDAO implements IDesadvDAO
 				.anyMatch();
 	}
 
-	private IQuery<I_M_InOut> createAllInOutsQuery(final I_EDI_Desadv desadv)
+	private IQuery<I_M_InOut> createAllInOutsQuery(@NonNull final I_EDI_Desadv desadv)
 	{
-		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
-				// .addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+		// me03#29231 — for consolidated multi-source-order shipments, M_InOut.EDI_Desadv_ID carries
+		// only the single-FK winner. Enumerate via the EDI_Desadv_M_InOut junction so all source-
+		// DESADV → M_InOut links are visible.
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class, desadv)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, I_M_InOut.class)
 				.create();
 	}
 
