@@ -109,6 +109,27 @@ public class RabbitMQ_StepDef
 		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
 	}
 
+	/**
+	 * Drains the material event queue first, then the async batch queue.
+	 *
+	 * <p>The ordering is intentional: a test action (e.g. order completion) publishes
+	 * {@link MaterialEventsQueueConfiguration} events first, whose listeners enqueue async
+	 * workpackages on {@link AsyncBatchQueueConfiguration}. Draining async alone would race
+	 * with material events still in flight — async could be empty simply because the
+	 * upstream material side hasn't been processed yet. Draining material then async
+	 * guarantees the chain has fully settled before the next assertion.
+	 *
+	 * <p>This is the preferred drain step for new scenarios. Prefer it over the individual
+	 * {@code wait until de.metas.material …} and {@code wait until de.metas.async …}
+	 * steps unless a scenario specifically needs to assert state between the two stages.
+	 */
+	@And("wait until all rabbitMQ queues are empty or throw exception after 5 minutes")
+	public void wait_empty_all_queues() throws InterruptedException
+	{
+		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
+		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
+	}
+
 	@Given("rabbitMQ queue is created")
 	public void create_queue(@NonNull final DataTable dataTable)
 	{

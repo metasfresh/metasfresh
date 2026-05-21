@@ -62,7 +62,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
       | hu      | ProjectValue         | P60      |
@@ -139,7 +139,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID | M_HU_ID2 |
       | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 20 PCE   | huPIP_10PCE             | hu1     | hu2      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
       | hu1     | ProjectValue         | P70      |
@@ -224,7 +224,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory_B    | warehouse_1    | 2026-03-15   | product_B    | 0 PCE   | 10 PCE   | huPIP_B_10PCE           | hu_B    |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
       | hu_A    | ProjectValue         | P80      |
@@ -328,7 +328,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID |
       | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | asi_DE                    | hu      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     # Set Herkunft=DE and ProjectValue directly on the HU (inventory step creates the HU with the attribute but value=null)
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
@@ -446,7 +446,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID | M_HU_ID |
       | inventory_AT   | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | asi_AT                    | hu_AT   |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     # Set Herkunft and ProjectValue directly on each HU (inventory creates HU with attribute but value=null)
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
@@ -600,7 +600,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID  | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID  |
       | inventory_plain | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu_plain |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     # Set Herkunft and ProjectValue directly on each HU (inventory creates HU with attribute but value=null)
     And M_HU_Attribute is changed
       | M_HU_ID  | M_Attribute_ID.Value | ValueStr |
@@ -785,7 +785,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID  | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID  | M_HU_ID2  | M_HU_ID3  |
       | inventory_plain | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 30 PCE   | huPIP_10PCE             | hu_plain | hu_plain2 | hu_plain3 |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     # Set Herkunft and ProjectValue on each HU (inventory creates HU with attribute but value=null)
     And M_HU_Attribute is changed
       | M_HU_ID   | M_Attribute_ID.Value | ValueStr |
@@ -903,7 +903,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And M_HU_Attribute is changed
       | M_HU_ID | M_Attribute_ID.Value | ValueStr |
       | hu      | ProjectValue         | P180     |
@@ -979,7 +979,7 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
       | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu      |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
