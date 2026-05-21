@@ -422,6 +422,18 @@ public class DesadvBL
 
 			addInOutLine(inOutLine, recipientBPartnerId, lineSequences);
 		}
+
+		// For multi-source-order batched shipments, write a junction row (EDI_Desadv_M_InOut) for
+		// every distinct source DESADV that contributed lines to this M_InOut, so that the export
+		// view (M_InOut_Export_EDI_DESADV_JSON_V) emits one row per source DESADV. The eager
+		// assignDesadvToInOut call above covers the M_InOut.C_Order_ID-derived DESADV even when
+		// it had zero contributing lines; assignDesadvToInOut is idempotent, so repeating it here
+		// is safe.
+		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
+		for (final EDIDesadvId perLineDesadvId : sequencesByDesadv.keySet())
+		{
+			ediDesadvInOutRepository.assignDesadvToInOut(perLineDesadvId, inOutId);
+		}
 		return desadv;
 	}
 
