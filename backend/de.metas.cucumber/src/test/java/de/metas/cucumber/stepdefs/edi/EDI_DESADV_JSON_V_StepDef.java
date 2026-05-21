@@ -199,6 +199,33 @@ public class EDI_DESADV_JSON_V_StepDef
 		assertThat(poRefA)
 				.as("Source orders A and B must have distinct POReferences")
 				.isNotEqualTo(poRefB);
+
+		// Strict intersection (per PR #24042 review #4335557991): each emitted view row must
+		// represent the intersection of (shipment ∩ source-order). I.e. the row carrying
+		// orderA's EDI_Desadv_ID must carry orderA's POReference (and never orderB's), and
+		// vice versa. Without this pairing assertion, two rows could swap POReferences and
+		// the earlier checks would still pass.
+		final de.metas.edi.model.I_C_Order ediOrderA =
+				InterfaceWrapperHelper.create(orderA, de.metas.edi.model.I_C_Order.class);
+		final ViewRow rowForOrderA = viewRows.stream()
+				.filter(r -> r.ediDesadvId() == ediOrderA.getEDI_Desadv_ID())
+				.findFirst()
+				.orElseThrow(() -> new AssertionError(
+						"No view row found for orderA's EDI_Desadv_ID (" + ediOrderA.getEDI_Desadv_ID() + ")"));
+		assertThat(rowForOrderA.poReference())
+				.as("View row for orderA's DESADV must carry orderA's POReference (shipment ∩ orderA)")
+				.isEqualTo(poRefA);
+
+		final de.metas.edi.model.I_C_Order ediOrderB =
+				InterfaceWrapperHelper.create(orderB, de.metas.edi.model.I_C_Order.class);
+		final ViewRow rowForOrderB = viewRows.stream()
+				.filter(r -> r.ediDesadvId() == ediOrderB.getEDI_Desadv_ID())
+				.findFirst()
+				.orElseThrow(() -> new AssertionError(
+						"No view row found for orderB's EDI_Desadv_ID (" + ediOrderB.getEDI_Desadv_ID() + ")"));
+		assertThat(rowForOrderB.poReference())
+				.as("View row for orderB's DESADV must carry orderB's POReference (shipment ∩ orderB)")
+				.isEqualTo(poRefB);
 	}
 
 	private List<ViewRow> queryViewRows(final int inoutId)

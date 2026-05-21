@@ -25,6 +25,7 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvQuery;
@@ -146,34 +147,28 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public int retrieveMaxDesadvLineLineNo(@NonNull final EDIDesadvId desadvId)
+	@NonNull
+	public SimpleSequence retrievePackSeqNoSequence(@NonNull final EDIDesadvId desadvId)
 	{
-		return queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvId)
-				.create()
-				.maxInt(I_EDI_DesadvLine.COLUMNNAME_Line);
-	}
-
-	@Override
-	public int retrieveMaxDesadvPackSeqNo(@NonNull final EDIDesadvId desadvId)
-	{
-		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+		final int maxSeqNo = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.create()
 				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo);
+		return SimpleSequence.builder().initial(maxSeqNo).increment(1).build();
 	}
 
 	@Override
-	public int retrieveMaxDesadvPackItemLine(@NonNull final EDIDesadvId desadvId)
+	@NonNull
+	public SimpleSequence retrievePackItemLineSequence(@NonNull final EDIDesadvId desadvId)
 	{
-		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+		final int maxLine = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
 				.andCollectChildren(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack_Item.class)
 				.create()
 				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
+		return SimpleSequence.builder().initial(maxLine).increment(10).build();
 	}
 
 	@Override

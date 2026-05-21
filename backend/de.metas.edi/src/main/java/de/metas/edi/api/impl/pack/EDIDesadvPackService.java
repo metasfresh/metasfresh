@@ -135,17 +135,9 @@ public class EDIDesadvPackService
 	@NonNull
 	public EDIDesadvPackService.Sequences createSequences(@NonNull final EDIDesadvId desadvId)
 	{
-		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
-		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
-				.initial(maxDesadvPackSeqNo)
-				.increment(1).build();
-
-		final int maxDesadvPackItemLine = desadvDAO.retrieveMaxDesadvPackItemLine(desadvId);
-		final SimpleSequence packItemLineSequence = SimpleSequence.builder()
-				.initial(maxDesadvPackItemLine)
-				.increment(10).build();
-
-		return new EDIDesadvPackService.Sequences(packSeqNoSequence, packItemLineSequence);
+		return new EDIDesadvPackService.Sequences(
+				desadvDAO.retrievePackSeqNoSequence(desadvId),
+				desadvDAO.retrievePackItemLineSequence(desadvId));
 	}
 
 	public void removePackAndItemRecords(@NonNull final I_M_InOutLine inOutLineRecord)
