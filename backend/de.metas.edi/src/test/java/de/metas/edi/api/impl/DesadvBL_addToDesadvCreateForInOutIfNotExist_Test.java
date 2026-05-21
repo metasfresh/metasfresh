@@ -539,6 +539,22 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(minNewSeqNoForB)
 				.as("DESADV B's first new pack SeqNo must be 4 (continuing from its own max=3), not 11 (which would wrongly inherit DESADV A's max=10)")
 				.isEqualTo(4);
+
+		// ── Junction-N assertion (commit 2bd2ca906f4) ─────────────────────────
+		// For a multi-source-order batched shipment, one junction row must exist per source DESADV.
+		// Falsifies the pre-2bd2ca906f4 behaviour of writing only ONE junction row (Order-A's).
+		final List<I_EDI_Desadv_M_InOut> junctionRows = POJOLookupMap.get().getRecords(I_EDI_Desadv_M_InOut.class);
+		assertThat(junctionRows)
+				.as("Multi-source-order shipment must produce one junction row per source DESADV")
+				.hasSize(2);
+		assertThat(junctionRows)
+				.extracting(I_EDI_Desadv_M_InOut::getEDI_Desadv_ID)
+				.as("Junction rows must reference both source DESADVs (A and B)")
+				.containsExactlyInAnyOrder(desadvA.getEDI_Desadv_ID(), desadvB.getEDI_Desadv_ID());
+		assertThat(junctionRows)
+				.extracting(I_EDI_Desadv_M_InOut::getM_InOut_ID)
+				.as("All junction rows must point to the same shipment")
+				.containsOnly(inOutRecord.getM_InOut_ID());
 	}
 
 	private void changeDesadvLineToCOLIasUOM()
