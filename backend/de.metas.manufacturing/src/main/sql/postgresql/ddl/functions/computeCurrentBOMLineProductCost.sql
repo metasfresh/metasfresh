@@ -106,7 +106,7 @@ BEGIN
                     ELSE
                     v_QtyBOM * v_sub_bom_cost
             END
-        , 2);
+        , 6);
 
     RETURN v_cost;
 

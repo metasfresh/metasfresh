@@ -43,7 +43,7 @@ BEGIN
                                   THEN bom.Percentage / 100 * bom.unit_cost
                                   ELSE bom.QtyBOM * bom.unit_cost
                          END
-                 ), 2)
+                 ), 6)
     INTO cost
     FROM (
              SELECT b.IsQtyPercentage,

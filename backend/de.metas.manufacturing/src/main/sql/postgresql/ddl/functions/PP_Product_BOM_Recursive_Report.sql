@@ -70,7 +70,7 @@ BEGIN
                                                       v_ad_org_id
                                               ), 0)
                            END
-                   , 4) AS cost
+                   , 6) AS cost
         FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL) t
         ORDER BY t.path;
 END;
