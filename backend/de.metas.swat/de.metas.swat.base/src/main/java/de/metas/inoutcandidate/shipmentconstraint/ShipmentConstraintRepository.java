@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
@@ -85,11 +84,16 @@ public class ShipmentConstraintRepository
 	/**
 	 * Returns the id of the first active delivery-stop constraint for the given Bill-BPartner.
 	 * <p>
-	 * Cached + out-of-transaction — suitable for order-completion checks against committed
-	 * state, NOT for model interceptors that need to see in-flight rows (use
-	 * {@link #hasActiveDeliveryStopFor(BPartnerId)} there).
+	 * Out-of-transaction — suitable for order-completion checks against committed state.
+	 * Uses {@link PlainContextAware#newOutOfTrx()} so it reads committed rows; use
+	 * {@link #hasActiveDeliveryStopFor(BPartnerId)} from inside a model interceptor that
+	 * needs to see the in-flight constraint row.
+	 * <p>
+	 * Not annotated with {@code @Cached}: the lookup is a single indexed query
+	 * ({@code M_Shipment_Constraint(Bill_BPartner_ID)} index from the gh#28631 migration)
+	 * and the host class is a {@code @Repository}, not an {@code IService} — and
+	 * {@code @Cached} requires the latter.
 	 */
-	@Cached(cacheName = I_M_Shipment_Constraint.Table_Name + "#IsDeliveryStop")
 	public Optional<ShipmentConstraintId> getDeliveryStopConstraintIdFor(@NonNull final BPartnerId billBPartnerId)
 	{
 		final int repoId = queryBL.createQueryBuilder(I_M_Shipment_Constraint.class, PlainContextAware.newOutOfTrx())
