@@ -322,7 +322,14 @@ public class EDIDocumentBL
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentPOReference", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
 
-		if (OrderId.ofRepoIdOrNull(shipment.getC_Order_ID()) == null)
+		// me03#29231 (multi-source-order batched shipments): when M_InOutLines come from
+		// multiple source orders, the legacy interceptor M_InOutLine.unsetM_InOut_C_Order_ID
+		// nulls out M_InOut.C_Order_ID. POReference survives (set from the first source
+		// order by InOutProducerFromShipmentScheduleWithHU). DesadvBL.addToDesadvCreateForInOutIfNotExist
+		// already handles the C_Order_ID==0 case via its POReference-based fallback path —
+		// this validator must match, otherwise no DESADV/pack is created for batched shipments.
+		if (OrderId.ofRepoIdOrNull(shipment.getC_Order_ID()) == null
+				&& Check.isEmpty(shipment.getPOReference()))
 		{
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentOrder", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
