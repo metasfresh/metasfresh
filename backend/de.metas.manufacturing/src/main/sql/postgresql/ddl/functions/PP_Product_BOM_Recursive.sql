@@ -14,7 +14,8 @@ returns table
 	M_Product_ID numeric,
 	IsQtyPercentage char(1),
 	C_UOM_ID numeric,
-    path integer[]
+    path integer[],
+    PP_Product_BOM_ID numeric
 )
 as
 $BODY$
@@ -95,7 +96,8 @@ $BODY$
 		n.M_Product_ID,
 		n.IsQtyPercentage,
 		n.C_UOM_ID,
-        n.path
+        n.path,
+        n.PP_Product_BOM_ID
 	from bomNode n
 	order by path
 	;
