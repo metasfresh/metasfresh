@@ -22,10 +22,15 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintCreateCommand;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
+import de.metas.inoutcandidate.shipmentconstraint.SourceDocRef;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -37,6 +42,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for M_Shipment_Constraint, the table behind the manual + dunning-sourced
@@ -54,13 +61,13 @@ public class M_Shipment_Constraint_StepDef
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	@NonNull private final M_Shipment_Constraint_StepDefData constraintTable;
 
-	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+	private final ShipmentConstraintService shipmentConstraintService = SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Seeds a system-sourced delivery-stop constraint (IsManual=N) for the given C_BPartner.
 	 * This is the same code path that {@code DunningBL.makeDeliveryStopIfNeeded} takes: it
-	 * goes through {@link IShipmentConstraintsBL#createConstraint}, which records the source
+	 * goes through {@link ShipmentConstraintService#createConstraint}, which records the source
 	 * document. We use the C_BPartner record itself as the source doc — for the cucumber test
 	 * the actual document type is irrelevant; what matters is that IsManual stays N so the
 	 * later {@code deactivateManualDeliveryStop} call (triggered by toggling
@@ -92,11 +99,12 @@ public class M_Shipment_Constraint_StepDef
 		final String reason = row.getAsOptionalString(I_M_Shipment_Constraint.COLUMNNAME_DeliveryStopReason)
 				.orElse("Dunning level 3 reached");
 
-		shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
-				.billPartnerId(bPartner.getC_BPartner_ID())
-				.sourceDocRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartner.getC_BPartner_ID()))
+		shipmentConstraintService.createConstraint(ShipmentConstraintCreateCommand.builder()
+				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
+				.billBPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
+				.sourceDocRef(SourceDocRef.of(TableRecordReference.of(I_C_BPartner.Table_Name, bPartner.getC_BPartner_ID())))
 				.deliveryStop(true)
-				.reason(reason)
+				.reason(TranslatableStrings.constant(reason))
 				.build());
 
 		// retrieve the just-created constraint so the test can later assert against it
@@ -206,7 +214,7 @@ public class M_Shipment_Constraint_StepDef
 
 			InterfaceWrapperHelper.refresh(InterfaceWrapperHelper.create(bPartner, I_C_BPartner.class));
 
-			org.assertj.core.api.Assertions.assertThat(constraint)
+			assertThat(constraint)
 					.as("No active manual M_Shipment_Constraint expected for Bill_BPartner_ID.Identifier=%s", bpIdentifier)
 					.isNull();
 		});

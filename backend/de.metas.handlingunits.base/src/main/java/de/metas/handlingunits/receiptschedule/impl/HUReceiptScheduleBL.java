@@ -154,6 +154,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 	@Override
 	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
@@ -387,7 +388,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		if (kept.isEmpty())
 		{
-			return Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(false);
+			return inOutCandidateBL.createEmptyInOutGenerateResult(false);
 		}
 
 		final CreateReceiptsParameters parameters = kept.size() == parametersIn.getReceiptSchedules().size()
@@ -568,7 +569,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private InOutGenerateResult createReceipts(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 		// Get the transaction to be used
 		final ITrx threadTrx;

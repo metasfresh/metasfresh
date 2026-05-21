@@ -45,6 +45,8 @@ Feature: Manual delivery / order stop on C_BPartner
       | pp_po      | plv_po                 | product      |  8.0     | PCE               | Normal                        |
 
   @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00104
   Scenario: TC-1 — Setting IsDeliveryStop=Y on a customer blocks sales-order completion; clearing it lets the order complete
     Given metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID |
@@ -79,6 +81,8 @@ Feature: Manual delivery / order stop on C_BPartner
     And the order identified by order_so is completed
 
   @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00104
   Scenario: TC-2 — Shipment schedules for a blocked partner carry IsDeliveryStop=Y
     Given metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID |
@@ -123,6 +127,8 @@ Feature: Manual delivery / order stop on C_BPartner
       | shipmentSchedule      | false          |
 
   @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00104
   Scenario: TC-3 — Setting IsDeliveryStop=Y on a vendor blocks purchase-order completion; clearing it lets the PO complete
     Given metasfresh contains C_BPartners:
       | Identifier | IsVendor | M_PricingSystem_ID |
@@ -155,6 +161,8 @@ Feature: Manual delivery / order stop on C_BPartner
     And the order identified by order_po is completed
 
   @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00104
   Scenario: TC-4 — Receipt schedules for a blocked vendor carry IsDeliveryStop=Y (gating both HU and non-HU receipt generation)
     Given metasfresh contains C_BPartners:
       | Identifier | IsVendor | M_PricingSystem_ID |
@@ -188,6 +196,8 @@ Feature: Manual delivery / order stop on C_BPartner
       | receiptSchedule      | order_po   | orderLine_po   | vendor        | vendor                 | product      | 10         | warehouseStd   | false          |
 
   @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00104
   Scenario: TC-6 — A dunning-sourced constraint keeps the partner blocked after the manual constraint is cleared
     Given metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID |
