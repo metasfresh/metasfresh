@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.i18n.ITranslatableString;
@@ -38,7 +39,8 @@ public class JsonPickingJobStepPickFrom
 	@NonNull List<JsonPickingJobStepPickFromHU> actuallyPickedHUs;
 
 	public static JsonPickingJobStepPickFrom of(
-			final PickingJobStepPickFrom pickFrom,
+			@NonNull final PickingJobStepPickFrom pickFrom,
+			@NonNull final PickingJobLine line,
 			@NonNull final JsonOpts jsonOpts,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
 	{
@@ -53,8 +55,13 @@ public class JsonPickingJobStepPickFrom
 		{
 			final QtyRejectedWithReason qtyRejected = pickedTo.getQtyRejected();
 
-			builder.qtyPicked(pickedTo.getQtyPicked().toBigDecimal())
-					.qtyRejected(qtyRejected != null ? qtyRejected.toBigDecimal() : null)
+			final BigDecimal qtyPickedToSerializeBD = convertToDisplayUnit(pickedTo.getQtyPicked(), line);
+			final BigDecimal qtyRejectedToSerializeBD = qtyRejected != null
+					? convertToDisplayUnit(qtyRejected.toQuantity(), line)
+					: null;
+
+			builder.qtyPicked(qtyPickedToSerializeBD)
+					.qtyRejected(qtyRejectedToSerializeBD)
 					.qtyRejectedReasonCode(qtyRejected != null ? qtyRejected.getReasonCode().getCode() : null)
 					.pickedCatchWeight(toJsonQuantity(pickedTo.getCatchWeight(), jsonOpts, getUOMSymbolById))
 					.actuallyPickedHUs(pickedTo.stream()
@@ -67,6 +74,20 @@ public class JsonPickingJobStepPickFrom
 		}
 
 		return builder.build();
+	}
+
+	@NonNull
+	private static BigDecimal convertToDisplayUnit(
+			@NonNull final Quantity qtyCUs,
+			@NonNull final PickingJobLine line)
+	{
+		if (!line.getPickingUnit().isTU())
+		{
+			return qtyCUs.toBigDecimal();
+		}
+		return line.getPackingInfo()
+				.computeQtyTUsOfTotalCUs(qtyCUs, line.getProductId())
+				.toBigDecimal();
 	}
 
 	@Nullable
