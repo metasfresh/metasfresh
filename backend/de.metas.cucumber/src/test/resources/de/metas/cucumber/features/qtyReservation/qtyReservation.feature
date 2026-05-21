@@ -150,7 +150,7 @@ Feature: Qty Reservation delivery tracking
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
       | inventory_40   | warehouse_1    | 2026-03-01   | product_1    | 0 PCE   | 30 PCE   | huPIP_TU_10PCE          |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyStockCurrent_AtDate |
@@ -198,7 +198,7 @@ Feature: Qty Reservation delivery tracking
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID |
       | inventory_50   | warehouse_1    | 2026-03-01   | product_1    | 0 PCE   | 10 PCE   | huPIP_TU_10PCE          |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised        | DeliveryRule | M_Warehouse_ID |
@@ -216,7 +216,7 @@ Feature: Qty Reservation delivery tracking
       | orderLine_5B | order_5B   | product_1    | 10         |
     And the order identified by order_5B is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier          | C_OrderLine_ID | IsToRecompute |

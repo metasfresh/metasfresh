@@ -145,7 +145,7 @@ Feature: material dispo reacts to order docactions
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | ol_1       | o_1        | p_finished   | 10         |
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
       | c_demand   | DEMAND            | SHIPMENT                  | p_finished   | 2024-09-22T21:00:00Z | 10  | -10 |
