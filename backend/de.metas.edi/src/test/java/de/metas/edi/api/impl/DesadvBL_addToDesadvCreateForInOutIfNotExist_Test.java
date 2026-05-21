@@ -557,6 +557,95 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				.containsOnly(inOutRecord.getM_InOut_ID());
 	}
 
+	/**
+	 * Verifies that {@link DesadvBL#addToDesadvCreateForInOutIfNotExist} writes one junction row
+	 * (EDI_Desadv_M_InOut) per source DESADV even when the {@code M_InOut} has
+	 * {@code C_Order_ID = 0} (the legacy {@code M_InOutLine.unsetM_InOut_C_Order_ID} interceptor
+	 * clears this column for consolidated shipments covering multiple source orders).
+	 * <p>
+	 * Scenario mirrors PLAN_ARCH.md Broken-Path #1: shipment whose C_Order_ID was unset because
+	 * its lines come from two distinct source orders/DESADVs (A and B). POReference is set to
+	 * mimic the legacy artefact left by the interceptor but is irrelevant here because the
+	 * authoritative line-walk produces a non-empty sequencesByDesadv and the POReference fallback
+	 * is not used.
+	 * <p>
+	 * Pins T1's behaviour (commit b8d62f264f7): walk inOutLines FIRST, derive source DESADVs
+	 * per-line, write one junction row per distinct DESADV.
+	 */
+	@Test
+	void test_junction_populated_for_consolidated_with_null_C_Order_ID()
+	{
+		// ── DESADV A is already set up by @BeforeEach (desadvLine is linked to its desadv) ──
+		final List<I_EDI_Desadv> allDesadvs = POJOLookupMap.get().getRecords(I_EDI_Desadv.class);
+		assertThat(allDesadvs).as("BeforeEach must have created exactly one DESADV").hasSize(1);
+		final I_EDI_Desadv desadvA = allDesadvs.get(0);
+
+		// ── Create DESADV B with its own desadvLine, order and orderLine ──
+		final I_EDI_Desadv desadvB = newInstance(I_EDI_Desadv.class);
+		saveRecord(desadvB);
+
+		final I_EDI_DesadvLine desadvLineB = newInstance(I_EDI_DesadvLine.class);
+		desadvLineB.setEDI_Desadv_ID(desadvB.getEDI_Desadv_ID());
+		desadvLineB.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
+		desadvLineB.setC_UOM_ID(desadvLine.getC_UOM_ID());
+		desadvLineB.setQtyDeliveredInStockingUOM(new BigDecimal("2"));
+		desadvLineB.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight.getCode());
+		saveRecord(desadvLineB);
+
+		final I_C_Order orderB = newInstance(I_C_Order.class);
+		orderB.setC_BPartner_ID(recipientBPartnerId.getRepoId());
+		orderB.setEDI_Desadv_ID(desadvB.getEDI_Desadv_ID());
+		saveRecord(orderB);
+
+		final I_C_OrderLine orderLineB = newInstance(I_C_OrderLine.class);
+		orderLineB.setC_Order_ID(orderB.getC_Order_ID());
+		orderLineB.setEDI_DesadvLine_ID(desadvLineB.getEDI_DesadvLine_ID());
+		orderLineB.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
+		orderLineB.setM_HU_PI_Item_Product_ID(huPIItemProductRecord.getM_HU_PI_Item_Product_ID());
+		orderLineB.setC_UOM_ID(desadvLine.getC_UOM_ID());
+		saveRecord(orderLineB);
+
+		// ── Override @BeforeEach: clear C_Order_ID and set POReference on the InOut ──
+		// Mimics M_InOutLine.unsetM_InOut_C_Order_ID interceptor result for consolidated shipments.
+		inOutRecord.setC_Order_ID(0);
+		inOutRecord.setPOReference("PO-CONSOLIDATED-29231");
+		saveRecord(inOutRecord);
+
+		// Second inOutLine on the same inOut, linked to orderLineB
+		final I_M_InOutLine inOutLineB = newInstance(I_M_InOutLine.class);
+		inOutLineB.setC_OrderLine_ID(orderLineB.getC_OrderLine_ID());
+		inOutLineB.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
+		inOutLineB.setMovementQty(new BigDecimal("5"));
+		inOutLineB.setQtyEntered(new BigDecimal("5"));
+		inOutLineB.setC_UOM_ID(desadvLine.getC_UOM_ID());
+		inOutLineB.setM_InOut_ID(inOutRecord.getM_InOut_ID());
+		saveRecord(inOutLineB);
+
+		// Guard: no junction rows before the call
+		assertThat(POJOLookupMap.get().getRecords(I_EDI_Desadv_M_InOut.class))
+				.as("Junction must be empty before the call")
+				.isEmpty();
+
+		// ── Invoke the method under test ──
+		final I_EDI_Desadv resultDesadv = desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
+		assertThat(resultDesadv).as("addToDesadvCreateForInOutIfNotExist must return a DESADV").isNotNull();
+
+		// ── Assertions ──
+		// Exactly 2 junction rows — one per distinct source DESADV (A and B).
+		final List<I_EDI_Desadv_M_InOut> junctionRows = POJOLookupMap.get().getRecords(I_EDI_Desadv_M_InOut.class);
+		assertThat(junctionRows)
+				.as("Consolidated shipment with C_Order_ID=0 must produce one junction row per source DESADV")
+				.hasSize(2);
+		assertThat(junctionRows)
+				.extracting(I_EDI_Desadv_M_InOut::getEDI_Desadv_ID)
+				.as("Junction rows must reference both source DESADVs (A and B)")
+				.containsExactlyInAnyOrder(desadvA.getEDI_Desadv_ID(), desadvB.getEDI_Desadv_ID());
+		assertThat(junctionRows)
+				.extracting(I_EDI_Desadv_M_InOut::getM_InOut_ID)
+				.as("All junction rows must point to the same shipment")
+				.containsOnly(inOutRecord.getM_InOut_ID());
+	}
+
 	private void changeDesadvLineToCOLIasUOM()
 	{
 		final I_C_UOM coliUomRecord = BusinessTestHelper.createUOM("coli", X12DE355.COLI);
