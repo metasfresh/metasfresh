@@ -1,5 +1,6 @@
 package de.metas.acct.tax.document;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.tax.TaxDeclarationId;
 import de.metas.acct.tax.TaxDeclarationRepository;
 import de.metas.document.engine.DocumentHandler;
@@ -9,7 +10,6 @@ import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.util.TimeUtil;
 
@@ -20,8 +20,12 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 	private static final AdMessageKey MSG_NoLinesYet    = AdMessageKey.of("TaxDeclaration_NoLinesYet");
 	private static final AdMessageKey MSG_PeriodOverlap = AdMessageKey.of("TaxDeclaration_PeriodOverlap");
 
-	@NonNull private final TaxDeclarationRepository repo =
-			SpringContextHolder.instance.getBean(TaxDeclarationRepository.class);
+	@NonNull private final TaxDeclarationRepository repo;
+
+	public TaxDeclarationDocumentHandler(@NonNull final TaxDeclarationRepository repo)
+	{
+		this.repo = repo;
+	}
 
 	@Override
 	public String getSummary(final DocumentTableFields docFields)
@@ -57,7 +61,7 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		{
 			throw new AdempiereException(MSG_NoLinesYet);
 		}
-		if (repo.existsCompletedOverlappingPeriod(id, td.getC_AcctSchema_ID(), td.getC_Period_ID()))
+		if (repo.existsCompletedOverlappingPeriod(id, AcctSchemaId.ofRepoId(td.getC_AcctSchema_ID()), td.getC_Period_ID()))
 		{
 			throw new AdempiereException(MSG_PeriodOverlap);
 		}

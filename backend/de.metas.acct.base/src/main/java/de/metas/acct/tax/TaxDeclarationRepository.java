@@ -1,5 +1,6 @@
 package de.metas.acct.tax;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -48,7 +49,7 @@ public class TaxDeclarationRepository
 
 	public boolean existsCompletedOverlappingPeriod(
 			@NonNull final TaxDeclarationId selfId,
-			final int acctSchemaId,
+			@NonNull final AcctSchemaId acctSchemaId,
 			final int periodId)
 	{
 		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)

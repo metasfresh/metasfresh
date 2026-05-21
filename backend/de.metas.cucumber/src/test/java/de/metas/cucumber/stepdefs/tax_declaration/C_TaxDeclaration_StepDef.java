@@ -47,7 +47,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_TaxDeclaration;
-import org.compiere.model.I_C_TaxDeclarationAcct;
 import org.compiere.model.I_C_TaxDeclarationLine;
 import org.compiere.util.TimeUtil;
 
@@ -261,21 +260,6 @@ public class C_TaxDeclaration_StepDef
 		assertLastExceptionHasErrorCode(adMessageKey);
 	}
 
-	/**
-	 * Assert that the most recent {@code @When} step that stashes exceptions failed with the given
-	 * AD_Message key.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Then the operation fails with message 'TaxDeclaration_Locked'
-	 * }</pre>
-	 */
-	@Then("the operation fails with message {string}")
-	public void assertOperationFailedWithMessage(@NonNull final String adMessageKey)
-	{
-		assertLastExceptionHasErrorCode(adMessageKey);
-	}
-
 	private void assertLastExceptionHasErrorCode(@NonNull final String expectedErrorCode)
 	{
 		final AdempiereException ex = lastException;
@@ -287,113 +271,6 @@ public class C_TaxDeclaration_StepDef
 		assertThat(ex.getErrorCode())
 				.as("ErrorCode of the exception")
 				.isEqualTo(expectedErrorCode);
-	}
-
-	/**
-	 * Attempt to change the {@code Description} of a {@link I_C_TaxDeclaration} and stash any
-	 * {@link AdempiereException} thrown by the model interceptor.
-	 *
-	 * <p>Use with {@link #assertOperationFailedWithMessage(String)} to verify the lock guard.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the user attempts to change the Description on tax declaration "taxDecl"
-	 * Then the operation fails with message 'TaxDeclaration_Locked'
-	 * }</pre>
-	 */
-	@When("the user attempts to change the Description on tax declaration {string}")
-	public void attemptChangeDescription(@NonNull final String identifier)
-	{
-		lastException = null;
-		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
-		try
-		{
-			decl.setDescription("attempt-edit-" + System.currentTimeMillis());
-			InterfaceWrapperHelper.saveRecord(decl);
-		}
-		catch (final AdempiereException e)
-		{
-			lastException = e;
-		}
-	}
-
-	/**
-	 * Attempt to save a benign field change on any {@link I_C_TaxDeclarationLine} of the given
-	 * declaration and stash any {@link AdempiereException} thrown by the model interceptor.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the user attempts to edit any C_TaxDeclarationLine of "taxDecl"
-	 * Then the operation fails with message 'TaxDeclaration_Locked'
-	 * }</pre>
-	 */
-	@When("the user attempts to edit any C_TaxDeclarationLine of {string}")
-	public void attemptEditAnyLine(@NonNull final String identifier)
-	{
-		lastException = null;
-		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
-		final I_C_TaxDeclarationLine line = queryBL.createQueryBuilder(I_C_TaxDeclarationLine.class)
-				.addEqualsFilter(I_C_TaxDeclarationLine.COLUMNNAME_C_TaxDeclaration_ID, decl.getC_TaxDeclaration_ID())
-				.create()
-				.first(I_C_TaxDeclarationLine.class);
-		assertThat(line).as("C_TaxDeclarationLine for declaration %s must exist", identifier).isNotNull();
-		try
-		{
-			line.setDescription("attempt-edit-line-" + System.currentTimeMillis());
-			InterfaceWrapperHelper.saveRecord(line);
-		}
-		catch (final AdempiereException e)
-		{
-			lastException = e;
-		}
-	}
-
-	/**
-	 * Attempt to save a benign field change on any {@link I_C_TaxDeclarationAcct} of the given
-	 * declaration and stash any {@link AdempiereException} thrown by the model interceptor.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the user attempts to edit any C_TaxDeclarationAcct of "taxDecl"
-	 * Then the operation fails with message 'TaxDeclaration_Locked'
-	 * }</pre>
-	 */
-	@When("the user attempts to edit any C_TaxDeclarationAcct of {string}")
-	public void attemptEditAnyAcct(@NonNull final String identifier)
-	{
-		lastException = null;
-		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
-		final I_C_TaxDeclarationAcct acct = queryBL.createQueryBuilder(I_C_TaxDeclarationAcct.class)
-				.addEqualsFilter(I_C_TaxDeclarationAcct.COLUMNNAME_C_TaxDeclaration_ID, decl.getC_TaxDeclaration_ID())
-				.create()
-				.first(I_C_TaxDeclarationAcct.class);
-		assertThat(acct).as("C_TaxDeclarationAcct for declaration %s must exist", identifier).isNotNull();
-		try
-		{
-			acct.setDescription("attempt-edit-acct-" + System.currentTimeMillis());
-			InterfaceWrapperHelper.saveRecord(acct);
-		}
-		catch (final AdempiereException e)
-		{
-			lastException = e;
-		}
-	}
-
-	/**
-	 * Change the {@code Description} of a {@link I_C_TaxDeclaration} and expect no exception.
-	 * Fails the scenario if an exception is thrown (i.e. if the declaration is still locked).
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * And the user can change the Description on tax declaration "taxDecl" successfully
-	 * }</pre>
-	 */
-	@And("the user can change the Description on tax declaration {string} successfully")
-	public void changeDescriptionAndExpectSuccess(@NonNull final String identifier)
-	{
-		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
-		decl.setDescription("post-reactivate-edit-" + System.currentTimeMillis());
-		InterfaceWrapperHelper.saveRecord(decl);
 	}
 
 	/**

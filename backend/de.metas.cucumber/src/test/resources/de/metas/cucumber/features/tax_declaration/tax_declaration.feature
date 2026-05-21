@@ -192,11 +192,12 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
 
 # ############################################################################################################################################
-# TC-D3 — Complete happy path: built declaration with lines transitions to Processed='Y'/DocAction='RA'
+# TC-D3 — Complete + Reactivate roundtrip: built declaration completes, reactivates, retains snapshot.
+# Lock is enforced by AD_Tab.ReadOnlyLogic='@Processed@=Y' (WebUI) — see migration 5803970.
 # ############################################################################################################################################
   @Id:S0467_TD_030
   @from:cucumber
-  Scenario: complete happy path flips Processed and DocAction
+  Scenario: complete + reactivate roundtrip on a built declaration
 
     And metasfresh contains C_TaxCategory
       | Identifier  |
@@ -223,10 +224,15 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And Wait until documents invoice is posted
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       |
-      | taxDecl    | acctSchema      | 2024-01-15 |
-    And the tax declaration "taxDecl" is built
-    When the tax declaration "taxDecl" is completed
-    Then the tax declaration "taxDecl" has Processed='Y' and DocStatus='CO' and DocAction='RA'
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    When the tax declaration "td" is completed
+    Then the tax declaration "td" has Processed='Y' and DocStatus='CO' and DocAction='RA'
+
+    When the tax declaration "td" is reactivated
+    Then the tax declaration "td" has Processed='N' and DocStatus='DR' and DocAction='CO'
+    And the C_TaxDeclarationLine rows for "td" are still present
 
 
 # ############################################################################################################################################
@@ -260,13 +266,13 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the invoice identified by invoice is completed
     And Wait until documents invoice is posted
     And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | Date       |
-      | td1        | acctSchema      | 2024-01-15 |
-      | td2        | acctSchema      | 2024-01-15 |
-    And the tax declaration "td1" is built
-    And the tax declaration "td1" is completed
-    And the tax declaration "td2" is built
-    When the tax declaration "td2" is completed
+      | Identifier  | C_AcctSchema_ID | Date       |
+      | tdOriginal  | acctSchema      | 2024-01-15 |
+      | tdDuplicate | acctSchema      | 2024-01-15 |
+    And the tax declaration "tdOriginal" is built
+    And the tax declaration "tdOriginal" is completed
+    And the tax declaration "tdDuplicate" is built
+    When the tax declaration "tdDuplicate" is completed
     Then the tax declaration completion fails with message 'TaxDeclaration_PeriodOverlap'
 
 
@@ -279,90 +285,6 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       |
-      | taxDecl    | acctSchema      | 2024-01-15 |
-    When the tax declaration "taxDecl" is completed
+      | td         | acctSchema      | 2024-01-15 |
+    When the tax declaration "td" is completed
     Then the tax declaration completion fails with message 'TaxDeclaration_NoLinesYet'
-
-
-# ############################################################################################################################################
-# TC-D-Lock — Edits to header, Line and Acct rows of a completed declaration are rejected
-# ############################################################################################################################################
-  @Id:S0467_TD_060
-  @from:cucumber
-  Scenario: edits on a completed declaration are rejected
-
-    And metasfresh contains C_TaxCategory
-      | Identifier  |
-      | taxCategory |
-    And metasfresh contains C_Tax
-      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19      | taxCategory      | 19   | DE                       | DE                        |
-    And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
-      | sales19    | tax19    | Y       | T          |
-    And metasfresh contains M_Products:
-      | Identifier |
-      | product    |
-    And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice    | customer      | 2024-01-15   | true    | EUR           |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
-    And the invoice identified by invoice is completed
-    And Wait until documents invoice is posted
-    And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | Date       |
-      | taxDecl    | acctSchema      | 2024-01-15 |
-    And the tax declaration "taxDecl" is built
-    And the tax declaration "taxDecl" is completed
-    When the user attempts to change the Description on tax declaration "taxDecl"
-    Then the operation fails with message 'TaxDeclaration_Locked'
-    When the user attempts to edit any C_TaxDeclarationLine of "taxDecl"
-    Then the operation fails with message 'TaxDeclaration_Locked'
-    When the user attempts to edit any C_TaxDeclarationAcct of "taxDecl"
-    Then the operation fails with message 'TaxDeclaration_Locked'
-
-
-# ############################################################################################################################################
-# TC-D-Reactivate — Reactivate restores editability; Lines and Acct preserved
-# ############################################################################################################################################
-  @Id:S0467_TD_070
-  @from:cucumber
-  Scenario: reactivate restores editability and preserves snapshot
-
-    And metasfresh contains C_TaxCategory
-      | Identifier  |
-      | taxCategory |
-    And metasfresh contains C_Tax
-      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19      | taxCategory      | 19   | DE                       | DE                        |
-    And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
-      | sales19    | tax19    | Y       | T          |
-    And metasfresh contains M_Products:
-      | Identifier |
-      | product    |
-    And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice    | customer      | 2024-01-15   | true    | EUR           |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
-    And the invoice identified by invoice is completed
-    And Wait until documents invoice is posted
-    And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | Date       |
-      | taxDecl    | acctSchema      | 2024-01-15 |
-    And the tax declaration "taxDecl" is built
-    And the tax declaration "taxDecl" is completed
-    When the tax declaration "taxDecl" is reactivated
-    Then the tax declaration "taxDecl" has Processed='N' and DocStatus='DR' and DocAction='CO'
-    And the C_TaxDeclarationLine rows for "taxDecl" are still present
-    And the user can change the Description on tax declaration "taxDecl" successfully
