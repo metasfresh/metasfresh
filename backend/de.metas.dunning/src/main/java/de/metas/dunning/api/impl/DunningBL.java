@@ -59,8 +59,14 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintCreateCommand;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
+import de.metas.inoutcandidate.shipmentconstraint.SourceDocRef;
+import de.metas.organization.OrgId;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -69,6 +75,8 @@ import lombok.NonNull;
 
 public class DunningBL implements IDunningBL
 {
+	private static final AdMessageKey MSG_DeliveryStopReason_FromDunning = AdMessageKey.of("DeliveryStopReason_FromDunning");
+
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	private ReentrantLock configLock = new ReentrantLock();
@@ -307,11 +315,19 @@ public class DunningBL implements IDunningBL
 			return;
 		}
 
-		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
-		shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
-				.billPartnerId(dunningDoc.getC_BPartner_ID())
-				.sourceDocRef(TableRecordReference.of(dunningDoc))
+		final ShipmentConstraintService shipmentConstraintService = org.compiere.SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
+		// gh#28631: translatable reason makes the constraint row self-describing
+		// in the Shipment-Restrictions window without hard-coding a German prefix.
+		final ITranslatableString reason = TranslatableStrings.adMessage(
+				MSG_DeliveryStopReason_FromDunning,
+				dunningLevel.getName(),
+				dunningDoc.getDocumentNo());
+		shipmentConstraintService.createConstraint(ShipmentConstraintCreateCommand.builder()
+				.orgId(OrgId.ofRepoId(dunningDoc.getAD_Org_ID()))
+				.billBPartnerId(BPartnerId.ofRepoId(dunningDoc.getC_BPartner_ID()))
+				.sourceDocRef(SourceDocRef.of(TableRecordReference.of(dunningDoc)))
 				.deliveryStop(true)
+				.reason(reason)
 				.build());
 
 	}

@@ -100,6 +100,10 @@ public class M_ReceiptSchedule_GenerateInOutFromSelection extends JavaProcess
 		queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
 
 		//
+		// Exclude delivery-stopped receipt schedules (gh#28631)
+		queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, false);
+
+		//
 		// From user selection
 		queryBuilder.filter(new ProcessInfoSelectionQueryFilter<I_M_ReceiptSchedule>(processInfo));
 

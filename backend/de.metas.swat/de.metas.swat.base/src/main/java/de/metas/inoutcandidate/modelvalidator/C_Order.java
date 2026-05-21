@@ -1,10 +1,12 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.ShipmentConstraintId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.model.I_C_Order;
@@ -15,7 +17,10 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -45,6 +50,9 @@ public class C_Order
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	// ShipmentConstraintService is a Spring @Service; this validator is instantiated as a plain
+	// object by InOutCandidateValidator, so we resolve via the Spring context.
+	private final ShipmentConstraintService shipmentConstraintService = SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
@@ -53,18 +61,21 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
 	{
-		// Makes sense only for sales orders
-		if (!order.isSOTrx())
+		// For sales orders, check the bill partner; for purchase orders, check the vendor
+		final int partnerIdToCheckRepo = order.isSOTrx()
+				? order.getBill_BPartner_ID()
+				: order.getC_BPartner_ID();
+
+		final BPartnerId partnerIdToCheck = BPartnerId.ofRepoIdOrNull(partnerIdToCheckRepo);
+		if (partnerIdToCheck == null)
 		{
 			return;
 		}
 
-		final int billPartnerId = order.getBill_BPartner_ID();
-		final int deliveryStopShipmentConstraintId = Services.get(IShipmentConstraintsBL.class).getDeliveryStopShipmentConstraintId(billPartnerId);
-		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-		if (isDeliveryStop)
+		final Optional<ShipmentConstraintId> constraintId = shipmentConstraintService.getDeliveryStopConstraintIdFor(partnerIdToCheck);
+		if (constraintId.isPresent())
 		{
-			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop)
+			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop, partnerIdToCheck.getRepoId(), constraintId.get().getRepoId())
 					.markAsUserValidationError();
 		}
 	}
