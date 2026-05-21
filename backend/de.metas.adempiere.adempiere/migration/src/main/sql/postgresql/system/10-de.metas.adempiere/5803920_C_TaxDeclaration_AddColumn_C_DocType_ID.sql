@@ -35,6 +35,12 @@ SET C_DocType_ID = 541176
 WHERE C_DocType_ID IS NULL
 ;
 
+-- Fire deferred FK triggers from the backfill so the ALTER COLUMN below can run
+-- inside the same transaction (FK is DEFERRABLE INITIALLY DEFERRED — without this,
+-- Postgres aborts the ALTER with "pending trigger events").
+SET CONSTRAINTS ALL IMMEDIATE
+;
+
 -- Now enforce NOT NULL at the DB level
 INSERT INTO t_alter_column VALUES ('c_taxdeclaration', 'C_DocType_ID', null, 'NOT NULL', null)
 ;

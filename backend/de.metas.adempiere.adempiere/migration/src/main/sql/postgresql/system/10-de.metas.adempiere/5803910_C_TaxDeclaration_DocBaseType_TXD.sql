@@ -14,9 +14,11 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
   AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
--- C_DocType row using DocBaseType='TXD'
-INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCopyDescriptionToDocument, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm, IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy, DocNoSequence_ID)
-VALUES (1000000, 0, 541176 /*From ID Server*/, TIMESTAMP '2026-05-21 00:00:00', 100, 'TXD', 1, 'D', 0, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Tax Declaration', 'Tax Declaration', TIMESTAMP '2026-05-21 00:00:00', 100, 556598)
+-- C_DocType row using DocBaseType='TXD'.
+-- NOTE: legacy column 'IsCopyDescriptionToDocument' was renamed to 'CopyDescriptionAndDocumentNote'
+-- (VARCHAR, default 'CD'); omit from the INSERT and let the default apply.
+INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm, IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy, DocNoSequence_ID)
+VALUES (1000000, 0, 541176 /*From ID Server*/, TIMESTAMP '2026-05-21 00:00:00', 100, 'TXD', 1, 'D', 0, 'N', 'N', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Tax Declaration', 'Tax Declaration', TIMESTAMP '2026-05-21 00:00:00', 100, 556598)
 ;
 
 INSERT INTO C_DocType_Trl (AD_Language, C_DocType_ID, Description, DocumentNote, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
