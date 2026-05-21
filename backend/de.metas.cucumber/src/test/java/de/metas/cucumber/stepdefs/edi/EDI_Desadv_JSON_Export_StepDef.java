@@ -515,7 +515,14 @@ public class EDI_Desadv_JSON_Export_StepDef
 								row.ediDesadvId(), expectedPoReference)
 						.isEqualTo(expectedPoReference);
 
-				final BigDecimal actualQtyDelivered = new BigDecimal(desadvLine.path("QtyDeliveredInDesadvLineUOM").asText("0"));
+				final JsonNode qtyNode = desadvLine.path("QtyDeliveredInDesadvLineUOM");
+				assertThat(qtyNode.isMissingNode())
+						.as("LineItem.DesadvLine must contain QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d "
+								+ "(silent-zero guard — a missing JSON field would otherwise fail the qty assertion "
+								+ "with a misleading 'expected 0' message)",
+								row.ediDesadvId())
+						.isFalse();
+				final BigDecimal actualQtyDelivered = new BigDecimal(qtyNode.asText());
 				assertThat(actualQtyDelivered)
 						.as("LineItem.DesadvLine.QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d must equal source order's delivered qty",
 								row.ediDesadvId())
