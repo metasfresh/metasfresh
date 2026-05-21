@@ -20,6 +20,10 @@
 --                              window Tab 548451)
 --   AD_UI_Element     651700 (Task B — paired UI element in group 553592
 --                              "advanced edit")
+--   AD_Element        584895 (Task B — receipt-side label "Wareneingangs-/
+--                              Bestellsperre" via AD_Field.AD_Name_ID override
+--                              so the shared element 543441 keeps its sales-side
+--                              wording for M_ShipmentSchedule / M_Shipment_Constraint)
 --   AD_MigrationScript 5803170 (this file's prefix)
 
 -- ============================================================================
@@ -110,22 +114,53 @@ SELECT update_FieldTranslation_From_AD_Name_Element(584890);
 -- (AD_Window_ID=541954, AD_Tab_ID=548451). Read-only flag, system-managed.
 -- ============================================================================
 
--- B.1 AD_Field — IsDeliveryStop on M_ReceiptSchedule (column 592212),
---     reuse shared AD_Element 543441 via AD_Column (no AD_Name_ID override).
--- NOTE: IsCentrallyMaintained lives on AD_Column, not AD_Field — do not list it here.
+-- B.1a New AD_Element 584895 — receipt-side label "Wareneingangs-/Bestellsperre"
+--      used via AD_Field.AD_Name_ID so we keep AD_Element 543441's sales-side
+--      wording ("Lieferstopp") for M_ShipmentSchedule / M_Shipment_Constraint.
+INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+                        ColumnName, EntityType, Name, PrintName, Description, Help)
+VALUES (584895 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0,
+        'M_ReceiptSchedule_IsDeliveryStop', 'de.metas.inoutcandidate',
+        'Wareneingangs-/Bestellsperre', 'Wareneingangs-/Bestellsperre',
+        'Wenn aktiv, sind Wareneingang und Bestellungen für diesen Lieferanten blockiert.',
+        'Wird systemseitig aus M_Shipment_Constraint propagiert und kann hier nicht bearbeitet werden. Aktive offene Bestellungen können bei aktiver Sperre nicht fertiggestellt werden.');
+
+INSERT INTO AD_Element_Trl (AD_Element_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+                            Name, PrintName, Description, Help, IsTranslated)
+SELECT 584895, AD_Language, 0, 0, 'Y', TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0,
+       'Wareneingangs-/Bestellsperre', 'Wareneingangs-/Bestellsperre',
+       'Wenn aktiv, sind Wareneingang und Bestellungen für diesen Lieferanten blockiert.',
+       'Wird systemseitig aus M_Shipment_Constraint propagiert und kann hier nicht bearbeitet werden. Aktive offene Bestellungen können bei aktiver Sperre nicht fertiggestellt werden.',
+       'N'
+FROM AD_Language
+WHERE IsSystemLanguage = 'Y'
+  AND AD_Language NOT IN (SELECT AD_Language FROM AD_Element_Trl WHERE AD_Element_ID = 584895);
+
+UPDATE AD_Element_Trl
+SET Name = 'Receipt / Purchase-Order Block', PrintName = 'Receipt / Purchase-Order Block',
+    Description = 'When active, both goods-receipts and purchase orders are blocked for this vendor.',
+    Help = 'Propagated by the system from M_Shipment_Constraint; not user-editable here. Open purchase orders cannot be completed while the block is active.',
+    IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), UpdatedBy = 0
+WHERE AD_Element_ID = 584895 AND AD_Language = 'en_US';
+
+-- B.1 AD_Field — IsDeliveryStop on M_ReceiptSchedule (column 592212).
+--     AD_Name_ID points at the receipt-side element 584895 so the rendered label
+--     and description use Wareneingang/Bestellung terminology, while the underlying
+--     column keeps the shared AD_Element 543441 (sales-side) for compatibility.
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                      AD_Tab_ID, AD_Column_ID,
+                      AD_Tab_ID, AD_Column_ID, AD_Name_ID,
                       Name, Description,
                       IsDisplayed, IsReadOnly, IsSameLine, IsEncrypted,
                       IsFieldOnly, IsHeading, EntityType, DisplayLength)
 VALUES (780254 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0,
-        548451, 592212,
-        'Lieferstopp',
-        'Liefer-/Auftragssperre für diesen Wareneingangs-Disponenten. Wird systemseitig aus M_Shipment_Constraint propagiert und kann hier nicht bearbeitet werden.',
+        548451, 592212, 584895,
+        'Wareneingangs-/Bestellsperre',
+        'Wenn aktiv, sind Wareneingang und Bestellungen für diesen Lieferanten blockiert.',
         'Y', 'Y', 'N', 'N',
         'N', 'N', 'de.metas.inoutcandidate', 1);
 
--- Translation skeleton (synced from AD_Element by the propagation function below).
+-- Translation skeleton — filled by the AD_Name_ID propagation below.
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated,
                           AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N',
@@ -145,10 +180,10 @@ INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, 
                            IsAllowFiltering, IsMultiLine)
 VALUES (651700 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-05-19 10:00', 'YYYY-MM-DD HH24:MI'), 0,
         548451, 553592, 780254, 'F',
-        'Lieferstopp', 200, 0, 0,
+        'Wareneingangs-/Bestellsperre', 200, 0, 0,
         'Y', 'Y', 'N', 'N',
         'N', 'N');
 
--- Propagate translations for the new AD_Field via its column's AD_Element
--- (M_ReceiptSchedule.IsDeliveryStop -> AD_Element 543441).
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(543441, NULL);
+-- Propagate Name/Description/Help from the receipt-side element 584895
+-- into the dependent AD_Field_Trl rows (the AD_Name_ID-overridden pattern).
+SELECT update_FieldTranslation_From_AD_Name_Element(584895);
