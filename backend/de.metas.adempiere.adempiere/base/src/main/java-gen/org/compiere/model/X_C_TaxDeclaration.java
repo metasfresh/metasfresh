@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_TaxDeclaration, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -195115826L;
+	private static final long serialVersionUID = 1163124041L;
 
     /** Standard Constructor */
     public X_C_TaxDeclaration (final Properties ctx, final int C_TaxDeclaration_ID, @Nullable final String trxName)
@@ -25,6 +25,7 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
     {
       super (ctx, rs, trxName);
     }
+
 
 	/** Load Meta Data */
 	@Override
@@ -76,6 +77,33 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	}
 
 	@Override
+	public org.compiere.model.I_C_Period getC_Period()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
+	}
+
+	@Override
+	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
+	}
+
+	@Override
+	public void setC_Period_ID (final int C_Period_ID)
+	{
+		if (C_Period_ID < 1) 
+			set_Value (COLUMNNAME_C_Period_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Period_ID, C_Period_ID);
+	}
+
+	@Override
+	public int getC_Period_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Period_ID);
+	}
+
+	@Override
 	public void setC_TaxDeclaration_ID (final int C_TaxDeclaration_ID)
 	{
 		if (C_TaxDeclaration_ID < 1) 
@@ -88,6 +116,18 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	public int getC_TaxDeclaration_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_TaxDeclaration_ID);
+	}
+
+	@Override
+	public void setDateAcct (final java.sql.Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateAcct() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
 	}
 
 	@Override
@@ -188,6 +228,18 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
+	}
+
+	@Override
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	@Override
+	public java.lang.String getDocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
 	@Override

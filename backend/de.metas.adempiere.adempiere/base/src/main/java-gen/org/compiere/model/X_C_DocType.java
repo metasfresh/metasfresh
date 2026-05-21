@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 970352650L;
+	private static final long serialVersionUID = 2058663046L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -25,6 +25,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
     {
       super (ctx, rs, trxName);
     }
+
 
 	/** Load Meta Data */
 	@Override
@@ -772,14 +773,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return org.compiere.util.KeyNamePair.of(get_ID(), getName());
-    }
 
 	@Override
 	public void setName (final java.lang.String Name)

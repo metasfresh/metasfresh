@@ -12,8 +12,8 @@ public interface I_C_TaxDeclaration
 
 	String Table_Name = "C_TaxDeclaration";
 
-	/** AD_Table_ID=818 */
-	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=818 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -98,6 +98,31 @@ public interface I_C_TaxDeclaration
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
+	 * Set Period.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Period_ID (int C_Period_ID);
+
+	/**
+	 * Get Period.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Period_ID();
+
+	org.compiere.model.I_C_Period getC_Period();
+
+	void setC_Period(org.compiere.model.I_C_Period C_Period);
+
+	ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+	String COLUMNNAME_C_Period_ID = "C_Period_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -144,6 +169,27 @@ public interface I_C_TaxDeclaration
 
 	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_C_TaxDeclaration_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_TaxDeclaration_ID", null);
 	String COLUMNNAME_C_TaxDeclaration_ID = "C_TaxDeclaration_ID";
+
+	/**
+	 * Set Accounting Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDateAcct (java.sql.Timestamp DateAcct);
+
+	/**
+	 * Get Accounting Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getDateAcct();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DateAcct = new ModelColumn<>(I_C_TaxDeclaration.class, "DateAcct", null);
+	String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
 	 * Set Description.
@@ -209,6 +255,27 @@ public interface I_C_TaxDeclaration
 
 	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_TaxDeclaration.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Document No.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+
+	/**
+	 * Get Document No.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentNo();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_TaxDeclaration.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Active.

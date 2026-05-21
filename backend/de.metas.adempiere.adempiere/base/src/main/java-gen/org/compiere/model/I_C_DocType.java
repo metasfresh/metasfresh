@@ -12,8 +12,8 @@ public interface I_C_DocType
 
 	String Table_Name = "C_DocType";
 
-	/** AD_Table_ID=217 */
-	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=217 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
