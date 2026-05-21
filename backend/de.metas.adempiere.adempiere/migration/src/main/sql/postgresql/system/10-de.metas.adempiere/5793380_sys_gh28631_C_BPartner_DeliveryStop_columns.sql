@@ -67,14 +67,14 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        ColumnName, Name, Description,
                        FieldLength, IsMandatory, IsUpdateable, DefaultValue,
                        IsKey, IsParent, IsTranslated, IsIdentifier, IsSelectionColumn,
-                       IsAlwaysUpdateable, PersonalDataCategory)
+                       IsAlwaysUpdateable, PersonalDataCategory, MandatoryLogic)
 VALUES (592209 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         0, 'de.metas.inoutcandidate', 291, 584648, 10,
         'DeliveryStopReason', 'Lieferstopp Grund', 'Grund für die Liefer-/Auftragssperre',
         200, 'N', 'Y', NULL,
         'N', 'N', 'N', 'N', 'N',
-        'N', 'NP');
+        'N', 'NP', '@IsDeliveryStop/N@=Y');
 
--- Physical column (nullable; reason is mandatory only via AD_Field MandatoryLogic when IsDeliveryStop=Y)
+-- Physical column (nullable at DB level; mandatory enforced via AD_Column.MandatoryLogic when IsDeliveryStop=Y)
 /* DDL */ SELECT public.db_alter_table('C_BPartner', 'ALTER TABLE public.C_BPartner ADD COLUMN IF NOT EXISTS DeliveryStopReason VARCHAR(200)')
 ;

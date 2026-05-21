@@ -4,7 +4,7 @@
 -- IsDeliveryStop semantics: covers BOTH shipment AND receipt blocking.
 --   For sales orders: checked against the Bill-BPartner.
 --   For purchase orders: checked against the vendor BPartner.
--- DeliveryStopReason: free-text reason; MANDATORY when IsDeliveryStop=Y (enforced via AD_Field MandatoryLogic).
+-- DeliveryStopReason: free-text reason; MANDATORY when IsDeliveryStop=Y (enforced via AD_Column.MandatoryLogic in 5793380).
 
 -- ==========================================================================
 -- 1. AD_Field: IsDeliveryStop on BPartner main tab (AD_Tab_ID=220)
@@ -23,19 +23,19 @@ VALUES (774882 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', '
 
 -- ==========================================================================
 -- 2. AD_Field: DeliveryStopReason on BPartner main tab (AD_Tab_ID=220)
--- Mandatory whenever IsDeliveryStop=Y (MandatoryLogic).
+-- Mandatory whenever IsDeliveryStop=Y — enforced via AD_Column.MandatoryLogic (5793380), not AD_Field.
 -- ==========================================================================
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Tab_ID, AD_Column_ID, AD_Name_ID,
                       Name, Description,
                       IsDisplayed, IsReadOnly, IsSameLine, IsEncrypted,
-                      EntityType, ReadOnlyLogic, MandatoryLogic)
+                      EntityType, ReadOnlyLogic)
 VALUES (774883 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-10 01:00', 'YYYY-MM-DD HH24:MI'), 0,
         220, 592209, NULL,
         'Lieferstopp Grund',
         'Begründung für die Liefer-/Auftragssperre dieses Geschäftspartners (für Buchhaltungs-/Vertriebsabsprache). Pflichtfeld, wenn ''Liefer-/Auftragssperre'' aktiv ist.',
         'Y', 'N', 'N', 'N',
-        'de.metas.inoutcandidate', '@#AD_Role_Group/''''@!Accounting', '@IsDeliveryStop/N@=Y');
+        'de.metas.inoutcandidate', '@#AD_Role_Group/''''@!Accounting');
 
 -- ==========================================================================
 -- 3. AD_UI_Element: IsDeliveryStop as advanced field

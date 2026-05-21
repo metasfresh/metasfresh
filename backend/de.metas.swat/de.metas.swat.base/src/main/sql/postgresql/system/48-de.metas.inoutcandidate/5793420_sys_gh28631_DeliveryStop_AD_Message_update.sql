@@ -21,5 +21,5 @@ SET MsgText = 'Cannot complete order: business partner {0} has an active deliver
 WHERE AD_Message_ID = 544514 AND AD_Language = 'en_US';
 
 -- NOTE (gh#28631): The previous version of this script created AD_Message 'DeliveryStopReasonRequired'.
--- That message is now obsolete — the mandatory-reason validation is enforced at the AD_Field MandatoryLogic
+-- That message is now obsolete — the mandatory-reason validation is enforced at the AD_Column.MandatoryLogic
 -- layer (@IsDeliveryStop/N@=Y on C_BPartner.DeliveryStopReason). No Java/MI validation needed.
