@@ -22,6 +22,7 @@
 
 package de.metas.edi.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.inout.InOutId;
@@ -61,5 +62,33 @@ public class EDIDesadvInOutRepository
 		row.setEDI_Desadv_ID(desadvId.getRepoId());
 		row.setM_InOut_ID(inOutId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(row);
+	}
+
+	/**
+	 * Lists all DESADVs linked to the given {@code InOut} via the {@code EDI_Desadv_M_InOut} junction table.
+	 * <p>
+	 * The junction is the authoritative source of {@code (DESADV, InOut)} links for consolidated shipments
+	 * (i.e. shipments aggregating multiple orders, where each order maps to its own DESADV).
+	 * Callers walking from an {@code M_InOut} to its associated DESADV(s) must use this accessor
+	 * rather than relying on {@code EDI_DesadvLine.M_InOutLine_ID} alone — the junction reflects the
+	 * full set of links, including DESADVs for orders not represented in the current shipment lines.
+	 * <p>
+	 * Returns an empty list if no junction rows exist for the given {@code InOut}. This can happen for
+	 * single-order shipments created before the junction migration backfilled the historical links;
+	 * callers are expected to handle the empty case (typically by falling back to the legacy direct
+	 * {@code EDI_Desadv.M_InOut_ID} reference or treating the shipment as un-DESADV'd).
+	 * <p>
+	 * Order of the returned list is unspecified.
+	 */
+	public ImmutableList<EDIDesadvId> listDesadvsForInOut(@NonNull final InOutId inOutId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, inOutId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list()
+				.stream()
+				.map(row -> EDIDesadvId.ofRepoId(row.getEDI_Desadv_ID()))
+				.collect(ImmutableList.toImmutableList());
 	}
 }
