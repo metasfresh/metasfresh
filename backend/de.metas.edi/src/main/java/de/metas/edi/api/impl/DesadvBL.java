@@ -81,6 +81,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -392,7 +393,7 @@ public class DesadvBL
 
 			final EDIDesadvPackService.Sequences lineSequences = sequencesByDesadv.computeIfAbsent(lineDesadvId, ediDesadvPackService::createSequences);
 
-			addInOutLine(inOutLine, recipientBPartnerId, lineSequences);
+			addInOutLine(inOutLine, recipientBPartnerId, lineSequences, desadvLineRecord);
 		}
 
 		// me03#29231: The set of distinct source DESADVs collected from the line walk is the
@@ -404,8 +405,12 @@ public class DesadvBL
 		final I_EDI_Desadv primary;
 		if (!sequencesByDesadv.isEmpty())
 		{
+			// Picking the lowest EDI_Desadv_ID is deterministic and matches the legacy single-order
+			// behaviour (where the only candidate desadv was the order's own desadv).
+			// The !isEmpty() guard above makes the orElseThrow path unreachable in practice; it is
+			// kept only to satisfy Optional's API (no Java 10 .orElseThrow() on Java 8).
 			final EDIDesadvId primaryId = sequencesByDesadv.keySet().stream()
-					.min(java.util.Comparator.comparingInt(EDIDesadvId::getRepoId))
+					.min(Comparator.comparingInt(EDIDesadvId::getRepoId))
 					.orElseThrow(() -> new AdempiereException("sequencesByDesadv unexpectedly empty"));
 			primary = desadvDAO.retrieveById(primaryId);
 		}
@@ -459,7 +464,8 @@ public class DesadvBL
 	private void addInOutLine(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final BPartnerId recipientBPartnerId,
-			@NonNull final EDIDesadvPackService.Sequences sequences)
+			@NonNull final EDIDesadvPackService.Sequences sequences,
+			@NonNull final I_EDI_DesadvLine desadvLineRecord)
 	{
 		if (inOutLineRecord.getMovementQty().signum() <= 0)
 		{
@@ -470,15 +476,11 @@ public class DesadvBL
 
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
-		final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
-		if (desadvLineId == null)
-		{
-			logger.debug("DesadvBL.addInOutLine - No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-					orderLineRecord.getC_OrderLine_ID());
-			return;
-		}
-
-		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
+		// Pre-condition (already enforced by the caller in addToDesadvCreateForInOutIfNotExist):
+		// the order line must have a non-null EDI_DesadvLine_ID and the passed-in desadvLineRecord
+		// must be the result of desadvDAO.retrieveLineById(orderLineRecord.getEDI_DesadvLine_ID()).
+		// We do NOT re-fetch the desadvLineRecord here — that would double the DB round-trips on
+		// every inOut line. See me03#29231 PLAN_ARCH T1 code-review IMPORTANT.
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
