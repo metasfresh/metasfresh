@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.manufacturing/src/main/sql/postgresql/ddl/functions/PP_Product_BOM_Recursive.sql
 drop function if exists PP_Product_BOM_Recursive(numeric, varchar);
 create or replace function PP_Product_BOM_Recursive(p_PP_Product_BOM_ID numeric, p_ad_language varchar)
 returns table
@@ -63,7 +64,6 @@ $BODY$
 					then (select bom.PP_Product_BOM_ID from PP_Product_BOM bom
 						where bom.M_Product_ID=bomLineProduct.M_Product_ID
 						and bom.IsActive='Y'
-						and bom.Value=bomLineProduct.Value
                         AND (bom.validto >= NOW() OR bom.validto IS NULL)
                         ORDER BY bom.validfrom DESC, bom.PP_Product_BOM_ID DESC
 						limit 1)

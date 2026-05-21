@@ -15,8 +15,7 @@ returns table
 	IsQtyPercentage char(1),
 	C_UOM_ID numeric,
     path integer[],
-    PP_Product_BOM_ID numeric,
-    cumulative_qty numeric
+    PP_Product_BOM_ID numeric
 )
 as
 $BODY$
@@ -36,8 +35,7 @@ $BODY$
 				round(1::numeric, uom.StdPrecision) as QtyBOM,
 				null::numeric as Percentage,
 				COALESCE(uom.UOMSymbol, uomt.UOMSymbol) as UOMSymbol,
-				uom.C_UOM_ID,
-				1::numeric as cumulative_qty
+				uom.C_UOM_ID
 			from PP_Product_BOM bom
 			inner join M_Product bomProduct on bomProduct.M_Product_ID=bom.M_Product_ID
 			LEFT OUTER JOIN M_Product_Trl pt    ON bomProduct.M_Product_ID = pt.M_Product_ID AND pt.AD_Language =p_ad_language
@@ -63,7 +61,6 @@ $BODY$
 					then (select bom.PP_Product_BOM_ID from PP_Product_BOM bom
 						where bom.M_Product_ID=bomLineProduct.M_Product_ID
 						and bom.IsActive='Y'
-						and bom.Value=bomLineProduct.Value
                         AND (bom.validto >= NOW() OR bom.validto IS NULL)
                         ORDER BY bom.validfrom DESC, bom.PP_Product_BOM_ID DESC
 						limit 1)
@@ -73,11 +70,7 @@ $BODY$
 				(case when bomLine.IsQtyPercentage='N' then round(bomLine.QtyBOM, uom.StdPrecision) else null end) as QtyBOM,
 				(case when bomLine.IsQtyPercentage='Y' then round(bomLine.QtyBatch, 2) else null end) as Percentage,
 				COALESCE(uom.UOMSymbol, uomt.UOMSymbol) as UOMSymbol,
-				uom.C_UOM_ID,
-				CASE WHEN bomLine.IsQtyPercentage = 'Y'
-					THEN parent.cumulative_qty * round(bomLine.QtyBatch, 2) / 100
-					ELSE parent.cumulative_qty * round(bomLine.QtyBOM, uom.StdPrecision)
-				END as cumulative_qty
+				uom.C_UOM_ID
 			from bomNode parent
 			inner join PP_Product_BOMLine bomLine on bomLine.PP_Product_BOM_ID=parent.PP_Product_BOM_ID
 			inner join M_Product bomLineProduct on bomLineProduct.M_Product_ID = bomLine.M_Product_ID
@@ -104,11 +97,11 @@ $BODY$
 		n.IsQtyPercentage,
 		n.C_UOM_ID,
         n.path,
-        n.PP_Product_BOM_ID,
-        n.cumulative_qty
+        n.PP_Product_BOM_ID
 	from bomNode n
 	order by path
 	;
 $BODY$
 LANGUAGE sql STABLE
 COST 100;
+
