@@ -145,9 +145,12 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
     # After the Option-A junction fix the view must return exactly 2 rows for the
     # consolidated shipment — one per source-order DESADV.
     # Before the fix: only 1 row (M_InOut.EDI_Desadv_ID single-FK → only Order-A's DESADV).
-    Then the M_InOut_Export_EDI_DESADV_JSON_V export view for M_InOut identified by io_S29231_100 has:
-      | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier |
-      | 2                | 2                 | oA_S29231         | oB_S29231         |
+    # Strict intersection asserted at both header (POReference / EDI_Desadv_ID pairing) AND
+    # line level (every LineItem.DesadvLine.OrderPOReference belongs to the row's source order,
+    # never the other) — per PR #24042 review #4335557991.
+    Then verify DESADV JSON export view for M_InOut identified by io_S29231_100 has:
+      | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier | ExpectedQtyDeliveredPerOrder |
+      | 2                | 2                 | oA_S29231         | oB_S29231         | 10                           |
 
 
   @Id:S29231_110
@@ -233,9 +236,11 @@ Feature: EDI DESADV multi-order aggregated shipment — all source orders' DESAD
 
     # ─── CORE ASSERTION (TC2 regression predicate) ────────────────────────────
     # View must still return exactly 1 row for the single-order case.
-    Then the M_InOut_Export_EDI_DESADV_JSON_V export view for M_InOut identified by io_S29231_110 has exactly 1 row matching:
-      | Order_Identifier |
-      | o_S29231_110     |
+    # Line-level intersection asserted: the single emitted row's LineItems must reference
+    # the one source order's POReference and carry its delivered qty.
+    Then verify DESADV JSON export view for M_InOut identified by io_S29231_110 has exactly 1 row matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | o_S29231_110     | 10                   |
 
 
   # me03#29231 TC3 (S29231_120: N=3 generalisation) — removed per PR #24042 review #4335557991
