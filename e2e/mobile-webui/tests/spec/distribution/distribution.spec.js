@@ -6,8 +6,6 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
 import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
-import { expectErrorToast } from '../../utils/common';
-import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 
 const createMasterdata = async ({ HU1_warehouse = 'wh1', HU1_product = 'P1', qtyToMove }) => {
@@ -91,7 +89,7 @@ test('Try picking an HU from a different locator than pick from locator', async 
     await DistributionLineScreen.scanHUToMove({
         huQRCode: masterdata.handlingUnits.HU1.qrCode,
         expectedQtyToMove: '100',
-        expectedError: `The HU's locator does not match the order's locator.`
+        expectedError: `HU is not at the target trolley`
     });
 });
 
@@ -113,19 +111,11 @@ test('Try picking an HU containing a different product than expected', async ({ 
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await expectErrorToast(
-        'Expect product not matching error',
-        async () => {
-            await DistributionLineScreen.scanHUToMove({
-                huQRCode: masterdata.handlingUnits.HU1.qrCode,
-                expectedQtyToMove: '100',
-                expectedError: `The HU's locator does not match the order's locator.`
-            });
-        },
-        ({ textContent }) => {
-            expect(textContent).toContain('The scanned QR Product does not match');
-        }
-    )
+    await DistributionLineScreen.scanHUToMove({
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
+        expectedQtyToMove: '100',
+        expectedError: `The product does not match!`
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
