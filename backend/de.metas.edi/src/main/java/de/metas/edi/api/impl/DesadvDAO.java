@@ -323,7 +323,11 @@ public class DesadvDAO implements IDesadvDAO
 	@NonNull
 	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
 	{
-		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
+		// Pass `desadv` as context-provider so the query inherits the record's AD_Client_ID
+		// (T4 code-review IMPORTANT: async workpackage threads run in system context;
+		// without the provider, EDI_Desadv_M_InOut active-records filter would not apply
+		// client isolation correctly).
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class, desadv)
 				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, I_M_InOut.class)
