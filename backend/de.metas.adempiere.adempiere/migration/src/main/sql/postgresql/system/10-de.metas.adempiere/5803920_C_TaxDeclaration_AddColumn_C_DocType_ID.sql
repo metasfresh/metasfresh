@@ -3,8 +3,8 @@
 -- AD_Table_ID=818 (C_TaxDeclaration).
 
 -- AD_Column row for C_TaxDeclaration.C_DocType_ID
-INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Table_ID, ColumnName, Created, CreatedBy, DDL_NoForeignKey, Description, EntityType, FieldLength, Help, IsActive, IsAdvancedText, IsAllowLogging, IsAlwaysUpdateable, IsAutoApplyValidationRule, IsAutocomplete, IsCalculated, IsDimension, IsEncrypted, IsForceIncludeInGeneratedModel, IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsIdentifier, IsKey, IsLazyLoading, IsMandatory, IsParent, IsSelectionColumn, IsShowFilterIncrementButtons, IsShowFilterInline, IsStaleable, IsSyncDatabase, IsTranslated, IsUpdateable, IsUseDocSequence, Name, SelectionColumnSeqNo, SeqNo, Updated, UpdatedBy, Version)
-VALUES (0, 592580, 196, 0, 19, 818, 'C_DocType_ID', TIMESTAMP '2026-05-21 00:00:00', 100, 'N', 'Belegart oder Verarbeitungsvorgaben', 'D', 10, 'Die Belegart bestimmt den Nummernkreis und die Vorgaben für die Belegverarbeitung.', 'Y', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'Belegart', 0, 0, TIMESTAMP '2026-05-21 00:00:00', 100, 0)
+INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Table_ID, ColumnName, Created, CreatedBy, DDL_NoForeignKey, Description, EntityType, FieldLength, Help, IsActive, IsAdvancedText, IsAllowLogging, IsAlwaysUpdateable, IsAutoApplyValidationRule, IsAutocomplete, IsCalculated, IsDimension, IsEncrypted, IsForceIncludeInGeneratedModel, IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsIdentifier, IsKey, IsLazyLoading, IsMandatory, IsParent, IsSelectionColumn, IsShowFilterIncrementButtons, IsShowFilterInline, IsStaleable, IsSyncDatabase, IsTranslated, IsUpdateable, IsUseDocSequence, Name, PersonalDataCategory, SelectionColumnSeqNo, SeqNo, Updated, UpdatedBy, Version)
+VALUES (0, 592580 /*From ID Server*/, 196, 0, 19, 818, 'C_DocType_ID', TIMESTAMP '2026-05-21 00:00:00', 100, 'N', 'Belegart oder Verarbeitungsvorgaben', 'D', 10, 'Die Belegart bestimmt den Nummernkreis und die Vorgaben für die Belegverarbeitung.', 'Y', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'Belegart', 'NP', 0, 0, TIMESTAMP '2026-05-21 00:00:00', 100, 0)
 ;
 
 -- Populate AD_Column_Trl for system languages from base
@@ -29,15 +29,13 @@ ALTER TABLE C_TaxDeclaration
     REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED
 ;
 
--- Backfill: every existing row gets the 'TXD' DocType
-UPDATE C_TaxDeclaration td
-SET C_DocType_ID = (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='TXD' LIMIT 1)
-WHERE td.C_DocType_ID IS NULL
+-- Backfill: every existing row gets the 'TXD' DocType (C_DocType_ID=541176, inserted in 5803910)
+UPDATE C_TaxDeclaration
+SET C_DocType_ID = 541176
+WHERE C_DocType_ID IS NULL
 ;
 
 -- Now enforce NOT NULL at the DB level
-INSERT INTO t_alter_column VALUES ('c_taxdeclaration', 'C_DocType_ID', 'NUMERIC(10)', null, 'NULL')
-;
 INSERT INTO t_alter_column VALUES ('c_taxdeclaration', 'C_DocType_ID', null, 'NOT NULL', null)
 ;
 

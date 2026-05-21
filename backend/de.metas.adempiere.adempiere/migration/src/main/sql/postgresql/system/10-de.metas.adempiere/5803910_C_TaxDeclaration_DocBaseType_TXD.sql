@@ -4,7 +4,7 @@
 
 -- AD_Ref_List: Tax Declaration under AD_Reference 183
 INSERT INTO AD_Ref_List (AD_Client_ID, AD_Org_ID, AD_Ref_List_ID, AD_Reference_ID, Created, CreatedBy, EntityType, IsActive, Name, Updated, UpdatedBy, Value, ValueName)
-VALUES (0, 0, 544233, 183, TIMESTAMP '2026-05-21 00:00:00', 100, 'D', 'Y', 'Tax Declaration', TIMESTAMP '2026-05-21 00:00:00', 100, 'TXD', 'Tax Declaration')
+VALUES (0, 0, 544233 /*From ID Server*/, 183, TIMESTAMP '2026-05-21 00:00:00', 100, 'D', 'Y', 'Tax Declaration', TIMESTAMP '2026-05-21 00:00:00', 100, 'TXD', 'Tax Declaration')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Description, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
@@ -16,7 +16,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 
 -- C_DocType row using DocBaseType='TXD'
 INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCopyDescriptionToDocument, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm, IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy, DocNoSequence_ID)
-VALUES (1000000, 0, 541176, TIMESTAMP '2026-05-21 00:00:00', 100, 'TXD', 1, 'D', 0, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Tax Declaration', 'Tax Declaration', TIMESTAMP '2026-05-21 00:00:00', 100, 556598)
+VALUES (1000000, 0, 541176 /*From ID Server*/, TIMESTAMP '2026-05-21 00:00:00', 100, 'TXD', 1, 'D', 0, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Tax Declaration', 'Tax Declaration', TIMESTAMP '2026-05-21 00:00:00', 100, 556598)
 ;
 
 INSERT INTO C_DocType_Trl (AD_Language, C_DocType_ID, Description, DocumentNote, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
