@@ -23,7 +23,6 @@
 package de.metas.edi.api.impl;
 
 import de.metas.edi.api.EDIDesadvId;
-import de.metas.edi.api.IEDIDesadvInOutRepository;
 import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
@@ -32,12 +31,19 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository for the {@code EDI_Desadv_M_InOut} junction table that records
+ * which DESADVs are associated with a given shipment.
+ */
 @Repository
-public class EDIDesadvInOutRepository implements IEDIDesadvInOutRepository
+public class EDIDesadvInOutRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Override
+	/**
+	 * Creates a row in {@code EDI_Desadv_M_InOut} linking the given DESADV to the given shipment.
+	 * If a row already exists for the {@code (desadvId, inOutId)} pair, the method does nothing (idempotent).
+	 */
 	public void assignDesadvToInOut(@NonNull final EDIDesadvId desadvId, @NonNull final InOutId inOutId)
 	{
 		final int existingId = queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)

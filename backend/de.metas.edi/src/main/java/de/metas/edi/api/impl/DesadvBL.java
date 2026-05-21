@@ -14,7 +14,6 @@ import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.api.IEDIDesadvInOutRepository;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.model.I_C_Order;
@@ -124,7 +123,7 @@ public class DesadvBL
 	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
 	@NonNull private final ProductASIDataRepository productASIDataRepository;
-	@NonNull private final IEDIDesadvInOutRepository ediDesadvInOutRepository;
+	@NonNull private final EDIDesadvInOutRepository ediDesadvInOutRepository;
 
 	@VisibleForTesting
 	public static DesadvBL newInstanceForUnitTesting()
