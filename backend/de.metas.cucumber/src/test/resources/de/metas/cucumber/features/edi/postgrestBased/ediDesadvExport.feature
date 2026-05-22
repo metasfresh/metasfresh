@@ -951,6 +951,9 @@ Feature: EDI DESADV export via postgREST
   ## Two EDI-configured orders, same BPartner, distinct POReferences → consolidated shipment.
   ## The PostgREST export endpoint must emit exactly 2 array elements — one per source-order
   ## DESADV — each carrying its own POReference and EDI_Desadv_ID.
+  ## Uses two DISTINCT products (pA + pB) with non-trivial line counts to allow strict
+  ## projection testing: DESADV A has 2 lines (pA qty 10, pB qty 5); DESADV B has 1 line
+  ## (pB qty 7). The shared product pB appears in BOTH DESADVs at DIFFERENT qtys.
 
     Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh is configured for One-DESADV-Per-ORDERS
@@ -961,9 +964,11 @@ Feature: EDI DESADV export via postgREST
       | M_Warehouse_ID | Value        |
       | warehouseStd   | StdWarehouse |
 
+    # Two distinct products so each DESADV element can be verified to contain only its own lines
     And metasfresh contains M_Products:
       | Identifier      |
-      | p_S29231_100    |
+      | pA_S29231_100   |
+      | pB_S29231_100   |
     And metasfresh contains M_PricingSystems
       | Identifier      |
       | ps_S29231_100   |
@@ -974,8 +979,9 @@ Feature: EDI DESADV export via postgREST
       | Identifier      | M_PriceList_ID  |
       | plv_S29231_100  | pl_S29231_100   |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | plv_S29231_100         | p_S29231_100   | 10.0     | PCE      | Normal           |
+      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_100         | pA_S29231_100   | 10.0     | PCE      | Normal           |
+      | plv_S29231_100         | pB_S29231_100   | 5.0      | PCE      | Normal           |
 
     # BPartner: EDI DESADV recipient — the gate condition for DESADV creation at order-complete
     And metasfresh contains C_BPartners:
@@ -985,7 +991,7 @@ Feature: EDI DESADV export via postgREST
       | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
       | bp_S29231_100  | true                 | 9900000290010         |
 
-    # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE
+    # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE (for pA) or 5 PCE (for pB)
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID        |
       | pi_LU_S29231_100  |
@@ -1001,16 +1007,18 @@ Feature: EDI DESADV export via postgREST
       | pii_LU_S29231_100   | piv_LU_S29231_100   | 20  | HU       | pi_TU_S29231_100   |
       | pii_TU_S29231_100   | piv_TU_S29231_100   | 0   | PM       |                    |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
-      | pip_S29231_100          | pii_TU_S29231_100 | p_S29231_100  | 10  | 2020-01-01 |
+      | M_HU_PI_Item_Product_ID  | M_HU_PI_Item_ID   | M_Product_ID    | Qty | ValidFrom  |
+      | pipA_S29231_100          | pii_TU_S29231_100 | pA_S29231_100   | 10  | 2020-01-01 |
+      | pipB_S29231_100          | pii_TU_S29231_100 | pB_S29231_100   | 5   | 2020-01-01 |
 
-    # Order A — distinct POReference so it gets its own EDI_Desadv at order-complete
+    # Order A — 2 lines: pA qty 10 + pB qty 5 → DESADV A must contain exactly those 2 lines
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference                 |
       | oA_S29231    | true    | bp_S29231_100  | 2026-05-20  | PO_A_S29231_100_@Date@      |
     And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID  | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
-      | olA_S29231    | oA_S29231   | p_S29231_100  | 10         | pip_S29231_100          |
+      | Identifier     | C_Order_ID  | M_Product_ID    | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olA1_S29231    | oA_S29231   | pA_S29231_100   | 10         | pipA_S29231_100          |
+      | olA2_S29231    | oA_S29231   | pB_S29231_100   | 5          | pipB_S29231_100          |
 
     When the order identified by oA_S29231 is completed
 
@@ -1019,13 +1027,15 @@ Feature: EDI DESADV export via postgREST
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
       | dA_S29231                | bp_S29231_100            | oA_S29231             | P                |
 
-    # Order B — different POReference → its own distinct EDI_Desadv
+    # Order B — 1 line: pB qty 7 → DESADV B must contain exactly that 1 line
+    # pB appears in BOTH orders at DIFFERENT qtys (5 vs 7) — the projection check must
+    # distinguish pB-in-A (qty 5) from pB-in-B (qty 7).
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference                 |
       | oB_S29231    | true    | bp_S29231_100  | 2026-05-20  | PO_B_S29231_100_@Date@      |
     And metasfresh contains C_OrderLines:
-      | Identifier    | C_Order_ID  | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
-      | olB_S29231    | oB_S29231   | p_S29231_100  | 10         | pip_S29231_100          |
+      | Identifier     | C_Order_ID  | M_Product_ID    | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olB1_S29231    | oB_S29231   | pB_S29231_100   | 7          | pipB_S29231_100          |
 
     When the order identified by oB_S29231 is completed
 
@@ -1036,23 +1046,27 @@ Feature: EDI DESADV export via postgREST
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # Both shipment schedules must be ready before batching
+    # All three shipment schedules (2 from order A, 1 from order B) must be ready before batching
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ssA_S29231    | olA_S29231     | N             |
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssA1_S29231    | olA1_S29231    | N             |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ssB_S29231    | olB_S29231     | N             |
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssA2_S29231    | olA2_S29231    | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssB1_S29231    | olB1_S29231    | N             |
 
-    # Batch-generate ONE shipment covering both schedules (the aggregated M_InOut)
+    # Batch-generate ONE shipment covering all three schedules (the aggregated M_InOut)
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
-      | ssA_S29231            |
-      | ssB_S29231            |
+      | ssA1_S29231           |
+      | ssA2_S29231           |
+      | ssB1_S29231           |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID    | REST.Context.M_InOut_ID |
-      | ssA_S29231            | io_S29231_100 | io_S29231_100_ID        |
+      | ssA1_S29231           | io_S29231_100 | io_S29231_100_ID        |
 
     # Wait for DESADV pack records to be written (async, triggered by M_InOut BEFORE_COMPLETE)
     # IsManual_IPA_SSCC18=true: this scenario does not set up M_HU_Attribute SSCC18 (no
@@ -1088,9 +1102,22 @@ Feature: EDI DESADV export via postgREST
   ]
 }
     """
+    # Header+line intersection: 2 elements, each with all line items belonging to its source order.
+    # ExpectedQtyDeliveredPerOrder is intentionally absent from the intersection step;
+    # per-line qty verification is handled by the strict-projection step below.
     Then verify DESADV JSON export response has multi-source-order intersection:
       | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier | ExpectedQtyDeliveredPerOrder |
-      | 2                | 2                 | oA_S29231         | oB_S29231         | 10                           |
+      | 2                | 2                 | oA_S29231         | oB_S29231         | 0                            |
+
+    # ─── STRICT PROJECTION ASSERTION ──────────────────────────────────────────────────────────────
+    # Each DESADV element must be an exact projection of its source order's lines: correct
+    # LineItem count, correct product set (DesadvLine.Product.SupplierProductNo), correct qty
+    # multiset (QtyDeliveredInDesadvLineUOM). pB appears in BOTH DESADVs at different qtys
+    # (5 in A, 7 in B) — this distinguishes per-line ownership from a naive product-set check.
+    Then verify DESADV JSON export response is a strict projection of source orders:
+      | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers    | ExpectedQtys |
+      | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100   | 10,5         |
+      | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100                 | 7            |
 
 
   @Id:S29231_110

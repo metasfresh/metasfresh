@@ -25,20 +25,27 @@ package de.metas.cucumber.stepdefs.edi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +65,8 @@ public class EDI_Desadv_JSON_Export_StepDef
 {
 	private final @NonNull TestContext testContext;
 	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull EDI_Desadv_StepDefData desadvTable;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
@@ -274,7 +283,10 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *   <b>DistinctDesadvIds</b> — (required) number of distinct EDI_Desadv_IDs expected<br>
 	 *   <b>OrderA_Identifier</b> — (required) step-def identifier of source order A; its {@code POReference} must appear in the response<br>
 	 *   <b>OrderB_Identifier</b> — (required) step-def identifier of source order B; its {@code POReference} must appear in the response<br>
-	 *   <b>ExpectedQtyDeliveredPerOrder</b> — (required) qty each source order's LineItems must show as {@code QtyDeliveredInDesadvLineUOM}<br>
+	 *   <b>ExpectedQtyDeliveredPerOrder</b> — uniform qty each source order's LineItems must show as
+	 *       {@code QtyDeliveredInDesadvLineUOM}; pass {@code 0} to skip per-line qty assertion (use
+	 *       {@code verify DESADV JSON export response is a strict projection of source orders:} for
+	 *       scenarios with multi-line orders carrying distinct per-line qtys)<br>
 	 * @cucumber.example
 	 * <pre>
 	 * Then verify DESADV JSON export response has multi-source-order intersection:
@@ -345,6 +357,131 @@ public class EDI_Desadv_JSON_Export_StepDef
 		});
 	}
 
+	/**
+	 * Verifies that each DESADV array element in the last {@code M_InOut_EDI_Export_JSON/invoke} REST response
+	 * is a <em>strict projection</em> of its source order's lines. For each DataTable row the step:
+	 * <ol>
+	 *   <li>Locates the array element whose {@code metasfresh_DESADV.EDI_Desadv_ID} matches
+	 *       the DESADV identified by {@code DESADV_Identifier}.</li>
+	 *   <li>Asserts that the total number of {@code Packings[].LineItems[]} equals {@code ExpectedLineCount}.</li>
+	 *   <li>Asserts that the multiset of {@code DesadvLine.Product.SupplierProductNo} values across
+	 *       all LineItems equals the products named by {@code ExpectedProductIdentifiers} (comma-separated
+	 *       step-def identifiers whose {@code M_Product.Value} is used for comparison).</li>
+	 *   <li>Asserts that the multiset of {@code DesadvLine.QtyDeliveredInDesadvLineUOM} values across
+	 *       all LineItems equals the quantities in {@code ExpectedQtys} (comma-separated integers).</li>
+	 * </ol>
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *   <li>{@code DESADV_Identifier} (required) — step-def identifier for the EDI_Desadv record</li>
+	 *   <li>{@code Order_Identifier} (required) — step-def identifier for the source order (used only for assertion messages)</li>
+	 *   <li>{@code ExpectedLineCount} (required) — expected total count of LineItems in this DESADV element</li>
+	 *   <li>{@code ExpectedProductIdentifiers} (required) — comma-separated step-def identifiers of M_Products;
+	 *       each identifier's {@code M_Product.Value} must appear as {@code DesadvLine.Product.SupplierProductNo}</li>
+	 *   <li>{@code ExpectedQtys} (required) — comma-separated integer delivered quantities matching the line list
+	 *       (multiset comparison; order does not matter)</li>
+	 * </ul>
+	 * <p>
+	 * Example usage:
+	 * <pre>
+	 * Then verify DESADV JSON export response is a strict projection of source orders:
+	 *   | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers    | ExpectedQtys |
+	 *   | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100   | 10,5         |
+	 *   | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100                 | 7            |
+	 * </pre>
+	 */
+	@Then("verify DESADV JSON export response is a strict projection of source orders:")
+	public void verifyStrictProjectionPerSourceOrder(@NonNull final DataTable dataTable) throws Exception
+	{
+		final JsonNode responseArray = objectMapper.readTree(testContext.getApiResponseBodyAsString());
+		assertThat(responseArray.isArray()).as("REST response must be a JSON array").isTrue();
+
+		final List<JsonNode> desadvNodes = ImmutableList.copyOf(
+				StreamSupport.stream(responseArray.spliterator(), false)
+						.map(el -> el.path("metasfresh_DESADV"))
+						.iterator());
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String desadvIdentifier = row.getAsString("DESADV_Identifier");
+			final String orderIdentifier = row.getAsString("Order_Identifier");
+			final int expectedLineCount = row.getAsInt("ExpectedLineCount");
+			final String expectedProductIdentifiersCsv = row.getAsString("ExpectedProductIdentifiers");
+			final String expectedQtysCsv = row.getAsString("ExpectedQtys");
+
+			// Resolve the EDI_Desadv_ID from the step-def data so we can find the right array element
+			final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
+			final int targetDesadvId = desadvRecord.getEDI_Desadv_ID();
+
+			final JsonNode desadvNode = desadvNodes.stream()
+					.filter(n -> n.path("EDI_Desadv_ID").asInt() == targetDesadvId)
+					.findFirst()
+					.orElseThrow(() -> new AssertionError(
+							"No response element found for DESADV '" + desadvIdentifier + "' (EDI_Desadv_ID=" + targetDesadvId + ")"
+									+ " — response EDI_Desadv_IDs: "
+									+ desadvNodes.stream().map(n -> String.valueOf(n.path("EDI_Desadv_ID").asInt())).collect(Collectors.joining(", "))));
+
+			// Collect all LineItems from all Packings
+			final JsonNode packings = desadvNode.path("Packings");
+			assertThat(packings.isArray())
+					.as("Packings must be an array for DESADV '%s' (EDI_Desadv_ID=%d)", desadvIdentifier, targetDesadvId)
+					.isTrue();
+
+			final List<JsonNode> allLineItems = new ArrayList<>();
+			for (final JsonNode packing : packings)
+			{
+				final JsonNode lineItems = packing.path("LineItems");
+				assertThat(lineItems.isArray())
+						.as("LineItems must be an array under Packings for DESADV '%s'", desadvIdentifier)
+						.isTrue();
+				StreamSupport.stream(lineItems.spliterator(), false).forEach(allLineItems::add);
+			}
+
+			// 1. Line count
+			assertThat(allLineItems.size())
+					.as("DESADV '%s' (order '%s') must have exactly %d LineItem(s)", desadvIdentifier, orderIdentifier, expectedLineCount)
+					.isEqualTo(expectedLineCount);
+
+			// 2. Product multiset — compare DesadvLine.Product.SupplierProductNo against M_Product.Value
+			final ImmutableMultiset<String> actualProductValues = allLineItems.stream()
+					.map(li -> li.path("DesadvLine").path("Product").path("SupplierProductNo").asText(null))
+					.collect(ImmutableMultiset.toImmutableMultiset());
+
+			final ImmutableMultiset<String> expectedProductValues = Arrays.stream(expectedProductIdentifiersCsv.split(","))
+					.map(String::trim)
+					.map(pid -> {
+						final I_M_Product product = productTable.get(pid);
+						return product.getValue();
+					})
+					.collect(ImmutableMultiset.toImmutableMultiset());
+
+			assertThat(actualProductValues)
+					.as("DESADV '%s' (order '%s'): DesadvLine.Product.SupplierProductNo multiset must exactly match source order's products",
+							desadvIdentifier, orderIdentifier)
+					.isEqualTo(expectedProductValues);
+
+			// 3. Qty multiset — compare QtyDeliveredInDesadvLineUOM (multiset, order-insensitive)
+			final ImmutableMultiset<BigDecimal> actualQtys = allLineItems.stream()
+					.map(li -> {
+						final JsonNode qtyNode = li.path("DesadvLine").path("QtyDeliveredInDesadvLineUOM");
+						assertThat(qtyNode.isMissingNode())
+								.as("DesadvLine.QtyDeliveredInDesadvLineUOM must be present in DESADV '%s'", desadvIdentifier)
+								.isFalse();
+						return new BigDecimal(qtyNode.asText());
+					})
+					.collect(ImmutableMultiset.toImmutableMultiset());
+
+			final ImmutableMultiset<BigDecimal> expectedQtys = Arrays.stream(expectedQtysCsv.split(","))
+					.map(String::trim)
+					.map(BigDecimal::new)
+					.collect(ImmutableMultiset.toImmutableMultiset());
+
+			assertThat(actualQtys)
+					.as("DESADV '%s' (order '%s'): QtyDeliveredInDesadvLineUOM multiset must exactly match source order's quantities",
+							desadvIdentifier, orderIdentifier)
+					.isEqualTo(expectedQtys);
+		});
+	}
+
 	// =========================================================================
 	// private helpers
 	// =========================================================================
@@ -363,7 +500,9 @@ public class EDI_Desadv_JSON_Export_StepDef
 		final int distinctDesadvIds = row.getAsInt("DistinctDesadvIds");
 		final String orderAIdentifier = row.getAsString("OrderA_Identifier");
 		final String orderBIdentifier = row.getAsString("OrderB_Identifier");
-		final int expectedQtyDeliveredPerOrder = row.getAsInt("ExpectedQtyDeliveredPerOrder");
+		// Optional: when absent or 0, per-line qty assertion is skipped (use the strict-projection step for that)
+		final Optional<Integer> expectedQtyDeliveredPerOrderOpt = row.getAsOptionalInt("ExpectedQtyDeliveredPerOrder")
+				.filter(q -> q != 0);
 
 		// array size
 		assertThat(responseArray.size())
@@ -434,24 +573,28 @@ public class EDI_Desadv_JSON_Export_StepDef
 				.isEqualTo(poRefB);
 
 		// Strict LINE-LEVEL intersection: each element's LineItems must reference order lines from
-		// its source order — never the other order — and carry the expected delivered qty.
-		assertLineItemsBelongToOrder(desadvIdA, desadvNodeForOrderA, poRefA, expectedQtyDeliveredPerOrder);
-		assertLineItemsBelongToOrder(desadvIdB, desadvNodeForOrderB, poRefB, expectedQtyDeliveredPerOrder);
+		// its source order — never the other order — and (if provided) carry the expected delivered qty.
+		assertLineItemsBelongToOrder(desadvIdA, desadvNodeForOrderA, poRefA, expectedQtyDeliveredPerOrderOpt.orElse(null));
+		assertLineItemsBelongToOrder(desadvIdB, desadvNodeForOrderB, poRefB, expectedQtyDeliveredPerOrderOpt.orElse(null));
 	}
 
 	/**
 	 * Asserts that every {@code Packings[].LineItems[]} entry in the given DESADV JSON node refers
-	 * to the expected source-order POReference (line-level intersection) and carries the expected
-	 * {@code QtyDeliveredInDesadvLineUOM}. Fails if any LineItem leaks across orders.
+	 * to the expected source-order POReference (line-level intersection) and, if {@code expectedQtyDelivered}
+	 * is non-null, carries the expected uniform {@code QtyDeliveredInDesadvLineUOM}. When scenarios have
+	 * multi-line orders with different per-line qtys, pass {@code null} to skip the uniform-qty check and
+	 * use the strict-projection step for per-line qty verification instead.
 	 *
-	 * @param ediDesadvId used only for assertion messages
-	 * @param desadvNode  the {@code metasfresh_DESADV} node from one array element of the REST response
+	 * @param ediDesadvId          used only for assertion messages
+	 * @param desadvNode           the {@code metasfresh_DESADV} node from one array element of the REST response
+	 * @param expectedPoReference  the POReference every LineItem must carry
+	 * @param expectedQtyDelivered uniform expected qty per LineItem; {@code null} to skip qty assertion
 	 */
 	private void assertLineItemsBelongToOrder(
 			final int ediDesadvId,
 			@NonNull final JsonNode desadvNode,
 			@NonNull final String expectedPoReference,
-			final int expectedQtyDelivered)
+			final Integer expectedQtyDelivered)
 	{
 		final JsonNode packings = desadvNode.path("Packings");
 		assertThat(packings.isArray())
@@ -483,18 +626,21 @@ public class EDI_Desadv_JSON_Export_StepDef
 								ediDesadvId, expectedPoReference)
 						.isEqualTo(expectedPoReference);
 
-				final JsonNode qtyNode = desadvLine.path("QtyDeliveredInDesadvLineUOM");
-				assertThat(qtyNode.isMissingNode())
-						.as("LineItem.DesadvLine must contain QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d "
-								+ "(silent-zero guard — a missing JSON field would otherwise fail the qty assertion "
-								+ "with a misleading 'expected 0' message)",
-								ediDesadvId)
-						.isFalse();
-				final BigDecimal actualQtyDelivered = new BigDecimal(qtyNode.asText());
-				assertThat(actualQtyDelivered)
-						.as("LineItem.DesadvLine.QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d must equal source order's delivered qty",
-								ediDesadvId)
-						.isEqualByComparingTo(BigDecimal.valueOf(expectedQtyDelivered));
+				if (expectedQtyDelivered != null)
+				{
+					final JsonNode qtyNode = desadvLine.path("QtyDeliveredInDesadvLineUOM");
+					assertThat(qtyNode.isMissingNode())
+							.as("LineItem.DesadvLine must contain QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d "
+									+ "(silent-zero guard — a missing JSON field would otherwise fail the qty assertion "
+									+ "with a misleading 'expected 0' message)",
+									ediDesadvId)
+							.isFalse();
+					final BigDecimal actualQtyDelivered = new BigDecimal(qtyNode.asText());
+					assertThat(actualQtyDelivered)
+							.as("LineItem.DesadvLine.QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d must equal source order's delivered qty",
+									ediDesadvId)
+							.isEqualByComparingTo(BigDecimal.valueOf(expectedQtyDelivered));
+				}
 
 				lineItemsChecked++;
 			}
