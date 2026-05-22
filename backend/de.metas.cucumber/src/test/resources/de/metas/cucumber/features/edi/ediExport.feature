@@ -256,20 +256,10 @@ Feature: EDI_cctop_invoic_v export format
   @F00350
   @Id:S29231_150
   Scenario: S29231_150 — Two orders, one consolidated shipment → both DESADVs exported via the Replication Interface (RPL) path
-  ## me03#29231 — Regression guard for the legacy RPL path (Broken-Path #5 + #6).
-  ## Two EDI-DESADV-recipient orders for the same BPartner with distinct POReferences
-  ## are completed (creating one EDI_Desadv per order). Their shipment schedules are
-  ## consolidated by 'generate shipments' into a single M_InOut whose C_Order_ID is null
-  ## (the legacy interceptor null-trick because lines come from 2 different orders).
-  ## After enqueuing BOTH DESADVs the RPL export path (EDI_DESADV_InOut_Export.doExport)
-  ## must run for the consolidated shipment, reading via the M_InOut_Desadv_V view
-  ## that T8 rewrote to enumerate per-source-DESADV via the EDI_Desadv_M_InOut junction.
-  ## Before T8 the view joined on the single-FK winner so only one DESADV's view row
-  ## was visible; after T8 both DESADVs are visible via the junction.
-  ## Before T9 the catch block flipped status on the single-FK winner only; after T9
-  ## the junction-driven loop flips status on every linked DESADV on RPL failure.
-  ## This scenario uses the One-DESADV-Per-Shipment EXP_Format (EDI_Exp_Desadv,
-  ## ID=540405) which reads from M_InOut_Desadv_V — the view T8 rewrote.
+  ## Regression for the RPL (One-DESADV-Per-Shipment EXP_Format) path: two orders with
+  ## distinct POReferences → consolidated shipment → BOTH source DESADVs are exported.
+  ## Uses EDI_Exp_Desadv (One-DESADV-Per-Shipment, ID=540405) which reads M_InOut_Desadv_V
+  ## via the junction — verifying that both linked DESADVs are visible and exported.
     Given metasfresh is configured for One-DESADV-Per-Shipment
 
   # Fresh BPartner for S29231_150 — the seed BPartner 2156425 has consolidation-blocking

@@ -948,12 +948,9 @@ Feature: EDI DESADV export via postgREST
   @Id:S29231_100
   @from:cucumber
   Scenario: S29231_100 — Two orders, one consolidated shipment → export view emits two DESADV JSONs
-  ## me03#29231 — TC1: regression test for the multi-source-order DESADV export fix.
-  ## Two EDI-configured orders for the same BPartner, each with a distinct POReference,
-  ## are completed (creating one EDI_Desadv per order). Their shipment schedules are
-  ## consolidated into a single M_InOut. After the Option-A junction fix the export view
-  ## M_InOut_Export_EDI_DESADV_JSON_V must return EXACTLY 2 rows for that M_InOut —
-  ## one per source-order DESADV — each carrying its own POReference and EDI_Desadv_ID.
+  ## Two EDI-configured orders, same BPartner, distinct POReferences → consolidated shipment.
+  ## The PostgREST export endpoint must emit exactly 2 array elements — one per source-order
+  ## DESADV — each carrying its own POReference and EDI_Desadv_ID.
 
     Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh is configured for One-DESADV-Per-ORDERS
@@ -1069,13 +1066,10 @@ Feature: EDI DESADV export via postgREST
       | packA_S29231       | dA_S29231                | true                |
       | packB_S29231       | dB_S29231                | true                |
 
-    # ─── CORE ASSERTION (TC1 falsifiable predicate) ───────────────────────────
-    # After the Option-A junction fix the REST endpoint must return exactly 2 elements for the
-    # consolidated shipment — one per source-order DESADV.
-    # Before the fix: only 1 element (M_InOut.EDI_Desadv_ID single-FK → only Order-A's DESADV).
-    # Strict intersection asserted at both header (POReference / EDI_Desadv_ID pairing) AND
-    # line level (every LineItem.DesadvLine.OrderPOReference belongs to the element's source order,
-    # never the other) — per PR #24042 review #4335557991.
+    # ─── CORE ASSERTION ───────────────────────────
+    # The REST endpoint must return exactly 2 elements — one per source-order DESADV.
+    # Asserted at header level (POReference + EDI_Desadv_ID pairing per element) AND
+    # line level (every LineItem.DesadvLine.OrderPOReference belongs to its element's source order).
     And the following API_Audit_Config records are created:
       | Identifier    | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_S29231_100  | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |

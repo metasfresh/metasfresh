@@ -192,31 +192,11 @@ Feature: EDI DESADV export via External System
   @F00350
   @Id:S29231_140
   Scenario: S29231_140 — Two orders, one consolidated shipment → array-mode fan-out exports both DESADVs via External System path
-  ## me03#29231 — End-to-end coverage of Tasks 1+4+6+7+9+9b through the External-System path,
-  ## reworked per ai-work/29231/PLAN_ARRAY_MODE.md for the array-mode pivot (Phase 1 + C1–C6).
-  ##
   ## Two EDI-DESADV-recipient orders for the same BPartner (each with a distinct POReference)
   ## are completed (creating one EDI_Desadv per order). Their shipment schedules are
-  ## consolidated by 'generate shipments' batch into a single M_InOut whose C_Order_ID is null
-  ## (the legacy interceptor null-trick because lines come from 2 different orders).
-  ##
-  ## After array-mode pivot (PLAN_ARRAY_MODE.md §2 architecture):
-  ##   - The export trigger is per-M_InOut (the consolidated shipment io_140), NOT per-DESADV.
-  ##   - The PostgREST view M_InOut_Export_EDI_DESADV_JSON_V emits ONE multi-row result
-  ##     containing both DESADV payloads as a JSON array (T6's per-DESADV filter is dropped).
-  ##   - The Camel scripted-adapter route fans out to TWO downstream HTTP calls — one per
-  ##     array element — when the endpoint's IsArrayFanOut flag is set. Wire-level fan-out
-  ##     details are exhaustively covered in
-  ##     ScriptedAdapterConvertMsgFromMFRouteBuilderTests (Camel module).
-  ##   - End-state contract is unchanged: both source DESADVs and the consolidated shipment
-  ##     must reach EDI_ExportStatus=S.
-  ##
-  ## NOTE on endpoint configuration: this cucumber test uses the integration-level
-  ## SKIP_WP_PROCESSOR_FOR_AUTOMATION mock that bypasses the live HTTP fan-out — the
-  ## RabbitMQ stub directly drives status writeback. The IsArrayFanOut flag itself
-  ## therefore has no observable effect at this layer; it is exercised in the Camel
-  ## unit tests. Here we still assert the end-state contract (per-DESADV + M_InOut
-  ## status reach S) which is the falsifiable predicate from PLAN_ARRAY_MODE.md §4.1.
+  ## consolidated into a single M_InOut (C_Order_ID = null — lines from 2 different orders).
+  ## End-state assertion: both source DESADVs (dA_140 + dB_140) and the consolidated
+  ## shipment (io_140) must reach EDI_ExportStatus=S within 120 s.
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     # Order A — distinct POReference → its own EDI_Desadv at order-complete.
@@ -267,19 +247,14 @@ Feature: EDI DESADV export via External System
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ssA_140               | io_140     |
 
-    # Array-mode pivot: enqueue ONE export for the consolidated M_InOut.
-    # On a live system this single export call would (a) issue ONE PostgREST request that
-    # returns a 2-element JSON array (one per source DESADV) and (b) the scripted-adapter
-    # Camel route would fan out into TWO downstream HTTP calls. See the Camel unit tests
-    # for the wire-level matrix.
+    # Enqueue one M_InOut export — production fans out to N HTTP calls; the cucumber mock writes status directly via RabbitMQ.
     And M_InOut is enqueued for EDI export
       | M_InOut_ID |
       | io_140     |
 
-    # ─── CORE ASSERTION (TC4 falsifiable predicate) ───────────────────────────
-    # Both source DESADVs must reach Sent (S) within 120s — only possible because
-    # T1+T9+T9b together let recomputeDesadvStatusFromInOuts traverse the junction
-    # to find the consolidated shipment for BOTH source DESADVs.
+    # ─── CORE ASSERTION ────────────────────
+    # Both source DESADVs must reach Sent (S) within 120 s — the status recompute
+    # must traverse the junction to find the consolidated shipment for both DESADVs.
     Then after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | dA_140                   | S                |
