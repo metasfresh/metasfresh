@@ -154,7 +154,7 @@ test('Scan locator QR code where HU is expected → user-friendly error', async 
         await DistributionLinePickFromScreen.typeHUQRCode(masterdata.warehouses.wh1.locatorQRCode);
         await GetQuantityDialog.waitForDialog();
     }, ({ textContent }) => {
-        expect(textContent).toContain('locator');
+        expect(textContent).toContain('QR_WRONG_TYPE_LOCATOR');
     });
 });
 
@@ -182,6 +182,6 @@ test('Scan unrecognized barcode where HU is expected → user-friendly error', a
         await DistributionLinePickFromScreen.typeHUQRCode('TOTALLY_UNKNOWN_FORMAT_XYZ');
         await GetQuantityDialog.waitForDialog();
     }, ({ textContent }) => {
-        expect(textContent).toContain('not recognized');
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
     });
 });

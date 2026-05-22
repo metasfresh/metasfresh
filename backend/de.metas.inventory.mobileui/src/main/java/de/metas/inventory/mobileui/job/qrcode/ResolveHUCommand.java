@@ -50,6 +50,7 @@ public class ResolveHUCommand
 	// Params
 	@NonNull private final ScannedCode scannedCode;
 	@NonNull private final ImmutableList<InventoryLine> lines;
+	@NonNull private final ImmutableList<InventoryLine> allLinesForLocator;
 
 	private static final ImmutableSet<AttributeCode> ATTRIBUTE_CODES = ImmutableSet.of(ATTR_BestBeforeDate, ATTR_LotNumber);
 
@@ -70,9 +71,11 @@ public class ResolveHUCommand
 		this.asiCache = productService.newASILoadingCache();
 
 		this.scannedCode = scannedCode;
-		this.lines = inventory.streamLines(lineId)
-				.filter(InventoryLine::isEligibleForCounting)
+		this.allLinesForLocator = inventory.streamLines(lineId)
 				.filter(line -> LocatorId.equals(line.getLocatorId(), locatorId))
+				.collect(ImmutableList.toImmutableList());
+		this.lines = allLinesForLocator.stream()
+				.filter(InventoryLine::isEligibleForCounting)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -102,7 +105,7 @@ public class ResolveHUCommand
 				throw new AdempiereException(MobileQRCodeMessages.WRONG_TYPE, parsedScannedCode.getClass().getSimpleName());
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("parsedScannedCode", parsedScannedCode);
@@ -176,7 +179,7 @@ public class ResolveHUCommand
 	}
 
 	@Nullable
-	private Attribute getDefaultAttribute(@NonNull AttributeCode attributeCode)
+	private Attribute getDefaultAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return Attribute.of(productService.getAttribute(attributeCode));
 	}
@@ -192,7 +195,7 @@ public class ResolveHUCommand
 			return uncountedLine.get();
 		}
 		// HU matches a line but it was already counted in this physical inventory
-		final boolean alreadyCounted = lines.stream()
+		final boolean alreadyCounted = allLinesForLocator.stream()
 				.anyMatch(line -> isLineLocatorAndProductMatchingHU(line, hu));
 		if (alreadyCounted)
 		{
