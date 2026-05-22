@@ -969,7 +969,11 @@ jobs:
 
   compatibility-images:
     runs-on: ${{ vars.RUNNER_HEAVY }}
-    needs: [ init, frontend, backend, db-apply-migrations ]
+    # Decoupled from db-apply-migrations: the db + migration-tool re-tags
+    # are produced by the `compatibility-images-db` job below so that the
+    # app/api/frontend/mobile/edi/externalsystems compat artifacts are not
+    # gated on the preloaded-db image push.
+    needs: [ init, frontend, backend ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1139,31 +1143,11 @@ jobs:
           df -h /
       - name: tag images
         run: |
-          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
-          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-          docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
           docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
           docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
           docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
           docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
 
-      - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-        if: env.ACT != 'true'
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-      - name: push-image metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
-        if: env.ACT != 'true'
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1189,10 +1173,51 @@ jobs:
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo 'Database compat images (metasfresh-db, metasfresh-db-migration-tool) are produced by the `compatibility-images-db` job.' >> $GITHUB_STEP_SUMMARY
+
+  compatibility-images-db:
+    # DB + migration-tool re-tag, split out of `compatibility-images` so that
+    # the app-leg artifacts no longer wait on `db-apply-migrations`. This job
+    # is the only remaining consumer of the preloaded-db image on the
+    # critical path to `cicd-dispatch`.
+    runs-on: ${{ vars.RUNNER_HEAVY }}
+    needs: [ init, db-apply-migrations ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: tag images
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push --quiet metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: push-image metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+        if: env.ACT != 'true'
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push --quiet metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: produce-summary
+        run: |
+          echo '#### database compat images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 
   junit:
     name: test (java)
@@ -2661,7 +2686,10 @@ jobs:
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, compatibility-images ]
+    # Wait for both compat legs. `compatibility-images-db` is still gated on
+    # `db-apply-migrations` — the critical-path saving comes from letting the
+    # app-leg finish in parallel with the db leg rather than serially after it.
+    needs: [ init, compatibility-images, compatibility-images-db ]
     steps:
       - name: dispatch-workflow
         env:
