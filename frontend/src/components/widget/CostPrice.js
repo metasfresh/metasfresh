@@ -23,6 +23,40 @@ export default class CostPrice extends PureComponent {
     onFocus?.();
   };
 
+  // Keypress-level filter: reject characters that can never be part of a
+  // valid monetary value. Allows digits, decimal separators (. and , — DE/AT
+  // users), Swiss thousands separators (apostrophe and typographic ’), space
+  // and non-breaking space (Excel/Word paste of numbers like "120 000.50"),
+  // and a leading minus sign. Backspace/delete/arrows fire with `e.data == null`
+  // and are passed through unchanged.
+  handleBeforeInput = (e) => {
+    if (e.data == null) return;
+    if (!/^[0-9.,'\u2019 \u00A0-]+$/.test(e.data)) {
+      e.preventDefault();
+    }
+  };
+
+  // Strip Swiss thousands separators (apostrophe + typographic apostrophe)
+  // and whitespace separators (space, non-breaking space) before the value
+  // flows upstream — the metasfresh backend's BigDecimal parser
+  // (DataTypes.convertToBigDecimal) rejects them with HTTP 500
+  // NumberFormatException. Verified by reproducing against ipshotfix:
+  //   PATCH … {"op":"replace","path":"PriceEntered","value":"1'500.00"}
+  //   → 500 java.lang.NumberFormatException: Character ' is neither …
+  // Keeping the keypress filter permissive (apostrophe allowed in the
+  // field) makes copy-paste from a price catalogue work; the strip here
+  // makes sure the cleaned value is what actually gets PATCHed.
+  handleChange = (e) => {
+    const { onChange } = this.props;
+    const raw = e.target.value;
+    const cleaned = raw.replace(/['\u2019 \u00A0]/g, '');
+    if (cleaned !== raw) {
+      onChange({ ...e, target: { ...e.target, value: cleaned } });
+    } else {
+      onChange(e);
+    }
+  };
+
   render() {
     const {
       autoComplete,
@@ -35,7 +69,7 @@ export default class CostPrice extends PureComponent {
       value,
       precision,
     } = this.props;
-    const { onChange, onKeyDown } = this.props;
+    const { onKeyDown } = this.props;
 
     // me03#27080 follow-up: previously this component swapped between a
     // display <input type="text"> (formatted value, no real editing) and
@@ -66,7 +100,8 @@ export default class CostPrice extends PureComponent {
         tabIndex={tabIndex}
         title={title}
         //
-        onChange={onChange}
+        onBeforeInput={this.handleBeforeInput}
+        onChange={this.handleChange}
         onFocus={this.focus}
         onBlur={this.handleBlur}
         onKeyDown={onKeyDown}
