@@ -235,7 +235,6 @@ Feature: material dispo reacts to forecast docactions
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
-  @me03_29657
   Scenario: A forecast on an MRP_Exclude warehouse produces no STOCK_UP candidate (me03#29657)
     # ForecastCreatedHandler consults IWarehouseBL.isIgnoreInMaterialDispo(warehouseId) per forecast line.
     # The M_ForecastLine model interceptor (de.metas.business: M_ForecastLine.updateFieldsFromHeader)

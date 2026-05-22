@@ -2,7 +2,6 @@
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
-@me03_29657
 Feature: M_Warehouse.MRP_Exclude='Y' bypasses material disposition end-to-end
 ## F5100: Material Disposition
 
@@ -35,7 +34,6 @@ Feature: M_Warehouse.MRP_Exclude='Y' bypasses material disposition end-to-end
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
-  @me03_29657
   Scenario: Shipment schedule on MRP_Exclude warehouse produces no MD_Candidate
     # SO completion creates a M_ShipmentSchedule on the MRP_Exclude warehouse. The
     # ShipmentScheduleCreatedHandler must short-circuit, producing zero non-STOCK MD_Candidate rows.
@@ -69,7 +67,6 @@ Feature: M_Warehouse.MRP_Exclude='Y' bypasses material disposition end-to-end
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
-  @me03_29657
   Scenario: Receipt schedule on MRP_Exclude warehouse produces no MD_Candidate
     # PO completion creates a M_ReceiptSchedule on the MRP_Exclude warehouse. The
     # ReceiptsScheduleCreatedOrUpdatedHandler must short-circuit, producing zero non-STOCK MD_Candidate rows.
@@ -103,7 +100,6 @@ Feature: M_Warehouse.MRP_Exclude='Y' bypasses material disposition end-to-end
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
-  @me03_29657
   Scenario: Inventory completion on MRP_Exclude warehouse fires m_transaction but produces no MD_Candidate
     # Completing an internal use inventory on the MRP_Exclude warehouse creates M_HUs and fires
     # TransactionCreatedEvent. Both the dispo-service TransactionEventHandler and the cockpit
@@ -135,7 +131,6 @@ Feature: M_Warehouse.MRP_Exclude='Y' bypasses material disposition end-to-end
   @from:cucumber
   @allure.label.epic:E0155_Material_Disposition
   @allure.label.feature:F5100
-  @me03_29657
   Scenario: DD order with source warehouse on MRP_Exclude produces no MD_Candidate pair
     # DD-order semantics: DDOrderAdvisedOrCreatedHandler / DDOrderCandidateAdvisedOrCreatedHandler
     # consult IWarehouseBL.isIgnoreInMaterialDispo() for BOTH source (supply side) and target

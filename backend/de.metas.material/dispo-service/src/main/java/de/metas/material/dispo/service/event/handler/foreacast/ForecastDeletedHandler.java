@@ -54,7 +54,7 @@ public class ForecastDeletedHandler implements MaterialEventHandler<ForecastDele
 {
 	private static final Logger logger = LogManager.getLogger(ForecastDeletedHandler.class);
 
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull

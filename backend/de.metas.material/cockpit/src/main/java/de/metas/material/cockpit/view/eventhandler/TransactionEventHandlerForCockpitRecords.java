@@ -55,10 +55,10 @@ public class TransactionEventHandlerForCockpitRecords
 		implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private static final Logger logger = LogManager.getLogger(TransactionEventHandlerForCockpitRecords.class);
-	
+
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	public TransactionEventHandlerForCockpitRecords(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
