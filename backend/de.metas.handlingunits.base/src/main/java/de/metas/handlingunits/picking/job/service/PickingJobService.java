@@ -112,7 +112,7 @@ public class PickingJobService implements PickingSlotListener
 		return pickingJobRepository.getById(pickingJobId, loadingSupportingServices);
 	}
 
-	public PickingJob updateById(@NonNull final PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
+	public PickingJob updateById(@NonNull final PickingJobId pickingJobId, @NonNull final UnaryOperator<PickingJob> updater)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
 		return pickingJobRepository.updateById(pickingJobId, loadingSupportingServices, updater);
@@ -632,10 +632,10 @@ public class PickingJobService implements PickingSlotListener
 
 	private PickingJob closeLUAndTUPickingTargets(
 			@NonNull final PickingJob pickingJob,
-			boolean isCloseOnHeader,
-			boolean isCloseOnLines,
-			@Nullable PickingJobLineId onlyLineId,
-			boolean isShipClosedHUs)
+			final boolean isCloseOnHeader,
+			final boolean isCloseOnLines,
+			@Nullable final PickingJobLineId onlyLineId,
+			final boolean isShipClosedHUs)
 	{
 		final LUIdsAndTopLevelTUIdsCollector closedHUIdsCollector = new LUIdsAndTopLevelTUIdsCollector();
 		final PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
@@ -747,7 +747,7 @@ public class PickingJobService implements PickingSlotListener
 				.build().execute();
 	}
 
-	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(@NonNull GetNextEligibleLineToPackRequest request)
+	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(@NonNull final GetNextEligibleLineToPackRequest request)
 	{
 		return GetNextEligibleLineToPackCommand.builder()
 				.pickingJobService(this)

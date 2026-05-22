@@ -41,6 +41,7 @@ public class GetNextEligibleLineToPackCommand
 	@Nullable private PickingJob _job;
 	@NonNull private final HashMap<PickingJobLineId, ExplainedOptional<HUInfo>> resolvedHUInfos = new HashMap<>();
 	@NonNull private final ArrayList<String> logs = new ArrayList<>();
+	@Nullable private ExplainedOptional<HUInfo> lastUserErrorResult = null;
 
 	@Builder
 	private GetNextEligibleLineToPackCommand(
@@ -92,6 +93,11 @@ public class GetNextEligibleLineToPackCommand
 				line -> BooleanWithReason.falseIf(line.isFullyPickedExcludingRejectedQty(), "fully picked (even when not considering rejected qty)")
 		);
 
+		if (!response.isFound() && lastUserErrorResult != null)
+		{
+			lastUserErrorResult.orElseThrow();
+		}
+
 		return response;
 	}
 
@@ -139,7 +145,7 @@ public class GetNextEligibleLineToPackCommand
 				.build();
 	}
 
-	private GetNextEligibleLineToPackResponse found(PickingJobLine line, HUInfo huInfo)
+	private GetNextEligibleLineToPackResponse found(final PickingJobLine line, final HUInfo huInfo)
 	{
 		return GetNextEligibleLineToPackResponse.builder()
 				.lineId(line.getId())
@@ -170,7 +176,7 @@ public class GetNextEligibleLineToPackCommand
 
 	private ExplainedOptional<HUInfo> resolvePickFromHUQRCode(@NonNull final PickingJobLine line)
 	{
-		return resolvedHUInfos.computeIfAbsent(
+		final ExplainedOptional<HUInfo> result = resolvedHUInfos.computeIfAbsent(
 				line.getId(),
 				k -> huService.resolvePickFromHUQRCode(
 						getHUQRCode(),
@@ -178,6 +184,11 @@ public class GetNextEligibleLineToPackCommand
 						getCustomerId(line),
 						getWarehouseId(line)
 				));
+		if (!result.isPresent() && result.getAdMessageKey() != null)
+		{
+			lastUserErrorResult = result;
+		}
+		return result;
 	}
 
 	@NonNull
@@ -196,12 +207,12 @@ public class GetNextEligibleLineToPackCommand
 		return shipmentSchedules.getById(shipmentScheduleId).getWarehouseId();
 	}
 
-	private void log(@NonNull String message)
+	private void log(@NonNull final String message)
 	{
 		log(null, message);
 	}
 
-	private void log(@Nullable final PickingJobLine line, @NonNull String message)
+	private void log(@Nullable final PickingJobLine line, @NonNull final String message)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (line != null)
@@ -209,7 +220,7 @@ public class GetNextEligibleLineToPackCommand
 			sb.append("Line: ").append(line.getId().getRepoId()).append(" - ");
 		}
 		sb.append(message);
-		String messageFinal = sb.toString();
+		final String messageFinal = sb.toString();
 
 		logger.debug(messageFinal);
 		logs.add(messageFinal);

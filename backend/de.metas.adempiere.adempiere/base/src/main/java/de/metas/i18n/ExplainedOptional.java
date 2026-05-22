@@ -2,6 +2,7 @@ package de.metas.i18n;
 
 import com.google.common.base.MoreObjects;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -38,31 +39,38 @@ public final class ExplainedOptional<T>
 {
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final String explanation)
 	{
-		return emptyBecause(TranslatableStrings.anyLanguage(explanation));
+		return new ExplainedOptional<>(null, TranslatableStrings.anyLanguage(explanation), null);
 	}
 
-	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey explanation)
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey adMessageKey)
 	{
-		return emptyBecause(TranslatableStrings.adMessage(explanation));
+		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey), adMessageKey);
+	}
+
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey adMessageKey, @Nullable final Object... params)
+	{
+		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey, params), adMessageKey);
 	}
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
 	{
-		return new ExplainedOptional<>(null, explanation);
+		return new ExplainedOptional<>(null, explanation, null);
 	}
 
 	public static <T> ExplainedOptional<T> of(@NonNull final T value)
 	{
-		return new ExplainedOptional<>(value, null);
+		return new ExplainedOptional<>(value, null, null);
 	}
 
-	private final T value;
-	private final ITranslatableString explanation;
+	@Nullable private final T value;
+	@Getter @NonNull private final ITranslatableString explanation;
+	@Nullable private final AdMessageKey adMessageKey;
 
-	private ExplainedOptional(@Nullable final T value, @Nullable final ITranslatableString explanation)
+	private ExplainedOptional(@Nullable final T value, @Nullable final ITranslatableString explanation, @Nullable final AdMessageKey adMessageKey)
 	{
 		this.value = value;
 		this.explanation = TranslatableStrings.nullToEmpty(explanation);
+		this.adMessageKey = adMessageKey;
 	}
 
 	@Override
@@ -79,14 +87,10 @@ public final class ExplainedOptional<T>
 				.toString();
 	}
 
-	public ITranslatableString getExplanation()
-	{
-		return explanation != null ? explanation : TranslatableStrings.empty();
-	}
-
+	@Nullable
 	public String getExplanationAsString()
 	{
-		return explanation != null ? explanation.getDefaultValue() : null;
+		return explanation.getDefaultValue();
 	}
 
 	@Nullable
@@ -100,9 +104,23 @@ public final class ExplainedOptional<T>
 		return value != null ? value : other.get();
 	}
 
+	@Nullable
+	public AdMessageKey getAdMessageKey()
+	{
+		return adMessageKey;
+	}
+
 	public T orElseThrow()
 	{
-		return orElseThrow(AdempiereException::new);
+		if (value != null)
+		{
+			return value;
+		}
+		if (adMessageKey != null)
+		{
+			throw new AdempiereException(adMessageKey);
+		}
+		throw new AdempiereException(explanation);
 	}
 
 	public T orElseThrow(@NonNull final AdMessageKey adMessageKey)

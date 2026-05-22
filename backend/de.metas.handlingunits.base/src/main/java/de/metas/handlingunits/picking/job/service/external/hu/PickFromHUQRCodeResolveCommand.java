@@ -120,7 +120,7 @@ class PickFromHUQRCodeResolveCommand
 			final BooleanWithReason valid = validateQRCode_ProductNo(customQRCode, productId);
 			if (valid.isFalse())
 			{
-				return ExplainedOptional.emptyBecause(valid.getReason());
+				return ExplainedOptional.emptyBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(productId));
 			}
 			return findHUByQRCodeAttribute(pickFromHUQRCode, productId);
 		}

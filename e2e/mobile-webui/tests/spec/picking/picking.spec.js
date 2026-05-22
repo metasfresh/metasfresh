@@ -602,6 +602,253 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
 });
 
 //
+// Scan a Leich+Mehl QR code (LMQ format) with an empty lot-number part.
+// Format: LMQ#1#<weight>#<date>#<lot>#<product>
+// Empty lot → backend throws PICKING_LM_QR_NO_LOT_NUMBER at scan time.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan LM QR code without lot number → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - specialty QR code formats');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await expectErrorToast('Scan LMQ QR code with empty lot', async () => {
+        // Wait for the API response before returning: type() dispatches keyboard events
+        // synchronously and returns immediately, but the barcode hook flushes the buffer
+        // on an interval (~600ms). A blur/refocus timer in BarcodeScannerComponent can
+        // reset that interval, pushing the API call past expectErrorToast's 2 s grace window.
+        const responsePromise = page.waitForResponse(
+            resp => resp.url().includes('/picking/nextEligibleLineToPack'),
+            { timeout: 5000 }
+        );
+        await PickingJobScreen.pickHU({
+            qrCode: 'LMQ#1#25.5#31.12.2025##',
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+        await responsePromise;
+    }, ({ textContent }) => {
+        expect(textContent).toContain('PICKING_LM_QR_NO_LOT_NUMBER');
+    });
+
+    await PickingJobScreen.waitForScreen();
+});
+
+//
+// Scan a Leich+Mehl QR code with a non-empty lot number that has no matching HU in stock.
+// Format: LMQ#1#<weight>#<date>#<lot>
+// Lot present but unknown → backend returns PICKING_NO_HU_FOR_EXTERNAL_LOT.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan LM QR code with unknown lot number → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - specialty QR code formats');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // Lot "NOSUCHLOT" is non-empty (no PICKING_LM_QR_NO_LOT_NUMBER) but no HU carries
+    // this external lot number in stock → PICKING_NO_HU_FOR_EXTERNAL_LOT.
+    await expectErrorToast('Scan LMQ QR code with unknown lot', async () => {
+        // Same reason as the test above: wait for the API response so the toast
+        // arrives within expectErrorToast's 2 s grace window.
+        const responsePromise = page.waitForResponse(
+            resp => resp.url().includes('/picking/nextEligibleLineToPack'),
+            { timeout: 5000 }
+        );
+        await PickingJobScreen.pickHU({
+            qrCode: 'LMQ#1#25.5#31.12.2025#NOSUCHLOT',
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+        await responsePromise;
+    }, ({ textContent }) => {
+        expect(textContent).toContain('PICKING_NO_HU_FOR_EXTERNAL_LOT');
+    });
+
+    await PickingJobScreen.waitForScreen();
+});
+
+//
+// Register a custom QR format (Constant prefix + LotNo), then scan a QR string whose
+// lot value has no matching HU in stock.  Backend returns PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan custom QR code with unknown lot → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - specialty QR code formats');
+    allure.severity('normal');
+
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                },
+            },
+            customQRCodeFormats: [{
+                name: 'E2E_ATTR',
+                parts: [
+                    { startPosition: 1, endPosition: 4, type: 'CONSTANT', constantValue: 'TST1' },
+                    { startPosition: 5, endPosition: 14, type: 'LOT' },
+                ],
+            }],
+            bpartners: { 'BP1': {} },
+            warehouses: { 'wh': {} },
+            pickingSlots: { slot1: {} },
+            products: { 'P1': { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                'PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                'SO1': {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
+                },
+            },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // "TST1" matches the Constant anchor (pos 1-4); "NOSUCHLOT0" (pos 5-14) is the lot value.
+    // No HU in stock carries this custom QR code → PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE.
+    await expectErrorToast('Scan custom QR with unknown lot', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: 'TST1NOSUCHLOT0',
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('PICKING_QR_HU_NOT_FOUND_BY_ATTRIBUTE');
+    });
+
+    await PickingJobScreen.waitForScreen();
+});
+
+//
+// Register a custom QR format (Constant prefix + ProductCode), then scan a QR string whose
+// product code does not match the picking line's expected product.
+// Backend returns PICKING_QR_PRODUCT_NOT_MATCHING.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan custom QR code with wrong product code → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - specialty QR code formats');
+    allure.severity('normal');
+
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                },
+            },
+            customQRCodeFormats: [{
+                name: 'E2E_PROD',
+                parts: [
+                    { startPosition: 1, endPosition: 4, type: 'CONSTANT', constantValue: 'TST2' },
+                    { startPosition: 5, endPosition: 14, type: 'PRODUCT_CODE' },
+                ],
+            }],
+            bpartners: { 'BP1': {} },
+            warehouses: { 'wh': {} },
+            pickingSlots: { slot1: {} },
+            products: { 'P1': { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                'PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                'SO1': {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
+                },
+            },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // "TST2" matches the Constant anchor (pos 1-4); "WRONGPROD9" (pos 5-14) is the product code.
+    // "WRONGPROD9" does not match P1's product value → PICKING_QR_PRODUCT_NOT_MATCHING.
+    await expectErrorToast('Scan custom QR with wrong product code', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: 'TST2WRONGPROD9',
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('PICKING_QR_PRODUCT_NOT_MATCHING');
+    });
+
+    await PickingJobScreen.waitForScreen();
+});
+
+//
 // Partial pick blocked, recover by picking remaining:
 // With allowCompletingPartialPickingJob=N, pick 1 of 3 TU → complete → error toast →
 // pick remaining 2 TU → complete successfully.
