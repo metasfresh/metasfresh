@@ -228,7 +228,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the tax declaration "td" is built
 
     When the tax declaration "td" is completed
-    Then the tax declaration "td" has Processed='Y' and DocStatus='CO' and DocAction='RA'
+    Then the tax declaration "td" has Processed='Y' and DocStatus='CO' and DocAction='RE'
 
     When the tax declaration "td" is reactivated
     Then the tax declaration "td" has Processed='N' and DocStatus='DR' and DocAction='CO'
@@ -273,7 +273,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the tax declaration "tdOriginal" is completed
     And the tax declaration "tdDuplicate" is built
     When the tax declaration "tdDuplicate" is completed
-    Then the tax declaration completion fails with message 'TaxDeclaration_PeriodOverlap'
+    Then the tax declaration completion fails with message 'TAXDECLARATION_PERIOD_OVERLAP'
 
 
 # ############################################################################################################################################
@@ -287,4 +287,4 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
       | Identifier | C_AcctSchema_ID | Date       |
       | td         | acctSchema      | 2024-01-15 |
     When the tax declaration "td" is completed
-    Then the tax declaration completion fails with message 'TaxDeclaration_NoLinesYet'
+    Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
