@@ -272,14 +272,33 @@ Feature: EDI_cctop_invoic_v export format
   ## ID=540405) which reads from M_InOut_Desadv_V — the view T8 rewrote.
     Given metasfresh is configured for One-DESADV-Per-Shipment
 
-  #   Test Kunde 1
-    And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN | OPT.DeliveryRule |
-      | 2156425                  | true                     | 1234567890123             | F                |
+  # Fresh BPartner for S29231_150 — the seed BPartner 2156425 has consolidation-blocking
+  # data (e.g. distinct ship-to defaults / pricing setup) that causes 'generate shipments'
+  # to emit TWO separate M_InOuts instead of ONE consolidated shipment. Both the local
+  # and CI seed DBs share this problem (T11 Concern 2). To reliably exercise the
+  # consolidation path required by Broken-Path #5 + #6 we create a fresh BPartner here,
+  # mirroring T10's S29231_140 in externalSystemBased/ediDesadvExportViaExternalSystem.feature.
+  # EdiDESADVSendingMode is left at the column default 'R' (ReplicationInterface) — that
+  # is the RPL path this scenario is regression-guarding.
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_150     |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_150     | ps_150             | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_150    | pl_150         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_150                | convenienceSalate | 10.0     | PCE      | Normal           |
 
-    And update C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | OPT.GLN       |
-      | 2205175                           | 1234567890123 |
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_150     | Y          | ps_150             | 1234567890123 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | DeliveryRule |
+      | bp_150        | true                 | 1234567890123         | F            |
 
     And load EXP_Processor_Type
       | EXP_Processor_Type_ID.Identifier | Value    |
@@ -308,7 +327,7 @@ Feature: EDI_cctop_invoic_v export format
     # @Date@ suffix keeps POReferences unique across local repeat runs (DB pollution guard).
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised | OPT.POReference        |
-      | oA_150     | true    | 2156425                  | 2021-04-17  | 2021-04-18Z      | PO_A_S29231_150_@Date@ |
+      | oA_150     | true    | bp_150                   | 2021-04-17  | 2021-04-18Z      | PO_A_S29231_150_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | olA_150    | oA_150                | convenienceSalate       | 100        | 3010001                                |
@@ -317,12 +336,12 @@ Feature: EDI_cctop_invoic_v export format
 
     And EDI_Desadv is found:
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
-      | dA_150                   | 2156425                  | oA_150                |
+      | dA_150                   | bp_150                   | oA_150                |
 
     # Order B — different POReference → its own distinct EDI_Desadv
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised | OPT.POReference        |
-      | oB_150     | true    | 2156425                  | 2021-04-17  | 2021-04-18Z      | PO_B_S29231_150_@Date@ |
+      | oB_150     | true    | bp_150                   | 2021-04-17  | 2021-04-18Z      | PO_B_S29231_150_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | olB_150    | oB_150                | convenienceSalate       | 100        | 3010001                                |
@@ -331,7 +350,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And EDI_Desadv is found:
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
-      | dB_150                   | 2156425                  | oB_150                |
+      | dB_150                   | bp_150                   | oB_150                |
 
     # Both shipment schedules must be ready before batching into one M_InOut
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -375,8 +394,3 @@ Feature: EDI_cctop_invoic_v export format
     And RabbitMQ receives a EDI_Exp_Desadv
       | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
       | e_dB_150                     | ep_2                        | routingKey                   |
-
-     #  Test Kunde 1 — restore BPartner flag
-    And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN | OPT.DeliveryRule |
-      | 2156425                  | false                    | null                      | null             |
