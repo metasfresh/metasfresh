@@ -124,8 +124,7 @@ BEGIN
 
     -- =========================================================
     -- Phase 3a — Aggregate: INSERT C_TaxDeclarationLine
-    -- Aggregation key: VATCode (string) + AmountType. (Iter 5: C_VAT_Code_ID FK
-    -- was dropped — VATCode string is the only key; see migration 5804070.)
+    -- Aggregation key: VATCode (string) + AmountType.
     -- =========================================================
     FOR v_LineMap IN
         WITH aggregated AS (
