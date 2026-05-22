@@ -375,6 +375,14 @@ Feature: EDI_cctop_invoic_v export format
       | dA_150                   |
       | dB_150                   |
 
+    # Wait for the async workpackage processor to pick up both DESADVs and set status U.
+    # This ensures RabbitMqExportProcessor.sendAMQPMessage() has declared the ediExport_150 queue
+    # before pollDocumentFromQueue() tries to consume from it.
+    And after not more than 60s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | dA_150                   | U                |
+      | dB_150                   | U                |
+
     # ─── CORE ASSERTION ───────────────────────────────────────────────────────
     # The RPL export emits one EDIFACT XML to RabbitMQ per processed DESADV.
     # We poll for both messages on the configured queue (ediExport_150 routing key).
