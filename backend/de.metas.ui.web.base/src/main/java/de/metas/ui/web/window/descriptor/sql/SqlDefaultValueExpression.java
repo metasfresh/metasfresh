@@ -1,46 +1,8 @@
-package de.metas.ui.web.window.descriptor.sql;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.Set;
-
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
-import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.CtxName;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -58,7 +20,42 @@ import lombok.NonNull;
  * #L%
  */
 
-@JsonSerialize(using = JsonStringExpressionSerializer.class)
+package de.metas.ui.web.window.descriptor.sql;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.CtxName;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.Set;
+
 /**
  * Deferred SQL default value expression for WebUI document fields.
  * The SQL template (with {@code @Variable@} placeholders) is compiled at descriptor build time
@@ -67,6 +64,7 @@ import lombok.NonNull;
  * @see DB#resolveSqlDefaultValue(String) for the immediate-execution variant
  * used by print option descriptors and other non-document contexts
  */
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class SqlDefaultValueExpression<V> implements IExpression<V>
 {
 	public static <V> SqlDefaultValueExpression<?> of(
@@ -269,3 +267,4 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 		}
 	}
 }
+

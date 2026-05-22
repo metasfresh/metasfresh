@@ -30,6 +30,7 @@ public class NoSupplyAdviceHandler implements MaterialEventHandler<NoSupplyAdvic
 	@Override
 	public void handleEvent(@NonNull final NoSupplyAdviceEvent event)
 	{
+		// no MRP_Exclude guard: warehouse not on the event
 		final CandidateId candidateId = CandidateId.ofRepoId(event.getSupplyCandidateId());
 		final Candidate candidate = candidateRepositoryRetrieval.retrieveById(candidateId);
 
