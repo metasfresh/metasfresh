@@ -125,6 +125,31 @@ test('Scan locator QR code where HU is expected in inventory → user-friendly e
 });
 
 // noinspection JSUnusedLocalSymbols
+test('Scan workplace QR code where HU is expected in inventory → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5310');
+    allure.story('Inventory - Scan errors');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('inventory');
+    await InventoryJobsListScreen.waitForScreen();
+    await InventoryJobsListScreen.startJob({ index: 1 });
+    await InventoryJobScreen.openScanHUStep({ locatorQRCode: masterdata.warehouses.wh.locatorQRCode });
+
+    await expectErrorToast('Scan workplace QR code where HU is expected', async () => {
+        await InventoryScanScreen.typeQRCode(masterdata.workplaces.workplace1.qrCode);
+        await InventoryScanScreen.waitForPanel('FillData');
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_WRONG_TYPE');
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('Scan same HU twice in one inventory job → user-friendly error', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
@@ -181,6 +206,56 @@ test('Scan same HU twice in one inventory job → user-friendly error', async ({
         await InventoryScanScreen.waitForPanel('FillData');
     }, ({ textContent }) => {
         expect(textContent).toContain('INVENTORY_HU_ALREADY_COUNTED');
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan HU not in this inventory → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5310');
+    allure.story('Inventory - Scan errors');
+    allure.severity('normal');
+
+    // P2+HU2 exist in the warehouse but are NOT included in the inventory (products: ['P1'] only).
+    // Scanning HU2 at the HU scan step should throw HU_NOT_IN_INVENTORY.
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US', workplace: "workplace1" } },
+            warehouses: { "wh": {} },
+            workplaces: { workplace1: { warehouse: 'wh' } },
+            products: { "P1": {}, "P2": {} },
+            packingInstructions: {
+                "PI1": { lu: "LU1", qtyTUsPerLU: 20, tu: "TU1", product: "P1", qtyCUsPerTU: 4 },
+                "PI2": { lu: "LU2", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI1' },
+                "HU2": { product: 'P2', warehouse: 'wh', packingInstructions: 'PI2' },
+            },
+            inventories: {
+                "inv1": {
+                    warehouse: 'wh',
+                    date: '2025-03-01T00:00:00.000+02:00',
+                    products: ['P1'],
+                }
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('inventory');
+    await InventoryJobsListScreen.waitForScreen();
+    await InventoryJobsListScreen.startJob({ index: 1 });
+    await InventoryJobScreen.openScanHUStep({ locatorQRCode: masterdata.warehouses.wh.locatorQRCode });
+
+    await expectErrorToast('Scan HU not in this inventory', async () => {
+        await InventoryScanScreen.typeQRCode(masterdata.handlingUnits.HU2.qrCode);
+        await InventoryScanScreen.waitForPanel('FillData');
+    }, ({ textContent }) => {
+        expect(textContent).toContain('INVENTORY_HU_NOT_IN_INVENTORY');
     });
 });
 
