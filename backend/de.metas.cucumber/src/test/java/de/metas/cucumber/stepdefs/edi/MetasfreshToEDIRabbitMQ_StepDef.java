@@ -158,12 +158,17 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		final DefaultConsumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws IOException
 			{
-				// Guard: only accept the first delivery; cancel the consumer immediately so subsequent
-				// messages (e.g. two DESADVs queued before this call) don't cause an AIOOB on messages[1].
+				// Only accept the first delivery and ack it; cancel the consumer immediately so the
+				// broker requeues / leaves any remaining messages (e.g. a second DESADV pre-queued
+				// before this poll) for the next pollDocumentFromQueue call.
 				if (countDownLatch.getCount() == 0)
 				{
+					// Reject without requeue is wrong (would lose the message); nack with requeue=true
+					// keeps it in the queue for the next caller. With basicCancel below, this path is
+					// only hit if the broker dispatched extra messages before cancellation took effect.
+					channel.basicNack(envelope.getDeliveryTag(), false, true);
 					return;
 				}
 
@@ -172,6 +177,8 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 				logger.info("*** Queue: {}, received message: {}", queueName, messages[0]);
 
 				countDownLatch.countDown();
+
+				channel.basicAck(envelope.getDeliveryTag(), false);
 
 				try
 				{
@@ -187,7 +194,10 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 
 		try
 		{
-			channel.basicConsume(queueName, true, consumer);
+			// autoAck=false: we manually ack the first message and nack-with-requeue any extras the
+			// broker dispatched before basicCancel took effect, so a follow-up pollDocumentFromQueue
+			// call still finds those messages in the queue.
+			channel.basicConsume(queueName, false, consumer);
 
 			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
 
