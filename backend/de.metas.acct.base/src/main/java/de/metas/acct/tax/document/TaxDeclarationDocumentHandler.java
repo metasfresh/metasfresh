@@ -73,6 +73,7 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 	{
 		final I_C_TaxDeclaration td = extract(docFields);
 		td.setProcessed(false);
+		td.setDocStatus(IDocument.STATUS_Drafted);
 		td.setDocAction(IDocument.ACTION_Complete);
 		// Lines + Acct snapshot intentionally kept intact — per REQUIREMENTS.md §2 and the Iter 5 design.
 	}
