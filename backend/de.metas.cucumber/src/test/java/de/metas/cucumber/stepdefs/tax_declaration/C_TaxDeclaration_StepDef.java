@@ -68,8 +68,7 @@ public class C_TaxDeclaration_StepDef
 
 	/**
 	 * Last exception thrown by a {@code @When} step that explicitly catches and stashes errors.
-	 * Asserted (and cleared) by {@link #assertCompletionFailedWithMessage(String)} or
-	 * {@link #assertOperationFailedWithMessage(String)}.
+	 * Asserted (and cleared) by {@link #assertCompletionFailedWithMessage(String)}.
 	 */
 	@Nullable
 	private AdempiereException lastException;
@@ -166,7 +165,8 @@ public class C_TaxDeclaration_StepDef
 	 * Complete an existing {@link I_C_TaxDeclaration} via the document engine.
 	 *
 	 * <p>On success the declaration transitions to {@code DocStatus='CO'}, {@code Processed='Y'},
-	 * {@code DocAction='RA'}.  If the handler rejects the completion (e.g. no lines, period overlap)
+	 * {@code DocAction='RE'} (re-activate; note: not {@code RA}, which is Reverse_Accrual).
+	 * If the handler rejects the completion (e.g. no lines, period overlap)
 	 * the resulting {@link AdempiereException} is stashed and can be asserted by
 	 * {@link #assertCompletionFailedWithMessage(String)}.
 	 *
@@ -219,13 +219,13 @@ public class C_TaxDeclaration_StepDef
 	 * <ul>
 	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
 	 *   <li>{@code processed} — expected value of {@code Processed} column ({@code Y} or {@code N})</li>
-	 *   <li>{@code docStatus} — expected {@code DocStatus} value (e.g. {@code CO}, {@code DR})</li>
-	 *   <li>{@code docAction} — expected {@code DocAction} value (e.g. {@code RA}, {@code CO})</li>
+	 *   <li>{@code docStatus} — expected {@code DocStatus} value (e.g. {@code CO}, {@code DR}, {@code IP})</li>
+	 *   <li>{@code docAction} — expected {@code DocAction} value (e.g. {@code RE} after complete, {@code CO} after reactivate)</li>
 	 * </ul>
 	 *
 	 * <p><b>Example:</b>
 	 * <pre>{@code
-	 * Then the tax declaration "taxDecl" has Processed='Y' and DocStatus='CO' and DocAction='RA'
+	 * Then the tax declaration "taxDecl" has Processed='Y' and DocStatus='CO' and DocAction='RE'
 	 * }</pre>
 	 */
 	@Then("the tax declaration {string} has Processed={string} and DocStatus={string} and DocAction={string}")
@@ -245,20 +245,22 @@ public class C_TaxDeclaration_StepDef
 	}
 
 	/**
-	 * Assert that the most recent {@link #complete(String)} step failed with the given AD_Message key.
+	 * Assert that the most recent {@link #complete(String)} step failed with the given
+	 * {@link AdempiereException#getErrorCode() error code} (i.e. the {@code AD_Message.ErrorCode}
+	 * column — UPPER_SNAKE_CASE, NOT the mixed-case {@code AD_Message.Value} key).
 	 *
 	 * <p>The stashed exception is cleared after the assertion so that subsequent steps
 	 * can stash a new one independently.
 	 *
 	 * <p><b>Example:</b>
 	 * <pre>{@code
-	 * Then the tax declaration completion fails with message 'TaxDeclaration_NoLinesYet'
+	 * Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
 	 * }</pre>
 	 */
 	@Then("the tax declaration completion fails with message {string}")
-	public void assertCompletionFailedWithMessage(@NonNull final String adMessageKey)
+	public void assertCompletionFailedWithMessage(@NonNull final String expectedErrorCode)
 	{
-		assertLastExceptionHasErrorCode(adMessageKey);
+		assertLastExceptionHasErrorCode(expectedErrorCode);
 	}
 
 	private void assertLastExceptionHasErrorCode(@NonNull final String expectedErrorCode)
