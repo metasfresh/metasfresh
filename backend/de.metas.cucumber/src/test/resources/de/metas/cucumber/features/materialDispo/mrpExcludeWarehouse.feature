@@ -131,3 +131,67 @@ Feature: M_Warehouse.MRP_Exclude='Y' bypasses material disposition end-to-end
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     # CORE assertion: zero non-STOCK MD_Candidate rows for the product on the MRP_Exclude warehouse.
     Then no MD_Candidate exists for M_Product_ID product
+
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
+  @me03_29657
+  Scenario: DD order with source warehouse on MRP_Exclude produces no MD_Candidate pair
+    # DD-order semantics: DDOrderAdvisedOrCreatedHandler / DDOrderCandidateAdvisedOrCreatedHandler
+    # consult IWarehouseBL.isIgnoreInMaterialDispo() for BOTH source (supply side) and target
+    # (demand side). If EITHER side is MRP_Exclude=Y, the WHOLE candidate pair is skipped
+    # — the SUPPLY and DEMAND candidates are tightly coupled via parentId, so half a pair
+    # cannot exist in the dispo timeline.
+    #
+    # Setup: standard distribution network targetWH <- sourceWH_excl, with sourceWH_excl marked
+    # MRP_Exclude=Y. A sales order on targetWH would normally trigger DDOrderCandidateAdvisedEvent,
+    # creating a SUPPLY(targetWH)/DEMAND(sourceWH_excl) candidate pair. The handler must short-
+    # circuit and produce ONLY the SHIPMENT DEMAND at targetWH — no DISTRIBUTION pair.
+    Given metasfresh contains M_Products:
+      | Identifier | OPT.IsPurchased |
+      | product    | N               |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_so      | plv_so                 | product      | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customer   | Y          | N        | ps_1               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | cust_loc   | 2965700000034 | customer      | Y               | Y               |
+    # targetWH is a regular MRP-tracked warehouse; sourceWH_excl has MRP_Exclude=Y.
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude |
+      | targetWH       | customer      | cust_loc               | N           |
+      | sourceWH_excl  | customer      | cust_loc               | Y           |
+    And contains M_Shippers
+      | Identifier |
+      | shipper    |
+    And metasfresh contains DD_NetworkDistribution
+      | DD_NetworkDistribution_ID |
+      | ddNetwork_1               |
+    And metasfresh contains DD_NetworkDistributionLine
+      | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
+      | ddNetwork_1               | targetWH       | sourceWH_excl        | shipper      |
+    # IsCreatePlan=N -> generates DD_Order_Candidate only (no DD_Order); enough to exercise the handler.
+    And metasfresh contains PP_Product_Plannings
+      | Identifier      | M_Product_ID | IsCreatePlan | DD_NetworkDistribution_ID | M_Warehouse_ID |
+      | productPlanning | product      | N            | ddNetwork_1               | targetWH       |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.PreparationDate  | M_Warehouse_ID |
+      | so_dd      | true    | customer      | 2021-04-17  | 2021-04-11T21:00:00Z | targetWH       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_dd     | so_dd      | product      | 5          |
+    When the order identified by so_dd is completed
+    # Drain async event processing — gives the DD-order handler a chance to (not) run.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    # CORE assertion: no DD_Order_Candidate was created for the product. This is the direct,
+    # precise test of the DD-handler short-circuit:
+    #   - DDOrderCandidateAdvisedOrCreatedHandler is what proposes the DD pair; on a regular
+    #     network it would create exactly one DD_Order_Candidate (sourceWH_excl -> targetWH).
+    #   - With MRP_Exclude=Y on the source side, IWarehouseBL.isIgnoreInMaterialDispo() returns
+    #     true and the handler must skip — therefore zero DD_Order_Candidates for the product.
+    # The MD_Candidate side (SUPPLY at targetWH + DEMAND at sourceWH_excl) is necessarily also
+    # skipped because the pair is tightly coupled via parentId — a half-pair cannot exist.
+    Then no DD_Order_Candidates found for product product

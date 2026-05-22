@@ -14,7 +14,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderRef;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderAndBOMLineId;
@@ -79,7 +78,12 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	{
 		final PPOrderId ppOrderId = event.getPpOrderId();
 		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId);
-		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", ppOrderId);
+		if (candidatesToUpdate.isEmpty())
+		{
+			// No candidates: PPOrderCreatedHandler was skipped earlier (e.g. PP_Order on an MRP_Exclude warehouse).
+			// Nothing to update — treat as no-op.
+			return;
+		}
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
