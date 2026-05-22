@@ -84,6 +84,7 @@ public class ExternalSystemEndpointRepository
 				.sshPrivateKey(endpointRecord.getSshPrivateKey())
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
+				.isArrayFanOut(endpointRecord.isArrayFanOut())
 				.build();
 	}
 
