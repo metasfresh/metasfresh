@@ -1280,8 +1280,15 @@ Feature: EDI DESADV export via postgREST
       | ss_S29231_160         | 10                    |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
       | ss_S29231_160         | ioA_S29231_160 |
+
+    # Wait for the schedule to reflect the first partial delivery before invoking the second
+    # generate-shipments run.  Without this recompute-wait the second workpackage may see a
+    # stale QtyToDeliver and produce no shipment (same pattern as duplicateShipmentLineGuard.feature).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S29231_160 | ol_S29231_160  | N             |
 
     # ─── Second partial: ship the remaining 10 of 20 ───────────────────────────
     # Use OPT.IgnoreCreated to exclude the first M_InOut (otherwise the
@@ -1294,13 +1301,14 @@ Feature: EDI DESADV export via postgREST
       | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.IgnoreCreated.M_InOut_ID.Identifier |
       | ss_S29231_160         | ioB_S29231_160 | ioA_S29231_160                          |
 
-    # Wait for DESADV packs (async, triggered by M_InOut BEFORE_COMPLETE — one pack per M_InOut).
-    # Disambiguate by listing both packs; the existing step filters by EDI_Desadv_ID +
-    # IsManual_IPA_SSCC18 (both true here for both packs since no real picked-LU SSCC is set).
+    # Wait for DESADV packs (triggered synchronously by M_InOut BEFORE_COMPLETE — one pack per
+    # M_InOut).  Both packs share the same EDI_Desadv_ID + IsManual_IPA_SSCC18, so we use SeqNo
+    # to disambiguate: the pack created for ioA gets SeqNo=1, ioB gets SeqNo=2 (DesadvDAO uses
+    # increment=1 starting from the max existing SeqNo, which is 0 after the initial delete).
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
-      | packA_S29231_160   | d_S29231_160             | true                |
-      | packB_S29231_160   | d_S29231_160             | true                |
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 | OPT.SeqNo |
+      | packA_S29231_160   | d_S29231_160             | true                | 1         |
+      | packB_S29231_160   | d_S29231_160             | true                | 2         |
 
     # ─── CORE ASSERTION (TC4 falsifiable predicate) ───────────────────────────
     # The EDI_Desadv_M_InOut junction must contain EXACTLY 2 rows for the single
