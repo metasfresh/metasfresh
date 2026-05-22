@@ -1073,12 +1073,15 @@ Feature: EDI DESADV export via postgREST
     # real picked-LU); EDIDesadvPackService.createPackUsingJustInOutLine synthesises the SSCC
     # and sets IsManual_IPA_SSCC18=true. Pack-side SSCC sourced-from-LU is exercised
     # separately in ediDesadvAggregateHU.feature.
-    # Consolidated multi-source-order shipment: production creates ONE pack per source DESADV.
-    # Disambiguate by EDI_Desadv_ID so each row matches exactly one pack.
+    # Consolidated multi-source-order shipment, multi-line orders: production creates ONE
+    # pack per (source DESADV, M_InOutLine). Order A has 2 lines → DESADV A has 2 packs
+    # (SeqNo 1, 2). Order B has 1 line → DESADV B has 1 pack (SeqNo 1).
+    # Disambiguate each pack by (EDI_Desadv_ID, SeqNo) so each row matches exactly one.
     And after not more than 60s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
-      | packA_S29231       | dA_S29231                | true                |
-      | packB_S29231       | dB_S29231                | true                |
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 | SeqNo |
+      | packA1_S29231      | dA_S29231                | true                | 1     |
+      | packA2_S29231      | dA_S29231                | true                | 2     |
+      | packB_S29231       | dB_S29231                | true                | 1     |
 
     # ─── CORE ASSERTION ───────────────────────────
     # The REST endpoint must return exactly 2 elements — one per source-order DESADV.
