@@ -85,6 +85,44 @@ public class M_Warehouse_StepDef
 				});
 	}
 
+	/**
+	 * Upserts {@code M_Warehouse} records by {@code Value} (suggested from the row's identifier when no explicit
+	 * {@code Value} is given), then assigns a default locator and stores the warehouse in the StepDefData table.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_Warehouse_ID.Identifier} (or {@code M_Warehouse_ID}) — the identifier used to reference the
+	 *       warehouse from later step rows; the {@code Value} / {@code Name} are derived from it via
+	 *       {@link de.metas.cucumber.stepdefs.DataTableRow#suggestValueAndName()}.</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns (any missing column leaves the column at its default / unset value):
+	 * <ul>
+	 *   <li>{@code IsIssueWarehouse} — {@code Y} / {@code N}. When {@code Y}, all other warehouses are first
+	 *       updated to {@code IsIssueWarehouse=N} (only one issue warehouse is allowed at a time).</li>
+	 *   <li>{@code IsDropShipWarehouse} — {@code Y} / {@code N}.</li>
+	 *   <li>{@code C_BPartner_ID} / {@code C_BPartner_Location_ID} — identifiers of a previously loaded
+	 *       BPartner / location; default to the metasfresh-AG defaults when absent.</li>
+	 *   <li>{@code IsInTransit}, {@code IsQuarantineWarehouse}, {@code IsQualityReturnWarehouse} — boolean flags.</li>
+	 *   <li>{@code MRP_Exclude} — Yes/No reference stored on the warehouse record. Accepts {@code "Y"} (warehouse is
+	 *       excluded from material disposition; no {@code MD_Candidate} rows are created for events on this
+	 *       warehouse), {@code "N"} (explicitly included; overrides legacy {@code IsDropShipWarehouse}), or blank /
+	 *       omitted (column stays unset; {@code IsDropShipWarehouse} acts as the fallback). See
+	 *       {@code WarehouseBL.isIgnoreInMaterialDispo} for the precedence rule.</li>
+	 *   <li>{@code PP_Plant_ID} — identifier of a previously loaded {@code S_Resource}.</li>
+	 *   <li>{@code M_Locator_ID.Identifier} — when present, the default locator created for this warehouse is
+	 *       stored under this identifier in the locator StepDefData table.</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And metasfresh contains M_Warehouse:
+	 *   | M_Warehouse_ID | MRP_Exclude | IsDropShipWarehouse |
+	 *   | wh_ok          |             |                     |
+	 *   | wh_excl        | Y           |                     |
+	 *   | wh_dropship    |             | Y                   |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_Warehouse:")
 	public void create_M_Warehouse(@NonNull final DataTable dataTable)
 	{
@@ -138,6 +176,15 @@ public class M_Warehouse_StepDef
 					warehouseRecord.setIsInTransit(isInTransit);
 					warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
 					warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
+
+					// MRP_Exclude is a Yes/No reference stored as "Y" / "N" / null on the warehouse record.
+					// "Y" → warehouse is excluded from material disposition (no MD_Candidate rows are created
+					// for events on this warehouse); "N" → explicitly included (overrides IsDropShipWarehouse);
+					// null / omitted → fall back to IsDropShipWarehouse semantics. See WarehouseBL.isIgnoreInMaterialDispo.
+					row.getAsOptionalString(I_M_Warehouse.COLUMNNAME_MRP_Exclude)
+							.map(de.metas.util.StringUtils::trimBlankToNull)
+							.filter(java.util.Objects::nonNull)
+							.ifPresent(warehouseRecord::setMRP_Exclude);
 
 					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_PP_Plant_ID)
 							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
