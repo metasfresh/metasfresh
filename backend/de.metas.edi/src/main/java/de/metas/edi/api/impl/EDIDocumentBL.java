@@ -495,8 +495,9 @@ public class EDIDocumentBL
 			verifyRecordId(recordId, tableIdentifier);
 
 			// The shipment carries an EDI_Desadv_ID that points at the (single, for this RPL branch) source-DESADV.
-			// After T8, M_InOut_Desadv_V emits one row per (M_InOut, EDI_Desadv) pair, so we must filter by both
-			// columns; filtering by M_InOut_ID alone would explode on consolidated multi-DESADV shipments.
+			// M_InOut_Desadv_V emits one row per (M_InOut, EDI_Desadv) pair via the EDI_Desadv_M_InOut junction,
+			// so we must filter by both columns; filtering by M_InOut_ID alone would return N rows on
+			// consolidated multi-DESADV shipments and cause a MoreThanOneRecordFoundException.
 			final I_M_InOut shipment = InterfaceWrapperHelper.create(ctx, recordId, I_M_InOut.class, trxName);
 			final EDIDesadvId shipmentDesadvId = EDIDesadvId.ofRepoIdOrNull(shipment.getEDI_Desadv_ID());
 			if (shipmentDesadvId == null)

@@ -327,10 +327,9 @@ public class DesadvDAO implements IDesadvDAO
 	@NonNull
 	public List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull final I_EDI_Desadv desadv, @NonNull final ImmutableSet<EDIExportStatus> statusSet)
 	{
-		// Pass `desadv` as context-provider so the query inherits the record's AD_Client_ID
-		// (T4 code-review IMPORTANT: async workpackage threads run in system context;
-		// without the provider, EDI_Desadv_M_InOut active-records filter would not apply
-		// client isolation correctly).
+		// Pass `desadv` as context-provider so the query inherits the record's AD_Client_ID.
+		// Async workpackage threads run in system context; without the provider, the
+		// EDI_Desadv_M_InOut active-records filter would not apply client isolation correctly.
 		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class, desadv)
 				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addOnlyActiveRecordsFilter()
@@ -344,7 +343,7 @@ public class DesadvDAO implements IDesadvDAO
 	@NonNull
 	public I_M_InOut_Desadv_V getInOutDesadvByInOutIdAndDesadvId(@NonNull final InOutId shipmentId, @NonNull final EDIDesadvId desadvId)
 	{
-		// Filtering by (M_InOut_ID, EDI_Desadv_ID) is mandatory after T8: the view emits one row per
+		// Filtering by (M_InOut_ID, EDI_Desadv_ID) is mandatory: the view emits one row per
 		// (shipment, source-DESADV) pair via the EDI_Desadv_M_InOut junction. For consolidated multi-DESADV
 		// shipments, filtering by M_InOut_ID alone would return N rows and firstOnlyNotNull would throw.
 		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
