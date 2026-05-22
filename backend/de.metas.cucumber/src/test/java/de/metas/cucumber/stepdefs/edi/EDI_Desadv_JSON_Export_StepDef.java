@@ -115,7 +115,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 	{
 		final String responseBody = testContext.getApiResponseBodyAsString();
 		final JsonNode root = objectMapper.readTree(responseBody);
-		final JsonNode packings = root.path("metasfresh_DESADV").path("Packings");
+		final JsonNode packings = unwrapDesadvRoot(root).path("Packings");
 
 		assertThat(packings.isArray()).as("Packings should be an array").isTrue();
 
@@ -223,7 +223,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 	{
 		final String responseBody = testContext.getApiResponseBodyAsString();
 		final JsonNode root = objectMapper.readTree(responseBody);
-		final JsonNode noPacking = root.path("metasfresh_DESADV").path("DesadvLineWithNoPacking");
+		final JsonNode noPacking = unwrapDesadvRoot(root).path("DesadvLineWithNoPacking");
 
 		assertThat(noPacking.isArray()).as("DesadvLineWithNoPacking should be an array").isTrue();
 
@@ -382,6 +382,12 @@ public class EDI_Desadv_JSON_Export_StepDef
 	// =========================================================================
 	// private helpers
 	// =========================================================================
+
+	/** ARRAY-MODE: the view now emits {@code [{...}]} instead of {@code {...}}; unwrap the first element. */
+	private static JsonNode unwrapDesadvRoot(@NonNull final JsonNode root)
+	{
+		return root.isArray() ? root.get(0).path("metasfresh_DESADV") : root.path("metasfresh_DESADV");
+	}
 
 	private void assertMultiRowIntersection(
 			@NonNull final List<ViewRow> viewRows,
