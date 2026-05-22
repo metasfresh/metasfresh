@@ -79,6 +79,10 @@ public class DunningBL implements IDunningBL
 
 	private final Logger logger = LogManager.getLogger(getClass());
 
+	// gh#28631: ShipmentConstraintService is a Spring @Service; this class is an ISingletonService impl
+	// so we resolve via the Spring context as a class field (per service-injection coding rule).
+	private final ShipmentConstraintService shipmentConstraintService = org.compiere.SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
+
 	private ReentrantLock configLock = new ReentrantLock();
 
 	/**
@@ -315,7 +319,6 @@ public class DunningBL implements IDunningBL
 			return;
 		}
 
-		final ShipmentConstraintService shipmentConstraintService = org.compiere.SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
 		// gh#28631: translatable reason makes the constraint row self-describing
 		// in the Shipment-Restrictions window without hard-coding a German prefix.
 		final ITranslatableString reason = TranslatableStrings.adMessage(

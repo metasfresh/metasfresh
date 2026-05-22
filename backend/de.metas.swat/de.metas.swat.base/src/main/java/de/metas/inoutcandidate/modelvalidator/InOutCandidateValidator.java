@@ -9,7 +9,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
@@ -82,9 +81,6 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 	private void setupCaching()
 	{
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_M_ShipmentSchedule.Table_Name);
-		// Manual delivery-stops set on one node must be visible cluster-wide so that order completion
-		// is blocked everywhere as soon as ShipmentConstraintsBL.getDeliveryStopShipmentConstraintId is re-asked.
-		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_M_Shipment_Constraint.Table_Name);
 	}
 
 	@VisibleForTesting

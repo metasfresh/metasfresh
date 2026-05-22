@@ -58,7 +58,7 @@ public class ShipmentConstraintRepository
 	public Optional<ShipmentConstraint> getManualForBPartner(@NonNull final BPartnerId billBPartnerId)
 	{
 		final I_M_Shipment_Constraint record = queryBL.createQueryBuilder(I_M_Shipment_Constraint.class)
-				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId.getRepoId())
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId)
 				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_IsManual, true)
 				.create()
 				.firstOnly(I_M_Shipment_Constraint.class);
@@ -75,7 +75,7 @@ public class ShipmentConstraintRepository
 	{
 		return queryBL.createQueryBuilder(I_M_Shipment_Constraint.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId.getRepoId())
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId)
 				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_IsDeliveryStop, true)
 				.create()
 				.anyMatch();
@@ -98,7 +98,7 @@ public class ShipmentConstraintRepository
 	{
 		final int repoId = queryBL.createQueryBuilder(I_M_Shipment_Constraint.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId.getRepoId())
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId)
 				.addEqualsFilter(I_M_Shipment_Constraint.COLUMN_IsDeliveryStop, true)
 				.orderBy()
 				.addColumn(I_M_Shipment_Constraint.COLUMN_M_Shipment_Constraint_ID)
@@ -144,7 +144,7 @@ public class ShipmentConstraintRepository
 	public int updateReceiptScheduleDeliveryStop(@NonNull final BPartnerId billBPartnerId, final boolean isDeliveryStop)
 	{
 		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID, billBPartnerId.getRepoId())
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID, billBPartnerId)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop)
 				.create()
