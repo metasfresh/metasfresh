@@ -292,6 +292,7 @@ Feature: EDI_cctop_invoic_v export format
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | plv_150                | convenienceSalate | 10.0     | PCE      | Normal           |
+      | plv_150                | ifco6410          | 0.00     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
