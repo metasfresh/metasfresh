@@ -160,11 +160,28 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 			@Override
 			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
 			{
-				messages[(int)(1 - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
+				// Guard: only accept the first delivery; cancel the consumer immediately so subsequent
+				// messages (e.g. two DESADVs queued before this call) don't cause an AIOOB on messages[1].
+				if (countDownLatch.getCount() == 0)
+				{
+					return;
+				}
 
-				logger.info("*** Queue: {}, received message: {}", queueName, messages[(int)(1 - countDownLatch.getCount())]);
+				messages[0] = new String(body, StandardCharsets.UTF_8);
+
+				logger.info("*** Queue: {}, received message: {}", queueName, messages[0]);
 
 				countDownLatch.countDown();
+
+				try
+				{
+					channel.basicCancel(consumerTag);
+				}
+				catch (final Exception e)
+				{
+					// best-effort cancel; channel may already be in the process of closing
+					logger.warn("basicCancel failed (ignored): {}", e.getMessage());
+				}
 			}
 		};
 
