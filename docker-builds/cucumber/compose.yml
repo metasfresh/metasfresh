@@ -34,15 +34,55 @@ services:
       mode: replicated
       replicas: 1
 
+  # Local SMTP relay for cucumber's `Test sending an outbound mail` scenario.
+  # Replaces the previous external-secrets-based SMTP relay: the external
+  # provider rejected our credentials on 2026-05-21 (locked out the test
+  # account) and the cucumber profile4 job has been red since. MailPit with
+  # --smtp-auth-accept-any removes the external dependency entirely.
+  # Image pinned (no :latest) so a future upstream change can't silently
+  # re-break the test.
+  mailpit:
+    image: axllent/mailpit:v1.20.5
+    command: ["--smtp-auth-accept-any", "--smtp-auth-allow-insecure", "--smtp=0.0.0.0:587"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8025 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 10
+    deploy:
+      mode: replicated
+      replicas: 1
+
   cucumber:
     image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
     environment:
-      - TEST_SMTP_HOST=$TEST_SMTP_HOST
-      - TEST_SMTP_FROM=$TEST_SMTP_FROM
-      - TEST_SMTP_USER=$TEST_SMTP_USER
-      - TEST_SMTP_PASSWORD=$TEST_SMTP_PASSWORD
+      # SMTP defaults point at the local mailpit container above.
+      # The env vars are still parametrised so a future scenario that
+      # needs a real external SMTP relay can override them at the
+      # compose `up` invocation, but the default cucumber run is now
+      # self-contained.
+      - TEST_SMTP_HOST=${TEST_SMTP_HOST:-mailpit}
+      - TEST_SMTP_PORT=${TEST_SMTP_PORT:-587}
+      - TEST_SMTP_STARTTLS=${TEST_SMTP_STARTTLS:-false}
+      - TEST_SMTP_FROM=${TEST_SMTP_FROM:-noreply@cucumber.metasfresh.test}
+      - TEST_SMTP_USER=${TEST_SMTP_USER:-cucumber}
+      - TEST_SMTP_PASSWORD=${TEST_SMTP_PASSWORD:-cucumber}
+      - CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_HOST=rabbitmq
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PORT=5672
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_USER=metasfresh
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PASS=metasfresh
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGRESQL_HOST=db
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGRESQL_PORT=5432
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGREST_HOST=postgrest
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGREST_PORT=3000
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
         condition: service_healthy
     volumes:
       - ./cucumber:/reports
