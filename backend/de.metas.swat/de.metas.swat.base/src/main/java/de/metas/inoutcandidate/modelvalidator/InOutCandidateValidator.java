@@ -49,12 +49,10 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		// engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initialized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
-		// engine.addModelValidator(new M_Shipment_Constraint(), client); initialized by spring (@Component)
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		//engine.addModelValidator(new M_InOut_Shipment(), client); // converted to spring bean
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
-		// engine.addModelValidator(new C_BPartner_DeliveryStop(), client); initialized by spring (@Component)
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
 
