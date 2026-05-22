@@ -1227,7 +1227,7 @@ Feature: EDI DESADV export via postgREST
   ## ("N DESADVs → 1 M_InOut" — consolidated shipment). The 1→N direction is structurally
   ## enabled by the EDI_Desadv_M_InOut junction (T1/T4) but had zero direct coverage; this
   ## scenario closes that gap by completing a single EDI-configured order with QtyEntered=20
-  ## and invoking 'generate shipments' twice with QtyToDeliver_Override=10 to produce two
+  ## and invoking 'generate shipments' twice with QtyToDeliver_Override_For_M_ShipmentSchedule_ID=10 to produce two
   ## partial M_InOuts. The junction must end up with EXACTLY 2 rows for the one EDI_Desadv,
   ## one per M_InOut.
 
@@ -1305,13 +1305,17 @@ Feature: EDI DESADV export via postgREST
       | ss_S29231_160 | ol_S29231_160  | N             |
 
     # ─── First partial: ship 10 of 20 ──────────────────────────────────────────
+    # QtyToDeliver_Override_For_M_ShipmentSchedule_ID is the workpackage-parameter name that
+    # ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override resolves to; using the
+    # short alias "QtyToDeliver_Override" does NOT match and results in no override being applied,
+    # so the first run would consume all 20 PCE and the second would have nothing to ship.
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
-      | M_ShipmentSchedule_ID | QtyToDeliver_Override |
-      | ss_S29231_160         | 10                    |
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_S29231_160         | 10                                              |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     |
-      | ss_S29231_160         | ioA_S29231_160 |
+      | M_ShipmentSchedule_ID | M_InOut_ID     | REST.Context.M_InOut_ID |
+      | ss_S29231_160         | ioA_S29231_160 | ioA_S29231_160_ID       |
 
     # Wait for the schedule to reflect the first partial delivery before invoking the second
     # generate-shipments run.  Without this recompute-wait the second workpackage may see a
@@ -1324,12 +1328,12 @@ Feature: EDI DESADV export via postgREST
     # Use OPT.IgnoreCreated to exclude the first M_InOut (otherwise the
     # 'M_InOut is found' step throws on size>1).
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
-      | M_ShipmentSchedule_ID | QtyToDeliver_Override |
-      | ss_S29231_160         | 10                    |
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_S29231_160         | 10                                              |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.IgnoreCreated.M_InOut_ID.Identifier |
-      | ss_S29231_160         | ioB_S29231_160 | ioA_S29231_160                          |
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.M_InOut_ID |
+      | ss_S29231_160         | ioB_S29231_160 | ioA_S29231_160                          | ioB_S29231_160_ID       |
 
     # Wait for DESADV packs (triggered synchronously by M_InOut BEFORE_COMPLETE — one pack per
     # M_InOut).  Both packs share the same EDI_Desadv_ID + IsManual_IPA_SSCC18, so we use SeqNo
@@ -1355,10 +1359,39 @@ Feature: EDI DESADV export via postgREST
     # EDI_Desadv) whose LineItems carry only that partial's delivered qty (10).
     # This complements the junction-count assertion: the junction proves the link
     # exists; this proves the export uses it correctly to emit per-M_InOut JSONs.
-    Then verify DESADV JSON export view for M_InOut identified by ioA_S29231_160 has exactly 1 row matching:
+    And the following API_Audit_Config records are created:
+      | Identifier       | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_160     | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioA_S29231_160_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
       | Order_Identifier | ExpectedQtyDelivered |
       | o_S29231_160     | 10                   |
 
-    Then verify DESADV JSON export view for M_InOut identified by ioB_S29231_160 has exactly 1 row matching:
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioB_S29231_160_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
       | Order_Identifier | ExpectedQtyDelivered |
       | o_S29231_160     | 10                   |

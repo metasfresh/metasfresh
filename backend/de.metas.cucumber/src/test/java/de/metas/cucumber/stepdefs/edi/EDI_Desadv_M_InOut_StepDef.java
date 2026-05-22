@@ -106,7 +106,7 @@ public class EDI_Desadv_M_InOut_StepDef
 							.count();
 					assertThat(total)
 							.as("Total EDI_Desadv_M_InOut rows for EDI_Desadv_ID=%d", ediDesadvId)
-							.isEqualTo(expectedCount);
+							.isEqualTo((long)expectedCount);
 				});
 	}
 }
