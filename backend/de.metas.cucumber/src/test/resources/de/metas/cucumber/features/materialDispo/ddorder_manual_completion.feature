@@ -45,7 +45,7 @@ Feature: Manual DD_Order completion creates MD_Candidates
     When the dd_order identified by ddOrder_man is completed
 
     # Wait for material dispo to process the event
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Verify SUPPLY + DEMAND candidates were created
     Then after not more than 60s, MD_Candidates are found

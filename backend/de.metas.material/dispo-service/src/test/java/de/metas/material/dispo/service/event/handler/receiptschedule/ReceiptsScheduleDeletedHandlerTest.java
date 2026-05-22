@@ -1,33 +1,3 @@
-package de.metas.material.dispo.service.event.handler.receiptschedule;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.MDCandidateDimensionFactory;
-import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
-import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * metasfresh-material-dispo-service
@@ -49,6 +19,43 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.material.dispo.service.event.handler.receiptschedule;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
+import de.metas.material.event.commons.MaterialDescriptor;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
+import static org.assertj.core.api.Assertions.assertThat;
+
 @ExtendWith(AdempiereTestWatcher.class)
 public class ReceiptsScheduleDeletedHandlerTest
 {
@@ -61,6 +68,8 @@ public class ReceiptsScheduleDeletedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ReceiptsScheduleCreatedHandlerTest.ensureWarehouseExists(de.metas.material.event.EventTestHelper.WAREHOUSE_ID);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -75,20 +84,27 @@ public class ReceiptsScheduleDeletedHandlerTest
 	}
 
 	@Test
-	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = ReceiptsScheduleCreatedHandlerTest.createWarehouse("Y");
+
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(createProductDescriptor())
+						.customerId(BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(excludedWarehouseId)
+						.build())
 				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
 				.reservedQuantity(new BigDecimal("10"))
-				.isDropShipWarehouse(true)
 				.build();
 
 		receiptsScheduleDeletedHandler.handleEvent(event);
 
-		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition — no candidates of any type are created.
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 }

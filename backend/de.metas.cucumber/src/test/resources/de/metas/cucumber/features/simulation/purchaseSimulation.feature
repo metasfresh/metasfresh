@@ -134,7 +134,7 @@ Feature: create purchase simulation
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 30             |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And the order identified by o_1 is completed
 

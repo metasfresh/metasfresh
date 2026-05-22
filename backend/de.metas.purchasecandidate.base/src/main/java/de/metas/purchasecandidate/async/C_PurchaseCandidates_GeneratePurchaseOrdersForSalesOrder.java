@@ -115,7 +115,13 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 						C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder.class.getName())
 				.create();
 
-		// Main query: find unprocessed WP with matching parameter and our processor
+		// Main query: find unprocessed WP with matching parameter and our processor.
+		// firstOnly (not first): the debouncer invariant in enqueueOrUpdateExisting above
+		// guarantees at most one unprocessed WP per (salesOrderId, processor) — a second WP
+		// is never created while one is still unprocessed. firstOnly throws if the invariant
+		// ever leaks (which we'd want to surface), and never trips the IQueryBuilder.first()
+		// "ORDER BY clause can be a developer error" warning/exception that was previously
+		// caught upstream by EventLogUserService.invokeHandlerAndLog as silent log noise.
 		return queryBL
 				.createQueryBuilder(I_C_Queue_WorkPackage.class)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
@@ -128,7 +134,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 						I_C_Queue_WorkPackage_Param.COLUMNNAME_C_Queue_WorkPackage_ID,
 						paramQuery)
 				.create()
-				.first(I_C_Queue_WorkPackage.class);
+				.firstOnly(I_C_Queue_WorkPackage.class);
 	}
 
 	@Override

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
 import com.google.common.collect.ImmutableList;
@@ -18,6 +40,9 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,27 +61,6 @@ import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-/*
- * #%L
- * metasfresh-material-dispo-service
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @ExtendWith(AdempiereTestWatcher.class)
 public class ReceiptsScheduleUpdatedHandlerTest
 {
@@ -70,6 +74,8 @@ public class ReceiptsScheduleUpdatedHandlerTest
 
 		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+		ReceiptsScheduleCreatedHandlerTest.ensureWarehouseExists(de.metas.material.event.EventTestHelper.WAREHOUSE_ID);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -85,23 +91,30 @@ public class ReceiptsScheduleUpdatedHandlerTest
 	}
 
 	@Test
-	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	public void handleEvent_isIgnoreInMaterialDispo_shortCircuits()
 	{
+		final WarehouseId excludedWarehouseId = ReceiptsScheduleCreatedHandlerTest.createWarehouse("Y");
+
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(NOW)
+						.productDescriptor(de.metas.material.event.EventTestHelper.createProductDescriptor())
+						.customerId(de.metas.material.event.EventTestHelper.BPARTNER_ID)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(excludedWarehouseId)
+						.build())
 				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
 				.reservedQuantity(new BigDecimal("11"))
 				.reservedQuantityDelta(ONE)
 				.orderedQuantityDelta(ONE)
-				.isDropShipWarehouse(true)
 				.build()
 				.validate();
 
 		receiptsScheduleUpdatedHandler.handleEvent(event);
 
-		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		// Warehouse is excluded from material-disposition — no candidates of any type are created.
 		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 
