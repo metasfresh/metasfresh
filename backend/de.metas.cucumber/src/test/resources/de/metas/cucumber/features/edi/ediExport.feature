@@ -376,14 +376,18 @@ Feature: EDI_cctop_invoic_v export format
       | dB_150                   |
 
     # Wait for the async workpackage processor to actually run sendAMQPMessage() and
-    # reach status S — only then is the ediExport_150 queue declared (Spring AMQP declares
-    # it on first publish). Status U (Enqueued) means the WP is queued but not yet running,
-    # which is too early — pollDocumentFromQueue() racing against queue declaration causes
-    # a 404 NOT_FOUND on slower CI runners.
+    # reach status D (SendingStarted) — only then is the ediExport_150 queue declared
+    # (Spring AMQP declares it on first publish). Status U (Enqueued) means the WP is
+    # queued but not yet running, which is too early — pollDocumentFromQueue() racing
+    # against queue declaration causes a 404 NOT_FOUND on slower CI runners.
+    # Note: in the RPL/EDI_DESADVExport path the DESADV status transitions are:
+    #   P → U (enqueued) → D (sendAMQPMessage called) → stays D after WP completes.
+    # Status S (Sent) is only reached via the per-InOut path; the DESADV-level RPL path
+    # never advances beyond D, so we wait for D as the "queue declared" sentinel.
     And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | dA_150                   | S                |
-      | dB_150                   | S                |
+      | dA_150                   | D                |
+      | dB_150                   | D                |
 
     # ─── CORE ASSERTION ───────────────────────────────────────────────────────
     # The RPL export emits one EDIFACT XML to RabbitMQ per processed DESADV.
