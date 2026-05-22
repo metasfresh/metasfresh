@@ -194,8 +194,9 @@ public class C_TaxDeclaration_StepDef
 	/**
 	 * Reactivate an existing {@link I_C_TaxDeclaration} via the document engine.
 	 *
-	 * <p>On success the declaration transitions to {@code DocStatus='DR'}, {@code Processed='N'},
-	 * {@code DocAction='CO'}.
+	 * <p>On success the declaration transitions to {@code DocStatus='IP'}, {@code Processed='N'},
+	 * {@code DocAction='CO'}.  Note: {@code DocumentEngine.reActivateIt()} unconditionally sets
+	 * the post-reactivate status to {@code IP}, not {@code DR}.
 	 *
 	 * <p><b>Example:</b>
 	 * <pre>{@code
@@ -207,7 +208,7 @@ public class C_TaxDeclaration_StepDef
 	{
 		lastException = null;
 		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
-		documentBL.processEx(decl, IDocument.ACTION_ReActivate, IDocument.STATUS_Drafted);
+		documentBL.processEx(decl, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 		InterfaceWrapperHelper.refresh(decl);
 	}
 
