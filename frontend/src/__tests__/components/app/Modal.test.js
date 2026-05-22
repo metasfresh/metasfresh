@@ -20,6 +20,7 @@ import processResponses from '../../../../test_setup/fixtures/process/responses.
 import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../test_setup/fixtures/keymap.json';
 import thunk from 'redux-thunk';
+import * as GenericActions from '../../../actions/GenericActions';
 const mockStore = configureStore([thunk]);
 
 const getInitialState = function(state = {}) {
@@ -111,5 +112,56 @@ describe('Modal test', () => {
     { attachTo: document.getElementById('container') });
 
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  it('does not call processNewRecord twice when handleClose is invoked rapidly on a new document modal', () => {
+    const processNewRecordSpy = jest
+      .spyOn(GenericActions, 'processNewRecord')
+      .mockReturnValue(new Promise(() => {})); // never resolves — simulates in-flight request
+
+    const newDocProps = {
+      ...fixtures,
+      dataId: 'NEW', // triggers isNewDoc = true
+      modalType: 'window', // not 'process', so handleClose calls closeModal
+      modalSaveStatus: true,
+      dispatch: jest.fn(),
+      printingOptions: {},
+    };
+
+    let modalRef = null;
+    class ModalWithRef extends React.Component {
+      render() {
+        return (
+          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+            <DisconnectedModal
+              ref={(ref) => {
+                modalRef = ref;
+              }}
+              {...newDocProps}
+            />
+          </ShortcutProvider>
+        );
+      }
+    }
+
+    mount(<ModalWithRef />, {
+      attachTo: document.getElementById('container'),
+    });
+
+    // Simulate two rapid handleClose calls (as if Done was clicked twice).
+    // Each call is wrapped in act() to ensure React flushes setState({ pending: true })
+    // between calls — matching production behavior where each click is a separate DOM event.
+    const { act } = require('react-dom/test-utils');
+    act(() => {
+      modalRef.handleClose();
+    });
+    act(() => {
+      modalRef.handleClose();
+    });
+
+    // processNewRecord should only be called once — the second call is blocked by the pending guard
+    expect(processNewRecordSpy).toHaveBeenCalledTimes(1);
+
+    processNewRecordSpy.mockRestore();
   });
 });
