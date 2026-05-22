@@ -55,9 +55,9 @@ public class JsonPickingJobStepPickFrom
 		{
 			final QtyRejectedWithReason qtyRejected = pickedTo.getQtyRejected();
 
-			final BigDecimal qtyPickedToSerializeBD = convertToDisplayUnit(pickedTo.getQtyPicked(), line);
+			final BigDecimal qtyPickedToSerializeBD = convertCuQtyForDisplay(pickedTo.getQtyPicked(), line);
 			final BigDecimal qtyRejectedToSerializeBD = qtyRejected != null
-					? convertToDisplayUnit(qtyRejected.toQuantity(), line)
+					? convertCuQtyForDisplay(qtyRejected.toQuantity(), line)
 					: null;
 
 			builder.qtyPicked(qtyPickedToSerializeBD)
@@ -77,7 +77,7 @@ public class JsonPickingJobStepPickFrom
 	}
 
 	@NonNull
-	private static BigDecimal convertToDisplayUnit(
+	private static BigDecimal convertCuQtyForDisplay(
 			@NonNull final Quantity qtyCUs,
 			@NonNull final PickingJobLine line)
 	{

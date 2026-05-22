@@ -66,14 +66,11 @@ import java.util.function.Function;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RED test: verifies that {@link JsonPickingJobStepPickFrom#of(PickingJobStepPickFrom, PickingJobLine, JsonOpts, Function)}
- * converts CU qty to TU qty when the parent line's picking unit is TU.
+ * Verifies that {@link JsonPickingJobStepPickFrom#of(PickingJobStepPickFrom, PickingJobLine, JsonOpts, Function)}
+ * converts CU qty to TU qty when the parent line's picking unit is TU, and passes raw CU
+ * through unchanged when the picking unit is CU.
  *
- * <p>This test calls the post-fix 4-argument signature and therefore FAILS TO COMPILE
- * against the current 3-argument production code — satisfying the RED phase.
- * Task 2 adds the {@code PickingJobLine} parameter; after that the test must go GREEN.
- *
- * <p>Setup: 12 CU at 2 CU/TU → expected 6 TU.
+ * <p>Setup for the TU cases: 12 CU at 2 CU/TU → expected 6 TU.
  */
 class JsonPickingJobStepPickFromTest
 {
@@ -131,7 +128,7 @@ class JsonPickingJobStepPickFromTest
 		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
 		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("TU");
 
-		// Act — calls the POST-FIX 4-arg signature; compile fails against current 3-arg code (RED)
+		// Act
 		final JsonPickingJobStepPickFrom json =
 				JsonPickingJobStepPickFrom.of(pickFrom, line, jsonOpts, getUOMSymbolById);
 
@@ -175,7 +172,7 @@ class JsonPickingJobStepPickFromTest
 		final JsonOpts jsonOpts = JsonOpts.ofAdLanguage("en_US");
 		final Function<UomId, ITranslatableString> getUOMSymbolById = uomId -> TranslatableStrings.constant("TU");
 
-		// Act — calls the POST-FIX 4-arg signature; compile fails against current 3-arg code (RED)
+		// Act
 		final JsonPickingJobStepPickFrom json =
 				JsonPickingJobStepPickFrom.of(pickFrom, line, jsonOpts, getUOMSymbolById);
 
