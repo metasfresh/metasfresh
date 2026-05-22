@@ -34,32 +34,25 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
 /**
- * Exports one particular invoice to JSON.
+ * Exports one particular shipment ({@code M_InOut}) as JSON.
  * It directs {@link PostgRESTProcessExecutor} to store the result to disk if not called via API.
- * It also attaches the resulting JSON file to the invoice and sets the invoice's {@code EDI_ExportStatus} to "Sent".
+ * It also attaches the resulting JSON file to the shipment and sets the shipment's {@code EDI_ExportStatus} to "Sent".
+ * <p>
+ * <b>Array-mode contract (me03#29231):</b> a consolidated multi-source-order shipment links to N source DESADVs
+ * via the {@code EDI_Desadv_M_InOut} junction. The underlying PostgREST view
+ * {@code M_InOut_Export_EDI_DESADV_JSON_V} emits one row per junction entry — i.e. one row per
+ * {@code (m_inout_id, edi_desadv_id)} pair. This process therefore returns a JSON <i>array</i> of DESADV
+ * documents (one element per linked source DESADV), not a single object. The downstream Camel route is
+ * responsible for fanning the array out into N EDIFACT messages.
  */
 public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 {
 	public static final String PARAM_M_InOut_ID = "M_InOut_ID";
-	public static final String PARAM_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	private final EDIInOutDAO ediInOutDAO = SpringContextHolder.instance.getBean(EDIInOutDAO.class);
 
 	@Param(parameterName = PARAM_M_InOut_ID, mandatory = true)
 	private int m_inout_id;
-
-	// me03#29231 — for consolidated multi-source-order shipments, one M_InOut links to N DESADVs via
-	// the EDI_Desadv_M_InOut junction. The PostgREST view (M_InOut_Export_EDI_DESADV_JSON_V) emits one
-	// row per (m_inout_id, edi_desadv_id) pair, so we MUST filter by both to keep expectSingleResult=true.
-	// EDIWorkpackageProcessor enqueues one workpackage per (desadv, inout) pair and supplies this parameter.
-	//
-	// Structurally unused in Java logic (mirrors m_inout_id above): the value is injected by the
-	// framework into the ProcessInfo.Param map and consumed by the PostgREST JSONPath substitution
-	// (`@EDI_Desadv_ID/0@`) at the AD_Process level. Removing the @Param declaration would break
-	// the framework's call validation. Code-review T6 / HIGH #2.
-	@SuppressWarnings("unused")
-	@Param(parameterName = PARAM_EDI_Desadv_ID, mandatory = true)
-	private int edi_desadv_id;
 
 	@Override
 	protected I_EDI_Document_Extension loadRecordOutOfTrx()
@@ -73,5 +66,19 @@ public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 	{
 		final I_M_InOut inOutRecord = InterfaceWrapperHelper.create(record, I_M_InOut.class);
 		ediInOutDAO.saveOutOfTrx(inOutRecord); //Should be saved before possible externalSystemInvocation could return an error
+	}
+
+	/**
+	 * Returns {@code false} — see the class-level Javadoc for the array-mode contract.
+	 * <p>
+	 * An {@code M_InOut} may map to N DESADVs via the {@code EDI_Desadv_M_InOut} junction; the export
+	 * view emits one row per linked DESADV, so this process returns the natural JSON array of all linked
+	 * DESADVs in a single call. Per-element fan-out into individual EDIFACT messages is handled by the
+	 * Camel route.
+	 */
+	@Override
+	protected boolean shouldExpectSingleResult()
+	{
+		return false;
 	}
 }

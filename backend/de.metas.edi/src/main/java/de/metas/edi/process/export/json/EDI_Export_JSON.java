@@ -46,7 +46,7 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	 * Sets invoice's EDI_ExportStatus and tell metasfresh to store the result to disk, unless we are called via API.
 	 */
 	@Override
-	protected final CustomPostgRESTParameters beforePostgRESTCall()
+	protected CustomPostgRESTParameters beforePostgRESTCall()
 	{
 		final I_EDI_Document_Extension record = loadRecordOutOfTrx();
 		record.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
@@ -56,8 +56,25 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 
 		return CustomPostgRESTParameters.builder()
 				.storeJsonFile(!calledViaAPI)
-				.expectSingleResult(true) // because we export exactly one record, we don't want the JSON to be an array
+				.expectSingleResult(shouldExpectSingleResult())
 				.build();
+	}
+
+	/**
+	 * Hook for subclasses to opt out of {@code expectSingleResult=true}.
+	 * <p>
+	 * Default {@code true}: the PostgREST call must return exactly one JSON object — the natural
+	 * single-record export path used by {@link C_Invoice_EDI_Export_JSON} and the single-DESADV-per-shipment
+	 * configurations of {@link M_InOut_EDI_Export_JSON}.
+	 * <p>
+	 * Subclasses override to {@code false} when the underlying view legitimately returns a JSON array
+	 * — e.g. the consolidated-shipment case in me03#29231 where one {@code M_InOut} maps to N source
+	 * DESADVs via the {@code EDI_Desadv_M_InOut} junction and the view emits one row per junction entry.
+	 * The downstream Camel route then iterates over the array and dispatches one EDIFACT message per element.
+	 */
+	protected boolean shouldExpectSingleResult()
+	{
+		return true;
 	}
 
 	@Override
