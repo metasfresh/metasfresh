@@ -89,6 +89,8 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	I_C_BPartner_Product retrieveByVendorId(BPartnerId vendorId, ProductId productId, OrgId orgId);
 
+	Optional<Integer> getDeliveryTimePromised(BPartnerId vendorId, ProductId productId, OrgId orgId);
+
 	List<I_C_BPartner_Product> retrieveAllBPartnerProductAssociations(Properties ctx, BPartnerId bpartnerId, ProductId productId, OrgId orgId, String trxName);
 
 	Optional<ProductId> getProductIdByCustomerProductNo(BPartnerId customerId, String customerProductNo);

@@ -50,7 +50,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;

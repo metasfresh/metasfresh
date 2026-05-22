@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
@@ -249,6 +250,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 		final int invoiceId = invoice.getC_Invoice_ID();
 		return retrieveLinesQuery(ctx, invoiceId, trxName);
+	}
+
+	@Override
+	public List<I_C_InvoiceLine> retrieveLinesByInvoiceIds(final Set<InvoiceId> invoiceIds)
+	{
+		if (invoiceIds.isEmpty()) {return ImmutableList.of();}
+
+		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addInArrayFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceIds)
+				.orderBy(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID)
+				.orderBy(I_C_InvoiceLine.COLUMNNAME_Line)
+				.list();
 	}
 
 	@Nullable

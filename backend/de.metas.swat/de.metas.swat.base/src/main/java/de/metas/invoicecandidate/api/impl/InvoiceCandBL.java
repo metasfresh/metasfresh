@@ -75,6 +75,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -293,7 +294,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
-	
+
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
 	{
@@ -752,15 +753,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Properties ctx,
 			final PInstanceId AD_PInstance_ID,
 			final boolean ignoreInvoiceSchedule,
+			@Nullable final Boolean isPartialInvoice,
 			final String trxName)
 	{
 		final Iterator<I_C_Invoice_Candidate> candidates =
 				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
-		return generateInvoices()
+		final IInvoiceGenerator generator = generateInvoices()
 				.setContext(ctx, trxName)
-				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule)
-				.generateInvoices(candidates);
+				.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+
+		if (isPartialInvoice != null)
+		{
+			final PlainInvoicingParams params = new PlainInvoicingParams();
+			params.setIsPartialInvoice(isPartialInvoice);
+			params.setIgnoreInvoiceSchedule(ignoreInvoiceSchedule);
+			generator.setInvoicingParams(params);
+		}
+
+		return generator.generateInvoices(candidates);
 	}
 
 	@Override
@@ -2333,6 +2344,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closePartiallyInvoiced_InvoiceCandidates(@NonNull final I_C_Invoice invoice)
 	{
+		// me03 #29369: if the user explicitly marked this invoice as Partial (more invoices coming
+		// on the same order), skip the auto-close entirely. N or NULL = NA falls through to the
+		// legacy qty-based close logic below. See de.metas.invoice.IsPartialInvoice for the tri-state
+		// mapping and migration 5801950 for the schema redesign.
+		// The PO layer stores YesNo columns as Boolean (after JDBC materialisation) or String
+		// (when explicitly set via setValue); IsPartialInvoice.fromValue handles both.
+		final IsPartialInvoice invoiceIntent = IsPartialInvoice.fromValue(invoice.getIsPartialInvoice());
+		if (invoiceIntent.isYes())
+		{
+			logger.debug("Invoice IsPartialInvoice=Y (explicit Partial - more invoices coming); => not closing any invoice candidates");
+			return;
+		}
+
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 

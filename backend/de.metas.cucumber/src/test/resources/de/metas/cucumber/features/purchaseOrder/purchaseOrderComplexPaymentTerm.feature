@@ -180,7 +180,7 @@ Feature: Purchase order with complex payment term
     #       (`IsPartiallyPaid=Y, OpenAmt=25.58`) only held because (a)'s payments had auto-
     #       allocated against the invoice. Without (a), the invoice has no allocations and the
     #       partial-paid state changes — covering this requires the partial-receipt + invoice
-    #       work scoped for iter-3, where the proforma-payment partial-paid flow will be
+    #       work scoped for split-payment feature (see https://github.com/metasfresh/me03/issues/29369), where the proforma-payment partial-paid flow will be
     #       re-tested end-to-end.
     # Both blocks are intentionally out of scope here. The scenario now covers exactly what
     # its title promises: pay-schedule LC/BL/ETA dates updating when the order's reference

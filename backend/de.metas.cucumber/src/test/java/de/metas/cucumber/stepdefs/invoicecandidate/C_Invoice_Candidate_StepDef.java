@@ -123,6 +123,7 @@ import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsInvoiceManua
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsUpdateLocationAndContactForInvoice;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsDeliveryDateAsInvoiceDate;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsPartialInvoice;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_OverrideDueDate;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
@@ -802,6 +803,7 @@ public class C_Invoice_Candidate_StepDef
 					row.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
 					row.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 					row.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
+					row.getAsOptionalBoolean(PARA_IsPartialInvoice).ifPresent(invoicingParams::setIsPartialInvoice);
 
 					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
@@ -983,6 +985,7 @@ public class C_Invoice_Candidate_StepDef
 		firstRow.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
 		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
 		firstRow.getAsOptionalLocalDate(PARA_OverrideDueDate).ifPresent(invoicingParams::setOverrideDueDate);
+		firstRow.getAsOptionalBoolean(PARA_IsPartialInvoice).ifPresent(invoicingParams::setIsPartialInvoice);
 
 		final boolean completeInvoices = firstRow.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 		invoicingParams.setCompleteInvoices(completeInvoices);

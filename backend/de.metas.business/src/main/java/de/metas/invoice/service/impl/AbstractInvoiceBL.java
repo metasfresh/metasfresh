@@ -227,6 +227,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public List<I_C_InvoiceLine> getLinesByInvoiceIds(final Set<InvoiceId> invoiceIds)
+	{
+		return invoiceDAO.retrieveLinesByInvoiceIds(invoiceIds);
+	}
+
+	@Override
 	public List<InvoiceTax> getTaxes(@NonNull final InvoiceId invoiceId)
 	{
 		return invoiceDAO.retrieveTaxes(invoiceId);
@@ -603,7 +609,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final BigDecimal openAmt,
 			@NonNull final InvoicePaymentStatus paymentStatus)
 	{
-		if(!invoice.isFinancial())
+		if (!invoice.isFinancial())
 		{
 			invoice.setIsPaid(false);
 			invoice.setIsPartiallyPaid(false);
@@ -830,7 +836,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				: Optional.empty();
 
 		final Optional<PaymentTermId> paymentTermId = bpartnerBL.getPaymentTermIdForBPartner(bpartnerId, soTrx);
-		final Optional<PaymentRule> paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId,soTrx);
+		final Optional<PaymentRule> paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId, soTrx);
 
 		final I_M_PriceList priceList = getPriceList(billBPartnerLocationId, soTrx, date);
 
@@ -1967,8 +1973,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-										 final I_C_Invoice creditMemo,
-										 final BigDecimal openAmt)
+	                                     final I_C_Invoice creditMemo,
+	                                     final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());

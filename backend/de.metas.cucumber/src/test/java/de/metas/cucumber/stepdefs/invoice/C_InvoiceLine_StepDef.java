@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -108,6 +109,8 @@ public class C_InvoiceLine_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
+	// for linking invoice lines back to order lines (C_OrderLine_ID FK, split-payment matching, etc.)
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
@@ -408,6 +411,16 @@ public class C_InvoiceLine_StepDef
 					invoiceLine.setPriceEntered(price);
 					invoiceLine.setPriceActual(price);
 				});
+
+		// link the invoice line back to the order line so M_MatchInv → orderLine.C_Tax_ID
+		// traversal in DeliveryPrepaymentAllocationService works correctly.
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
+				.map(orderLineTable::getId)
+				.ifPresent(orderLineId -> invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> invoiceLine.setM_InOutLine_ID(inOutLineId.getRepoId()));
 
 		row.getAsOptionalIdentifier("C_Tax_ID$set")
 				.ifPresent(taxIdentifier -> {
