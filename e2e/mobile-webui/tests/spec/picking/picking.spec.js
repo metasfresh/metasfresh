@@ -9,6 +9,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { expect } from '@playwright/test';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 
 const createMasterdata = async ({
@@ -588,6 +589,8 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
             qrCode: 'HU#1#{"id":"00000000000000000000000000000000-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"}}',
             isScanDirectly: true,
         });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('No HU found for this QR code');
     });
 
     await PickingJobScreen.waitForScreen();
@@ -638,5 +641,82 @@ test('Partial pick blocked, recover by picking remaining', async ({ page }) => {
         expectQtyEntered: '0',
         qtyEntered: '2',
     });
+    await PickingJobScreen.complete();
+});
+
+//
+// Scan HU containing a different product than the picking job expects:
+// Error toast fires at scan time (backend product check), qty dialog never appears.
+// Verify the screen recovers and picking continues with the correct HU.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan HU with wrong product during picking', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - wrong product HU');
+    allure.severity('normal');
+
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "sales_order",
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                }
+            },
+            bpartners: { "BP1": {} },
+            warehouses: { "wh": {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                "P1": { prices: [{ price: 1 }] },
+                "P2": {},
+            },
+            packingInstructions: {
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+                "PI2": { lu: "LU2", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+                "HU2": { product: 'P2', warehouse: 'wh', packingInstructions: 'PI2' },
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }]
+                }
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await expectErrorToast('Scan HU with wrong product', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU2.qrCode,
+            isScanDirectly: true,
+        });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('Product not matching. Expected:');
+    });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
     await PickingJobScreen.complete();
 });
