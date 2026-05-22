@@ -231,7 +231,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     Then the tax declaration "td" has Processed='Y' and DocStatus='CO' and DocAction='RE'
 
     When the tax declaration "td" is reactivated
-    Then the tax declaration "td" has Processed='N' and DocStatus='DR' and DocAction='CO'
+    Then the tax declaration "td" has Processed='N' and DocStatus='IP' and DocAction='CO'
     And the C_TaxDeclarationLine rows for "td" are still present
 
 
