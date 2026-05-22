@@ -43,7 +43,10 @@ import org.junit.platform.suite.api.Suite;
 // NOTE: cucumber.filter.tags moved to pom.xml <configurationParameters> (default: "not @ignore")
 // so it can be overridden via -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @ignore"
 // @ConfigurationParameter for FILTER_TAGS has highest JUnit5 priority and cannot be overridden!
-@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "html:target/cucumber.html,json:target/cucumber.json,junit:target/cucumber-junit.xml,message:target/cucumber.message,io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm")
+// `pretty` plugin prints scenario / step boundaries to stdout — required so cucumber CI logs
+// identify which scenario was running when the runner crashes / times out (otherwise the only
+// signal is a generic "Tests run: 0" with no scenario context).
+@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "pretty,html:target/cucumber.html,json:target/cucumber.json,junit:target/cucumber-junit.xml,message:target/cucumber.message,io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm")
 public class RunCucumberTest
 {
 }
