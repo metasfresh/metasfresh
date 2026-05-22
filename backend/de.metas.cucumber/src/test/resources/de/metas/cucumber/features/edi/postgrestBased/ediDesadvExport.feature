@@ -1186,3 +1186,141 @@ Feature: EDI DESADV export via postgREST
   # per-line loop + sequencesByDesadv map); one extra iteration adds no new branch coverage.
   # TC1 (S29231_100) is the canonical multi-source-order test; TC2 (S29231_110) is the
   # 1-order regression baseline.
+
+
+  @Id:S29231_160
+  @from:cucumber
+  Scenario: S29231_160 — One order, two partial shipments → one DESADV linked to two M_InOuts via junction
+  ## me03#29231 — TC4: covers the structural "1 DESADV → N M_InOuts" direction acknowledged by
+  ## PLAN_ARRAY_MODE.md §0 ("one DESADV can have N M_InOuts" — partial deliveries on the same
+  ## source order). The pre-existing me03#29231 tests S29231_100/110 cover only the inverse
+  ## ("N DESADVs → 1 M_InOut" — consolidated shipment). The 1→N direction is structurally
+  ## enabled by the EDI_Desadv_M_InOut junction (T1/T4) but had zero direct coverage; this
+  ## scenario closes that gap by completing a single EDI-configured order with QtyEntered=20
+  ## and invoking 'generate shipments' twice with QtyToDeliver_Override=10 to produce two
+  ## partial M_InOuts. The junction must end up with EXACTLY 2 rows for the one EDI_Desadv,
+  ## one per M_InOut.
+
+    Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
+    And metasfresh is configured for One-DESADV-Per-ORDERS
+    And metasfresh initially has no EDI_Desadv_Pack_Item data
+    And metasfresh initially has no EDI_Desadv_Pack data
+    And destroy existing M_HUs
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
+
+    And metasfresh contains M_Products:
+      | Identifier      |
+      | p_S29231_160    |
+    And metasfresh contains M_PricingSystems
+      | Identifier      |
+      | ps_S29231_160   |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_160   | ps_S29231_160      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID  |
+      | plv_S29231_160  | pl_S29231_160   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_160         | p_S29231_160  | 10.0     | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient — gate condition for DESADV creation at order-complete
+    And metasfresh contains C_BPartners:
+      | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S29231_160   | Y          | ps_S29231_160      | 9900000291600 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | bp_S29231_160  | true                 | 9900000291600         |
+
+    # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID          |
+      | pi_LU_S29231_160    |
+      | pi_TU_S29231_160    |
+      | pi_VHU_S29231_160   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_160   | pi_LU_S29231_160    | LU          | Y         |
+      | piv_TU_S29231_160   | pi_TU_S29231_160    | TU          | Y         |
+      | piv_VHU_S29231_160  | pi_VHU_S29231_160   | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   |
+      | pii_LU_S29231_160   | piv_LU_S29231_160   | 20  | HU       | pi_TU_S29231_160    |
+      | pii_TU_S29231_160   | piv_TU_S29231_160   | 0   | PM       |                     |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S29231_160          | pii_TU_S29231_160 | p_S29231_160  | 10  | 2020-01-01 |
+
+    # Single order with QtyEntered=20 — large enough to be split into two complete-TU shipments of 10 each
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference              |
+      | o_S29231_160 | true    | bp_S29231_160  | 2026-05-20  | PO_S29231_160_@Date@     |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID   | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S29231_160 | o_S29231_160 | p_S29231_160  | 20         | pip_S29231_160          |
+
+    When the order identified by o_S29231_160 is completed
+
+    # Order-complete must create the single EDI_Desadv (one DESADV per ORDERS)
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_S29231_160             | bp_S29231_160            | o_S29231_160          | P                |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S29231_160 | ol_S29231_160  | N             |
+
+    # ─── First partial: ship 10 of 20 ──────────────────────────────────────────
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override |
+      | ss_S29231_160         | 10                    |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | ss_S29231_160         | ioA_S29231_160 |
+
+    # ─── Second partial: ship the remaining 10 of 20 ───────────────────────────
+    # Use OPT.IgnoreCreated to exclude the first M_InOut (otherwise the
+    # 'M_InOut is found' step throws on size>1).
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override |
+      | ss_S29231_160         | 10                    |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.IgnoreCreated.M_InOut_ID.Identifier |
+      | ss_S29231_160         | ioB_S29231_160 | ioA_S29231_160                          |
+
+    # Wait for DESADV packs (async, triggered by M_InOut BEFORE_COMPLETE — one pack per M_InOut).
+    # Disambiguate by listing both packs; the existing step filters by EDI_Desadv_ID +
+    # IsManual_IPA_SSCC18 (both true here for both packs since no real picked-LU SSCC is set).
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
+      | packA_S29231_160   | d_S29231_160             | true                |
+      | packB_S29231_160   | d_S29231_160             | true                |
+
+    # ─── CORE ASSERTION (TC4 falsifiable predicate) ───────────────────────────
+    # The EDI_Desadv_M_InOut junction must contain EXACTLY 2 rows for the single
+    # EDI_Desadv — one linking it to each partial M_InOut. Before the T1/T4
+    # junction this scenario would have been impossible to express (M_InOut had a
+    # single EDI_Desadv_ID FK and the 2nd shipment would either steal or null it).
+    Then EDI_Desadv_M_InOut records are found:
+      | EDI_Desadv_ID | M_InOut_ID     | ExpectedRowCountForDesadv |
+      | d_S29231_160  | ioA_S29231_160 | 2                         |
+      | d_S29231_160  | ioB_S29231_160 | 2                         |
+
+    # ─── PER-INOUT EXPORT ASSERTION ────────────────────────────────────────────
+    # Each partial M_InOut's export view emits exactly 1 DESADV JSON (the shared
+    # EDI_Desadv) whose LineItems carry only that partial's delivered qty (10).
+    # This complements the junction-count assertion: the junction proves the link
+    # exists; this proves the export uses it correctly to emit per-M_InOut JSONs.
+    Then verify DESADV JSON export view for M_InOut identified by ioA_S29231_160 has exactly 1 row matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | o_S29231_160     | 10                   |
+
+    Then verify DESADV JSON export view for M_InOut identified by ioB_S29231_160 has exactly 1 row matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | o_S29231_160     | 10                   |
