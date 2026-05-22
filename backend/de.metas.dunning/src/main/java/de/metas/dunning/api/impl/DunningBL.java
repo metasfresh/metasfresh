@@ -80,8 +80,13 @@ public class DunningBL implements IDunningBL
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	// gh#28631: ShipmentConstraintService is a Spring @Service; this class is an ISingletonService impl
-	// so we resolve via the Spring context as a class field (per service-injection coding rule).
-	private final ShipmentConstraintService shipmentConstraintService = org.compiere.SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
+	// so we resolve via the Spring context. Use lazyBean (not getBean) at the field site because
+	// unit tests instantiate DunningBL without a Spring application context — an eager getBean
+	// would fail with "This unit test requires a spring ApplicationContext". The lazy wrapper only
+	// resolves on first call to .get() (i.e., inside makeDeliveryStopIfNeeded), which production
+	// code reaches and unit tests do not.
+	private final org.compiere.SpringContextHolder.Lazy<ShipmentConstraintService> shipmentConstraintService =
+			org.compiere.SpringContextHolder.lazyBean(ShipmentConstraintService.class);
 
 	private ReentrantLock configLock = new ReentrantLock();
 
@@ -325,7 +330,7 @@ public class DunningBL implements IDunningBL
 				MSG_DeliveryStopReason_FromDunning,
 				dunningLevel.getName(),
 				dunningDoc.getDocumentNo());
-		shipmentConstraintService.createConstraint(ShipmentConstraintCreateCommand.builder()
+		shipmentConstraintService.get().createConstraint(ShipmentConstraintCreateCommand.builder()
 				.orgId(OrgId.ofRepoId(dunningDoc.getAD_Org_ID()))
 				.billBPartnerId(BPartnerId.ofRepoId(dunningDoc.getC_BPartner_ID()))
 				.sourceDocRef(SourceDocRef.of(TableRecordReference.of(dunningDoc)))
