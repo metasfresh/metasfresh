@@ -1054,8 +1054,8 @@ Feature: EDI DESADV export via postgREST
       | ssB_S29231            |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID      |
-      | ssA_S29231            | io_S29231_100   |
+      | M_ShipmentSchedule_ID | M_InOut_ID    | REST.Context.M_InOut_ID |
+      | ssA_S29231            | io_S29231_100 | io_S29231_100_ID        |
 
     # Wait for DESADV pack records to be written (async, triggered by M_InOut BEFORE_COMPLETE)
     # IsManual_IPA_SSCC18=true: this scenario does not set up M_HU_Attribute SSCC18 (no
@@ -1070,13 +1070,31 @@ Feature: EDI DESADV export via postgREST
       | packB_S29231       | dB_S29231                | true                |
 
     # ─── CORE ASSERTION (TC1 falsifiable predicate) ───────────────────────────
-    # After the Option-A junction fix the view must return exactly 2 rows for the
+    # After the Option-A junction fix the REST endpoint must return exactly 2 elements for the
     # consolidated shipment — one per source-order DESADV.
-    # Before the fix: only 1 row (M_InOut.EDI_Desadv_ID single-FK → only Order-A's DESADV).
+    # Before the fix: only 1 element (M_InOut.EDI_Desadv_ID single-FK → only Order-A's DESADV).
     # Strict intersection asserted at both header (POReference / EDI_Desadv_ID pairing) AND
-    # line level (every LineItem.DesadvLine.OrderPOReference belongs to the row's source order,
+    # line level (every LineItem.DesadvLine.OrderPOReference belongs to the element's source order,
     # never the other) — per PR #24042 review #4335557991.
-    Then verify DESADV JSON export view for M_InOut identified by io_S29231_100 has:
+    And the following API_Audit_Config records are created:
+      | Identifier    | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_100  | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@io_S29231_100_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has multi-source-order intersection:
       | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier | ExpectedQtyDeliveredPerOrder |
       | 2                | 2                 | oA_S29231         | oB_S29231         | 10                           |
 
@@ -1163,8 +1181,8 @@ Feature: EDI DESADV export via postgREST
       | ss_S29231_110         |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID    |
-      | ss_S29231_110         | io_S29231_110 |
+      | M_ShipmentSchedule_ID | M_InOut_ID    | REST.Context.M_InOut_ID |
+      | ss_S29231_110         | io_S29231_110 | io_S29231_110_ID        |
 
     # IsManual_IPA_SSCC18=true: no M_HU_Attribute SSCC18 in this scenario — see TC1 note.
     And after not more than 60s, EDI_Desadv_Pack records are found:
@@ -1172,10 +1190,28 @@ Feature: EDI DESADV export via postgREST
       | pack_S29231_110    | true                |
 
     # ─── CORE ASSERTION (TC2 regression predicate) ────────────────────────────
-    # View must still return exactly 1 row for the single-order case.
-    # Line-level intersection asserted: the single emitted row's LineItems must reference
+    # REST endpoint must still return exactly 1 element for the single-order case.
+    # Line-level intersection asserted: the single element's LineItems must reference
     # the one source order's POReference and carry its delivered qty.
-    Then verify DESADV JSON export view for M_InOut identified by io_S29231_110 has exactly 1 row matching:
+    And the following API_Audit_Config records are created:
+      | Identifier    | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_110  | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@io_S29231_110_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
       | Order_Identifier | ExpectedQtyDelivered |
       | o_S29231_110     | 10                   |
 

@@ -29,58 +29,34 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.DB;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for verifying the DESADV JSON export.
  * <p>
- * Two assertion families are supported:
- * <ol>
- *   <li>REST-API response based assertions — inspect the last API response captured in
- *       {@link TestContext#getApiResponseBodyAsString()} (works for single-source-order
- *       shipments because the REST endpoint expects a single result).</li>
- *   <li>SQL-view based assertions — query {@code M_InOut_Export_EDI_DESADV_JSON_V} directly
- *       (required for multi-source-order shipments where the view emits N rows, which the
- *       REST endpoint cannot return because it requests {@code application/vnd.pgrst.object+json}).</li>
- * </ol>
- * <p>
- * The SQL-view path is intentional: there is no DAO for a SQL view, and the multi-row
- * response shape is incompatible with the {@code expectSingleResult(true)} setting of
- * {@code EDI_Export_JSON}. Precedent: {@code EPCIS_JSON_Export_StepDef}.
+ * All assertions inspect the last API response captured in
+ * {@link TestContext#getApiResponseBodyAsString()}. The REST endpoint
+ * {@code api/v2/processes/M_InOut_EDI_Export_JSON/invoke} returns a JSON <em>array</em> of
+ * DESADV documents (one element per linked source DESADV) — {@code shouldExpectSingleResult()}
+ * returns {@code false} in {@code M_InOut_EDI_Export_JSON}, so both single-source-order and
+ * multi-source-order shipments are handled through the same REST path.
  */
 @RequiredArgsConstructor
 public class EDI_Desadv_JSON_Export_StepDef
 {
-	/** SQL query: for a given M_InOut_ID return one JSON row per DESADV the view emits. */
-	private static final String SQL_QUERY_VIEW =
-			"SELECT"
-					+ "  (v.embedded_json->'metasfresh_DESADV'->>'EDI_Desadv_ID')::int  AS edi_desadv_id,"
-					+ "  v.embedded_json->'metasfresh_DESADV'->>'POReference'          AS po_reference,"
-					+ "  v.embedded_json->'metasfresh_DESADV'                          AS desadv_json"
-					+ " FROM M_InOut_Export_EDI_DESADV_JSON_V v"
-					+ " WHERE v.m_inout_id = ?";
-
 	private final @NonNull TestContext testContext;
-	private final @NonNull M_InOut_StepDefData inoutTable;
 	private final @NonNull C_Order_StepDefData orderTable;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -281,55 +257,46 @@ public class EDI_Desadv_JSON_Export_StepDef
 	}
 
 	/**
-	 * Queries {@code M_InOut_Export_EDI_DESADV_JSON_V} for the given (multi-source-order) shipment
-	 * and asserts a strict per-row intersection between each emitted DESADV JSON and exactly one
-	 * source order — at both the header (POReference / EDI_Desadv_ID) and the line level
+	 * Verifies that the last {@code M_InOut_EDI_Export_JSON/invoke} REST response (a JSON array)
+	 * represents a strict per-element intersection between each emitted DESADV JSON and exactly one
+	 * source order — at both header (POReference / EDI_Desadv_ID) and line level
 	 * ({@code Packings[].LineItems[].DesadvLine.OrderPOReference} + {@code QtyDeliveredInDesadvLineUOM}).
 	 * <p>
-	 * Rationale (per PR #24042 review #4335557991): for a shipment that covers N source orders the
-	 * view must emit N rows, and each row must represent the intersection of (shipment ∩ that one
-	 * source order) — never mix lines from a different source order. Header-only pairing is not
-	 * sufficient: without the line-level check, the SQL could silently swap line membership and the
-	 * header pairing would still pass.
-	 * <p>
-	 * Implementation note: the REST endpoint {@code M_InOut_EDI_Export_JSON/invoke} cannot be used
-	 * here because it requests {@code application/vnd.pgrst.object+json} ({@code expectSingleResult=true}),
-	 * which fails for a multi-row view response. We therefore query the view directly — same precedent
-	 * as {@code EPCIS_JSON_Export_StepDef}.
+	 * Rationale (per PR #24042 review #4335557991): for a consolidated multi-source-order shipment the
+	 * REST endpoint returns one array element per linked source DESADV. Each element must represent the
+	 * intersection of (shipment ∩ that one source order) — never mix lines from a different source order.
+	 * Header-only pairing is not sufficient: without the line-level check the SQL could silently swap
+	 * line membership and the header pairing would still pass.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>ExpectedRowCount</b> — (required) total rows the view must return for the M_InOut<br>
+	 *   <b>ExpectedRowCount</b> — (required) number of array elements the response must contain<br>
 	 *   <b>DistinctDesadvIds</b> — (required) number of distinct EDI_Desadv_IDs expected<br>
-	 *   <b>OrderA_Identifier</b> — (required) step-def identifier of source order A; its {@code POReference} must appear in the view rows<br>
-	 *   <b>OrderB_Identifier</b> — (required) step-def identifier of source order B; its {@code POReference} must appear in the view rows<br>
-	 *   <b>ExpectedQtyDeliveredPerOrder</b> — (required) qty each source order's order line must show as {@code QtyDeliveredInDesadvLineUOM} on every emitted LineItem<br>
+	 *   <b>OrderA_Identifier</b> — (required) step-def identifier of source order A; its {@code POReference} must appear in the response<br>
+	 *   <b>OrderB_Identifier</b> — (required) step-def identifier of source order B; its {@code POReference} must appear in the response<br>
+	 *   <b>ExpectedQtyDeliveredPerOrder</b> — (required) qty each source order's LineItems must show as {@code QtyDeliveredInDesadvLineUOM}<br>
 	 * @cucumber.example
 	 * <pre>
-	 * Then verify DESADV JSON export view for M_InOut identified by io_S29231_100 has:
+	 * Then verify DESADV JSON export response has multi-source-order intersection:
 	 *   | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier | ExpectedQtyDeliveredPerOrder |
 	 *   | 2                | 2                 | oA_S29231         | oB_S29231         | 10                           |
 	 * </pre>
 	 */
-	@Then("^verify DESADV JSON export view for M_InOut identified by (.*) has:$")
-	public void verifyExportViewMultiRowIntersection(
-			@NonNull final String inoutIdentifier,
-			@NonNull final DataTable dataTable)
+	@Then("verify DESADV JSON export response has multi-source-order intersection:")
+	public void verifyExportResponseMultiSourceOrderIntersection(@NonNull final DataTable dataTable) throws Exception
 	{
-		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
-		final int inoutId = inout.getM_InOut_ID();
+		final JsonNode responseArray = objectMapper.readTree(testContext.getApiResponseBodyAsString());
+		assertThat(responseArray.isArray()).as("REST response must be a JSON array").isTrue();
 
-		final List<ViewRow> rows = queryViewRows(inoutId);
-
-		DataTableRows.of(dataTable).forEach(row -> assertMultiRowIntersection(rows, row));
+		DataTableRows.of(dataTable).forEach(row -> assertMultiRowIntersection(responseArray, row));
 	}
 
 	/**
-	 * Queries {@code M_InOut_Export_EDI_DESADV_JSON_V} for the given (single-source-order) shipment
-	 * and asserts exactly 1 emitted DESADV JSON whose header matches the given source order
-	 * (EDI_Desadv_ID + POReference), and whose {@code Packings[].LineItems[]} all carry that order's
-	 * POReference and the expected delivered qty. This is the 1-source-order regression baseline
-	 * (S29231_110) for the multi-row fix.
+	 * Verifies that the last {@code M_InOut_EDI_Export_JSON/invoke} REST response (a JSON array)
+	 * contains exactly 1 element whose header matches the given source order (EDI_Desadv_ID +
+	 * POReference), and whose {@code Packings[].LineItems[]} all carry that order's POReference and
+	 * the expected delivered qty. This is the 1-source-order regression baseline (S29231_110) for the
+	 * multi-row fix.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -337,24 +304,19 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *   <b>ExpectedQtyDelivered</b> — (required) qty each LineItem must show as {@code QtyDeliveredInDesadvLineUOM}<br>
 	 * @cucumber.example
 	 * <pre>
-	 * Then verify DESADV JSON export view for M_InOut identified by io_S29231_110 has exactly 1 row matching:
+	 * Then verify DESADV JSON export response has exactly 1 element matching:
 	 *   | Order_Identifier | ExpectedQtyDelivered |
 	 *   | o_S29231_110     | 10                   |
 	 * </pre>
 	 */
-	@Then("^verify DESADV JSON export view for M_InOut identified by (.*) has exactly 1 row matching:$")
-	public void verifyExportViewSingleRowIntersection(
-			@NonNull final String inoutIdentifier,
-			@NonNull final DataTable dataTable)
+	@Then("verify DESADV JSON export response has exactly 1 element matching:")
+	public void verifyExportResponseSingleElementIntersection(@NonNull final DataTable dataTable) throws Exception
 	{
-		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
-		final int inoutId = inout.getM_InOut_ID();
-
-		final List<ViewRow> rows = queryViewRows(inoutId);
-
-		assertThat(rows)
-				.as("M_InOut_Export_EDI_DESADV_JSON_V must return exactly 1 row for single-order shipment")
-				.hasSize(1);
+		final JsonNode responseArray = objectMapper.readTree(testContext.getApiResponseBodyAsString());
+		assertThat(responseArray.isArray()).as("REST response must be a JSON array").isTrue();
+		assertThat(responseArray.size())
+				.as("REST response must contain exactly 1 element for a single-order shipment")
+				.isEqualTo(1);
 
 		DataTableRows.of(dataTable).forEach(row -> {
 			final String orderIdentifier = row.getAsString("Order_Identifier");
@@ -364,18 +326,22 @@ public class EDI_Desadv_JSON_Export_StepDef
 			final de.metas.edi.model.I_C_Order ediOrder =
 					InterfaceWrapperHelper.create(order, de.metas.edi.model.I_C_Order.class);
 
-			final ViewRow only = rows.get(0);
-			assertThat(only.ediDesadvId())
-					.as("View row EDI_Desadv_ID must match the order's EDI_Desadv_ID")
+			final JsonNode element = responseArray.get(0);
+			final JsonNode desadvNode = element.path("metasfresh_DESADV");
+			final int actualEdiDesadvId = desadvNode.path("EDI_Desadv_ID").asInt();
+			final String actualPoReference = desadvNode.path("POReference").asText(null);
+
+			assertThat(actualEdiDesadvId)
+					.as("Response element EDI_Desadv_ID must match the order's EDI_Desadv_ID")
 					.isEqualTo(ediOrder.getEDI_Desadv_ID());
 
-			assertThat(only.poReference())
-					.as("View row POReference must match the order's POReference")
+			assertThat(actualPoReference)
+					.as("Response element POReference must match the order's POReference")
 					.isEqualTo(order.getPOReference());
 
 			// Line-level intersection: every LineItem must belong to this single order
 			// and carry the expected QtyDeliveredInDesadvLineUOM.
-			assertLineItemsBelongToOrder(only, order.getPOReference(), expectedQtyDelivered);
+			assertLineItemsBelongToOrder(actualEdiDesadvId, desadvNode, order.getPOReference(), expectedQtyDelivered);
 		});
 	}
 
@@ -383,14 +349,14 @@ public class EDI_Desadv_JSON_Export_StepDef
 	// private helpers
 	// =========================================================================
 
-	/** ARRAY-MODE: the view now emits {@code [{...}]} instead of {@code {...}}; unwrap the first element. */
+	/** ARRAY-MODE: the REST response emits {@code [{...}]} instead of {@code {...}}; unwrap the first element. */
 	private static JsonNode unwrapDesadvRoot(@NonNull final JsonNode root)
 	{
 		return root.isArray() ? root.get(0).path("metasfresh_DESADV") : root.path("metasfresh_DESADV");
 	}
 
 	private void assertMultiRowIntersection(
-			@NonNull final List<ViewRow> viewRows,
+			@NonNull final JsonNode responseArray,
 			@NonNull final DataTableRow row)
 	{
 		final int expectedRowCount = row.getAsInt("ExpectedRowCount");
@@ -399,35 +365,41 @@ public class EDI_Desadv_JSON_Export_StepDef
 		final String orderBIdentifier = row.getAsString("OrderB_Identifier");
 		final int expectedQtyDeliveredPerOrder = row.getAsInt("ExpectedQtyDeliveredPerOrder");
 
-		// row count
-		assertThat(viewRows)
-				.as("M_InOut_Export_EDI_DESADV_JSON_V must return %d row(s) for this M_InOut", expectedRowCount)
-				.hasSize(expectedRowCount);
+		// array size
+		assertThat(responseArray.size())
+				.as("REST response must contain %d element(s)", expectedRowCount)
+				.isEqualTo(expectedRowCount);
+
+		// collect (ediDesadvId, poReference, desadvNode) tuples from the array
+		final List<JsonNode> desadvNodes = ImmutableList.copyOf(
+				StreamSupport.stream(responseArray.spliterator(), false)
+						.map(el -> el.path("metasfresh_DESADV"))
+						.iterator());
 
 		// distinct EDI_Desadv_ID count
-		final long distinctCount = viewRows.stream()
-				.map(ViewRow::ediDesadvId)
+		final long distinctCount = desadvNodes.stream()
+				.map(n -> n.path("EDI_Desadv_ID").asInt())
 				.distinct()
 				.count();
 		assertThat(distinctCount)
-				.as("Number of distinct EDI_Desadv_IDs in the view rows")
+				.as("Number of distinct EDI_Desadv_IDs in the response")
 				.isEqualTo(distinctDesadvIds);
 
 		// POReferences — each source order must contribute its own
-		final List<String> viewPoRefs = viewRows.stream()
-				.map(ViewRow::poReference)
+		final List<String> responsePoRefs = desadvNodes.stream()
+				.map(n -> n.path("POReference").asText(null))
 				.collect(ImmutableList.toImmutableList());
 
 		final I_C_Order orderA = orderTable.get(orderAIdentifier);
 		final String poRefA = orderA.getPOReference();
-		assertThat(viewPoRefs)
-				.as("View rows must contain POReference from order A ('%s' = '%s')", orderAIdentifier, poRefA)
+		assertThat(responsePoRefs)
+				.as("Response must contain POReference from order A ('%s' = '%s')", orderAIdentifier, poRefA)
 				.contains(poRefA);
 
 		final I_C_Order orderB = orderTable.get(orderBIdentifier);
 		final String poRefB = orderB.getPOReference();
-		assertThat(viewPoRefs)
-				.as("View rows must contain POReference from order B ('%s' = '%s')", orderBIdentifier, poRefB)
+		assertThat(responsePoRefs)
+				.as("Response must contain POReference from order B ('%s' = '%s')", orderBIdentifier, poRefB)
 				.contains(poRefB);
 
 		// the two POReferences must be distinct (sanity-check that the two orders really differ)
@@ -435,68 +407,58 @@ public class EDI_Desadv_JSON_Export_StepDef
 				.as("Source orders A and B must have distinct POReferences")
 				.isNotEqualTo(poRefB);
 
-		// Strict header-level intersection (per PR #24042 review #4335557991): each emitted view row
-		// must represent the intersection of (shipment ∩ source-order). I.e. the row carrying
+		// Strict header-level intersection (per PR #24042 review #4335557991): each element carrying
 		// orderA's EDI_Desadv_ID must carry orderA's POReference (and never orderB's), and vice versa.
-		// Without this pairing assertion, two rows could swap POReferences and the earlier checks
-		// would still pass.
 		final de.metas.edi.model.I_C_Order ediOrderA =
 				InterfaceWrapperHelper.create(orderA, de.metas.edi.model.I_C_Order.class);
-		final ViewRow rowForOrderA = viewRows.stream()
-				.filter(r -> r.ediDesadvId() == ediOrderA.getEDI_Desadv_ID())
+		final int desadvIdA = ediOrderA.getEDI_Desadv_ID();
+		final JsonNode desadvNodeForOrderA = desadvNodes.stream()
+				.filter(n -> n.path("EDI_Desadv_ID").asInt() == desadvIdA)
 				.findFirst()
 				.orElseThrow(() -> new AssertionError(
-						"No view row found for orderA's EDI_Desadv_ID (" + ediOrderA.getEDI_Desadv_ID() + ")"));
-		assertThat(rowForOrderA.poReference())
-				.as("View row for orderA's DESADV must carry orderA's POReference (shipment ∩ orderA)")
+						"No response element found for orderA's EDI_Desadv_ID (" + desadvIdA + ")"));
+		assertThat(desadvNodeForOrderA.path("POReference").asText(null))
+				.as("Response element for orderA's DESADV must carry orderA's POReference (shipment ∩ orderA)")
 				.isEqualTo(poRefA);
 
 		final de.metas.edi.model.I_C_Order ediOrderB =
 				InterfaceWrapperHelper.create(orderB, de.metas.edi.model.I_C_Order.class);
-		final ViewRow rowForOrderB = viewRows.stream()
-				.filter(r -> r.ediDesadvId() == ediOrderB.getEDI_Desadv_ID())
+		final int desadvIdB = ediOrderB.getEDI_Desadv_ID();
+		final JsonNode desadvNodeForOrderB = desadvNodes.stream()
+				.filter(n -> n.path("EDI_Desadv_ID").asInt() == desadvIdB)
 				.findFirst()
 				.orElseThrow(() -> new AssertionError(
-						"No view row found for orderB's EDI_Desadv_ID (" + ediOrderB.getEDI_Desadv_ID() + ")"));
-		assertThat(rowForOrderB.poReference())
-				.as("View row for orderB's DESADV must carry orderB's POReference (shipment ∩ orderB)")
+						"No response element found for orderB's EDI_Desadv_ID (" + desadvIdB + ")"));
+		assertThat(desadvNodeForOrderB.path("POReference").asText(null))
+				.as("Response element for orderB's DESADV must carry orderB's POReference (shipment ∩ orderB)")
 				.isEqualTo(poRefB);
 
-		// Strict LINE-LEVEL intersection: each row's emitted LineItems must reference order lines
-		// from the row's source order — never the other order — and carry the expected delivered qty.
-		// This is the assertion the reviewer asked for: it would fail if the SQL view ever joined a
-		// shipment line to the wrong DESADV (line-membership swap), even though header POReferences
-		// would still pair correctly.
-		assertLineItemsBelongToOrder(rowForOrderA, poRefA, expectedQtyDeliveredPerOrder);
-		assertLineItemsBelongToOrder(rowForOrderB, poRefB, expectedQtyDeliveredPerOrder);
+		// Strict LINE-LEVEL intersection: each element's LineItems must reference order lines from
+		// its source order — never the other order — and carry the expected delivered qty.
+		assertLineItemsBelongToOrder(desadvIdA, desadvNodeForOrderA, poRefA, expectedQtyDeliveredPerOrder);
+		assertLineItemsBelongToOrder(desadvIdB, desadvNodeForOrderB, poRefB, expectedQtyDeliveredPerOrder);
 	}
 
 	/**
-	 * Asserts that every {@code Packings[].LineItems[]} entry in the given view row's JSON refers
+	 * Asserts that every {@code Packings[].LineItems[]} entry in the given DESADV JSON node refers
 	 * to the expected source-order POReference (line-level intersection) and carries the expected
 	 * {@code QtyDeliveredInDesadvLineUOM}. Fails if any LineItem leaks across orders.
+	 *
+	 * @param ediDesadvId used only for assertion messages
+	 * @param desadvNode  the {@code metasfresh_DESADV} node from one array element of the REST response
 	 */
 	private void assertLineItemsBelongToOrder(
-			@NonNull final ViewRow row,
+			final int ediDesadvId,
+			@NonNull final JsonNode desadvNode,
 			@NonNull final String expectedPoReference,
 			final int expectedQtyDelivered)
 	{
-		final JsonNode desadvJson;
-		try
-		{
-			desadvJson = objectMapper.readTree(row.desadvJson());
-		}
-		catch (final Exception e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-
-		final JsonNode packings = desadvJson.path("Packings");
+		final JsonNode packings = desadvNode.path("Packings");
 		assertThat(packings.isArray())
-				.as("Packings must be an array for EDI_Desadv_ID=%d", row.ediDesadvId())
+				.as("Packings must be an array for EDI_Desadv_ID=%d", ediDesadvId)
 				.isTrue();
 		assertThat(packings.size())
-				.as("Packings must be non-empty for EDI_Desadv_ID=%d (otherwise line-level intersection cannot be verified)", row.ediDesadvId())
+				.as("Packings must be non-empty for EDI_Desadv_ID=%d (otherwise line-level intersection cannot be verified)", ediDesadvId)
 				.isGreaterThan(0);
 
 		int lineItemsChecked = 0;
@@ -504,21 +466,21 @@ public class EDI_Desadv_JSON_Export_StepDef
 		{
 			final JsonNode lineItems = packing.path("LineItems");
 			assertThat(lineItems.isArray())
-					.as("LineItems must be an array under Packings for EDI_Desadv_ID=%d", row.ediDesadvId())
+					.as("LineItems must be an array under Packings for EDI_Desadv_ID=%d", ediDesadvId)
 					.isTrue();
 
 			for (final JsonNode lineItem : lineItems)
 			{
 				final JsonNode desadvLine = lineItem.path("DesadvLine");
 				assertThat(desadvLine.isMissingNode())
-						.as("LineItem must contain DesadvLine for EDI_Desadv_ID=%d", row.ediDesadvId())
+						.as("LineItem must contain DesadvLine for EDI_Desadv_ID=%d", ediDesadvId)
 						.isFalse();
 
 				final String actualPoRef = desadvLine.path("OrderPOReference").asText(null);
 				assertThat(actualPoRef)
-						.as("LineItem.DesadvLine.OrderPOReference for EDI_Desadv_ID=%d must equal the row's POReference "
+						.as("LineItem.DesadvLine.OrderPOReference for EDI_Desadv_ID=%d must equal the element's POReference "
 								+ "(shipment ∩ orderPOReference=%s) — never the other source order's POReference",
-								row.ediDesadvId(), expectedPoReference)
+								ediDesadvId, expectedPoReference)
 						.isEqualTo(expectedPoReference);
 
 				final JsonNode qtyNode = desadvLine.path("QtyDeliveredInDesadvLineUOM");
@@ -526,12 +488,12 @@ public class EDI_Desadv_JSON_Export_StepDef
 						.as("LineItem.DesadvLine must contain QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d "
 								+ "(silent-zero guard — a missing JSON field would otherwise fail the qty assertion "
 								+ "with a misleading 'expected 0' message)",
-								row.ediDesadvId())
+								ediDesadvId)
 						.isFalse();
 				final BigDecimal actualQtyDelivered = new BigDecimal(qtyNode.asText());
 				assertThat(actualQtyDelivered)
 						.as("LineItem.DesadvLine.QtyDeliveredInDesadvLineUOM for EDI_Desadv_ID=%d must equal source order's delivered qty",
-								row.ediDesadvId())
+								ediDesadvId)
 						.isEqualByComparingTo(BigDecimal.valueOf(expectedQtyDelivered));
 
 				lineItemsChecked++;
@@ -539,50 +501,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 		}
 
 		assertThat(lineItemsChecked)
-				.as("At least one LineItem must be present under Packings for EDI_Desadv_ID=%d", row.ediDesadvId())
+				.as("At least one LineItem must be present under Packings for EDI_Desadv_ID=%d", ediDesadvId)
 				.isGreaterThan(0);
-	}
-
-	private List<ViewRow> queryViewRows(final int inoutId)
-	{
-		final List<ViewRow> result = new ArrayList<>();
-		try (final PreparedStatement pstmt = DB.prepareStatement(SQL_QUERY_VIEW, ITrx.TRXNAME_None))
-		{
-			pstmt.setInt(1, inoutId);
-			try (final ResultSet rs = pstmt.executeQuery())
-			{
-				while (rs.next())
-				{
-					result.add(new ViewRow(
-							rs.getInt("edi_desadv_id"),
-							rs.getString("po_reference"),
-							rs.getString("desadv_json")));
-				}
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-		return result;
-	}
-
-	/** Immutable value holder for one row returned by the export view. */
-	private static final class ViewRow
-	{
-		private final int ediDesadvId;
-		private final String poReference;
-		private final String desadvJson;
-
-		ViewRow(final int ediDesadvId, final String poReference, final String desadvJson)
-		{
-			this.ediDesadvId = ediDesadvId;
-			this.poReference = poReference;
-			this.desadvJson = desadvJson;
-		}
-
-		int ediDesadvId() { return ediDesadvId; }
-		String poReference() { return poReference; }
-		String desadvJson() { return desadvJson; }
 	}
 }
