@@ -101,7 +101,6 @@ public class NShiftShipmentService
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)
 				.trackingURL(true)
-				.validatePostCode(true)
 				.build();
 
 		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
