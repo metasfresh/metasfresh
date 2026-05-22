@@ -131,6 +131,7 @@ const translations = {
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
+      noMatchingLines: 'Keine passende Packzeile gefunden',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

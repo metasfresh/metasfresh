@@ -27,6 +27,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
+    code = extractErrorCodeFromAxiosError(axiosError);
   } else if (messageKey) {
     message = trl(messageKey);
     code = messageKey;
@@ -54,6 +55,16 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     callstack: new Error().stack,
     context,
   });
+};
+
+export const extractErrorCodeFromAxiosError = (axiosError) => {
+  const responseData = axiosError?.response && unboxAxiosResponse(axiosError.response);
+  if (responseData?.errors?.[0]?.errorCode) {
+    return responseData.errors[0].errorCode;
+  } else if (axiosError?.response?.data?.error?.errorCode) {
+    return axiosError.response.data.error.errorCode;
+  }
+  return null;
 };
 
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {

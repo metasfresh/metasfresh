@@ -586,11 +586,12 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
 
     await expectErrorToast('Scanning non-existent HU QR code', async () => {
         await PickingJobScreen.pickHU({
-            qrCode: 'HU#1#{"id":"00000000000000000000000000000000-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"}}',
+            qrCode: 'HU#1#{"id":"ffffffffffffffffffffffffffff-99999","packingInfo":{"huUnitType":"LU","packingInstructionsId":1,"caption":"NonExistent"},"product":{"id":1,"code":"FAKE","name":"FAKE"},"attributes":[]}',
             isScanDirectly: true,
+            expectedPickDirectly: true,
         });
     }, ({ textContent }) => {
-        expect(textContent).toContain('No HU found for this QR code');
+        expect(textContent).toContain('QR_HU_NOT_FOUND');
     });
 
     await PickingJobScreen.waitForScreen();
@@ -709,9 +710,10 @@ test('Scan HU with wrong product during picking', async ({ page }) => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU2.qrCode,
             isScanDirectly: true,
+            expectedPickDirectly: true,
         });
     }, ({ textContent }) => {
-        expect(textContent).toContain('Product not matching. Expected:');
+        expect(textContent).toContain('activities.picking.noMatchingLines');
     });
 
     await PickingJobScreen.waitForScreen();

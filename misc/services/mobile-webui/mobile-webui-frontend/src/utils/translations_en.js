@@ -128,6 +128,7 @@ const translations = {
       reopenLU: 'Reopen LU',
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
+      noMatchingLines: 'No matching lines found',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
