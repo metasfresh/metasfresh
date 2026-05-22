@@ -5,6 +5,7 @@ import de.metas.acct.tax.TaxDeclarationRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -19,7 +20,9 @@ import org.springframework.stereotype.Component;
 public class C_TaxDeclaration
 {
 	@NonNull private final TaxDeclarationRepository taxDeclarationRepository;
-	@NonNull private final IDocTypeBL docTypeBL;
+
+	// IDocTypeBL is an ISingletonService — must NOT be ctor-injected; resolve via Services.get().
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void defaultDocType(final I_C_TaxDeclaration taxDeclaration)
