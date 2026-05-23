@@ -1136,10 +1136,9 @@ Feature: EDI DESADV export via postgREST
   @Id:S29231_110
   @from:cucumber
   Scenario: S29231_110 — One order, one shipment → export view emits exactly one DESADV JSON (1-order regression)
-  ## me03#29231 — TC2: Single-order baseline regression. A single EDI-configured order is
-  ## completed and its shipment schedule generates one M_InOut. After the Option-A junction
-  ## fix the export view M_InOut_Export_EDI_DESADV_JSON_V must still return exactly 1 row
-  ## for that M_InOut — proving the fix does not break the pre-existing 1-source-order case.
+  ## Single-order baseline regression. A single EDI-configured order is completed and
+  ## generates one M_InOut. The export view M_InOut_Export_EDI_DESADV_JSON_V must still
+  ## return exactly 1 row for that M_InOut (1-source-order case not broken by junction logic).
 
     Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh is configured for One-DESADV-Per-ORDERS
@@ -1250,26 +1249,17 @@ Feature: EDI DESADV export via postgREST
       | o_S29231_110     | 10                   |
 
 
-  # me03#29231 TC3 (S29231_120: N=3 generalisation) — removed per PR #24042 review #4335557991
-  # comment on the original ediDesadvAggregateOrders.feature file:371. The N=3 case exercises
-  # the same production code path as TC1 (DesadvBL.addToDesadvCreateForInOutIfNotExist's
-  # per-line loop + sequencesByDesadv map); one extra iteration adds no new branch coverage.
-  # TC1 (S29231_100) is the canonical multi-source-order test; TC2 (S29231_110) is the
-  # 1-order regression baseline.
+  # TC3 (N=3 generalisation) was removed: it exercises the same production code path as TC1
+  # (per-line loop + sequencesByDesadv map) with no additional branch coverage.
 
 
   @Id:S29231_160
   @from:cucumber
   Scenario: S29231_160 — One order, two partial shipments → one DESADV linked to two M_InOuts via junction
-  ## me03#29231 — TC4: covers the structural "1 DESADV → N M_InOuts" direction acknowledged by
-  ## PLAN_ARRAY_MODE.md §0 ("one DESADV can have N M_InOuts" — partial deliveries on the same
-  ## source order). The pre-existing me03#29231 tests S29231_100/110 cover only the inverse
-  ## ("N DESADVs → 1 M_InOut" — consolidated shipment). The 1→N direction is structurally
-  ## enabled by the EDI_Desadv_M_InOut junction (T1/T4) but had zero direct coverage; this
-  ## scenario closes that gap by completing a single EDI-configured order with QtyEntered=20
-  ## and invoking 'generate shipments' twice with QtyToDeliver_Override_For_M_ShipmentSchedule_ID=10 to produce two
-  ## partial M_InOuts. The junction must end up with EXACTLY 2 rows for the one EDI_Desadv,
-  ## one per M_InOut.
+  ## Covers the "1 DESADV → N M_InOuts" direction (partial deliveries on the same source order).
+  ## S29231_100/110 cover the inverse ("N DESADVs → 1 M_InOut" — consolidated shipment).
+  ## A single order with QtyEntered=20 is shipped in two partial M_InOuts of 10 each.
+  ## The junction must end up with exactly 2 rows for the one EDI_Desadv, one per M_InOut.
 
     Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh is configured for One-DESADV-Per-ORDERS
@@ -1384,11 +1374,9 @@ Feature: EDI DESADV export via postgREST
       | packA_S29231_160   | d_S29231_160             | true                | 1         |
       | packB_S29231_160   | d_S29231_160             | true                | 2         |
 
-    # ─── CORE ASSERTION (TC4 falsifiable predicate) ───────────────────────────
-    # The EDI_Desadv_M_InOut junction must contain EXACTLY 2 rows for the single
-    # EDI_Desadv — one linking it to each partial M_InOut. Before the T1/T4
-    # junction this scenario would have been impossible to express (M_InOut had a
-    # single EDI_Desadv_ID FK and the 2nd shipment would either steal or null it).
+    # ─── CORE ASSERTION ───────────────────────────────────────────────────────
+    # The EDI_Desadv_M_InOut junction must contain exactly 2 rows for the single
+    # EDI_Desadv — one per partial M_InOut.
     Then EDI_Desadv_M_InOut records are found:
       | EDI_Desadv_ID | M_InOut_ID     | ExpectedRowCountForDesadv |
       | d_S29231_160  | ioA_S29231_160 | 2                         |

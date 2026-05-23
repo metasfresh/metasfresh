@@ -1,10 +1,10 @@
 -- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
--- me03#29231 — S29231_160 fix: use per-inout QtyDeliveredInUOM from edi_desadvline_inoutline instead of
--- cumulative dl.qtydeliveredinuom. When multiple M_InOuts (partial shipments) share one EDI_Desadv,
--- exporting ioA after ioB was completed showed ioA's QtyDeliveredInDesadvLineUOM=20 (cumulative)
--- instead of 10 (ioA's partial qty). The fix reads COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom):
--- - diol (edi_desadvline_inoutline) is already joined on m_inoutline_id+edi_desadvline_id → per-inout qty
--- - fallback to dl.qtydeliveredinuom for single-inout DESADVs where no diol row exists
+-- Use per-inout QtyDeliveredInUOM from edi_desadvline_inoutline instead of cumulative
+-- dl.qtydeliveredinuom. When multiple M_InOuts (partial shipments) share one EDI_Desadv,
+-- the cumulative qty was incorrectly emitted for each individual export call.
+-- COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom): diol (joined on m_inoutline_id +
+-- edi_desadvline_id) carries the per-inout qty; fallback to dl.qtydeliveredinuom for
+-- single-inout DESADVs where no diol row exists.
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -152,10 +152,8 @@ BEGIN
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
                                        ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
-                                       -- me03#29231 — use per-inout qty from edi_desadvline_inoutline when available,
-                                       -- so that exporting ioA after ioB was completed shows ioA's qty (10),
-                                       -- not the cumulative total (20). Falls back to dl.qtydeliveredinuom for
-                                       -- single-inout DESADVs where the junction row may be absent.
+                                       -- Per-inout qty from edi_desadvline_inoutline; fallback to cumulative
+                                       -- dl.qtydeliveredinuom for single-inout DESADVs.
                                        'QtyDeliveredInDesadvLineUOM', COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom),
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
                                        'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,

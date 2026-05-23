@@ -326,12 +326,9 @@ public class EDIDocumentBL
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentPOReference", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
 
-		// me03#29231 (consolidated multi-source-order shipments): when M_InOutLines come
-		// from multiple source orders, the legacy interceptor M_InOutLine.unsetM_InOut_C_Order_ID
-		// nulls out M_InOut.C_Order_ID. The shipment is still EDI-valid as long as the
-		// M_InOutLines reference C_OrderLines (the per-line orderlines carry the source
-		// orders; DesadvBL.addToDesadvCreateForInOutIfNotExist resolves DESADVs via
-		// orderLine.EDI_DesadvLine_ID).
+		// For consolidated shipments whose lines come from multiple source orders,
+		// M_InOutLine.unsetM_InOut_C_Order_ID nulls out M_InOut.C_Order_ID. The shipment
+		// is still EDI-valid as long as its InOutLines reference C_OrderLines.
 		if (OrderId.ofRepoIdOrNull(shipment.getC_Order_ID()) == null
 				&& !hasInOutLineWithOrderLine(shipment))
 		{

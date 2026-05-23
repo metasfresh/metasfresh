@@ -414,8 +414,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	 * After the call exactly one junction row must exist in the POJO store, recording
 	 * the {@code (desadv, inOut)} pair.
 	 * <p>
-	 * Direct falsification of RESEARCH.md §R4 finding #1 — confirms the junction is populated
-	 * by the production code path (not only by migration backfill).
+	 * Confirms the junction is populated by the production code path (not only by migration backfill).
 	 */
 	@Test
 	void test_junction_populated_per_inOut_DESADV_pair()
@@ -453,7 +452,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	 * The inOut has two lines — one linked to DESADV A's desadvLine, one linked to DESADV B's.
 	 * After the call the newly-created pack for DESADV B must get SeqNo = 4 (not 11).
 	 * <p>
-	 * Direct falsification of RESEARCH.md §R4 finding #2 — per-DESADV Sequences isolation.
+	 * Confirms pack sequence numbers are built independently per DESADV (not globally).
 	 */
 	@Test
 	void test_sequences_built_per_DESADV()
@@ -540,9 +539,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				.as("DESADV B's first new pack SeqNo must be 4 (continuing from its own max=3), not 11 (which would wrongly inherit DESADV A's max=10)")
 				.isEqualTo(4);
 
-		// ── Junction-N assertion (commit 2bd2ca906f4) ─────────────────────────
+		// ── Junction-N assertion ─────────────────────────────────────────────
 		// For a consolidated multi-source-order shipment, one junction row must exist per source DESADV.
-		// Falsifies the pre-2bd2ca906f4 behaviour of writing only ONE junction row (Order-A's).
 		final List<I_EDI_Desadv_M_InOut> junctionRows = POJOLookupMap.get().getRecords(I_EDI_Desadv_M_InOut.class);
 		assertThat(junctionRows)
 				.as("Multi-source-order shipment must produce one junction row per source DESADV")
@@ -563,14 +561,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	 * {@code C_Order_ID = 0} (the legacy {@code M_InOutLine.unsetM_InOut_C_Order_ID} interceptor
 	 * clears this column for consolidated shipments covering multiple source orders).
 	 * <p>
-	 * Scenario mirrors PLAN_ARCH.md Broken-Path #1: shipment whose C_Order_ID was unset because
-	 * its lines come from two distinct source orders/DESADVs (A and B). POReference is set to
-	 * mimic the legacy artefact left by the interceptor but is irrelevant here because the
-	 * authoritative line-walk produces a non-empty sequencesByDesadv and the POReference fallback
-	 * is not used.
-	 * <p>
-	 * Pins T1's behaviour (commit b8d62f264f7): walk inOutLines FIRST, derive source DESADVs
-	 * per-line, write one junction row per distinct DESADV.
+	 * The method walks inOutLines first to derive source DESADVs per-line, so the
+	 * C_Order_ID=0 header does not prevent writing one junction row per distinct DESADV.
 	 */
 	@Test
 	void test_junction_populated_for_consolidated_with_null_C_Order_ID()

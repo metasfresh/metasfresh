@@ -44,12 +44,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link DesadvDAO}.
  * <p>
- * Pinning the post-T4 (PLAN_ARCH) behaviour of {@link IDesadvDAO#retrieveShipmentsWithStatus}:
- * after the rewrite (commit {@code 01484e93da3}) the lookup enumerates shipments via the
- * {@code EDI_Desadv_M_InOut} junction instead of the single-FK {@code M_InOut.EDI_Desadv_ID}.
- * That means a "non-winner" DESADV — i.e. one that does NOT hold the single-FK on the shared
- * shipment — must still resolve to that shipment as long as a junction row links them.
- * Pre-T4 this returned an empty list for the non-winner; post-T4 it returns the shipment.
+ * Pins the behaviour of {@link IDesadvDAO#retrieveShipmentsWithStatus}: the lookup
+ * enumerates shipments via the {@code EDI_Desadv_M_InOut} junction instead of the
+ * single-FK {@code M_InOut.EDI_Desadv_ID}.  A "non-winner" DESADV — one that does NOT
+ * hold the single-FK on the shared shipment — must still resolve to that shipment as long
+ * as a junction row links them.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class DesadvDAOTest
@@ -69,7 +68,7 @@ class DesadvDAOTest
 	 * {@code (A, inOut)} and {@code (B, inOut)}.
 	 * <p>
 	 * Key assertion: {@code retrieveShipmentsWithStatus(B, {Pending})} returns the shared
-	 * shipment. Pre-T4 this returned empty; post-T4 it returns the shipment via the junction.
+	 * shipment via the junction even though the single-FK does not point to B.
 	 */
 	@Test
 	void test_retrieveShipmentsWithStatus_returns_shared_inout_for_non_winner_desadv()
@@ -118,14 +117,12 @@ class DesadvDAOTest
 				.as("DESADV A must return the shared M_InOut")
 				.isEqualTo(sharedInOut.getM_InOut_ID());
 
-		// (2) KEY ASSERTION — non-winner DESADV B also resolves the shared shipment via its
-		//     junction row. Pre-T4 this returned empty because the lookup walked the single-FK
-		//     M_InOut.EDI_Desadv_ID (which points to A, not B). Post-T4 it walks the junction.
+		// (2) KEY ASSERTION — non-winner DESADV B also resolves the shared shipment via
+		//     its junction row (the single-FK M_InOut.EDI_Desadv_ID points to A, not B).
 		final List<I_M_InOut> shipmentsForB = desadvDAO.retrieveShipmentsWithStatus(
 				desadvB, ImmutableSet.of(EDIExportStatus.Pending));
 		assertThat(shipmentsForB)
-				.as("DESADV B (non-winner) must resolve the shared shipment via the junction "
-						+ "— pre-T4 returned empty, post-T4 returns the shipment")
+				.as("DESADV B (non-winner) must resolve the shared shipment via the junction")
 				.hasSize(1);
 		assertThat(shipmentsForB.get(0).getM_InOut_ID())
 				.as("DESADV B must return the same shared M_InOut as DESADV A")

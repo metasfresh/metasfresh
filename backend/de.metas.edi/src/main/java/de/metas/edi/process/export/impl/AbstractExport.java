@@ -91,7 +91,7 @@ public abstract class AbstractExport<T extends I_EDI_Document>
 
 	/**
 	 * Two-column filter overload. Used when the source view emits more than one row per primary
-	 * filter (e.g. {@code M_InOut_Desadv_V} after T8 emits N rows per (M_InOut, source-DESADV) pair)
+	 * filter (e.g. {@code M_InOut_Desadv_V} emits N rows per (M_InOut, source-DESADV) pair)
 	 * and a single {@code columnName=?} filter would explode with {@code MoreThanOneRecordFoundException}.
 	 *
 	 * @throws Exception on any error

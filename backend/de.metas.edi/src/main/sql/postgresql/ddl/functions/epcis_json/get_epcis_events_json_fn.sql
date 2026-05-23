@@ -32,14 +32,11 @@
 --   - DESADV: LEFT JOIN (optional, for buyer/handover/PO references)
 --   - New field: cuGTIN from M_Product.GTIN
 --
--- Changes in me03#29231:
--- me03#29231 DESIGN NOTE (Option A): desadvReferences[] / poReferences[] are arrays per
--- the customer-confirmed expectation of "N DESADV messages per shipment with shared SSCC18".
--- If the receiver-side parser cannot consume arrays, switch to N events per shipment via
--- jsonb_array_elements(events) at the export edge — but the SQL function shape stays the same.
---   - desadvReference (scalar) → desadvReferences (jsonb array) via junction EDI_Desadv_M_InOut
---   - poReference (scalar)     → poReferences (jsonb array) via junction EDI_Desadv_M_InOut
---   - The single-FK edi_desadv join is retained for GLN / location / handover lookups
+-- Changes in this function version:
+-- desadvReferences[] and poReferences[] are jsonb arrays built via the EDI_Desadv_M_InOut
+-- junction (one element per linked DESADV). The scalar desadvReference / poReference fields
+-- are kept for backward compatibility. The single-FK edi_desadv join is retained for
+-- GLN / location / handover lookups.
 --
 -- Performance design:
 --   - Flat CTEs only (no nested LATERALs)
@@ -101,12 +98,12 @@ BEGIN
                d.handover_location_id,
                d.documentno                           AS desadv_documentno,
                d.poreference                          AS desadv_poreference,
-               -- me03#29231: arrays from junction (all DESADVs linked to this shipment)
+               -- arrays from junction (all DESADVs linked to this shipment)
                desadv_agg.desadv_documentnos,
                desadv_agg.desadv_poreferences
         FROM m_inout io
                  LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
-                 -- me03#29231: aggregate all DESADV references via N:M junction
+                 -- aggregate all DESADV references via N:M junction
                  LEFT JOIN LATERAL (
                      SELECT jsonb_agg(da.documentno ORDER BY da.documentno)   AS desadv_documentnos,
                             jsonb_agg(da.poreference ORDER BY da.documentno)  AS desadv_poreferences
@@ -323,9 +320,8 @@ BEGIN
          all_crates_with_grai AS (
              -- Dummy GRAI counter: global, increments only over slots without a real GRAI,
              -- always starting at 01 for the first dummy across the whole shipment.
-             -- me03#29231: static 'DUMMY_____' middle segment replaces ctx.poreference —
-             --             in multi-source-order shipments ctx.poreference was Order_A's
-             --             POReference only, making dummy GRAIs misleading for Order_B TUs.
+             -- Static 'DUMMY_____' middle segment avoids a POReference that may belong
+             -- to only one of N source orders in a consolidated shipment.
              SELECT lu_hu_id,
                     tu_hu_id,
                     CASE
@@ -379,23 +375,13 @@ BEGIN
                        WHEN ctx.drop_gln_desadv IS NOT NULL THEN ctx.drop_gcplength_desadv
                                                             ELSE ctx.drop_gcplength_ship
                    END,
-               -- me03#29231: DESADV references — scalar (first/representative) AND array.
-               -- The scalar field stays for backward compatibility with existing consumers
-               -- (e.g. epcis_ft_export.js in scriptedadapter, which reads `data.desadvReference`
-               -- as a presence flag). The array carries all N source-order DESADV DocumentNos
-               -- for multi-source-order shipments. Consumers that want full multi-order
-               -- visibility iterate the array.
-               --
-               -- Backward-compat fallback: shipments that have the legacy single-FK
-               -- M_InOut.EDI_Desadv_ID populated but no junction row (data migration
-               -- window or auto-generated InOuts whose post-complete validator path
-               -- doesn't write a junction row) still emit the scalar via the
-               -- LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id alias.
+               -- DESADV references: scalar (first element, backward-compat) AND array.
+               -- desadvReferences[] carries all linked DESADV DocumentNos.
+               -- Scalar falls back to M_InOut.EDI_Desadv_ID for shipments without junction rows.
                    'desadvReference', COALESCE((ctx.desadv_documentnos ->> 0), ctx.desadv_documentno),
                    'desadvReferences', COALESCE(ctx.desadv_documentnos, '[]'::jsonb),
-               -- me03#29231: PO references — scalar + array, same backward-compat pattern.
-               -- Scalar fallback to InOut header POReference for shipments not yet
-               -- backfilled into the junction (data migration window).
+               -- PO references: same scalar + array pattern.
+               -- Scalar falls back to InOut.POReference for shipments without junction rows.
                    'poReference', COALESCE((ctx.desadv_poreferences ->> 0), ctx.poreference),
                    'poReferences', COALESCE(ctx.desadv_poreferences,
                                             CASE WHEN ctx.poreference IS NOT NULL

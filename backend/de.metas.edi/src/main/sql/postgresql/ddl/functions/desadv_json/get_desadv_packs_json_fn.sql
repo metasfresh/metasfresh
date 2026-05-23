@@ -149,10 +149,8 @@ BEGIN
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
                                        ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
-                                       -- me03#29231 — use per-inout qty from edi_desadvline_inoutline when available,
-                                       -- so that exporting ioA after ioB was completed shows ioA's qty (10),
-                                       -- not the cumulative total (20). Falls back to dl.qtydeliveredinuom for
-                                       -- single-inout DESADVs where the junction row may be absent.
+                                       -- Per-inout qty from edi_desadvline_inoutline; fallback to cumulative
+                                       -- dl.qtydeliveredinuom for single-inout DESADVs.
                                        'QtyDeliveredInDesadvLineUOM', COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom),
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
                                        'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,

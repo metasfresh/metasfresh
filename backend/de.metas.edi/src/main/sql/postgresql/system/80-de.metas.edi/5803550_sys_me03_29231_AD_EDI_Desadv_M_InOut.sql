@@ -1,6 +1,5 @@
--- AD metadata for EDI_Desadv_M_InOut junction table (me03#29231 — Option A)
--- Table DDL created by 5803540_sys_me03_29231_create_EDI_Desadv_M_InOut.sql
--- This migration inserts AD metadata: 1 element + 1 table + 6 columns (3 custom + 3 standard)
+-- AD metadata for EDI_Desadv_M_InOut junction table.
+-- Table DDL created by 5803540. Inserts 1 element + 1 table + 6 columns (3 custom + 3 standard).
 
 -- 2026-05-20T10:45:00.001Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy)

@@ -357,15 +357,11 @@ public class DesadvBL
 	{
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
-		// me03#29231: Walk the inOutLines FIRST and derive the set of source DESADVs from the
-		// orderLine → desadvLine → desadv chain. The legacy path was to first resolve a single
-		// DESADV via M_InOut.C_Order_ID (or POReference) and use that as `inOut.EDI_Desadv`, then
-		// — only if non-null — walk the lines. For consolidated shipments where the InOut has
-		// no C_Order_ID (Broken-Path #1 in PLAN_ARCH.md), the legacy path early-returned and
-		// never built the junction rows, leaving the export with zero source DESADVs. Walking
-		// the lines first makes the per-line desadv-line links the authoritative source of truth
-		// and lets the C_Order_ID branch act as a pure fallback for 1-order shipments where the
-		// order completed before any desadvLine was wired up.
+		// Walk the inOutLines FIRST and derive the set of source DESADVs from the
+		// orderLine → desadvLine → desadv chain. This makes per-line desadv-line links
+		// the authoritative source of truth for consolidated shipments (where M_InOut.C_Order_ID
+		// may be null), and lets the C_Order_ID branch act as a pure fallback for 1-order
+		// shipments where the order completed before any desadvLine was wired up.
 		//
 		// Sequences are built lazily per DESADV so that pack sequence numbers are independent
 		// across source-order DESADVs when a shipment covers multiple orders.
@@ -396,12 +392,10 @@ public class DesadvBL
 			addInOutLine(inOutLine, recipientBPartnerId, lineSequences, desadvLineRecord);
 		}
 
-		// me03#29231: The set of distinct source DESADVs collected from the line walk is the
-		// authoritative state for consolidated shipments. If non-empty, the lowest source-DESADV-ID
-		// wins as the "primary" written to M_InOut.EDI_Desadv (legacy single-DESADV header link);
-		// the junction table carries the full set. If the line walk produced no source DESADV
-		// (e.g. a 1-order shipment whose order completed before any desadvLine was wired up),
-		// fall back to the legacy C_Order_ID / POReference resolution.
+		// If the line walk found source DESADVs, the lowest EDI_Desadv_ID wins as the "primary"
+		// written to M_InOut.EDI_Desadv (legacy single-DESADV header link); the junction table
+		// carries the full set. If no source DESADV was found (e.g. a 1-order shipment whose
+		// order completed before any desadvLine was wired up), fall back to C_Order_ID / POReference.
 		final I_EDI_Desadv primary;
 		if (!sequencesByDesadv.isEmpty())
 		{
@@ -476,11 +470,9 @@ public class DesadvBL
 
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
-		// Pre-condition (already enforced by the caller in addToDesadvCreateForInOutIfNotExist):
-		// the order line must have a non-null EDI_DesadvLine_ID and the passed-in desadvLineRecord
-		// must be the result of desadvDAO.retrieveLineById(orderLineRecord.getEDI_DesadvLine_ID()).
-		// We do NOT re-fetch the desadvLineRecord here — that would double the DB round-trips on
-		// every inOut line. See me03#29231 PLAN_ARCH T1 code-review IMPORTANT.
+		// Pre-condition (enforced by the caller): the order line has a non-null EDI_DesadvLine_ID
+		// and the passed-in desadvLineRecord is the result of desadvDAO.retrieveLineById(…).
+		// We do NOT re-fetch it here — that would double the DB round-trips on every inOut line.
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);

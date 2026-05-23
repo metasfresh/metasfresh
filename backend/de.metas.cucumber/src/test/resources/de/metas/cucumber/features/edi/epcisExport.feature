@@ -260,12 +260,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   Scenario: S29231_130 — Two orders, one consolidated shipment → EPCIS desadvReferences[] and poReferences[] arrays of size 2
-  ## me03#29231 — TC4: Asserts that the EPCIS event JSON produced by get_epcis_events_json_fn
-  ## for a 2-source-order shipment carries desadvReferences[] and poReferences[] as jsonb arrays
-  ## of size 2 (not scalars, not nulls). This directly validates the Option-A junction design
-  ## decision documented in the function header comment.
-  ## Tagged @design_pending: if the receiver-side parser requires a different shape, only
-  ## Tasks 15 (SQL function) and this scenario need to change.
+  ## Asserts that the EPCIS event JSON for a 2-source-order consolidated shipment carries
+  ## desadvReferences[] and poReferences[] as jsonb arrays of size 2 (not scalars, not nulls).
+  ## Tagged @design_pending: if the receiver-side parser requires a different shape, only the
+  ## SQL function and this scenario need to change.
     Given metasfresh contains M_Products:
       | Identifier      | GTIN          |
       | p_S29231_130    | 4060000000130 |
@@ -368,7 +366,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | packA_S29231_130   | dA_S29231_130            | true                |
       | packB_S29231_130   | dB_S29231_130            | true                |
 
-    # ─── CORE ASSERTION (TC4: EPCIS desadvReferences[] / poReferences[] arrays) ──────
+    # ─── CORE ASSERTION ──────────────────────────────────────────────────────────────
     # The EPCIS function must return ONE event document with desadvReferences[] of size 2
     # and poReferences[] of size 2 — one element per source-order DESADV.
     When the EPCIS JSON export function is called for M_InOut identified by io_S29231_130

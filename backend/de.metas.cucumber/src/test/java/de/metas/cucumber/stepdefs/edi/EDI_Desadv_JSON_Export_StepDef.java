@@ -271,11 +271,10 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 * source order — at both header (POReference / EDI_Desadv_ID) and line level
 	 * ({@code Packings[].LineItems[].DesadvLine.OrderPOReference} + {@code QtyDeliveredInDesadvLineUOM}).
 	 * <p>
-	 * Rationale (per PR #24042 review #4335557991): for a consolidated multi-source-order shipment the
-	 * REST endpoint returns one array element per linked source DESADV. Each element must represent the
-	 * intersection of (shipment ∩ that one source order) — never mix lines from a different source order.
-	 * Header-only pairing is not sufficient: without the line-level check the SQL could silently swap
-	 * line membership and the header pairing would still pass.
+	 * For a consolidated multi-source-order shipment the REST endpoint returns one array element per
+	 * linked source DESADV. Each element must represent the intersection of (shipment ∩ that one source
+	 * order) — never mixing lines from a different source order. Header-only pairing is not sufficient:
+	 * without the line-level check the SQL could silently swap line membership.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -642,8 +641,8 @@ public class EDI_Desadv_JSON_Export_StepDef
 				.as("Source orders A and B must have distinct POReferences")
 				.isNotEqualTo(poRefB);
 
-		// Strict header-level intersection (per PR #24042 review #4335557991): each element carrying
-		// orderA's EDI_Desadv_ID must carry orderA's POReference (and never orderB's), and vice versa.
+		// Strict header-level intersection: each element carrying orderA's EDI_Desadv_ID must carry
+		// orderA's POReference (and never orderB's), and vice versa.
 		final de.metas.edi.model.I_C_Order ediOrderA =
 				InterfaceWrapperHelper.create(orderA, de.metas.edi.model.I_C_Order.class);
 		final int desadvIdA = ediOrderA.getEDI_Desadv_ID();

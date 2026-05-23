@@ -74,10 +74,9 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 
 		try
 		{
-			// After T8, M_InOut_Desadv_V emits one row per (M_InOut, source-DESADV) pair. Filter by both
-			// columns to uniquely identify THIS workpackage's row; filtering by M_InOut_ID alone would
-			// match N rows for a consolidated multi-DESADV shipment and firstOnly would throw / pick
-			// arbitrarily, emitting wrong EDIFACT content for N-1 of N workpackages.
+			// M_InOut_Desadv_V emits one row per (M_InOut, source-DESADV) pair. Filter by both
+			// columns to uniquely identify this workpackage's row; filtering by M_InOut_ID alone
+			// would match N rows for a consolidated multi-DESADV shipment.
 			final I_M_InOut_Desadv_V desadvInOut = InterfaceWrapperHelper.create(getDocument(), I_M_InOut_Desadv_V.class);
 			exportEDI(I_M_InOut_Desadv_V.class,
 					  EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT,

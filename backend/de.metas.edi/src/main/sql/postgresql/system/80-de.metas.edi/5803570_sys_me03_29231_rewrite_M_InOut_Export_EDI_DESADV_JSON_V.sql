@@ -48,9 +48,8 @@ SELECT io.m_inout_id,
        ) as embedded_json
                          FROM m_inout io
                          LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
-                         -- me03#29231 — enumerate DESADVs via edi_desadv_m_inout junction.
-                         -- M_InOut.EDI_Desadv_ID stays on the table as a legacy display field but is no longer
-                         -- the authoritative export-side link. View now emits one row per (m_inout_id, edi_desadv_id) pair.
+                         -- Enumerate DESADVs via edi_desadv_m_inout junction.
+                         -- View emits one row per (m_inout_id, edi_desadv_id) pair.
                          JOIN edi_desadv_m_inout link
                               ON link.m_inout_id = io.m_inout_id AND link.isactive = 'Y'
                          JOIN edi_desadv d

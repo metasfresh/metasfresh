@@ -68,8 +68,8 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	 * configurations of {@link M_InOut_EDI_Export_JSON}.
 	 * <p>
 	 * Subclasses override to {@code false} when the underlying view legitimately returns a JSON array
-	 * — e.g. the consolidated-shipment case in me03#29231 where one {@code M_InOut} maps to N source
-	 * DESADVs via the {@code EDI_Desadv_M_InOut} junction and the view emits one row per junction entry.
+	 * — e.g. when one {@code M_InOut} maps to N source DESADVs via the {@code EDI_Desadv_M_InOut}
+	 * junction and the view emits one row per junction entry.
 	 * The downstream Camel route then iterates over the array and dispatches one EDIFACT message per element.
 	 */
 	protected boolean shouldExpectSingleResult()

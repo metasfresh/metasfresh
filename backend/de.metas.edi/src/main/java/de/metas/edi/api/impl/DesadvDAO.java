@@ -189,9 +189,9 @@ public class DesadvDAO implements IDesadvDAO
 
 	private IQuery<I_M_InOut> createAllInOutsQuery(@NonNull final I_EDI_Desadv desadv)
 	{
-		// me03#29231 — for consolidated multi-source-order shipments, M_InOut.EDI_Desadv_ID carries
-		// only the single-FK winner. Enumerate via the EDI_Desadv_M_InOut junction so all source-
-		// DESADV → M_InOut links are visible.
+		// Enumerate via the EDI_Desadv_M_InOut junction so all linked shipments are visible,
+		// including consolidated multi-source-order shipments where M_InOut.EDI_Desadv_ID carries
+		// only the single-FK winner.
 		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class, desadv)
 				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addOnlyActiveRecordsFilter()

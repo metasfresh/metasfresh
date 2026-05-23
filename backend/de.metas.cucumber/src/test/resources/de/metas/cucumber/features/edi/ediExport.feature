@@ -262,14 +262,10 @@ Feature: EDI_cctop_invoic_v export format
   ## via the junction — verifying that both linked DESADVs are visible and exported.
     Given metasfresh is configured for One-DESADV-Per-Shipment
 
-  # Fresh BPartner for S29231_150 — the seed BPartner 2156425 has consolidation-blocking
-  # data (e.g. distinct ship-to defaults / pricing setup) that causes 'generate shipments'
-  # to emit TWO separate M_InOuts instead of ONE consolidated shipment. Both the local
-  # and CI seed DBs share this problem (T11 Concern 2). To reliably exercise the
-  # consolidation path required by Broken-Path #5 + #6 we create a fresh BPartner here,
-  # mirroring T10's S29231_140 in externalSystemBased/ediDesadvExportViaExternalSystem.feature.
-  # EdiDESADVSendingMode is left at the column default 'R' (ReplicationInterface) — that
-  # is the RPL path this scenario is regression-guarding.
+  # Fresh BPartner for S29231_150 — using a pre-existing seed BPartner with consolidation-blocking
+  # data causes 'generate shipments' to emit two separate M_InOuts instead of one consolidated
+  # shipment. A fresh BPartner guarantees a single consolidated M_InOut.
+  # EdiDESADVSendingMode is left at the column default 'R' (ReplicationInterface).
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_150     |
@@ -384,14 +380,12 @@ Feature: EDI_cctop_invoic_v export format
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | ssA_150                          | io_150                |
 
-    # The two source schedules MUST share the same M_InOut and the same EDI_Desadv-via-junction
-    # (T1's junction table populated by DesadvBL.addToDesadvCreateForInOutIfNotExist).
+    # The two source schedules MUST share the same M_InOut (the junction table links both DESADVs to it).
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | ssB_150                          | io_150                |
 
     # Enqueue both DESADVs — each fires its own RPL export (EDI_DESADV_InOut_Export.doExport).
-    # After T8 the view M_InOut_Desadv_V enumerates BOTH DESADVs for io_150 via the junction.
     And EDI_Desadv is enqueued for export
       | EDI_Desadv_ID.Identifier |
       | dA_150                   |

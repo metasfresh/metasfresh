@@ -39,9 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for the {@code EDI_Desadv_M_InOut} junction table that records
- * the many-to-many link between {@code EDI_Desadv} and {@code M_InOut} introduced by
- * me03#29231 (T1/T4 — Desadv↔InOut decoupling). Used to verify both the
- * "N DESADVs → 1 M_InOut" (consolidated multi-source-order) AND
+ * the many-to-many link between {@code EDI_Desadv} and {@code M_InOut}.
+ * Covers both the "N DESADVs → 1 M_InOut" (consolidated multi-source-order) and
  * "1 DESADV → N M_InOuts" (partial deliveries on the same source order) shapes.
  */
 @RequiredArgsConstructor

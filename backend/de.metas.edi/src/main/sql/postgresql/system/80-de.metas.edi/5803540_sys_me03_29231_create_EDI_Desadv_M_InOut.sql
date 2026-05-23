@@ -1,6 +1,4 @@
--- DDL: backend/de.metas.edi/src/main/sql/postgresql/system/80-de.metas.edi/5803540_sys_me03_29231_create_EDI_Desadv_M_InOut.sql
--- Junction table linking EDI_Desadv to M_InOut (N:M relationship)
--- For me03#29231 — Option A: N:M junction instead of single-FK on M_InOut
+-- Junction table linking EDI_Desadv to M_InOut (N:M relationship).
 
 /* DDL */ CREATE TABLE public.edi_desadv_m_inout (
     edi_desadv_m_inout_id numeric(10) NOT NULL PRIMARY KEY,

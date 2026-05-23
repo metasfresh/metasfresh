@@ -290,7 +290,7 @@ public class EPCIS_JSON_Export_StepDef
 
 	/**
 	 * Validates jsonb-array fields in the EPCIS JSON that carry arrays of string values.
-	 * Used for me03#29231 TC4: desadvReferences[] and poReferences[] arrays.
+	 * Validates {@code desadvReferences[]} and {@code poReferences[]} array fields in the EPCIS JSON.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

@@ -1,6 +1,4 @@
--- DDL: backend/de.metas.edi/src/main/sql/postgresql/system/80-de.metas.edi/5803560_sys_me03_29231_backfill_EDI_Desadv_M_InOut.sql
--- Backfill existing M_InOut.EDI_Desadv_ID single-FK rows into the new junction
--- (introduced by 5803540 + 5803550 for me03#29231 Option A).
+-- Backfill existing M_InOut.EDI_Desadv_ID single-FK rows into the EDI_Desadv_M_InOut junction table.
 
 INSERT INTO edi_desadv_m_inout (
     edi_desadv_m_inout_id, edi_desadv_id, m_inout_id,

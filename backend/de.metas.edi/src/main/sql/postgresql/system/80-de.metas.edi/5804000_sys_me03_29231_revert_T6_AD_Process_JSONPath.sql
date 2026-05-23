@@ -1,18 +1,10 @@
--- me03#29231 — revert the T6 AD_Process JSONPath / EDI_Desadv_ID mandatory parameter for
--- M_InOut_EDI_Export_JSON (AD_Process_ID=585473). See PLAN_ARRAY_MODE.md §6.1.
+-- Remove the EDI_Desadv_ID mandatory parameter from M_InOut_EDI_Export_JSON (AD_Process_ID=585473)
+-- and revert the JSONPath to filter by m_inout_id only.
 --
--- Background — array-mode pivot:
--- The previous design (migration 5803860, code-review T6 / HIGH #2) required every call to the
--- M_InOut_EDI_Export_JSON process to supply both M_InOut_ID and EDI_Desadv_ID, scoping the export
--- view to one (m_inout_id, edi_desadv_id) row so expectSingleResult(true) held. That broke five
--- pre-existing direct REST callers that only knew the M_InOut_ID, and forced the EDIWorkpackageProcessor
--- to enqueue one workpackage per (desadv, inout) pair.
---
--- ARRAY-MODE Phase 1 relaxes this: the M_InOut JSON-export now expects an *array* of DESADVs
--- (one element per EDI_Desadv_M_InOut junction row) via the new shouldExpectSingleResult()=false
--- hook on M_InOut_EDI_Export_JSON. The downstream Camel route iterates over the array and
--- dispatches one EDIFACT message per element. With this contract the EDI_Desadv_ID parameter is
--- no longer needed at the AD_Process level.
+-- The M_InOut JSON-export now returns an *array* of DESADVs (one element per
+-- EDI_Desadv_M_InOut junction row) via shouldExpectSingleResult()=false. The downstream Camel
+-- route iterates over the array and dispatches one EDIFACT message per element. The EDI_Desadv_ID
+-- parameter is therefore no longer needed at the AD_Process level.
 --
 -- This migration:
 --   1. Drops the &edi_desadv_id=eq.@EDI_Desadv_ID/0@ filter from the JSONPath.

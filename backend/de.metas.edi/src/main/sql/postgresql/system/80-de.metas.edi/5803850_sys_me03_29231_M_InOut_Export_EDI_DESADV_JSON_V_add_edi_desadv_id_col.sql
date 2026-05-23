@@ -1,9 +1,7 @@
 -- DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/desadv_json/M_InOut_Export_EDI_DESADV_JSON_V.sql
 --
--- me03#29231 — expose edi_desadv_id as a top-level column on the DESADV export view so PostgREST can
--- filter by the (m_inout_id, edi_desadv_id) pair. A consolidated multi-source-order shipment links to
--- N DESADVs via edi_desadv_m_inout, so the view emits N rows per shipment; the export caller now filters
--- to a single row per call (one PostgREST call per source DESADV), keeping expectSingleResult(true) valid.
+-- Expose edi_desadv_id as a top-level column so PostgREST can filter by (m_inout_id, edi_desadv_id).
+-- A consolidated shipment links to N DESADVs via edi_desadv_m_inout; the view emits N rows.
 
 DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V$new;
 
@@ -54,9 +52,8 @@ SELECT io.m_inout_id,
        ) as embedded_json
                          FROM m_inout io
                          LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
-                         -- me03#29231 — enumerate DESADVs via edi_desadv_m_inout junction.
-                         -- M_InOut.EDI_Desadv_ID stays on the table as a legacy display field but is no longer
-                         -- the authoritative export-side link. View now emits one row per (m_inout_id, edi_desadv_id) pair.
+                         -- Enumerate DESADVs via edi_desadv_m_inout junction.
+                         -- View emits one row per (m_inout_id, edi_desadv_id) pair.
                          JOIN edi_desadv_m_inout link
                               ON link.m_inout_id = io.m_inout_id AND link.isactive = 'Y'
                          JOIN edi_desadv d

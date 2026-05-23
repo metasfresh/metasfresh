@@ -1,12 +1,10 @@
--- me03#29231 — extend the PostgREST JSONPath of M_InOut_EDI_Export_JSON to filter by BOTH
--- m_inout_id AND edi_desadv_id, and add the new mandatory EDI_Desadv_ID process parameter.
+-- Extend the PostgREST JSONPath of M_InOut_EDI_Export_JSON (AD_Process_ID=585473) to filter by
+-- BOTH m_inout_id AND edi_desadv_id, and add the new mandatory EDI_Desadv_ID process parameter.
 --
--- Background: a consolidated multi-source-order shipment links to N source DESADVs via the
--- edi_desadv_m_inout junction. The export view (M_InOut_Export_EDI_DESADV_JSON_V) now emits one
--- row per (m_inout_id, edi_desadv_id) pair. Without the EDI_Desadv_ID filter the PostgREST call
--- would return N rows and trip expectSingleResult(true) in PostgRESTProcessExecutor.
--- The EDIWorkpackageProcessor enqueues one workpackage per (desadv, inout) pair and supplies
--- the EDI_Desadv_ID parameter for each call (wired in PLAN_ARCH T7).
+-- The export view (M_InOut_Export_EDI_DESADV_JSON_V) emits one row per (m_inout_id, edi_desadv_id)
+-- pair. Without the EDI_Desadv_ID filter a consolidated shipment linked to N DESADVs would return
+-- N rows and trip expectSingleResult(true) in PostgRESTProcessExecutor.
+-- NOTE: this design was subsequently replaced by migration 5804000 (array-mode).
 
 -- AD_Process M_InOut_EDI_Export_JSON: AD_Process_ID=585473
 UPDATE AD_Process
@@ -41,10 +39,8 @@ ON CONFLICT (AD_Process_Para_ID) DO NOTHING
 ;
 
 -- DefaultValue safety-net (mirrors the M_InOut_ID param set by 5755950). The /0@ suffix in the
--- JSONPath above is the primary safe-fail for substitution; this DefaultValue is the framework-
--- side fallback when the AD-process caller doesn't supply a value. IsMandatory='Y' should reject
--- those calls before substitution, but the layered fallback keeps the worst case to "empty
--- result set" rather than a NullPointer / crash. Code-review T6 / HIGH #3.
+-- JSONPath is the primary safe-fail; this DefaultValue is the framework-side fallback when the
+-- caller doesn't supply a value. The layered fallback keeps the worst case to an empty result set.
 UPDATE AD_Process_Para
 SET DefaultValue = '@EDI_Desadv_ID/0@',
     Updated = now() AT TIME ZONE 'UTC',
@@ -72,9 +68,7 @@ WHERE l.IsActive = 'Y'
 
 -- Propagate the AD_Element_Trl values (Name / Description / Help) into the newly-inserted
 -- AD_Process_Para_Trl rows for each installed language. Without this, the skeleton _Trl rows
--- above carry the base-language strings copied from AD_Process_Para — wrong for non-base
--- languages. Idempotent: the function is a no-op if there's nothing to update.
--- See metasfresh-application-dictionary skill, section "Translation propagation". Code-review T6 / HIGH #4.
+-- carry the base-language strings — wrong for non-base languages. Idempotent.
 DO $$
 DECLARE
     lang_rec RECORD;

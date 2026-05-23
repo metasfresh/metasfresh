@@ -93,11 +93,10 @@ public class M_InOut
 	 * the DESADV status is derived from all linked InOut statuses
 	 * via {@link DesadvBL#recomputeDesadvStatusFromInOuts(EDIDesadvId)}.
 	 * <p>
-	 * me03#29231 — consolidated multi-source-order shipments link to N DESADVs via the
-	 * {@code EDI_Desadv_M_InOut} junction. The shipment-level {@code EDI_Desadv_ID}
-	 * carries only the single-FK winner; the other DESADVs would never see their status
-	 * propagated to Sent if we relied on the FK alone. Enumerate the junction so all
-	 * linked source DESADVs are recomputed when the shipment status flips.
+	 * A consolidated shipment may link to N DESADVs via the {@code EDI_Desadv_M_InOut}
+	 * junction. Enumerating the junction ensures all linked source DESADVs are recomputed
+	 * when the shipment status flips — relying on the single-FK {@code EDI_Desadv_ID} alone
+	 * would miss the non-winner DESADVs.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
 			ifColumnsChanged = I_M_InOut.COLUMNNAME_EDI_ExportStatus)
