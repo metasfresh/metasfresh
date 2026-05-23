@@ -36,6 +36,7 @@ import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -244,6 +245,7 @@ public class ExternalSystemScriptedExportConversionService
 				.setCtx(context)
 				.setRecord(TableRecordReference.of(config.getTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
 				.setAD_Process_ID(config.getOutboundDataProcessId())
+				.setProcessCalledFrom(ProcessCalledFrom.API) // mark as API call → PostgREST result returned in-memory, not written to disk
 				.addParameter(rootKeyColumnName, outboundDataProcessRecordId);
 
 		final ProcessExecutor processExecutor = outboundProcessInfoBuilder
