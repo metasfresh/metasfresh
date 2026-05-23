@@ -36,15 +36,14 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
-import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -67,11 +66,8 @@ import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
@@ -89,7 +85,6 @@ public class EDI_Desadv_StepDef
 
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
 
@@ -175,13 +170,11 @@ public class EDI_Desadv_StepDef
 	}
 
 	/**
-	 * Asserts that all given M_InOut records are linked to at least one common {@code EDI_Desadv}
-	 * via the {@code EDI_Desadv_M_InOut} junction table.
-	 * <p>
+	 * Asserts that all given M_InOut records point to the same {@code EDI_Desadv_ID}.
 	 * This is used to verify the test precondition that multiple shipments share
 	 * a single DESADV (e.g. because they originate from orders with the same POReference + BPartner).
 	 * <p>
-	 * Each InOut must have at least one junction row, and all InOuts must share at least one DESADV.
+	 * Each record must have a non-zero {@code EDI_Desadv_ID}, and all must match.
 	 * <p>
 	 * DataTable columns:
 	 * <ul>
@@ -202,40 +195,26 @@ public class EDI_Desadv_StepDef
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
 		assertThat(rows).as("Need at least 2 M_InOut records to compare").hasSizeGreaterThanOrEqualTo(2);
 
-		Set<Integer> sharedDesadvIds = null;
+		int firstDesadvId = -1;
 		for (final DataTableRow row : rows)
 		{
 			final org.compiere.model.I_M_InOut inoutRecord = row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
-			final int inOutId = inoutRecord.getM_InOut_ID();
+			final I_M_InOut ediInout = InterfaceWrapperHelper.create(inoutRecord, I_M_InOut.class);
+			InterfaceWrapperHelper.refresh(ediInout);
+			final int desadvId = ediInout.getEDI_Desadv_ID();
+			assertThat(desadvId).as("M_InOut %s should have EDI_Desadv_ID set", row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID)).isGreaterThan(0);
 
-			final Set<Integer> desadvIdsForInOut = queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
-					.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, inOutId)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.list()
-					.stream()
-					.map(I_EDI_Desadv_M_InOut::getEDI_Desadv_ID)
-					.filter(id -> id > 0)
-					.collect(Collectors.toSet());
-
-			assertThat(desadvIdsForInOut)
-					.as("M_InOut %s should be linked to at least one EDI_Desadv via junction table",
-							row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID))
-					.isNotEmpty();
-
-			if (sharedDesadvIds == null)
+			if (firstDesadvId < 0)
 			{
-				sharedDesadvIds = new HashSet<>(desadvIdsForInOut);
+				firstDesadvId = desadvId;
 			}
 			else
 			{
-				sharedDesadvIds.retainAll(desadvIdsForInOut);
+				assertThat(desadvId)
+						.as("All M_InOut records should share the same EDI_Desadv_ID")
+						.isEqualTo(firstDesadvId);
 			}
 		}
-
-		assertThat(sharedDesadvIds)
-				.as("All M_InOut records should share at least one common EDI_Desadv via junction table")
-				.isNotEmpty();
 	}
 
 	private void validateEdiDesadv(@NonNull final Map<String, String> tableRow)
