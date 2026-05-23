@@ -22,6 +22,7 @@
 
 package de.metas.edi.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.esb.edi.model.I_EDI_Desadv_M_InOut;
@@ -29,6 +30,7 @@ import de.metas.inout.InOutId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
@@ -40,6 +42,12 @@ import org.springframework.stereotype.Repository;
 public class EDIDesadvInOutRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static EDIDesadvInOutRepository newInstanceForUnitTesting()
+	{
+		return new EDIDesadvInOutRepository();
+	}
 
 	/**
 	 * Creates a row in {@code EDI_Desadv_M_InOut} linking the given DESADV to the given shipment.
@@ -65,6 +73,42 @@ public class EDIDesadvInOutRepository
 	}
 
 	/**
+	 * Returns {@code true} if the given {@code InOut} has at least one junction row in {@code EDI_Desadv_M_InOut}.
+	 */
+	public boolean isInOutLinkedToAnyDesadv(@NonNull final InOutId inOutId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, inOutId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * Deletes all {@code EDI_Desadv_M_InOut} junction rows for the given {@code InOut}.
+	 * Call this when removing a shipment from all its DESADVs (e.g. on reactivation or reversal).
+	 */
+	public void deleteByInOutId(@NonNull final InOutId inOutId)
+	{
+		queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, inOutId)
+				.create()
+				.delete();
+	}
+
+	/**
+	 * Deletes all {@code EDI_Desadv_M_InOut} junction rows for the given {@code DESADV}.
+	 * Must be called before deleting a {@code EDI_Desadv} record to satisfy the FK constraint.
+	 */
+	public void deleteByDesadvId(@NonNull final EDIDesadvId desadvId)
+	{
+		queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
+				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.create()
+				.delete();
+	}
+
+	/**
 	 * Lists all DESADVs linked to the given {@code InOut} via the {@code EDI_Desadv_M_InOut} junction table.
 	 * <p>
 	 * The junction is the authoritative source of {@code (DESADV, InOut)} links for consolidated shipments
@@ -85,6 +129,7 @@ public class EDIDesadvInOutRepository
 		return queryBL.createQueryBuilder(I_EDI_Desadv_M_InOut.class)
 				.addEqualsFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_M_InOut_ID, inOutId)
 				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_EDI_Desadv_M_InOut.COLUMNNAME_EDI_Desadv_ID, CompareQueryFilter.Operator.GREATER, 0) // defensive: skip rows with EDI_Desadv_ID=0 (e.g. backfill artifacts)
 				.create()
 				.list()
 				.stream()
