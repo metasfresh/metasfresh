@@ -81,7 +81,7 @@ services:
       db:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy
+        condition: service_started
       mailpit:
         condition: service_healthy
     volumes:
