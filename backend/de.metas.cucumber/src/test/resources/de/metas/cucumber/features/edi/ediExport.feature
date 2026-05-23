@@ -314,6 +314,28 @@ Feature: EDI_cctop_invoic_v export format
       | ep_2                        | routingKey     | ediExport_150    |
       | ep_2                        | isDurableQueue | true             |
 
+    # Order A uses the seed packing 3010001 (IFCO 6410 x 10 Stk): QtyCUsPerTU=10, QtyCUsPerLU=100.
+    # Order B uses a dedicated packing (20 PCE/TU, LU=5 TUs): QtyCUsPerTU=20, QtyCUsPerLU=100.
+    # Distinct QtyCUsPerTU values (10 vs 20) prove the RPL export preserves each source-order's
+    # pack-item configuration rather than merging them into a single shared set.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID      |
+      | pi_LU_B_150     |
+      | pi_TU_B_150     |
+      | pi_VHU_B_150    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID   | HU_UnitType | IsCurrent |
+      | piv_LU_B_150       | pi_LU_B_150  | LU          | Y         |
+      | piv_TU_B_150       | pi_TU_B_150  | TU          | Y         |
+      | piv_VHU_B_150      | pi_VHU_B_150 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_B_150    | piv_LU_B_150       | 5   | HU       | pi_TU_B_150       |
+      | pii_TU_B_150    | piv_TU_B_150       | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID      | Qty | ValidFrom  |
+      | pip_B_150               | pii_TU_B_150    | convenienceSalate | 20  | 2020-01-01 |
+
     # Order A — distinct POReference → its own EDI_Desadv at order-complete.
     # @Date@ suffix keeps POReferences unique across local repeat runs (DB pollution guard).
     And metasfresh contains C_Orders:
@@ -329,13 +351,13 @@ Feature: EDI_cctop_invoic_v export format
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
       | dA_150                   | bp_150                   | oA_150                |
 
-    # Order B — different POReference → its own distinct EDI_Desadv
+    # Order B — different POReference → its own distinct EDI_Desadv; uses pip_B_150 (20 PCE/TU)
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised | OPT.POReference        |
       | oB_150     | true    | bp_150                   | 2021-04-17  | 2021-04-18Z      | PO_B_S29231_150_@Date@ |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | olB_150    | oB_150                | convenienceSalate       | 100        | 3010001                                |
+      | olB_150    | oB_150                | convenienceSalate       | 100        | pip_B_150                              |
 
     And the order identified by oB_150 is completed
 
@@ -399,3 +421,16 @@ Feature: EDI_cctop_invoic_v export format
     And RabbitMQ receives a EDI_Exp_Desadv
       | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
       | e_dB_150                     | ep_2                        | routingKey                   |
+
+    # ─── PACK-ITEM ASSERTIONS ─────────────────────────────────────────────────
+    # Each DESADV must carry pack-item dimensions that match its source order's packing config.
+    # DESADV A (oA_150): uses 3010001 (IFCO 6410 x 10 Stk) → QtyCUsPerTU=10, QtyCUsPerLU=100, QtyTU=10
+    # DESADV B (oB_150): uses pip_B_150 (20 PCE/TU, LU=5 TUs)  → QtyCUsPerTU=20, QtyCUsPerLU=100, QtyTU=5
+    # Distinct QtyCUsPerTU values (10 vs 20) prove per-source-DESADV projection is correct.
+    And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
+      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
+      | e_dA_150                     | 10                                       | 100                                      | 10                                 |
+
+    And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
+      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
+      | e_dB_150                     | 20                                       | 100                                      | 5                                  |
