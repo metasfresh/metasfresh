@@ -59,8 +59,14 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintCreateCommand;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
+import de.metas.inoutcandidate.shipmentconstraint.SourceDocRef;
+import de.metas.organization.OrgId;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -69,7 +75,18 @@ import lombok.NonNull;
 
 public class DunningBL implements IDunningBL
 {
+	private static final AdMessageKey MSG_DeliveryStopReason_FromDunning = AdMessageKey.of("DeliveryStopReason_FromDunning");
+
 	private final Logger logger = LogManager.getLogger(getClass());
+
+	// gh#28631: ShipmentConstraintService is a Spring @Service; this class is an ISingletonService impl
+	// so we resolve via the Spring context. Use lazyBean (not getBean) at the field site because
+	// unit tests instantiate DunningBL without a Spring application context — an eager getBean
+	// would fail with "This unit test requires a spring ApplicationContext". The lazy wrapper only
+	// resolves on first call to .get() (i.e., inside makeDeliveryStopIfNeeded), which production
+	// code reaches and unit tests do not.
+	private final org.compiere.SpringContextHolder.Lazy<ShipmentConstraintService> shipmentConstraintService =
+			org.compiere.SpringContextHolder.lazyBean(ShipmentConstraintService.class);
 
 	private ReentrantLock configLock = new ReentrantLock();
 
@@ -307,11 +324,18 @@ public class DunningBL implements IDunningBL
 			return;
 		}
 
-		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
-		shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
-				.billPartnerId(dunningDoc.getC_BPartner_ID())
-				.sourceDocRef(TableRecordReference.of(dunningDoc))
+		// gh#28631: translatable reason makes the constraint row self-describing
+		// in the Shipment-Restrictions window without hard-coding a German prefix.
+		final ITranslatableString reason = TranslatableStrings.adMessage(
+				MSG_DeliveryStopReason_FromDunning,
+				dunningLevel.getName(),
+				dunningDoc.getDocumentNo());
+		shipmentConstraintService.get().createConstraint(ShipmentConstraintCreateCommand.builder()
+				.orgId(OrgId.ofRepoId(dunningDoc.getAD_Org_ID()))
+				.billBPartnerId(BPartnerId.ofRepoId(dunningDoc.getC_BPartner_ID()))
+				.sourceDocRef(SourceDocRef.of(TableRecordReference.of(dunningDoc)))
 				.deliveryStop(true)
+				.reason(reason)
 				.build());
 
 	}
