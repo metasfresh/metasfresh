@@ -42,6 +42,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -97,7 +98,8 @@ public class EDIDesadvPackRepository
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());
 		desadvPackRecord.setM_HU_PackagingCode_ID(PackagingCodeId.toRepoId(createEDIDesadvPackRequest.getHuPackagingCodeID()));
-		desadvPackRecord.setGTIN_PackingMaterial(createEDIDesadvPackRequest.getGtinPackingMaterial());
+		// (EDIFACT GIN segment rejects values that don't match ^[0-9]{1,14}$).
+		desadvPackRecord.setGTIN_PackingMaterial(StringUtils.trimBlankToNull(createEDIDesadvPackRequest.getGtinPackingMaterial()));
 
 		saveRecord(desadvPackRecord);
 		final EDIDesadvPackId packId = EDIDesadvPackId.ofRepoId(desadvPackRecord.getEDI_Desadv_Pack_ID());
@@ -148,7 +150,7 @@ public class EDIDesadvPackRepository
 		packItemRecord.setBestBeforeDate(createPackItemRequest.getBestBeforeDate());
 		packItemRecord.setLotNumber(createPackItemRequest.getLotNumber());
 		packItemRecord.setM_HU_PackagingCode_TU_ID(PackagingCodeId.toRepoId(createPackItemRequest.getHuPackagingCodeTUID()));
-		packItemRecord.setGTIN_TU_PackingMaterial(createPackItemRequest.getGtinTUPackingMaterial());
+		packItemRecord.setGTIN_TU_PackingMaterial(StringUtils.trimBlankToNull(createPackItemRequest.getGtinTUPackingMaterial()));
 
 		saveRecord(packItemRecord);
 		return packItemRecord;
