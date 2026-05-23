@@ -1117,10 +1117,16 @@ Feature: EDI DESADV export via postgREST
     # LineItem count, correct product set (DesadvLine.Product.SupplierProductNo), correct qty
     # multiset (QtyDeliveredInDesadvLineUOM). pB appears in BOTH DESADVs at different qtys
     # (5 in A, 7 in B) — this distinguishes per-line ownership from a naive product-set check.
+    # Pack-item dimensions are verified at LineItem level (sorted by Line asc):
+    # - DESADV A: pA (Line 10) has TU-capacity=10 → QtyTU=1, QtyCUsPerTU=10, QtyCUsPerLU=200
+    #             pB (Line 20) has TU-capacity=5  → QtyTU=1, QtyCUsPerTU=5,  QtyCUsPerLU=100
+    # - DESADV B: pB (Line 10) qty=7, TU-capacity=5 → QtyTU=ceil(7/5)=2, QtyCUsPerTU=5, QtyCUsPerLU=100
+    # The distinct QtyCUsPerTU values (10 vs 5) across DESADVs prove the projection preserves
+    # each source order's pack-item configuration rather than mixing them.
     Then verify DESADV JSON export response is a strict projection of source orders:
-      | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers    | ExpectedQtys |
-      | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100   | 10,5         |
-      | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100                 | 7            |
+      | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers  | ExpectedQtys | ExpectedQtyTUs | ExpectedQtyCUsPerTU | ExpectedQtyCUsPerLU |
+      | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100 | 10,5         | 1,1            | 10,5                | 200,100             |
+      | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100               | 7            | 2              | 5                   | 100                 |
 
 
   @Id:S29231_110

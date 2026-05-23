@@ -369,6 +369,9 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *       step-def identifiers whose {@code M_Product.Value} is used for comparison).</li>
 	 *   <li>Asserts that the multiset of {@code DesadvLine.QtyDeliveredInDesadvLineUOM} values across
 	 *       all LineItems equals the quantities in {@code ExpectedQtys} (comma-separated integers).</li>
+	 *   <li>Optionally asserts per-pack-item dimensions on the LineItem itself if the corresponding
+	 *       {@code ExpectedQtyTUs}, {@code ExpectedQtyCUsPerTU}, or {@code ExpectedQtyCUsPerLU} columns
+	 *       are present (comma-separated, matched positionally to the sorted LineItem list).</li>
 	 * </ol>
 	 * <p>
 	 * DataTable columns:
@@ -380,14 +383,26 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 *       each identifier's {@code M_Product.Value} must appear as {@code DesadvLine.Product.SupplierProductNo}</li>
 	 *   <li>{@code ExpectedQtys} (required) — comma-separated integer delivered quantities matching the line list
 	 *       (multiset comparison; order does not matter)</li>
+	 *   <li>{@code ExpectedQtyTUs} (optional) — comma-separated {@code QtyTU} values, one per LineItem in
+	 *       {@code Line}-ascending order; column may be absent to skip the assertion</li>
+	 *   <li>{@code ExpectedQtyCUsPerTU} (optional) — comma-separated {@code QtyCUsPerTU} values, positionally
+	 *       matching the same Line-ascending order; column may be absent to skip the assertion</li>
+	 *   <li>{@code ExpectedQtyCUsPerLU} (optional) — comma-separated {@code QtyCUsPerLU} values, positionally
+	 *       matching the same Line-ascending order; column may be absent to skip the assertion</li>
 	 * </ul>
+	 * <p>
+	 * The pack-item dimension columns use the same base names ({@code QtyTU}, {@code QtyCUsPerTU},
+	 * {@code QtyCUsPerLU}) as the RPL-path step {@code EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv
+	 * is validated} — DataTable column naming is intentionally aligned across both paths (Option 2 of the
+	 * dedup assessment). No shared code is used; sources differ (JSON vs XML DOM), but the column-name
+	 * contract is the same.
 	 * <p>
 	 * Example usage:
 	 * <pre>
 	 * Then verify DESADV JSON export response is a strict projection of source orders:
-	 *   | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers    | ExpectedQtys |
-	 *   | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100   | 10,5         |
-	 *   | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100                 | 7            |
+	 *   | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers    | ExpectedQtys | ExpectedQtyTUs | ExpectedQtyCUsPerTU | ExpectedQtyCUsPerLU |
+	 *   | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100   | 10,5         | 1,1            | 10,5                | 200,100             |
+	 *   | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100                 | 7            | 1              | 5                   | 100                 |
 	 * </pre>
 	 */
 	@Then("verify DESADV JSON export response is a strict projection of source orders:")
@@ -407,6 +422,11 @@ public class EDI_Desadv_JSON_Export_StepDef
 			final int expectedLineCount = row.getAsInt("ExpectedLineCount");
 			final String expectedProductIdentifiersCsv = row.getAsString("ExpectedProductIdentifiers");
 			final String expectedQtysCsv = row.getAsString("ExpectedQtys");
+
+			// Optional pack-item dimension columns (Layout A: comma-separated, positional by Line asc)
+			final Optional<String> expectedQtyTUsCsvOpt = row.getAsOptionalString("ExpectedQtyTUs");
+			final Optional<String> expectedQtyCUsPerTUCsvOpt = row.getAsOptionalString("ExpectedQtyCUsPerTU");
+			final Optional<String> expectedQtyCUsPerLUCsvOpt = row.getAsOptionalString("ExpectedQtyCUsPerLU");
 
 			// Resolve the EDI_Desadv_ID from the step-def data so we can find the right array element
 			final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
@@ -479,7 +499,83 @@ public class EDI_Desadv_JSON_Export_StepDef
 					.as("DESADV '%s' (order '%s'): QtyDeliveredInDesadvLineUOM multiset must exactly match source order's quantities",
 							desadvIdentifier, orderIdentifier)
 					.isEqualTo(expectedQtys);
+
+			// 4. Optional pack-item dimension assertions (Layout A: positional, Line-ascending order)
+			final boolean anyPackItemAssertionRequested =
+					expectedQtyTUsCsvOpt.isPresent()
+					|| expectedQtyCUsPerTUCsvOpt.isPresent()
+					|| expectedQtyCUsPerLUCsvOpt.isPresent();
+
+			if (anyPackItemAssertionRequested)
+			{
+				// Sort LineItems by their top-level Line number so positional list indices are stable
+				final List<JsonNode> sortedLineItems = allLineItems.stream()
+						.sorted((a, b) -> Integer.compare(a.path("Line").asInt(), b.path("Line").asInt()))
+						.collect(Collectors.toList());
+
+				expectedQtyTUsCsvOpt.ifPresent(csv -> {
+					final List<BigDecimal> expectedValues = parseCsvBigDecimals(csv);
+					assertThat(expectedValues.size())
+							.as("DESADV '%s': ExpectedQtyTUs list length must equal LineItem count (%d)", desadvIdentifier, sortedLineItems.size())
+							.isEqualTo(sortedLineItems.size());
+					for (int i = 0; i < sortedLineItems.size(); i++)
+					{
+						final JsonNode lineItem = sortedLineItems.get(i);
+						final JsonNode qtyTuNode = lineItem.path("QtyTU");
+						assertThat(qtyTuNode.isMissingNode())
+								.as("DESADV '%s' LineItem[%d] (Line=%d): QtyTU field must be present", desadvIdentifier, i, lineItem.path("Line").asInt())
+								.isFalse();
+						assertThat(new BigDecimal(qtyTuNode.asText()))
+								.as("DESADV '%s' LineItem[%d] (Line=%d): QtyTU", desadvIdentifier, i, lineItem.path("Line").asInt())
+								.isEqualByComparingTo(expectedValues.get(i));
+					}
+				});
+
+				expectedQtyCUsPerTUCsvOpt.ifPresent(csv -> {
+					final List<BigDecimal> expectedValues = parseCsvBigDecimals(csv);
+					assertThat(expectedValues.size())
+							.as("DESADV '%s': ExpectedQtyCUsPerTU list length must equal LineItem count (%d)", desadvIdentifier, sortedLineItems.size())
+							.isEqualTo(sortedLineItems.size());
+					for (int i = 0; i < sortedLineItems.size(); i++)
+					{
+						final JsonNode lineItem = sortedLineItems.get(i);
+						final JsonNode qtyCUsPerTUNode = lineItem.path("QtyCUsPerTU");
+						assertThat(qtyCUsPerTUNode.isMissingNode())
+								.as("DESADV '%s' LineItem[%d] (Line=%d): QtyCUsPerTU field must be present", desadvIdentifier, i, lineItem.path("Line").asInt())
+								.isFalse();
+						assertThat(new BigDecimal(qtyCUsPerTUNode.asText()))
+								.as("DESADV '%s' LineItem[%d] (Line=%d): QtyCUsPerTU", desadvIdentifier, i, lineItem.path("Line").asInt())
+								.isEqualByComparingTo(expectedValues.get(i));
+					}
+				});
+
+				expectedQtyCUsPerLUCsvOpt.ifPresent(csv -> {
+					final List<BigDecimal> expectedValues = parseCsvBigDecimals(csv);
+					assertThat(expectedValues.size())
+							.as("DESADV '%s': ExpectedQtyCUsPerLU list length must equal LineItem count (%d)", desadvIdentifier, sortedLineItems.size())
+							.isEqualTo(sortedLineItems.size());
+					for (int i = 0; i < sortedLineItems.size(); i++)
+					{
+						final JsonNode lineItem = sortedLineItems.get(i);
+						final JsonNode qtyCUsPerLUNode = lineItem.path("QtyCUsPerLU");
+						assertThat(qtyCUsPerLUNode.isMissingNode())
+								.as("DESADV '%s' LineItem[%d] (Line=%d): QtyCUsPerLU field must be present", desadvIdentifier, i, lineItem.path("Line").asInt())
+								.isFalse();
+						assertThat(new BigDecimal(qtyCUsPerLUNode.asText()))
+								.as("DESADV '%s' LineItem[%d] (Line=%d): QtyCUsPerLU", desadvIdentifier, i, lineItem.path("Line").asInt())
+								.isEqualByComparingTo(expectedValues.get(i));
+					}
+				});
+			}
 		});
+	}
+
+	private static List<BigDecimal> parseCsvBigDecimals(@NonNull final String csv)
+	{
+		return Arrays.stream(csv.split(","))
+				.map(String::trim)
+				.map(BigDecimal::new)
+				.collect(Collectors.toList());
 	}
 
 	// =========================================================================
