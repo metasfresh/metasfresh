@@ -9,10 +9,10 @@
 INSERT INTO AD_Message
 (AD_Client_ID, AD_Message_ID, AD_Org_ID, Created, CreatedBy, EntityType, IsActive, MsgText, MsgType, ErrorCode, Updated, UpdatedBy, Value)
 VALUES
-(0, 545711, 0, TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'de.metas.inoutcandidate', 'Y',
+(0, 545711/*From ID Server*/, 0, TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'de.metas.inoutcandidate', 'Y',
  'Receipt not possible: selected receipt schedules belong to business partners with an active delivery/order block: {0}. Please unselect and retry.',
  'E', 'CANNOT_RECEIVE_DELIVERY_STOP_MULTI',
- TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'ERR_RECEIPT_DELIVERY_STOP_MULTI')
+ TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'CannotReceive_DeliveryStop_Multi')
 ;
 
 INSERT INTO AD_Message_Trl
@@ -47,10 +47,10 @@ WHERE AD_Message_ID = 545711 AND AD_Language = 'en_US'
 INSERT INTO AD_Message
 (AD_Client_ID, AD_Message_ID, AD_Org_ID, Created, CreatedBy, EntityType, IsActive, MsgText, MsgType, ErrorCode, Updated, UpdatedBy, Value)
 VALUES
-(0, 545712, 0, TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'de.metas.inoutcandidate', 'Y',
+(0, 545712/*From ID Server*/, 0, TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'de.metas.inoutcandidate', 'Y',
  'Cannot complete receipt: business partner {0} has an active delivery/order block (Shipment Restriction {1}). Open the Shipment Restrictions window to review or release it.',
  'E', 'CANNOT_RECEIVE_DELIVERY_STOP_SINGLE',
- TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'ERR_RECEIPT_DELIVERY_STOP_SINGLE')
+ TO_TIMESTAMP('2026-05-24 00:00', 'YYYY-MM-DD HH24:MI'), 0, 'CannotReceive_DeliveryStop_Single')
 ;
 
 INSERT INTO AD_Message_Trl

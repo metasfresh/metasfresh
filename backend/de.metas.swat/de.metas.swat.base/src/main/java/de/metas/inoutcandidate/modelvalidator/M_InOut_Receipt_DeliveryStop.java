@@ -27,10 +27,10 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.ShipmentConstraintId;
 import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import de.metas.inout.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -52,14 +52,12 @@ import java.util.Optional;
  */
 @Interceptor(I_M_InOut.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOut_Receipt_DeliveryStop
 {
 	private static final AdMessageKey MSG_CannotReceive_DeliveryStop_Single = AdMessageKey.of("CannotReceive_DeliveryStop_Single");
 
-	// ShipmentConstraintService is a Spring @Service; this interceptor is registered
-	// as a Spring bean (see SwatValidator / ReceiptScheduleValidator), so injection
-	// via SpringContextHolder is the correct pattern used throughout this package.
-	private final ShipmentConstraintService shipmentConstraintService = SpringContextHolder.instance.getBean(ShipmentConstraintService.class);
+	@NonNull private final ShipmentConstraintService shipmentConstraintService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertVendorNotDeliveryStopped(@NonNull final I_M_InOut inout)
