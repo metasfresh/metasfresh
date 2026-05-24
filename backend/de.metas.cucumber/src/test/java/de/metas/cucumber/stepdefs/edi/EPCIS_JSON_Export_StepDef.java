@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -59,6 +60,11 @@ public class EPCIS_JSON_Export_StepDef
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private JsonNode lastEpcisResult;
+
+	/** Tracks M_HU_IDs of LU/TU HUs injected by {@link #assignLuHUsWithSscc18ToInoutLines}; cleaned up in {@link #cleanupInjectedHUs()}. */
+	private final List<Integer> injectedLuHuIds = new ArrayList<>();
+	/** Tracks M_HU_IDs of TU HUs (children of injected LUs); cleaned up in {@link #cleanupInjectedHUs()}. */
+	private final List<Integer> injectedTuHuIds = new ArrayList<>();
 
 	/**
 	 * Calls the {@code get_epcis_events_json_fn} SQL function for the given shipment
@@ -481,6 +487,10 @@ public class EPCIS_JSON_Export_StepDef
 							+ " 'EPCIS_TEST_TU_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
 							+ " RETURNING m_hu_id");
 			assertThat(tuHuId).as("Newly created TU M_HU_ID (child of LU " + luHuId + ")").isGreaterThan(0);
+
+			// Track for cleanup in @After so these test HUs don't pollute other scenarios
+			injectedLuHuIds.add(luHuId);
+			injectedTuHuIds.add(tuHuId);
 		});
 	}
 
@@ -520,6 +530,47 @@ public class EPCIS_JSON_Export_StepDef
 		assertThat(actualSscc18Values)
 				.as("pallets[] sscc18 values (any order)")
 				.containsExactlyInAnyOrderElementsOf(expectedSscc18Values);
+	}
+
+	/**
+	 * Deletes all M_HU / M_HU_Attribute / M_HU_Assignment / M_HU_Item rows that were injected
+	 * by {@link #assignLuHUsWithSscc18ToInoutLines} in the current scenario.
+	 * <p>
+	 * Without this cleanup the test LUs (with {@code hustatus='E'}) survive across scenarios within
+	 * the same JVM session and cause "Illegal M_HU.HUStatus change from E to D" failures in
+	 * subsequent scenarios that run broad HU lifecycle operations.
+	 */
+	@After
+	public void cleanupInjectedHUs()
+	{
+		if (injectedLuHuIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<Integer> allHuIds = new ArrayList<>(injectedLuHuIds);
+		allHuIds.addAll(injectedTuHuIds);
+
+		// Build comma-separated ID list for SQL IN clauses
+		final String luIdList = injectedLuHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
+		final String allIdList = allHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
+
+		// Delete in FK-dependency order: assignments first, then items, then HU attributes, then HUs
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu_assignment WHERE m_lu_hu_id IN (" + luIdList + ")",
+				Trx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu_item WHERE m_hu_id IN (" + luIdList + ")",
+				Trx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu_attribute WHERE m_hu_id IN (" + allIdList + ")",
+				Trx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu WHERE m_hu_id IN (" + allIdList + ")",
+				Trx.TRXNAME_None);
+
+		injectedLuHuIds.clear();
+		injectedTuHuIds.clear();
 	}
 
 	private void assertEpcisArrayField(@NonNull final DataTableRow row)
