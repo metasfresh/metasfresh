@@ -368,11 +368,12 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # ─── Inject real LU HUs so pallets[] is populated ────────────────────────────────
     # QuantityType=D shipments do not create M_HU records; inject minimal M_HU +
     # M_HU_Attribute (SSCC18) + M_HU_Assignment rows directly so the EPCIS pallet-
-    # discovery CTE finds them.  One distinct LU per DESADV source order.
-    And real LU HUs with SSCC18 are assigned to all inout lines of M_InOut identified by io_S29231_130
-      | sscc18             |
-      | 987654321000000016 |
-      | 987654321000000023 |
+    # discovery CTE finds them.  Each LU is assigned only to the InOutLines of its
+    # specific source order so that per-LU POReference derivation works correctly.
+    And real LU HUs with SSCC18 are assigned to inout lines by source order of M_InOut identified by io_S29231_130
+      | sscc18             | C_Order_ID    |
+      | 987654321000000016 | oA_S29231_130 |
+      | 987654321000000023 | oB_S29231_130 |
 
     # ─── CORE ASSERTION ──────────────────────────────────────────────────────────────
     # The EPCIS function must return ONE event document with pallets[] of size 2,
@@ -386,3 +387,11 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | field            | expectedSize |
       | desadvReferences | 2            |
       | poReferences     | 2            |
+    # ─── Per-LU POReference in dummy GRAI ────────────────────────────────────────────
+    # POReferences are PO_A_S29231_130_<date> and PO_B_S29231_130_<date>.
+    # Sanitized (replace non-[A-Za-z0-9-] with '_') and capped at 10 chars → PO_A_S2923 / PO_B_S2923.
+    # Each pallet's TU dummy GRAI must contain only its own source order's sanitized POReference.
+    Then the EPCIS JSON pallets have dummy GRAIs containing the source order POReference:
+      | sscc18             | ExpectedPOReferenceSanitized |
+      | 987654321000000016 | PO_A_S2923                   |
+      | 987654321000000023 | PO_B_S2923                   |
