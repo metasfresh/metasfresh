@@ -1,33 +1,15 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- me03 #29231: rewrite M_InOut_Desadv_V (Replication-Interface RPL export path) to enumerate rows
+-- via the EDI_Desadv_M_InOut junction instead of joining on the single-FK M_InOut.EDI_Desadv_ID.
+-- Fixes Broken-Path #5: for consolidated multi-source-order shipments the legacy single-FK join
+-- emitted exactly one row, causing the RPL path to drop N-1 EDIFACT XMLs.
+--
+-- PK M_InOut_Desadv_ID is now a synthetic composite (m_inout_id * 10000000 + ordinal) so it stays
+-- unique even when one shipment has N>=2 DESADVs. The PK is opaque (Record_ID for EXP_Format-driven
+-- exports); no Java consumer assumes PK == M_InOut_ID.
 
-drop view if exists M_InOut_Desadv_V
-;
+DROP VIEW IF EXISTS M_InOut_Desadv_V$new;
 
--- The view emits one row per (shipment, DESADV) pair enumerated via the EDI_Desadv_M_InOut junction.
--- For consolidated multi-source-order shipments this yields N rows per shipment (one per DESADV).
--- The synthetic PK M_InOut_Desadv_ID = m_inout_id * 10000000 + ordinal (0..N-1, deterministic by edi_desadv_id)
--- keeps the column unique. The PK is opaque to EXP_Format-driven exports (used only as Record_ID).
-create or replace view M_InOut_Desadv_V as
+CREATE OR REPLACE VIEW M_InOut_Desadv_V$new AS
 select (shipment.m_inout_id::bigint * 10000000
             + (row_number() OVER (PARTITION BY shipment.m_inout_id ORDER BY desadv.edi_desadv_id) - 1)
        )::numeric                                                                                                          as M_InOut_Desadv_ID,
@@ -68,4 +50,14 @@ from m_inout shipment
                     on link.m_inout_id = shipment.m_inout_id
                         and link.isactive = 'Y'
          inner join edi_desadv desadv
-                    on desadv.edi_desadv_id = link.edi_desadv_id;
+                    on desadv.edi_desadv_id = link.edi_desadv_id
+;
+
+SELECT db_alter_view(
+    'M_InOut_Desadv_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('M_InOut_Desadv_V$new'))
+);
+
+DROP VIEW IF EXISTS M_InOut_Desadv_V$new;

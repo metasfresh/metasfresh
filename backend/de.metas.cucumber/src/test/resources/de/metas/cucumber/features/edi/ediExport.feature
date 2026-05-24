@@ -248,3 +248,183 @@ Feature: EDI_cctop_invoic_v export format
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN | OPT.DeliveryRule |
       | 2156425                  | false                    | null                      | null             |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S29231_150
+  Scenario: S29231_150 — Two orders, one consolidated shipment → both DESADVs exported via the Replication Interface (RPL) path
+  ## Regression for the RPL (One-DESADV-Per-Shipment EXP_Format) path: two orders with
+  ## distinct POReferences → consolidated shipment → BOTH source DESADVs are exported.
+  ## Uses EDI_Exp_Desadv (One-DESADV-Per-Shipment, ID=540405) which reads M_InOut_Desadv_V
+  ## via the junction — verifying that both linked DESADVs are visible and exported.
+    Given metasfresh is configured for One-DESADV-Per-Shipment
+
+  # Fresh BPartner for S29231_150 — using a pre-existing seed BPartner with consolidation-blocking
+  # data causes 'generate shipments' to emit two separate M_InOuts instead of one consolidated
+  # shipment. A fresh BPartner guarantees a single consolidated M_InOut.
+  # EdiDESADVSendingMode is left at the column default 'R' (ReplicationInterface).
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_150     |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_150     | ps_150             | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_150    | pl_150         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_150                | convenienceSalate | 10.0     | PCE      | Normal           |
+      | plv_150                | ifco6410          | 0.00     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_150     | Y          | ps_150             | 1234567890123 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | DeliveryRule |
+      | bp_150        | true                 | 1234567890123         | F            |
+
+    And load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | type_2                           | RabbitMQ |
+
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name           | EXP_Processor_Type_ID.Identifier |
+      | ep_2                        | ediExport_150  | type_2                           |
+
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name        | EntityType | EXP_Processor_ID.Identifier |
+      | rs_2                                 | rabbitMQ150 | U          | ep_2                        |
+
+    #  metasfresh
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | rs_2                                 |
+
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue   |
+      | ep_2                        | exchangeName   | ediExport_150    |
+      | ep_2                        | routingKey     | ediExport_150    |
+      | ep_2                        | isDurableQueue | true             |
+
+    # Order A uses the seed packing 3010001 (IFCO 6410 x 10 Stk): QtyCUsPerTU=10, QtyCUsPerLU=100.
+    # Order B uses a dedicated packing (20 PCE/TU, LU=5 TUs): QtyCUsPerTU=20, QtyCUsPerLU=100.
+    # Distinct QtyCUsPerTU values (10 vs 20) prove the RPL export preserves each source-order's
+    # pack-item configuration rather than merging them into a single shared set.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID      |
+      | pi_LU_B_150     |
+      | pi_TU_B_150     |
+      | pi_VHU_B_150    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID   | HU_UnitType | IsCurrent |
+      | piv_LU_B_150       | pi_LU_B_150  | LU          | Y         |
+      | piv_TU_B_150       | pi_TU_B_150  | TU          | Y         |
+      | piv_VHU_B_150      | pi_VHU_B_150 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_B_150    | piv_LU_B_150       | 5   | HU       | pi_TU_B_150       |
+      | pii_TU_B_150    | piv_TU_B_150       | 0   | PM       |                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID      | Qty | ValidFrom  |
+      | pip_B_150               | pii_TU_B_150    | convenienceSalate | 20  | 2020-01-01 |
+
+    # Order A — distinct POReference → its own EDI_Desadv at order-complete.
+    # @Date@ suffix keeps POReferences unique across local repeat runs (DB pollution guard).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised | OPT.POReference        |
+      | oA_150     | true    | bp_150                   | 2021-04-17  | 2021-04-18Z      | PO_A_S29231_150_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | olA_150    | oA_150                | convenienceSalate       | 100        | 3010001                                |
+
+    And the order identified by oA_150 is completed
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | dA_150                   | bp_150                   | oA_150                |
+
+    # Order B — different POReference → its own distinct EDI_Desadv; uses pip_B_150 (20 PCE/TU)
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised | OPT.POReference        |
+      | oB_150     | true    | bp_150                   | 2021-04-17  | 2021-04-18Z      | PO_B_S29231_150_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | olB_150    | oB_150                | convenienceSalate       | 100        | pip_B_150                              |
+
+    And the order identified by oB_150 is completed
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | dB_150                   | bp_150                   | oB_150                |
+
+    # Both shipment schedules must be ready before batching into one M_InOut
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ssA_150    | olA_150                   | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ssB_150    | olB_150                   | N             |
+
+    # Batch-generate ONE shipment covering both schedules (the aggregated M_InOut).
+    # The legacy interceptor sets M_InOut.C_Order_ID = null because the lines come from 2 orders.
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ssA_150               |
+      | ssB_150               |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ssA_150                          | io_150                |
+
+    # The two source schedules MUST share the same M_InOut (the junction table links both DESADVs to it).
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ssB_150                          | io_150                |
+
+    # Enqueue both DESADVs — each fires its own RPL export (EDI_DESADV_InOut_Export.doExport).
+    And EDI_Desadv is enqueued for export
+      | EDI_Desadv_ID.Identifier |
+      | dA_150                   |
+      | dB_150                   |
+
+    # Wait for the async workpackage processor to actually run sendAMQPMessage() and
+    # reach status D (SendingStarted) — only then is the ediExport_150 queue declared
+    # (Spring AMQP declares it on first publish). Status U (Enqueued) means the WP is
+    # queued but not yet running, which is too early — pollDocumentFromQueue() racing
+    # against queue declaration causes a 404 NOT_FOUND on slower CI runners.
+    # Note: in the RPL/EDI_DESADVExport path the DESADV status transitions are:
+    #   P → U (enqueued) → D (sendAMQPMessage called) → stays D after WP completes.
+    # Status S (Sent) is only reached via the per-InOut path; the DESADV-level RPL path
+    # never advances beyond D, so we wait for D as the "queue declared" sentinel.
+    And after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | dA_150                   | D                |
+      | dB_150                   | D                |
+
+    # ─── CORE ASSERTION ───────────────────────────────────────────────────────
+    # The RPL export emits one EDIFACT XML to RabbitMQ per processed DESADV.
+    # We poll for both messages on the configured queue (ediExport_150 routing key).
+    And RabbitMQ receives a EDI_Exp_Desadv
+      | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | e_dA_150                     | ep_2                        | routingKey                   |
+
+    And RabbitMQ receives a EDI_Exp_Desadv
+      | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | e_dB_150                     | ep_2                        | routingKey                   |
+
+    # ─── PACK-ITEM ASSERTIONS ─────────────────────────────────────────────────
+    # Each DESADV must carry pack-item dimensions that match its source order's packing config.
+    # DESADV A (oA_150): uses 3010001 (IFCO 6410 x 10 Stk) → QtyCUsPerTU=10, QtyCUsPerLU=100, QtyTU=10
+    # DESADV B (oB_150): uses pip_B_150 (20 PCE/TU, LU=5 TUs)  → QtyCUsPerTU=20, QtyCUsPerLU=100, QtyTU=5
+    # Distinct QtyCUsPerTU values (10 vs 20) prove per-source-DESADV projection is correct.
+    And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
+      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
+      | e_dA_150                     | 10                                       | 100                                      | 10                                 |
+
+    And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
+      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
+      | e_dB_150                     | 20                                       | 100                                      | 5                                  |

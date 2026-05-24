@@ -1,11 +1,9 @@
+-- DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/desadv_json/M_InOut_Export_EDI_DESADV_JSON_V.sql
 
 -- Main view that uses the functions and other views
 drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
 CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
 SELECT io.m_inout_id,
-       -- Top-level column so PostgREST can filter by (m_inout_id, edi_desadv_id).
-       -- A consolidated shipment links to N DESADVs via edi_desadv_m_inout; view emits N rows.
-       d.edi_desadv_id AS edi_desadv_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
                'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
@@ -49,7 +47,7 @@ SELECT io.m_inout_id,
                'DatePromised', o.datepromised)
        ) as embedded_json
                          FROM m_inout io
-                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id 
+                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
                          -- Enumerate DESADVs via edi_desadv_m_inout junction.
                          -- View emits one row per (m_inout_id, edi_desadv_id) pair.
                          JOIN edi_desadv_m_inout link
@@ -76,6 +74,3 @@ SELECT io.m_inout_id,
                          WHERE io.isactive = 'Y'
   AND io.docstatus IN ('CO', 'CL')
 ;
-
--- Example query
---select * from M_InOut_Export_EDI_DESADV_JSON_V where m_inout_id=1001857;

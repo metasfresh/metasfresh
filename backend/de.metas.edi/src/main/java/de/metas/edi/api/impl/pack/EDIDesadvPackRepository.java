@@ -89,8 +89,7 @@ public class EDIDesadvPackRepository
 		}
 		else
 		{
-			final int maxSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(createEDIDesadvPackRequest.getEdiDesadvId());
-			desadvPackRecord.setSeqNo(maxSeqNo + 1);
+			desadvPackRecord.setSeqNo(desadvDAO.retrievePackSeqNoSequence(createEDIDesadvPackRequest.getEdiDesadvId()).next());
 		}
 		desadvPackRecord.setAD_Org_ID(createEDIDesadvPackRequest.getOrgId().getRepoId());
 		desadvPackRecord.setEDI_Desadv_ID(EDIDesadvId.toRepoId(createEDIDesadvPackRequest.getEdiDesadvId()));

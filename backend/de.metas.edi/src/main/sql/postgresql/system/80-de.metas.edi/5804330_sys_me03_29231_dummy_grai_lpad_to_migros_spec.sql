@@ -1,3 +1,17 @@
+-- Migration: get_epcis_events_json_fn — dummy GRAI middle uses LPAD-to-10 per Migros Bestellnummer spec
+-- Issue: https://github.com/metasfresh/me03/issues/29231
+-- PR: https://github.com/metasfresh/metasfresh/pull/24042
+--
+-- Context:
+--   The Migros EPCIS format requires:
+--     urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer left-padded with zeros><2-digit counter>
+--
+--   Pre-PR the function used: LPAD(poreference, 10, '0') || LPAD(counter, 2, '0')
+--   Commit 3c1a71dd6c4 added the correct per-LU poreference derivation (via M_HU_Assignment →
+--   M_InOutLine → C_OrderLine → C_Order) but changed the format to LEFT(REGEXP_REPLACE(...), 10)
+--   which left-truncates instead of zero-left-padding, breaking the Migros spec.
+--   This migration restores the LPAD-to-10 format while keeping the per-LU plumbing intact.
+
 /*
  * #%L
  * de.metas.edi

@@ -1,3 +1,4 @@
+-- DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/epcis_json/get_epcis_events_json_fn.sql
 /*
  * #%L
  * de.metas.edi
@@ -32,11 +33,11 @@
 --   - DESADV: LEFT JOIN (optional, for buyer/handover/PO references)
 --   - New field: cuGTIN from M_Product.GTIN
 --
--- Changes in this function version:
+-- Changes in this migration:
 -- desadvReferences[] and poReferences[] are jsonb arrays built via the EDI_Desadv_M_InOut
 -- junction (one element per linked DESADV). The scalar desadvReference / poReference fields
--- are kept for backward compatibility. The single-FK edi_desadv join is retained for
--- GLN / location / handover lookups.
+-- are kept for backward compatibility with consumers that read the first element only.
+-- The single-FK edi_desadv join is retained for GLN / location / handover lookups.
 --
 -- Performance design:
 --   - Flat CTEs only (no nested LATERALs)
@@ -123,56 +124,32 @@ BEGIN
         WHERE io.m_inout_id = p_m_inout_id),
 
          pallet_list AS MATERIALIZED (
-             -- All LU HU IDs for this shipment, enriched with the left-zero-padded POReference of
-             -- their source order.  In an n:m consolidated shipment each LU belongs to exactly one
-             -- source order; we pick one POReference per LU (MIN) and LPAD it to 10 digits for the
-             -- GRAI Serial middle segment per Migros spec:
-             --   urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer left-padded><2-digit counter>
-             -- Production POReferences are numeric (e.g. '1234567890'); LPAD pads shorter values
-             -- with leading zeros and leaves 10-digit values unchanged.
-             SELECT lu_hu_id,
-                    LPAD(COALESCE(MIN(poreference), '0'), 10, '0') AS lu_poreference_padded
-             FROM (
-                 -- Primary: M_HU_Assignment → InOutLine → OrderLine → Order path
-                 SELECT ha.m_lu_hu_id AS lu_hu_id,
-                        ord.poreference
-                 FROM inout_context ctx
-                          JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
-                          JOIN m_hu_assignment ha
-                               ON ha.ad_table_id = 320 -- M_InOutLine
-                                   AND ha.record_id = iol.m_inoutline_id
-                          LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
-                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
-                 WHERE ha.m_lu_hu_id IS NOT NULL
-                   AND ha.isactive = 'Y'
+             -- All LU HU IDs for this shipment (computed once)
+             SELECT DISTINCT ha.m_lu_hu_id
+             FROM inout_context ctx
+                      JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
+                      JOIN m_hu_assignment ha
+                           ON ha.ad_table_id = 320 -- M_InOutLine
+                               AND ha.record_id = iol.m_inoutline_id
+             WHERE ha.m_lu_hu_id IS NOT NULL
+               AND ha.isactive = 'Y'
 
-                 UNION ALL
+             UNION
 
-                 -- Fallback: M_ShipmentSchedule_QtyPicked path (no per-LU order link available)
-                 SELECT qp.m_lu_hu_id AS lu_hu_id,
-                        NULL::text AS poreference
-                 FROM inout_context ctx
-                          JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
-                          JOIN m_shipmentschedule_qtypicked qp ON qp.m_inoutline_id = iol.m_inoutline_id
-                 WHERE qp.m_lu_hu_id IS NOT NULL
-                   AND qp.isactive = 'Y'
-                   AND NOT EXISTS (
-                       SELECT 1 FROM m_hu_assignment ha2
-                       WHERE ha2.m_lu_hu_id = qp.m_lu_hu_id
-                         AND ha2.ad_table_id = 320
-                         AND ha2.isactive = 'Y'
-                   )
-             ) lu_with_poreference
-             GROUP BY lu_hu_id),
+             SELECT DISTINCT qp.m_lu_hu_id
+             FROM inout_context ctx
+                      JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
+                      JOIN m_shipmentschedule_qtypicked qp ON qp.m_inoutline_id = iol.m_inoutline_id
+             WHERE qp.m_lu_hu_id IS NOT NULL
+               AND qp.isactive = 'Y'),
 
          individual_tu_ids AS MATERIALIZED (
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet
              SELECT lu_hu.m_hu_id                 AS lu_hu_id,
-                    pl.lu_poreference_padded,
                     tu_hu.m_hu_id                 AS tu_hu_id,
                     tu_hu.m_hu_pi_item_product_id AS tu_pi_item_product_id
              FROM pallet_list pl
-                      JOIN m_hu lu_hu ON lu_hu.m_hu_id = pl.lu_hu_id
+                      JOIN m_hu lu_hu ON lu_hu.m_hu_id = pl.m_lu_hu_id
                       JOIN m_hu_item parent_item
                            ON parent_item.m_hu_id = lu_hu.m_hu_id
                                AND parent_item.itemtype = 'HU'
@@ -182,7 +159,6 @@ BEGIN
              -- CASE B: HA items with their virtual TU resolved — computed ONCE, reused for
              --         both attribute lookup and storage item joins (avoids double m_hu scan)
              SELECT lu_hu.m_hu_id                           AS lu_hu_id,
-                    pl.lu_poreference_padded,
                     ha_item.m_hu_item_id                    AS tu_hu_id,
                     ha_item.qty,
                     ha_vtu.m_hu_id                          AS vtu_hu_id,
@@ -190,7 +166,7 @@ BEGIN
                     -- HU ID to use for attribute lookups: virtual TU first, fall back to LU
                     COALESCE(ha_vtu.m_hu_id, lu_hu.m_hu_id) AS attr_hu_id
              FROM pallet_list pl
-                      JOIN m_hu lu_hu ON lu_hu.m_hu_id = pl.lu_hu_id
+                      JOIN m_hu lu_hu ON lu_hu.m_hu_id = pl.m_lu_hu_id
                       JOIN m_hu_item ha_item
                            ON ha_item.m_hu_id = lu_hu.m_hu_id
                                AND ha_item.itemtype = 'HA'
@@ -227,7 +203,6 @@ BEGIN
          individual_tus AS MATERIALIZED (
              -- CASE A: individual TUs with attributes joined from hu_attrs
              SELECT it.lu_hu_id,
-                    it.lu_poreference_padded,
                     it.tu_hu_id,
                     it.tu_pi_item_product_id,
                     NULLIF(TRIM(ha.grai_value), '') AS grai_raw,
@@ -264,7 +239,6 @@ BEGIN
          aggregated_tu_base AS MATERIALIZED (
              -- CASE B: aggregated TU base rows with attributes — vtu already resolved in ha_items_with_vtu
              SELECT hwv.lu_hu_id,
-                    hwv.lu_poreference_padded,
                     hwv.tu_hu_id,
                     hwv.qty,
                     hwv.vtu_hu_id,
@@ -314,7 +288,6 @@ BEGIN
          all_crates_raw AS (
              -- Individual TUs (CASE A)
              SELECT it.lu_hu_id,
-                    it.lu_poreference_padded,
                     it.tu_hu_id,
                     it.grai_raw,
                     it.lot_number,
@@ -328,7 +301,6 @@ BEGIN
 
              -- Aggregated TUs (CASE B): expand grai_arr to qty rows, reuse pre-computed items
              SELECT atb.lu_hu_id,
-                    atb.lu_poreference_padded,
                     atb.tu_hu_id,
                     NULLIF(
                             CASE
@@ -347,24 +319,21 @@ BEGIN
                       CROSS JOIN GENERATE_SERIES(1, GREATEST(atb.qty::int, 1)) AS gs),
 
          all_crates_with_grai AS (
-             -- Dummy GRAI: middle segment = source-order POReference (LPAD to 10 digits, per-LU).
-             -- Migros format: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
-             -- Counter resets per LU so TUs within the same LU get 01, 02, … while TUs on
-             -- different LUs (= different source orders) start at 01 independently.
-             -- This avoids both the cross-order POReference leak (pre-PR bug) and the
-             -- zero-uniqueness 'DUMMY_____' literal (first PR draft).
+             -- Dummy GRAI counter: global, increments only over slots without a real GRAI,
+             -- always starting at 01 for the first dummy across the whole shipment.
+             -- Static 'DUMMY_____' middle segment avoids a POReference that may belong
+             -- to only one of N source orders in a consolidated shipment.
              SELECT lu_hu_id,
                     tu_hu_id,
                     CASE
                         WHEN grai_raw IS NOT NULL
                             THEN grai_raw
                             ELSE v_dummy_grai_prefix ||
-                                 lu_poreference_padded ||
+                                 'DUMMY_____' ||
                                  LPAD(
                                          (COUNT(*) FILTER (WHERE grai_raw IS NULL)
-                                             OVER (PARTITION BY lu_hu_id
-                                                   ORDER BY tu_hu_id, sort_ord
-                                                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW))::text,
+                                             OVER (ORDER BY lu_hu_id, tu_hu_id, sort_ord
+                                             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW))::text,
                                          2, '0')
                     END AS grai,
                     lot_number,
@@ -407,10 +376,10 @@ BEGIN
                        WHEN ctx.drop_gln_desadv IS NOT NULL THEN ctx.drop_gcplength_desadv
                                                             ELSE ctx.drop_gcplength_ship
                    END,
-               -- DESADV references: scalar (first element, backward-compat) AND array.
-               -- desadvReferences[] carries all linked DESADV DocumentNos.
-               -- Scalar falls back to M_InOut.EDI_Desadv_ID for shipments without junction rows.
-                   'desadvReference', COALESCE((ctx.desadv_documentnos ->> 0), ctx.desadv_documentno),
+               -- DESADV references: scalar (first/representative, backward-compat) AND array.
+               -- desadvReferences[] carries all linked DESADV DocumentNos; consumers that
+               -- need full multi-order visibility iterate the array.
+                   'desadvReference', (ctx.desadv_documentnos ->> 0),
                    'desadvReferences', COALESCE(ctx.desadv_documentnos, '[]'::jsonb),
                -- PO references: same scalar + array pattern.
                -- Scalar falls back to InOut.POReference for shipments without junction rows.
