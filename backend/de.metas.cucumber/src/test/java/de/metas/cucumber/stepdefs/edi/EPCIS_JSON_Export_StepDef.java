@@ -353,10 +353,44 @@ public class EPCIS_JSON_Export_StepDef
 				"SELECT m_attribute_id FROM m_attribute WHERE value='SSCC18' LIMIT 1");
 		assertThat(sscc18AttributeId).as("M_Attribute_ID for SSCC18").isGreaterThan(0);
 
-		// Get a suitable LU M_HU_PI_Version (first available LU version)
-		final int luPIVersionId = DB.getSQLValueEx(Trx.TRXNAME_None,
-				"SELECT m_hu_pi_version_id FROM m_hu_pi_version WHERE hu_unittype='LU' AND iscurrent='Y' LIMIT 1");
+		// Get a suitable LU M_HU_PI_Version that has a TU child PI item, plus the TU version and PI item IDs.
+		// The EPCIS function's individual_tu_ids CTE requires:
+		//   M_HU_Item (itemtype='HU') on the LU → M_HU (child TU) via M_HU.m_hu_item_parent_id.
+		// We therefore need luPIVersionId, tuPIVersionId, and m_hu_pi_item_id in one lookup.
+		final int[] piVersionAndItem = new int[3]; // [0]=luPIVersionId, [1]=tuPIVersionId, [2]=luPiItemId
+		try (final java.sql.PreparedStatement pstmt = DB.prepareStatement(
+				"SELECT piv_lu.m_hu_pi_version_id, piv_tu.m_hu_pi_version_id, pii.m_hu_pi_item_id"
+						+ " FROM m_hu_pi_version piv_lu"
+						+ " JOIN m_hu_pi_item pii ON pii.m_hu_pi_version_id = piv_lu.m_hu_pi_version_id"
+						+ "   AND pii.itemtype = 'HU' AND pii.isactive = 'Y'"
+						+ " JOIN m_hu_pi pih ON pih.m_hu_pi_id = pii.included_hu_pi_id"
+						+ " JOIN m_hu_pi_version piv_tu ON piv_tu.m_hu_pi_id = pih.m_hu_pi_id"
+						+ "   AND piv_tu.iscurrent = 'Y' AND piv_tu.hu_unittype = 'TU'"
+						+ " WHERE piv_lu.iscurrent = 'Y' AND piv_lu.hu_unittype = 'LU' AND piv_lu.isactive = 'Y'"
+						+ " LIMIT 1",
+				Trx.TRXNAME_None))
+		{
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				if (!rs.next())
+				{
+					throw new AdempiereException("No current LU M_HU_PI_Version with a TU child PI item found");
+				}
+				piVersionAndItem[0] = rs.getInt(1);
+				piVersionAndItem[1] = rs.getInt(2);
+				piVersionAndItem[2] = rs.getInt(3);
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed to look up LU/TU PI version and PI item", e);
+		}
+		final int luPIVersionId = piVersionAndItem[0];
+		final int tuPIVersionId = piVersionAndItem[1];
+		final int luPiItemId = piVersionAndItem[2];
 		assertThat(luPIVersionId).as("A current LU M_HU_PI_Version must exist").isGreaterThan(0);
+		assertThat(tuPIVersionId).as("A current TU M_HU_PI_Version (child of LU) must exist").isGreaterThan(0);
+		assertThat(luPiItemId).as("M_HU_PI_Item linking LU to TU must exist").isGreaterThan(0);
 
 		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
 		final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
@@ -423,6 +457,30 @@ public class EPCIS_JSON_Export_StepDef
 								+ inoutLineId + "," + luHuId + "," + luHuId + ",'Y', now(), 100, now(), 100)",
 						Trx.TRXNAME_None);
 			}
+
+			// INSERT a minimal TU M_HU child so that the EPCIS function's individual_tu_ids CTE can find it.
+			// The CTE join pattern:
+			//   M_HU_Item (itemtype='HU') on the LU → M_HU (child TU) via M_HU.m_hu_item_parent_id
+			// Step 1: create the M_HU_Item row on the LU (parent)
+			final int huItemId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"INSERT INTO m_hu_item"
+							+ " (m_hu_item_id, ad_client_id, ad_org_id, m_hu_id, m_hu_pi_item_id, itemtype, qty, isactive,"
+							+ " created, createdby, updated, updatedby)"
+							+ " VALUES (nextval('m_hu_item_seq')," + adClientId + "," + adOrgId + "," + luHuId + "," + luPiItemId
+							+ ",'HU', 1,'Y', now(), 100, now(), 100)"
+							+ " RETURNING m_hu_item_id");
+			assertThat(huItemId).as("Newly created M_HU_Item_ID for LU→TU link").isGreaterThan(0);
+
+			// Step 2: create the TU M_HU row, pointing back to the M_HU_Item via m_hu_item_parent_id
+			final int tuHuId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"INSERT INTO m_hu"
+							+ " (m_hu_id, ad_client_id, ad_org_id, m_hu_pi_version_id, m_hu_item_parent_id, hustatus, isactive,"
+							+ " value, created, createdby, updated, updatedby)"
+							+ " VALUES (nextval('m_hu_seq')," + adClientId + "," + adOrgId + "," + tuPIVersionId + "," + huItemId
+							+ ",'E','Y',"
+							+ " 'EPCIS_TEST_TU_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
+							+ " RETURNING m_hu_id");
+			assertThat(tuHuId).as("Newly created TU M_HU_ID (child of LU " + luHuId + ")").isGreaterThan(0);
 		});
 	}
 
