@@ -553,11 +553,16 @@ public class EPCIS_JSON_Export_StepDef
 
 		// Build comma-separated ID list for SQL IN clauses
 		final String luIdList = injectedLuHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
+		final String tuIdList = injectedTuHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
 		final String allIdList = allHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
 
-		// Delete in FK-dependency order: assignments first, then items, then HU attributes, then HUs
+		// Delete in FK-dependency order. Each TU m_hu carries m_hu_item_parent_id → the LU's m_hu_item,
+		// so the TU m_hu rows must go before the LU's m_hu_item rows.
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"DELETE FROM m_hu_assignment WHERE m_lu_hu_id IN (" + luIdList + ")",
+				Trx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu WHERE m_hu_id IN (" + tuIdList + ")",
 				Trx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail(
 				"DELETE FROM m_hu_item WHERE m_hu_id IN (" + luIdList + ")",
@@ -566,7 +571,7 @@ public class EPCIS_JSON_Export_StepDef
 				"DELETE FROM m_hu_attribute WHERE m_hu_id IN (" + allIdList + ")",
 				Trx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM m_hu WHERE m_hu_id IN (" + allIdList + ")",
+				"DELETE FROM m_hu WHERE m_hu_id IN (" + luIdList + ")",
 				Trx.TRXNAME_None);
 
 		injectedLuHuIds.clear();
