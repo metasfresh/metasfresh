@@ -13,6 +13,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
@@ -34,10 +35,12 @@ public class DocumentFieldLogicExpressionResultRevaluator
 
 	private static final Logger logger = LogManager.getLogger(DocumentFieldLogicExpressionResultRevaluator.class);
 
+	// `#AD_Role_Group` is not declared in Env.java — kept local. The other three reuse the Env constants
+	// as the single source of truth for the context-variable name strings (review note on #24231).
 	private static final CtxName CTXNAME_AD_Role_Group = CtxNames.parse("#AD_Role_Group");
-	private static final CtxName CTXNAME_AD_Role_ID = CtxNames.parse("#AD_Role_ID");
-	private static final CtxName CTXNAME_AD_User_ID = CtxNames.parse("#AD_User_ID");
-	private static final CtxName CTXNAME_AD_Client_ID = CtxNames.parse("#AD_Client_ID");
+	private static final CtxName CTXNAME_AD_Role_ID = CtxNames.parse(Env.CTXNAME_AD_Role_ID);
+	private static final CtxName CTXNAME_AD_User_ID = CtxNames.parse(Env.CTXNAME_AD_User_ID);
+	private static final CtxName CTXNAME_AD_Client_ID = CtxNames.parse(Env.CTXNAME_AD_Client_ID);
 
 	private final LogicExpressionResultWithReason alwaysReturnResult;
 	@Nullable private final IUserRolePermissions userRolePermissions;
