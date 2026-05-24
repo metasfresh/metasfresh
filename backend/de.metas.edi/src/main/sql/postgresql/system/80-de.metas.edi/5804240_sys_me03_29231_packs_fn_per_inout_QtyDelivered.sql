@@ -1,7 +1,10 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_packs_json_fn.sql
+-- Use per-inout QtyDeliveredInUOM from edi_desadvline_inoutline instead of cumulative
+-- dl.qtydeliveredinuom. When multiple M_InOuts (partial shipments) share one EDI_Desadv,
+-- the cumulative qty was incorrectly emitted for each individual export call.
+-- COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom): diol (joined on m_inoutline_id +
+-- edi_desadvline_id) carries the per-inout qty; fallback to dl.qtydeliveredinuom for
+-- single-inout DESADVs where no diol row exists.
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -182,7 +185,7 @@ BEGIN
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = ia.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
-            -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
+            -- Junction table for per-shipment-line delivery totals
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
             -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (

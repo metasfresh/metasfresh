@@ -1,24 +1,18 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Migration: get_epcis_events_json_fn — dummy GRAI middle = per-LU source-order POReference
+-- Issue: https://github.com/metasfresh/me03/issues/29231
+-- PR: https://github.com/metasfresh/metasfresh/pull/24042
+--
+-- Context:
+--   Previously the dummy GRAI for TUs without a real GRAI attribute used either
+--   ctx.poreference (the InOut-level POReference — leaked Order A's ref into Order B's TUs
+--   in n:m consolidated shipments) or the literal 'DUMMY_____' (zero uniqueness across all
+--   shipments).
+--
+--   This migration rewrites pallet_list to fetch, via M_HU_Assignment → M_InOutLine →
+--   C_OrderLine → C_Order, the POReference of the source order for each LU.  The dummy GRAI
+--   middle segment becomes that sanitized POReference (≤10 chars, [A-Za-z0-9-], fallback
+--   'noporef' when no order link exists).  The per-TU counter now resets per-LU so TUs
+--   within the same LU still get 01, 02, … independently from other LUs.
 
 -- EPCIS event JSON for a given M_InOut (shipment).
 -- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
@@ -123,15 +117,21 @@ BEGIN
         WHERE io.m_inout_id = p_m_inout_id),
 
          pallet_list AS MATERIALIZED (
-             -- All LU HU IDs for this shipment, enriched with the left-zero-padded POReference of
-             -- their source order.  In an n:m consolidated shipment each LU belongs to exactly one
-             -- source order; we pick one POReference per LU (MIN) and LPAD it to 10 digits for the
-             -- GRAI Serial middle segment per Migros spec:
-             --   urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer left-padded><2-digit counter>
-             -- Production POReferences are numeric (e.g. '1234567890'); LPAD pads shorter values
-             -- with leading zeros and leaves 10-digit values unchanged.
+             -- All LU HU IDs for this shipment, enriched with the sanitized POReference of their
+             -- source order.  In an n:m consolidated shipment each LU belongs to exactly one source
+             -- order; we pick one POReference per LU (MIN) and sanitize it for GRAI Serial use.
+             -- Sanitization: replace any char outside [A-Za-z0-9-] with '_', cap at 10 chars.
              SELECT lu_hu_id,
-                    LPAD(COALESCE(MIN(poreference), '0'), 10, '0') AS lu_poreference_padded
+                    COALESCE(
+                        LEFT(
+                            REGEXP_REPLACE(
+                                MIN(poreference),
+                                '[^A-Za-z0-9-]', '_', 'g'
+                            ),
+                            10
+                        ),
+                        'noporef'
+                    ) AS lu_poreference_sanitized
              FROM (
                  -- Primary: M_HU_Assignment → InOutLine → OrderLine → Order path
                  SELECT ha.m_lu_hu_id AS lu_hu_id,
@@ -168,7 +168,7 @@ BEGIN
          individual_tu_ids AS MATERIALIZED (
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet
              SELECT lu_hu.m_hu_id                 AS lu_hu_id,
-                    pl.lu_poreference_padded,
+                    pl.lu_poreference_sanitized,
                     tu_hu.m_hu_id                 AS tu_hu_id,
                     tu_hu.m_hu_pi_item_product_id AS tu_pi_item_product_id
              FROM pallet_list pl
@@ -182,7 +182,7 @@ BEGIN
              -- CASE B: HA items with their virtual TU resolved — computed ONCE, reused for
              --         both attribute lookup and storage item joins (avoids double m_hu scan)
              SELECT lu_hu.m_hu_id                           AS lu_hu_id,
-                    pl.lu_poreference_padded,
+                    pl.lu_poreference_sanitized,
                     ha_item.m_hu_item_id                    AS tu_hu_id,
                     ha_item.qty,
                     ha_vtu.m_hu_id                          AS vtu_hu_id,
@@ -227,7 +227,7 @@ BEGIN
          individual_tus AS MATERIALIZED (
              -- CASE A: individual TUs with attributes joined from hu_attrs
              SELECT it.lu_hu_id,
-                    it.lu_poreference_padded,
+                    it.lu_poreference_sanitized,
                     it.tu_hu_id,
                     it.tu_pi_item_product_id,
                     NULLIF(TRIM(ha.grai_value), '') AS grai_raw,
@@ -264,7 +264,7 @@ BEGIN
          aggregated_tu_base AS MATERIALIZED (
              -- CASE B: aggregated TU base rows with attributes — vtu already resolved in ha_items_with_vtu
              SELECT hwv.lu_hu_id,
-                    hwv.lu_poreference_padded,
+                    hwv.lu_poreference_sanitized,
                     hwv.tu_hu_id,
                     hwv.qty,
                     hwv.vtu_hu_id,
@@ -314,7 +314,7 @@ BEGIN
          all_crates_raw AS (
              -- Individual TUs (CASE A)
              SELECT it.lu_hu_id,
-                    it.lu_poreference_padded,
+                    it.lu_poreference_sanitized,
                     it.tu_hu_id,
                     it.grai_raw,
                     it.lot_number,
@@ -328,7 +328,7 @@ BEGIN
 
              -- Aggregated TUs (CASE B): expand grai_arr to qty rows, reuse pre-computed items
              SELECT atb.lu_hu_id,
-                    atb.lu_poreference_padded,
+                    atb.lu_poreference_sanitized,
                     atb.tu_hu_id,
                     NULLIF(
                             CASE
@@ -347,8 +347,7 @@ BEGIN
                       CROSS JOIN GENERATE_SERIES(1, GREATEST(atb.qty::int, 1)) AS gs),
 
          all_crates_with_grai AS (
-             -- Dummy GRAI: middle segment = source-order POReference (LPAD to 10 digits, per-LU).
-             -- Migros format: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
+             -- Dummy GRAI: middle segment = source-order POReference (sanitized, per-LU).
              -- Counter resets per LU so TUs within the same LU get 01, 02, … while TUs on
              -- different LUs (= different source orders) start at 01 independently.
              -- This avoids both the cross-order POReference leak (pre-PR bug) and the
@@ -359,7 +358,7 @@ BEGIN
                         WHEN grai_raw IS NOT NULL
                             THEN grai_raw
                             ELSE v_dummy_grai_prefix ||
-                                 lu_poreference_padded ||
+                                 lu_poreference_sanitized ||
                                  LPAD(
                                          (COUNT(*) FILTER (WHERE grai_raw IS NULL)
                                              OVER (PARTITION BY lu_hu_id
