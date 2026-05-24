@@ -369,7 +369,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # QuantityType=D shipments do not create M_HU records; inject minimal M_HU +
     # M_HU_Attribute (SSCC18) + M_HU_Assignment rows directly so the EPCIS pallet-
     # discovery CTE finds them.  One distinct LU per DESADV source order.
-    And real LU HUs with SSCC18 are assigned to all inout lines of M_InOut identified by io_S29231_130:
+    And real LU HUs with SSCC18 are assigned to all inout lines of M_InOut identified by io_S29231_130
       | sscc18             |
       | 987654321000000016 |
       | 987654321000000023 |
