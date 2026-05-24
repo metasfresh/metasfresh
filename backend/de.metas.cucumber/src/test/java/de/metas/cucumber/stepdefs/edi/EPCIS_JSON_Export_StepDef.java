@@ -35,8 +35,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -311,6 +314,154 @@ public class EPCIS_JSON_Export_StepDef
 		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
 
 		DataTableRows.of(dataTable).forEach(row -> assertEpcisArrayField(row));
+	}
+
+	/**
+	 * Creates minimal LU HUs with the given SSCC18 values and assigns them to the M_InOutLines of the
+	 * given shipment via {@code M_HU_Assignment}. Exactly one LU is created per data-table row and
+	 * assigned to all M_InOutLines of the shipment; the EPCIS pallet-discovery CTE uses
+	 * {@code DISTINCT m_lu_hu_id} so each distinct LU appears exactly once in {@code pallets[]}.
+	 *
+	 * <p>Background: {@code QuantityType=D} shipments do not create real M_HU records, so
+	 * {@code pallets[]} is always empty. This step injects the required M_HU + M_HU_Attribute +
+	 * M_HU_Assignment rows without needing the full picking workflow, enabling an end-to-end test
+	 * of the EPCIS pallet-array shape for consolidated multi-source-order shipments.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>sscc18</b> — (required) 18-digit SSCC value to set on the LU HU
+	 * @cucumber.example
+	 * <pre>
+	 * And real LU HUs with SSCC18 are assigned to all inout lines of M_InOut identified by io_130:
+	 *   | sscc18             |
+	 *   | 987654321000000016 |
+	 *   | 987654321000000023 |
+	 * </pre>
+	 */
+	@And("^real LU HUs with SSCC18 are assigned to all inout lines of M_InOut identified by (.*)$")
+	public void assignLuHUsWithSscc18ToInoutLines(@NonNull final String inoutIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final int inoutId = inout.getM_InOut_ID();
+
+		// Look up AD_Table_ID for M_InOutLine and the SSCC18 M_Attribute_ID once
+		final int inoutLineTableId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT ad_table_id FROM ad_table WHERE tablename='M_InOutLine'");
+		assertThat(inoutLineTableId).as("AD_Table_ID for M_InOutLine").isGreaterThan(0);
+
+		final int sscc18AttributeId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT m_attribute_id FROM m_attribute WHERE value='SSCC18' LIMIT 1");
+		assertThat(sscc18AttributeId).as("M_Attribute_ID for SSCC18").isGreaterThan(0);
+
+		// Get a suitable LU M_HU_PI_Version (first available LU version)
+		final int luPIVersionId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT m_hu_pi_version_id FROM m_hu_pi_version WHERE hu_unittype='LU' AND iscurrent='Y' LIMIT 1");
+		assertThat(luPIVersionId).as("A current LU M_HU_PI_Version must exist").isGreaterThan(0);
+
+		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
+		final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
+		if (adOrgId <= 0)
+		{
+			throw new AdempiereException("AD_Org_ID from context is 0; context may not be initialised");
+		}
+
+		// Collect all M_InOutLine_IDs for this shipment via PreparedStatement
+		final List<Integer> inoutLineIds = new ArrayList<>();
+		try (final java.sql.PreparedStatement pstmt = DB.prepareStatement(
+				"SELECT m_inoutline_id FROM m_inoutline WHERE m_inout_id=? ORDER BY m_inoutline_id",
+				Trx.TRXNAME_None))
+		{
+			pstmt.setInt(1, inoutId);
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				while (rs.next())
+				{
+					inoutLineIds.add(rs.getInt(1));
+				}
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed to load M_InOutLine IDs for M_InOut_ID=" + inoutId, e);
+		}
+		assertThat(inoutLineIds).as("M_InOutLine records for M_InOut_ID=" + inoutId).isNotEmpty();
+
+		dataTable.asMaps().forEach(rowMap -> {
+			final String sscc18 = rowMap.get("sscc18");
+			assertThat(sscc18).as("sscc18 column must be present in the data table row").isNotBlank();
+
+			// INSERT a minimal LU M_HU record; value must be unique and non-null
+			final int luHuId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"INSERT INTO m_hu (m_hu_id, ad_client_id, ad_org_id, m_hu_pi_version_id, hustatus, isactive,"
+							+ " value, created, createdby, updated, updatedby)"
+							+ " VALUES (nextval('m_hu_seq')," + adClientId + "," + adOrgId + "," + luPIVersionId + ",'E','Y',"
+							+ " 'EPCIS_TEST_LU_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
+							+ " RETURNING m_hu_id");
+			assertThat(luHuId).as("Newly created LU M_HU_ID").isGreaterThan(0);
+
+			// INSERT the SSCC18 attribute value on the LU
+			final int huAttrId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"SELECT nextval('m_hu_attribute_seq')");
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"INSERT INTO m_hu_attribute"
+							+ " (m_hu_attribute_id, ad_client_id, ad_org_id, m_hu_id, m_attribute_id, value, isactive,"
+							+ " created, createdby, updated, updatedby)"
+							+ " VALUES (" + huAttrId + "," + adClientId + "," + adOrgId + "," + luHuId + "," + sscc18AttributeId
+							+ ",'" + sscc18 + "','Y', now(), 100, now(), 100)",
+					Trx.TRXNAME_None);
+
+			// INSERT M_HU_Assignment rows linking this LU to every M_InOutLine of the shipment
+			for (final int inoutLineId : inoutLineIds)
+			{
+				final int assignId = DB.getSQLValueEx(Trx.TRXNAME_None,
+						"SELECT nextval('m_hu_assignment_seq')");
+				DB.executeUpdateAndThrowExceptionOnFail(
+						"INSERT INTO m_hu_assignment"
+								+ " (m_hu_assignment_id, ad_client_id, ad_org_id, ad_table_id, record_id, m_hu_id, m_lu_hu_id, isactive,"
+								+ " created, createdby, updated, updatedby)"
+								+ " VALUES (" + assignId + "," + adClientId + "," + adOrgId + "," + inoutLineTableId + ","
+								+ inoutLineId + "," + luHuId + "," + luHuId + ",'Y', now(), 100, now(), 100)",
+						Trx.TRXNAME_None);
+			}
+		});
+	}
+
+	/**
+	 * Asserts that the {@code pallets[]} array in the last EPCIS JSON result contains exactly the
+	 * given SSCC18 values (order-independent).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>sscc18</b> — (required) expected SSCC18 value; one row per expected pallet
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON pallets contain SSCC18 values in any order:
+	 *   | sscc18             |
+	 *   | 987654321000000016 |
+	 *   | 987654321000000023 |
+	 * </pre>
+	 */
+	@Then("the EPCIS JSON pallets contain SSCC18 values in any order:")
+	public void validatePalletsContainSscc18Values(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
+
+		final JsonNode pallets = lastEpcisResult.path("pallets");
+		assertThat(pallets.isArray()).as("pallets must be a JSON array").isTrue();
+
+		final List<String> expectedSscc18Values = new ArrayList<>();
+		dataTable.asMaps().forEach(rowMap -> expectedSscc18Values.add(rowMap.get("sscc18")));
+
+		assertThat(pallets.size())
+				.as("pallets[] must contain exactly %d entries", expectedSscc18Values.size())
+				.isEqualTo(expectedSscc18Values.size());
+
+		final List<String> actualSscc18Values = new ArrayList<>();
+		pallets.forEach(pallet -> actualSscc18Values.add(pallet.path("sscc").asText()));
+
+		assertThat(actualSscc18Values)
+				.as("pallets[] sscc18 values (any order)")
+				.containsExactlyInAnyOrderElementsOf(expectedSscc18Values);
 	}
 
 	private void assertEpcisArrayField(@NonNull final DataTableRow row)

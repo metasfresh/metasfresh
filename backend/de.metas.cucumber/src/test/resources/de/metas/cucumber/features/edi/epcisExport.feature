@@ -256,14 +256,13 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
 
   @from:cucumber
   @Id:S29231_130
-  @design_pending
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S29231_130 — Two orders, one consolidated shipment → EPCIS desadvReferences[] and poReferences[] arrays of size 2
+  Scenario: S29231_130 — Two orders, one consolidated shipment → EPCIS pallets[] populated, desadvReferences[] and poReferences[] arrays of size 2
   ## Asserts that the EPCIS event JSON for a 2-source-order consolidated shipment carries
-  ## desadvReferences[] and poReferences[] as jsonb arrays of size 2 (not scalars, not nulls).
-  ## Tagged @design_pending: if the receiver-side parser requires a different shape, only the
-  ## SQL function and this scenario need to change.
+  ## pallets[] of size 2 (one LU per DESADV), desadvReferences[] of size 2, and
+  ## poReferences[] of size 2.  Two real LU HUs with distinct SSCC18 values are injected
+  ## directly via SQL (QuantityType=D shipments skip the normal HU-picking flow).
     Given metasfresh contains M_Products:
       | Identifier      | GTIN          |
       | p_S29231_130    | 4060000000130 |
@@ -366,11 +365,24 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | packA_S29231_130   | dA_S29231_130            | true                |
       | packB_S29231_130   | dB_S29231_130            | true                |
 
+    # ─── Inject real LU HUs so pallets[] is populated ────────────────────────────────
+    # QuantityType=D shipments do not create M_HU records; inject minimal M_HU +
+    # M_HU_Attribute (SSCC18) + M_HU_Assignment rows directly so the EPCIS pallet-
+    # discovery CTE finds them.  One distinct LU per DESADV source order.
+    And real LU HUs with SSCC18 are assigned to all inout lines of M_InOut identified by io_S29231_130:
+      | sscc18             |
+      | 987654321000000016 |
+      | 987654321000000023 |
+
     # ─── CORE ASSERTION ──────────────────────────────────────────────────────────────
-    # The EPCIS function must return ONE event document with desadvReferences[] of size 2
-    # and poReferences[] of size 2 — one element per source-order DESADV.
+    # The EPCIS function must return ONE event document with pallets[] of size 2,
+    # desadvReferences[] of size 2, and poReferences[] of size 2.
     When the EPCIS JSON export function is called for M_InOut identified by io_S29231_130
-    Then the EPCIS JSON array field has:
+    Then the EPCIS JSON pallets contain SSCC18 values in any order:
+      | sscc18             |
+      | 987654321000000016 |
+      | 987654321000000023 |
+    And the EPCIS JSON array field has:
       | field            | expectedSize |
       | desadvReferences | 2            |
       | poReferences     | 2            |
