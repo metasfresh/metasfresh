@@ -33,6 +33,7 @@ public class DocumentFieldLogicExpressionResultRevaluator
 	private static final Logger logger = LogManager.getLogger(DocumentFieldLogicExpressionResultRevaluator.class);
 
 	private static final CtxName CTXNAME_AD_Role_Group = CtxNames.parse("#AD_Role_Group");
+	private static final CtxName CTXNAME_AD_Role_ID = CtxNames.parse("#AD_Role_ID");
 
 	private final LogicExpressionResultWithReason alwaysReturnResult;
 	@Nullable private final IUserRolePermissions userRolePermissions;
@@ -93,6 +94,20 @@ public class DocumentFieldLogicExpressionResultRevaluator
 				{
 					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
 					newParameters.put(CTXNAME_AD_Role_Group.getName(), newValue);
+				}
+			}
+			else if (CTXNAME_AD_Role_ID.equalsByName(usedParameterName))
+			{
+				// mf15#4157: the result of a layout expression that depends on @#AD_Role_ID@ is cached at
+				// descriptor-build time with the FIRST loading user's role ID baked in. Without re-substituting
+				// per request, every subsequent user with a different role sees the cached evaluation — turning
+				// role-specific ReadOnlyLogic into a coin flip that depends on who logged in first.
+				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
+				final String newValue = String.valueOf(userRolePermissions.getRoleId().getRepoId());
+				if (!Objects.equals(usedValue, newValue))
+				{
+					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
+					newParameters.put(CTXNAME_AD_Role_ID.getName(), newValue);
 				}
 			}
 		}

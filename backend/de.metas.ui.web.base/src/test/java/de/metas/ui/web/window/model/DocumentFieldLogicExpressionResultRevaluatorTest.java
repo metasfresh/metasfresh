@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model;
 
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleGroup;
+import de.metas.security.RoleId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
@@ -20,6 +21,13 @@ class DocumentFieldLogicExpressionResultRevaluatorTest
 
 		final IUserRolePermissions userRolePermissions = Mockito.mock(IUserRolePermissions.class);
 		Mockito.doReturn(roleGroup).when(userRolePermissions).getRoleGroup();
+		return userRolePermissions;
+	}
+
+	private static IUserRolePermissions roleWithId(final int adRoleId)
+	{
+		final IUserRolePermissions userRolePermissions = Mockito.mock(IUserRolePermissions.class);
+		Mockito.doReturn(RoleId.ofRepoId(adRoleId)).when(userRolePermissions).getRoleId();
 		return userRolePermissions;
 	}
 
@@ -121,6 +129,57 @@ class DocumentFieldLogicExpressionResultRevaluatorTest
 				assertThat(revaluator.revaluate(expression)).isSameAs(expression);
 			}
 
+		}
+
+		/**
+		 * Regression coverage for the per-request {@code #AD_Role_ID} substitution path
+		 * (mf15#4157). A ReadOnlyLogic / DisplayLogic expression referencing {@code @#AD_Role_ID/0@}
+		 * must NOT be evaluated against the role-id of the user who happened to load the descriptor
+		 * first — every subsequent caller has to see the substitution under their own role.
+		 */
+		@Nested
+		class expression_AD_Role_ID_equals_540174
+		{
+			// Compiled at descriptor build time with @#AD_Role_ID/0@ defaulting to 0 (i.e. unknown).
+			// Without the revaluator's per-request substitution, every later caller would inherit '0=540174 -> false'.
+			final LogicExpressionResult expression = expr("@#AD_Role_ID/0@=540174");
+
+			@Test
+			void compile_time_default_value_resolves_to_false()
+			{
+				assertThat(expression.booleanValue()).isFalse();
+			}
+
+			@Test
+			void caller_with_role_id_540174_sees_TRUE()
+			{
+				final DocumentFieldLogicExpressionResultRevaluator revaluator =
+						DocumentFieldLogicExpressionResultRevaluator.using(roleWithId(540174));
+				assertThat(revaluator.revaluate(expression).booleanValue()).isTrue();
+			}
+
+			@Test
+			void caller_with_different_role_id_sees_FALSE()
+			{
+				final DocumentFieldLogicExpressionResultRevaluator revaluator =
+						DocumentFieldLogicExpressionResultRevaluator.using(roleWithId(540173));
+				assertThat(revaluator.revaluate(expression).booleanValue()).isFalse();
+			}
+
+			@Test
+			void substitution_is_independent_of_first_loaded_value()
+			{
+				// First request: role 540174 → substitution flips the cached '0' to '540174' → result TRUE
+				final DocumentFieldLogicExpressionResultRevaluator first =
+						DocumentFieldLogicExpressionResultRevaluator.using(roleWithId(540174));
+				assertThat(first.revaluate(expression).booleanValue()).isTrue();
+
+				// Second request, same cached `expression` instance: role 540173 → substitution flips to '540173' → result FALSE.
+				// If the revaluator were to forget #AD_Role_ID, the second caller would still see TRUE.
+				final DocumentFieldLogicExpressionResultRevaluator second =
+						DocumentFieldLogicExpressionResultRevaluator.using(roleWithId(540173));
+				assertThat(second.revaluate(expression).booleanValue()).isFalse();
+			}
 		}
 	}
 }
