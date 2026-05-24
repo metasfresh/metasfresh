@@ -698,6 +698,14 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           cucumberparams: ${{ matrix.params }}
+          # TEST_SMTP_* env vars are no longer set here: the cucumber compose
+          # now starts a local MailPit container and the SMTP defaults in
+          # docker-builds/cucumber/compose.yml point at it. The previous
+          # external SMTP relay was rejecting the secrets-stored credentials
+          # since 2026-05-21 (provider-side lockout), keeping profile4 red
+          # across every branch. Removing the secrets reference also lets
+          # forks and PR-from-fork builds run the SMTP scenario without
+          # needing the org secrets.
         timeout-minutes: 120
         run: |
           mkdir cucumber
