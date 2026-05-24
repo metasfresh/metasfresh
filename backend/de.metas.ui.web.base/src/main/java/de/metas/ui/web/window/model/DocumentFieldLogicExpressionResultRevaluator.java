@@ -3,7 +3,9 @@ package de.metas.ui.web.window.model;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.user.UserId;
 import de.metas.util.StringUtils;
+import org.adempiere.service.ClientId;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -34,6 +36,8 @@ public class DocumentFieldLogicExpressionResultRevaluator
 
 	private static final CtxName CTXNAME_AD_Role_Group = CtxNames.parse("#AD_Role_Group");
 	private static final CtxName CTXNAME_AD_Role_ID = CtxNames.parse("#AD_Role_ID");
+	private static final CtxName CTXNAME_AD_User_ID = CtxNames.parse("#AD_User_ID");
+	private static final CtxName CTXNAME_AD_Client_ID = CtxNames.parse("#AD_Client_ID");
 
 	private final LogicExpressionResultWithReason alwaysReturnResult;
 	@Nullable private final IUserRolePermissions userRolePermissions;
@@ -108,6 +112,28 @@ public class DocumentFieldLogicExpressionResultRevaluator
 				{
 					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
 					newParameters.put(CTXNAME_AD_Role_ID.getName(), newValue);
+				}
+			}
+			else if (CTXNAME_AD_User_ID.equalsByName(usedParameterName))
+			{
+				// mirrors the #AD_Role_ID handling for #AD_User_ID
+				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
+				final String newValue = String.valueOf(userRolePermissions.getUserId().getRepoId());
+				if (!Objects.equals(usedValue, newValue))
+				{
+					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
+					newParameters.put(CTXNAME_AD_User_ID.getName(), newValue);
+				}
+			}
+			else if (CTXNAME_AD_Client_ID.equalsByName(usedParameterName))
+			{
+				// mirrors the #AD_Role_ID handling for #AD_Client_ID
+				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
+				final String newValue = String.valueOf(userRolePermissions.getClientId().getRepoId());
+				if (!Objects.equals(usedValue, newValue))
+				{
+					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
+					newParameters.put(CTXNAME_AD_Client_ID.getName(), newValue);
 				}
 			}
 		}
