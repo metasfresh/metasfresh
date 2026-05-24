@@ -1,24 +1,18 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Migration: get_epcis_events_json_fn — dummy GRAI middle = per-LU source-order POReference
+-- Issue: https://github.com/metasfresh/me03/issues/29231
+-- PR: https://github.com/metasfresh/metasfresh/pull/24042
+--
+-- Context:
+--   Previously the dummy GRAI for TUs without a real GRAI attribute used either
+--   ctx.poreference (the InOut-level POReference — leaked Order A's ref into Order B's TUs
+--   in n:m consolidated shipments) or the literal 'DUMMY_____' (zero uniqueness across all
+--   shipments).
+--
+--   This migration rewrites pallet_list to fetch, via M_HU_Assignment → M_InOutLine →
+--   C_OrderLine → C_Order, the POReference of the source order for each LU.  The dummy GRAI
+--   middle segment becomes that sanitized POReference (≤10 chars, [A-Za-z0-9-], fallback
+--   'noporef' when no order link exists).  The per-TU counter now resets per-LU so TUs
+--   within the same LU still get 01, 02, … independently from other LUs.
 
 -- EPCIS event JSON for a given M_InOut (shipment).
 -- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
