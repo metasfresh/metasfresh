@@ -310,10 +310,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
       | pip_S29231_130          | pii_TU_S29231_130 | p_S29231_130  | 10  | 2020-01-01 |
 
-    # Order A — distinct POReference → its own EDI_Desadv
+    # Order A — distinct numeric POReference (≤10 digits) → LPAD pads to '1234567893', per Migros spec
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference               |
-      | oA_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | PO_A_S29231_130_@Date@    |
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference |
+      | oA_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | 1234567893  |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
       | olA_S29231_130| oA_S29231_130 | p_S29231_130  | 10         | pip_S29231_130          |
@@ -324,10 +324,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
       | dA_S29231_130            | bp_S29231_130            | oA_S29231_130         | P                |
 
-    # Order B — distinct POReference → its own EDI_Desadv
+    # Order B — distinct numeric POReference (10 digits) → LPAD leaves '9876543210' unchanged, per Migros spec
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference               |
-      | oB_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | PO_B_S29231_130_@Date@    |
+      | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference |
+      | oB_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | 9876543210  |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
       | olB_S29231_130| oB_S29231_130 | p_S29231_130  | 10         | pip_S29231_130          |
@@ -388,10 +388,11 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | desadvReferences | 2            |
       | poReferences     | 2            |
     # ─── Per-LU POReference in dummy GRAI ────────────────────────────────────────────
-    # POReferences are PO_A_S29231_130_<date> and PO_B_S29231_130_<date>.
-    # Sanitized (replace non-[A-Za-z0-9-] with '_') and capped at 10 chars → PO_A_S2923 / PO_B_S2923.
-    # Each pallet's TU dummy GRAI must contain only its own source order's sanitized POReference.
+    # POReferences are '1234567893' (Order A, 10 digits → LPAD no-op → '1234567893') and
+    # '9876543210' (Order B, 10 digits → LPAD no-op → '9876543210').
+    # Migros spec: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
+    # Each pallet's TU dummy GRAI must contain only its own source order's padded POReference.
     Then the EPCIS JSON pallets have dummy GRAIs containing the source order POReference:
       | sscc18             | ExpectedPOReferenceSanitized |
-      | 987654321000000016 | PO_A_S2923                   |
-      | 987654321000000023 | PO_B_S2923                   |
+      | 987654321000000016 | 1234567893                   |
+      | 987654321000000023 | 9876543210                   |
