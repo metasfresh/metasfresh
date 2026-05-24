@@ -1,22 +1,27 @@
--- NOTE: keep in sync with ad_field_v
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/ad_field_v.sql
+-- mf15#4157: ad_field_v silently ignored AD_Field-level ReadOnlyLogic overrides because the view sourced
+-- readonlylogic exclusively from c.readonlylogic. Every per-field role/column gate set in migrations
+-- against AD_Field.ReadOnlyLogic was a no-op since the WebUI / Swing client loads GridFieldVO from this
+-- view. Fix: honour the AD_Field override when set (non-empty), fall back to AD_Column.ReadOnlyLogic
+-- when not. NULLIF treats empty-string as "not overridden" — legacy AD_Field rows commonly default
+-- ReadOnlyLogic to '' rather than NULL.
+--
+-- Triggered by me03#30014 (Delivery / Order Stop) where ReadOnlyLogic placed on the new
+-- BPartner-window AD_Field rows by https://github.com/metasfresh/metasfresh/pull/22796 never
+-- evaluated; the customer workaround was to move the expression to AD_Column.ReadOnlyLogic.
 
-DROP VIEW IF EXISTS ad_field_vt
-;
+DROP VIEW IF EXISTS ad_field_v$new;
 
-CREATE OR REPLACE VIEW ad_field_vt AS
-SELECT c_trl.ad_language
-     , t.ad_window_id
+CREATE OR REPLACE VIEW ad_field_v$new AS
+SELECT t.ad_window_id
      , f.colorlogic
      , t.ad_tab_id
      , f.ad_field_id
      , tbl.ad_table_id
      , c.ad_column_id
-     , COALESCE(f.name, c.name)                                                                                                                   AS name_BaseLang
-     , COALESCE(f_trl.name, f.name, c_trl.name, c.name)                                                                                           AS name
-     , COALESCE(f.description, c.description)                                                                                                     AS description_BaseLang
-     , COALESCE(f.help, t.help)                                                                                                                   AS help_BaseLang
-     , COALESCE(f_trl.description, f.description, c.description)                                                                                  AS description
-     , COALESCE(f_trl.help, f.help, t.help)                                                                                                       AS help
+     , COALESCE(f.name, c.name)                                                                                                                   AS name
+     , COALESCE(f.description, c.description)                                                                                                     AS description
+     , COALESCE(f.help, t.help)                                                                                                                   AS help
      , f.isdisplayed
      , f.isdisplayedgrid
      , f.IsHideGridColumnIfEmpty
@@ -49,17 +54,14 @@ SELECT c_trl.ad_language
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)                                                                                               AS ad_val_rule_id
      , c.ad_process_id
      , c.isalwaysupdateable
-     -- mf15#4157: honour AD_Field-level ReadOnlyLogic override; fall back to AD_Column when the field has no override.
-     -- NULLIF treats empty-string as "not overridden" (legacy AD_Field rows often carry ''-default instead of NULL).
-     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                    AS readonlylogic
+     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                     AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                                                                                                              AS isencryptedcolumn
      , tbl.tablename
      , c.valuemin
      , c.valuemax
-     , fg.name                                                                                                                                    AS fieldgroup_BaseLang
-     , COALESCE(fg_trl.name, fg.name)                                                                                                             AS fieldgroup
+     , fg.name                                                                                                                                    AS fieldgroup
      , vr.code                                                                                                                                    AS validationcode
      , f.included_tab_id
      , fg.fieldgrouptype
@@ -90,12 +92,18 @@ SELECT c_trl.ad_language
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
          JOIN ad_column c ON c.ad_table_id = t.ad_table_id
-         JOIN ad_column_trl c_trl ON c_trl.ad_column_id = c.ad_column_id
          LEFT JOIN ad_field f ON f.ad_tab_id = t.ad_tab_id AND f.ad_column_id = c.ad_column_id
-         LEFT JOIN ad_field_trl f_trl ON f_trl.ad_field_id = f.ad_field_id AND f_trl.ad_language::text = c_trl.ad_language::text
          LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
-         LEFT JOIN ad_fieldgroup_trl fg_trl ON fg_trl.ad_fieldgroup_id = f.ad_fieldgroup_id AND fg_trl.ad_language::text = c_trl.ad_language::text
          LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
 WHERE (f.isactive = 'Y' OR f.AD_Field_ID IS NULL)
   AND c.isactive = 'Y'
 ;
+
+SELECT db_alter_view(
+    'ad_field_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('ad_field_v$new'))
+);
+
+DROP VIEW IF EXISTS ad_field_v$new;

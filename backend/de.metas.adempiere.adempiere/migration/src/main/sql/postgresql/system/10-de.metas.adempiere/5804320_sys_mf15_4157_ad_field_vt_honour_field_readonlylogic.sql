@@ -1,9 +1,9 @@
--- NOTE: keep in sync with ad_field_v
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/ad_field_vt.sql
+-- mf15#4157 — translated-language sibling of ad_field_v. Same readonlylogic fix.
 
-DROP VIEW IF EXISTS ad_field_vt
-;
+DROP VIEW IF EXISTS ad_field_vt$new;
 
-CREATE OR REPLACE VIEW ad_field_vt AS
+CREATE OR REPLACE VIEW ad_field_vt$new AS
 SELECT c_trl.ad_language
      , t.ad_window_id
      , f.colorlogic
@@ -49,9 +49,7 @@ SELECT c_trl.ad_language
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)                                                                                               AS ad_val_rule_id
      , c.ad_process_id
      , c.isalwaysupdateable
-     -- mf15#4157: honour AD_Field-level ReadOnlyLogic override; fall back to AD_Column when the field has no override.
-     -- NULLIF treats empty-string as "not overridden" (legacy AD_Field rows often carry ''-default instead of NULL).
-     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                    AS readonlylogic
+     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                     AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                                                                                                              AS isencryptedcolumn
@@ -99,3 +97,12 @@ FROM ad_tab t
 WHERE (f.isactive = 'Y' OR f.AD_Field_ID IS NULL)
   AND c.isactive = 'Y'
 ;
+
+SELECT db_alter_view(
+    'ad_field_vt',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('ad_field_vt$new'))
+);
+
+DROP VIEW IF EXISTS ad_field_vt$new;
