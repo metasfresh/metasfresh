@@ -236,6 +236,14 @@ Feature: Split-payment — reversal cascade (AC #16/#17/#18/#25)
       | C_Payment_ID.Identifier | OpenAmt  |
       | lcPayment               | 12000.00 |
 
+    # Drain async queues before the second reversal — the invoice-reversal step (above) schedules
+    # async accounting reposting that UPDATEs M_Cost on the same product. Without this drain, the
+    # subsequent material-receipt reversal's voidCosts path races on the same M_Cost row and
+    # deadlocks (`org.adempiere.exceptions.DBDeadLockDetectedException` on table m_cost).
+    # Drain is a test-side band-aid; underlying concurrency bug tracked in
+    # https://github.com/metasfresh/mf15/issues/4160 — remove this drain once that issue is fixed.
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
     # ── Step 2: reverse R1 ──
     And the material receipt identified by r1 is reversed
 
