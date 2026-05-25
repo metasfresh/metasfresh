@@ -1,3 +1,7 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
+-- Rebuild de_metas_acct.tax_declaration_build after dropping C_TaxDeclarationLine.C_VAT_Code_ID
+-- (migration 5804070). The function body no longer references the column.
+
 DROP FUNCTION IF EXISTS de_metas_acct.tax_declaration_build(p_C_TaxDeclaration_ID numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_acct.tax_declaration_build(
@@ -124,7 +128,8 @@ BEGIN
 
     -- =========================================================
     -- Phase 3a — Aggregate: INSERT C_TaxDeclarationLine
-    -- Aggregation key: VATCode (string) + AmountType.
+    -- Aggregation key: VATCode (string) + AmountType. (Iter 5: C_VAT_Code_ID FK
+    -- was dropped — VATCode string is the only key; see migration 5804070.)
     -- =========================================================
     FOR v_LineMap IN
         WITH aggregated AS (

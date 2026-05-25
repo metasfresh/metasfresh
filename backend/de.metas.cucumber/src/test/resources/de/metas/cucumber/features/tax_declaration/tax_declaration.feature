@@ -186,6 +186,105 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
     # Each invoice must map to its own VAT code — no cross-contamination
     Then the C_TaxDeclarationAcct for declaration 'td11' contains entries for documents:
-      | Record_ID | VATCode  | AmountType | Amount |
-      | invoiceA  | salesVatA     | T          | -190   |
-      | invoiceB  | salesVatB     | T          | -70    |
+      | Record_ID | VATCode   | AmountType | Amount |
+      | invoiceA  | salesVatA | T          | -190   |
+      | invoiceB  | salesVatB | T          | -70    |
+
+
+# ############################################################################################################################################
+# TC-D3 — Complete + Reactivate roundtrip: built declaration completes, reactivates, retains snapshot.
+# Lock is enforced by AD_Tab.ReadOnlyLogic='@Processed@=Y' (WebUI).
+# ############################################################################################################################################
+  @Id:S0467_TD_030
+  @from:cucumber
+  Scenario: complete + reactivate roundtrip on a built declaration
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
+    And the invoice identified by invoice is completed
+    And Wait until documents invoice is posted
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+
+    When the tax declaration "td" is completed
+    Then the tax declaration "td" has Processed='Y' and DocStatus='CO' and DocAction='RE'
+
+    When the tax declaration "td" is reactivated
+    Then the tax declaration "td" has Processed='N' and DocStatus='IP' and DocAction='CO'
+    And the C_TaxDeclarationLine rows for "td" are still present
+
+
+# ############################################################################################################################################
+# TC-D4 — Period uniqueness: a second completed declaration on same (AcctSchema, Period) is rejected
+# ############################################################################################################################################
+  @Id:S0467_TD_040
+  @from:cucumber
+  Scenario: second completed declaration on same period and acct schema is rejected
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
+    And the invoice identified by invoice is completed
+    And Wait until documents invoice is posted
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier  | C_AcctSchema_ID | Date       |
+      | tdOriginal  | acctSchema      | 2024-01-15 |
+      | tdDuplicate | acctSchema      | 2024-01-15 |
+    And the tax declaration "tdOriginal" is built
+    And the tax declaration "tdOriginal" is completed
+    And the tax declaration "tdDuplicate" is built
+    When the tax declaration "tdDuplicate" is completed
+    Then the tax declaration completion fails with message 'TAXDECLARATION_PERIOD_OVERLAP'
+
+
+# ############################################################################################################################################
+# TC-D-NoLines — Complete-without-Build is rejected with TaxDeclaration_NoLinesYet
+# ############################################################################################################################################
+  @Id:S0467_TD_050
+  @from:cucumber
+  Scenario: complete-without-build rejected with TaxDeclaration_NoLinesYet
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    When the tax declaration "td" is completed
+    Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
