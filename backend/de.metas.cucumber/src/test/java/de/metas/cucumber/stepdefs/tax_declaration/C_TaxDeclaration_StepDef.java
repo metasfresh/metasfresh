@@ -296,4 +296,94 @@ public class C_TaxDeclaration_StepDef
 		assertThat(lines).as("C_TaxDeclarationLine rows for declaration %s must not be empty after reactivation", identifier)
 				.isNotEmpty();
 	}
+
+	/**
+	 * Invoke {@link TaxDeclarationService#createCorrection(TaxDeclarationId)} on the given original declaration
+	 * and register the resulting correction under the derived identifier {@code <originalIdentifier>_correction}.
+	 *
+	 * <p>If the service call throws an {@link AdempiereException} the exception is stashed in
+	 * {@link #lastException} (same field as {@link #complete(String)}) so that it can be asserted by
+	 * {@link #assertCompletionFailedWithMessage(String)}.
+	 *
+	 * <p><b>Required:</b> {@code originalIdentifier} — refers to a previously stored original
+	 * {@link I_C_TaxDeclaration} in {@link C_TaxDeclaration_StepDefData}.
+	 *
+	 * <p><b>Side-effect:</b> on success, the correction record is stored under
+	 * {@code <originalIdentifier>_correction} in the step-def data table.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When invoke Create Correction on C_TaxDeclaration "taxDecl"
+	 * }</pre>
+	 */
+	@When("invoke Create Correction on C_TaxDeclaration {string}")
+	public void invokeCreateCorrection(@NonNull final String originalIdentifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration original = taxDeclarationTable.get(StepDefDataIdentifier.ofString(originalIdentifier));
+		try
+		{
+			final TaxDeclarationId correctionId = taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(original.getC_TaxDeclaration_ID()));
+			final I_C_TaxDeclaration correction = InterfaceWrapperHelper.load(correctionId.getRepoId(), I_C_TaxDeclaration.class);
+			taxDeclarationTable.putOrReplace(StepDefDataIdentifier.ofString(originalIdentifier + "_correction"), correction);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
+	/**
+	 * Assert the {@code IsCorrectionNeeded} flag of a {@link I_C_TaxDeclaration}.
+	 * The record is always reloaded from the database to avoid stale-cache false-positives.
+	 *
+	 * <p><b>Required parameters:</b>
+	 * <ul>
+	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
+	 *   <li>{@code expectedFlag} — {@code Y} or {@code N}</li>
+	 * </ul>
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Then C_TaxDeclaration "taxDecl" has IsCorrectionNeeded = "Y"
+	 * }</pre>
+	 */
+	@Then("C_TaxDeclaration {string} has IsCorrectionNeeded = {string}")
+	public void assertIsCorrectionNeeded(@NonNull final String identifier, @NonNull final String expectedFlag)
+	{
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		final I_C_TaxDeclaration reloaded = InterfaceWrapperHelper.load(decl.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
+		final boolean expected = "Y".equalsIgnoreCase(expectedFlag);
+		assertThat(reloaded.isIsCorrectionNeeded()).as("IsCorrectionNeeded").isEqualTo(expected);
+	}
+
+	/**
+	 * Directly set the {@code IsCorrectionNeeded} flag on a {@link I_C_TaxDeclaration} and save it.
+	 * This step is used in tests that need to simulate drift before the Iter-8 auto-detector ships.
+	 * When the flag is set to {@code true}, a placeholder reason {@code "test-drift"} is written
+	 * to {@code CorrectionNeededReason}.
+	 *
+	 * <p><b>Required parameters:</b>
+	 * <ul>
+	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
+	 *   <li>{@code flagValue} — {@code Y} or {@code N}</li>
+	 * </ul>
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Given C_TaxDeclaration "taxDecl" has IsCorrectionNeeded set to "Y"
+	 * }</pre>
+	 */
+	@Given("C_TaxDeclaration {string} has IsCorrectionNeeded set to {string}")
+	public void setIsCorrectionNeeded(@NonNull final String identifier, @NonNull final String flagValue)
+	{
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		final boolean value = "Y".equalsIgnoreCase(flagValue);
+		decl.setIsCorrectionNeeded(value);
+		if (value)
+		{
+			decl.setCorrectionNeededReason("test-drift");
+		}
+		InterfaceWrapperHelper.saveRecord(decl);
+	}
 }
