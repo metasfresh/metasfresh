@@ -7,6 +7,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_TaxDeclaration;
+import org.compiere.model.I_C_TaxDeclarationLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,6 +58,16 @@ class TaxDeclarationDocumentHandlerTest
 		return InterfaceWrapperHelper.create(record, DocumentTableFields.class);
 	}
 
+	private static void addLine(final I_C_TaxDeclaration parent)
+	{
+		// completeIt rejects with TaxDeclaration_NoLinesYet unless the declaration has at least one Line.
+		// (Iter 4 + 5 contract — exercised by 'Build' before 'Complete' in the real workflow.)
+		final I_C_TaxDeclarationLine line = InterfaceWrapperHelper.newInstance(I_C_TaxDeclarationLine.class);
+		line.setC_TaxDeclaration_ID(parent.getC_TaxDeclaration_ID());
+		line.setIsActive(true);
+		InterfaceWrapperHelper.save(line);
+	}
+
 	// ---------------------------------------------------------------------------
 	// reactivateIt tests
 	// ---------------------------------------------------------------------------
@@ -95,14 +106,16 @@ class TaxDeclarationDocumentHandlerTest
 	@Test
 	public void completeIt_onCorrection_clearsOriginalIsCorrectionNeeded()
 	{
-		// Given: an Original with IsCorrectionNeeded='Y' + CorrectionNeededReason='something'
-		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, false, true);
+		// Given: a LOCKED Original with IsCorrectionNeeded='Y' + CorrectionNeededReason='something'
+		// (must be Processed=Y so the Iter 7 Correction-lifecycle precondition holds.)
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		original.setIsCorrectionNeeded(true);
 		original.setCorrectionNeededReason("Test correction reason");
 		InterfaceWrapperHelper.save(original);
 
-		// AND: a draft Correction pointing to it
+		// AND: a draft Correction pointing to it, with a Line so completeIt's NoLinesYet check passes
 		final I_C_TaxDeclaration correction = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true);
+		addLine(correction);
 
 		// When: completeIt is called on the Correction
 		final String result = handler.completeIt(asDocFields(correction));
@@ -110,20 +123,23 @@ class TaxDeclarationDocumentHandlerTest
 		// Then: the Correction is marked as completed
 		Assertions.assertThat(result).isEqualTo("CO");
 		Assertions.assertThat(correction.isProcessed()).isTrue();
-		Assertions.assertThat(correction.getDocAction()).isEqualTo("RC");
+		Assertions.assertThat(correction.getDocAction()).isEqualTo("RE");
 
-		// AND: the Original's IsCorrectionNeeded flag is cleared
-		Assertions.assertThat(original.isIsCorrectionNeeded()).isFalse();
-		Assertions.assertThat(original.getCorrectionNeededReason()).isNull();
+		// AND: the Original's IsCorrectionNeeded flag is cleared (reload from DB — completeIt loads a fresh
+		// copy of the Original via repo.getById, so the local 'original' reference is stale.)
+		final I_C_TaxDeclaration reloadedOriginal = InterfaceWrapperHelper.load(original.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
+		Assertions.assertThat(reloadedOriginal.isIsCorrectionNeeded()).isFalse();
+		Assertions.assertThat(reloadedOriginal.getCorrectionNeededReason()).isNull();
 	}
 
 	@Test
 	public void completeIt_onOriginal_doesNotMutateAnyOriginal()
 	{
-		// Given: a draft Original with IsCorrectionNeeded='Y'
+		// Given: a draft Original with IsCorrectionNeeded='Y' and a Line so completeIt's NoLinesYet check passes
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, false, true);
 		original.setIsCorrectionNeeded(true);
 		InterfaceWrapperHelper.save(original);
+		addLine(original);
 		final boolean expectedIsCorrectionNeeded = original.isIsCorrectionNeeded();
 
 		// When: completeIt is called on the Original (not a Correction)
@@ -132,7 +148,7 @@ class TaxDeclarationDocumentHandlerTest
 		// Then: the Original is marked as completed
 		Assertions.assertThat(result).isEqualTo("CO");
 		Assertions.assertThat(original.isProcessed()).isTrue();
-		Assertions.assertThat(original.getDocAction()).isEqualTo("RC");
+		Assertions.assertThat(original.getDocAction()).isEqualTo("RE");
 
 		// AND: the Original's IsCorrectionNeeded flag is NOT mutated
 		Assertions.assertThat(original.isIsCorrectionNeeded()).isEqualTo(expectedIsCorrectionNeeded);

@@ -58,7 +58,10 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		{
 			throw new AdempiereException(MSG_NoLinesYet);
 		}
-		if (repo.existsCompletedOverlappingPeriod(id, AcctSchemaId.ofRepoId(td.getC_AcctSchema_ID()), td.getC_Period_ID()))
+		// Iter 7 (me03#29631): period-uniqueness applies to Originals only.
+		// A Correction legitimately shares its Original's period (the whole point of the lifecycle).
+		if (!td.isIsCorrection()
+				&& repo.existsCompletedOverlappingPeriod(id, AcctSchemaId.ofRepoId(td.getC_AcctSchema_ID()), td.getC_Period_ID()))
 		{
 			throw new AdempiereException(MSG_PeriodOverlap);
 		}

@@ -52,8 +52,11 @@ public class TaxDeclarationRepository
 			@NonNull final AcctSchemaId acctSchemaId,
 			final int periodId)
 	{
+		// Iter 7 (me03#29631): only OTHER ORIGINALS count toward period-uniqueness.
+		// A locked Correction legitimately shares its Original's period.
 		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, false)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_Period_ID, periodId)
 				.addNotEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID, selfId)
