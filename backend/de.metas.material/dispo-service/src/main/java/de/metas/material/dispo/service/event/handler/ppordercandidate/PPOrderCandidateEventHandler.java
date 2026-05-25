@@ -50,6 +50,8 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
@@ -61,8 +63,15 @@ import java.util.Optional;
 abstract class  PPOrderCandidateEventHandler
 {
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull protected final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull protected final CandidateChangeService candidateChangeService;
 	@NonNull protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	protected final boolean isWarehouseExcludedFromMaterialDispo(@NonNull final AbstractPPOrderCandidateEvent event)
+	{
+		final WarehouseId warehouseId = event.getPpOrderCandidate().getPpOrderData().getWarehouseId();
+		return warehouseBL.isIgnoreInMaterialDispo(warehouseId);
+	}
 
 	@NonNull
 	protected final Candidate createHeaderCandidate(

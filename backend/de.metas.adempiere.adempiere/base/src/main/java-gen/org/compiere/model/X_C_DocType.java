@@ -327,6 +327,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_AnalysisReport = "QMA";
 	/** APProFormaInvoice = APF */
 	public static final String DOCBASETYPE_APProFormaInvoice = "APF";
+	/** TaxDeclaration = TXD */
+	public static final String DOCBASETYPE_TaxDeclaration = "TXD";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{

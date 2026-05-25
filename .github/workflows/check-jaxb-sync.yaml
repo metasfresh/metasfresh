@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ vars.RUNNER_LIGHT }}
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 

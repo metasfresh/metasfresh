@@ -124,26 +124,19 @@ BEGIN
 
     -- =========================================================
     -- Phase 3a — Aggregate: INSERT C_TaxDeclarationLine
-    -- Aggregation key: VATCode (string) + AmountType. C_VAT_Code_ID is a nice-to-have
-    -- looked up via the C_VAT_Code master (LEFT JOIN: NULL when no master matches).
+    -- Aggregation key: VATCode (string) + AmountType.
     -- =========================================================
     FOR v_LineMap IN
         WITH aggregated AS (
             SELECT
                 acct.VATCode,
                 acct.AmountType,
-                vc.C_VAT_Code_ID              AS C_VAT_Code_ID,
                 SUM(acct.Amount)              AS TotalAmount,
                 COUNT(*)                      AS LineCount,
                 ROW_NUMBER() OVER (ORDER BY acct.VATCode, acct.AmountType NULLS LAST) * 10 AS LineNo
             FROM C_TaxDeclarationAcct acct
-            LEFT JOIN C_VAT_Code vc
-                   ON vc.VATCode         = acct.VATCode
-                  AND vc.C_AcctSchema_ID = acct.C_AcctSchema_ID
-                  AND vc.AmountType      IS NOT DISTINCT FROM acct.AmountType
-                  AND vc.IsActive        = 'Y'
             WHERE acct.C_TaxDeclaration_ID = p_C_TaxDeclaration_ID
-            GROUP BY acct.VATCode, acct.AmountType, vc.C_VAT_Code_ID
+            GROUP BY acct.VATCode, acct.AmountType
         )
         INSERT INTO C_TaxDeclarationLine (
             C_TaxDeclarationLine_ID,
@@ -158,7 +151,6 @@ BEGIN
             Line,
             C_Currency_ID,
             VATCode,
-            C_VAT_Code_ID,
             AmountType,
             Amount,
             LineCount
@@ -176,7 +168,6 @@ BEGIN
             agg.LineNo,
             v_C_Currency_ID,
             agg.VATCode,
-            agg.C_VAT_Code_ID,
             agg.AmountType,
             agg.TotalAmount,
             agg.LineCount
