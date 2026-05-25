@@ -161,8 +161,8 @@ class C_TaxDeclarationInterceptorTest
 		td.setDocStatus("CO");
 		InterfaceWrapperHelper.save(td);
 
-		// When: reload and only IsCorrectionNeeded changes
-		final I_C_TaxDeclaration tdLoaded = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getPO(td), I_C_TaxDeclaration.class);
+		// When: only IsCorrectionNeeded changes (POJOWrapper tracks change vs the saved baseline)
+		final I_C_TaxDeclaration tdLoaded = td;
 		tdLoaded.setIsCorrectionNeeded(true);
 
 		// Then: no exception (Iter 8 drift-detector path requires this)
@@ -183,8 +183,8 @@ class C_TaxDeclarationInterceptorTest
 		td.setDocStatus("CO");
 		InterfaceWrapperHelper.save(td);
 
-		// When: reload and only CorrectionNeededReason changes
-		final I_C_TaxDeclaration tdLoaded = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getPO(td), I_C_TaxDeclaration.class);
+		// When: only CorrectionNeededReason changes (POJOWrapper tracks change vs the saved baseline)
+		final I_C_TaxDeclaration tdLoaded = td;
 		tdLoaded.setCorrectionNeededReason("Test reason");
 
 		// Then: no exception (Iter 8 drift-detector path requires this)
@@ -205,8 +205,8 @@ class C_TaxDeclarationInterceptorTest
 		td.setDocStatus("CO");
 		InterfaceWrapperHelper.save(td);
 
-		// When: reload and Description (a disallowed column) changes
-		final I_C_TaxDeclaration tdLoaded = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getPO(td), I_C_TaxDeclaration.class);
+		// When: Description (a disallowed column) changes (POJOWrapper tracks change vs the saved baseline)
+		final I_C_TaxDeclaration tdLoaded = td;
 		tdLoaded.setDescription("Modified description");
 
 		// Then: reject with TaxDeclaration_ProcessedLocked
@@ -228,8 +228,8 @@ class C_TaxDeclarationInterceptorTest
 		td.setDocStatus("DR");
 		InterfaceWrapperHelper.save(td);
 
-		// When: reload and any column (e.g., Description) changes (and Processed is still false)
-		final I_C_TaxDeclaration tdLoaded = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getPO(td), I_C_TaxDeclaration.class);
+		// When: any column (e.g., Description) changes (and Processed is still false)
+		final I_C_TaxDeclaration tdLoaded = td;
 		tdLoaded.setDescription("Modified description");
 
 		// Then: no exception (lock-guard only applies when Processed='Y')
