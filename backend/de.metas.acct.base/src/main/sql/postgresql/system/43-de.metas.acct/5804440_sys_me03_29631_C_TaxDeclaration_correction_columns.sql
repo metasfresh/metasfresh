@@ -12,25 +12,37 @@ INSERT INTO AD_Element (
     AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     ColumnName, Name, PrintName, EntityType
 ) VALUES
-    (584908, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    (584908 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
      'IsCorrection', 'Berichtigung?', 'Berichtigung?', 'de.metas.acct'),
-    (584909, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    (584909 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
      'C_TaxDeclaration_Original_ID', 'Berichtigte Steuererklärung', 'Berichtigte Steuererklärung', 'de.metas.acct'),
-    (584910, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    (584910 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
      'IsCorrectionNeeded', 'Berichtigung erforderlich?', 'Berichtigung erforderlich?', 'de.metas.acct'),
-    (584911, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    (584911 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
      'CorrectionNeededReason', 'Grund für Berichtigung', 'Grund für Berichtigung', 'de.metas.acct');
 
 -- ====================================================================================
--- Section 2: AD_Element_Trl (en_US translations only — DE is base language)
+-- Section 2: AD_Element_Trl (en_US explicit + CROSS JOIN for other system languages)
 -- ====================================================================================
+-- Phase 1: en_US explicit (because the EN names differ from the DE base)
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, Help,
     IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 VALUES
-    ('en_US', 584908, 'Correction?', 'Correction?', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y'),
-    ('en_US', 584909, 'Original Tax Declaration', 'Original Tax Declaration', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y'),
-    ('en_US', 584910, 'Correction needed?', 'Correction needed?', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y'),
-    ('en_US', 584911, 'Reason for Correction', 'Reason for Correction', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y');
+    ('en_US', 584908 /*From ID Server*/, 'Correction?', 'Correction?', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y'),
+    ('en_US', 584909 /*From ID Server*/, 'Original Tax Declaration', 'Original Tax Declaration', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y'),
+    ('en_US', 584910 /*From ID Server*/, 'Correction needed?', 'Correction needed?', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y'),
+    ('en_US', 584911 /*From ID Server*/, 'Reason for Correction', 'Reason for Correction', NULL, NULL, 'Y', 0, 0, TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100, 'Y');
+
+-- Phase 2: any other active system language gets the base-language fallback
+INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, Help,
+    IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, e.AD_Element_ID, e.Name, e.PrintName, e.Description, e.Help, 'N',
+    e.AD_Client_ID, e.AD_Org_ID, e.Created, e.CreatedBy, e.Updated, e.UpdatedBy, 'Y'
+FROM AD_Language l
+CROSS JOIN AD_Element e
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND e.AD_Element_ID IN (584908 /*From ID Server*/, 584909 /*From ID Server*/, 584910 /*From ID Server*/, 584911 /*From ID Server*/)
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = e.AD_Element_ID);
 
 -- ====================================================================================
 -- Section 3: AD_Column rows (4 columns for C_TaxDeclaration)
@@ -44,9 +56,9 @@ INSERT INTO AD_Column (
     PersonalDataCategory
 )
 VALUES (
-    592616, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    592616 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
     (SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_TaxDeclaration'),
-    584908, 'IsCorrection', 1, 'N', 'N', 'Y',
+    584908 /*From ID Server*/, 'IsCorrection', 1, 'N', 'N', 'Y',
     'N', 'N', 0, 'N', 'Y', 'N',
     319, 'N', 'N', 'Y', 'de.metas.acct', 0,
     'NP'
@@ -61,9 +73,9 @@ INSERT INTO AD_Column (
     PersonalDataCategory
 )
 VALUES (
-    592617, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    592617 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
     (SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_TaxDeclaration'),
-    584909, 'C_TaxDeclaration_Original_ID', 10, 'N', 'N', 'N',
+    584909 /*From ID Server*/, 'C_TaxDeclaration_Original_ID', 10, 'N', 'N', 'N',
     'N', 'N', 0, 'N', 'Y', 'N',
     30, 'N', 'N', 'Y', 'de.metas.acct', 0,
     'NP'
@@ -78,9 +90,9 @@ INSERT INTO AD_Column (
     PersonalDataCategory
 )
 VALUES (
-    592618, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    592618 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
     (SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_TaxDeclaration'),
-    584910, 'IsCorrectionNeeded', 1, 'N', 'N', 'Y',
+    584910 /*From ID Server*/, 'IsCorrectionNeeded', 1, 'N', 'N', 'Y',
     'N', 'N', 0, 'N', 'Y', 'N',
     319, 'N', 'N', 'Y', 'de.metas.acct', 0,
     'NP'
@@ -95,9 +107,9 @@ INSERT INTO AD_Column (
     PersonalDataCategory
 )
 VALUES (
-    592619, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
+    592619 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
     (SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_TaxDeclaration'),
-    584911, 'CorrectionNeededReason', 2000, 'N', 'N', 'N',
+    584911 /*From ID Server*/, 'CorrectionNeededReason', 2000, 'N', 'N', 'N',
     'N', 'N', 0, 'N', 'Y', 'N',
     14, 'N', 'N', 'Y', 'de.metas.acct', 0,
     'NP'
@@ -138,7 +150,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsActive, IsDisplayed, IsDisplayedGrid,
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
-VALUES (0, 592616, 780479, 0, 549256,
+VALUES (0, 592616 /*From ID Server*/, 780479 /*From ID Server*/, 0, 549256,
     TIMESTAMP '2026-05-25 00:00:00', 100, 1, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
@@ -150,7 +162,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsActive, IsDisplayed, IsDisplayedGrid,
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
-VALUES (0, 592617, 780480, 0, 549256,
+VALUES (0, 592617 /*From ID Server*/, 780480 /*From ID Server*/, 0, 549256,
     TIMESTAMP '2026-05-25 00:00:00', 100, 10, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
@@ -162,7 +174,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsActive, IsDisplayed, IsDisplayedGrid,
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
-VALUES (0, 592618, 780481, 0, 549256,
+VALUES (0, 592618 /*From ID Server*/, 780481 /*From ID Server*/, 0, 549256,
     TIMESTAMP '2026-05-25 00:00:00', 100, 1, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
@@ -174,7 +186,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
     IsActive, IsDisplayed, IsDisplayedGrid,
     IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
     Name, Updated, UpdatedBy)
-VALUES (0, 592619, 780482, 0, 549256,
+VALUES (0, 592619 /*From ID Server*/, 780482 /*From ID Server*/, 0, 549256,
     TIMESTAMP '2026-05-25 00:00:00', 100, 2000, 'de.metas.acct',
     'Y', 'Y', 'Y',
     'N', 'N', 'N', 'N', 'N',
@@ -203,8 +215,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
     Name, SeqNo, SeqNoGrid, SeqNo_SideList,
     Updated, UpdatedBy)
-VALUES (0, 780479, 0, 549256,
-    555313, 651834, 'F',
+VALUES (0, 780479 /*From ID Server*/, 0, 549256,
+    555313, 651834 /*From ID Server*/, 'F',
     TIMESTAMP '2026-05-25 00:00:00', 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Berichtigung?', 40, 40, 0,
@@ -217,8 +229,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
     Name, SeqNo, SeqNoGrid, SeqNo_SideList,
     Updated, UpdatedBy)
-VALUES (0, 780480, 0, 549256,
-    555313, 651835, 'F',
+VALUES (0, 780480 /*From ID Server*/, 0, 549256,
+    555313, 651835 /*From ID Server*/, 'F',
     TIMESTAMP '2026-05-25 00:00:00', 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Berichtigte Steuererklärung', 50, 50, 0,
@@ -231,8 +243,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
     Name, SeqNo, SeqNoGrid, SeqNo_SideList,
     Updated, UpdatedBy)
-VALUES (0, 780481, 0, 549256,
-    555313, 651836, 'F',
+VALUES (0, 780481 /*From ID Server*/, 0, 549256,
+    555313, 651836 /*From ID Server*/, 'F',
     TIMESTAMP '2026-05-25 00:00:00', 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Berichtigung erforderlich?', 60, 60, 0,
@@ -245,8 +257,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
     IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
     Name, SeqNo, SeqNoGrid, SeqNo_SideList,
     Updated, UpdatedBy)
-VALUES (0, 780482, 0, 549256,
-    555313, 651837, 'F',
+VALUES (0, 780482 /*From ID Server*/, 0, 549256,
+    555313, 651837 /*From ID Server*/, 'F',
     TIMESTAMP '2026-05-25 00:00:00', 100, 'Y', 'N',
     'Y', 'Y', 'N',
     'Grund für Berichtigung', 70, 70, 0,
