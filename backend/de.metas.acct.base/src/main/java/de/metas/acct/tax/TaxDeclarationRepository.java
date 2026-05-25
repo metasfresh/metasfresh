@@ -61,4 +61,35 @@ public class TaxDeclarationRepository
 				.create()
 				.anyMatch();
 	}
+
+	/**
+	 * @return true iff at least one ACTIVE C_TaxDeclaration row has
+	 *         C_TaxDeclaration_Original_ID = originalId (regardless of Processed status —
+	 *         Reopen must be blocked even by a NEW Correction).
+	 */
+	public boolean existsCorrectionFor(@NonNull final TaxDeclarationId originalId)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_Original_ID, originalId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * Returns the latest LIVE (Processed='Y') Correction in the chain rooted at {@code originalId},
+	 * ordered by Created DESC; falls back to the Original itself if no completed Correction exists.
+	 */
+	public I_C_TaxDeclaration getLatestInChain(@NonNull final TaxDeclarationId originalId)
+	{
+		final I_C_TaxDeclaration latestCorrection = queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_Original_ID, originalId)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, true)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_TaxDeclaration.COLUMNNAME_Created)
+				.create()
+				.first();
+		return latestCorrection != null ? latestCorrection : getById(originalId);
+	}
 }
