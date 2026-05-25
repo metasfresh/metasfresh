@@ -14,6 +14,7 @@ DECLARE
     v_AD_Org_ID         numeric;
     v_C_Currency_ID     numeric;
     v_Processed         char(1);
+    v_IsCorrection      char(1);
     --
     v_LineMap           record;
     --
@@ -29,6 +30,7 @@ BEGIN
            td.AD_Client_ID,
            td.AD_Org_ID,
            td.Processed,
+           td.IsCorrection,
            acs.C_Currency_ID
     INTO
         v_C_Period_ID,
@@ -36,6 +38,7 @@ BEGIN
         v_AD_Client_ID,
         v_AD_Org_ID,
         v_Processed,
+        v_IsCorrection,
         v_C_Currency_ID
     FROM C_TaxDeclaration td
     JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = td.C_AcctSchema_ID
@@ -70,6 +73,10 @@ BEGIN
     -- Authoritative carriers from Fact_Acct: VATCode (string) + VATCodeAmountType.
     -- Both are written by the per-leg matcher at posting time (no LEFT JOIN to
     -- C_VAT_Code needed → avoids ambiguity when same VATCode has both N+T rows).
+    -- Originals (IsCorrection='N'): facts already snapshotted in another locked
+    --   Original are excluded to prevent double-counting across declarations.
+    -- Corrections (IsCorrection='Y'): all period facts are included — full
+    --   restatement is the German legal requirement (Berichtigungsmeldung).
     -- =========================================================
     INSERT INTO C_TaxDeclarationAcct (
         C_TaxDeclarationAcct_ID,
@@ -115,7 +122,19 @@ BEGIN
       AND fa.C_Period_ID      = v_C_Period_ID
       AND fa.C_AcctSchema_ID  = v_C_AcctSchema_ID
       AND fa.VATCode          IS NOT NULL
-      AND fa.IsActive         = 'Y';
+      AND fa.IsActive         = 'Y'
+      -- Originals (IsCorrection='N') must not re-snapshot facts already captured in another
+      -- locked (Processed='Y') Original.  Corrections (IsCorrection='Y') include all period
+      -- facts — full restatement is the German legal requirement (Berichtigungsmeldung).
+      AND (v_IsCorrection = 'Y' OR NOT EXISTS (
+          SELECT 1
+          FROM C_TaxDeclarationAcct excl
+          JOIN C_TaxDeclaration excltd ON excltd.C_TaxDeclaration_ID = excl.C_TaxDeclaration_ID
+          WHERE excl.Fact_Acct_ID    = fa.Fact_Acct_ID
+            AND excltd.Processed     = 'Y'
+            AND excltd.IsCorrection  = 'N'
+            AND excltd.C_TaxDeclaration_ID <> p_C_TaxDeclaration_ID
+      ));
       -- AD_Org_ID intentionally NOT filtered — open question whether a declaration on a
       -- specific org should aggregate only that org's Fact_Acct rows or the whole client.
 
