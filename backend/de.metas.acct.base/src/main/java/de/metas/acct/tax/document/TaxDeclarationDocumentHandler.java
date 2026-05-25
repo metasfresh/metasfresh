@@ -72,6 +72,13 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 	public void reactivateIt(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_TaxDeclaration td = extract(docFields);
+		final TaxDeclarationId taxDeclarationId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_ID());
+
+		if (repo.existsCorrectionFor(taxDeclarationId))
+		{
+			throw new AdempiereException(AdMessageKey.of("TaxDeclaration_HasCorrections"));
+		}
+
 		td.setProcessed(false);
 		td.setDocAction(IDocument.ACTION_Complete);
 		// DocStatus is forced to IP (In Progress) by DocumentEngine.reActivateIt() after this method returns —
