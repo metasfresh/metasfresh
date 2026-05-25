@@ -87,4 +87,54 @@ class TaxDeclarationDocumentHandlerTest
 		Assertions.assertThat(original.isProcessed()).isFalse();
 		Assertions.assertThat(original.getDocAction()).isEqualTo("CO");
 	}
+
+	// ---------------------------------------------------------------------------
+	// completeIt tests
+	// ---------------------------------------------------------------------------
+
+	@Test
+	public void completeIt_onCorrection_clearsOriginalIsCorrectionNeeded()
+	{
+		// Given: an Original with IsCorrectionNeeded='Y' + CorrectionNeededReason='something'
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, false, true);
+		original.setIsCorrectionNeeded(true);
+		original.setCorrectionNeededReason("Test correction reason");
+		InterfaceWrapperHelper.save(original);
+
+		// AND: a draft Correction pointing to it
+		final I_C_TaxDeclaration correction = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true);
+
+		// When: completeIt is called on the Correction
+		final String result = handler.completeIt(asDocFields(correction));
+
+		// Then: the Correction is marked as completed
+		Assertions.assertThat(result).isEqualTo("CO");
+		Assertions.assertThat(correction.isProcessed()).isTrue();
+		Assertions.assertThat(correction.getDocAction()).isEqualTo("RC");
+
+		// AND: the Original's IsCorrectionNeeded flag is cleared
+		Assertions.assertThat(original.isIsCorrectionNeeded()).isFalse();
+		Assertions.assertThat(original.getCorrectionNeededReason()).isNull();
+	}
+
+	@Test
+	public void completeIt_onOriginal_doesNotMutateAnyOriginal()
+	{
+		// Given: a draft Original with IsCorrectionNeeded='Y'
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, false, true);
+		original.setIsCorrectionNeeded(true);
+		InterfaceWrapperHelper.save(original);
+		final boolean expectedIsCorrectionNeeded = original.isIsCorrectionNeeded();
+
+		// When: completeIt is called on the Original (not a Correction)
+		final String result = handler.completeIt(asDocFields(original));
+
+		// Then: the Original is marked as completed
+		Assertions.assertThat(result).isEqualTo("CO");
+		Assertions.assertThat(original.isProcessed()).isTrue();
+		Assertions.assertThat(original.getDocAction()).isEqualTo("RC");
+
+		// AND: the Original's IsCorrectionNeeded flag is NOT mutated
+		Assertions.assertThat(original.isIsCorrectionNeeded()).isEqualTo(expectedIsCorrectionNeeded);
+	}
 }

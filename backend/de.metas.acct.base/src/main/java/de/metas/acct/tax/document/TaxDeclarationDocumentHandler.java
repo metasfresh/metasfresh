@@ -65,6 +65,21 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 
 		td.setProcessed(true);
 		td.setDocAction(IDocument.ACTION_ReActivate);
+
+		// Iter 7: completing a Correction clears its Original's "Berichtigung erforderlich" flag.
+		// REQUIREMENTS.md §5.2 step 4 + §7 AC#9.
+		if (td.isIsCorrection())
+		{
+			final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_Original_ID());
+			final I_C_TaxDeclaration original = repo.getById(originalId);
+			if (original.isIsCorrectionNeeded() || original.getCorrectionNeededReason() != null)
+			{
+				original.setIsCorrectionNeeded(false);
+				original.setCorrectionNeededReason(null);
+				InterfaceWrapperHelper.save(original);
+			}
+		}
+
 		return IDocument.STATUS_Completed;
 	}
 
