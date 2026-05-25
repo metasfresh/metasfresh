@@ -33,7 +33,7 @@ runs:
     # Download previous history from last run on same branch
     - name: Download previous Allure history
       if: inputs.history-artifact-name != ''
-      uses: dawidd6/action-download-artifact@v6
+      uses: dawidd6/action-download-artifact@v9
       with:
         name: ${{ inputs.history-artifact-name }}
         path: junit-history-temp
@@ -135,7 +135,7 @@ runs:
         fi
 
     - name: Upload report artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: success() || failure()
       with:
         name: ${{ inputs.artifact-name }}
@@ -145,7 +145,7 @@ runs:
     # Upload history for next build (enables trends over time)
     - name: Upload history for trends
       if: inputs.history-artifact-name != '' && (success() || failure())
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.history-artifact-name }}
         path: ${{ inputs.output-dir }}/history
