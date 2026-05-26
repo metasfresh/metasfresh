@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.order;
 import de.metas.order.OrderLineId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import io.cucumber.java.en.Then;
@@ -55,12 +56,17 @@ public class C_OrderLine_Split_StepDef
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		final AdProcessId processId = processDAO.retrieveProcessIdByValue("C_OrderLine_SplitQty");
 
-		ProcessInfo.builder()
+		final ProcessExecutionResult result = ProcessInfo.builder()
 				.setAD_Process_ID(processId.getRepoId())
 				.setRecord(I_C_OrderLine.Table_Name, orderLineId.getRepoId())
 				.addParameter("QtyToSplitOff", qtyToSplitOff)
 				.buildAndPrepareExecution()
-				.executeSync();
+				.executeSync()
+				.getResult();
+		if (result.isError())
+		{
+			throw new AdempiereException(result.getSummary());
+		}
 	}
 
 	@When("the C_OrderLine_SplitQty process is run on {string} with QtyToSplitOff = {bigdecimal} expecting validation failure")
