@@ -16,27 +16,27 @@ VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         5849130 /*From ID Server*/,
         'M_HU_Destroy_In_Warehouse',
-        'HU Vernichten im Lager',
-        'HU Vernichten im Lager',
+        'HU-Zerstörung im Materialentnahmelager',
+        'HU-Zerstörung im Materialentnahmelager',
         'de.metas.handlingunits');
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                             AD_Element_ID, Name, PrintName, Description, Help, IsTranslated)
 VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
-        5849130, 'HU Vernichten im Lager', 'HU Vernichten im Lager', NULL, NULL, 'N');
+        5849130, 'HU-Zerstörung im Materialentnahmelager', 'HU-Zerstörung im Materialentnahmelager', NULL, NULL, 'N');
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                             AD_Element_ID, Name, PrintName, Description, Help, IsTranslated)
 VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
-        5849130, 'HU Vernichten im Lager', 'HU Vernichten im Lager', NULL, NULL, 'N');
+        5849130, 'HU-Zerstörung im Materialentnahmelager', 'HU-Zerstörung im Materialentnahmelager', NULL, NULL, 'N');
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                             AD_Element_ID, Name, PrintName, Description, Help, IsTranslated)
 VALUES ('en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
-        5849130, 'Destroy HUs in Warehouse', 'Destroy HUs in Warehouse', NULL, NULL, 'Y');
+        5849130, 'HU Destruction in Withdrawal Warehouse', 'HU Destruction in Withdrawal Warehouse', NULL, NULL, 'Y');
 
 -- =============================================
 -- 2. AD_Process (Type=SQL)
@@ -181,3 +181,112 @@ SELECT 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
                                        AND IsActive = 'Y'
                                        AND IsAllNodes = 'Y'
                                        AND AD_Table_ID = 116)), 0) + 10;
+
+-- =============================================
+-- 6. Rename + re-describe: AD_Process, AD_Process_Trl, AD_Menu, AD_Menu_Trl
+--    (applied as UPDATEs so the script can be re-run on a DB where the
+--     INSERTs above already executed)
+-- =============================================
+
+-- AD_Process
+UPDATE AD_Process
+SET Name        = 'HU-Zerstörung im Materialentnahmelager',
+    description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy   = 0
+WHERE AD_Process_ID = 5856210;
+
+-- AD_Process_Trl de_DE
+UPDATE AD_Process_Trl
+SET Name        = 'HU-Zerstörung im Materialentnahmelager',
+    Description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy   = 0
+WHERE AD_Process_ID = 5856210
+  AND AD_Language   = 'de_DE';
+
+-- AD_Process_Trl de_CH
+UPDATE AD_Process_Trl
+SET Name        = 'HU-Zerstörung im Materialentnahmelager',
+    Description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy   = 0
+WHERE AD_Process_ID = 5856210
+  AND AD_Language   = 'de_CH';
+
+-- AD_Process_Trl en_US
+UPDATE AD_Process_Trl
+SET Name        = 'HU Destruction in Withdrawal Warehouse',
+    Description = E'This process is designed for the Materialentnahmelager; in special situations, another warehouse could be selected.\nIt first creates an automatic backup of the M_HU table — the backup table name starts with "m_hu_before_deactivate" and contains the timestamp of when the process was run.\nIt then destroys all the active Handling Units in the selected warehouse.',
+    Help        = E'This process is designed for the Materialentnahmelager; in special situations, another warehouse could be selected.\nIt first creates an automatic backup of the M_HU table — the backup table name starts with "m_hu_before_deactivate" and contains the timestamp of when the process was run.\nIt then destroys all the active Handling Units in the selected warehouse.',
+    Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy   = 0
+WHERE AD_Process_ID = 5856210
+  AND AD_Language   = 'en_US';
+
+-- AD_Menu
+UPDATE AD_Menu
+SET Name      = 'HU-Zerstörung im Materialentnahmelager',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Menu_ID = 5423300;
+
+-- AD_Menu_Trl de_DE
+UPDATE AD_Menu_Trl
+SET Name      = 'HU-Zerstörung im Materialentnahmelager',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Menu_ID  = 5423300
+  AND AD_Language = 'de_DE';
+
+-- AD_Menu_Trl de_CH
+UPDATE AD_Menu_Trl
+SET Name      = 'HU-Zerstörung im Materialentnahmelager',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Menu_ID  = 5423300
+  AND AD_Language = 'de_CH';
+
+-- AD_Menu_Trl en_US
+UPDATE AD_Menu_Trl
+SET Name      = 'HU Destruction in Withdrawal Warehouse',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Menu_ID  = 5423300
+  AND AD_Language = 'en_US';
+
+-- AD_Element_Trl de_DE
+UPDATE AD_Element_Trl
+SET Name      = 'HU-Zerstörung im Materialentnahmelager',
+    PrintName = 'HU-Zerstörung im Materialentnahmelager',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Element_ID = 5849130
+  AND AD_Language   = 'de_DE';
+
+-- AD_Element_Trl de_CH
+UPDATE AD_Element_Trl
+SET Name      = 'HU-Zerstörung im Materialentnahmelager',
+    PrintName = 'HU-Zerstörung im Materialentnahmelager',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Element_ID = 5849130
+  AND AD_Language   = 'de_CH';
+
+-- AD_Element_Trl en_US
+UPDATE AD_Element_Trl
+SET Name      = 'HU Destruction in Withdrawal Warehouse',
+    PrintName = 'HU Destruction in Withdrawal Warehouse',
+    Updated   = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
+    UpdatedBy = 0
+WHERE AD_Element_ID = 5849130
+  AND AD_Language   = 'en_US';
+
+/* DDL */
+SELECT update_trl_tables_on_ad_element_trl_update(5849130, 'de_DE');
+SELECT update_trl_tables_on_ad_element_trl_update(5849130, 'de_CH');
+SELECT update_trl_tables_on_ad_element_trl_update(5849130, 'en_US');
+

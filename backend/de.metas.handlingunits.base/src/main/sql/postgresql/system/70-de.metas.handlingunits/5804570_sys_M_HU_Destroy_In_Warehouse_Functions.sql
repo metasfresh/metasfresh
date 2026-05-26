@@ -45,10 +45,10 @@ BEGIN
     END IF;
 
     -- -----------------------------------------------------------------------
-    -- Step 2: Backup m_hu before updating parent HUs
+    -- Step 2: Backup m_hu once before any updates
     -- -----------------------------------------------------------------------
-    v_backup_name := backup_table('m_hu');
-    RAISE NOTICE 'Backup vor Eltern-HU Update: %', v_backup_name;
+    v_backup_name := backup_table('m_hu', '_before_deactivate');
+    RAISE NOTICE 'Backup: %', v_backup_name;
 
     -- -----------------------------------------------------------------------
     -- Step 3: Destroy parent HUs
@@ -87,10 +87,6 @@ BEGIN
     RAISE NOTICE 'Kind-HUs gefunden: %', v_children_count;
 
     IF v_children_count > 0 THEN
-        -- Backup m_hu before updating child HUs
-        v_backup_name := backup_table('m_hu');
-        RAISE NOTICE 'Backup vor Kind-HU Update: %', v_backup_name;
-
         UPDATE m_hu
         SET isactive  = 'N',
             hustatus  = 'D',
