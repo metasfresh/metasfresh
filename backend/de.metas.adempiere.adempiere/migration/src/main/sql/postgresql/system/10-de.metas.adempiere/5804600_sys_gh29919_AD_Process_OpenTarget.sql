@@ -58,6 +58,13 @@ UPDATE AD_Element_Trl SET Name='Öffnungsziel', PrintName='Öffnungsziel', IsTra
 WHERE AD_Element_ID=584914 AND AD_Language='de_DE'
 ;
 
+-- English translation (en_US)
+-- 2026-05-26T14:50:00.000Z
+UPDATE AD_Element_Trl SET Name='Open Target', PrintName='Open Target', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-05-26 14:50:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+WHERE AD_Element_ID=584914 AND AD_Language='en_US'
+;
+
 -- Column: AD_Process.OpenTarget
 -- 2026-05-26T14:50:00.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterInactiveValues,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592622 /*From ID Server*/,584914,0,17,542096,284,'XX','OpenTarget',TO_TIMESTAMP('2026-05-26 14:50:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Open Target',0,0,TO_TIMESTAMP('2026-05-26 14:50:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)

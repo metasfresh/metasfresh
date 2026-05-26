@@ -1148,6 +1148,7 @@ public final class ProcessInfo implements Serializable
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
+			// CoalesceUtil not applicable: getOpenTarget() returns String, ofCode() returns ProcessOpenTarget (type mismatch)
 			setOpenTarget(_adProcess.getOpenTarget() != null ? ProcessOpenTarget.ofCode(_adProcess.getOpenTarget()) : null);
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());

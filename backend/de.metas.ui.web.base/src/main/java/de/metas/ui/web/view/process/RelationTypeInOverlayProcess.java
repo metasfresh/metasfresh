@@ -66,8 +66,7 @@ import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
  * <p>
  * The display mode is configured per AD_Process via {@code AD_Process.OpenTarget}
  * (see {@link ProcessOpenTarget}): modal overlay (default — historical behaviour
- * when the column is NULL), new browser tab, or in-place navigation to the related
- * records.
+ * when the column is NULL) or new browser tab.
  * <p>
  * This process is automatically assigned when AD_Process.Type='RelationTypeInOverlay'.
  */
@@ -156,6 +155,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		}
 		else
 		{
+			// Defensive fallback for any future ProcessOpenTarget value not yet mapped here — unreachable with current values
 			log.warn("Unknown processOpenTarget {}. Returning {}", processOpenTarget, ViewOpenTarget.ModalOverlay);
 			return ViewOpenTarget.ModalOverlay;
 		}
