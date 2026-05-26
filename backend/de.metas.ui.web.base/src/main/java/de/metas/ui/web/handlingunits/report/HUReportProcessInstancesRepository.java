@@ -16,7 +16,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
+import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessHandlerType;
@@ -182,31 +184,40 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final WebuiPreconditionsContext preconditionsContext)
 	{
 		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.castOrNull(preconditionsContext);
-		if (viewContext == null)
+		if (viewContext != null)
 		{
-			return Stream.empty();
+			if (viewContext.isNoSelection())
+			{
+				return Stream.empty();
+			}
+			if (!HUReportAwareViews.isHUReportAwareView(viewContext.getView()))
+			{
+				return Stream.empty();
+			}
+			if (!viewContext.isConsiderTableRelatedProcessDescriptors(PROCESS_HANDLER_TYPE))
+			{
+				return Stream.empty();
+			}
+			return getIndexedWebuiHUProcessDescriptors()
+					.getAll()
+					.stream()
+					.filter(descriptor -> checkApplies(descriptor, viewContext))
+					.map(WebuiHUProcessDescriptor::toWebuiRelatedProcessDescriptor);
 		}
 
-		if (viewContext.isNoSelection())
+		if (preconditionsContext instanceof DocumentPreconditionsAsContext)
 		{
-			return Stream.empty();
+			final DocumentPreconditionsAsContext documentContext = (DocumentPreconditionsAsContext) preconditionsContext;
+			if (I_M_HU.Table_Name.equals(documentContext.getTableName()))
+			{
+				return getIndexedWebuiHUProcessDescriptors()
+						.getAll()
+						.stream()
+						.map(WebuiHUProcessDescriptor::toWebuiRelatedProcessDescriptorForSingleDocument);
+			}
 		}
 
-		if (!HUReportAwareViews.isHUReportAwareView(viewContext.getView()))
-		{
-			return Stream.empty();
-		}
-
-		if (!viewContext.isConsiderTableRelatedProcessDescriptors(PROCESS_HANDLER_TYPE))
-		{
-			return Stream.empty();
-		}
-
-		return getIndexedWebuiHUProcessDescriptors()
-				.getAll()
-				.stream()
-				.filter(descriptor -> checkApplies(descriptor, viewContext))
-				.map(WebuiHUProcessDescriptor::toWebuiRelatedProcessDescriptor);
+		return Stream.empty();
 	}
 
 	private boolean checkApplies(final WebuiHUProcessDescriptor descriptor, @NonNull final ViewAsPreconditionsContext viewContext)
