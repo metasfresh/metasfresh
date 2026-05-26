@@ -28,9 +28,6 @@ Feature: Split sales order line after partial delivery
     And metasfresh contains C_BPartners:
       | Identifier  | IsCustomer | M_PricingSystem_ID | DeliveryRule |
       | bpartner_C1 | true       | ps_split           | A            |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID | IsShipTo | IsBillTo |
-      | bploc_C1   | bpartner_C1   | true     | true     |
 
   @from:cucumber
   @Id:S_OLSplit_10
