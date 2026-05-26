@@ -191,8 +191,8 @@ SELECT 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
 -- AD_Process
 UPDATE AD_Process
 SET Name        = 'HU-Zerstörung im Materialentnahmelager',
-    description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
-    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name enthält einen Zeitstempel sowie den Begriff "before_deactivate".\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name enthält einen Zeitstempel sowie den Begriff "before_deactivate".\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
     Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
     UpdatedBy   = 0
 WHERE AD_Process_ID = 5856210;
@@ -200,8 +200,8 @@ WHERE AD_Process_ID = 5856210;
 -- AD_Process_Trl de_DE
 UPDATE AD_Process_Trl
 SET Name        = 'HU-Zerstörung im Materialentnahmelager',
-    Description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
-    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name enthält einen Zeitstempel sowie den Begriff "before_deactivate".\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name enthält einen Zeitstempel sowie den Begriff "before_deactivate".\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
     Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
     UpdatedBy   = 0
 WHERE AD_Process_ID = 5856210
@@ -210,8 +210,8 @@ WHERE AD_Process_ID = 5856210
 -- AD_Process_Trl de_CH
 UPDATE AD_Process_Trl
 SET Name        = 'HU-Zerstörung im Materialentnahmelager',
-    Description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
-    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name der Sicherungstabelle beginnt mit "m_hu_before_deactivate" und enthält den Zeitstempel des Prozesslaufs.\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Description = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name enthält einen Zeitstempel sowie den Begriff "before_deactivate".\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
+    Help        = E'Dieser Prozess ist für das Materialentnahmelager vorgesehen; in besonderen Situationen kann auch ein anderes Lager gewählt werden.\nZunächst wird automatisch eine Sicherungskopie der Tabelle M_HU angelegt — der Name enthält einen Zeitstempel sowie den Begriff "before_deactivate".\nAnschließend werden alle aktiven Handling Units im gewählten Lager vernichtet.',
     Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
     UpdatedBy   = 0
 WHERE AD_Process_ID = 5856210
@@ -220,8 +220,8 @@ WHERE AD_Process_ID = 5856210
 -- AD_Process_Trl en_US
 UPDATE AD_Process_Trl
 SET Name        = 'HU Destruction in Withdrawal Warehouse',
-    Description = E'This process is designed for the Materialentnahmelager; in special situations, another warehouse could be selected.\nIt first creates an automatic backup of the M_HU table — the backup table name starts with "m_hu_before_deactivate" and contains the timestamp of when the process was run.\nIt then destroys all the active Handling Units in the selected warehouse.',
-    Help        = E'This process is designed for the Materialentnahmelager; in special situations, another warehouse could be selected.\nIt first creates an automatic backup of the M_HU table — the backup table name starts with "m_hu_before_deactivate" and contains the timestamp of when the process was run.\nIt then destroys all the active Handling Units in the selected warehouse.',
+    Description = E'This process is designed for the Materialentnahmelager; in special situations, another warehouse could be selected.\nIt first creates an automatic backup of the M_HU table — the backup name contains a timestamp and the term "before_deactivate".\nIt then destroys all the active Handling Units in the selected warehouse.',
+    Help        = E'This process is designed for the Materialentnahmelager; in special situations, another warehouse could be selected.\nIt first creates an automatic backup of the M_HU table — the backup name contains a timestamp and the term "before_deactivate".\nIt then destroys all the active Handling Units in the selected warehouse.',
     Updated     = TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'),
     UpdatedBy   = 0
 WHERE AD_Process_ID = 5856210

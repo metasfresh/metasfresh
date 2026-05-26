@@ -40,15 +40,15 @@ BEGIN
     SELECT COUNT(*) INTO v_parents_count FROM tmp_hu_destroy_parents;
     RAISE NOTICE 'Zu vernichtende Eltern-HUs: %', v_parents_count;
 
-    IF v_parents_count = 0 THEN
-        RETURN 'Keine HUs mit Status A/S/I im Lager ' || p_m_warehouse_id::text || ' gefunden.';
-    END IF;
-
     -- -----------------------------------------------------------------------
-    -- Step 2: Backup m_hu once before any updates
+    -- Step 2: Backup m_hu unconditionally (even if nothing to destroy)
     -- -----------------------------------------------------------------------
     v_backup_name := backup_table('m_hu', '_before_deactivate');
     RAISE NOTICE 'Backup: %', v_backup_name;
+
+    IF v_parents_count = 0 THEN
+        RETURN 'Keine HUs mit Status A/S/I im Lager ' || p_m_warehouse_id::text || ' gefunden.';
+    END IF;
 
     -- -----------------------------------------------------------------------
     -- Step 3: Destroy parent HUs
