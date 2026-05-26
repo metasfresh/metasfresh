@@ -91,12 +91,11 @@ class LocatorValueRoundRobinResolverTest
 	@Test
 	void returns_first_when_current_not_in_set()
 	{
-		// Create A, B; pass a synthetic LocatorId that doesn't exist
 		final LocatorId a = locator("A", true);
 		locator("B", true);
 
-		final LocatorId syntheticId = LocatorId.ofRepoId(warehouseId.getRepoId(), 99_999_999);
-		assertThat(resolver.resolveNext(warehouseId, syntheticId)).isEqualTo(a);
+		final LocatorId nonexistent = LocatorId.ofRepoId(warehouseId.getRepoId(), 99_999_999);
+		assertThat(resolver.resolveNext(warehouseId, nonexistent)).isEqualTo(a);
 	}
 
 	@Test

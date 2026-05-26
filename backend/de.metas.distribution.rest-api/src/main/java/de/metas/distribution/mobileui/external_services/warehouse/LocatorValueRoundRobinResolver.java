@@ -17,22 +17,19 @@ import java.util.stream.Collectors;
 @Component
 public class LocatorValueRoundRobinResolver implements NextPickFromLocatorResolver
 {
-	public static final AdMessageKey MSG_NO_ALTERNATIVE =
-			AdMessageKey.of("MobileUI_DDOrder_SwitchPickFromLocator_NoAlternative");
+	static final AdMessageKey MSG_NO_ALTERNATIVE = AdMessageKey.of("MobileUI_DDOrder_SwitchPickFromLocator_NoAlternative");
+
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public @NonNull LocatorId resolveNext(@NonNull final WarehouseId warehouseId, @NonNull final LocatorId currentLocatorId)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
 		final List<I_M_Locator> allLocators = warehouseDAO.getLocators(warehouseId);
 
 		// Filter active only, sort by Value ascending (nulls last for safety)
 		final List<I_M_Locator> candidates = allLocators.stream()
 				.filter(I_M_Locator::isActive)
-				.sorted(Comparator.comparing(
-						l -> l.getValue() != null ? l.getValue() : "￿",
-						String::compareTo))
+				.sorted(Comparator.comparing(I_M_Locator::getValue, Comparator.nullsLast(String::compareTo)))
 				.collect(Collectors.toList());
 
 		if (candidates.isEmpty())
