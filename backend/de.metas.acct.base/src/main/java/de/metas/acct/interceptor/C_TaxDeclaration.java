@@ -81,6 +81,12 @@ public class C_TaxDeclaration
 		{
 			return;
 		}
+		// The very transition Processed:N→Y (= completeIt) is legitimate and must not be guarded against —
+		// only PERSISTED locked rows are subject to the disallowed-column check.
+		if (InterfaceWrapperHelper.isValueChanged(td, I_C_TaxDeclaration.COLUMNNAME_Processed))
+		{
+			return;
+		}
 
 		// Check critical disallowed columns. Other system columns (IsActive, Updated, etc.) are excluded from the check.
 		final String[] disallowedColumns = {
