@@ -13,7 +13,14 @@ public interface DDOrderPickingReconcileBL
 	/** Sync registration from M_ShipmentSchedule.afterSave. Coalesces and publishes a single reconcile event per distinct schedule id after the current transaction commits. No-op when warehouse is not a packing warehouse. */
 	void scheduleReconcileAfterCommit(I_M_ShipmentSchedule schedule);
 
-	/** Async handler entry point. Re-reads schedule, classifies the action (NONE/CREATE/RECREATE/VOID), executes it. */
+	/**
+	 * Async handler entry point. Re-reads schedule, classifies the action (NONE/CREATE/RECREATE/VOID), executes it.
+	 *
+	 * <p><b>No transaction boundary.</b> The RECREATE branch voids the existing DD_Order then creates a fresh one;
+	 * this is only atomic if the caller wraps the call in a transaction. The caller (the async event handler, T17)
+	 * MUST invoke this via {@code trxManager.runInNewTrx(() -> bl.reconcile(scheduleId))} so a create-failure rolls
+	 * back the void — never call {@code reconcile()} bare.</p>
+	 */
 	void reconcile(ShipmentScheduleId scheduleId);
 
 	/** Drift watchdog. Scans packing-warehouse schedules with no live DD_Order and republishes events. Called by the DD_Order_Picking_Rebuild JavaProcess + the hourly AD_Scheduler. */

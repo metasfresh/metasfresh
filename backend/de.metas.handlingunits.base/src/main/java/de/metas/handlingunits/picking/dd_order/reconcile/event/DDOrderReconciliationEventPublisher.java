@@ -38,6 +38,9 @@ public class DDOrderReconciliationEventPublisher
 	 * Publishes exactly one event per <em>distinct</em> shipment schedule id in the given collection.
 	 * Duplicates are coalesced so that repeated reconcile requests for the same schedule (within one
 	 * transaction) result in a single event.
+	 *
+	 * <p>The dedup here is intentional: the BL after-commit accumulator does NOT dedup, so equal ids arriving
+	 * from multiple within-trx afterSave calls land here together and collapse via the {@link LinkedHashSet}.</p>
 	 */
 	public void publishAll(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{

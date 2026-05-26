@@ -10,8 +10,10 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,20 +69,42 @@ public class DDOrderPickingReconcileRepository
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		// Main query: active schedules on a packing warehouse with no live DD_Order
+		// Main query: active schedules on a packing warehouse with no live DD_Order.
+		//
+		// NOTE on "active": this definition (IsActive='Y', no Processed/IsClosed filter) intentionally
+		// matches DDOrderPickingReconcileService#classifyAction — the watchdog only republishes; the BL
+		// re-decides per schedule. If one changes, change both.
 		final IQueryBuilder<I_M_ShipmentSchedule> scheduleQueryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter();
 
-		// schedule must be on a packing warehouse (M_Warehouse_ID or M_Warehouse_Override_ID)
-		scheduleQueryBuilder.addCompositeQueryFilter()
-				.setJoinOr()
-				.addInSubQueryFilter(
-						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
-						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
-						packingWarehouseSubQuery)
+		// Schedule must be on a packing EFFECTIVE warehouse, mirroring IShipmentScheduleEffectiveBL#getWarehouseId
+		// (Override-takes-priority) used by the BL. A plain OR over base/Override would wrongly include a schedule
+		// whose base warehouse is packing but whose Override points to a non-packing warehouse, generating a spurious
+		// watchdog event that the BL then no-ops via classifyAction=NONE.
+		//
+		//   (M_Warehouse_Override_ID IS NOT NULL AND M_Warehouse_Override_ID IN packing)
+		//   OR
+		//   (M_Warehouse_Override_ID IS NULL     AND M_Warehouse_ID          IN packing)
+		final ICompositeQueryFilter<I_M_ShipmentSchedule> effectivePackingFilter = scheduleQueryBuilder
+				.addCompositeQueryFilter()
+				.setJoinOr();
+
+		// branch 1: Override set and pointing at a packing warehouse
+		effectivePackingFilter.addCompositeQueryFilter()
+				.setJoinAnd()
+				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
 				.addInSubQueryFilter(
 						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
+						packingWarehouseSubQuery);
+
+		// branch 2: Override not set → base warehouse decides
+		effectivePackingFilter.addCompositeQueryFilter()
+				.setJoinAnd()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
+				.addInSubQueryFilter(
+						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
 						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
 						packingWarehouseSubQuery);
 
@@ -151,6 +175,11 @@ public class DDOrderPickingReconcileRepository
 	 * locator, links both header and line to the shipment schedule via {@code M_ShipmentSchedule_ID},
 	 * and completes the document via {@link IDocumentBL}.
 	 *
+	 * <p>Note on intentionally-omitted fields: {@code C_BPartner_Location_ID} and {@code PP_Plant_ID} are NOT set.
+	 * This is an internal pick-to-packing move, so neither the partner-location nor the manufacturing-plant context
+	 * applies. (If a dt204 packing warehouse ever turns out to have a PP_Plant that MRP needs, resolve it via
+	 * {@code warehouseBL.getPlantId(targetWarehouseId)} — not expected.)</p>
+	 *
 	 * @return the ID of the newly created, completed DD_Order
 	 */
 	public DDOrderId createCompletedDDOrder(@NonNull final CreateDDOrderRequest request)
@@ -170,6 +199,8 @@ public class DDOrderPickingReconcileRepository
 						.adClientId(Env.getAD_Client_ID())
 						.adOrgId(orgId.getRepoId())
 						.build());
+		// Fail with a clear config-time error rather than letting a -1 doc-type surface during completeIt.
+		Check.assumeNotNull(docTypeId, "Distribution Order doc-type must exist for orgId={}", orgId);
 
 		//
 		// Header
@@ -204,6 +235,10 @@ public class DDOrderPickingReconcileRepository
 		ddOrderLine.setDatePromised(ddOrder.getDatePromised());
 		ddOrderLine.setM_Product_ID(request.getProductId().getRepoId());
 		ddOrderLine.setC_UOM_ID(request.getQty().getUomId().getRepoId());
+		// This flow operates entirely in the product's stock UOM (internal pick-to-packing move):
+		// QtyToDeliver is always stock UOM and source UOM == stock UOM, so QtyEntered == QtyOrdered == TargetQty
+		// intentionally. (HUs2DDOrderProducer distinguishes QtyEntered=sourceUOM vs QtyOrdered/TargetQty=stockUOM;
+		// revisit only if a real source-UOM != stock-UOM case arises here.)
 		ddOrderLine.setQtyEntered(request.getQty().toBigDecimal());
 		ddOrderLine.setQtyOrdered(request.getQty().toBigDecimal());
 		ddOrderLine.setTargetQty(request.getQty().toBigDecimal());

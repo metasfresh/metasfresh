@@ -19,6 +19,10 @@ import java.time.Instant;
  *
  * <p>Consumed exclusively by {@link DDOrderPickingReconcileRepository#createCompletedDDOrder(CreateDDOrderRequest)}.
  * Kept minimal — only the fields that method actually needs.
+ *
+ * <p>Note on intentionally-omitted fields: there is no {@code C_BPartner_Location_ID} nor {@code PP_Plant_ID}.
+ * The reconcile flow is an internal pick-to-packing move, so the partner-location and manufacturing-plant context
+ * are not applicable.
  */
 @Value
 @Builder

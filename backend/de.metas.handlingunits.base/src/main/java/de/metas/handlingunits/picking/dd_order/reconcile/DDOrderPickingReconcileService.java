@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -42,7 +43,9 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
 
-	private static final String TRX_PROPERTY_ScheduleReconcile = "DDOrderPickingReconcile";
+	// FQN trx-property key: avoids collisions with any other service that might register an
+	// after-commit accumulator under a shorter, easier-to-clash name.
+	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcile";
 
 	@NonNull private final DDOrderPickingReconcileRepository repository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
@@ -56,9 +59,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-		if (!warehouse.isPackingWarehouse())
+		if (!isOnPackingWarehouse(schedule))
 		{
 			return;
 		}
@@ -94,6 +95,14 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				reconciliationEventPublisher::publishAll);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p><b>No transaction boundary here.</b> The VOID-then-CREATE of the RECREATE branch is only atomic if
+	 * the caller wraps this call in a transaction. The caller (the async event handler, T17) MUST invoke this
+	 * via {@code trxManager.runInNewTrx(() -> bl.reconcile(scheduleId))} so that a create-failure rolls back
+	 * the void — never call {@code reconcile()} bare.</p>
+	 */
 	@Override
 	public void reconcile(@NonNull final ShipmentScheduleId scheduleId)
 	{
@@ -217,6 +226,10 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	 * RECREATE: the schedule is still active but has changed (e.g. qty changed) while a live DD_Order exists.
 	 * Picker-busy guard first: if busy, throw without touching anything.
 	 * Then void the existing DD_Order and create a fresh one from the current schedule data.
+	 *
+	 * <p><b>No transaction boundary here.</b> The void + create is only atomic if the caller (the async event
+	 * handler, T17) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
+	 * create-failure rolls back the void.</p>
 	 */
 	private void recreateDDOrderFor(
 			@NonNull final ShipmentScheduleId scheduleId,
@@ -247,8 +260,11 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void rebuildDrift()
 	{
-		repository.streamSchedulesNeedingDDOrder()
-				.forEach(reconciliationEventPublisher::publishOne);
+		// try-with-resources: close the DB cursor even if publishOne throws mid-stream.
+		try (final Stream<ShipmentScheduleId> schedules = repository.streamSchedulesNeedingDDOrder())
+		{
+			schedules.forEach(reconciliationEventPublisher::publishOne);
+		}
 	}
 
 	@Override

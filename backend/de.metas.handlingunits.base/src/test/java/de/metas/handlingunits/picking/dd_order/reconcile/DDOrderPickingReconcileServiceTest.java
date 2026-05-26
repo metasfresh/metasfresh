@@ -29,6 +29,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -267,7 +271,7 @@ class DDOrderPickingReconcileServiceTest
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
 
 		assertThat(result).isPresent();
 		assertThat(result.get()).isEqualTo(sourceWarehouseId);
@@ -294,7 +298,7 @@ class DDOrderPickingReconcileServiceTest
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
 
 		assertThat(result).isNotPresent();
 	}
@@ -305,7 +309,7 @@ class DDOrderPickingReconcileServiceTest
 		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(23);
 		final ProductId productId = ProductId.ofRepoId(32);
 
-		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, null);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, null);
 
 		assertThat(result).isNotPresent();
 	}
@@ -380,11 +384,34 @@ class DDOrderPickingReconcileServiceTest
 	}
 
 	@Test
-	void reconcile_returnsActionNONE_whenAlreadyInDesiredState()
+	void classifyAction_returnsVOID_whenInactiveScheduleHasLiveDDOrder()
 	{
-		// non-packing warehouse => classifyAction should return NONE
+		// packing warehouse, INACTIVE schedule, existing live DD_Order => VOID
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(false);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(false);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
+		ddOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(ddOrder);
+
+		assertThat(service.classifyAction(schedule)).isEqualTo(DDOrderReconcileAction.VOID);
+	}
+
+	@Test
+	void classifyAction_returnsRECREATE_whenActiveScheduleHasLiveDDOrder()
+	{
+		// packing warehouse, ACTIVE schedule, existing live DD_Order => RECREATE
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -392,9 +419,14 @@ class DDOrderPickingReconcileServiceTest
 		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
 		schedule.setIsActive(true);
 		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
-		final DDOrderReconcileAction action = service.classifyAction(schedule);
-		assertThat(action).isEqualTo(DDOrderReconcileAction.NONE);
+		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
+		ddOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(ddOrder);
+
+		assertThat(service.classifyAction(schedule)).isEqualTo(DDOrderReconcileAction.RECREATE);
 	}
 
 	@Test
@@ -428,7 +460,7 @@ class DDOrderPickingReconcileServiceTest
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
 
 		// expect: sourceA is returned because priorityNo=10 < 20
 		assertThat(result).isPresent();
@@ -456,6 +488,15 @@ class DDOrderPickingReconcileServiceTest
 		locator.setValue("loc-" + warehouseId.getRepoId());
 		save(locator);
 		return warehouseId;
+	}
+
+	/** Creates a Distribution Order doc-type so {@code createCompletedDDOrder}'s doc-type assume succeeds. */
+	private static void createDistributionOrderDocType()
+	{
+		final org.compiere.model.I_C_DocType docType = newInstance(org.compiere.model.I_C_DocType.class);
+		docType.setDocBaseType(org.compiere.model.X_C_DocType.DOCBASETYPE_DistributionOrder);
+		docType.setName("Distribution Order");
+		save(docType);
 	}
 
 	/** Creates the in-transit warehouse for the schedule's org (default org = 0), as required by the DD_Order header. */
@@ -486,6 +527,8 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void reconcile_creates_completed_DDOrder_for_newSchedule()
 	{
+		createDistributionOrderDocType();
+
 		// in-transit warehouse for the default org (the DD_Order header warehouse)
 		final WarehouseId inTransitWarehouseId = createInTransitWarehouse(0);
 
@@ -519,7 +562,7 @@ class DDOrderPickingReconcileServiceTest
 		service.reconcile(scheduleId);
 
 		// exactly one DD_Order, completed, linked to the schedule
-		final java.util.List<I_DD_Order> ddOrders = Services.get(IQueryBL.class)
+		final List<I_DD_Order> ddOrders = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
 				.create()
@@ -536,7 +579,7 @@ class DDOrderPickingReconcileServiceTest
 		assertThat(ddOrder.getDatePromised()).as("DatePromised is set").isNotNull();
 		assertThat(ddOrder.getDateOrdered()).as("DateOrdered is set").isNotNull();
 
-		final java.util.List<I_DD_OrderLine> lines = Services.get(IQueryBL.class)
+		final List<I_DD_OrderLine> lines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DD_OrderLine.class)
 				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
 				.create()
@@ -648,6 +691,8 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void reconcile_voidsAndCreates_whenScheduleQtyChanged_andPickerNotBusy()
 	{
+		createDistributionOrderDocType();
+
 		// in-transit warehouse (required for DD_Order header)
 		createInTransitWarehouse(0);
 
@@ -698,7 +743,7 @@ class DDOrderPickingReconcileServiceTest
 		assertThat(reloaded.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Voided);
 
 		// a new Completed DD_Order must exist linked to the same schedule
-		final java.util.List<I_DD_Order> allDDOrders = Services.get(IQueryBL.class)
+		final List<I_DD_Order> allDDOrders = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
 				.create()
@@ -709,6 +754,15 @@ class DDOrderPickingReconcileServiceTest
 				.filter(o -> X_DD_Order.DOCSTATUS_Completed.equals(o.getDocStatus()))
 				.count();
 		assertThat(completedCount).as("exactly 1 new Completed DD_Order").isEqualTo(1);
+
+		// the new Completed DD_Order is explicitly linked to the schedule
+		final I_DD_Order newCompleted = allDDOrders.stream()
+				.filter(o -> X_DD_Order.DOCSTATUS_Completed.equals(o.getDocStatus()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("expected a Completed DD_Order"));
+		assertThat(newCompleted.getM_ShipmentSchedule_ID())
+				.as("new Completed DD_Order is linked to the schedule")
+				.isEqualTo(scheduleId.getRepoId());
 	}
 
 	@Test
@@ -838,7 +892,7 @@ class DDOrderPickingReconcileServiceTest
 		service.scheduleReconcileAfterCommit(schedule);
 
 		// exactly one publishAll call carrying the single schedule id
-		verify(publisher, times(1)).publishAll(java.util.Collections.singletonList(scheduleId));
+		verify(publisher, times(1)).publishAll(Collections.singletonList(scheduleId));
 	}
 
 	@Test
@@ -863,8 +917,11 @@ class DDOrderPickingReconcileServiceTest
 
 		// exactly one publishAll call after commit (the two per-trx calls are accumulated into one);
 		// the publishAll implementation itself deduplicates to one event per distinct id.
-		verify(publisher, times(1)).publishAll(anyCollection());
-		verify(publisher, times(1)).publishAll(java.util.Arrays.asList(scheduleId, scheduleId));
+		@SuppressWarnings("unchecked")
+		final org.mockito.ArgumentCaptor<java.util.Collection<ShipmentScheduleId>> captor =
+				org.mockito.ArgumentCaptor.forClass(java.util.Collection.class);
+		verify(publisher, times(1)).publishAll(captor.capture());
+		assertThat(captor.getValue()).containsExactly(scheduleId, scheduleId);
 	}
 
 	// -----------------------------------------------------------------------
@@ -885,7 +942,7 @@ class DDOrderPickingReconcileServiceTest
 		final ShipmentScheduleId id2 = ShipmentScheduleId.ofRepoId(502);
 
 		// id1 appears twice → only one event for it; id2 once → one event. Total = 2 events.
-		realPublisher.publishAll(java.util.Arrays.asList(id1, id1, id2));
+		realPublisher.publishAll(Arrays.asList(id1, id1, id2));
 
 		verify(eventBus, times(2)).enqueueEvent(any(de.metas.event.Event.class));
 	}
@@ -942,6 +999,94 @@ class DDOrderPickingReconcileServiceTest
 		service.rebuildDrift();
 
 		// schedule has a live DD_Order → publisher must NOT have been called
+		verify(publisher, never()).publishOne(scheduleId);
+	}
+
+	@Test
+	void rebuildDrift_skips_scheduleOnNonPackingWarehouse()
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(false);
+		save(warehouse);
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		service.rebuildDrift();
+
+		verify(publisher, never()).publishOne(scheduleId);
+	}
+
+	@Test
+	void rebuildDrift_skips_inactiveSchedule()
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		schedule.setIsActive(false);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		service.rebuildDrift();
+
+		// inactive schedule is excluded by addOnlyActiveRecordsFilter → not published
+		verify(publisher, never()).publishOne(scheduleId);
+	}
+
+	@Test
+	void rebuildDrift_publishesEvent_whenOverrideWarehouseIsPacking()
+	{
+		// base warehouse is NON-packing, but the Override points at a packing warehouse → effective = packing
+		final I_M_Warehouse baseWarehouse = newInstance(I_M_Warehouse.class);
+		baseWarehouse.setIsPackingWarehouse(false);
+		save(baseWarehouse);
+
+		final I_M_Warehouse overrideWarehouse = newInstance(I_M_Warehouse.class);
+		overrideWarehouse.setIsPackingWarehouse(true);
+		save(overrideWarehouse);
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(baseWarehouse.getM_Warehouse_ID());
+		schedule.setM_Warehouse_Override_ID(overrideWarehouse.getM_Warehouse_ID());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		service.rebuildDrift();
+
+		// Override-takes-priority: effective warehouse is packing → published
+		verify(publisher, times(1)).publishOne(scheduleId);
+	}
+
+	@Test
+	void rebuildDrift_skips_whenBasePackingButOverrideNonPacking()
+	{
+		// base warehouse IS packing, but the Override points at a NON-packing warehouse → effective = non-packing.
+		// This is the divergence case the plain-OR filter wrongly included; the effective-priority filter excludes it.
+		final I_M_Warehouse baseWarehouse = newInstance(I_M_Warehouse.class);
+		baseWarehouse.setIsPackingWarehouse(true);
+		save(baseWarehouse);
+
+		final I_M_Warehouse overrideWarehouse = newInstance(I_M_Warehouse.class);
+		overrideWarehouse.setIsPackingWarehouse(false);
+		save(overrideWarehouse);
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(baseWarehouse.getM_Warehouse_ID());
+		schedule.setM_Warehouse_Override_ID(overrideWarehouse.getM_Warehouse_ID());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		service.rebuildDrift();
+
+		// effective warehouse (Override) is non-packing → NOT published (no spurious event)
 		verify(publisher, never()).publishOne(scheduleId);
 	}
 }
