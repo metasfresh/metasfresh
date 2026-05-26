@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Warehouse
  *  @author metasfresh (generated) 
@@ -52,6 +51,28 @@ public interface I_M_Warehouse
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -96,7 +117,7 @@ public interface I_M_Warehouse
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -105,7 +126,7 @@ public interface I_M_Warehouse
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -164,6 +185,33 @@ public interface I_M_Warehouse
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
+
+	/**
+	 * Get Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_NetworkDistribution_ID();
+
+	@Nullable org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
+
+	void setDD_NetworkDistribution(@Nullable org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
+
+	ModelColumn<I_M_Warehouse, org.eevolution.model.I_DD_NetworkDistribution> COLUMN_DD_NetworkDistribution_ID = new ModelColumn<>(I_M_Warehouse.class, "DD_NetworkDistribution_ID", org.eevolution.model.I_DD_NetworkDistribution.class);
+	String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
 
 	/**
 	 * Set Description.
@@ -232,7 +280,7 @@ public interface I_M_Warehouse
 
 	/**
 	 * Set Dropship Warehouse.
-	 * If Yes, this warehouse is used for dropship orders (direct supplier-to-customer delivery).
+	 * If Yes, sales orders on this warehouse are handled as dropship. On sales-order completion a single purchase order is automatically created for the vendor.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -242,7 +290,7 @@ public interface I_M_Warehouse
 
 	/**
 	 * Get Dropship Warehouse.
-	 * If Yes, this warehouse is used for dropship orders (direct supplier-to-customer delivery).
+	 * If Yes, sales orders on this warehouse are handled as dropship. On sales-order completion a single purchase order is automatically created for the vendor.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -255,7 +303,7 @@ public interface I_M_Warehouse
 
 	/**
 	 * Set In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -265,7 +313,7 @@ public interface I_M_Warehouse
 
 	/**
 	 * Get In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -277,7 +325,7 @@ public interface I_M_Warehouse
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
-	 * Set Beanstandungslager.
+	 * Set Quality Issue Warehouse.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -286,7 +334,7 @@ public interface I_M_Warehouse
 	void setIsIssueWarehouse (boolean IsIssueWarehouse);
 
 	/**
-	 * Get Beanstandungslager.
+	 * Get Quality Issue Warehouse.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -296,6 +344,29 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_IsIssueWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsIssueWarehouse", null);
 	String COLUMNNAME_IsIssueWarehouse = "IsIssueWarehouse";
+
+	/**
+	 * Set Picking Warehouse.
+	 * If Yes, this warehouse runs the dedicated DD_Order reconcile flow for picking — instead of the general material-disposition flow. Requires MRP_Exclude=Y and a distribution network to be set.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPackingWarehouse (boolean IsPackingWarehouse);
+
+	/**
+	 * Get Picking Warehouse.
+	 * If Yes, this warehouse runs the dedicated DD_Order reconcile flow for picking — instead of the general material-disposition flow. Requires MRP_Exclude=Y and a distribution network to be set.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPackingWarehouse();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsPackingWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsPackingWarehouse", null);
+	String COLUMNNAME_IsPackingWarehouse = "IsPackingWarehouse";
 
 	/**
 	 * Set Kommissionierlager.
@@ -319,7 +390,8 @@ public interface I_M_Warehouse
 	String COLUMNNAME_IsPickingWarehouse = "IsPickingWarehouse";
 
 	/**
-	 * Set IsQualityReturnWarehouse.
+	 * Set Quality Return Warehouse.
+	 * Indicates whether the warehouse is designated for quality-related returns.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -328,7 +400,8 @@ public interface I_M_Warehouse
 	void setIsQualityReturnWarehouse (boolean IsQualityReturnWarehouse);
 
 	/**
-	 * Get IsQualityReturnWarehouse.
+	 * Get Quality Return Warehouse.
+	 * Indicates whether the warehouse is designated for quality-related returns.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -340,7 +413,8 @@ public interface I_M_Warehouse
 	String COLUMNNAME_IsQualityReturnWarehouse = "IsQualityReturnWarehouse";
 
 	/**
-	 * Set IsQuarantineWarehouse.
+	 * Set Quarantine Warehouse.
+	 * Flag indicating whether the warehouse is used as a quarantine warehouse.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -349,7 +423,8 @@ public interface I_M_Warehouse
 	void setIsQuarantineWarehouse (boolean IsQuarantineWarehouse);
 
 	/**
-	 * Get IsQuarantineWarehouse.
+	 * Get Quarantine Warehouse.
+	 * Flag indicating whether the warehouse is used as a quarantine warehouse.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -382,6 +457,54 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_IsReceiveAsSourceHU = new ModelColumn<>(I_M_Warehouse.class, "IsReceiveAsSourceHU", null);
 	String COLUMNNAME_IsReceiveAsSourceHU = "IsReceiveAsSourceHU";
+
+	/**
+	 * Set Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturing_Warehouse_Group_ID (int Manufacturing_Warehouse_Group_ID);
+
+	/**
+	 * Get Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getManufacturing_Warehouse_Group_ID();
+
+	@Nullable org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group();
+
+	void setManufacturing_Warehouse_Group(@Nullable org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group);
+
+	ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Group> COLUMN_Manufacturing_Warehouse_Group_ID = new ModelColumn<>(I_M_Warehouse.class, "Manufacturing_Warehouse_Group_ID", org.compiere.model.I_M_Warehouse_Group.class);
+	String COLUMNNAME_Manufacturing_Warehouse_Group_ID = "Manufacturing_Warehouse_Group_ID";
+
+	/**
+	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMRP_Exclude (@Nullable java.lang.String MRP_Exclude);
+
+	/**
+	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMRP_Exclude();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_M_Warehouse.class, "MRP_Exclude", null);
+	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
 
 	/**
 	 * Set Warehouse.
@@ -432,6 +555,28 @@ public interface I_M_Warehouse
 	String COLUMNNAME_M_Warehouse_PickingGroup_ID = "M_Warehouse_PickingGroup_ID";
 
 	/**
+	 * Set Source Warehouse.
+	 * Optional Warehouse to replenish from
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_WarehouseSource_ID (int M_WarehouseSource_ID);
+
+	/**
+	 * Get Source Warehouse.
+	 * Optional Warehouse to replenish from
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_WarehouseSource_ID();
+
+	String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
+
+	/**
 	 * Set Warehouse Type.
 	 *
 	 * <br>Type: TableDir
@@ -457,74 +602,6 @@ public interface I_M_Warehouse
 	String COLUMNNAME_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
 
 	/**
-	 * Set Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_WarehouseSource_ID (int M_WarehouseSource_ID);
-
-	/**
-	 * Get Source Warehouse.
-	 * Optional Warehouse to replenish from
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_WarehouseSource_ID();
-
-	String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
-
-	/**
-	 * Set Manufacturing Warehouse Group.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setManufacturing_Warehouse_Group_ID (int Manufacturing_Warehouse_Group_ID);
-
-	/**
-	 * Get Manufacturing Warehouse Group.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getManufacturing_Warehouse_Group_ID();
-
-	@Nullable org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group();
-
-	void setManufacturing_Warehouse_Group(@Nullable org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group);
-
-	ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Group> COLUMN_Manufacturing_Warehouse_Group_ID = new ModelColumn<>(I_M_Warehouse.class, "Manufacturing_Warehouse_Group_ID", org.compiere.model.I_M_Warehouse_Group.class);
-	String COLUMNNAME_Manufacturing_Warehouse_Group_ID = "Manufacturing_Warehouse_Group_ID";
-
-	/**
-	 * Set Exclude from MRP.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMRP_Exclude (@Nullable java.lang.String MRP_Exclude);
-
-	/**
-	 * Get Exclude from MRP.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMRP_Exclude();
-
-	ModelColumn<I_M_Warehouse, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_M_Warehouse.class, "MRP_Exclude", null);
-	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
-
-	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -546,7 +623,7 @@ public interface I_M_Warehouse
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Produktionsstätte.
+	 * Set Plant.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -555,7 +632,7 @@ public interface I_M_Warehouse
 	void setPP_Plant_ID (int PP_Plant_ID);
 
 	/**
-	 * Get Produktionsstätte.
+	 * Get Plant.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -594,7 +671,7 @@ public interface I_M_Warehouse
 	String COLUMNNAME_ReplenishmentClass = "ReplenishmentClass";
 
 	/**
-	 * Set Element-Trenner.
+	 * Set Element Separator.
 	 * Element Separator
 	 *
 	 * <br>Type: String
@@ -604,7 +681,7 @@ public interface I_M_Warehouse
 	void setSeparator (java.lang.String Separator);
 
 	/**
-	 * Get Element-Trenner.
+	 * Get Element Separator.
 	 * Element Separator
 	 *
 	 * <br>Type: String
@@ -663,27 +740,4 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_Value = new ModelColumn<>(I_M_Warehouse.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
-
-	/**
-	 * Set Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_User_ID (int AD_User_ID);
-
-	/**
-	 * Get Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_User_ID();
-
-	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
 }
