@@ -89,6 +89,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
       scanLuOrLocator: 'Scannen LU oder Lagerplatz',
+      action: {
+        bulkActions: {
+          windowName: 'Massenaktionen',
+          closeScanner: 'Scanner schließen',
+          move: 'Verschieben',
+          moveSuccess: 'HU erfolgreich verschoben',
+          scanHUPlaceholder: 'HU scannen',
+          scanTargetPlaceholder: 'Ziellagerplatz scannen',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packzeile',

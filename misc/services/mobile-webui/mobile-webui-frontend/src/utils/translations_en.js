@@ -86,6 +86,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Target QR Code must be scanned first!',
       scanLuOrLocator: 'Scan LU or locator',
+      action: {
+        bulkActions: {
+          windowName: 'Bulk Actions',
+          closeScanner: 'Close scanner',
+          move: 'Move',
+          moveSuccess: 'HU moved successfully',
+          scanHUPlaceholder: 'Scan HU',
+          scanTargetPlaceholder: 'Scan target location',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packing line',

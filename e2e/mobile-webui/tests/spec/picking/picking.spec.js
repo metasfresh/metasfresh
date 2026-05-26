@@ -11,6 +11,8 @@ import { expectErrorToast } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { expect } from '@playwright/test';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
+import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
+import { InventoryJobScreen } from '../../utils/screens/inventory/InventoryJobScreen';
 
 const createMasterdata = async ({
                                     language = 'en_US',
@@ -968,4 +970,106 @@ test('Scan HU with wrong product during picking', async ({ page }) => {
 
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
     await PickingJobScreen.complete();
+});
+
+//
+// Simulate an HU removed from stock via a zero-count inventory (physical label still on
+// the shelf), then scan its QR code during a picking job.  The real-world scenario:
+// a warehouse worker counts the HU as 0, inventory is completed → HU destroyed in the
+// system.  A picker later scans the dangling label → QR_CODE_HU_DESTROYED error toast.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan destroyed HU QR code during picking → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - destroyed HU');
+    allure.severity('normal');
+
+    // HU1 is created in the warehouse.  An inventory document for P1 lets the test
+    // count HU1 as 0 → complete inventory → HU1 status becomes 'D' (Destroyed).
+    // SO1 provides a picking job so we can scan HU1 after it is destroyed.
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US', workplace: 'workplace1' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                },
+            },
+            bpartners: { 'BP1': {} },
+            warehouses: { 'wh': {} },
+            workplaces: { workplace1: { warehouse: 'wh' } },
+            pickingSlots: { slot1: {} },
+            products: { 'P1': { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                'PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            inventories: {
+                'inv1': {
+                    warehouse: 'wh',
+                    date: '2025-03-01T00:00:00.000+02:00',
+                    products: ['P1'],
+                },
+            },
+            salesOrders: {
+                'SO1': {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
+                },
+            },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    // Step 1: Destroy HU1 by counting it as 0 in inventory and completing the job.
+    await ApplicationsListScreen.startApplication('inventory');
+    await InventoryJobsListScreen.waitForScreen();
+    await InventoryJobsListScreen.startJob({ index: 1 });
+    await InventoryJobScreen.countHU({
+        locatorQRCode: masterdata.warehouses.wh.locatorQRCode,
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
+        qtyCount: 0,
+    });
+    await InventoryJobScreen.complete();
+    await InventoryJobsListScreen.goBack();
+
+    // Step 2: Start picking for SO1, scan the now-destroyed HU1 → expect QR_CODE_HU_DESTROYED.
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await expectErrorToast('Scan depleted (destroyed) HU', async () => {
+        // Wait for the API response before returning: the barcode hook flushes on a
+        // ~600ms interval, which may push the API call past expectErrorToast's 2 s grace window.
+        const responsePromise = page.waitForResponse(
+            resp => resp.url().includes('/picking/nextEligibleLineToPack'),
+            { timeout: 5000 }
+        );
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+        await responsePromise;
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_CODE_HU_DESTROYED');
+    });
+
+    await PickingJobScreen.waitForScreen();
 });
