@@ -37,7 +37,6 @@ public enum ProcessOpenTarget implements ReferenceListAwareEnum
 {
 	ModalOverlay(X_AD_Process.OPENTARGET_ModalOverlay),
 	NewBrowserTab(X_AD_Process.OPENTARGET_NewBrowserTab),
-	InPlace(X_AD_Process.OPENTARGET_InPlace),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ProcessOpenTarget> index = ReferenceListAwareEnums.index(values());
