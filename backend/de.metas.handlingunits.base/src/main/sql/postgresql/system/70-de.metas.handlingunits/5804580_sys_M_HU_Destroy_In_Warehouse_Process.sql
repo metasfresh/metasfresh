@@ -1,9 +1,11 @@
 -- 2026-05-26
--- AD_Process, parameter, element, menu entry and tree node
+-- AD_Process (SQL type), parameter, element, menu entry and tree node
 -- for the "HU Vernichten im Lager" process.
 --
--- Process classname: de.metas.handlingunits.process.M_HU_Destroy_In_Warehouse
--- SQL function:      m_hu_destroy_in_warehouse(p_m_warehouse_id, p_ad_pinstance_id)
+-- SQL function: m_hu_destroy_in_warehouse(p_m_warehouse_id)
+-- Process type: SQL (de.metas.process.ExecuteUpdateSQL)
+-- IsLogWarning=Y ensures RAISE NOTICE messages (backup table names, counts)
+-- appear in the process log.
 
 -- =============================================
 -- 1. AD_Element (for menu entry)
@@ -37,20 +39,23 @@ VALUES ('en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI
         5849130, 'Destroy HUs in Warehouse', 'Destroy HUs in Warehouse', NULL, NULL, 'Y');
 
 -- =============================================
--- 2. AD_Process
+-- 2. AD_Process (Type=SQL)
 -- =============================================
 INSERT INTO AD_Process (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                         AD_Process_ID, Value, Name, Description, Help,
-                        Classname, IsReport, AccessLevel, EntityType, ShowHelp, Type)
+                        Classname, SQLStatement, IsReport, IsLogWarning,
+                        AccessLevel, EntityType, ShowHelp, Type)
 VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         5856210 /*From ID Server*/,
         'M_HU_Destroy_In_Warehouse',
         'HU Vernichten im Lager',
-        'Setzt alle HUs im gewählten Lager auf Status "Vernichtet" und erstellt einen Excel-Bericht.',
-        'Dieser Prozess vernichtet alle aktiven Handling Units (HUs) im gewählten Lager, deren Status auf den Lagerbestand angerechnet wird (Aktiv, Gepickt, Ausgegeben). HUs mit Status "Versandt" oder bereits "Vernichtet" werden übersprungen. Vor jeder Änderung wird eine Sicherungskopie der Tabelle m_hu angelegt. Am Ende wird eine Excel-Datei mit allen vernichteten HUs (Produkte, Menge, Lagerort) erstellt und kann gespeichert werden.',
-        'de.metas.handlingunits.process.M_HU_Destroy_In_Warehouse',
-        'N', '3', 'de.metas.handlingunits', 'Y', 'Java');
+        'Setzt alle aktiven HUs im gewählten Lager auf "Vernichtet" und sichert die Daten vorher.',
+        'Dieser Prozess vernichtet alle Handling Units (HUs) im gewählten Lager, deren Status auf den Lagerbestand angerechnet wird (Aktiv, Gepickt, Ausgegeben). HUs mit Status "Versandt" (E) oder bereits "Vernichtet" (D) werden übersprungen. Vor jeder Änderung wird automatisch eine Sicherungskopie der Tabelle m_hu angelegt — die Namen der Sicherungstabellen sind im Prozessprotokoll ersichtlich. Eltern-HUs sowie alle untergeordneten HUs (z. B. TUs auf einem LU) werden vollständig vernichtet.',
+        'de.metas.process.ExecuteUpdateSQL',
+        'SELECT m_hu_destroy_in_warehouse(@M_Warehouse_ID/1000109@::numeric)',
+        'N', 'Y',
+        '3', 'de.metas.handlingunits', 'Y', 'SQL');
 
 -- de_DE
 INSERT INTO AD_Process_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
@@ -59,8 +64,8 @@ VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         5856210,
         'HU Vernichten im Lager',
-        'Setzt alle HUs im gewählten Lager auf Status "Vernichtet" und erstellt einen Excel-Bericht.',
-        'Dieser Prozess vernichtet alle aktiven Handling Units (HUs) im gewählten Lager, deren Status auf den Lagerbestand angerechnet wird (Aktiv, Gepickt, Ausgegeben). HUs mit Status "Versandt" oder bereits "Vernichtet" werden übersprungen. Vor jeder Änderung wird eine Sicherungskopie der Tabelle m_hu angelegt. Am Ende wird eine Excel-Datei mit allen vernichteten HUs (Produkte, Menge, Lagerort) erstellt und kann gespeichert werden.',
+        'Setzt alle aktiven HUs im gewählten Lager auf "Vernichtet" und sichert die Daten vorher.',
+        'Dieser Prozess vernichtet alle Handling Units (HUs) im gewählten Lager, deren Status auf den Lagerbestand angerechnet wird (Aktiv, Gepickt, Ausgegeben). HUs mit Status "Versandt" (E) oder bereits "Vernichtet" (D) werden übersprungen. Vor jeder Änderung wird automatisch eine Sicherungskopie der Tabelle m_hu angelegt — die Namen der Sicherungstabellen sind im Prozessprotokoll ersichtlich. Eltern-HUs sowie alle untergeordneten HUs (z. B. TUs auf einem LU) werden vollständig vernichtet.',
         'N');
 
 -- de_CH
@@ -70,8 +75,8 @@ VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         5856210,
         'HU Vernichten im Lager',
-        'Setzt alle HUs im gewählten Lager auf Status "Vernichtet" und erstellt einen Excel-Bericht.',
-        'Dieser Prozess vernichtet alle aktiven Handling Units (HUs) im gewählten Lager, deren Status auf den Lagerbestand angerechnet wird (Aktiv, Gepickt, Ausgegeben). HUs mit Status "Versandt" oder bereits "Vernichtet" werden übersprungen. Vor jeder Änderung wird eine Sicherungskopie der Tabelle m_hu angelegt. Am Ende wird eine Excel-Datei mit allen vernichteten HUs (Produkte, Menge, Lagerort) erstellt und kann gespeichert werden.',
+        'Setzt alle aktiven HUs im gewählten Lager auf "Vernichtet" und sichert die Daten vorher.',
+        'Dieser Prozess vernichtet alle Handling Units (HUs) im gewählten Lager, deren Status auf den Lagerbestand angerechnet wird (Aktiv, Gepickt, Ausgegeben). HUs mit Status "Versandt" (E) oder bereits "Vernichtet" (D) werden übersprungen. Vor jeder Änderung wird automatisch eine Sicherungskopie der Tabelle m_hu angelegt — die Namen der Sicherungstabellen sind im Prozessprotokoll ersichtlich. Eltern-HUs sowie alle untergeordneten HUs (z. B. TUs auf einem LU) werden vollständig vernichtet.',
         'N');
 
 -- en_US
@@ -81,8 +86,8 @@ VALUES ('en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         5856210,
         'Destroy HUs in Warehouse',
-        'Sets all HUs in the selected warehouse to status "Destroyed" and generates an Excel report.',
-        'This process destroys all Handling Units (HUs) in the selected warehouse whose status counts toward warehouse stock (Active, Picked, Issued). HUs with status Shipped or already Destroyed are skipped. A backup of the m_hu table is created before each modification. An Excel file listing all destroyed HUs (products, quantities, locator) is generated at the end.',
+        'Sets all active HUs in the selected warehouse to "Destroyed" and backs up the data first.',
+        'This process destroys all Handling Units (HUs) in the selected warehouse whose status counts toward warehouse stock (Active, Picked, Issued). HUs with status Shipped (E) or already Destroyed (D) are skipped. A backup of the m_hu table is created automatically before each modification — the backup table names are visible in the process log. Both parent HUs and all their descendants (e.g. TUs on an LU) are fully destroyed.',
         'Y');
 
 -- =============================================
@@ -94,7 +99,7 @@ INSERT INTO AD_Process_Para (AD_Client_ID, AD_Org_ID, IsActive, Created, Created
                              EntityType, IsCentrallyMaintained)
 VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
         TO_TIMESTAMP('2026-05-26 12:00', 'YYYY-MM-DD HH24:MI'), 0,
-        5432080 /*From ID Server*/, 5856210 /*AD_Process_ID*/, 459 /*M_Warehouse_ID element*/,
+        5432080 /*From ID Server*/, 5856210, 459 /*M_Warehouse_ID element*/,
         'M_Warehouse_ID',
         'Lager',
         'Lager, dessen HUs vernichtet werden sollen',
