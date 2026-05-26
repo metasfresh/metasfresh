@@ -40,12 +40,14 @@ INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, C
                       AD_Tab_ID, AD_Column_ID, AD_Name_ID,
                       Name, Description,
                       IsDisplayed, IsDisplayedGrid, IsReadOnly, IsSameLine,
+                      DisplayLogic,
                       SeqNo, SeqNoGrid, SortNo, EntityType)
 VALUES (780494 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 14:00:01','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-05-27 14:00:01','YYYY-MM-DD HH24:MI:SS'), 100,
         177, (SELECT AD_Column_ID FROM AD_Column WHERE ColumnName='DD_NetworkDistribution_ID' AND AD_Table_ID=190), NULL,
         'Verteilungsnetz',
         'Verteilungsnetz, das für den DD_Order-Abgleich auf diesem Kommissionierungslager verwendet wird.',
         'Y', 'Y', 'N', 'N',
+        '@IsPackingWarehouse@=''Y''',
         115, 66, 0, 'D');
 
 -- Skeleton Trl rows for DD_NetworkDistribution_ID AD_Field
