@@ -5,7 +5,7 @@
 -- Value: de.metas.mobile.qr.WrongType.Locator
 -- 2026-05-21 10:00
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value)
-VALUES (0,545689 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Lagerort ''{0}'' eingescannt — erwartet wird eine Artikel-HU','E','QR_WRONG_TYPE_LOCATOR',TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),100,'de.metas.mobile.qr.WrongType.Locator')
+VALUES (0,545689 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Lagerort {0} eingescannt — erwartet wird eine Artikel-HU','E','QR_WRONG_TYPE_LOCATOR',TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),100,'de.metas.mobile.qr.WrongType.Locator')
 ;
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.CreatedBy,t.Updated,t.UpdatedBy,'Y'
@@ -13,7 +13,7 @@ FROM AD_Language l, AD_Message t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545689
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
-UPDATE AD_Message_Trl SET IsTranslated='Y',MsgText='Scanned locator ''{0}'' — expected a product HU',Updated=TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),UpdatedBy=100
+UPDATE AD_Message_Trl SET IsTranslated='Y',MsgText='Scanned locator {0} — expected a product HU',Updated=TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),UpdatedBy=100
 WHERE AD_Language='en_US' AND AD_Message_ID=545689
 ;
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-21 10:00','YYYY-MM-DD HH24:MI'),UpdatedBy=100
@@ -41,7 +41,7 @@ WHERE AD_Language IN ('de_DE','de_CH') AND AD_Message_ID=545690
 -- Value: de.metas.mobile.qr.NotRecognized
 -- 2026-05-21 10:00
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value)
-VALUES (0,545691 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),100,'D','Y','QR-Code nicht erkannt: ''{0}''','E','QR_NOT_RECOGNIZED',TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),100,'de.metas.mobile.qr.NotRecognized')
+VALUES (0,545691 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),100,'D','Y','QR-Code nicht erkannt: {0}','E','QR_NOT_RECOGNIZED',TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),100,'de.metas.mobile.qr.NotRecognized')
 ;
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.CreatedBy,t.Updated,t.UpdatedBy,'Y'
@@ -49,7 +49,7 @@ FROM AD_Language l, AD_Message t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545691
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
-UPDATE AD_Message_Trl SET IsTranslated='Y',MsgText='QR code not recognized: ''{0}''',Updated=TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),UpdatedBy=100
+UPDATE AD_Message_Trl SET IsTranslated='Y',MsgText='QR code not recognized: {0}',Updated=TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),UpdatedBy=100
 WHERE AD_Language='en_US' AND AD_Message_ID=545691
 ;
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-21 10:02','YYYY-MM-DD HH24:MI'),UpdatedBy=100
