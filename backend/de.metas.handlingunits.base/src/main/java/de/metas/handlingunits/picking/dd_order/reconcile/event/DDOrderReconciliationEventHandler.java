@@ -7,6 +7,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -26,8 +27,8 @@ import javax.annotation.PostConstruct;
 public class DDOrderReconciliationEventHandler implements IEventListener
 {
 	@NonNull private final DDOrderPickingReconcileBL reconcileBL;
-	@NonNull private final IEventBusFactory eventBusFactory;
-	@NonNull private final ITrxManager trxManager;
+	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@PostConstruct
 	public void subscribe()

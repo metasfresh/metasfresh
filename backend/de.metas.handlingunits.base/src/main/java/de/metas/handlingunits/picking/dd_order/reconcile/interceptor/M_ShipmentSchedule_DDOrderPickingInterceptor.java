@@ -25,6 +25,7 @@ package de.metas.handlingunits.picking.dd_order.reconcile.interceptor;
 import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -32,14 +33,10 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_ShipmentSchedule.class)
 @Component
+@RequiredArgsConstructor
 public class M_ShipmentSchedule_DDOrderPickingInterceptor
 {
-	private final DDOrderPickingReconcileBL reconcileBL;
-
-	public M_ShipmentSchedule_DDOrderPickingInterceptor(@NonNull final DDOrderPickingReconcileBL reconcileBL)
-	{
-		this.reconcileBL = reconcileBL;
-	}
+	@NonNull private final DDOrderPickingReconcileBL reconcileBL;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
