@@ -89,7 +89,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 			case RECREATE:
 				throw new UnsupportedOperationException("not yet implemented: " + action);
 			case VOID:
-				throw new UnsupportedOperationException("not yet implemented: " + action);
+				voidDDOrderFor(scheduleId);
+				return;
 			default:
 				throw new AdempiereException("Unexpected action: " + action);
 		}
@@ -175,6 +176,20 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				.build();
 
 		repository.createCompletedDDOrder(request);
+	}
+
+	private void voidDDOrderFor(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final DDOrderId ddOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
+		if (ddOrderId == null)
+		{
+			return;
+		}
+		if (isPickerBusy(ddOrderId))
+		{
+			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, ddOrderId);
+		}
+		repository.voidDDOrder(ddOrderId);
 	}
 
 	@Override

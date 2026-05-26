@@ -45,15 +45,16 @@ class DDOrderPickingReconcileServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// Stub the document engine: completing a DD_Order just flips its DocStatus to Completed.
-		// Full doc-engine completion needs DB infrastructure not available in AdempiereTestHelper unit tests.
+		// Stub the document engine: processEx flips DocStatus to whatever the targetStatus argument says.
+		// Full doc-engine processing needs DB infrastructure not available in AdempiereTestHelper unit tests.
 		final IDocumentBL documentBL = mock(IDocumentBL.class);
 		doAnswer(invocation -> {
 			final Object document = invocation.getArgument(0);
+			final String targetStatus = (String)invocation.getArgument(2);
 			if (document instanceof I_DD_Order)
 			{
 				final I_DD_Order ddOrder = (I_DD_Order)document;
-				ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+				ddOrder.setDocStatus(targetStatus);
 				save(ddOrder);
 			}
 			return null;
@@ -541,6 +542,94 @@ class DDOrderPickingReconcileServiceTest
 		assertThat(ddOrderLine.getTargetQty()).isEqualByComparingTo(new BigDecimal("17"));
 		assertThat(ddOrderLine.getDatePromised()).as("line DatePromised is set").isNotNull();
 		assertThat(ddOrderLine.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
+	}
+
+	// -----------------------------------------------------------------------
+	// reconcile() VOID branch tests (T13)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void reconcile_voids_existingDDOrder_whenScheduleInactive_andPickerNotBusy()
+	{
+		// packing warehouse
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		// INACTIVE schedule on the packing warehouse
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(false);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// existing live (Completed) DD_Order linked to this schedule
+		final I_DD_Order existingDDOrder = newInstance(I_DD_Order.class);
+		existingDDOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		existingDDOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(existingDDOrder);
+
+		// no PickingJobLine → picker is NOT busy
+
+		service.reconcile(scheduleId);
+
+		// the existing DD_Order must now be Voided; no new DD_Order created
+		final I_DD_Order reloaded = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, existingDDOrder.getDD_Order_ID())
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		assertThat(reloaded.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Voided);
+
+		final int ddOrderCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.count();
+		assertThat(ddOrderCount).as("no new DD_Order created; only the existing one").isEqualTo(1);
+	}
+
+	@Test
+	void reconcile_throws_whenScheduleInactive_butPickerBusy()
+	{
+		// packing warehouse
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		// INACTIVE schedule on the packing warehouse
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(false);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// existing live (Completed) DD_Order linked to this schedule
+		final I_DD_Order existingDDOrder = newInstance(I_DD_Order.class);
+		existingDDOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		existingDDOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(existingDDOrder);
+
+		// create a PickingJobLine referencing the same shipment schedule → picker IS busy
+		final I_M_Picking_Job_Line pickingJobLine = newInstance(I_M_Picking_Job_Line.class);
+		pickingJobLine.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		save(pickingJobLine);
+
+		// expect AdempiereException with the picker-busy message key
+		assertThatThrownBy(() -> service.reconcile(scheduleId))
+				.isInstanceOf(AdempiereException.class)
+				.extracting(t -> ((AdempiereException)t).getErrorCode())
+				.isEqualTo("DDOrderPickingReconcile_PickerBusy");
+
+		// DD_Order must be unchanged (still Completed, not Voided)
+		final I_DD_Order reloaded = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, existingDDOrder.getDD_Order_ID())
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		assertThat(reloaded.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Completed);
 	}
 
 	@Test

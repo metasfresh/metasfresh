@@ -81,6 +81,15 @@ public class DDOrderPickingReconcileRepository
 	}
 
 	/**
+	 * Voids the given DD_Order via the document engine (DocStatus → Voided).
+	 */
+	public void voidDDOrder(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+	}
+
+	/**
 	 * Builds exactly one {@link I_DD_Order} (with a single {@link I_DD_OrderLine}) moving the requested
 	 * product/qty from the source warehouse's default locator to the target (packing) warehouse's default
 	 * locator, links both header and line to the shipment schedule via {@code M_ShipmentSchedule_ID},
