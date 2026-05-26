@@ -89,7 +89,7 @@ public class NShiftShipAdvisorService
 				.build();
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
-				.orderNo(deliveryAdvisorRequest.getId());
+				.orderNo(deliveryAdvisorRequest.getId().replace("-", "")); //  Order Number is limited to 35 characters. fld_RefOrderNumber
 
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(
@@ -172,7 +172,7 @@ public class NShiftShipAdvisorService
 
 	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
 	{
-		Check.assumeEquals(response.getProducts().size(), 1, "response should only contain 1 shipperProduct, pls check defined shipment rules");
+		Check.assume(!response.getProducts().isEmpty(), "response should contain at least 1 shipperProduct, pls check defined shipment rules");
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
