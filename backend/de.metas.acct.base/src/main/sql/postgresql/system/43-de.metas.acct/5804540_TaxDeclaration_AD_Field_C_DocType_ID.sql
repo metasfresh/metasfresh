@@ -45,3 +45,4 @@ VALUES (0, 780485 /*From ID Server*/, 0, 549256,
     'Y', 'Y', 'N',
     'Document Type', 15, 15, 0,
     TIMESTAMP '2026-05-26 00:00:00', 100);
+-- (CI re-trigger 2026-05-26: empty commit didn't fire workflow because paths-ignore + zero-file-change skips Actions; comment-only line forces a real diff)
