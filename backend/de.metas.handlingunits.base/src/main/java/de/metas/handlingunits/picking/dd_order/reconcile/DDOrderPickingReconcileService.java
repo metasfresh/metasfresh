@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.planning.ddorder.DistributionNetwork;
@@ -33,6 +34,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@NonNull private final DDOrderPickingReconcileRepository repository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
@@ -66,7 +68,69 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void reconcile(@NonNull final ShipmentScheduleId scheduleId)
 	{
-		throw new UnsupportedOperationException("not implemented yet — Task T11+");
+		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(scheduleId);
+		final DDOrderReconcileAction action = classifyAction(schedule);
+		switch (action)
+		{
+			case NONE:
+				return;
+			case CREATE:
+				throw new UnsupportedOperationException("not yet implemented: " + action);
+			case RECREATE:
+				throw new UnsupportedOperationException("not yet implemented: " + action);
+			case VOID:
+				throw new UnsupportedOperationException("not yet implemented: " + action);
+			default:
+				throw new AdempiereException("Unexpected action: " + action);
+		}
+	}
+
+	/**
+	 * Classifies the reconcile action based on the truth-table:
+	 * <pre>
+	 * warehouseIsPacking | scheduleActive | existingDDOrder | action
+	 * false              | *              | *               | NONE
+	 * true               | false          | none            | NONE
+	 * true               | false          | exists          | VOID
+	 * true               | true           | none            | CREATE
+	 * true               | true           | exists          | RECREATE
+	 * </pre>
+	 */
+	@VisibleForTesting
+	DDOrderReconcileAction classifyAction(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		if (!isOnPackingWarehouse(schedule))
+		{
+			return DDOrderReconcileAction.NONE;
+		}
+
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+		final boolean hasExistingDDOrder = repository.findActiveDDOrderForSchedule(scheduleId).isPresent();
+		final boolean scheduleActive = schedule.isActive();
+
+		if (!scheduleActive && !hasExistingDDOrder)
+		{
+			return DDOrderReconcileAction.NONE;
+		}
+		else if (!scheduleActive)
+		{
+			return DDOrderReconcileAction.VOID;
+		}
+		else if (!hasExistingDDOrder)
+		{
+			return DDOrderReconcileAction.CREATE;
+		}
+		else
+		{
+			return DDOrderReconcileAction.RECREATE;
+		}
+	}
+
+	private boolean isOnPackingWarehouse(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return warehouse.isPackingWarehouse();
 	}
 
 	@Override

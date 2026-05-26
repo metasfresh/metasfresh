@@ -274,6 +274,93 @@ class DDOrderPickingReconcileServiceTest
 		assertThat(result).isNotPresent();
 	}
 
+	// -----------------------------------------------------------------------
+	// reconcile() relevance gating + action classification tests (T11)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void reconcile_doesNothing_whenScheduleNotOnPackingWarehouse()
+	{
+		// warehouse with IsPackingWarehouse = false (default)
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(false);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// count DD_Orders before
+		final int ddOrderCountBefore = Services.get(IQueryBL.class)
+				.createQueryBuilder(org.eevolution.model.I_DD_Order.class)
+				.create()
+				.count();
+
+		// reconcile should return normally (no exception) because non-packing → NONE
+		service.reconcile(scheduleId);
+
+		// no DD_Order created
+		final int ddOrderCountAfter = Services.get(IQueryBL.class)
+				.createQueryBuilder(org.eevolution.model.I_DD_Order.class)
+				.create()
+				.count();
+		assertThat(ddOrderCountAfter).isEqualTo(ddOrderCountBefore);
+	}
+
+	@Test
+	void reconcile_doesNothing_whenScheduleInactive_andNoExistingDDOrder()
+	{
+		// warehouse with IsPackingWarehouse = true
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		// schedule is INACTIVE + no DD_Order => NONE
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(false);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// count DD_Orders before
+		final int ddOrderCountBefore = Services.get(IQueryBL.class)
+				.createQueryBuilder(org.eevolution.model.I_DD_Order.class)
+				.create()
+				.count();
+
+		// reconcile should return normally (no exception)
+		service.reconcile(scheduleId);
+
+		// no DD_Order created
+		final int ddOrderCountAfter = Services.get(IQueryBL.class)
+				.createQueryBuilder(org.eevolution.model.I_DD_Order.class)
+				.create()
+				.count();
+		assertThat(ddOrderCountAfter).isEqualTo(ddOrderCountBefore);
+	}
+
+	@Test
+	void reconcile_returnsActionNONE_whenAlreadyInDesiredState()
+	{
+		// non-packing warehouse => classifyAction should return NONE
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(false);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		save(schedule);
+
+		final DDOrderReconcileAction action = service.classifyAction(schedule);
+		assertThat(action).isEqualTo(DDOrderReconcileAction.NONE);
+	}
+
 	@Test
 	void resolveSourceWarehouse_returns_highestPriority_whenMultipleLinesMatch()
 	{
