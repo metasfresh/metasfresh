@@ -66,8 +66,10 @@ public class EPCIS_JSON_Export_StepDef
 
 	/** Tracks M_HU_IDs of LU/TU HUs injected by {@link #assignLuHUsWithSscc18ToInoutLines}; cleaned up in {@link #cleanupInjectedHUs()}. */
 	private final List<Integer> injectedLuHuIds = new ArrayList<>();
-	/** Tracks M_HU_IDs of TU HUs (children of injected LUs); cleaned up in {@link #cleanupInjectedHUs()}. */
+	/** Tracks M_HU_IDs of TU/VTU HUs (children of injected LUs); cleaned up in {@link #cleanupInjectedHUs()}. */
 	private final List<Integer> injectedTuHuIds = new ArrayList<>();
+	/** Tracks M_HU_PI_Item_IDs (itemtype='HA') created on the fly for shared-LU HA scenarios. */
+	private final List<Integer> injectedHaPiItemIds = new ArrayList<>();
 
 	/**
 	 * Calls the {@code get_epcis_events_json_fn} SQL function for the given shipment
@@ -453,24 +455,11 @@ public class EPCIS_JSON_Export_StepDef
 							+ ",'" + sscc18 + "','Y', now(), 100, now(), 100)",
 					Trx.TRXNAME_None);
 
-			// INSERT M_HU_Assignment rows linking this LU to every M_InOutLine of the shipment
-			for (final int inoutLineId : inoutLineIds)
-			{
-				final int assignId = DB.getSQLValueEx(Trx.TRXNAME_None,
-						"SELECT nextval('m_hu_assignment_seq')");
-				DB.executeUpdateAndThrowExceptionOnFail(
-						"INSERT INTO m_hu_assignment"
-								+ " (m_hu_assignment_id, ad_client_id, ad_org_id, ad_table_id, record_id, m_hu_id, m_lu_hu_id, isactive,"
-								+ " created, createdby, updated, updatedby)"
-								+ " VALUES (" + assignId + "," + adClientId + "," + adOrgId + "," + inoutLineTableId + ","
-								+ inoutLineId + "," + luHuId + "," + luHuId + ",'Y', now(), 100, now(), 100)",
-						Trx.TRXNAME_None);
-			}
-
-			// INSERT a minimal TU M_HU child so that the EPCIS function's individual_tu_ids CTE can find it.
-			// The CTE join pattern:
-			//   M_HU_Item (itemtype='HU') on the LU → M_HU (child TU) via M_HU.m_hu_item_parent_id
-			// Step 1: create the M_HU_Item row on the LU (parent)
+			// Create the child TU FIRST so the assignment rows below can carry m_tu_hu_id.
+			// The EPCIS function's individual_tu_ids CTE requires:
+			//   M_HU_Item (itemtype='HU') on the LU → M_HU (child TU) via M_HU.m_hu_item_parent_id.
+			// Additionally, since me03#29231 the function gates TUs by an EXISTS check against
+			// m_hu_assignment.m_tu_hu_id (or .vhu_id) referencing the TU.
 			final int huItemId = DB.getSQLValueEx(Trx.TRXNAME_None,
 					"INSERT INTO m_hu_item"
 							+ " (m_hu_item_id, ad_client_id, ad_org_id, m_hu_id, m_hu_pi_item_id, itemtype, qty, isactive,"
@@ -480,7 +469,6 @@ public class EPCIS_JSON_Export_StepDef
 							+ " RETURNING m_hu_item_id");
 			assertThat(huItemId).as("Newly created M_HU_Item_ID for LU→TU link").isGreaterThan(0);
 
-			// Step 2: create the TU M_HU row, pointing back to the M_HU_Item via m_hu_item_parent_id
 			final int tuHuId = DB.getSQLValueEx(Trx.TRXNAME_None,
 					"INSERT INTO m_hu"
 							+ " (m_hu_id, ad_client_id, ad_org_id, m_hu_pi_version_id, m_hu_item_parent_id, hustatus, isactive,"
@@ -490,6 +478,21 @@ public class EPCIS_JSON_Export_StepDef
 							+ " 'EPCIS_TEST_TU_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
 							+ " RETURNING m_hu_id");
 			assertThat(tuHuId).as("Newly created TU M_HU_ID (child of LU " + luHuId + ")").isGreaterThan(0);
+
+			// INSERT M_HU_Assignment rows linking this LU+TU to every M_InOutLine of the shipment.
+			// m_tu_hu_id is required by the EPCIS individual_tu_ids EXISTS gate (me03#29231).
+			for (final int inoutLineId : inoutLineIds)
+			{
+				final int assignId = DB.getSQLValueEx(Trx.TRXNAME_None,
+						"SELECT nextval('m_hu_assignment_seq')");
+				DB.executeUpdateAndThrowExceptionOnFail(
+						"INSERT INTO m_hu_assignment"
+								+ " (m_hu_assignment_id, ad_client_id, ad_org_id, ad_table_id, record_id, m_hu_id, m_lu_hu_id, m_tu_hu_id, isactive,"
+								+ " created, createdby, updated, updatedby)"
+								+ " VALUES (" + assignId + "," + adClientId + "," + adOrgId + "," + inoutLineTableId + ","
+								+ inoutLineId + "," + luHuId + "," + luHuId + "," + tuHuId + ",'Y', now(), 100, now(), 100)",
+						Trx.TRXNAME_None);
+			}
 
 			// Track for cleanup in @After so these test HUs don't pollute other scenarios
 			injectedLuHuIds.add(luHuId);
@@ -663,21 +666,8 @@ public class EPCIS_JSON_Export_StepDef
 							+ ",'" + sscc18 + "','Y', now(), 100, now(), 100)",
 					Trx.TRXNAME_None);
 
-			// INSERT M_HU_Assignment rows linking this LU only to the InOutLines of its source order
-			for (final int inoutLineId : inoutLineIds)
-			{
-				final int assignId = DB.getSQLValueEx(Trx.TRXNAME_None,
-						"SELECT nextval('m_hu_assignment_seq')");
-				DB.executeUpdateAndThrowExceptionOnFail(
-						"INSERT INTO m_hu_assignment"
-								+ " (m_hu_assignment_id, ad_client_id, ad_org_id, ad_table_id, record_id, m_hu_id, m_lu_hu_id, isactive,"
-								+ " created, createdby, updated, updatedby)"
-								+ " VALUES (" + assignId + "," + adClientId + "," + adOrgId + "," + inoutLineTableId + ","
-								+ inoutLineId + "," + luHuId + "," + luHuId + ",'Y', now(), 100, now(), 100)",
-						Trx.TRXNAME_None);
-			}
-
-			// INSERT a minimal TU M_HU child so that individual_tu_ids CTE can find it
+			// Create the child TU FIRST so the assignment rows below can carry m_tu_hu_id
+			// (required by the individual_tu_ids EXISTS gate since me03#29231).
 			final int huItemId = DB.getSQLValueEx(Trx.TRXNAME_None,
 					"INSERT INTO m_hu_item"
 							+ " (m_hu_item_id, ad_client_id, ad_org_id, m_hu_id, m_hu_pi_item_id, itemtype, qty, isactive,"
@@ -696,6 +686,20 @@ public class EPCIS_JSON_Export_StepDef
 							+ " 'EPCIS_TEST_TU_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
 							+ " RETURNING m_hu_id");
 			assertThat(tuHuId).as("Newly created TU M_HU_ID (child of LU " + luHuId + ")").isGreaterThan(0);
+
+			// INSERT M_HU_Assignment rows linking this LU+TU only to the InOutLines of its source order
+			for (final int inoutLineId : inoutLineIds)
+			{
+				final int assignId = DB.getSQLValueEx(Trx.TRXNAME_None,
+						"SELECT nextval('m_hu_assignment_seq')");
+				DB.executeUpdateAndThrowExceptionOnFail(
+						"INSERT INTO m_hu_assignment"
+								+ " (m_hu_assignment_id, ad_client_id, ad_org_id, ad_table_id, record_id, m_hu_id, m_lu_hu_id, m_tu_hu_id, isactive,"
+								+ " created, createdby, updated, updatedby)"
+								+ " VALUES (" + assignId + "," + adClientId + "," + adOrgId + "," + inoutLineTableId + ","
+								+ inoutLineId + "," + luHuId + "," + luHuId + "," + tuHuId + ",'Y', now(), 100, now(), 100)",
+						Trx.TRXNAME_None);
+			}
 
 			injectedLuHuIds.add(luHuId);
 			injectedTuHuIds.add(tuHuId);
@@ -767,6 +771,166 @@ public class EPCIS_JSON_Export_StepDef
 	}
 
 	/**
+	 * Creates ONE shared LU with the given SSCC18 and attaches one HA aggregate per data-table row.
+	 * Each HA aggregate is assigned to one M_InOut via {@code m_hu_assignment.vhu_id} — simulating
+	 * the real-world case where a picker consolidates two orders' goods onto one physical pallet
+	 * but each shipment only "owns" some of the crates.
+	 *
+	 * <p>This is the HA-aggregate counterpart of {@link #assignLuHUsWithSscc18ToInoutLines}. It
+	 * exercises the {@code ha_items_with_vtu} CTE and the per-shipment EXISTS gate added in me03#29231.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) shipment that "owns" this HA aggregate<br>
+	 *   <b>crateCount</b> — (required) number of TUs aggregated under this HA (sets {@code ha_item.qty})
+	 * @cucumber.example
+	 * <pre>
+	 * And one shared LU with SSCC18 '987654321000000040' carries HA aggregates assigned to inout lines:
+	 *   | M_InOut_ID | crateCount |
+	 *   | shipment_A | 5          |
+	 *   | shipment_B | 10         |
+	 * </pre>
+	 */
+	@And("^one shared LU with SSCC18 '(.*)' carries HA aggregates assigned to inout lines:$")
+	public void assignSharedLuHaToInoutLines(@NonNull final String sscc18, @NonNull final DataTable dataTable)
+	{
+		final int inoutLineTableId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT ad_table_id FROM ad_table WHERE tablename='M_InOutLine'");
+		assertThat(inoutLineTableId).as("AD_Table_ID for M_InOutLine").isGreaterThan(0);
+
+		final int sscc18AttributeId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT m_attribute_id FROM m_attribute WHERE value='SSCC18' LIMIT 1");
+		assertThat(sscc18AttributeId).as("M_Attribute_ID for SSCC18").isGreaterThan(0);
+
+		// Look up a current LU PI version + its TU PI version (used for the VTU's PI version)
+		final int[] piVersions = new int[2]; // [0]=luPIVersionId, [1]=tuPIVersionId
+		try (final java.sql.PreparedStatement pstmt = DB.prepareStatement(
+				"SELECT piv_lu.m_hu_pi_version_id, piv_tu.m_hu_pi_version_id"
+						+ " FROM m_hu_pi_version piv_lu"
+						+ " JOIN m_hu_pi_item pii ON pii.m_hu_pi_version_id = piv_lu.m_hu_pi_version_id"
+						+ "   AND pii.itemtype = 'HU' AND pii.isactive = 'Y'"
+						+ " JOIN m_hu_pi pih ON pih.m_hu_pi_id = pii.included_hu_pi_id"
+						+ " JOIN m_hu_pi_version piv_tu ON piv_tu.m_hu_pi_id = pih.m_hu_pi_id"
+						+ "   AND piv_tu.iscurrent = 'Y' AND piv_tu.hu_unittype = 'TU'"
+						+ " WHERE piv_lu.iscurrent = 'Y' AND piv_lu.hu_unittype = 'LU' AND piv_lu.isactive = 'Y'"
+						+ " LIMIT 1",
+				Trx.TRXNAME_None))
+		{
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				if (!rs.next())
+				{
+					throw new AdempiereException("No current LU M_HU_PI_Version with a TU child PI item found");
+				}
+				piVersions[0] = rs.getInt(1);
+				piVersions[1] = rs.getInt(2);
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed to look up LU/TU PI versions", e);
+		}
+		final int luPIVersionId = piVersions[0];
+		final int tuPIVersionId = piVersions[1];
+
+		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
+		final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
+		if (adOrgId <= 0)
+		{
+			throw new AdempiereException("AD_Org_ID from context is 0; context may not be initialised");
+		}
+
+		// Find or create an HA-itemtype M_HU_PI_Item on the LU PI version. Required by m_hu_item.m_hu_pi_item_id.
+		int haPiItemId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT m_hu_pi_item_id FROM m_hu_pi_item"
+						+ " WHERE m_hu_pi_version_id=" + luPIVersionId
+						+ "   AND itemtype='HA' AND isactive='Y' LIMIT 1");
+		if (haPiItemId <= 0)
+		{
+			haPiItemId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"INSERT INTO m_hu_pi_item (m_hu_pi_item_id, ad_client_id, ad_org_id, m_hu_pi_version_id, itemtype, qty, isactive,"
+							+ " created, createdby, updated, updatedby)"
+							+ " VALUES (nextval('m_hu_pi_item_seq')," + adClientId + "," + adOrgId + "," + luPIVersionId + ",'HA', 0,'Y',"
+							+ " now(), 100, now(), 100) RETURNING m_hu_pi_item_id");
+			assertThat(haPiItemId).as("Newly created HA M_HU_PI_Item_ID").isGreaterThan(0);
+			injectedHaPiItemIds.add(haPiItemId);
+		}
+		final int haPiItemIdFinal = haPiItemId;
+
+		// Create the shared LU (one for all rows)
+		final int luHuId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"INSERT INTO m_hu (m_hu_id, ad_client_id, ad_org_id, m_hu_pi_version_id, hustatus, isactive,"
+						+ " value, created, createdby, updated, updatedby)"
+						+ " VALUES (nextval('m_hu_seq')," + adClientId + "," + adOrgId + "," + luPIVersionId + ",'E','Y',"
+						+ " 'EPCIS_TEST_LU_HA_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
+						+ " RETURNING m_hu_id");
+		assertThat(luHuId).as("Newly created shared LU M_HU_ID").isGreaterThan(0);
+		injectedLuHuIds.add(luHuId);
+
+		// SSCC18 attribute on the shared LU
+		final int sscc18HuAttrId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT nextval('m_hu_attribute_seq')");
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO m_hu_attribute"
+						+ " (m_hu_attribute_id, ad_client_id, ad_org_id, m_hu_id, m_attribute_id, value, isactive,"
+						+ " created, createdby, updated, updatedby)"
+						+ " VALUES (" + sscc18HuAttrId + "," + adClientId + "," + adOrgId + "," + luHuId + "," + sscc18AttributeId
+						+ ",'" + sscc18 + "','Y', now(), 100, now(), 100)",
+				Trx.TRXNAME_None);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_InOut inout = inoutTable.get(row.getAsIdentifier("M_InOut_ID"));
+			final int crateCount = row.getAsInt("crateCount");
+			assertThat(crateCount).as("crateCount must be > 0").isGreaterThan(0);
+
+			// Pick one inoutline of this shipment to anchor the assignment on
+			final int inoutLineId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"SELECT m_inoutline_id FROM m_inoutline"
+							+ " WHERE m_inout_id=" + inout.getM_InOut_ID()
+							+ " ORDER BY m_inoutline_id LIMIT 1");
+			assertThat(inoutLineId)
+					.as("M_InOutLine for M_InOut_ID=%d", inout.getM_InOut_ID())
+					.isGreaterThan(0);
+
+			// HA m_hu_item under the shared LU (itemtype='HA', qty = crate count for this shipment)
+			final int haItemId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"INSERT INTO m_hu_item"
+							+ " (m_hu_item_id, ad_client_id, ad_org_id, m_hu_id, m_hu_pi_item_id, itemtype, qty, isactive,"
+							+ " created, createdby, updated, updatedby)"
+							+ " VALUES (nextval('m_hu_item_seq')," + adClientId + "," + adOrgId + "," + luHuId + "," + haPiItemIdFinal
+							+ ",'HA', " + crateCount + ",'Y', now(), 100, now(), 100)"
+							+ " RETURNING m_hu_item_id");
+			assertThat(haItemId).as("Newly created HA M_HU_Item_ID under shared LU").isGreaterThan(0);
+
+			// VTU m_hu as child of the HA m_hu_item
+			final int vtuHuId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"INSERT INTO m_hu"
+							+ " (m_hu_id, ad_client_id, ad_org_id, m_hu_pi_version_id, m_hu_item_parent_id, hustatus, isactive,"
+							+ " value, created, createdby, updated, updatedby)"
+							+ " VALUES (nextval('m_hu_seq')," + adClientId + "," + adOrgId + "," + tuPIVersionId + "," + haItemId
+							+ ",'E','Y',"
+							+ " 'EPCIS_TEST_VTU_' || nextval('m_hu_seq'), now(), 100, now(), 100)"
+							+ " RETURNING m_hu_id");
+			assertThat(vtuHuId).as("Newly created VTU M_HU_ID (child of HA item " + haItemId + ")").isGreaterThan(0);
+			injectedTuHuIds.add(vtuHuId);
+
+			// m_hu_assignment: link the VTU to one inoutline of this shipment.
+			// vhu_id = vtuHuId is the column the EPCIS function's EXISTS gate matches on for HA.
+			// qty=0 mirrors production data observed in LAF1010-3 (assignment is presence-only;
+			// the real crate count comes from ha_item.qty).
+			final int assignId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"SELECT nextval('m_hu_assignment_seq')");
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"INSERT INTO m_hu_assignment"
+							+ " (m_hu_assignment_id, ad_client_id, ad_org_id, ad_table_id, record_id, m_hu_id, m_lu_hu_id, m_tu_hu_id, vhu_id, qty, isactive,"
+							+ " created, createdby, updated, updatedby)"
+							+ " VALUES (" + assignId + "," + adClientId + "," + adOrgId + "," + inoutLineTableId + ","
+							+ inoutLineId + "," + luHuId + "," + luHuId + "," + vtuHuId + "," + vtuHuId + ", 0,'Y', now(), 100, now(), 100)",
+					Trx.TRXNAME_None);
+		});
+	}
+
+	/**
 	 * Deletes all M_HU / M_HU_Attribute / M_HU_Assignment / M_HU_Item rows that were injected
 	 * by {@link #assignLuHUsWithSscc18ToInoutLines} in the current scenario.
 	 * <p>
@@ -777,7 +941,7 @@ public class EPCIS_JSON_Export_StepDef
 	@After
 	public void cleanupInjectedHUs()
 	{
-		if (injectedLuHuIds.isEmpty())
+		if (injectedLuHuIds.isEmpty() && injectedHaPiItemIds.isEmpty())
 		{
 			return;
 		}
@@ -808,8 +972,18 @@ public class EPCIS_JSON_Export_StepDef
 				"DELETE FROM m_hu WHERE m_hu_id IN (" + luIdList + ")",
 				Trx.TRXNAME_None);
 
+		// HA PI items created on the fly by the shared-LU HA helper
+		if (!injectedHaPiItemIds.isEmpty())
+		{
+			final String haPiList = injectedHaPiItemIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"DELETE FROM m_hu_pi_item WHERE m_hu_pi_item_id IN (" + haPiList + ")",
+					Trx.TRXNAME_None);
+		}
+
 		injectedLuHuIds.clear();
 		injectedTuHuIds.clear();
+		injectedHaPiItemIds.clear();
 	}
 
 	private void assertEpcisArrayField(@NonNull final DataTableRow row)

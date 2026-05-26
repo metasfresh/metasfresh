@@ -1,24 +1,22 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Migration: get_epcis_events_json_fn — restrict TUs (individual + HA aggregates) to the current M_InOut
+-- Issue: https://github.com/metasfresh/me03/issues/29231
+--
+-- Context:
+--   When two M_InOuts share the same physical LU pallet (real-world: picker consolidates
+--   two orders onto one pallet), the export of shipment-1 used to also include the TUs
+--   that belong to the sibling shipment. Original failure: shipment-1's JSON contained
+--   35 crates instead of 15 (LAF1010-3 testcase, Migros / Spavetti EPCIS).
+--
+--   Root cause: the individual_tu_ids and ha_items_with_vtu CTEs walked every TU /
+--   HA m_hu_item under the LU with no link back to the M_InOut. pallet_list already
+--   filters LUs to the current shipment via m_hu_assignment, but the TU-level walkers
+--   did not.
+--
+--   Fix: both CTEs now add an EXISTS gate against m_hu_assignment.
+--   - CASE A (individual_tu_ids): match assignment.m_tu_hu_id or .vhu_id = tu_hu.m_hu_id
+--   - CASE B (ha_items_with_vtu): match assignment.vhu_id = ha_vtu.m_hu_id
+--   For HA, ha_item.qty remains the crate count source (m_hu_assignment.qty is 0 in
+--   the observed production data — the assignment is presence-only).
 
 -- EPCIS event JSON for a given M_InOut (shipment).
 -- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
@@ -222,7 +220,7 @@ BEGIN
                  SELECT 1
                  FROM m_hu_assignment ha
                           JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 WHERE ha.ad_table_id = get_table_id('M_InOutLine') 
+                 WHERE ha.ad_table_id = get_table_id('M_InOutLine')
                    AND iol.m_inout_id = (SELECT m_inout_id FROM inout_context)
                    AND ha.isactive = 'Y'
                    AND ha.vhu_id = ha_vtu.m_hu_id
