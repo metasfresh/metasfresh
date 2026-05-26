@@ -52,6 +52,7 @@ test('Switch pick-from locator — button advances to next active locator', asyn
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await test.step('Fresh job: button is visible', async () => {
@@ -77,6 +78,7 @@ test('Switch pick-from locator — successive presses cycle round-robin', async 
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     // The warehouse has 3 active locators. Three presses cycle wh1_l1 -> wh1_l2 -> wh1_l3 -> wh1_l1.
@@ -103,6 +105,7 @@ test('Switch pick-from locator — button hidden once picking has started', asyn
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
     await test.step('Pick the line', async () => {
