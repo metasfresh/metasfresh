@@ -127,6 +127,7 @@ public final class ProcessInfo implements Serializable
 
 		adProcessId = builder.getAD_Process_ID();
 		adRelationTypeId = builder.getAD_RelationType_ID();
+		openTarget = builder.openTarget;
 		pinstanceId = builder.getPInstanceId();
 
 		clientId = builder.getAdClientId();
@@ -196,6 +197,7 @@ public final class ProcessInfo implements Serializable
 	@Getter private final String title;
 	@Getter private final AdProcessId adProcessId;
 	@Getter @Nullable private final RelationTypeId adRelationTypeId;
+	@Getter @Nullable private final ProcessOpenTarget openTarget;
 	private final int adTableId;
 	private final int recordId;
 	@Getter private final Set<TableRecordReference> selectedIncludedRecords;
@@ -805,6 +807,7 @@ public final class ProcessInfo implements Serializable
 		private Boolean logWarning;
 
 		@Nullable private RelationTypeId adRelationTypeId;
+		@Nullable private ProcessOpenTarget openTarget;
 
 		private ProcessInfoBuilder()
 		{
@@ -1145,6 +1148,8 @@ public final class ProcessInfo implements Serializable
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
+			// CoalesceUtil not applicable: getOpenTarget() returns String, ofCode() returns ProcessOpenTarget (type mismatch)
+			setOpenTarget(_adProcess.getOpenTarget() != null ? ProcessOpenTarget.ofCode(_adProcess.getOpenTarget()) : null);
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());
 			return this;
@@ -1153,6 +1158,12 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setAdRelationTypeId(@Nullable final RelationTypeId adRelationTypeId)
 		{
 			this.adRelationTypeId = adRelationTypeId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setOpenTarget(@Nullable final ProcessOpenTarget openTarget)
+		{
+			this.openTarget = openTarget;
 			return this;
 		}
 
