@@ -261,6 +261,12 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return toWFProcess(job);
 	}
 
+	public WFProcess switchPickFromLocatorToNext(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = distributionRestService.switchPickFromLocatorToNext(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
+		return toWFProcess(job);
+	}
+
 	public void printMaterialInTransitReport(@NonNull final UserId userId, @NonNull final String adLanguage)
 	{
 		distributionRestService.printMaterialInTransitReport(userId, adLanguage);

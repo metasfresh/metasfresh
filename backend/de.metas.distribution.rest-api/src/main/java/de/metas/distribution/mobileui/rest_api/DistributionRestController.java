@@ -85,6 +85,13 @@ public class DistributionRestController
 		return distributionMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
 
+	@PostMapping("/job/{wfProcessId}/switchPickFromLocatorToNext")
+	public WFProcess switchPickFromLocatorToNext(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		return distributionMobileApplication.switchPickFromLocatorToNext(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+	}
+
 	@PostMapping("/print/materialInTransitReport")
 	public void printMaterialInTransitReport()
 	{

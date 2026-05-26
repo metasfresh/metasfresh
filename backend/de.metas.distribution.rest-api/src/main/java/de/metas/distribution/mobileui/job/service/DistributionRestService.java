@@ -10,6 +10,8 @@ import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepositor
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
+import de.metas.distribution.mobileui.external_services.warehouse.NextPickFromLocatorResolver;
+import de.metas.distribution.mobileui.job.service.commands.switch_pick_from_locator.DistributionJobSwitchPickFromLocatorCommand;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.model.DistributionJobLine;
@@ -53,6 +55,7 @@ public class DistributionRestService
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
+	@NonNull private final NextPickFromLocatorResolver nextPickFromLocatorResolver;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -122,6 +125,23 @@ public class DistributionRestService
 	private DistributionJobLoader newLoader()
 	{
 		return new DistributionJobLoader(loadingSupportServices);
+	}
+
+	public DistributionJob switchPickFromLocatorToNext(
+			@NonNull final DistributionJobId jobId,
+			@NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+
+		return DistributionJobSwitchPickFromLocatorCommand.builder()
+				.trxManager(trxManager)
+				.loadingSupportServices(loadingSupportServices)
+				.nextLocatorResolver(nextPickFromLocatorResolver)
+				.ddOrderService(ddOrderService)
+				.jobId(jobId)
+				.build()
+				.execute();
 	}
 
 	public DistributionJob processEvent(@NonNull final JsonDistributionEvent event, @NonNull final UserId callerId)
