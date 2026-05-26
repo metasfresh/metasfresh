@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.dd_order.reconcile;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.picking.dd_order.reconcile.event.DDOrderReconciliationEventPublisher;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -12,6 +13,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -33,12 +35,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class DDOrderPickingReconcileServiceTest
 {
 	private DDOrderPickingReconcileService service;
+	private DDOrderReconciliationEventPublisher publisher;
 
 	@BeforeEach
 	void beforeEach()
@@ -64,7 +71,9 @@ class DDOrderPickingReconcileServiceTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final DDOrderPickingReconcileRepository repository = new DDOrderPickingReconcileRepository(queryBL);
 		final DistributionNetworkRepository distributionNetworkRepository = new DistributionNetworkRepository();
-		service = new DDOrderPickingReconcileService(repository, distributionNetworkRepository);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		publisher = mock(DDOrderReconciliationEventPublisher.class);
+		service = new DDOrderPickingReconcileService(repository, distributionNetworkRepository, trxManager, publisher);
 	}
 
 	@Test
@@ -786,5 +795,98 @@ class DDOrderPickingReconcileServiceTest
 				.create()
 				.count();
 		assertThat(ddOrderCountAfter).isEqualTo(ddOrderCountBefore);
+	}
+
+	// -----------------------------------------------------------------------
+	// scheduleReconcileAfterCommit tests (T15)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void scheduleReconcileAfterCommit_skips_whenNotPackingWarehouse()
+	{
+		// warehouse with IsPackingWarehouse = false (default)
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(false);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		save(schedule);
+
+		service.scheduleReconcileAfterCommit(schedule);
+
+		// non-packing warehouse → publisher never called
+		verify(publisher, never()).publishAll(anyCollection());
+	}
+
+	@Test
+	void scheduleReconcileAfterCommit_publishesOneEventAfterCommit()
+	{
+		// packing warehouse
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// no active trx → accumulateAndProcessAfterCommit runs the processor inline immediately
+		service.scheduleReconcileAfterCommit(schedule);
+
+		// exactly one publishAll call carrying the single schedule id
+		verify(publisher, times(1)).publishAll(java.util.Collections.singletonList(scheduleId));
+	}
+
+	@Test
+	void scheduleReconcileAfterCommit_coalescesMultipleCallsForSameId()
+	{
+		// packing warehouse
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// two calls for the same id inside ONE transaction → coalesced into a SINGLE publishAll after commit
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
+			service.scheduleReconcileAfterCommit(schedule);
+			service.scheduleReconcileAfterCommit(schedule);
+		});
+
+		// exactly one publishAll call after commit (the two per-trx calls are accumulated into one);
+		// the publishAll implementation itself deduplicates to one event per distinct id.
+		verify(publisher, times(1)).publishAll(anyCollection());
+		verify(publisher, times(1)).publishAll(java.util.Arrays.asList(scheduleId, scheduleId));
+	}
+
+	// -----------------------------------------------------------------------
+	// DDOrderReconciliationEventPublisher distinct-id dedup (T15)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void publishAll_publishesOneEventPerDistinctId()
+	{
+		final de.metas.event.IEventBusFactory eventBusFactory = mock(de.metas.event.IEventBusFactory.class);
+		final de.metas.event.IEventBus eventBus = mock(de.metas.event.IEventBus.class);
+		org.mockito.Mockito.when(eventBusFactory.getEventBus(any())).thenReturn(eventBus);
+		Services.registerService(de.metas.event.IEventBusFactory.class, eventBusFactory);
+
+		final DDOrderReconciliationEventPublisher realPublisher = new DDOrderReconciliationEventPublisher();
+
+		final ShipmentScheduleId id1 = ShipmentScheduleId.ofRepoId(501);
+		final ShipmentScheduleId id2 = ShipmentScheduleId.ofRepoId(502);
+
+		// id1 appears twice → only one event for it; id2 once → one event. Total = 2 events.
+		realPublisher.publishAll(java.util.Arrays.asList(id1, id1, id2));
+
+		verify(eventBus, times(2)).enqueueEvent(any(de.metas.event.Event.class));
 	}
 }

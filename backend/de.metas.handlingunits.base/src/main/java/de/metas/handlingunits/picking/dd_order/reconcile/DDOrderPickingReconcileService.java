@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.handlingunits.picking.dd_order.reconcile.event.DDOrderReconciliationEventPublisher;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
@@ -22,6 +23,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -29,6 +31,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,8 +42,12 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
 
+	private static final String TRX_PROPERTY_ScheduleReconcile = "DDOrderPickingReconcile";
+
 	@NonNull private final DDOrderPickingReconcileRepository repository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final ITrxManager trxManager;
+	@NonNull private final DDOrderReconciliationEventPublisher reconciliationEventPublisher;
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -71,7 +78,20 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		throw new UnsupportedOperationException("not implemented yet — Task T15");
+		if (!isOnPackingWarehouse(schedule))
+		{
+			return;
+		}
+
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// Accumulate the schedule id per-trx: exactly ONE reconcile event per distinct id is published
+		// after the current transaction commits (the collector deduplicates equal items).
+		// If there is no active trx, the processor runs inline immediately.
+		trxManager.accumulateAndProcessAfterCommit(
+				TRX_PROPERTY_ScheduleReconcile,
+				Collections.singletonList(scheduleId),
+				reconciliationEventPublisher::publishAll);
 	}
 
 	@Override
