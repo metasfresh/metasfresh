@@ -1,4 +1,4 @@
-package de.metas.order.split;
+package de.metas.order.split.impl;
 
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -14,15 +14,15 @@ import org.mockito.Mockito;
 import static org.mockito.Mockito.verify;
 
 /**
- * Unit tests for {@link OrderLineSplitListenerImpl}.
+ * Unit tests for {@link OrderLineSplitListener}.
  *
  * me03 #29261 — Order Line Split.
  */
-class OrderLineSplitListenerImplTest
+class OrderLineSplitListenerTest
 {
 	private QtyReservationService qtyReservationService;
 	private IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL;
-	private OrderLineSplitListenerImpl listener;
+	private OrderLineSplitListener listener;
 
 	@BeforeEach
 	void setup()
@@ -31,7 +31,7 @@ class OrderLineSplitListenerImplTest
 		qtyReservationService = Mockito.mock(QtyReservationService.class);
 		invoiceCandidateHandlerBL = Mockito.mock(IInvoiceCandidateHandlerBL.class);
 		Services.registerService(IInvoiceCandidateHandlerBL.class, invoiceCandidateHandlerBL);
-		listener = new OrderLineSplitListenerImpl(qtyReservationService);
+		listener = new OrderLineSplitListener(qtyReservationService);
 	}
 
 	@Test

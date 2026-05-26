@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.order.split;
+package de.metas.order.split.impl;
 
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.order.OrderLineId;
+import de.metas.order.split.IOrderLineSplitListener;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class OrderLineSplitListenerImpl implements IOrderLineSplitListener
+public class OrderLineSplitListener implements IOrderLineSplitListener
 {
 	@NonNull private final QtyReservationService qtyReservationService;
 
