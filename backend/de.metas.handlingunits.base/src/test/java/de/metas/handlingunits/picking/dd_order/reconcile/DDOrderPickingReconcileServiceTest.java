@@ -4,12 +4,17 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
+import org.eevolution.model.I_DD_NetworkDistribution;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.X_DD_Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +36,8 @@ class DDOrderPickingReconcileServiceTest
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final DDOrderPickingReconcileRepository repository = new DDOrderPickingReconcileRepository(queryBL);
-		service = new DDOrderPickingReconcileService(repository);
+		final DistributionNetworkRepository distributionNetworkRepository = new DistributionNetworkRepository();
+		service = new DDOrderPickingReconcileService(repository, distributionNetworkRepository);
 	}
 
 	@Test
@@ -196,5 +202,73 @@ class DDOrderPickingReconcileServiceTest
 		// expect: AdempiereException thrown because picker is busy
 		assertThatThrownBy(() -> service.assertCanChange(schedule))
 				.isInstanceOf(AdempiereException.class);
+	}
+
+	// -----------------------------------------------------------------------
+	// resolveSourceWarehouse tests (T10)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void resolveSourceWarehouse_returns_resolvedWarehouse_whenNetworkLineMatches()
+	{
+		final WarehouseId sourceWarehouseId = WarehouseId.ofRepoId(10);
+		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(20);
+		final ProductId productId = ProductId.ofRepoId(30);
+
+		// create distribution network with a line: source → packing
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("TestNetwork");
+		save(network);
+
+		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
+		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		line.setM_Shipper_ID(1);
+		save(line);
+
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
+
+		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(sourceWarehouseId);
+	}
+
+	@Test
+	void resolveSourceWarehouse_returnsEmpty_whenNoMatchingLine()
+	{
+		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(21);
+		final WarehouseId differentWarehouseId = WarehouseId.ofRepoId(22);
+		final ProductId productId = ProductId.ofRepoId(31);
+
+		// create distribution network with a line that does NOT target packingWarehouseId
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("TestNetwork2");
+		save(network);
+
+		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
+		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		line.setM_WarehouseSource_ID(WarehouseId.ofRepoId(50).getRepoId());
+		line.setM_Warehouse_ID(differentWarehouseId.getRepoId()); // target is NOT packingWarehouseId
+		line.setM_Shipper_ID(1);
+		save(line);
+
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
+
+		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+
+		assertThat(result).isNotPresent();
+	}
+
+	@Test
+	void resolveSourceWarehouse_returnsEmpty_whenNetworkIsNull()
+	{
+		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(23);
+		final ProductId productId = ProductId.ofRepoId(32);
+
+		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, null);
+
+		assertThat(result).isNotPresent();
 	}
 }

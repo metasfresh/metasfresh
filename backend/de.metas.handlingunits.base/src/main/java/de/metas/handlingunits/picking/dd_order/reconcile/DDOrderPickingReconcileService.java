@@ -1,10 +1,16 @@
 package de.metas.handlingunits.picking.dd_order.reconcile;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.planning.ddorder.DistributionNetwork;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -13,6 +19,8 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -21,12 +29,16 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 
 	@NonNull private final DDOrderPickingReconcileRepository repository;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL;
 	@NonNull private final IWarehouseDAO warehouseDAO;
 
-	public DDOrderPickingReconcileService(@NonNull final DDOrderPickingReconcileRepository repository)
+	public DDOrderPickingReconcileService(
+			@NonNull final DDOrderPickingReconcileRepository repository,
+			@NonNull final DistributionNetworkRepository distributionNetworkRepository)
 	{
 		this.repository = repository;
+		this.distributionNetworkRepository = distributionNetworkRepository;
 		this.shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		this.warehouseDAO = Services.get(IWarehouseDAO.class);
 	}
@@ -83,5 +95,35 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
 		return repository.existsPickingJobLineForDDOrder(ddOrderId);
+	}
+
+	/**
+	 * Resolves the source (stocking) warehouse for a product given the packing warehouse and distribution network.
+	 * Returns the first matching source warehouse from the network lines whose target is the packing warehouse.
+	 *
+	 * <p>Note: {@code productId} is accepted for future per-product filtering but is not yet used,
+	 * because {@link DistributionNetworkLine} does not carry product-level constraints.</p>
+	 *
+	 * @return the source warehouse, or empty if {@code networkId} is null or no matching line exists
+	 */
+	@VisibleForTesting
+	Optional<WarehouseId> resolveSourceWarehouse(
+			@NonNull final WarehouseId packingWarehouseId,
+			@NonNull final ProductId productId,
+			@Nullable final DistributionNetworkId networkId)
+	{
+		if (networkId == null)
+		{
+			return Optional.empty();
+		}
+
+		final DistributionNetwork network = distributionNetworkRepository.getById(networkId);
+		final List<DistributionNetworkLine> lines = network.getLinesByTargetWarehouse(packingWarehouseId);
+		if (lines.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(lines.get(0).getSourceWarehouseId());
 	}
 }
