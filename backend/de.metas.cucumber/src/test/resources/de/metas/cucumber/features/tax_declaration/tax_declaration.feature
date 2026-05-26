@@ -283,8 +283,13 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
   @from:cucumber
   Scenario: complete-without-build rejected with TaxDeclaration_NoLinesYet
 
+    # Uses its own period (Jun-24) — distinct from every other scenario (Jan-24) — so the
+    # no-lines path is tested in isolation. Completion now checks period-uniqueness BEFORE the
+    # no-lines guard (an Original on an already-declared period is rejected with PERIOD_OVERLAP,
+    # since such a declaration builds empty by construction); sharing Jan-24 with TC-D4 would
+    # surface PERIOD_OVERLAP here instead of the intended NO_LINES_YET.
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       |
-      | td         | acctSchema      | 2024-01-15 |
+      | td         | acctSchema      | 2024-06-15 |
     When the tax declaration "td" is completed
     Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'

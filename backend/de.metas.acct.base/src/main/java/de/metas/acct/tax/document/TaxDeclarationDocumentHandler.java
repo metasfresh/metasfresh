@@ -54,16 +54,22 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		final I_C_TaxDeclaration td = extract(docFields);
 		final TaxDeclarationId id = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_ID());
 
-		if (!repo.hasAnyLines(id))
-		{
-			throw new AdempiereException(MSG_NoLinesYet);
-		}
-		// Iter 7 (me03#29631): period-uniqueness applies to Originals only.
-		// A Correction legitimately shares its Original's period (the whole point of the lifecycle).
+		// Iter 7 (me03#29631): period-uniqueness applies to Originals only, and must be checked
+		// BEFORE the no-lines guard. A second Original on an already-declared period builds EMPTY
+		// by construction — the build engine excludes facts already snapshotted in the locked
+		// Original (tax_declaration_build.sql NOT-EXISTS branch). If the no-lines guard ran first,
+		// the user would see the misleading TAXDECLARATION_NO_LINES_YET instead of the meaningful
+		// "a declaration already exists for this period — create a Correction" (PERIOD_OVERLAP).
+		// A Correction legitimately shares its Original's period (the whole point of the lifecycle),
+		// so it skips this check.
 		if (!td.isIsCorrection()
 				&& repo.existsCompletedOverlappingPeriod(id, AcctSchemaId.ofRepoId(td.getC_AcctSchema_ID()), td.getC_Period_ID()))
 		{
 			throw new AdempiereException(MSG_PeriodOverlap);
+		}
+		if (!repo.hasAnyLines(id))
+		{
+			throw new AdempiereException(MSG_NoLinesYet);
 		}
 
 		td.setProcessed(true);
