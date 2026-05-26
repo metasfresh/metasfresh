@@ -27,7 +27,7 @@ public class DDOrderPickingReconcileRepository
 	{
 		final org.compiere.model.IQuery<I_DD_Order> ddOrderSubQuery = queryBL
 				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId)
 				.create();
 
 		return queryBL
@@ -36,6 +36,7 @@ public class DDOrderPickingReconcileRepository
 						I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID,
 						I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID,
 						ddOrderSubQuery)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
 	}

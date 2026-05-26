@@ -71,4 +71,26 @@ class DDOrderPickingReconcileServiceTest
 		// expect: picker is NOT busy
 		assertThat(service.isPickerBusy(ddOrderId)).isFalse();
 	}
+
+	@Test
+	void isPickerBusy_ignoresInactivePickingJobLine()
+	{
+		// create a shipment schedule (simulated by repoId = 300)
+		final int shipmentScheduleRepoId = 300;
+
+		// create DD_Order linked to that shipment schedule
+		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
+		ddOrder.setM_ShipmentSchedule_ID(shipmentScheduleRepoId);
+		save(ddOrder);
+		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+
+		// create an inactive PickingJobLine referencing the same shipment schedule
+		final I_M_Picking_Job_Line line = newInstance(I_M_Picking_Job_Line.class);
+		line.setM_ShipmentSchedule_ID(shipmentScheduleRepoId);
+		line.setIsActive(false);
+		save(line);
+
+		// expect: picker is NOT busy (inactive line is ignored)
+		assertThat(service.isPickerBusy(ddOrderId)).isFalse();
+	}
 }
