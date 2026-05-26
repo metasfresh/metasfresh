@@ -1089,4 +1089,49 @@ class DDOrderPickingReconcileServiceTest
 		// effective warehouse (Override) is non-packing → NOT published (no spurious event)
 		verify(publisher, never()).publishOne(scheduleId);
 	}
+
+	// -----------------------------------------------------------------------
+	// assertWarehouseConfigurationIsValid tests (T21)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void assertWarehouseConfigurationIsValid_throws_whenPacking_andNoNetwork()
+	{
+		// IsPackingWarehouse=Y, DD_NetworkDistribution_ID=0 → must throw
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		warehouse.setDD_NetworkDistribution_ID(0);
+		save(warehouse);
+
+		assertThatThrownBy(() -> service.assertWarehouseConfigurationIsValid(warehouse))
+				.isInstanceOf(AdempiereException.class)
+				.extracting(t -> ((AdempiereException)t).getErrorCode())
+				.isEqualTo("DDOrderPickingReconcile_MandatoryNetwork");
+	}
+
+	@Test
+	void assertWarehouseConfigurationIsValid_ok_whenPacking_withNetwork()
+	{
+		// IsPackingWarehouse=Y + network set → no throw
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		warehouse.setDD_NetworkDistribution_ID(42);
+		save(warehouse);
+
+		// must not throw
+		service.assertWarehouseConfigurationIsValid(warehouse);
+	}
+
+	@Test
+	void assertWarehouseConfigurationIsValid_ok_whenNotPacking()
+	{
+		// IsPackingWarehouse=N → no throw (network irrelevant)
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(false);
+		warehouse.setDD_NetworkDistribution_ID(0);
+		save(warehouse);
+
+		// must not throw
+		service.assertWarehouseConfigurationIsValid(warehouse);
+	}
 }

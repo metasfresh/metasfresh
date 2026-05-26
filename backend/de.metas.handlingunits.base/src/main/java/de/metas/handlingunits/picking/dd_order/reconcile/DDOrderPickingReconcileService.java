@@ -42,6 +42,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 {
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
+	private static final AdMessageKey MSG_DDOrderPickingReconcile_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
 
 	// FQN trx-property key: avoids collisions with any other service that might register an
 	// after-commit accumulator under a shorter, easier-to-clash name.
@@ -270,7 +271,10 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)
 	{
-		throw new UnsupportedOperationException("not implemented yet — Task T21");
+		if (warehouse.isPackingWarehouse() && warehouse.getDD_NetworkDistribution_ID() <= 0)
+		{
+			throw new AdempiereException(MSG_DDOrderPickingReconcile_MandatoryNetwork);
+		}
 	}
 
 	@Override
