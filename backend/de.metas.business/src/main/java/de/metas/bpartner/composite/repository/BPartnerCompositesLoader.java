@@ -337,6 +337,7 @@ final class BPartnerCompositesLoader
 				.customer(bpartnerRecord.isCustomer())
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
+				.discountPrinted(bpartnerRecord.isDiscountPrinted())
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.paymentRulePO(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRulePO()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))

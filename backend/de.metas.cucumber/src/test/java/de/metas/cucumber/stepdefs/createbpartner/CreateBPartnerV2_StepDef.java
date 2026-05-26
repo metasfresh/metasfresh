@@ -267,6 +267,12 @@ public class CreateBPartnerV2_StepDef
 				softly.assertThat(bPartnerRecord.getC_Incoterms_Vendor_ID()).isEqualTo(vendorIncoterms.getC_Incoterms_ID());
 			}
 
+			final Boolean discountPrinted = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_IsDiscountPrinted);
+			if (discountPrinted != null)
+			{
+				softly.assertThat(bPartnerRecord.isDiscountPrinted()).isEqualTo(discountPrinted);
+			}
+			
 			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PaymentRule);
 			if (Check.isNotBlank(paymentRule))
 			{

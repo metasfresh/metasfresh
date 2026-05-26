@@ -1169,6 +1169,18 @@ public class JsonPersisterService
 			bpartner.setParentId(parentBPartnerId);
 		}
 
+		if (jsonBPartner.isDiscountPrintedSet())
+		{
+			if (jsonBPartner.getDiscountPrinted() == null)
+			{
+				logger.debug("Ignoring boolean property \"discountPrinted\" : null ");
+			}
+			else
+			{
+				bpartner.setDiscountPrinted(jsonBPartner.getDiscountPrinted());
+			}
+		}
+
 		if (jsonBPartner.isPaymentRuleSet())
 		{
 			bpartner.setPaymentRule(Optional.ofNullable(jsonBPartner.getPaymentRule())

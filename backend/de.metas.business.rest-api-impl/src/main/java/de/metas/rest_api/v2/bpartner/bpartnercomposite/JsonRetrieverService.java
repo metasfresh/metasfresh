@@ -155,6 +155,7 @@ public class JsonRetrieverService
 			.put(BPartner.SALES_PARTNER_CODE, JsonResponseBPartner.SALES_PARTNER_CODE)
 			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
+			.put(BPartner.DISCOUNT_PRINTED, JsonResponseBPartner.DISCOUNT_PRINTED)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.PAYMENT_RULE_PO, JsonResponseBPartner.PAYMENT_RULE_PO)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
@@ -413,6 +414,7 @@ public class JsonRetrieverService
 				.pricingSystemId(JsonMetasfreshId.ofOrNull(PricingSystemId.toRepoId(bpartner.getCustomerPricingSystemId())))
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
 
+				.discountPrinted(bpartner.isDiscountPrinted())
 				.paymentRule(bpartner.mapPaymentRule(ValueMappingHelper::getJsonPaymentRule))
 				.paymentRulePO(bpartner.mapPaymentRulePO(ValueMappingHelper::getJsonPaymentRule))
 
