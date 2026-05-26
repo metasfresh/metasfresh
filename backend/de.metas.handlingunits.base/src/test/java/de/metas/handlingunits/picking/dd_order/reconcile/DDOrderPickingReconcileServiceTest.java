@@ -199,9 +199,11 @@ class DDOrderPickingReconcileServiceTest
 		pickingJobLine.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
 		save(pickingJobLine);
 
-		// expect: AdempiereException thrown because picker is busy
+		// expect: AdempiereException thrown because picker is busy, with the correct message key
 		assertThatThrownBy(() -> service.assertCanChange(schedule))
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.extracting(t -> ((AdempiereException) t).getErrorCode())
+				.isEqualTo("DDOrderPickingReconcile_PickerBusy");
 	}
 
 	// -----------------------------------------------------------------------
@@ -270,5 +272,43 @@ class DDOrderPickingReconcileServiceTest
 		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, null);
 
 		assertThat(result).isNotPresent();
+	}
+
+	@Test
+	void resolveSourceWarehouse_returns_highestPriority_whenMultipleLinesMatch()
+	{
+		final WarehouseId sourceA = WarehouseId.ofRepoId(40);  // priorityNo=10 → highest priority
+		final WarehouseId sourceB = WarehouseId.ofRepoId(41);  // priorityNo=20 → lower priority
+		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(42);
+		final ProductId productId = ProductId.ofRepoId(33);
+
+		// create distribution network with two lines targeting the same packing warehouse
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("TestNetworkPriority");
+		save(network);
+
+		final I_DD_NetworkDistributionLine lineA = newInstance(I_DD_NetworkDistributionLine.class);
+		lineA.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		lineA.setM_WarehouseSource_ID(sourceA.getRepoId());
+		lineA.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		lineA.setM_Shipper_ID(1);
+		lineA.setPriorityNo(10);
+		save(lineA);
+
+		final I_DD_NetworkDistributionLine lineB = newInstance(I_DD_NetworkDistributionLine.class);
+		lineB.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		lineB.setM_WarehouseSource_ID(sourceB.getRepoId());
+		lineB.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		lineB.setM_Shipper_ID(1);
+		lineB.setPriorityNo(20);
+		save(lineB);
+
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
+
+		final java.util.Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+
+		// expect: sourceA is returned because priorityNo=10 < 20
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(sourceA);
 	}
 }

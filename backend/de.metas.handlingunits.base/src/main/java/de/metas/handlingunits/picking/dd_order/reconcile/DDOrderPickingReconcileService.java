@@ -13,6 +13,7 @@ import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -24,24 +25,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 {
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 
 	@NonNull private final DDOrderPickingReconcileRepository repository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
-	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL;
-	@NonNull private final IWarehouseDAO warehouseDAO;
-
-	public DDOrderPickingReconcileService(
-			@NonNull final DDOrderPickingReconcileRepository repository,
-			@NonNull final DistributionNetworkRepository distributionNetworkRepository)
-	{
-		this.repository = repository;
-		this.distributionNetworkRepository = distributionNetworkRepository;
-		this.shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		this.warehouseDAO = Services.get(IWarehouseDAO.class);
-	}
+	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
@@ -54,13 +46,11 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		}
 
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final Optional<DDOrderId> existingDDOrderId = repository.findActiveDDOrderForSchedule(scheduleId);
-		if (!existingDDOrderId.isPresent())
+		final DDOrderId ddOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
+		if (ddOrderId == null)
 		{
 			return;
 		}
-
-		final DDOrderId ddOrderId = existingDDOrderId.get();
 		if (isPickerBusy(ddOrderId))
 		{
 			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, ddOrderId);
@@ -99,12 +89,16 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 
 	/**
 	 * Resolves the source (stocking) warehouse for a product given the packing warehouse and distribution network.
-	 * Returns the first matching source warehouse from the network lines whose target is the packing warehouse.
+	 * Returns the source warehouse from the highest-priority line (i.e. lowest {@link DistributionNetworkLine#getPriorityNo()})
+	 * whose target is the packing warehouse.
+	 * Lines are sorted ascending by {@code priorityNo} inside {@link de.metas.material.planning.ddorder.DistributionNetwork},
+	 * so the first matching line is always the highest-priority one.
 	 *
 	 * <p>Note: {@code productId} is accepted for future per-product filtering but is not yet used,
 	 * because {@link DistributionNetworkLine} does not carry product-level constraints.</p>
 	 *
-	 * @return the source warehouse, or empty if {@code networkId} is null or no matching line exists
+	 * @return the source warehouse of the highest-priority matching line,
+	 *         or empty if {@code networkId} is null or no matching line exists
 	 */
 	@VisibleForTesting
 	Optional<WarehouseId> resolveSourceWarehouse(

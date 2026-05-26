@@ -33,6 +33,7 @@ public class DDOrderPickingReconcileRepository
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
 				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
 				.firstOptional(I_DD_Order.class)
 				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
