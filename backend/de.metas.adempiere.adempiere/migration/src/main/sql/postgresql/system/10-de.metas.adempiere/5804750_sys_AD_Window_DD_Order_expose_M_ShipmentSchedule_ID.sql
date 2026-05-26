@@ -21,7 +21,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, AD_Field_ID, AD_Column_ID, AD_Tab
                       DisplayLength, DisplayLogic,
                       IsDisplayed, IsDisplayedGrid,
                       IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine)
-VALUES (0, 0, 780487,
+VALUES (0, 0, 780487 /*From ID Server*/,
         (SELECT AD_Column_ID FROM AD_Column
           WHERE ColumnName = 'M_ShipmentSchedule_ID'
             AND AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'DD_Order')),
@@ -67,7 +67,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID,
                            Name,
                            IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
                            SeqNo, SeqNoGrid, SeqNo_SideList)
-VALUES (0, 0, 651844,
+VALUES (0, 0, 651844 /*From ID Server*/,
         780487,
         53055,
         540423,
@@ -89,7 +89,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, AD_Field_ID, AD_Column_ID, AD_Tab
                       DisplayLength, DisplayLogic,
                       IsDisplayed, IsDisplayedGrid,
                       IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine)
-VALUES (0, 0, 780488,
+VALUES (0, 0, 780488 /*From ID Server*/,
         (SELECT AD_Column_ID FROM AD_Column
           WHERE ColumnName = 'M_ShipmentSchedule_ID'
             AND AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'DD_OrderLine')),
@@ -131,7 +131,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID,
                            Name,
                            IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
                            SeqNo, SeqNoGrid, SeqNo_SideList)
-VALUES (0, 0, 651845,
+VALUES (0, 0, 651845 /*From ID Server*/,
         780488,
         53050,
         540424,
