@@ -41,7 +41,7 @@ import org.compiere.SpringContextHolder;
  */
 public class M_HU_Report_QRCode extends JavaProcess
 {
-	private HUQRCodesService huQRCodesService;
+	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
 
@@ -50,16 +50,6 @@ public class M_HU_Report_QRCode extends JavaProcess
 
 	@Param(parameterName = "IsPrintPreview")
 	private boolean isPrintPreview;
-
-	@Param(parameterName = IMassPrintingService.PARAM_PrintCopies)
-	private int p_PrintCopies;
-
-	@Override
-	protected void prepare()
-	{
-		// Deferred so plain-reflection instantiation during precondition checking does not throw
-		huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	}
 
 	@Override
 	@RunOutOfTrx
@@ -76,10 +66,10 @@ public class M_HU_Report_QRCode extends JavaProcess
 		else
 		{
 			final PrintCopies printCopies = getParameters().stream()
-					.filter(p -> IMassPrintingService.PARAM_PrintCopies.equals(p.getParameterName()))
+					.filter(processInfoParameter -> IMassPrintingService.PARAM_PrintCopies.equals(processInfoParameter.getParameterName()))
 					.findFirst()
 					.map(ProcessInfoParameter::getParameterAsInt)
-					.filter(n -> n > 0)
+					.filter(nrOfCopies -> nrOfCopies > 0)
 					.map(PrintCopies::ofInt)
 					.orElse(PrintCopies.ONE);
 
