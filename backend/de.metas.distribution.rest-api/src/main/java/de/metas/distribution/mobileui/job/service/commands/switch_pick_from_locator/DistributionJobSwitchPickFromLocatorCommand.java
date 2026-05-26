@@ -8,11 +8,11 @@ import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoader;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.i18n.AdMessageKey;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_Order;
@@ -60,8 +60,9 @@ public class DistributionJobSwitchPickFromLocatorCommand
 			throw new AdempiereException(MSG_NOT_AVAILABLE);
 		}
 
-		final LocatorId currentLocatorId = job.getSinglePickFromLocatorIdOrNull();
-		// canSwitchPickFromLocator guarantees currentLocatorId is non-null
+		final LocatorId currentLocatorId = Check.assumeNotNull(
+				job.getSinglePickFromLocatorIdOrNull(),
+				"job.getSinglePickFromLocatorIdOrNull() is non-null because canSwitchPickFromLocator() was true");
 		final WarehouseId warehouseId = job.getPickFromWarehouse().getWarehouseId();
 		final LocatorId nextLocatorId = nextLocatorResolver.resolveNext(warehouseId, currentLocatorId);
 
@@ -71,7 +72,7 @@ public class DistributionJobSwitchPickFromLocatorCommand
 		for (final I_DD_OrderLine line : lines)
 		{
 			line.setM_Locator_ID(nextLocatorId.getRepoId());
-			InterfaceWrapperHelper.save(line);
+			ddOrderService.saveLine(line);
 		}
 
 		return loader.loadByJobId(jobId);

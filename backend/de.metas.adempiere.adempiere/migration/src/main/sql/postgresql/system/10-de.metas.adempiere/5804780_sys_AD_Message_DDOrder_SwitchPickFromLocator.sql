@@ -18,8 +18,9 @@ INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,E
 VALUES (0,545723 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-26 18:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Lagerort leer kann nicht mehr genutzt werden, sobald die Kommissionierung begonnen hat.','E',TO_TIMESTAMP('2026-05-26 18:00:00','YYYY-MM-DD HH24:MI:SS'),100,'MobileUI_DDOrder_SwitchPickFromLocator_NotAvailable')
 ;
 
+-- AD_Message.ErrorCode is varchar(40); use a shorter form (the full key lives in AD_Message.Value).
 -- 2026-05-26T18:00:01.000Z
-UPDATE AD_Message SET ErrorCode='MobileUI_DDOrder_SwitchPickFromLocator_NotAvailable', Updated=TO_TIMESTAMP('2026-05-26 18:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545723 /*From ID Server*/
+UPDATE AD_Message SET ErrorCode='SwitchPickFromLocator_NotAvailable', Updated=TO_TIMESTAMP('2026-05-26 18:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545723 /*From ID Server*/
 ;
 
 -- Seed AD_Message_Trl for every active system language using the base (DE) text.
@@ -55,7 +56,7 @@ VALUES (0,545724 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-26 18:00:06','YYYY-M
 ;
 
 -- 2026-05-26T18:00:07.000Z
-UPDATE AD_Message SET ErrorCode='MobileUI_DDOrder_SwitchPickFromLocator_NoAlternative', Updated=TO_TIMESTAMP('2026-05-26 18:00:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545724 /*From ID Server*/
+UPDATE AD_Message SET ErrorCode='SwitchPickFromLocator_NoAlternative', Updated=TO_TIMESTAMP('2026-05-26 18:00:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545724 /*From ID Server*/
 ;
 
 -- Seed AD_Message_Trl for every active system language using the base (DE) text.
