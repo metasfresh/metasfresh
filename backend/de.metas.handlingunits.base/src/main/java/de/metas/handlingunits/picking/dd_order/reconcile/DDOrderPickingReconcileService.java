@@ -50,6 +50,6 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
-		throw new UnsupportedOperationException("not implemented yet — Task T8");
+		return repository.existsPickingJobLineForDDOrder(ddOrderId);
 	}
 }
