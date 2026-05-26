@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +60,7 @@ public class OrderLineSplitCommand
 		this(Services.get(IOrderLineBL.class),
 				Services.get(IOrderBL.class),
 				Services.get(IOrderDAO.class),
-				Services.get(IOrderLineSplitListener.class));
+				SpringContextHolder.instance.getBean(IOrderLineSplitListener.class));
 	}
 
 	@VisibleForTesting

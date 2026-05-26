@@ -24,7 +24,6 @@ package de.metas.order.split;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.OrderLineId;
-import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 /**
@@ -36,7 +35,7 @@ import lombok.NonNull;
  * de.metas.swat.base registers the real implementation that creates shipment schedules,
  * invalidates invoice candidates, and shrinks qty-reservations.
  */
-public interface IOrderLineSplitListener extends ISingletonService
+public interface IOrderLineSplitListener
 {
 	/**
 	 * Schedules creation of the missing M_ShipmentSchedule row for the newly-cloned order line.
