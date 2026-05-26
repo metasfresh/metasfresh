@@ -14,7 +14,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -446,11 +448,40 @@ class DDOrderPickingReconcileServiceTest
 		return warehouseId;
 	}
 
+	/** Creates the in-transit warehouse for the schedule's org (default org = 0), as required by the DD_Order header. */
+	private static WarehouseId createInTransitWarehouse(final int orgRepoId)
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setAD_Org_ID(orgRepoId);
+		warehouse.setIsInTransit(true);
+		save(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
+	/** Creates a product with a stock UOM, returns both IDs. */
+	private static ProductId createProductWithStockUom(final int uomRepoIdOut[])
+	{
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Each");
+		save(uom);
+		uomRepoIdOut[0] = uom.getC_UOM_ID();
+
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("TestProduct");
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		save(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
 	@Test
 	void reconcile_creates_completed_DDOrder_for_newSchedule()
 	{
+		// in-transit warehouse for the default org (the DD_Order header warehouse)
+		final WarehouseId inTransitWarehouseId = createInTransitWarehouse(0);
+
 		final WarehouseId sourceWarehouseId = createWarehouse(false, 0);
-		final ProductId productId = ProductId.ofRepoId(555);
+		final int[] uomRepoIdOut = new int[1];
+		final ProductId productId = createProductWithStockUom(uomRepoIdOut);
 
 		// distribution network: source → packing
 		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
@@ -487,9 +518,13 @@ class DDOrderPickingReconcileServiceTest
 
 		final I_DD_Order ddOrder = ddOrders.get(0);
 		assertThat(ddOrder.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Completed);
+		// header warehouse = IN-TRANSIT (mirrors HUs2DDOrderProducer); source/target on dedicated columns
+		assertThat(ddOrder.getM_Warehouse_ID()).as("header warehouse is in-transit").isEqualTo(inTransitWarehouseId.getRepoId());
 		assertThat(ddOrder.getM_Warehouse_From_ID()).isEqualTo(sourceWarehouseId.getRepoId());
 		assertThat(ddOrder.getM_Warehouse_To_ID()).isEqualTo(packingWarehouseId.getRepoId());
 		assertThat(ddOrder.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
+		assertThat(ddOrder.getDatePromised()).as("DatePromised is set").isNotNull();
+		assertThat(ddOrder.getDateOrdered()).as("DateOrdered is set").isNotNull();
 
 		final java.util.List<I_DD_OrderLine> lines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DD_OrderLine.class)
@@ -500,12 +535,16 @@ class DDOrderPickingReconcileServiceTest
 
 		final I_DD_OrderLine ddOrderLine = lines.get(0);
 		assertThat(ddOrderLine.getM_Product_ID()).isEqualTo(productId.getRepoId());
+		assertThat(ddOrderLine.getC_UOM_ID()).as("line UOM = product stock UOM").isEqualTo(uomRepoIdOut[0]);
 		assertThat(ddOrderLine.getQtyOrdered()).isEqualByComparingTo(new BigDecimal("17"));
+		assertThat(ddOrderLine.getQtyEntered()).isEqualByComparingTo(new BigDecimal("17"));
+		assertThat(ddOrderLine.getTargetQty()).isEqualByComparingTo(new BigDecimal("17"));
+		assertThat(ddOrderLine.getDatePromised()).as("line DatePromised is set").isNotNull();
 		assertThat(ddOrderLine.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
 	}
 
 	@Test
-	void reconcile_marks_eventAsError_whenSourceWarehouseUnresolved()
+	void reconcile_throwsNetworkGapException_whenSourceWarehouseUnresolved()
 	{
 		// packing warehouse WITH a network, but NO network line targeting it → source unresolvable
 		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);

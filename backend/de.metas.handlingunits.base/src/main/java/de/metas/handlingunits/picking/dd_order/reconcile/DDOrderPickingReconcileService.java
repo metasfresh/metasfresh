@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.dd_order.reconcile;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -13,7 +14,11 @@ import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +44,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
@@ -148,20 +154,23 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		final I_M_Warehouse packingWarehouse = warehouseDAO.getById(packingWarehouseId);
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
-		final DistributionNetworkId networkId = packingWarehouse.getDD_NetworkDistribution_ID() > 0
-				? DistributionNetworkId.ofRepoId(packingWarehouse.getDD_NetworkDistribution_ID())
-				: null;
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(packingWarehouse.getDD_NetworkDistribution_ID());
 
 		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(packingWarehouseId, productId, networkId)
 				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
+
+		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final Quantity qty = Quantitys.of(schedule.getQtyToDeliver(), stockUomId);
 
 		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
 				.targetWarehouseId(packingWarehouseId)
 				.productId(productId)
-				.qty(schedule.getQtyToDeliver())
+				.qty(qty)
 				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
+				.datePromised(SystemTime.asInstant())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
 				.build();
 

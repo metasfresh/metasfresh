@@ -4,13 +4,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import java.time.Instant;
 
 /**
  * Immutable request describing the single Completed DD_Order that the picking-reconcile flow
@@ -27,7 +28,8 @@ public class CreateDDOrderRequest
 	@NonNull WarehouseId sourceWarehouseId;
 	@NonNull WarehouseId targetWarehouseId;
 	@NonNull ProductId productId;
-	@NonNull BigDecimal qty;
+	@NonNull Quantity qty;
 	@NonNull OrgId orgId;
+	@NonNull Instant datePromised;
 	@Nullable BPartnerId bpartnerId;
 }
