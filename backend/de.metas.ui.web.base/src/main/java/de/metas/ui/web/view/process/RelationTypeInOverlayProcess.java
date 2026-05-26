@@ -183,7 +183,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		}
 
 		final MQuery mquery = candidates.get(0).getQuerySupplier().getQuery();
-		final String tableName = mquery.getTableName();
+		final String tableName = mquery.getZoomTableName();
 		final String whereClause = mquery.getWhereClause(false);
 
 		if (Check.isBlank(whereClause))
@@ -200,6 +200,11 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final List<TableRecordReference> refs = recordIds.stream()
 				.map(id -> TableRecordReference.of(tableName, id))
 				.collect(Collectors.toList());
+
+		if (refs.isEmpty())
+		{
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
 
 		getResult().setRecordsToOpen(refs);
 	}
