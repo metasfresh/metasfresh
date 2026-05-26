@@ -203,6 +203,12 @@ public class DistributionJob
 				.collect(GuavaCollectors.singleElementOrEmpty());
 	}
 
+	public boolean canSwitchPickFromLocator()
+	{
+		return getSinglePickFromLocatorIdOrNull() != null
+				&& streamSteps().noneMatch(DistributionJobStep::isPickedFromLocator);
+	}
+
 	@Nullable
 	public LocatorId getSingleDropToLocatorIdOrNull()
 	{
