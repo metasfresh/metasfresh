@@ -8,33 +8,36 @@ Feature: Split sales order line after partial delivery
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-05-26T08:00:00+02:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
-      | Identifier   |
-      | ps_split     |
+      | Identifier |
+      | ps_split   |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
-      | pl_split     | ps_split           | EUR                 | true  |
+      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
+      | pl_split   | ps_split           | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier   | M_PriceList_ID |
-      | plv_split    | pl_split       |
+      | Identifier | M_PriceList_ID |
+      | plv_split  | pl_split       |
+    And metasfresh contains M_Warehouse:
+      | Identifier      |
+      | warehouse_split |
     And metasfresh contains M_Products:
-      | Identifier   | Value      | Name       |
-      | product_P1   | P1_split   | P1_split   |
+      | Identifier | IsStocked |
+      | product_P1 | true      |
     And metasfresh contains M_ProductPrices
-      | Identifier   | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
-      | pp_split     | plv_split              | product_P1   | 10.00    | PCE               |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_split              | product_P1   | 10.00    | PCE               |
     And metasfresh contains C_BPartners:
-      | Identifier   | Value      | Name       | IsCustomer | M_PricingSystem_ID |
-      | bpartner_C1  | C1_split   | C1_split   | Y          | ps_split           |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | DeliveryRule |
+      | bpartner_C1 | true       | ps_split           | A            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier         | C_BPartner_ID | IsShipTo | IsBillTo |
-      | bploc_C1           | bpartner_C1   | true     | true     |
+      | Identifier | C_BPartner_ID | IsShipTo | IsBillTo |
+      | bploc_C1   | bpartner_C1   | true     | true     |
 
   @from:cucumber
   @Id:S_OLSplit_10
-  Scenario: S_OLSplit_10 Happy path - split partially-shipped line
+  Scenario: S_OLSplit_10 Happy path - split a completed line
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | order_O1   | true    | bpartner_C1   | 2026-05-26  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID  | DeliveryRule |
+      | order_O1   | true    | bpartner_C1   | 2026-05-26  | warehouse_split | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | line_OL1   | order_O1   | product_P1   | 10         |
@@ -45,8 +48,8 @@ Feature: Split sales order line after partial delivery
   @Id:S_OLSplit_20
   Scenario: S_OLSplit_20 Validation - cannot split off the entire line qty
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | order_O2   | true    | bpartner_C1   | 2026-05-26  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID  | DeliveryRule |
+      | order_O2   | true    | bpartner_C1   | 2026-05-26  | warehouse_split | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | line_OL2   | order_O2   | product_P1   | 10         |
@@ -58,8 +61,8 @@ Feature: Split sales order line after partial delivery
   @Id:S_OLSplit_30
   Scenario: S_OLSplit_30 Shipment schedule and invoice candidate created for new line
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | order_O3   | true    | bpartner_C1   | 2026-05-26  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID  | DeliveryRule |
+      | order_O3   | true    | bpartner_C1   | 2026-05-26  | warehouse_split | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | line_OL3   | order_O3   | product_P1   | 10         |
@@ -68,10 +71,10 @@ Feature: Split sales order line after partial delivery
 
   @from:cucumber
   @Id:S_OLSplit_40
-  Scenario: S_OLSplit_40 Reservation on original line is shrunk to fit
+  Scenario: S_OLSplit_40 Split on order with a qty reservation
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | order_O4   | true    | bpartner_C1   | 2026-05-26  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID  | DeliveryRule |
+      | order_O4   | true    | bpartner_C1   | 2026-05-26  | warehouse_split | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | line_OL4   | order_O4   | product_P1   | 10         |
