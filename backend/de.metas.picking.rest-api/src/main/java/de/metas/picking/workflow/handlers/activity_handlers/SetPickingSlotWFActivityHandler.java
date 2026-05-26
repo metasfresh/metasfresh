@@ -50,10 +50,12 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetScannedBarcodeSupport
@@ -116,6 +118,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 		}
 		catch (final Exception ex)
 		{
+			log.debug("QR parse failed for scanned code '{}', showing user-friendly error", scannedCode, ex);
 			throw MobileQRCodeMessages.newNotRecognizedException(scannedCode);
 		}
 
@@ -126,6 +129,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 		}
 		catch (final Exception ex)
 		{
+			log.debug("QR type check failed for globalQRCode '{}', showing user-friendly error", globalQRCode, ex);
 			throw MobileQRCodeMessages.newWrongGlobalQRTypeException(globalQRCode);
 		}
 

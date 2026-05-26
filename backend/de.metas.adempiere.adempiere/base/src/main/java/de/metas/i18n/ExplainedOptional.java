@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * #L%
  */
 
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "adMessageKey")
 public final class ExplainedOptional<T>
 {
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final String explanation)
