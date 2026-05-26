@@ -8,14 +8,18 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -25,6 +29,7 @@ import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /** DAO for the DD_Order picking-reconcile flow. Methods added per-task as the BL evolves. */
 @Repository
@@ -38,6 +43,57 @@ public class DDOrderPickingReconcileRepository
 	public DDOrderPickingReconcileRepository(@NonNull final IQueryBL queryBL)
 	{
 		this.queryBL = queryBL;
+	}
+
+	/**
+	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
+	 * ({@code M_Warehouse.IsPackingWarehouse='Y'}), and have NO live (non-voided) DD_Order linked.
+	 *
+	 * <p>These are the "drifted" schedules that need to be re-reconciled by the watchdog scan.</p>
+	 */
+	public Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder()
+	{
+		// Sub-query: packing warehouse IDs
+		final IQuery<I_M_Warehouse> packingWarehouseSubQuery = queryBL
+				.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsPackingWarehouse, true)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		// Sub-query: live (non-voided) DD_Orders
+		final IQuery<I_DD_Order> liveDDOrderSubQuery = queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		// Main query: active schedules on a packing warehouse with no live DD_Order
+		final IQueryBuilder<I_M_ShipmentSchedule> scheduleQueryBuilder = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter();
+
+		// schedule must be on a packing warehouse (M_Warehouse_ID or M_Warehouse_Override_ID)
+		scheduleQueryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addInSubQueryFilter(
+						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
+						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
+						packingWarehouseSubQuery)
+				.addInSubQueryFilter(
+						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
+						packingWarehouseSubQuery);
+
+		// schedule must have NO live DD_Order
+		scheduleQueryBuilder.addNotInSubQueryFilter(
+				I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+				I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID,
+				liveDDOrderSubQuery);
+
+		return scheduleQueryBuilder
+				.create()
+				.stream()
+				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
 	}
 
 	/**

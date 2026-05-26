@@ -247,7 +247,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void rebuildDrift()
 	{
-		throw new UnsupportedOperationException("not implemented yet — Task T16");
+		repository.streamSchedulesNeedingDDOrder()
+				.forEach(reconciliationEventPublisher::publishOne);
 	}
 
 	@Override

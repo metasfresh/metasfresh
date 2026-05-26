@@ -889,4 +889,59 @@ class DDOrderPickingReconcileServiceTest
 
 		verify(eventBus, times(2)).enqueueEvent(any(de.metas.event.Event.class));
 	}
+
+	// -----------------------------------------------------------------------
+	// rebuildDrift() tests (T16)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void rebuildDrift_publishesEvent_for_scheduleWithoutDDOrder()
+	{
+		// packing warehouse
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		// ACTIVE schedule on the packing warehouse, NO live DD_Order
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// stub the publisher (already mocked in beforeEach)
+		service.rebuildDrift();
+
+		// publisher.publishOne must have been called exactly once with the schedule id
+		verify(publisher, times(1)).publishOne(scheduleId);
+	}
+
+	@Test
+	void rebuildDrift_skips_scheduleWithLiveDDOrder()
+	{
+		// packing warehouse
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		// ACTIVE schedule on the packing warehouse WITH a live (non-voided) DD_Order
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// create a live (Completed) DD_Order linked to this schedule
+		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
+		ddOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(ddOrder);
+
+		service.rebuildDrift();
+
+		// schedule has a live DD_Order → publisher must NOT have been called
+		verify(publisher, never()).publishOne(scheduleId);
+	}
 }
