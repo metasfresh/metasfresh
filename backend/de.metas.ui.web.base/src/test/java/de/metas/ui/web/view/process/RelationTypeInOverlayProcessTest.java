@@ -12,7 +12,9 @@ import de.metas.document.references.related_documents.relation_type.SpecificRela
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessOpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -27,6 +29,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -169,6 +172,88 @@ class RelationTypeInOverlayProcessTest
 					.hasMessageContaining("No AD_Process.AD_RelationType_ID defined");
 		}
 
+		@Test
+		void doIt_whenOpenTargetIsNull_opensModalOverlay()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			final RelatedDocumentsCandidateGroup group = buildCandidateGroupWithOneEntry(WindowId.of(AdWindowId.ofRepoId(200)));
+			final IView mockView = mock(IView.class);
+
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId)))
+					.thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(any(), any()))
+					.thenReturn(ImmutableList.of(group));
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			// No .setOpenTarget(...) → ProcessInfo.openTarget is null → should default to ModalOverlay
+			final RelationTypeInOverlayProcess process = buildProcess(providerFactory, viewsRepo, relationTypeId);
+			process.doIt();
+
+			assertThat(process.getResult().getWebuiViewToOpen()).isNotNull();
+			assertThat(process.getResult().getWebuiViewToOpen().getTarget())
+					.isEqualTo(ProcessExecutionResult.ViewOpenTarget.ModalOverlay);
+		}
+
+		@Test
+		void doIt_whenOpenTargetIsO_opensModalOverlay()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			final RelatedDocumentsCandidateGroup group = buildCandidateGroupWithOneEntry(WindowId.of(AdWindowId.ofRepoId(200)));
+			final IView mockView = mock(IView.class);
+
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId)))
+					.thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(any(), any()))
+					.thenReturn(ImmutableList.of(group));
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final RelationTypeInOverlayProcess process = buildProcess(providerFactory, viewsRepo, relationTypeId, ProcessOpenTarget.ModalOverlay);
+			process.doIt();
+
+			assertThat(process.getResult().getWebuiViewToOpen()).isNotNull();
+			assertThat(process.getResult().getWebuiViewToOpen().getTarget())
+					.isEqualTo(ProcessExecutionResult.ViewOpenTarget.ModalOverlay);
+		}
+
+		@Test
+		void doIt_whenOpenTargetIsN_opensInNewBrowserTab()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			final RelatedDocumentsCandidateGroup group = buildCandidateGroupWithOneEntry(WindowId.of(AdWindowId.ofRepoId(200)));
+			final IView mockView = mock(IView.class);
+
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId)))
+					.thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(any(), any()))
+					.thenReturn(ImmutableList.of(group));
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final RelationTypeInOverlayProcess process = buildProcess(providerFactory, viewsRepo, relationTypeId, ProcessOpenTarget.NewBrowserTab);
+			process.doIt();
+
+			assertThat(process.getResult().getWebuiViewToOpen()).isNotNull();
+			assertThat(process.getResult().getWebuiViewToOpen().getTarget())
+					.isEqualTo(ProcessExecutionResult.ViewOpenTarget.NewBrowserTab);
+		}
+
+		@Test
+		@Disabled("blocked: openInPlace calls IQueryBL.createQueryBuilder(tableName) which requires a real DB or full POJO table registration; branch-dispatch is verified by the other 3 tests; covered by integration smoke in Phase B")
+		void doIt_whenOpenTargetIsR_callsSetRecordsToOpen()
+		{
+			// Intentionally left empty — see @Disabled reason above.
+			// When IQueryBL POJO support for dynamic table names is available, implement:
+			//   - Build ProcessInfo with .setOpenTarget(ProcessOpenTarget.InPlace)
+			//   - Mock querySupplier to return an MQuery with tableName + non-blank whereClause
+			//   - Assert: process.getResult().getWebuiViewToOpen() == null
+			//   - Assert: process.getResult().getRecordsToOpen() != null
+		}
+
 		// --- helpers ---
 
 		private RelationTypeInOverlayProcess buildProcess(
@@ -176,12 +261,22 @@ class RelationTypeInOverlayProcessTest
 				final IViewsRepository viewsRepo,
 				final RelationTypeId relationTypeId)
 		{
+			return buildProcess(factory, viewsRepo, relationTypeId, null);
+		}
+
+		private RelationTypeInOverlayProcess buildProcess(
+				final RelationTypeRelatedDocumentsProvidersFactory factory,
+				final IViewsRepository viewsRepo,
+				final RelationTypeId relationTypeId,
+				final ProcessOpenTarget openTarget)
+		{
 			final ProcessInfo processInfo = ProcessInfo.builder()
 					.setCtx(Env.getCtx())
 					.setAD_Process_ID(1)
 					.setRecord(TableRecordReference.of("C_Order", 101))
 					.setAdWindowId(AdWindowId.ofRepoId(100))
 					.setAdRelationTypeId(relationTypeId)
+					.setOpenTarget(openTarget)
 					.build();
 
 			final IZoomSource mockZoomSource = mock(IZoomSource.class);
