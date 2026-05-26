@@ -24,6 +24,7 @@ package de.metas.order.split;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -35,9 +36,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -46,6 +50,8 @@ class OrderLineSplitCommandTest
 {
 	private IOrderLineBL orderLineBL;
 	private IOrderBL orderBL;
+	private IOrderDAO orderDAO;
+	private IOrderLineSplitListener splitListener;
 	private OrderLineSplitCommand command;
 
 	@BeforeEach
@@ -55,7 +61,10 @@ class OrderLineSplitCommandTest
 
 		orderLineBL = Mockito.mock(IOrderLineBL.class);
 		orderBL = Mockito.mock(IOrderBL.class);
-		command = new OrderLineSplitCommand(orderLineBL, orderBL);
+		orderDAO = Mockito.mock(IOrderDAO.class);
+		splitListener = Mockito.mock(IOrderLineSplitListener.class);
+
+		command = new OrderLineSplitCommand(orderLineBL, orderBL, orderDAO, splitListener);
 	}
 
 	@Test
@@ -167,5 +176,78 @@ class OrderLineSplitCommandTest
 				.build()))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("OrderLineSplit_QtyBelowInvoiced");
+	}
+
+	/**
+	 * Happy-path test using AdempiereTestHelper (in-memory POJOWrapper environment).
+	 * <p>
+	 * Scenario: CO order, line ordered=10, delivered=8.
+	 * Split qtyToSplitOff=2 → original.QtyEntered=8, new line QtyEntered=2, new line C_Project_ID=0.
+	 * <p>
+	 * NOTE: interceptors do NOT fire in the AdempiereTestHelper environment (no Spring context),
+	 * so QtyOrdered is NOT recomputed from QtyEntered. This test validates field-copying, qty
+	 * reduction, and project clearing — the coordination logic — not interceptor side-effects.
+	 */
+	@Test
+	void splitsLineSuccessfully_whenAllValidationsPass()
+	{
+		// Given: completed order with a line that has project set, qty=10, delivered=8
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setDocStatus("CO");
+		order.setIsSOTrx(true);
+		save(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final I_C_OrderLine originalLine = newInstance(I_C_OrderLine.class);
+		originalLine.setC_Order_ID(order.getC_Order_ID());
+		originalLine.setQtyOrdered(new BigDecimal("10"));
+		originalLine.setQtyEntered(new BigDecimal("10"));
+		originalLine.setQtyDelivered(new BigDecimal("8"));
+		originalLine.setQtyInvoiced(BigDecimal.ZERO);
+		originalLine.setLine(10);
+		originalLine.setC_Project_ID(42);
+		originalLine.setPriceEntered(new BigDecimal("5.00"));
+		originalLine.setPriceActual(new BigDecimal("5.00"));
+		originalLine.setPriceList(new BigDecimal("6.00"));
+		originalLine.setPriceLimit(new BigDecimal("4.00"));
+		originalLine.setDiscount(new BigDecimal("0"));
+		originalLine.setLineNetAmt(new BigDecimal("50.00"));
+		save(originalLine);
+
+		final OrderLineId originalLineId = OrderLineId.ofRepoId(originalLine.getC_OrderLine_ID());
+
+		// Mock the DAO/BL that are not really used via in-memory helpers
+		when(orderLineBL.getOrderLineById(originalLineId)).thenReturn(originalLine);
+		when(orderBL.getById(orderId)).thenReturn(order);
+		// orderDAO.retrieveOrderLines returns just the original line (for computeNextLineNo)
+		when(orderDAO.retrieveOrderLines(orderId)).thenReturn(Collections.singletonList(originalLine));
+
+		// When
+		final OrderLineSplitResult result = command.split(OrderLineSplitRequest.builder()
+				.orderLineId(originalLineId)
+				.qtyToSplitOff(new BigDecimal("2"))
+				.build());
+
+		// Then: result IDs are populated
+		assertThat(result.getOriginalOrderLineId()).isEqualTo(originalLineId);
+		assertThat(result.getNewOrderLineId()).isNotNull();
+		assertThat(result.getNewOrderLineId()).isNotEqualTo(originalLineId);
+
+		// Original line: QtyEntered reduced from 10 to 8
+		final I_C_OrderLine reloadedOriginal = load(originalLine.getC_OrderLine_ID(), I_C_OrderLine.class);
+		assertThat(reloadedOriginal.getQtyEntered()).isEqualByComparingTo(new BigDecimal("8"));
+
+		// New line: QtyEntered = 2, C_Project_ID = 0, pricing copied from original
+		final I_C_OrderLine newLine = load(result.getNewOrderLineId().getRepoId(), I_C_OrderLine.class);
+		assertThat(newLine.getQtyEntered()).isEqualByComparingTo(new BigDecimal("2"));
+		assertThat(newLine.getQtyDelivered()).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThat(newLine.getC_Project_ID()).isZero();
+		assertThat(newLine.getPriceEntered()).isEqualByComparingTo(new BigDecimal("5.00"));
+		assertThat(newLine.getPriceActual()).isEqualByComparingTo(new BigDecimal("5.00"));
+		assertThat(newLine.getLine()).isEqualTo(20); // next step-10 after line 10
+
+		// Listener was called for both side-effects
+		Mockito.verify(splitListener).onOriginalLineReduced(originalLineId);
+		Mockito.verify(splitListener).onNewLineSaved(any());
 	}
 }
