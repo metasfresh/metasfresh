@@ -105,7 +105,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 
 		getResult().setReportData(
 				new ByteArrayResource(out.toByteArray()), // data
-				buildFilename(datevExport), // filename
+				buildFilename(datevExport, isExportEXTF && datevExport.getDATEV_Export_Config_ID() > 0), // filename
 				"text/csv"); // content type
 
 		return MSG_OK;
@@ -128,7 +128,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 		return builder.createDataSource();
 	}
 
-	private static String buildFilename(final I_DATEV_Export datevExport)
+	private static String buildFilename(final I_DATEV_Export datevExport, final boolean useExtfPrefix)
 	{
 		final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -137,7 +137,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 
 		return Joiner.on("_")
 				.skipNulls()
-				.join("datev",
+				.join(useExtfPrefix ? "EXTF" : "datev",
 						dateAcctFrom != null ? dateFormatter.format(TimeUtil.asLocalDate(dateAcctFrom)) : null,
 						dateAcctTo != null ? dateFormatter.format(TimeUtil.asLocalDate(dateAcctTo)) : null)
 				+ ".csv";
