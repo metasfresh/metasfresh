@@ -1,6 +1,8 @@
 package de.metas.handlingunits.picking.dd_order.reconcile;
 
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -12,18 +14,25 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 class DDOrderPickingReconcileServiceTest
 {
@@ -33,6 +42,21 @@ class DDOrderPickingReconcileServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// Stub the document engine: completing a DD_Order just flips its DocStatus to Completed.
+		// Full doc-engine completion needs DB infrastructure not available in AdempiereTestHelper unit tests.
+		final IDocumentBL documentBL = mock(IDocumentBL.class);
+		doAnswer(invocation -> {
+			final Object document = invocation.getArgument(0);
+			if (document instanceof I_DD_Order)
+			{
+				final I_DD_Order ddOrder = (I_DD_Order)document;
+				ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+				save(ddOrder);
+			}
+			return null;
+		}).when(documentBL).processEx(any(), any(), any());
+		Services.registerService(IDocumentBL.class, documentBL);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final DDOrderPickingReconcileRepository repository = new DDOrderPickingReconcileRepository(queryBL);
@@ -397,5 +421,121 @@ class DDOrderPickingReconcileServiceTest
 		// expect: sourceA is returned because priorityNo=10 < 20
 		assertThat(result).isPresent();
 		assertThat(result.get()).isEqualTo(sourceA);
+	}
+
+	// -----------------------------------------------------------------------
+	// reconcile() CREATE branch tests (T12)
+	// -----------------------------------------------------------------------
+
+	private static WarehouseId createWarehouse(final boolean packing, final int networkRepoId)
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(packing);
+		if (networkRepoId > 0)
+		{
+			warehouse.setDD_NetworkDistribution_ID(networkRepoId);
+		}
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+		// create a default locator so getOrCreateDefaultLocatorId resolves deterministically
+		final I_M_Locator locator = newInstance(I_M_Locator.class);
+		locator.setM_Warehouse_ID(warehouseId.getRepoId());
+		locator.setIsDefault(true);
+		locator.setValue("loc-" + warehouseId.getRepoId());
+		save(locator);
+		return warehouseId;
+	}
+
+	@Test
+	void reconcile_creates_completed_DDOrder_for_newSchedule()
+	{
+		final WarehouseId sourceWarehouseId = createWarehouse(false, 0);
+		final ProductId productId = ProductId.ofRepoId(555);
+
+		// distribution network: source → packing
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("CreateBranchNetwork");
+		save(network);
+
+		final WarehouseId packingWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+
+		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
+		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		line.setM_Shipper_ID(1);
+		save(line);
+
+		// active schedule on the packing warehouse
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		schedule.setM_Product_ID(productId.getRepoId());
+		schedule.setQtyToDeliver(new BigDecimal("17"));
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		service.reconcile(scheduleId);
+
+		// exactly one DD_Order, completed, linked to the schedule
+		final java.util.List<I_DD_Order> ddOrders = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.list(I_DD_Order.class);
+		assertThat(ddOrders).hasSize(1);
+
+		final I_DD_Order ddOrder = ddOrders.get(0);
+		assertThat(ddOrder.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Completed);
+		assertThat(ddOrder.getM_Warehouse_From_ID()).isEqualTo(sourceWarehouseId.getRepoId());
+		assertThat(ddOrder.getM_Warehouse_To_ID()).isEqualTo(packingWarehouseId.getRepoId());
+		assertThat(ddOrder.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
+
+		final java.util.List<I_DD_OrderLine> lines = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
+				.create()
+				.list(I_DD_OrderLine.class);
+		assertThat(lines).hasSize(1);
+
+		final I_DD_OrderLine ddOrderLine = lines.get(0);
+		assertThat(ddOrderLine.getM_Product_ID()).isEqualTo(productId.getRepoId());
+		assertThat(ddOrderLine.getQtyOrdered()).isEqualByComparingTo(new BigDecimal("17"));
+		assertThat(ddOrderLine.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
+	}
+
+	@Test
+	void reconcile_marks_eventAsError_whenSourceWarehouseUnresolved()
+	{
+		// packing warehouse WITH a network, but NO network line targeting it → source unresolvable
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("EmptyNetwork");
+		save(network);
+
+		final WarehouseId packingWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		schedule.setM_Product_ID(556);
+		schedule.setQtyToDeliver(new BigDecimal("5"));
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		final int ddOrderCountBefore = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.create()
+				.count();
+
+		assertThatThrownBy(() -> service.reconcile(scheduleId))
+				.isInstanceOf(AdempiereException.class)
+				.extracting(t -> ((AdempiereException)t).getErrorCode())
+				.isEqualTo("DDOrderPickingReconcile_NetworkGap");
+
+		final int ddOrderCountAfter = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.create()
+				.count();
+		assertThat(ddOrderCountAfter).isEqualTo(ddOrderCountBefore);
 	}
 }

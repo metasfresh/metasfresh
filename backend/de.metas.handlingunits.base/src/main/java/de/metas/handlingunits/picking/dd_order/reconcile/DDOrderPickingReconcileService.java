@@ -1,9 +1,11 @@
 package de.metas.handlingunits.picking.dd_order.reconcile;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.organization.OrgId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -30,6 +32,7 @@ import java.util.Optional;
 public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 {
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
+	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
 
 	@NonNull private final DDOrderPickingReconcileRepository repository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
@@ -75,7 +78,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 			case NONE:
 				return;
 			case CREATE:
-				throw new UnsupportedOperationException("not yet implemented: " + action);
+				createDDOrderFor(schedule);
+				return;
 			case RECREATE:
 				throw new UnsupportedOperationException("not yet implemented: " + action);
 			case VOID:
@@ -131,6 +135,37 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		return warehouse.isPackingWarehouse();
+	}
+
+	/**
+	 * Builds exactly one Completed DD_Order for the given (active, packing-warehouse) shipment schedule.
+	 * Resolves the source warehouse via the packing warehouse's distribution network;
+	 * if no source can be resolved, throws the network-gap exception and creates nothing.
+	 */
+	private void createDDOrderFor(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final WarehouseId packingWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+		final I_M_Warehouse packingWarehouse = warehouseDAO.getById(packingWarehouseId);
+		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
+
+		final DistributionNetworkId networkId = packingWarehouse.getDD_NetworkDistribution_ID() > 0
+				? DistributionNetworkId.ofRepoId(packingWarehouse.getDD_NetworkDistribution_ID())
+				: null;
+
+		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(packingWarehouseId, productId, networkId)
+				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
+
+		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
+				.sourceWarehouseId(sourceWarehouseId)
+				.targetWarehouseId(packingWarehouseId)
+				.productId(productId)
+				.qty(schedule.getQtyToDeliver())
+				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
+				.build();
+
+		repository.createCompletedDDOrder(request);
 	}
 
 	@Override
