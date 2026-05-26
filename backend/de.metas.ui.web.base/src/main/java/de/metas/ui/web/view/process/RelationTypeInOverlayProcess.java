@@ -183,7 +183,15 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		}
 
 		final MQuery mquery = candidates.get(0).getQuerySupplier().getQuery();
-		final String tableName = mquery.getZoomTableName();
+		String tableName = mquery.getZoomTableName();
+		if (tableName == null || tableName.isEmpty())
+		{
+			tableName = mquery.getTableName();
+		}
+		if (tableName == null || tableName.isEmpty())
+		{
+			throw new AdempiereException("Cannot resolve target table name from MQuery for relation type " + getRelationTypeId());
+		}
 		final String whereClause = mquery.getWhereClause(false);
 
 		if (Check.isBlank(whereClause))
