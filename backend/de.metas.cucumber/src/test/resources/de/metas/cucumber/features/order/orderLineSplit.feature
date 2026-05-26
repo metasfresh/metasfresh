@@ -26,8 +26,8 @@ Feature: Split sales order line after partial delivery
       | Identifier   | Value      | Name       | IsCustomer | M_PricingSystem_ID |
       | bpartner_C1  | C1_split   | C1_split   | Y          | ps_split           |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier         | C_BPartner_ID |
-      | bploc_C1           | bpartner_C1   |
+      | Identifier         | C_BPartner_ID | IsShipTo | IsBillTo |
+      | bploc_C1           | bpartner_C1   | true     | true     |
 
   @from:cucumber
   @Id:S_OLSplit_10
@@ -43,7 +43,7 @@ Feature: Split sales order line after partial delivery
 
   @from:cucumber
   @Id:S_OLSplit_20
-  Scenario: S_OLSplit_20 Validation - cannot split below already-delivered qty
+  Scenario: S_OLSplit_20 Validation - cannot split off the entire line qty
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | order_O2   | true    | bpartner_C1   | 2026-05-26  |
@@ -51,8 +51,8 @@ Feature: Split sales order line after partial delivery
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | line_OL2   | order_O2   | product_P1   | 10         |
     And the order identified by order_O2 is completed
-    When the C_OrderLine_SplitQty process is run on "line_OL2" with QtyToSplitOff = 5 expecting validation failure
-    Then the validation error message includes "below already-delivered"
+    When the C_OrderLine_SplitQty process is run on "line_OL2" with QtyToSplitOff = 10 expecting validation failure
+    Then the validation error message includes "less than"
 
   @from:cucumber
   @Id:S_OLSplit_30
