@@ -498,12 +498,13 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_ShipmentSchedule_ID | M_InOut_ID    |
       | ssB_S29231_140        | ioB_S29231_140 |
 
-    # ─── Inject ONE shared LU with two HA aggregates, one per shipment ────────────────
+    # ─── Create ONE shared LU with two HA aggregates via real BL ────────────────────
     # Without the bug fix, shipment_A's EPCIS would see BOTH HA aggregates (5+10=15 crates);
     # with the fix it only sees the HA aggregate whose VTU is referenced by shipment_A's
     # m_hu_assignment row (5 crates).
-    And one shared LU with SSCC18 '987654321000001400' carries HA aggregates assigned to inout lines:
-      | M_InOut_ID    | crateCount |
+    # Uses real metasfresh BL (InterfaceWrapperHelper + IHUAssignmentBL) instead of raw SQL.
+    And one shared LU created via BL with SSCC18 '987654321000001400' carries HA aggregates assigned to inout lines:
+      | M_InOut_ID     | crateCount |
       | ioA_S29231_140 | 5          |
       | ioB_S29231_140 | 10         |
 

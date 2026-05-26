@@ -28,6 +28,13 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUAssignmentBuilder;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
@@ -35,16 +42,19 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -767,6 +777,167 @@ public class EPCIS_JSON_Export_StepDef
 						.as("pallet sscc=%s crate[%d] grai must contain '%s'", sscc18, i, expectedPoRefSanitized)
 						.contains(expectedPoRefSanitized);
 			}
+		});
+	}
+
+	/**
+	 * Creates ONE shared LU with the given SSCC18 and attaches one HA aggregate per data-table row,
+	 * using real metasfresh BL ({@code InterfaceWrapperHelper} for HU and M_HU_Item record creation,
+	 * {@code IHUAssignmentBL} for assignment rows). This mirrors the DB shape that mobile picking
+	 * produces in production for the LAF1010-3 case (one physical pallet, two crate allocations
+	 * for two different M_InOuts) without using any raw {@code DB.executeUpdate} SQL.
+	 *
+	 * <p>HA {@code M_HU_Item} records do NOT reference an {@code M_HU_PI_Item} (the PI item table
+	 * does not accept {@code ItemType='HA'}). This matches {@code HUAndItemsDAO.createAggregateHUItem()}.
+	 *
+	 * <p>The step creates the shared LU exactly once (first row). Every row creates one HA
+	 * {@code M_HU_Item} under the LU, one child VTU {@code M_HU}, and one {@code M_HU_Assignment}
+	 * row linking the VTU to the first M_InOutLine of the row's shipment. The
+	 * {@code m_hu_assignment.vhu_id} column is set to the VTU's {@code M_HU_ID}, which is the
+	 * critical invariant the {@code ha_items_with_vtu} CTE in
+	 * {@code get_epcis_events_json_fn} matches on.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) shipment that "owns" this HA aggregate<br>
+	 *   <b>crateCount</b> — (required) number of TUs aggregated under this HA (sets {@code ha_item.qty})
+	 * @cucumber.example
+	 * <pre>
+	 * And one shared LU created via BL with SSCC18 '987654321000001400' carries HA aggregates assigned to inout lines:
+	 *   | M_InOut_ID     | crateCount |
+	 *   | ioA_S29231_140 | 5          |
+	 *   | ioB_S29231_140 | 10         |
+	 * </pre>
+	 */
+	@And("^one shared LU created via BL with SSCC18 '(.*)' carries HA aggregates assigned to inout lines:$")
+	public void createSharedLuHaViaBL(@NonNull final String sscc18, @NonNull final DataTable dataTable)
+	{
+		// ── Lookup: SSCC18 M_Attribute_ID (read-only query) ──────────────────────────
+		final int sscc18AttributeId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT m_attribute_id FROM m_attribute WHERE value='SSCC18' LIMIT 1");
+		assertThat(sscc18AttributeId).as("M_Attribute_ID for SSCC18").isGreaterThan(0);
+
+		// ── Lookup: LU PI version + TU PI version (read-only query) ──────────────────
+		final int[] piVersions = new int[2]; // [0]=luPIVersionId, [1]=tuPIVersionId
+		try (final java.sql.PreparedStatement pstmt = DB.prepareStatement(
+				"SELECT piv_lu.m_hu_pi_version_id, piv_tu.m_hu_pi_version_id"
+						+ " FROM m_hu_pi_version piv_lu"
+						+ " JOIN m_hu_pi_item pii ON pii.m_hu_pi_version_id = piv_lu.m_hu_pi_version_id"
+						+ "   AND pii.itemtype = 'HU' AND pii.isactive = 'Y'"
+						+ " JOIN m_hu_pi pih ON pih.m_hu_pi_id = pii.included_hu_pi_id"
+						+ " JOIN m_hu_pi_version piv_tu ON piv_tu.m_hu_pi_id = pih.m_hu_pi_id"
+						+ "   AND piv_tu.iscurrent = 'Y' AND piv_tu.hu_unittype = 'TU'"
+						+ " WHERE piv_lu.iscurrent = 'Y' AND piv_lu.hu_unittype = 'LU' AND piv_lu.isactive = 'Y'"
+						+ " LIMIT 1",
+				Trx.TRXNAME_None))
+		{
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				if (!rs.next())
+				{
+					throw new AdempiereException("No current LU M_HU_PI_Version with a TU child PI item found");
+				}
+				piVersions[0] = rs.getInt(1);
+				piVersions[1] = rs.getInt(2);
+			}
+		}
+		catch (final SQLException e)
+		{
+			throw new AdempiereException("Failed to look up LU/TU PI versions for BL-based shared-LU step", e);
+		}
+		final int luPIVersionId = piVersions[0];
+		final int tuPIVersionId = piVersions[1];
+		assertThat(luPIVersionId).as("A current LU M_HU_PI_Version must exist").isGreaterThan(0);
+		assertThat(tuPIVersionId).as("A current TU M_HU_PI_Version (child of LU) must exist").isGreaterThan(0);
+
+		final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
+		if (adOrgId <= 0)
+		{
+			throw new AdempiereException("AD_Org_ID from context is 0; context may not be initialised");
+		}
+
+		// ── Create the shared LU via BL (InterfaceWrapperHelper) ─────────────────────
+		final I_M_HU luHu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+		luHu.setAD_Org_ID(adOrgId);
+		luHu.setM_HU_PI_Version_ID(luPIVersionId);
+		luHu.setHUStatus("E"); // Shipped — matches production LAF1010-3 state
+		luHu.setIsActive(true);
+		luHu.setValue("EPCIS_BL_LU_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12));
+		InterfaceWrapperHelper.save(luHu);
+		final int luHuId = luHu.getM_HU_ID();
+		assertThat(luHuId).as("Newly created shared LU M_HU_ID (via BL)").isGreaterThan(0);
+		injectedLuHuIds.add(luHuId);
+
+		// ── Set SSCC18 attribute on the shared LU via BL ──────────────────────────────
+		final I_M_HU_Attribute sscc18Attr = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
+		sscc18Attr.setAD_Org_ID(adOrgId);
+		sscc18Attr.setM_HU_ID(luHuId);
+		sscc18Attr.setM_Attribute_ID(sscc18AttributeId);
+		sscc18Attr.setValue(sscc18);
+		sscc18Attr.setIsActive(true);
+		InterfaceWrapperHelper.save(sscc18Attr);
+
+		// ── Per-row: create HA item + VTU + assignment via BL ────────────────────────
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_InOut inout = inoutTable.get(row.getAsIdentifier("M_InOut_ID"));
+			final int crateCount = row.getAsInt("crateCount");
+			assertThat(crateCount).as("crateCount must be > 0").isGreaterThan(0);
+
+			// Pick the first M_InOutLine of this shipment (read-only query)
+			final int inoutLineId = DB.getSQLValueEx(Trx.TRXNAME_None,
+					"SELECT m_inoutline_id FROM m_inoutline"
+							+ " WHERE m_inout_id=" + inout.getM_InOut_ID()
+							+ " ORDER BY m_inoutline_id LIMIT 1");
+			assertThat(inoutLineId)
+					.as("M_InOutLine for M_InOut_ID=%d", inout.getM_InOut_ID())
+					.isGreaterThan(0);
+
+			// Create HA M_HU_Item under the shared LU via BL.
+			// HA items are aggregate items and do NOT reference an M_HU_PI_Item (PI_Item_ID=0),
+			// matching how HUAndItemsDAO.createAggregateHUItem() creates them in production.
+			// M_HU_PI_Item.ItemType only accepts MI/PM/HU — "HA" is only valid on M_HU_Item.ItemType.
+			final I_M_HU_Item haItem = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class);
+			haItem.setAD_Org_ID(adOrgId);
+			haItem.setM_HU_ID(luHuId);
+			// M_HU_PI_Item_ID intentionally left at 0 (HA items have no backing PI item)
+			haItem.setItemType(X_M_HU_Item.ITEMTYPE_HUAggregate);
+			haItem.setQty(new BigDecimal(crateCount));
+			haItem.setIsActive(true);
+			InterfaceWrapperHelper.save(haItem);
+			final int haItemId = haItem.getM_HU_Item_ID();
+			assertThat(haItemId).as("Newly created HA M_HU_Item_ID (via BL)").isGreaterThan(0);
+
+			// Create VTU M_HU as child of the HA item via BL
+			// (VTU's m_hu_item_parent_id points to the HA M_HU_Item — standard aggregate-HU structure)
+			final I_M_HU vtu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+			vtu.setAD_Org_ID(adOrgId);
+			vtu.setM_HU_PI_Version_ID(tuPIVersionId);
+			vtu.setM_HU_Item_Parent_ID(haItemId);
+			vtu.setHUStatus("E"); // Shipped — mirrors production LAF1010-3
+			vtu.setIsActive(true);
+			vtu.setValue("EPCIS_BL_VTU_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12));
+			InterfaceWrapperHelper.save(vtu);
+			final int vtuHuId = vtu.getM_HU_ID();
+			assertThat(vtuHuId).as("Newly created VTU M_HU_ID (via BL)").isGreaterThan(0);
+			injectedTuHuIds.add(vtuHuId);
+
+			// Create M_HU_Assignment via IHUAssignmentBL (the real BL path mobile picking uses)
+			// setVHU(vtu) sets m_hu_assignment.vhu_id = vtu.M_HU_ID — the critical column that
+			// the ha_items_with_vtu CTE in get_epcis_events_json_fn matches on (see RESEARCH Q3).
+			// qty=0 mirrors production data (presence-only assignment; real crate count comes from ha_item.qty).
+			final org.compiere.model.I_M_InOutLine inoutLine = InterfaceWrapperHelper.load(inoutLineId, org.compiere.model.I_M_InOutLine.class);
+			final IHUAssignmentBuilder builder = huAssignmentBL.createHUAssignmentBuilder();
+			builder.initializeAssignment(Env.getCtx(), Trx.TRXNAME_None);
+			builder.setIsActive(true);
+			builder.setModel(inoutLine);
+			builder.setTopLevelHU(luHu);
+			builder.setM_LU_HU(luHu);
+			builder.setM_TU_HU(vtu);
+			builder.setVHU(vtu);
+			builder.setQty(BigDecimal.ZERO);
+			builder.build();
 		});
 	}
 
