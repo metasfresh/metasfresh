@@ -2,6 +2,7 @@ const translations = {
   appName: 'metasfresh mobile',
   error: {
     PleaseTryAgain: 'Please try again',
+    InternalError: 'Please try again. If the problem persists, contact support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Connection error',
     },

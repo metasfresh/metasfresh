@@ -5,6 +5,8 @@ const translations = {
       differentProduct: 'The scanned QR Product does not match',
     },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    InternalError:
+      'Bitte erneut versuchen. Sollte das Problem weiterhin auftreten, wenden Sie sich an den Support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Verbindung Fehler',
     },
