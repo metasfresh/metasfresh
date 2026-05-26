@@ -237,6 +237,8 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
 
     await expectErrorToast('Scanning invalid QR code', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: 'this is an invalid QR code' });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
     });
 });
 
