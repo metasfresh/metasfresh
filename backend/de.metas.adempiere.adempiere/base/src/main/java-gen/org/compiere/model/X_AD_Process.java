@@ -538,8 +538,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String OPENTARGET_ModalOverlay = "O";
 	/** NewBrowserTab = N */
 	public static final String OPENTARGET_NewBrowserTab = "N";
-	/** InPlace = R */
-	public static final String OPENTARGET_InPlace = "R";
 
 	@Override
 	public void setOpenTarget (@Nullable final java.lang.String OpenTarget)

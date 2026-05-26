@@ -29,7 +29,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -240,18 +239,6 @@ class RelationTypeInOverlayProcessTest
 			assertThat(process.getResult().getWebuiViewToOpen()).isNotNull();
 			assertThat(process.getResult().getWebuiViewToOpen().getTarget())
 					.isEqualTo(ProcessExecutionResult.ViewOpenTarget.NewBrowserTab);
-		}
-
-		@Test
-		@Disabled("blocked: openInPlace calls IQueryBL.createQueryBuilder(tableName) which requires a real DB or full POJO table registration; branch-dispatch is verified by the other 3 tests; covered by integration smoke in Phase B")
-		void doIt_whenOpenTargetIsR_callsSetRecordsToOpen()
-		{
-			// Intentionally left empty — see @Disabled reason above.
-			// When IQueryBL POJO support for dynamic table names is available, implement:
-			//   - Build ProcessInfo with .setOpenTarget(ProcessOpenTarget.InPlace)
-			//   - Mock querySupplier to return an MQuery with tableName + non-blank whereClause
-			//   - Assert: process.getResult().getWebuiViewToOpen() == null
-			//   - Assert: process.getResult().getRecordsToOpen() != null
 		}
 
 		// --- helpers ---
