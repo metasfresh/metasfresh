@@ -13,7 +13,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        DefaultValue, EntityType, IsKey, IsParent, IsSelectionColumn,
                        IsTranslated, IsIdentifier, IsEncrypted, IsAllowLogging,
                        PersonalDataCategory)
-VALUES (592624 /*AD_Column_ID*/, 0, 0, 'Y',
+VALUES (592624 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-05-26 14:10:00','YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-05-26 14:10:00','YYYY-MM-DD HH24:MI:SS'), 100,
         0, 190 /*M_Warehouse*/,
