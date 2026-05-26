@@ -26,6 +26,7 @@ package de.metas.ui.web.view.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeId;
@@ -34,6 +35,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessOpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -44,24 +46,33 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
 
 /**
- * Process implementation for opening related documents in an overlay window (as grid view).
+ * Process implementation for opening related documents via an AD_RelationType.
  * <p>
- * This process is automatically assigned when a process has Type = 'RelationTypeInOverlay'.
- * It retrieves related documents based on the configured AD_RelationType_ID and displays them in a modal overlay.
+ * The display mode is configured per AD_Process via {@code AD_Process.OpenTarget}
+ * (see {@link ProcessOpenTarget}): modal overlay (default — historical behaviour
+ * when the column is NULL), new browser tab, or in-place navigation to the related
+ * records.
+ * <p>
+ * This process is automatically assigned when AD_Process.Type='RelationTypeInOverlay'.
  */
 public class RelationTypeInOverlayProcess extends JavaProcess implements IProcessPrecondition
 {
@@ -129,12 +140,68 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
 
-		final IView popupView = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId()));
+		final ProcessOpenTarget openTarget = getProcessInfo().getOpenTarget() != null
+				? getProcessInfo().getOpenTarget()
+				: ProcessOpenTarget.ModalOverlay;
 
-		getResult().setWebuiViewToOpen(
-				ProcessExecutionResult.WebuiViewToOpen.modalOverlay(popupView.getViewId().getViewId()));
+		switch (openTarget)
+		{
+			case InPlace:
+				openInPlace(firstGroup);
+				break;
+			case NewBrowserTab:
+				openAsView(recordRef, firstGroup, ProcessExecutionResult.ViewOpenTarget.NewBrowserTab);
+				break;
+			case ModalOverlay:
+			default:
+				openAsView(recordRef, firstGroup, ProcessExecutionResult.ViewOpenTarget.ModalOverlay);
+				break;
+		}
 
 		return MSG_OK;
+	}
+
+	private void openAsView(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final RelatedDocumentsCandidateGroup firstGroup,
+			@NonNull final ProcessExecutionResult.ViewOpenTarget viewOpenTarget)
+	{
+		final IView popupView = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId()));
+		getResult().setWebuiViewToOpen(
+				ProcessExecutionResult.WebuiViewToOpen.builder()
+						.viewId(popupView.getViewId().getViewId())
+						.target(viewOpenTarget)
+						.build());
+	}
+
+	private void openInPlace(@NonNull final RelatedDocumentsCandidateGroup firstGroup)
+	{
+		final List<RelatedDocumentsCandidate> candidates = firstGroup.getCandidates();
+		if (candidates.isEmpty())
+		{
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
+
+		final MQuery mquery = candidates.get(0).getQuerySupplier().getQuery();
+		final String tableName = mquery.getTableName();
+		final String whereClause = mquery.getWhereClause(false);
+
+		if (Check.isBlank(whereClause))
+		{
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
+
+		final List<Integer> recordIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(tableName)
+				.filter(TypedSqlQueryFilter.of(whereClause))
+				.create()
+				.listIds();
+
+		final List<TableRecordReference> refs = recordIds.stream()
+				.map(id -> TableRecordReference.of(tableName, id))
+				.collect(Collectors.toList());
+
+		getResult().setRecordsToOpen(refs);
 	}
 
 	protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)
