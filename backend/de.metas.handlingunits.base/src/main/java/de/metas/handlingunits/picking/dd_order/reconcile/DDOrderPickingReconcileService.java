@@ -87,7 +87,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				createDDOrderFor(schedule);
 				return;
 			case RECREATE:
-				throw new UnsupportedOperationException("not yet implemented: " + action);
+				recreateDDOrderFor(scheduleId, schedule);
+				return;
 			case VOID:
 				voidDDOrderFor(scheduleId);
 				return;
@@ -190,6 +191,37 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, ddOrderId);
 		}
 		repository.voidDDOrder(ddOrderId);
+	}
+
+	/**
+	 * RECREATE: the schedule is still active but has changed (e.g. qty changed) while a live DD_Order exists.
+	 * Picker-busy guard first: if busy, throw without touching anything.
+	 * Then void the existing DD_Order and create a fresh one from the current schedule data.
+	 */
+	private void recreateDDOrderFor(
+			@NonNull final ShipmentScheduleId scheduleId,
+			@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		final DDOrderId existingId = repository.findActiveDDOrderForSchedule(scheduleId)
+				.orElse(null);
+		if (existingId == null)
+		{
+			// should not happen under normal flow (classifyAction only returns RECREATE when one exists)
+			createDDOrderFor(schedule);
+			return;
+		}
+
+		// Picker-busy guard: checked ONCE up front, before any mutation
+		if (isPickerBusy(existingId))
+		{
+			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingId);
+		}
+
+		// Void the existing DD_Order (picker already checked — no double check needed)
+		repository.voidDDOrder(existingId);
+
+		// Create a fresh DD_Order from the current schedule data
+		createDDOrderFor(schedule);
 	}
 
 	@Override

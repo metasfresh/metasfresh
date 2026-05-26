@@ -632,6 +632,127 @@ class DDOrderPickingReconcileServiceTest
 		assertThat(reloaded.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Completed);
 	}
 
+	// -----------------------------------------------------------------------
+	// reconcile() RECREATE branch tests (T14)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void reconcile_voidsAndCreates_whenScheduleQtyChanged_andPickerNotBusy()
+	{
+		// in-transit warehouse (required for DD_Order header)
+		createInTransitWarehouse(0);
+
+		final WarehouseId sourceWarehouseId = createWarehouse(false, 0);
+		final int[] uomRepoIdOut = new int[1];
+		final ProductId productId = createProductWithStockUom(uomRepoIdOut);
+
+		// distribution network: source → packing
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("RecreateNetwork");
+		save(network);
+
+		final WarehouseId packingWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+
+		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
+		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		line.setM_Shipper_ID(1);
+		save(line);
+
+		// ACTIVE schedule on the packing warehouse
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		schedule.setM_Product_ID(productId.getRepoId());
+		schedule.setQtyToDeliver(new BigDecimal("25"));
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// existing live (Completed) DD_Order linked to this schedule
+		final I_DD_Order existingDDOrder = newInstance(I_DD_Order.class);
+		existingDDOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		existingDDOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(existingDDOrder);
+		final int existingDDOrderId = existingDDOrder.getDD_Order_ID();
+
+		// no PickingJobLine → picker is NOT busy
+
+		service.reconcile(scheduleId);
+
+		// original DD_Order must be Voided
+		final I_DD_Order reloaded = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, existingDDOrderId)
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		assertThat(reloaded.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Voided);
+
+		// a new Completed DD_Order must exist linked to the same schedule
+		final java.util.List<I_DD_Order> allDDOrders = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.list(I_DD_Order.class);
+		assertThat(allDDOrders).as("2 DD_Orders total: 1 voided + 1 new completed").hasSize(2);
+
+		final long completedCount = allDDOrders.stream()
+				.filter(o -> X_DD_Order.DOCSTATUS_Completed.equals(o.getDocStatus()))
+				.count();
+		assertThat(completedCount).as("exactly 1 new Completed DD_Order").isEqualTo(1);
+	}
+
+	@Test
+	void reconcile_throws_whenScheduleQtyChanged_butPickerBusy()
+	{
+		// packing warehouse (no network needed — exception thrown before create)
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsPackingWarehouse(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		// ACTIVE schedule on the packing warehouse
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		// existing live (Completed) DD_Order linked to this schedule
+		final I_DD_Order existingDDOrder = newInstance(I_DD_Order.class);
+		existingDDOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		existingDDOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(existingDDOrder);
+		final int existingDDOrderId = existingDDOrder.getDD_Order_ID();
+
+		// create a PickingJobLine referencing the same shipment schedule → picker IS busy
+		final I_M_Picking_Job_Line pickingJobLine = newInstance(I_M_Picking_Job_Line.class);
+		pickingJobLine.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		save(pickingJobLine);
+
+		// expect AdempiereException with the picker-busy message key
+		assertThatThrownBy(() -> service.reconcile(scheduleId))
+				.isInstanceOf(AdempiereException.class)
+				.extracting(t -> ((AdempiereException)t).getErrorCode())
+				.isEqualTo("DDOrderPickingReconcile_PickerBusy");
+
+		// original DD_Order must be unchanged (still Completed)
+		final I_DD_Order reloaded = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, existingDDOrderId)
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		assertThat(reloaded.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Completed);
+
+		// no new DD_Order must have been created
+		final int ddOrderCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.count();
+		assertThat(ddOrderCount).as("only the original DD_Order; no new one created").isEqualTo(1);
+	}
+
 	@Test
 	void reconcile_throwsNetworkGapException_whenSourceWarehouseUnresolved()
 	{
