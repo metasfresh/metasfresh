@@ -81,6 +81,11 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
     And after not more than 5s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+    # The original DD_Order identifier (captured in Background) must be unchanged (same ID, still Completed).
+    # Because the tx rolled back, afterSave never published a reconcile event — no void/recreate happened.
+    And after not more than 5s, following DD_Orders are found
+      | Identifier | DocStatus |
+      | ddOrder    | Completed |
 
   @from:cucumber
   Scenario: A picker who grabs the job in the race window makes the async reconcile event fail (TC5)
@@ -91,6 +96,9 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
       | shipmentSchedule      | orderLine      | product      | 5         | 100      |
 
     # Processing the reconcile event (the consumer-side definitive guard) is rejected while the picker is busy.
+    # NOTE: this step drives the BL directly (not via the async DDOrderReconciliationEventHandler) so
+    # no AD_EventLog_Entry is produced here. The handler's error-recording path (IsError=true) is covered
+    # by TC6, which goes through the real async event flow. TC5 is about the BL-level picker-busy guard.
     Then processing the reconcile event for M_ShipmentSchedule shipmentSchedule is rejected
 
     # The DD_Order is left unchanged by the failed reconcile.
@@ -99,8 +107,14 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
       | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
 
     # Once the picker releases the job (picking line inactivated), reprocessing the event succeeds.
+    # The reconcile classifies as RECREATE (active schedule + existing live DD_Order): the old DD_Order
+    # is voided and a fresh one is created. Capturing a new Identifier pins that recreate actually happened.
     When the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is removed
     And the reconcile event for M_ShipmentSchedule shipmentSchedule is processed
     Then after not more than 10s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | Identifier  | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
+      | ddOrder_v2  | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+    # The original DD_Order (captured in Background as ddOrder) must now be Voided — RECREATE voided it.
+    And after not more than 5s, following DD_Orders are found
+      | Identifier | DocStatus |
+      | ddOrder    | Voided    |

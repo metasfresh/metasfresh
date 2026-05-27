@@ -54,6 +54,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -144,7 +145,9 @@ public class DDOrderPickingReconcile_StepDef
 
 	/**
 	 * Attempts to change a shipment schedule quantity and asserts the {@code beforeSave} interceptor REJECTS the
-	 * save (picker-busy guard, REQUIREMENTS.md TC4). The schedule record is reloaded and asserted unchanged.
+	 * save (picker-busy guard, REQUIREMENTS.md TC4). Asserts the thrown exception is an
+	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
+	 * The schedule record is reloaded and asserted unchanged.
 	 *
 	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyToDeliver_Override} (attempted quantity).</p>
 	 */
@@ -163,7 +166,8 @@ public class DDOrderPickingReconcile_StepDef
 								InterfaceWrapperHelper.saveRecord(schedule);
 							})
 							.as("Changing the schedule while the picker is busy must be rejected by the beforeSave interceptor")
-							.isInstanceOf(Throwable.class);
+							.isInstanceOf(AdempiereException.class)
+							.hasMessageContaining("picking");
 
 					// Reload and assert the persisted value is unchanged (the rolled-back save left no mark).
 					final I_M_ShipmentSchedule reloaded = InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
@@ -266,7 +270,13 @@ public class DDOrderPickingReconcile_StepDef
 
 	/**
 	 * Directly invokes {@code DDOrderPickingReconcileBL.reconcile(scheduleId)} and asserts it FAILS while the
-	 * picker is busy (the consumer-side definitive guard — REQUIREMENTS.md TC5). The DD_Order is left unchanged.
+	 * picker is busy (the consumer-side definitive guard — REQUIREMENTS.md TC5). Asserts the thrown exception is
+	 * an {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
+	 * The DD_Order is left unchanged.
+	 *
+	 * <p>Note: this step drives the BL directly (not via the async event handler) so no {@code AD_EventLog_Entry}
+	 * is produced. The handler-level error-recording path (IsError=true in AD_EventLog_Entry) is covered by TC6,
+	 * which goes through the real async event flow.</p>
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
 	 */
@@ -279,7 +289,8 @@ public class DDOrderPickingReconcile_StepDef
 
 		org.assertj.core.api.Assertions.assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
-				.isInstanceOf(Throwable.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("picking");
 	}
 
 	/**
