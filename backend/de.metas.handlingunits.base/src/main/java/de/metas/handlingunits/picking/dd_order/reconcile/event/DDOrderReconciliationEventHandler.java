@@ -5,6 +5,7 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import de.metas.event.log.EventLogUserService;
 import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Services;
@@ -20,15 +21,25 @@ import javax.annotation.PostConstruct;
  * Consumes DD_Order picking reconcile events from {@link DDOrderReconciliationTopic#TOPIC}.
  * Each event carries the {@code shipmentScheduleId} property, which is extracted and passed to the
  * reconciliation business logic in a new transaction.
+ *
+ * <p>The processing is routed through {@link EventLogUserService#invokeHandlerAndLog} so that:
+ * <ul>
+ *   <li>A <em>Done</em> {@code AD_EventLog_Entry} is written on success (REQUIREMENTS §5 TC1/TC3/TC7).</li>
+ *   <li>An <em>Error</em> {@code AD_EventLog_Entry} (with an {@code AD_Issue} attached) is written on
+ *       failure, making the event repostable via {@code AD_EventLog_Entry_RepostEvent} (REQUIREMENTS §3.3).</li>
+ * </ul>
+ * The reconcile itself still runs in its own transaction (as mandated by
+ * {@link DDOrderPickingReconcileBL#reconcile}); {@code invokeHandlerAndLog} does not open a transaction.</p>
  */
 @Component
 @Profile(Profiles.PROFILE_App)
 @RequiredArgsConstructor
 public class DDOrderReconciliationEventHandler implements IEventListener
 {
-	// EventBusFactory is a Spring @Service — must be constructor-injected, NOT Services.get.
+	// EventBusFactory and EventLogUserService are Spring @Service beans — must be constructor-injected, NOT Services.get.
 	@NonNull private final DDOrderPickingReconcileBL reconcileBL;
 	@NonNull private final IEventBusFactory eventBusFactory;
+	@NonNull private final EventLogUserService eventLogUserService;
 	// ITrxManager is an ISingletonService — Services.get is correct.
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -43,6 +54,10 @@ public class DDOrderReconciliationEventHandler implements IEventListener
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(event.getPropertyAsInt(
 				DDOrderReconciliationEventPublisher.PROPERTY_shipmentScheduleId, -1));
-		trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId));
+
+		eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
+				.handlerClass(DDOrderReconciliationEventHandler.class)
+				.invokaction(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
+				.build());
 	}
 }
