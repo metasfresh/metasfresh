@@ -18,6 +18,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class DistributionJobSwitchPickFromLocatorCommand
@@ -71,10 +72,37 @@ public class DistributionJobSwitchPickFromLocatorCommand
 		final List<I_DD_OrderLine> lines = ddOrderService.retrieveLines(ddOrder);
 		for (final I_DD_OrderLine line : lines)
 		{
-			line.setM_Locator_ID(nextLocatorId.getRepoId());
-			ddOrderService.saveLine(line);
+			switchLinePickFromLocator(line, nextLocatorId);
 		}
 
-		return loader.loadByJobId(jobId);
+		// Reload with a FRESH loader: the `loader` above cached the pre-switch lines in its instance-level
+		// ddOrderLinesCache, so reusing it would return the old M_Locator_ID and the mobile UI would not reflect
+		// the switch (even though the DB is correctly updated).
+		return new DistributionJobLoader(loadingSupportServices).loadByJobId(jobId);
+	}
+
+	/**
+	 * Move the line's pick-from locator to {@code nextLocatorId}, carrying the (legacy, locator-level) reservation along.
+	 * <p>
+	 * {@code MDDOrderLine.beforeSave} forbids changing {@code M_Locator_ID} while {@code QtyReserved != 0}
+	 * ({@code canChangeWarehouse} throws {@code @QtyReserved}). So un-reserve on the old locator (set qty to 0,
+	 * which lets the locator change pass), then re-reserve the same qty on the new locator.
+	 */
+	private void switchLinePickFromLocator(@NonNull final I_DD_OrderLine line, @NonNull final LocatorId nextLocatorId)
+	{
+		final BigDecimal qtyReserved = line.getQtyReserved();
+
+		if (qtyReserved.signum() != 0)
+		{
+			line.setQtyReserved(BigDecimal.ZERO);
+		}
+		line.setM_Locator_ID(nextLocatorId.getRepoId());
+		ddOrderService.saveLine(line);
+
+		if (qtyReserved.signum() != 0)
+		{
+			line.setQtyReserved(qtyReserved);
+			ddOrderService.saveLine(line);
+		}
 	}
 }

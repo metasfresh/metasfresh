@@ -86,10 +86,14 @@ public class DistributionRestController
 	}
 
 	@PostMapping("/job/{wfProcessId}/switchPickFromLocatorToNext")
-	public WFProcess switchPickFromLocatorToNext(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	public JsonWFProcess switchPickFromLocatorToNext(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
 		assertApplicationAccess();
-		return distributionMobileApplication.switchPickFromLocatorToNext(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+		final WFProcess wfProcess = distributionMobileApplication.switchPickFromLocatorToNext(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+		// Serialize the full job (incl. activity detail: lines, pickFromLocator, canSwitchPickFromLocator)
+		// like /event does. Returning the raw WFProcess yields a summary-only payload, so the mobile UI
+		// would keep showing the old locator after the switch.
+		return workflowRestController.toJson(wfProcess);
 	}
 
 	@PostMapping("/print/materialInTransitReport")

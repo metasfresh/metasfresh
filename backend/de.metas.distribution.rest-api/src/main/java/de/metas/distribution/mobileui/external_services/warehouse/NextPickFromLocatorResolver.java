@@ -1,8 +1,8 @@
 package de.metas.distribution.mobileui.external_services.warehouse;
 
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.springframework.lang.NonNull;
 
 public interface NextPickFromLocatorResolver
 {
