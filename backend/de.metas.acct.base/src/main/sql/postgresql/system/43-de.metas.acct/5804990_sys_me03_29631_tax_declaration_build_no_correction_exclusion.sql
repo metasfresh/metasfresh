@@ -1,3 +1,9 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_build.sql
+-- Rebuild de_metas_acct.tax_declaration_build so it snapshots all tax-relevant Fact_Acct rows
+-- of the declaration's period + acctschema, identically for Original and Correction declarations.
+-- The previous NOT-EXISTS exclusion (skip facts already snapshotted in another locked Original)
+-- and its IsCorrection bypass are removed: the report must look the same regardless of correction.
+
 DROP FUNCTION IF EXISTS de_metas_acct.tax_declaration_build(p_C_TaxDeclaration_ID numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_acct.tax_declaration_build(
