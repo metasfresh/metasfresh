@@ -66,36 +66,13 @@ public class C_TaxDeclaration_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	/**
-	 * Last exception thrown by a {@code @When} step that explicitly catches and stashes errors.
-	 * Asserted (and cleared) by {@link #assertCompletionFailedWithMessage(String)}.
-	 */
+	/** Last exception stashed by a failure-catching {@code @When} step; asserted+cleared by {@link #assertOperationFailedWithMessage(String)}. */
 	@Nullable
 	private AdempiereException lastException;
 
 	/**
 	 * Create {@link I_C_TaxDeclaration} records.
-	 *
-	 * <p><b>Required columns:</b>
-	 * <ul>
-	 *   <li>{@code Identifier} — step-def reference key</li>
-	 *   <li>{@code C_AcctSchema_ID} — identifier of a {@link I_C_AcctSchema} in {@link C_AcctSchema_StepDefData}</li>
-	 *   <li>{@code Date} — any date inside the period (format {@code yyyy-MM-dd}); the period
-	 *       of the AcctSchema's calendar covering this date is selected and assigned to
-	 *       {@code C_Period_ID}, plus the period's end date is stored in {@code DateAcct}</li>
-	 * </ul>
-	 *
-	 * <p><b>Optional columns:</b>
-	 * <ul>
-	 *   <li>{@code Description}</li>
-	 * </ul>
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Given metasfresh contains C_TaxDeclaration:
-	 *   | Identifier | C_AcctSchema_ID | Date       |
-	 *   | td1        | acctSchema      | 2024-01-15 |
-	 * }</pre>
+	 * Columns: {@code Identifier}, {@code C_AcctSchema_ID}, {@code Date} (any date in the target period), optional {@code Description}.
 	 */
 	@Given("metasfresh contains C_TaxDeclaration:")
 	public void metasfresh_contains_c_tax_declaration(@NonNull final DataTable dataTable)
@@ -104,30 +81,16 @@ public class C_TaxDeclaration_StepDef
 	}
 
 	/**
-	 * Neutralise every existing {@link I_C_TaxDeclaration} so it is ignored by the period-uniqueness
-	 * index, the star-topology CHECK, the {@code existsCompletedOverlappingPeriod} guard and the build
-	 * engine's "already-snapshotted" exclusion — giving each scenario a clean slate without a full DB reset.
-	 *
-	 * <p>Per row, in a single save:
-	 * <ul>
-	 *   <li>{@code Processed='N'} — unlocks the row past {@code C_TaxDeclaration.lockProcessedDeclaration}
-	 *       (which forbids mutating Original_ID / IsCorrection on a locked row) and drops it out of the
-	 *       build engine's NOT-EXISTS exclusion, which keys on {@code Processed='Y'};</li>
-	 *   <li>{@code IsCorrection='N'} + {@code C_TaxDeclaration_Original_ID=null} — required together by the
-	 *       star-topology CHECK ({@code (IsCorrection='N' AND Original_ID IS NULL) OR (IsCorrection='Y' AND Original_ID IS NOT NULL)});</li>
-	 *   <li>{@code DocStatus='VO'} (voided) and {@code IsActive='N'} — removes the row from the partial
-	 *       unique index and from the active-only overlap query.</li>
-	 * </ul>
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Given Clear previous Tax Declaration documents
-	 * }</pre>
+	 * Neutralise every active {@link I_C_TaxDeclaration} to give each scenario a clean slate without a full DB reset.
+	 * The five fields are set together to satisfy interlocking constraints: {@code Processed='N'} unlocks the row and
+	 * drops it from the build engine's exclusion; {@code IsCorrection='N'}+{@code Original_ID=null} satisfy the
+	 * star-topology CHECK; {@code DocStatus='VO'}+{@code IsActive='N'} remove it from the unique index and overlap guards.
 	 */
 	@Given("Clear previous Tax Declaration documents")
 	public void clear_previous_tax_declarations()
 	{
 		final List<I_C_TaxDeclaration> existing = queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
 		for (final I_C_TaxDeclaration decl : existing)
@@ -164,11 +127,7 @@ public class C_TaxDeclaration_StepDef
 		row.getAsOptionalIdentifier().ifPresent(id -> taxDeclarationTable.putOrReplace(id, decl));
 	}
 
-	/**
-	 * Resolve the {@link I_C_AcctSchema} from the step-def data table (if a previously loaded record
-	 * is registered under the identifier) or fall back to loading the first active AcctSchema from the DB
-	 * (environment-agnostic, suitable for single-schema test environments).
-	 */
+	/** Resolve the {@link I_C_AcctSchema} from the step-def table by identifier, falling back to the first active AcctSchema in the DB. */
 	private I_C_AcctSchema resolveAcctSchema(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier acctSchemaIdentifier = row.getAsIdentifier("C_AcctSchema_ID");
@@ -180,18 +139,7 @@ public class C_TaxDeclaration_StepDef
 						.firstOnlyNotNull(I_C_AcctSchema.class));
 	}
 
-	/**
-	 * Trigger the build process for an existing {@link I_C_TaxDeclaration} by calling
-	 * {@link TaxDeclarationService#build(TaxDeclarationId)}.
-	 *
-	 * <p><b>Required:</b> {@code identifier} — refers to a record previously stored
-	 * in {@link C_TaxDeclaration_StepDefData}.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the tax declaration 'td1' is built
-	 * }</pre>
-	 */
+	/** Trigger {@link TaxDeclarationService#build(TaxDeclarationId)} for the declaration registered under {@code identifier}. */
 	@When("the tax declaration {string} is built")
 	public void the_tax_declaration_is_built(@NonNull final String identifier)
 	{
@@ -199,20 +147,7 @@ public class C_TaxDeclaration_StepDef
 		taxDeclarationService.build(TaxDeclarationId.ofRepoId(decl.getC_TaxDeclaration_ID()));
 	}
 
-	/**
-	 * Complete an existing {@link I_C_TaxDeclaration} via the document engine.
-	 *
-	 * <p>On success the declaration transitions to {@code DocStatus='CO'}, {@code Processed='Y'},
-	 * {@code DocAction='RE'} (re-activate; note: not {@code RA}, which is Reverse_Accrual).
-	 * If the handler rejects the completion (e.g. no lines, period overlap)
-	 * the resulting {@link AdempiereException} is stashed and can be asserted by
-	 * {@link #assertCompletionFailedWithMessage(String)}.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the tax declaration "taxDecl" is completed
-	 * }</pre>
-	 */
+	/** Complete the declaration via the document engine; any rejection is stashed for {@link #assertOperationFailedWithMessage(String)}. */
 	@When("the tax declaration {string} is completed")
 	public void complete(@NonNull final String identifier)
 	{
@@ -229,18 +164,7 @@ public class C_TaxDeclaration_StepDef
 		}
 	}
 
-	/**
-	 * Reactivate an existing {@link I_C_TaxDeclaration} via the document engine.
-	 *
-	 * <p>On success the declaration transitions to {@code DocStatus='IP'}, {@code Processed='N'},
-	 * {@code DocAction='CO'}.  Note: {@code DocumentEngine.reActivateIt()} unconditionally sets
-	 * the post-reactivate status to {@code IP}, not {@code DR}.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the tax declaration "taxDecl" is reactivated
-	 * }</pre>
-	 */
+	/** Reactivate the declaration via the document engine. */
 	@When("the tax declaration {string} is reactivated")
 	public void reactivate(@NonNull final String identifier)
 	{
@@ -250,20 +174,7 @@ public class C_TaxDeclaration_StepDef
 		InterfaceWrapperHelper.refresh(decl);
 	}
 
-	/**
-	 * Attempt to reactivate an existing {@link I_C_TaxDeclaration}, expecting the handler to reject it.
-	 * The resulting {@link AdempiereException} is stashed (same field as {@link #complete(String)}) so it
-	 * can be asserted by {@link #assertOperationFailedWithMessage(String)}. Use this for the guard that
-	 * forbids reopening an Original while a Correction anchored to it still exists.
-	 *
-	 * <p><b>Required:</b> {@code identifier} — refers to a record previously stored in
-	 * {@link C_TaxDeclaration_StepDefData}.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When the tax declaration "td" is reactivated expecting failure
-	 * }</pre>
-	 */
+	/** Reactivate the declaration expecting rejection; the resulting exception is stashed for {@link #assertOperationFailedWithMessage(String)}. */
 	@When("the tax declaration {string} is reactivated expecting failure")
 	public void reactivateExpectingFailure(@NonNull final String identifier)
 	{
@@ -280,22 +191,7 @@ public class C_TaxDeclaration_StepDef
 		}
 	}
 
-	/**
-	 * Assert that a {@link I_C_TaxDeclaration} is a Correction that inherited
-	 * {@code (C_Period_ID, DateAcct, C_AcctSchema_ID)} from its Original, and is linked back to it via
-	 * {@code C_TaxDeclaration_Original_ID}. Both records are reloaded from the DB before comparison.
-	 *
-	 * <p><b>Required parameters:</b>
-	 * <ul>
-	 *   <li>{@code correctionIdentifier} — the Correction record (e.g. {@code td_correction})</li>
-	 *   <li>{@code originalIdentifier} — the Original record it was derived from (e.g. {@code td})</li>
-	 * </ul>
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Then the tax declaration "td_correction" is a Correction inheriting Period, DateAcct and AcctSchema from "td"
-	 * }</pre>
-	 */
+	/** Assert the Correction inherited {@code C_Period_ID}, {@code DateAcct} and {@code C_AcctSchema_ID} from its Original and links back to it. */
 	@Then("the tax declaration {string} is a Correction inheriting Period, DateAcct and AcctSchema from {string}")
 	public void assertCorrectionInherits(
 			@NonNull final String correctionIdentifier,
@@ -313,22 +209,7 @@ public class C_TaxDeclaration_StepDef
 		assertThat(correction.getC_AcctSchema_ID()).as("C_AcctSchema_ID inherited from Original").isEqualTo(original.getC_AcctSchema_ID());
 	}
 
-	/**
-	 * Assert that a {@link I_C_TaxDeclaration} is in a specific state after complete / reactivate.
-	 *
-	 * <p><b>Required parameters:</b>
-	 * <ul>
-	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
-	 *   <li>{@code processed} — expected value of {@code Processed} column ({@code Y} or {@code N})</li>
-	 *   <li>{@code docStatus} — expected {@code DocStatus} value (e.g. {@code CO}, {@code DR}, {@code IP})</li>
-	 *   <li>{@code docAction} — expected {@code DocAction} value (e.g. {@code RE} after complete, {@code CO} after reactivate)</li>
-	 * </ul>
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Then the tax declaration "taxDecl" has Processed='Y' and DocStatus='CO' and DocAction='RE'
-	 * }</pre>
-	 */
+	/** Assert the declaration's {@code Processed}, {@code DocStatus} and {@code DocAction} match the expected values. */
 	@Then("the tax declaration {string} has Processed={string} and DocStatus={string} and DocAction={string}")
 	public void assertHeaderState(
 			@NonNull final String identifier,
@@ -345,24 +226,7 @@ public class C_TaxDeclaration_StepDef
 		assertThat(decl.getDocAction()).as("DocAction").isEqualTo(docAction);
 	}
 
-	/**
-	 * Assert that the most recent {@link #complete(String)} step failed with the given
-	 * {@link AdempiereException#getErrorCode() error code} (i.e. the {@code AD_Message.ErrorCode}
-	 * column — UPPER_SNAKE_CASE, NOT the mixed-case {@code AD_Message.Value} key).
-	 *
-	 * <p>The stashed exception is cleared after the assertion so that subsequent steps
-	 * can stash a new one independently.
-	 *
-	 * <p>The same assertion is also exposed under the operation-neutral phrasing
-	 * {@code the tax declaration operation fails with message ...} — use that form for failures of
-	 * operations other than completion (Create Correction, reactivate), which stash into the same field.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
-	 * Then the tax declaration operation fails with message 'TAXDECLARATION_HAS_CORRECTIONS'
-	 * }</pre>
-	 */
+	/** Assert the last failure-catching step stashed an exception with the given error code (the {@code AD_Message.ErrorCode}, not {@code Value}); clears it afterwards. */
 	@Then("the tax declaration completion fails with message {string}")
 	@Then("the tax declaration operation fails with message {string}")
 	public void assertOperationFailedWithMessage(@NonNull final String expectedErrorCode)
@@ -383,15 +247,7 @@ public class C_TaxDeclaration_StepDef
 				.isEqualTo(expectedErrorCode);
 	}
 
-	/**
-	 * Assert that the {@link I_C_TaxDeclarationLine} rows belonging to the given declaration are
-	 * still present in the database (i.e. reactivation did not purge them).
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * And the C_TaxDeclarationLine rows for "taxDecl" are still present
-	 * }</pre>
-	 */
+	/** Assert the declaration's {@link I_C_TaxDeclarationLine} rows still exist (e.g. reactivation did not purge them). */
 	@And("the C_TaxDeclarationLine rows for {string} are still present")
 	public void assertLinesStillPresent(@NonNull final String identifier)
 	{
@@ -405,23 +261,8 @@ public class C_TaxDeclaration_StepDef
 	}
 
 	/**
-	 * Invoke {@link TaxDeclarationService#createCorrection(TaxDeclarationId)} on the given original declaration
-	 * and register the resulting correction under the derived identifier {@code <originalIdentifier>_correction}.
-	 *
-	 * <p>If the service call throws an {@link AdempiereException} the exception is stashed in
-	 * {@link #lastException} (same field as {@link #complete(String)}) so that it can be asserted by
-	 * {@link #assertCompletionFailedWithMessage(String)}.
-	 *
-	 * <p><b>Required:</b> {@code originalIdentifier} — refers to a previously stored original
-	 * {@link I_C_TaxDeclaration} in {@link C_TaxDeclaration_StepDefData}.
-	 *
-	 * <p><b>Side-effect:</b> on success, the correction record is stored under
-	 * {@code <originalIdentifier>_correction} in the step-def data table.
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * When invoke Create Correction on C_TaxDeclaration "taxDecl"
-	 * }</pre>
+	 * Invoke {@link TaxDeclarationService#createCorrection(TaxDeclarationId)} on the original and register the result under {@code <originalIdentifier>_correction}.
+	 * Any failure is stashed for {@link #assertOperationFailedWithMessage(String)}.
 	 */
 	@When("invoke Create Correction on C_TaxDeclaration {string}")
 	public void invokeCreateCorrection(@NonNull final String originalIdentifier)
@@ -440,21 +281,7 @@ public class C_TaxDeclaration_StepDef
 		}
 	}
 
-	/**
-	 * Assert the {@code IsCorrectionNeeded} flag of a {@link I_C_TaxDeclaration}.
-	 * The record is always reloaded from the database to avoid stale-cache false-positives.
-	 *
-	 * <p><b>Required parameters:</b>
-	 * <ul>
-	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
-	 *   <li>{@code expectedFlag} — {@code Y} or {@code N}</li>
-	 * </ul>
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Then C_TaxDeclaration "taxDecl" has IsCorrectionNeeded = "Y"
-	 * }</pre>
-	 */
+	/** Assert the declaration's {@code IsCorrectionNeeded} flag ({@code Y}/{@code N}); reloads from DB to avoid stale-cache false-positives. */
 	@Then("C_TaxDeclaration {string} has IsCorrectionNeeded = {string}")
 	public void assertIsCorrectionNeeded(@NonNull final String identifier, @NonNull final String expectedFlag)
 	{
@@ -464,23 +291,7 @@ public class C_TaxDeclaration_StepDef
 		assertThat(reloaded.isIsCorrectionNeeded()).as("IsCorrectionNeeded").isEqualTo(expected);
 	}
 
-	/**
-	 * Directly set the {@code IsCorrectionNeeded} flag on a {@link I_C_TaxDeclaration} and save it.
-	 * This step is used in tests that need to simulate drift before the Iter-8 auto-detector ships.
-	 * When the flag is set to {@code true}, a placeholder reason {@code "test-drift"} is written
-	 * to {@code CorrectionNeededReason}.
-	 *
-	 * <p><b>Required parameters:</b>
-	 * <ul>
-	 *   <li>{@code identifier} — record identifier in {@link C_TaxDeclaration_StepDefData}</li>
-	 *   <li>{@code flagValue} — {@code Y} or {@code N}</li>
-	 * </ul>
-	 *
-	 * <p><b>Example:</b>
-	 * <pre>{@code
-	 * Given C_TaxDeclaration "taxDecl" has IsCorrectionNeeded set to "Y"
-	 * }</pre>
-	 */
+	/** Set the declaration's {@code IsCorrectionNeeded} flag ({@code Y}/{@code N}) and save; when {@code Y}, writes a {@code "test-drift"} reason. Used to simulate drift in tests. */
 	@Given("C_TaxDeclaration {string} has IsCorrectionNeeded set to {string}")
 	public void setIsCorrectionNeeded(@NonNull final String identifier, @NonNull final String flagValue)
 	{
