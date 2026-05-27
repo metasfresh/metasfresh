@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
 import lombok.Data;
@@ -47,4 +48,16 @@ public class MsgFromMfContext
 
 	/** DocumentNo of the outbound record (e.g., shipment or invoice number). May be null if the table has no DocumentNo column. */
 	@Nullable private final String outboundDocumentNo;
+
+	/**
+	 * Array-mode fan-out: when the JS transform returns a JSON array AND the endpoint has
+	 * {@link JsonExternalSystemEndpoint#getArrayFanOut()} == TRUE, this holds the parsed array
+	 * and one downstream HTTP/SFTP call is dispatched per element.
+	 * <p>
+	 * When null, the route falls through to single-request behaviour.
+	 */
+	@Nullable private JsonNode fanOutArray;
+
+	/** Total number of elements in {@link #fanOutArray}; null when fan-out is not active. */
+	@Nullable private Integer fanOutTotal;
 }

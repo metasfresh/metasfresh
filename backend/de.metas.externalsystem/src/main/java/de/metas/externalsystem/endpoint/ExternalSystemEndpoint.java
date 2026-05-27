@@ -25,6 +25,7 @@ package de.metas.externalsystem.endpoint;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.springframework.http.MediaType;
@@ -79,6 +80,14 @@ public class ExternalSystemEndpoint
 	@Nullable String sftpFilenamePattern;
 
 	/**
+	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
+	 * Camel route dispatches one HTTP/SFTP request per array element. Default FALSE — endpoint
+	 * runs once with the whole payload, matching existing behaviour.
+	 * See me03#29231, PLAN_ARRAY_MODE.md §3.1.
+	 */
+	@Default boolean isArrayFanOut = false;
+
+	/**
 	 * Converts this endpoint to a JSON DTO.
 	 * Supports both HTTP and SFTP transport types.
 	 */
@@ -105,6 +114,7 @@ public class ExternalSystemEndpoint
 				.sshPrivateKey(sshPrivateKey)
 				.sftpRemotePath(sftpRemotePath)
 				.sftpFilenamePattern(sftpFilenamePattern)
+				.arrayFanOut(isArrayFanOut ? Boolean.TRUE : null)
 				.build();
 	}
 }
