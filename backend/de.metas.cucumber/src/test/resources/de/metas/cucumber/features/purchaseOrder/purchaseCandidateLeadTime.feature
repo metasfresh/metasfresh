@@ -18,6 +18,7 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
+  @Id:S26070_T1
   Scenario: tier 1 — C_BPartner_Product.DeliveryTime_Promised wins
     # Vendor-product = 3 days; BPartner default = 10; PP_Product_Planning = 99 (both must be ignored).
     # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-12
@@ -78,6 +79,7 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
       | pc         | so           | sol              | product      | 2022-06-15           | 2022-06-12          |
 
   @from:cucumber
+  @Id:S26070_T2
   Scenario: tier 2 — C_BPartner.PO_TransportDays fallback
     # No vendor-product DeliveryTime_Promised; BPartner default = 5; PP_Product_Planning = 99 (ignored).
     # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-10
@@ -138,6 +140,7 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
       | pc         | so           | sol              | product      | 2022-06-15           | 2022-06-10          |
 
   @from:cucumber
+  @Id:S26070_T3
   Scenario: tier 3 — PP_Product_Planning.DeliveryTime_Promised fallback
     # No vendor-product DeliveryTime_Promised; no BPartner PO_TransportDays; PP_Product_Planning = 7.
     # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-08
