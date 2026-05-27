@@ -135,7 +135,7 @@ Feature: EDI DESADV export via postgREST
     """
     Then the metasfresh REST-API responds with
     """
-{
+[{
   "metasfresh_DESADV": {
     "Parties": {
       "Buyer": {
@@ -276,7 +276,7 @@ Feature: EDI DESADV export via postgREST
     "TechnicalRecipientGLN": "1234567890",
     "DesadvLineWithNoPacking": []
   }
-}
+}]
     """
 
 #   no need to wait. the process runs synchronously
@@ -1051,7 +1051,7 @@ Feature: EDI DESADV export via postgREST
     #   - M_Product.GTIN is NULL (not provided in fixture)
     Then the metasfresh REST-API responds with
     """
-{
+[{
   "metasfresh_DESADV": {
     "Packings": [
       {
@@ -1074,7 +1074,7 @@ Feature: EDI DESADV export via postgREST
     "M_InOut_ID": @shipment_S0468_060_ID@,
     "EDI_Desadv_ID": @d_060@
   }
-}
+}]
     """
 
     And after not more than 1s, M_InOut records have the following export status
