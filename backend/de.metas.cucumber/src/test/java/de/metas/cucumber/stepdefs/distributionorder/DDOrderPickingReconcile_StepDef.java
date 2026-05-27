@@ -73,6 +73,7 @@ import java.math.BigDecimal;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Step definitions specific to the DD_Order picking-reconcile flow
@@ -161,7 +162,7 @@ public class DDOrderPickingReconcile_StepDef
 					final BigDecimal originalQtyOverride = schedule.getQtyToDeliver_Override();
 					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 
-					org.assertj.core.api.Assertions.assertThatThrownBy(() -> {
+					assertThatThrownBy(() -> {
 								schedule.setQtyToDeliver_Override(newQty);
 								InterfaceWrapperHelper.saveRecord(schedule);
 							})
@@ -288,7 +289,7 @@ public class DDOrderPickingReconcile_StepDef
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 		final DDOrderPickingReconcileBL reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReconcileBL.class);
 
-		org.assertj.core.api.Assertions.assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
+		assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
 				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".

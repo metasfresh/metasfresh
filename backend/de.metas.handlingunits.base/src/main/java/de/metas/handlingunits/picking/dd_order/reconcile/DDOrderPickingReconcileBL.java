@@ -29,6 +29,6 @@ public interface DDOrderPickingReconcileBL
 	/** Throws AdempiereException if the warehouse has IsAutoDistributionOrder=Y but no DD_NetworkDistribution_ID set. */
 	void assertWarehouseConfigurationIsValid(I_M_Warehouse warehouse);
 
-	/** Shared picker-busy check: returns true iff a PickingJobLine references the DD_Order's M_Movement. */
+	/** Shared picker-busy check: returns true iff a PickingJobLine references the same M_ShipmentSchedule_ID as the given DD_Order. */
 	boolean isPickerBusy(DDOrderId ddOrderId);
 }

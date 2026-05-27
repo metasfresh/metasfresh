@@ -132,7 +132,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	/**
 	 * Classifies the reconcile action based on the truth-table:
 	 * <pre>
-	 * warehouseIsPacking | scheduleActive | existingDDOrderId | action
+	 * warehouseIsAutoDistributionOrder | scheduleActive | existingDDOrderId | action
 	 * false              | *              | *                 | NONE
 	 * true               | false          | null              | NONE
 	 * true               | false          | non-null          | VOID
