@@ -44,7 +44,7 @@ BEGIN
                                            'Name', p.name,
                                            'Description', p.description,
                                            'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
-                                           'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean13_productcode, p.gtin),
+                                           'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, p.gtin),
                                            'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
                                            'NetWeight', p.weight,
                                            'GrossWeight', p.grossweight,
@@ -133,7 +133,7 @@ BEGIN
              -- is NULL and only wildcard records (m_attributesetinstance_id IS NULL in
              -- M_Product_ASI_Data) match — that is the documented fallback for unshipped lines.
              LEFT JOIN LATERAL (
-                 SELECT gtin, ean13_productcode, productno 
+                 SELECT gtin, ean_cu, ean13_productcode, productno
                  FROM m_product_asi_data
                  WHERE isactive = 'Y'
                    AND m_product_id = p.m_product_id

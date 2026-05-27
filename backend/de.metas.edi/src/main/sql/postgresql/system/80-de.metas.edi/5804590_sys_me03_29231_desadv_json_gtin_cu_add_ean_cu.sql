@@ -1,7 +1,132 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- me03 #29231: extend GTIN_CU resolution chain in DESADV JSON functions to include
+-- m_product_asi_data.ean_cu between asi_data.gtin and asi_data.ean13_productcode.
+-- Affects both the no-pack lines function and the packs function.
+
+CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
+    RETURNS JSONB AS $$
+DECLARE
+    v_lines_no_pack_json JSONB;
+BEGIN
+    SELECT jsonb_agg(
+                   jsonb_build_object(
+                           'QtyCUsPerTU', dl.qtyitemcapacity,
+                           'DesadvLine', JSONB_BUILD_OBJECT(
+                                   'Product', JSONB_BUILD_OBJECT(
+                                           'SupplierProductNo', p.value,
+                                           'Name', p.name,
+                                           'Description', p.description,
+                                           'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
+                                           'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, p.gtin),
+                                           'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
+                                           'NetWeight', p.weight,
+                                           'GrossWeight', p.grossweight,
+                                           'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
+                                   ),
+                                   'QtyOrderedInDesadvLineUOM', dl.qtyentered,
+                                   'QtyDeliveredInDesadvLineUOM', dl.qtydeliveredinuom,
+                                   'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
+                                   'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,
+                                   'InvoicingUOM', COALESCE(inv_uom.uom_json, '{}'::jsonb),
+                                   'OrderLine', ol.line,
+                                   'ShipmentLine', iol.line,
+                                   'OrderPOReference', o.poreference,
+                                   'OrderDocumentNo', o.documentno,
+                                   'DesadvLine', dl.line,
+                                   'IsDeliveryClosed',
+                                       CASE WHEN diol.desadvlinetotalqtydelivered IS NOT NULL
+                                            THEN diol.desadvlinetotalqtydelivered >= COALESCE(dl.qtyordered_override, dl.qtyordered)
+                                            WHEN COALESCE(dl.qtyordered_override, dl.qtyordered, 0) = 0
+                                            THEN true
+                                            ELSE false
+                                       END
+                           )
+                   ) ORDER BY dl.line
+           )
+    INTO v_lines_no_pack_json
+    FROM edi_desadvline dl
+             JOIN m_product p ON p.m_product_id = dl.m_product_id
+             JOIN edi_desadv d ON d.edi_desadv_id = dl.edi_desadv_id
+             JOIN "de.metas.edi".edi_uom_object_v dl_uom ON dl_uom.c_uom_id = dl.c_uom_id
+             LEFT JOIN "de.metas.edi".edi_uom_object_v inv_uom ON inv_uom.c_uom_id = dl.c_uom_invoice_id
+             LEFT JOIN "de.metas.edi".edi_uom_object_v gw_uom ON gw_uom.c_uom_id = p.grossweight_uom_id
+             LEFT JOIN LATERAL (
+                 SELECT iol_inner.m_inoutline_id,
+                        iol_inner.line,
+                        iol_inner.m_attributesetinstance_id
+                 FROM m_inoutline iol_inner
+                 WHERE iol_inner.edi_desadvline_id = dl.edi_desadvline_id
+                   AND iol_inner.m_inout_id = p_m_inout_id
+                 ORDER BY iol_inner.m_inoutline_id
+                 LIMIT 1
+             ) iol ON TRUE
+             LEFT JOIN LATERAL (
+                 SELECT ol_inner.line, ol_inner.c_order_id
+                 FROM c_orderline ol_inner
+                 WHERE ol_inner.edi_desadvline_id = dl.edi_desadvline_id
+                 ORDER BY ol_inner.c_orderline_id
+                 LIMIT 1
+             ) ol ON TRUE
+             LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
+             LEFT JOIN LATERAL (
+                 SELECT diol_inner.desadvlinetotalqtydelivered
+                 FROM m_inoutline iol_diol
+                          JOIN edi_desadvline_inoutline diol_inner
+                               ON diol_inner.m_inoutline_id = iol_diol.m_inoutline_id
+                              AND diol_inner.edi_desadvline_id = dl.edi_desadvline_id
+                 WHERE iol_diol.m_inout_id = p_m_inout_id
+                   AND iol_diol.edi_desadvline_id = dl.edi_desadvline_id
+                 LIMIT 1
+             ) diol ON TRUE
+             LEFT JOIN LATERAL (
+                 SELECT gtin
+                 FROM m_hu_pi_item_product
+                 WHERE isactive = 'Y'
+                   AND m_product_id = p.m_product_id
+                   AND COALESCE(c_bpartner_id, d.c_bpartner_id) = d.c_bpartner_id
+                 ORDER BY c_bpartner_id NULLS LAST
+                 LIMIT 1
+             ) pip ON TRUE
+             LEFT JOIN LATERAL (
+                 SELECT gtin, ean_cu, ean13_productcode, productno
+                 FROM m_product_asi_data
+                 WHERE isactive = 'Y'
+                   AND m_product_id = p.m_product_id
+                   AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
+                   AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
+                 ORDER BY seqno
+                 LIMIT 1
+             ) asi_data ON TRUE
+    WHERE dl.edi_desadv_id = p_edi_desadv_id
+      AND dl.isactive = 'Y'
+      AND (
+          EXISTS (
+              SELECT 1 FROM m_inoutline iol_exist
+              WHERE iol_exist.m_inout_id = p_m_inout_id
+                AND iol_exist.edi_desadvline_id = dl.edi_desadvline_id
+          )
+          OR NOT EXISTS (
+              SELECT 1 FROM m_inoutline iol_any
+                       JOIN m_inout io_any ON io_any.m_inout_id = iol_any.m_inout_id AND io_any.docstatus IN ('CO', 'CL')
+              WHERE iol_any.edi_desadvline_id = dl.edi_desadvline_id
+          )
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM edi_desadv_pack_item edpi_check
+                 JOIN edi_desadv_pack edp_check ON edp_check.edi_desadv_pack_id = edpi_check.edi_desadv_pack_id
+            AND edp_check.edi_desadv_id = dl.edi_desadv_id
+            AND edp_check.isactive = 'Y'
+                 JOIN m_inoutline iol_check ON iol_check.m_inoutline_id = edpi_check.m_inoutline_id
+            AND iol_check.m_inout_id = p_m_inout_id
+        WHERE edpi_check.edi_desadvline_id = dl.edi_desadvline_id
+          AND edpi_check.isactive = 'Y'
+    );
+
+    RETURN COALESCE(v_lines_no_pack_json, '[]'::jsonb);
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -10,8 +135,6 @@ DECLARE
     v_packs_json JSONB;
 BEGIN
     WITH pack_item_comp AS (
-        -- For each pack_item, resolve its compensation group via:
-        -- pack_item.m_inoutline_id -> m_inoutline.c_orderline_id -> c_orderline.c_order_compensationgroup_id
         SELECT epi.edi_desadv_pack_item_id,
                epi.edi_desadv_pack_id,
                epi.edi_desadvline_id,
@@ -31,7 +154,6 @@ BEGIN
           AND epi.isactive = 'Y'
     ),
          main_per_group AS (
-             -- The main line in each comp group = the one with the lowest order_line
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id,
                  edi_desadvline_id AS main_desadvline_id,
@@ -41,7 +163,6 @@ BEGIN
              ORDER BY comp_group_id, order_line
          ),
          pack_with_role AS (
-             -- Enrich each pack_item with its role (main vs sub-article)
              SELECT ep.edi_desadv_pack_id,
                     ep.seqno,
                     ep.ipa_sscc18,
@@ -78,9 +199,6 @@ BEGIN
                AND ep.isactive = 'Y'
          ),
          main_packs AS (
-             -- Identify the main pack per compensation group
-             -- (the pack containing the main article item, i.e. lowest order_line).
-             -- Uses DISTINCT ON to pick one main pack per group regardless of seqno ordering.
              SELECT DISTINCT ON (comp_group_id)
                  comp_group_id, edi_desadv_pack_id AS main_pack_id
              FROM pack_with_role
@@ -88,7 +206,6 @@ BEGIN
              ORDER BY comp_group_id, seqno
          ),
          items_assigned AS (
-             -- Sub-article items are reassigned to the main pack in their compensation group
              SELECT pwr.*,
                     CASE
                         WHEN pwr.is_sub_article THEN mp.main_pack_id
@@ -98,7 +215,6 @@ BEGIN
                       LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
          ),
          pack_header AS (
-             -- Use the main pack's header info (SSCC, packaging code) for each effective_pack_id
              SELECT DISTINCT ON (ia.effective_pack_id)
                  ia.effective_pack_id,
                  ep.seqno,
@@ -115,7 +231,6 @@ BEGIN
                            'IPA_SSCC18', ph.ipa_sscc18,
                            'M_HU_PackagingCode_Text', pc_lu.packagingcode,
                            'LineItems', COALESCE(items_lat.items_data, '[]'::jsonb),
-                           -- Defensive trim: master-data sometimes carries stray whitespace
                            'GTIN_PackingMaterial', NULLIF(btrim(ph.gtin_packingmaterial), '')
                    ) ORDER BY ph.seqno
            )
@@ -124,9 +239,6 @@ BEGIN
              LEFT JOIN m_hu_packagingcode pc_lu
                        ON pc_lu.m_hu_packagingcode_id = ph.m_hu_packagingcode_id
              LEFT JOIN LATERAL (
-        -- Build LineItems JSON per effective pack.
-        -- Inlines the edi_desadv_line_object_v logic using ia.m_inoutline_id
-        -- to get the correct orderline/order context (avoiding 1:N multiplication).
         SELECT JSONB_AGG(
                        JSONB_BUILD_OBJECT(
                                'BestBeforeDate', ia.bestbeforedate,
@@ -149,8 +261,6 @@ BEGIN
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
                                        ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
-                                       -- Per-inout qty from edi_desadvline_inoutline; fallback to cumulative
-                                       -- dl.qtydeliveredinuom for single-inout DESADVs.
                                        'QtyDeliveredInDesadvLineUOM', COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom),
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
                                        'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,
@@ -178,13 +288,10 @@ BEGIN
                  JOIN "de.metas.edi".edi_uom_object_v dl_uom ON dl_uom.c_uom_id = dl.c_uom_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v inv_uom ON inv_uom.c_uom_id = dl.c_uom_invoice_id
                  LEFT JOIN "de.metas.edi".edi_uom_object_v gw_uom ON gw_uom.c_uom_id = p.grossweight_uom_id
-            -- Use pack_item's m_inoutline_id for 1:1 join (not desadvline-level N:M)
                  LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = ia.m_inoutline_id
                  LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
-            -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (
             SELECT gtin, ean_cu, ean13_productcode, productno
             FROM m_product_asi_data
@@ -195,7 +302,6 @@ BEGIN
             ORDER BY seqno
             LIMIT 1
             ) asi_data ON TRUE
-            -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin
             FROM m_hu_pi_item_product
