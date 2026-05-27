@@ -487,6 +487,21 @@ public class BPartnerEffectiveBLTest
 		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).isEmpty();
 	}
 
+	/**
+	 * Guards the zero-boundary at the BL layer: an explicit {@code PO_TransportDays = 0} on
+	 * the vendor must surface as {@code Optional.of(0)}, not collapse to {@code Optional.empty()}.
+	 * If the DAO's {@code InterfaceWrapperHelper.isNull} check regresses (e.g. POJOWrapper starts
+	 * treating int-zero as null), the candidate handler's three-tier chain would silently
+	 * fall through to {@code PP_Product_Planning.DeliveryTime_Promised} instead of using the
+	 * explicitly-configured 0 — a behavioural regression.
+	 */
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSetToZero_returnsZero()
+	{
+		final BPartnerId vendorId = createVendor(0);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(0);
+	}
+
 	private BPartnerId createVendor(final Integer poTransportDays)
 	{
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);

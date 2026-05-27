@@ -9,6 +9,11 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
   ##   1. C_BPartner_Product.DeliveryTime_Promised (vendor × product)
   ##   2. C_BPartner.PO_TransportDays (vendor default)
   ##   3. PP_Product_Planning.DeliveryTime_Promised (product fallback)
+  ##
+  ## Each scenario varies only the tier-specific data (PP_Product_Planning's
+  ## DeliveryTime_Promised, C_BPartner's PO_TransportDays, C_BPartner_Product's
+  ## DeliveryTime_Promised) — the products/pricing/customer/order shell is
+  ## identical across scenarios and lives in Background.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -17,11 +22,6 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
-  @from:cucumber
-  @Id:S26070_T1
-  Scenario: tier 1 — C_BPartner_Product.DeliveryTime_Promised wins
-    # Vendor-product = 3 days; BPartner default = 10; PP_Product_Planning = 99 (both must be ignored).
-    # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-12
     Given metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -42,20 +42,26 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
       | pp_po      | plv_po                 | product      | 10.00    | PCE               | Normal                        |
     ## VendorProductInfoService.getVendorProductInfos only considers vendors with a PO_DiscountSchema_ID
     And metasfresh contains M_DiscountSchemas:
-      | Identifier | Name                  | DiscountType | ValidFrom  |
-      | ds         | lead_time_tier1_ds    | F            | 2022-01-01 |
+      | Identifier | Name              | DiscountType | ValidFrom  |
+      | ds         | po_transport_days | F            | 2022-01-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
       | dsb        | ds                  | product      | ps                    | 10    | Y                      | P         | 0          | 0             |
-    And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID | IsCreatePlan | IsPurchased | IsDocComplete | DeliveryTime_Promised |
-      | ppln       | product      | true         | Y           | true          | 99                    |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | customerLocation | customer      | Y               | Y               |
+
+  @from:cucumber
+  @Id:S26070_T1
+  Scenario: tier 1 — C_BPartner_Product.DeliveryTime_Promised wins
+    # Vendor-product = 3 days; BPartner default = 10; PP_Product_Planning = 99 — both lower tiers must be ignored.
+    # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-12
+    Given metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID | IsCreatePlan | IsPurchased | IsDocComplete | DeliveryTime_Promised |
+      | ppln       | product      | true         | Y           | true          | 99                    |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_TransportDays | PO_DiscountSchema_ID |
       | vendor     | Y        | N          | ps                 | 10               | ds                   |
@@ -81,48 +87,19 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
   @from:cucumber
   @Id:S26070_T2
   Scenario: tier 2 — C_BPartner.PO_TransportDays fallback
-    # No vendor-product DeliveryTime_Promised; BPartner default = 5; PP_Product_Planning = 99 (ignored).
+    # C_BPartner_Product row created WITHOUT DeliveryTime_Promised → tier 1 inactive.
+    # C_BPartner.PO_TransportDays = 5 wins; PP_Product_Planning = 99 (lower priority, ignored).
     # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-10
-    Given metasfresh contains M_Products:
-      | Identifier |
-      | product    |
-    And metasfresh contains M_PricingSystems
-      | Identifier |
-      | ps         |
-    And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps                 | EUR                 | true  | false         | 2              |
-      | pl_po      | ps                 | EUR                 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID |
-      | plv_so     | pl_so          |
-      | plv_po     | pl_po          |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_so      | plv_so                 | product      | 10.00    | PCE               | Normal                        |
-      | pp_po      | plv_po                 | product      | 10.00    | PCE               | Normal                        |
-    ## VendorProductInfoService.getVendorProductInfos only considers vendors with a PO_DiscountSchema_ID
-    And metasfresh contains M_DiscountSchemas:
-      | Identifier | Name                  | DiscountType | ValidFrom  |
-      | ds         | lead_time_tier2_ds    | F            | 2022-01-01 |
-    And metasfresh contains M_DiscountSchemaBreaks:
-      | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
-      | dsb        | ds                  | product      | ps                    | 10    | Y                      | P         | 0          | 0             |
-    And metasfresh contains PP_Product_Plannings
+    Given metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | IsCreatePlan | IsPurchased | IsDocComplete | DeliveryTime_Promised |
       | ppln       | product      | true         | Y           | true          | 99                    |
-    And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | customer   | N        | Y          | ps                 |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | customerLocation | customer      | Y               | Y               |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_TransportDays | PO_DiscountSchema_ID |
       | vendor     | Y        | N          | ps                 | 5                | ds                   |
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation | vendor        | Y               | Y               |
+    # no DeliveryTime_Promised column → tier 1 is inactive, chain must fall through to tier 2
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
       | vendor        | product      |
@@ -142,48 +119,21 @@ Feature: Purchase candidate — vendor-aware lead time on PurchaseDateOrdered
   @from:cucumber
   @Id:S26070_T3
   Scenario: tier 3 — PP_Product_Planning.DeliveryTime_Promised fallback
-    # No vendor-product DeliveryTime_Promised; no BPartner PO_TransportDays; PP_Product_Planning = 7.
+    # C_BPartner_Product row WITHOUT DeliveryTime_Promised → tier 1 inactive.
+    # C_BPartner row WITHOUT PO_TransportDays → tier 2 inactive.
+    # PP_Product_Planning.DeliveryTime_Promised = 7 wins.
     # DatePromised = 2022-06-15 → PurchaseDateOrdered = 2022-06-08
-    Given metasfresh contains M_Products:
-      | Identifier |
-      | product    |
-    And metasfresh contains M_PricingSystems
-      | Identifier |
-      | ps         |
-    And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps                 | EUR                 | true  | false         | 2              |
-      | pl_po      | ps                 | EUR                 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID |
-      | plv_so     | pl_so          |
-      | plv_po     | pl_po          |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_so      | plv_so                 | product      | 10.00    | PCE               | Normal                        |
-      | pp_po      | plv_po                 | product      | 10.00    | PCE               | Normal                        |
-    ## VendorProductInfoService.getVendorProductInfos only considers vendors with a PO_DiscountSchema_ID
-    And metasfresh contains M_DiscountSchemas:
-      | Identifier | Name                  | DiscountType | ValidFrom  |
-      | ds         | lead_time_tier3_ds    | F            | 2022-01-01 |
-    And metasfresh contains M_DiscountSchemaBreaks:
-      | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
-      | dsb        | ds                  | product      | ps                    | 10    | Y                      | P         | 0          | 0             |
-    And metasfresh contains PP_Product_Plannings
+    Given metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | IsCreatePlan | IsPurchased | IsDocComplete | DeliveryTime_Promised |
       | ppln       | product      | true         | Y           | true          | 7                     |
-    And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | customer   | N        | Y          | ps                 |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | customerLocation | customer      | Y               | Y               |
+    # no PO_TransportDays column → tier 2 inactive
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
       | vendor     | Y        | N          | ps                 | ds                   |
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation | vendor        | Y               | Y               |
+    # no DeliveryTime_Promised column → tier 1 inactive
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
       | vendor        | product      |
