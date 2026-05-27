@@ -48,6 +48,14 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable String attributeSetName;
 
+	/**
+	 * Identifier of a {@link de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest}
+	 * created in the same request. When set, the product is linked via
+	 * {@code M_Product.C_CompensationGroup_Schema_ID} after the schema is created — this turns the
+	 * product into a "trigger product" that materialises the schema's template lines on an order.
+	 */
+	@Nullable Identifier compensationGroupSchema;
+
 	//
 	//
 	//
