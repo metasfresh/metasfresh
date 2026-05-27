@@ -401,7 +401,8 @@ public class EDIDesadvPackService
 				sequences.getPackSeqNoSequence(),
 				sequences.getPackItemLineSequence());
 
-		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvLineAndHUId(topLevelHU.getId());
+		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvAndHUId(desadvId, topLevelHU.getId());
 
 		if (packByHUId == null)
 		{
