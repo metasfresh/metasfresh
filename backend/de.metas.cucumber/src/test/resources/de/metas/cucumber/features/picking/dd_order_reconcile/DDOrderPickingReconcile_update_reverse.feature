@@ -62,7 +62,7 @@ Feature: DD_Order picking reconcile — update (void + recreate) and reverse (vo
       | shipmentSchedule | orderLine      | packingWH    |
     And after not more than 120s, the DD_Order linked to shipment schedule is found:
       | Identifier  | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | ddOrder_v1  | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | ddOrder_v1  | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
 
   @from:cucumber
   Scenario: Changing the schedule quantity voids the old DD_Order and recreates a fresh one (picker not busy)
@@ -74,11 +74,11 @@ Feature: DD_Order picking reconcile — update (void + recreate) and reverse (vo
     # The new live DD_Order carries qty 8 and the schedule linkage; the old one is voided.
     Then after not more than 120s, the DD_Order linked to shipment schedule is found:
       | Identifier | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | ddOrder_v2 | shipmentSchedule      | Completed | stockWH             | packingWH         | 8          |
+      | ddOrder_v2 | shipmentSchedule      | CO | stockWH             | packingWH         | 8          |
     # The original DD_Order (captured in Background as ddOrder_v1) must now be Voided.
     And after not more than 5s, following DD_Orders are found
       | Identifier  | DocStatus |
-      | ddOrder_v1  | Voided    |
+      | ddOrder_v1  | VO     |
 
   @from:cucumber
   Scenario: Deactivating the schedule voids the DD_Order and creates no replacement (picker not busy)

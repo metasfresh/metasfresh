@@ -64,9 +64,10 @@ Feature: DD_Order picking reconcile — network gap soft-fail and repost recover
     # No source warehouse can be resolved → no DD_Order is created.
     And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
     # The reconcile event ends in Error with a readable message and an AD_Issue is logged.
+    # MsgText matches the AD_Message resolved in the system base language (de_DE): "Kein Quelllager ...".
     And after not more than 120s, an AD_EventLog_Entry for the reconcile handler is found:
-      | IsError | MsgText                  |
-      | true    | %source warehouse%       |
+      | IsError | MsgText        |
+      | true    | %Quelllager%   |
     And after not more than 10s, an AD_Issue is logged for the reconcile network gap
 
     # Fix the network: add the missing source line resolving stockWH for the packing warehouse, then repost.
@@ -78,4 +79,4 @@ Feature: DD_Order picking reconcile — network gap soft-fail and repost recover
     # Now the DD_Order is created.
     Then after not more than 30s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |

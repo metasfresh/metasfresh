@@ -61,7 +61,7 @@ Feature: DD_Order picking reconcile — drift watchdog (manual rebuild + hourly 
       | shipmentSchedule | orderLine      | packingWH    |
     And after not more than 120s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
 
     # Simulate the "fell through" drift: the schedule's DD_Order is lost (voided outside the reconcile flow),
     # so the active packing-warehouse schedule now has no live DD_Order — exactly the watchdog's input.
@@ -74,7 +74,7 @@ Feature: DD_Order picking reconcile — drift watchdog (manual rebuild + hourly 
 
     Then after not more than 30s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success (REQUIREMENTS §5 TC7).
     And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
@@ -91,7 +91,7 @@ Feature: DD_Order picking reconcile — drift watchdog (manual rebuild + hourly 
 
     Then after not more than 30s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success (REQUIREMENTS §5 TC8).
     And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:

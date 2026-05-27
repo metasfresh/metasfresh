@@ -62,7 +62,7 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
       | shipmentSchedule | orderLine      | packingWH    |
     And after not more than 120s, the DD_Order linked to shipment schedule is found:
       | Identifier | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | ddOrder    | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | ddOrder    | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
 
   @from:cucumber
   Scenario: A busy picker makes the beforeSave interceptor reject the schedule change (TC4)
@@ -80,12 +80,12 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
     # The DD_Order is untouched (still the original Completed one, qty 5).
     And after not more than 5s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
     # The original DD_Order identifier (captured in Background) must be unchanged (same ID, still Completed).
     # Because the tx rolled back, afterSave never published a reconcile event — no void/recreate happened.
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
-      | ddOrder    | Completed |
+      | ddOrder    | CO |
 
   @from:cucumber
   Scenario: A picker who grabs the job in the race window makes the async reconcile event fail (TC5)
@@ -104,7 +104,7 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
     # The DD_Order is left unchanged by the failed reconcile.
     And after not more than 5s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
 
     # Once the picker releases the job (picking line inactivated), reprocessing the event succeeds.
     # The reconcile classifies as RECREATE (active schedule + existing live DD_Order): the old DD_Order
@@ -113,8 +113,8 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
     And the reconcile event for M_ShipmentSchedule shipmentSchedule is processed
     Then after not more than 10s, the DD_Order linked to shipment schedule is found:
       | Identifier  | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | ddOrder_v2  | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+      | ddOrder_v2  | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
     # The original DD_Order (captured in Background as ddOrder) must now be Voided — RECREATE voided it.
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
-      | ddOrder    | Voided    |
+      | ddOrder    | VO     |
