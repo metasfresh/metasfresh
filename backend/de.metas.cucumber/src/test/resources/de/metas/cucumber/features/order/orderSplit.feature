@@ -29,10 +29,10 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | Identifier | IsStocked |
       | product_os | false     |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | plv_os                 | product_os   | 10.00    | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_os      | plv_os                 | product_os   | 10.00    | PCE               | Normal                        |
 
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | M_PricingSystem_ID |
       | bp_os      | true       | ps_os              |
     And metasfresh contains C_BPartner_Locations:
@@ -40,7 +40,7 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | bp_os_loc  | bp_os         | Y               | Y               |
 
     And metasfresh contains M_Warehouse:
-      | Identifier  |
+      | Identifier   |
       | warehouse_os |
 
 
@@ -102,9 +102,9 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | product_os2 | false     |
       | product_os3 | false     |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | plv_os                 | product_os2  | 12.00    | PCE               | Normal                        |
-      | plv_os                 | product_os3  | 15.00    | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_os2     | plv_os                 | product_os2  | 12.00    | PCE               | Normal                        |
+      | pp_os3     | plv_os                 | product_os3  | 15.00    | PCE               | Normal                        |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
@@ -161,8 +161,8 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | Identifier   | IsStocked |
       | product_os30 | false     |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | plv_os                 | product_os30  | 8.00     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_os30    | plv_os                 | product_os30  | 8.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
@@ -253,8 +253,8 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | Identifier   | IsStocked |
       | product_os50 | false     |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | plv_os                 | product_os50  | 9.00     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_os50    | plv_os                 | product_os50  | 9.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
