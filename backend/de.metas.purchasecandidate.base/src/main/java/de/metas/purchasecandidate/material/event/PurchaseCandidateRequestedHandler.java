@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -74,6 +75,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
@@ -85,6 +87,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepository;
 	@NonNull private final PostMaterialEventService postMaterialEventService;
 	@NonNull private final VendorProductInfoService vendorProductInfosRepo;
+	@NonNull private final BPartnerProductEffectiveBL bpartnerProductEffectiveBL;
 
 	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
@@ -182,7 +185,12 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.vendorId(vendorProductInfos.getVendorId()) // mandatory
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
 				.purchaseDatePromised(datePromised)
-				.purchaseDateOrdered(computePurchaseDateOrderedOrNull(datePromised, productPlanning))
+				.purchaseDateOrdered(computePurchaseDateOrderedOrNull(
+						datePromised,
+						vendorProductInfos.getVendorId(),
+						product.getId(),
+						orgId,
+						productPlanning))
 
 				.dimension(dimension)
 				.orgId(orgId)
@@ -210,13 +218,24 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	}
 
 	@Nullable
-	private ZonedDateTime computePurchaseDateOrderedOrNull(@NonNull final ZonedDateTime datePromised, @Nullable final ProductPlanning productPlanning)
+	@VisibleForTesting
+	ZonedDateTime computePurchaseDateOrderedOrNull(
+			@NonNull final ZonedDateTime datePromised,
+			@NonNull final BPartnerId vendorId,
+			@NonNull final ProductId productId,
+			@NonNull final OrgId orgId,
+			@Nullable final ProductPlanning productPlanning)
 	{
-		if (productPlanning == null)
+		final Optional<Integer> vendorAware = bpartnerProductEffectiveBL.getPurchaseTransportDaysIfSet(vendorId, productId, orgId);
+		if (vendorAware.isPresent())
 		{
-			return null;
+			return datePromised.minusDays(vendorAware.get());
 		}
-		return datePromised.minusDays(productPlanning.getLeadTimeDays());
+		if (productPlanning != null)
+		{
+			return datePromised.minusDays(productPlanning.getLeadTimeDays());
+		}
+		return null;
 	}
 
 	private void saveCandidateAndPostCreatedEvent(
