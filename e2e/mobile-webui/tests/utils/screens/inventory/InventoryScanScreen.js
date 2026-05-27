@@ -1,5 +1,9 @@
 import { test } from "../../../../playwright.config";
+<<<<<<< HEAD
 import { page, SLOW_ACTION_TIMEOUT, step } from "../../common";
+=======
+import { page, step, SLOW_ACTION_TIMEOUT } from "../../common";
+>>>>>>> 0d890c476f (MobileUI — emit user-friendly error messages for QR scan failures (#24067))
 import { expect } from '@playwright/test';
 import { InventoryJobScreen } from './InventoryJobScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';

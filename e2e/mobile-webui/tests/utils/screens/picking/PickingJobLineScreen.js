@@ -26,6 +26,10 @@ export const PickingJobLineScreen = {
         await GetQuantityDialog.waitForDialog();
     }),
 
+    clickScanButton: async () => await test.step(`${NAME} - Click Scan button`, async () => {
+        await page.getByRole('button', { name: 'Scan' }).tap();
+    }),
+
     clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index} button`, async () => {
         await page.locator(`#step-${index}-button`).tap();
         await PickingJobStepScreen.waitForScreen();
