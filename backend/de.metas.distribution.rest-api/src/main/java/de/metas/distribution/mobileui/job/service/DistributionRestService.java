@@ -138,7 +138,6 @@ public class DistributionRestService
 				.trxManager(trxManager)
 				.loadingSupportServices(loadingSupportServices)
 				.nextLocatorResolver(nextPickFromLocatorResolver)
-				.ddOrderService(ddOrderService)
 				.jobId(jobId)
 				.build()
 				.execute();

@@ -1,7 +1,6 @@
 package de.metas.distribution.mobileui.job.service.commands.switch_pick_from_locator;
 
 import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.external_services.warehouse.NextPickFromLocatorResolver;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
@@ -26,7 +25,6 @@ public class DistributionJobSwitchPickFromLocatorCommand
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final NextPickFromLocatorResolver nextLocatorResolver;
-	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DistributionJobId jobId;
 
 	@Builder
@@ -34,13 +32,11 @@ public class DistributionJobSwitchPickFromLocatorCommand
 			@NonNull final ITrxManager trxManager,
 			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final NextPickFromLocatorResolver nextLocatorResolver,
-			@NonNull final DDOrderService ddOrderService,
 			@NonNull final DistributionJobId jobId)
 	{
 		this.trxManager = trxManager;
 		this.loadingSupportServices = loadingSupportServices;
 		this.nextLocatorResolver = nextLocatorResolver;
-		this.ddOrderService = ddOrderService;
 		this.jobId = jobId;
 	}
 
@@ -64,7 +60,7 @@ public class DistributionJobSwitchPickFromLocatorCommand
 
 		final DDOrderId ddOrderId = jobId.toDDOrderId();
 		final I_DD_Order ddOrder = loadingSupportServices.getDDOrderById(ddOrderId);
-		final List<I_DD_OrderLine> lines = ddOrderService.retrieveLines(ddOrder);
+		final List<I_DD_OrderLine> lines = loadingSupportServices.retrieveLines(ddOrder);
 		for (final I_DD_OrderLine line : lines)
 		{
 			// Resilience: only move lines that still sit on the locator we resolved the next one from.
@@ -96,12 +92,12 @@ public class DistributionJobSwitchPickFromLocatorCommand
 			line.setQtyReserved(BigDecimal.ZERO);
 		}
 		line.setM_Locator_ID(nextLocatorId.getRepoId());
-		ddOrderService.saveLine(line);
+		loadingSupportServices.saveLine(line);
 
 		if (qtyReserved.signum() != 0)
 		{
 			line.setQtyReserved(qtyReserved);
-			ddOrderService.saveLine(line);
+			loadingSupportServices.saveLine(line);
 		}
 	}
 }
