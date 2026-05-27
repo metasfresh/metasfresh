@@ -104,6 +104,11 @@ public class DDOrderService
 		ddOrderLowLevelDAO.save(ddOrder);
 	}
 
+	public void saveLine(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		ddOrderLowLevelDAO.save(ddOrderLine);
+	}
+
 	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order order)
 	{
 		return ddOrderLowLevelDAO.retrieveLines(order);

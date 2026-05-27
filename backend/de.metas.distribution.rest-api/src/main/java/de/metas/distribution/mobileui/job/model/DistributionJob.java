@@ -195,12 +195,29 @@ public class DistributionJob
 				.collect(GuavaCollectors.singleElementOrNull());
 	}
 
+	@NonNull
+	public LocatorId getSinglePickFromLocatorId()
+	{
+		final LocatorId locatorId = getSinglePickFromLocatorIdOrNull();
+		if (locatorId == null)
+		{
+			throw new AdempiereException("No single pick-from locator for " + this);
+		}
+		return locatorId;
+	}
+
 	public Optional<LocatorInfo> getSinglePickFromLocator()
 	{
 		return lines.stream()
 				.map(DistributionJobLine::getPickFromLocator)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrEmpty());
+	}
+
+	public boolean canSwitchPickFromLocator()
+	{
+		return getSinglePickFromLocatorIdOrNull() != null
+				&& streamSteps().noneMatch(DistributionJobStep::isPickedFromLocator);
 	}
 
 	@Nullable
