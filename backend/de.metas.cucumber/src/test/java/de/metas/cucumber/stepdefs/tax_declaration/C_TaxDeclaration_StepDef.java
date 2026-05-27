@@ -103,6 +103,44 @@ public class C_TaxDeclaration_StepDef
 		DataTableRows.of(dataTable).forEach(this::createTaxDeclaration);
 	}
 
+	/**
+	 * Neutralise every existing {@link I_C_TaxDeclaration} so it is ignored by the period-uniqueness
+	 * index, the star-topology CHECK, the {@code existsCompletedOverlappingPeriod} guard and the build
+	 * engine's "already-snapshotted" exclusion — giving each scenario a clean slate without a full DB reset.
+	 *
+	 * <p>Per row, in a single save:
+	 * <ul>
+	 *   <li>{@code Processed='N'} — unlocks the row past {@code C_TaxDeclaration.lockProcessedDeclaration}
+	 *       (which forbids mutating Original_ID / IsCorrection on a locked row) and drops it out of the
+	 *       build engine's NOT-EXISTS exclusion, which keys on {@code Processed='Y'};</li>
+	 *   <li>{@code IsCorrection='N'} + {@code C_TaxDeclaration_Original_ID=null} — required together by the
+	 *       star-topology CHECK ({@code (IsCorrection='N' AND Original_ID IS NULL) OR (IsCorrection='Y' AND Original_ID IS NOT NULL)});</li>
+	 *   <li>{@code DocStatus='VO'} (voided) and {@code IsActive='N'} — removes the row from the partial
+	 *       unique index and from the active-only overlap query.</li>
+	 * </ul>
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Given Clear previous Tax Declaration documents
+	 * }</pre>
+	 */
+	@Given("Clear previous Tax Declaration documents")
+	public void clear_previous_tax_declarations()
+	{
+		final List<I_C_TaxDeclaration> existing = queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.create()
+				.list();
+		for (final I_C_TaxDeclaration decl : existing)
+		{
+			decl.setProcessed(false);
+			decl.setIsCorrection(false);
+			decl.setC_TaxDeclaration_Original_ID(0); // 0 → NULL for FK columns
+			decl.setDocStatus(IDocument.STATUS_Voided);
+			decl.setIsActive(false);
+			InterfaceWrapperHelper.saveRecord(decl);
+		}
+	}
+
 	private void createTaxDeclaration(@NonNull final DataTableRow row)
 	{
 		final I_C_AcctSchema acctSchema = resolveAcctSchema(row);

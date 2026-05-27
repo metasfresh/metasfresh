@@ -6,10 +6,14 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 ##
 ## Coverage for the Tax Declaration Build process — the DB function
 ## de_metas_acct.tax_declaration_build(?). Each scenario creates its own dedicated
-## C_Tax + C_VAT_Codes and C_TaxDeclaration. No cross-scenario pollution.
+## C_Tax + C_VAT_Codes and C_TaxDeclaration. Scenarios share the same acct schema and
+## period (Jan-24); the "Clear previous Tax Declaration documents" Background step gives
+## each scenario a clean slate so a completed Original left by one scenario does not leak
+## into the period-uniqueness / no-lines paths of the next.
 
   Background:
     Given infrastructure and metasfresh are running
+    And Clear previous Tax Declaration documents
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config InterceptorEnabled_de.metas.payment.esr.model.validator.C_Invoice#createEsrPaymentRequest
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -283,13 +287,11 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
   @from:cucumber
   Scenario: complete-without-build rejected with TaxDeclaration_NoLinesYet
 
-    # Uses its own period (Jun-24) — distinct from every other scenario (Jan-24) — so the
-    # no-lines path is tested in isolation. Completion now checks period-uniqueness BEFORE the
-    # no-lines guard (an Original on an already-declared period is rejected with PERIOD_OVERLAP,
-    # since such a declaration builds empty by construction); sharing Jan-24 with TC-D4 would
-    # surface PERIOD_OVERLAP here instead of the intended NO_LINES_YET.
+    # The Background "Clear previous Tax Declaration documents" step guarantees no completed
+    # Original lingers on this period, so completion reaches the no-lines guard (rather than the
+    # period-uniqueness guard, which is checked first).
     And metasfresh contains C_TaxDeclaration:
       | Identifier | C_AcctSchema_ID | Date       |
-      | td         | acctSchema      | 2024-06-15 |
+      | td         | acctSchema      | 2024-01-15 |
     When the tax declaration "td" is completed
     Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
