@@ -18,11 +18,6 @@ public class JsonCompensationGroupSchemaRequest
 	@Nullable String name;
 
 	/**
-	 * Optional activity internal name (resolves to {@code C_Activity}). Not commonly used in tests; usually left null.
-	 */
-	@Nullable String activityInternalName;
-
-	/**
 	 * Whether the schema propagates packing instructions to derived order lines.
 	 */
 	@Nullable Boolean isInheritPackingInstruction;
