@@ -327,14 +327,19 @@ public class DD_Order_StepDef
 	{
 		final ShipmentScheduleId scheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
 
+		// Validate header AND line inside the retry: during an async RECREATE (qty change) the old DD_Order is
+		// transiently still live with the same header (schedule/warehouses/DocStatus) but the old qty. Binding on
+		// header-only would grab that stale record (and collide with its already-assigned identifier). Folding the
+		// single-line (qty) check into the supplier makes the poll wait for the fully-matching DD_Order before binding.
 		final I_DD_Order ddOrder = StepDefUtil.tryAndWaitForItem(liveDDOrderForScheduleQuery(scheduleId))
-				.validateUsingConsumer(record -> validateDDOrderHeader(record, row))
+				.validateUsingConsumer(record -> {
+					validateDDOrderHeader(record, row);
+					validateSingleLine(record, scheduleId, row);
+				})
 				.maxWaitSeconds(timeoutSec)
 				.execute();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
-
-		validateSingleLine(ddOrder, scheduleId, row);
 	}
 
 	private IQuery<I_DD_Order> liveDDOrderForScheduleQuery(@NonNull final ShipmentScheduleId scheduleId)

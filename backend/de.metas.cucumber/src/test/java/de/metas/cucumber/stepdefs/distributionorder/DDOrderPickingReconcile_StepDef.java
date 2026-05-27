@@ -167,7 +167,8 @@ public class DDOrderPickingReconcile_StepDef
 							})
 							.as("Changing the schedule while the picker is busy must be rejected by the beforeSave interceptor")
 							.isInstanceOf(AdempiereException.class)
-							.hasMessageContaining("picking");
+							// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
+							.hasMessageContaining("Kommissionierung läuft bereits");
 
 					// Reload and assert the persisted value is unchanged (the rolled-back save left no mark).
 					final I_M_ShipmentSchedule reloaded = InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
@@ -290,7 +291,8 @@ public class DDOrderPickingReconcile_StepDef
 		org.assertj.core.api.Assertions.assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("picking");
+				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
+				.hasMessageContaining("Kommissionierung läuft bereits");
 	}
 
 	/**
