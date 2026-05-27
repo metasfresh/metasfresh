@@ -96,6 +96,11 @@ public class OrderSplitCommand
 			newLine.setLine(nextLineNo);
 			nextLineNo += 10;
 
+			// DateOrdered is denormalized from C_Order and has a NOT-NULL constraint on C_OrderLine.
+			// setSkipCalculatedColumns(true) skips it during the copy → we must set it explicitly
+			// from the new header (which itself was copied from the old SO, so the date is preserved).
+			newLine.setDateOrdered(newOrder.getDateOrdered());
+
 			newLine.setQtyDelivered(BigDecimal.ZERO);
 			newLine.setQtyInvoiced(BigDecimal.ZERO);
 			newLine.setDateDelivered(null);
