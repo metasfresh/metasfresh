@@ -4,6 +4,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_TaxDeclaration;
@@ -11,6 +12,7 @@ import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TaxDeclarationService
 {
 	private static final AdMessageKey MSG_TaxDeclaration_AlreadyProcessed = AdMessageKey.of("TaxDeclaration_AlreadyProcessed");
@@ -18,12 +20,6 @@ public class TaxDeclarationService
 	private static final AdMessageKey MSG_TaxDeclaration_OriginalMustBeOriginal = AdMessageKey.of("TaxDeclaration_OriginalMustBeOriginal");
 
 	@NonNull private final TaxDeclarationRepository taxDeclarationRepository;
-
-	public TaxDeclarationService(
-			@NonNull final TaxDeclarationRepository taxDeclarationRepository)
-	{
-		this.taxDeclarationRepository = taxDeclarationRepository;
-	}
 
 	public void build(@NonNull final TaxDeclarationId id)
 	{

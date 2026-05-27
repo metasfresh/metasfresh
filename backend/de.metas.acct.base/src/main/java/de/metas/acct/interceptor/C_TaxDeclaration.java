@@ -28,8 +28,6 @@ public class C_TaxDeclaration
 	private static final AdMessageKey MSG_CorrectionInheritsPeriod = AdMessageKey.of("TaxDeclaration_CorrectionInheritsPeriod");
 
 	@NonNull private final TaxDeclarationRepository taxDeclarationRepository;
-
-	// IDocTypeBL is an ISingletonService — must NOT be ctor-injected; resolve via Services.get().
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
