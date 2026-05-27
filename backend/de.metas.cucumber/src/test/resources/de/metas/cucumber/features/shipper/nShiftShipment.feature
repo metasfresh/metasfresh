@@ -137,6 +137,16 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss1        | so1_l1         | N             | cp1                | cgt1                  |
+    # Only automatic carrier advise (M_ShipmentSchedule_Advise with IsIncludeCarrierAdviseManual=true)
+    # creates allocation records. Manual advise (M_ShipmentSchedule_Advise_Manual) does not — so
+    # cp1 allocations are expected here (from the auto-advise response), but not cp2 ones.
+    Then Carrier_Product_GoodsType_Allocs are found:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    And Carrier_Product_Service_Allocs are found:
+      | Carrier_Product_ID | Carrier_Service_ID |
+      | cp1                | cs1                |
+      | cp1                | cs2                |
     And update shipment schedules
       | Identifier | M_Shipper_ID |
       | ss1        | null         |

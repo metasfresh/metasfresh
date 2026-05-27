@@ -93,7 +93,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -112,6 +111,7 @@ public class CarrierAdviseCommand
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final UserRepository userRepository = SpringContextHolder.instance.getBean(UserRepository.class);
+	@NonNull private final CarrierProductAllocationService carrierProductAllocationService = SpringContextHolder.instance.getBean(CarrierProductAllocationService.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -310,18 +310,38 @@ public class CarrierAdviseCommand
 		}
 		else
 		{
+			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "Shipment Schedule ShipperId should be set at this point");
+
 			final JsonShipperProduct shipperProduct = response.getShipperProduct();
+			final CarrierProductId carrierProductId;
 			if (shipperProduct != null)
 			{
-				shipmentSchedule.setCarrierProductId(extractCarrierProductId(Objects.requireNonNull(shipmentSchedule.getShipperId()), shipperProduct));
+				carrierProductId = extractCarrierProductId(shipperId, shipperProduct);
+				shipmentSchedule.setCarrierProductId(carrierProductId);
 			}
-			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "Shipment Schedule ShipperId should be set at this point");
-			final JsonGoodsType goodsType = response.getGoodsType();
-			if(goodsType != null)
+			else
 			{
-				shipmentSchedule.setCarrierGoodsTypeId(extractCarrierGoodsTypeId(shipperId, goodsType));
+				carrierProductId = null;
 			}
-			shipmentSchedule.setCarrierServices(extractCarrierServiceIds(shipmentSchedule.getShipperId(), response.getShipperProductServices()));
+
+			final JsonGoodsType goodsType = response.getGoodsType();
+			if (goodsType != null)
+			{
+				final CarrierGoodsTypeId goodsTypeId = extractCarrierGoodsTypeId(shipperId, goodsType);
+				shipmentSchedule.setCarrierGoodsTypeId(goodsTypeId);
+				if (carrierProductId != null)
+				{
+					carrierProductAllocationService.addGoodsTypeIfMissing(carrierProductId, goodsTypeId);
+				}
+			}
+
+			final Set<CarrierServiceId> serviceIds = extractCarrierServiceIds(shipperId, response.getShipperProductServices());
+			shipmentSchedule.setCarrierServices(serviceIds);
+			if (carrierProductId != null)
+			{
+				serviceIds.forEach(serviceId -> carrierProductAllocationService.addServiceIfMissing(carrierProductId, serviceId));
+			}
+
 			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.Completed);
 		}
 	}
