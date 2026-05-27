@@ -474,7 +474,6 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
 
 
   @from:cucumber
-  @ghActions:run_on_executor5
   @Id:S29231_170
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link

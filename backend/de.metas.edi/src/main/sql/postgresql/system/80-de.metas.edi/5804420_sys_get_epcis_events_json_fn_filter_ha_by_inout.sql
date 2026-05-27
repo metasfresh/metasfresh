@@ -48,12 +48,13 @@ CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id 
 AS
 $$
 DECLARE
-    v_result            JSONB;
-    v_grai_attribute_id NUMERIC;
-    v_sscc_attribute_id NUMERIC;
-    v_lot_attribute_id  NUMERIC;
-    v_bbd_attribute_id  NUMERIC;
-    v_dummy_grai_prefix TEXT;
+    v_result               JSONB;
+    v_grai_attribute_id    NUMERIC;
+    v_sscc_attribute_id    NUMERIC;
+    v_lot_attribute_id     NUMERIC;
+    v_bbd_attribute_id     NUMERIC;
+    v_dummy_grai_prefix    TEXT;
+    v_m_inoutline_table_id NUMERIC;
 
 BEGIN
     -- Cache attribute IDs in one scan
@@ -67,6 +68,9 @@ BEGIN
 
     -- de.metas.edi.epcis.dummyGRAI.Prefix — GCP.assetType. portion before the 12-char serial, e.g. '7613264.00307.'
     v_dummy_grai_prefix := get_sysconfig_value('de.metas.edi.epcis.dummyGRAI.Prefix', '0000000.11111.');
+
+    -- Cache the AD_Table_ID for M_InOutLine — used 4× below as the m_hu_assignment.ad_table_id filter
+    v_m_inoutline_table_id := get_table_id('M_InOutLine');
 
     WITH inout_context AS (
         -- Materialize all context data ONCE to avoid correlated subqueries
@@ -137,7 +141,7 @@ BEGIN
                  FROM inout_context ctx
                           JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
                           JOIN m_hu_assignment ha
-                               ON ha.ad_table_id = 320 -- M_InOutLine
+                               ON ha.ad_table_id = v_m_inoutline_table_id -- M_InOutLine
                                    AND ha.record_id = iol.m_inoutline_id
                           LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
                           LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
@@ -157,7 +161,7 @@ BEGIN
                    AND NOT EXISTS (
                        SELECT 1 FROM m_hu_assignment ha2
                        WHERE ha2.m_lu_hu_id = qp.m_lu_hu_id
-                         AND ha2.ad_table_id = 320
+                         AND ha2.ad_table_id = v_m_inoutline_table_id
                          AND ha2.isactive = 'Y'
                    )
              ) lu_with_poreference
@@ -185,7 +189,7 @@ BEGIN
                  SELECT 1
                  FROM m_hu_assignment ha
                           JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 WHERE ha.ad_table_id = get_table_id('M_InOutLine')
+                 WHERE ha.ad_table_id = v_m_inoutline_table_id
                    AND iol.m_inout_id = (SELECT m_inout_id FROM inout_context)
                    AND ha.isactive = 'Y'
                    AND (ha.m_tu_hu_id = tu_hu.m_hu_id OR ha.vhu_id = tu_hu.m_hu_id)
@@ -220,7 +224,7 @@ BEGIN
                  SELECT 1
                  FROM m_hu_assignment ha
                           JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 WHERE ha.ad_table_id = get_table_id('M_InOutLine')
+                 WHERE ha.ad_table_id = v_m_inoutline_table_id
                    AND iol.m_inout_id = (SELECT m_inout_id FROM inout_context)
                    AND ha.isactive = 'Y'
                    AND ha.vhu_id = ha_vtu.m_hu_id
@@ -312,7 +316,7 @@ BEGIN
                     JSONB_AGG(
                             JSONB_BUILD_OBJECT(
                                     'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
-                                    'tuGTIN', COALESCE(pi_prod.ean_tu, pi_prod.gtin),
+                                    'tuGTIN', COALESCE(pi_prod.gtin, pi_prod.ean_tu),
                                     'quantity',
                                     CASE
                                         WHEN COALESCE(atb.qty, 1) > 0 THEN stor.qty / atb.qty
