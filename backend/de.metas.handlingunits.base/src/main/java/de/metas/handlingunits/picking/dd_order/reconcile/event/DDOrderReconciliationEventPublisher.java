@@ -30,9 +30,13 @@ public class DDOrderReconciliationEventPublisher
 
 	public void publishOne(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
+		// shallBeLogged() is required so the event-bus sets up the EventLogEntryCollector thread-local
+		// (EventBus.invokeEventListener → isWasLogged); without it the handler's invokeHandlerAndLog
+		// fails with "Missing thread-local EventLogEntryCollector", and no AD_EventLog Done/Error is recorded.
 		final Event event = Event.builder()
 				.setEventName(EVENT_NAME)
 				.putProperty(PROPERTY_shipmentScheduleId, shipmentScheduleId.getRepoId())
+				.shallBeLogged()
 				.build();
 		eventBusFactory.getEventBus(DDOrderReconciliationTopic.TOPIC).enqueueEvent(event);
 	}
