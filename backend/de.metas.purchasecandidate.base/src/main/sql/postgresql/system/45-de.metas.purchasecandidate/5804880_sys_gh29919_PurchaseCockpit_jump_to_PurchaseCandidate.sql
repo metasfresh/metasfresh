@@ -11,7 +11,7 @@ INSERT INTO AD_Reference
   (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
    Name, Description, Help, ValidationType, VFormat, EntityType, IsOrderByValue)
 VALUES
-  (542097, 0, 0, 'Y', NOW(), 100, NOW(), 100,
+  (542097 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
    'RV_PurchaseCockpit (Purchase Cockpit jump source)', 'Einkaufsdisposition', NULL, 'T', NULL, 'D', 'N')
 ON CONFLICT (AD_Reference_ID) DO NOTHING;
 
@@ -19,7 +19,7 @@ INSERT INTO AD_Ref_Table
   (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
    AD_Table_ID, AD_Key, AD_Display, IsValueDisplayed, WhereClause, OrderByClause, EntityType, AD_Window_ID, ShowInactiveValues)
 VALUES
-  (542097, 0, 0, 'Y', NOW(), 100, NOW(), 100,
+  (542097 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
    542581, 592051, 592051, 'N', NULL, NULL, 'D', NULL, 'N')
 ON CONFLICT (AD_Reference_ID) DO NOTHING;
 
@@ -31,7 +31,7 @@ INSERT INTO AD_Reference
   (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
    Name, Description, Help, ValidationType, VFormat, EntityType, IsOrderByValue)
 VALUES
-  (542098, 0, 0, 'Y', NOW(), 100, NOW(), 100,
+  (542098 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
    'C_PurchaseCandidate (Purchase Cockpit jump target)', 'Bestelldisposition', NULL, 'T', NULL, 'D', 'N')
 ON CONFLICT (AD_Reference_ID) DO NOTHING;
 
@@ -39,7 +39,7 @@ INSERT INTO AD_Ref_Table
   (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
    AD_Table_ID, AD_Key, AD_Display, IsValueDisplayed, WhereClause, OrderByClause, EntityType, AD_Window_ID, ShowInactiveValues)
 VALUES
-  (542098, 0, 0, 'Y', NOW(), 100, NOW(), 100,
+  (542098 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
    540861, 557857, 557857, 'N',
    $WC$EXISTS (
      SELECT 1 FROM RV_PurchaseCockpit rv
@@ -62,7 +62,7 @@ INSERT INTO AD_RelationType
    Name, Description, IsDirected, IsExplicit, Type, InternalName, Role_Source, Role_Target,
    AD_Reference_Source_ID, AD_Reference_Target_ID, EntityType, IsTableRecordIDTarget)
 VALUES
-  (540498, 0, 0, 'Y', NOW(), 100, NOW(), 100,
+  (540498 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
    'RV_PurchaseCockpit → C_PurchaseCandidate', NULL, 'Y', 'N', 'I', 'RV_PurchaseCockpit_C_PurchaseCandidate', NULL, NULL,
    542097, 542098, 'D', 'N')
 ON CONFLICT (AD_RelationType_ID) DO NOTHING;
@@ -81,10 +81,10 @@ INSERT INTO AD_Process
    SpreadsheetFormat, CSVFieldDelimiter, IsUpdateExportDate, IsLogWarning, CSVFieldQuote,
    AD_RelationType_ID, IsIncludeCSVHeaderRow, FileNamePattern, OpenTarget, Type)
 VALUES
-  (585624, 0, 0, 'Y', NOW(), 100, NOW(), 100,
-   'gh29919_JumpToPurchaseCandidate', 'Sprung zu Bestellvorschlägen', NULL, NULL, '3', 'D', NULL, 'N', 'N',
+  (585624 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
+   'RV_PurchaseCockpit_JumpToPurchaseCandidate', 'Sprung zu Bestellvorschlägen', NULL, NULL, '3', 'D', NULL, 'N', 'N',
    'de.metas.ui.web.view.process.RelationTypeInOverlayProcess', NULL, NULL, NULL, NULL, 'N',
-   'N', 'N', NULL, NULL, 'N', 0, 'N',
+   'N', 'S', NULL, NULL, 'N', 0, 'N',
    NULL, 'Y', 'Y', 'N', NULL,
    'Y', NULL, 'N', 'json', 'Y',
    'xls', NULL, 'N', 'N', '"',
@@ -94,7 +94,7 @@ ON CONFLICT (AD_Process_ID) DO NOTHING;
 -- Copy translations from base language
 INSERT INTO AD_Process_Trl
   (AD_Process_ID, AD_Client_ID, AD_Org_ID, AD_Language, IsActive, Created, CreatedBy, Updated, UpdatedBy, IsTranslated, Name, Description, Help)
-SELECT p.AD_Process_ID, p.AD_Client_ID, p.AD_Org_ID, l.AD_Language, p.IsActive, NOW(), 100, NOW(), 100,
+SELECT p.AD_Process_ID, p.AD_Client_ID, p.AD_Org_ID, l.AD_Language, p.IsActive, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
        CASE WHEN l.AD_Language IN ('de_DE', 'en_US') THEN 'Y' ELSE 'N' END,
        CASE WHEN l.AD_Language = 'de_DE' THEN 'Sprung zu Bestellvorschlägen'
             WHEN l.AD_Language = 'en_US' THEN 'Jump to Purchase Candidates'
@@ -122,7 +122,7 @@ INSERT INTO AD_Table_Process
    AD_Table_ID, AD_Process_ID, WEBUI_ViewQuickAction, WEBUI_ViewQuickAction_Default, WEBUI_ViewAction,
    WEBUI_IncludedTabTopAction, EntityType)
 VALUES
-  (541644, 0, 0, 'Y', NOW(), 100, NOW(), 100,
+  (541644 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100, TO_TIMESTAMP('2026-05-27 00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
    542581, 585624, 'Y', 'N', 'Y',
    'N', 'D')
 ON CONFLICT (AD_Table_Process_ID) DO NOTHING;
