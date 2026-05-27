@@ -129,7 +129,7 @@ public class PMMProductBL implements IPMMProductBL
 														   @NonNull final ProductId productId,
 														   @Nullable final BPartnerId partnerId,
 														   final int huPIPId,
-														   final I_M_AttributeSetInstance asi)
+														   @Nullable final I_M_AttributeSetInstance asi)
 	{
 		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 		final IPMMProductDAO productDAO = Services.get(IPMMProductDAO.class);
