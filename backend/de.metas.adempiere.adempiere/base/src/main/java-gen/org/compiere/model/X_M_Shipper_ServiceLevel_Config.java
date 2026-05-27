@@ -3,24 +3,25 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Shipper_ServiceLevel_Config
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO implements I_M_Shipper_ServiceLevel_Config, org.compiere.model.I_Persistent
+public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO implements I_M_Shipper_ServiceLevel_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1865421327L;
+	private static final long serialVersionUID = 1356895135L;
 
     /** Standard Constructor */
-    public X_M_Shipper_ServiceLevel_Config (final Properties ctx, final int M_Shipper_ServiceLevel_Config_ID, @javax.annotation.Nullable final String trxName)
+    public X_M_Shipper_ServiceLevel_Config (final Properties ctx, final int M_Shipper_ServiceLevel_Config_ID, @Nullable final String trxName)
     {
       super (ctx, M_Shipper_ServiceLevel_Config_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_Shipper_ServiceLevel_Config (final Properties ctx, final ResultSet rs, @javax.annotation.Nullable final String trxName)
+    public X_M_Shipper_ServiceLevel_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -36,14 +37,14 @@ public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO imple
 	@Override
 	public void setExternal_System_ID (final int External_System_ID)
 	{
-		if (External_System_ID < 1)
+		if (External_System_ID < 1) 
 			set_Value (COLUMNNAME_External_System_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_External_System_ID, External_System_ID);
 	}
 
 	@Override
-	public int getExternal_System_ID()
+	public int getExternal_System_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_External_System_ID);
 	}
@@ -51,14 +52,14 @@ public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO imple
 	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1)
+		if (M_Shipper_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
 	@Override
-	public int getM_Shipper_ID()
+	public int getM_Shipper_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
@@ -66,14 +67,14 @@ public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO imple
 	@Override
 	public void setM_Shipper_ServiceLevel_Config_ID (final int M_Shipper_ServiceLevel_Config_ID)
 	{
-		if (M_Shipper_ServiceLevel_Config_ID < 1)
+		if (M_Shipper_ServiceLevel_Config_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ServiceLevel_Config_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ServiceLevel_Config_ID, M_Shipper_ServiceLevel_Config_ID);
 	}
 
 	@Override
-	public int getM_Shipper_ServiceLevel_Config_ID()
+	public int getM_Shipper_ServiceLevel_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Shipper_ServiceLevel_Config_ID);
 	}
@@ -85,7 +86,7 @@ public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public int getSeqNo()
+	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
@@ -97,7 +98,7 @@ public class X_M_Shipper_ServiceLevel_Config extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public java.lang.String getServiceLevel()
+	public java.lang.String getServiceLevel() 
 	{
 		return get_ValueAsString(COLUMNNAME_ServiceLevel);
 	}

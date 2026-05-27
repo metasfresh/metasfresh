@@ -3,10 +3,10 @@ package org.compiere.model;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Shipper_ServiceLevel_Config
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_M_Shipper_ServiceLevel_Config
+public interface I_M_Shipper_ServiceLevel_Config 
 {
 
 	String Table_Name = "M_Shipper_ServiceLevel_Config";
@@ -16,8 +16,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -28,8 +28,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -38,8 +38,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -50,8 +50,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -63,8 +63,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -75,8 +75,29 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Externes System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternal_System_ID (int External_System_ID);
+
+	/**
+	 * Get Externes System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternal_System_ID();
+
+	ModelColumn<I_M_Shipper_ServiceLevel_Config, Object> COLUMN_External_System_ID = new ModelColumn<>(I_M_Shipper_ServiceLevel_Config.class, "External_System_ID", null);
+	String COLUMNNAME_External_System_ID = "External_System_ID";
+
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -85,8 +106,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -98,29 +119,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternal_System_ID (int External_System_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternal_System_ID();
-
-	ModelColumn<I_M_Shipper_ServiceLevel_Config, de.metas.externalsystem.model.I_ExternalSystem> COLUMN_External_System_ID = new ModelColumn<>(I_M_Shipper_ServiceLevel_Config.class, "External_System_ID", de.metas.externalsystem.model.I_ExternalSystem.class);
-	String COLUMNNAME_External_System_ID = "External_System_ID";
-
-	/**
-	 * Set Shipper.
-	 * Method or manner of product delivery
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -129,8 +129,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Shipper.
-	 * Method or manner of product delivery
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -163,8 +163,9 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_M_Shipper_ServiceLevel_Config_ID = "M_Shipper_ServiceLevel_Config_ID";
 
 	/**
-	 * Set SeqNo.
-	 * Method of ordering records; lowest number comes first
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -173,8 +174,9 @@ public interface I_M_Shipper_ServiceLevel_Config
 	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get SeqNo.
-	 * Method of ordering records; lowest number comes first
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -207,8 +209,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_ServiceLevel = "ServiceLevel";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -220,8 +222,8 @@ public interface I_M_Shipper_ServiceLevel_Config
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
