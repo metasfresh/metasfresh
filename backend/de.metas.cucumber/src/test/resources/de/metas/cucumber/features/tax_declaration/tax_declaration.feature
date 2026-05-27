@@ -295,3 +295,244 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
       | td         | acctSchema      | 2024-01-15 |
     When the tax declaration "td" is completed
     Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
+
+
+# ############################################################################################################################################
+# TC-D6 — Reactivating an Original that already has a Correction is rejected (TaxDeclaration_HasCorrections)
+# ############################################################################################################################################
+  @Id:S0467_TD_060
+  @from:cucumber
+  Scenario: reactivating an Original that already has a Correction is rejected
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
+    And the invoice identified by invoice is completed
+    And Wait until documents invoice is posted
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+    And the tax declaration "td" is completed
+    And invoke Create Correction on C_TaxDeclaration "td"
+
+    When the tax declaration "td" is reactivated expecting failure
+    Then the tax declaration operation fails with message 'TaxDeclaration_HasCorrections'
+
+
+# ############################################################################################################################################
+# TC-D8 — Create Correction inherits Period, DateAcct and AcctSchema from the Original
+# ############################################################################################################################################
+  @Id:S0467_TD_080
+  @from:cucumber
+  Scenario: Create Correction inherits period, posting date and acct schema from the Original
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
+    And the invoice identified by invoice is completed
+    And Wait until documents invoice is posted
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+    And the tax declaration "td" is completed
+
+    When invoke Create Correction on C_TaxDeclaration "td"
+    Then the tax declaration "td_correction" is a Correction inheriting Period, DateAcct and AcctSchema from "td"
+
+
+# ############################################################################################################################################
+# TC-D9 — Completing a Correction clears the Original's "Berichtigung erforderlich" (IsCorrectionNeeded) flag
+# ############################################################################################################################################
+  @Id:S0467_TD_090
+  @from:cucumber
+  Scenario: completing a Correction clears the Original's correction-needed flag
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
+    And the invoice identified by invoice is completed
+    And Wait until documents invoice is posted
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+    And the tax declaration "td" is completed
+    And C_TaxDeclaration "td" has IsCorrectionNeeded set to "Y"
+
+    And invoke Create Correction on C_TaxDeclaration "td"
+    And the tax declaration "td_correction" is built
+
+    When the tax declaration "td_correction" is completed
+    Then C_TaxDeclaration "td" has IsCorrectionNeeded = "N"
+
+
+# ############################################################################################################################################
+# TC-D10 — A Correction of a Correction is rejected (star topology: only an Original may be the template)
+# ############################################################################################################################################
+  @Id:S0467_TD_100
+  @from:cucumber
+  Scenario: a Correction of a Correction is rejected
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
+    And the invoice identified by invoice is completed
+    And Wait until documents invoice is posted
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+    And the tax declaration "td" is completed
+
+    # First Correction: legal. Build + complete it so it becomes a locked (Processed='Y') Correction.
+    And invoke Create Correction on C_TaxDeclaration "td"
+    And the tax declaration "td_correction" is built
+    And the tax declaration "td_correction" is completed
+
+    # Second Correction anchored to the first Correction: rejected — only an Original may be the template.
+    When invoke Create Correction on C_TaxDeclaration "td_correction"
+    Then the tax declaration operation fails with message 'TaxDeclaration_OriginalMustBeOriginal'
+
+
+# ############################################################################################################################################
+# TC-D12 — A Correction Build snapshots ALL period facts (full restatement), including facts posted after the Original was locked
+# ############################################################################################################################################
+  @Id:S0467_TD_120
+  @from:cucumber
+  Scenario: a Correction Build snapshots all period facts (full restatement)
+
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory      | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19    | tax19    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
+
+    # Two sales invoices in Jan-24, posted BEFORE the Original is locked.
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceA   | customer      | 2024-01-15   | true    | EUR           |
+      | invoiceB   | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | lineA1     | invoiceA     | product      | 10 PCE      | tax19    |
+      | lineB1     | invoiceB     | product      | 20 PCE      | tax19    |
+    And the invoice identified by invoiceA is completed
+    And the invoice identified by invoiceB is completed
+    And Wait until documents invoiceA is posted
+    And Wait until documents invoiceB is posted
+
+    # Original is built (snapshots A + B) and locked.
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | td         | acctSchema      | 2024-01-15 |
+    And the tax declaration "td" is built
+    And the tax declaration "td" is completed
+
+    # A third sales invoice in the SAME period, posted AFTER the Original was locked.
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceC   | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | lineC1     | invoiceC     | product      | 30 PCE      | tax19    |
+    And the invoice identified by invoiceC is completed
+    And Wait until documents invoiceC is posted
+
+    # The Correction's Build must restate the WHOLE period: A + B (already in the Original's snapshot)
+    # AND C (posted after the lock). IsCorrection='Y' bypasses the build engine's NOT-EXISTS exclusion.
+    And invoke Create Correction on C_TaxDeclaration "td"
+    When the tax declaration "td_correction" is built
+
+    Then the C_TaxDeclarationAcct for declaration 'td_correction' contains entries for documents:
+      | Record_ID | VATCode | AmountType | Amount |
+      | invoiceA  | sales19 | T          | -190   |
+      | invoiceB  | sales19 | T          | -380   |
+      | invoiceC  | sales19 | T          | -570   |

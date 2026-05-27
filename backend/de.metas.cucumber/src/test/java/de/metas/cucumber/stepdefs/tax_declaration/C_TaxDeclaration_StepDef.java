@@ -251,6 +251,69 @@ public class C_TaxDeclaration_StepDef
 	}
 
 	/**
+	 * Attempt to reactivate an existing {@link I_C_TaxDeclaration}, expecting the handler to reject it.
+	 * The resulting {@link AdempiereException} is stashed (same field as {@link #complete(String)}) so it
+	 * can be asserted by {@link #assertOperationFailedWithMessage(String)}. Use this for the guard that
+	 * forbids reopening an Original while a Correction anchored to it still exists.
+	 *
+	 * <p><b>Required:</b> {@code identifier} — refers to a record previously stored in
+	 * {@link C_TaxDeclaration_StepDefData}.
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * When the tax declaration "td" is reactivated expecting failure
+	 * }</pre>
+	 */
+	@When("the tax declaration {string} is reactivated expecting failure")
+	public void reactivateExpectingFailure(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		try
+		{
+			documentBL.processEx(decl, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+			InterfaceWrapperHelper.refresh(decl);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
+	/**
+	 * Assert that a {@link I_C_TaxDeclaration} is a Correction that inherited
+	 * {@code (C_Period_ID, DateAcct, C_AcctSchema_ID)} from its Original, and is linked back to it via
+	 * {@code C_TaxDeclaration_Original_ID}. Both records are reloaded from the DB before comparison.
+	 *
+	 * <p><b>Required parameters:</b>
+	 * <ul>
+	 *   <li>{@code correctionIdentifier} — the Correction record (e.g. {@code td_correction})</li>
+	 *   <li>{@code originalIdentifier} — the Original record it was derived from (e.g. {@code td})</li>
+	 * </ul>
+	 *
+	 * <p><b>Example:</b>
+	 * <pre>{@code
+	 * Then the tax declaration "td_correction" is a Correction inheriting Period, DateAcct and AcctSchema from "td"
+	 * }</pre>
+	 */
+	@Then("the tax declaration {string} is a Correction inheriting Period, DateAcct and AcctSchema from {string}")
+	public void assertCorrectionInherits(
+			@NonNull final String correctionIdentifier,
+			@NonNull final String originalIdentifier)
+	{
+		final I_C_TaxDeclaration correctionRef = taxDeclarationTable.get(StepDefDataIdentifier.ofString(correctionIdentifier));
+		final I_C_TaxDeclaration originalRef = taxDeclarationTable.get(StepDefDataIdentifier.ofString(originalIdentifier));
+		final I_C_TaxDeclaration correction = InterfaceWrapperHelper.load(correctionRef.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
+		final I_C_TaxDeclaration original = InterfaceWrapperHelper.load(originalRef.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
+
+		assertThat(correction.isIsCorrection()).as("IsCorrection").isTrue();
+		assertThat(correction.getC_TaxDeclaration_Original_ID()).as("C_TaxDeclaration_Original_ID").isEqualTo(original.getC_TaxDeclaration_ID());
+		assertThat(correction.getC_Period_ID()).as("C_Period_ID inherited from Original").isEqualTo(original.getC_Period_ID());
+		assertThat(correction.getDateAcct()).as("DateAcct inherited from Original").isEqualTo(original.getDateAcct());
+		assertThat(correction.getC_AcctSchema_ID()).as("C_AcctSchema_ID inherited from Original").isEqualTo(original.getC_AcctSchema_ID());
+	}
+
+	/**
 	 * Assert that a {@link I_C_TaxDeclaration} is in a specific state after complete / reactivate.
 	 *
 	 * <p><b>Required parameters:</b>
@@ -290,13 +353,19 @@ public class C_TaxDeclaration_StepDef
 	 * <p>The stashed exception is cleared after the assertion so that subsequent steps
 	 * can stash a new one independently.
 	 *
+	 * <p>The same assertion is also exposed under the operation-neutral phrasing
+	 * {@code the tax declaration operation fails with message ...} — use that form for failures of
+	 * operations other than completion (Create Correction, reactivate), which stash into the same field.
+	 *
 	 * <p><b>Example:</b>
 	 * <pre>{@code
 	 * Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
+	 * Then the tax declaration operation fails with message 'TaxDeclaration_HasCorrections'
 	 * }</pre>
 	 */
 	@Then("the tax declaration completion fails with message {string}")
-	public void assertCompletionFailedWithMessage(@NonNull final String expectedErrorCode)
+	@Then("the tax declaration operation fails with message {string}")
+	public void assertOperationFailedWithMessage(@NonNull final String expectedErrorCode)
 	{
 		assertLastExceptionHasErrorCode(expectedErrorCode);
 	}
