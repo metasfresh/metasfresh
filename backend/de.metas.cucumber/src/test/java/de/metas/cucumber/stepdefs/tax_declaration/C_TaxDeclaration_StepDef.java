@@ -360,7 +360,7 @@ public class C_TaxDeclaration_StepDef
 	 * <p><b>Example:</b>
 	 * <pre>{@code
 	 * Then the tax declaration completion fails with message 'TAXDECLARATION_NO_LINES_YET'
-	 * Then the tax declaration operation fails with message 'TaxDeclaration_HasCorrections'
+	 * Then the tax declaration operation fails with message 'TAXDECLARATION_HAS_CORRECTIONS'
 	 * }</pre>
 	 */
 	@Then("the tax declaration completion fails with message {string}")

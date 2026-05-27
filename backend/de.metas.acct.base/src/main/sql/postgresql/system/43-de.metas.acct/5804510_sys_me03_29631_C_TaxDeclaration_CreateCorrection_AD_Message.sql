@@ -3,13 +3,13 @@
 
 INSERT INTO AD_Message (
     AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-    Value, MsgText, MsgType, EntityType
+    Value, MsgText, MsgType, EntityType, ErrorCode
 ) VALUES (
     545717, 0, 0, 'Y',
     TIMESTAMP '2026-05-25 00:00:00', 100, TIMESTAMP '2026-05-25 00:00:00', 100,
     'TaxDeclaration_CreateCorrection_OriginalNotLocked',
     'Eine Korrektur kann nur für eine gesperrte Original-Berichtigung erstellt werden.',
-    'E', 'de.metas.acct'
+    'E', 'de.metas.acct', 'TAXDECLARATION_CORRECTION_NOT_LOCKED'
 );
 
 -- en_US Trl

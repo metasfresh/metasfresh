@@ -298,7 +298,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
 
 # ############################################################################################################################################
-# TC-D6 — Reactivating an Original that already has a Correction is rejected (TaxDeclaration_HasCorrections)
+# TC-D6 — Reactivating an Original that already has a Correction is rejected (TAXDECLARATION_HAS_CORRECTIONS)
 # ############################################################################################################################################
   @Id:S0467_TD_060
   @from:cucumber
@@ -336,7 +336,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And invoke Create Correction on C_TaxDeclaration "td"
 
     When the tax declaration "td" is reactivated expecting failure
-    Then the tax declaration operation fails with message 'TaxDeclaration_HasCorrections'
+    Then the tax declaration operation fails with message 'TAXDECLARATION_HAS_CORRECTIONS'
 
 
 # ############################################################################################################################################
@@ -469,7 +469,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
     # Second Correction anchored to the first Correction: rejected — only an Original may be the template.
     When invoke Create Correction on C_TaxDeclaration "td_correction"
-    Then the tax declaration operation fails with message 'TaxDeclaration_OriginalMustBeOriginal'
+    Then the tax declaration operation fails with message 'TAXDECLARATION_ORIGINAL_MUST_BE_ORIGINAL'
 
 
 # ############################################################################################################################################

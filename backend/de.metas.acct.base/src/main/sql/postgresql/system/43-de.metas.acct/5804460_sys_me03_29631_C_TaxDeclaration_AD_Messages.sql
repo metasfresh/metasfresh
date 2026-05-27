@@ -2,7 +2,7 @@
 
 -- Value: TaxDeclaration_HasCorrections
 -- 2026-05-25T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545713,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Berichtigung kann nicht aufgehoben werden — eine Korrektur-Berichtigung verweist auf sie. Bitte zuerst die Korrektur aufheben oder löschen.','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_HasCorrections')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545713,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Berichtigung kann nicht aufgehoben werden — eine Korrektur-Berichtigung verweist auf sie. Bitte zuerst die Korrektur aufheben oder löschen.','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_HasCorrections','TAXDECLARATION_HAS_CORRECTIONS')
 ;
 
 -- 2026-05-25T00:00:00Z
@@ -20,7 +20,7 @@ UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=t
 
 -- Value: TaxDeclaration_OriginalMustBeOriginal
 -- 2026-05-25T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545714,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Eine Korrektur kann nur eine Original-Berichtigung als Vorlage haben (keine Korrektur einer Korrektur).','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_OriginalMustBeOriginal')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545714,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Eine Korrektur kann nur eine Original-Berichtigung als Vorlage haben (keine Korrektur einer Korrektur).','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_OriginalMustBeOriginal','TAXDECLARATION_ORIGINAL_MUST_BE_ORIGINAL')
 ;
 
 -- 2026-05-25T00:00:00Z
@@ -38,7 +38,7 @@ UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=t
 
 -- Value: TaxDeclaration_OriginalRequired
 -- 2026-05-25T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545715,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Bei IsCorrection=''Y'' ist C_TaxDeclaration_Original_ID erforderlich.','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_OriginalRequired')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545715,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Bei IsCorrection=''Y'' ist C_TaxDeclaration_Original_ID erforderlich.','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_OriginalRequired','TAXDECLARATION_ORIGINAL_REQUIRED')
 ;
 
 -- 2026-05-25T00:00:00Z
@@ -56,7 +56,7 @@ UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=t
 
 -- Value: TaxDeclaration_CorrectionInheritsPeriod
 -- 2026-05-25T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545716,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Eine Korrektur muss Periode (C_Period_ID), Buchungsdatum (DateAcct) und Buchungskreis (C_AcctSchema_ID) der Original-Berichtigung übernehmen.','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_CorrectionInheritsPeriod')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545716,0,TIMESTAMP '2026-05-25 00:00:00',100,'de.metas.acct','Y','Eine Korrektur muss Periode (C_Period_ID), Buchungsdatum (DateAcct) und Buchungskreis (C_AcctSchema_ID) der Original-Berichtigung übernehmen.','E',TIMESTAMP '2026-05-25 00:00:00',100,'TaxDeclaration_CorrectionInheritsPeriod','TAXDECLARATION_CORRECTION_INHERITS_PD')
 ;
 
 -- 2026-05-25T00:00:00Z

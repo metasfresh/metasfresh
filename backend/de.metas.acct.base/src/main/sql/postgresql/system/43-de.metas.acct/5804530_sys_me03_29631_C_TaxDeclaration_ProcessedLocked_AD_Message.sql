@@ -2,7 +2,7 @@
 
 -- Value: TaxDeclaration_ProcessedLocked
 -- 2026-05-26T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545718,0,TIMESTAMP '2026-05-26 00:00:00',100,'de.metas.acct','Y','Berichtigung ist fertiggestellt (Processed=Y). Nur IsCorrectionNeeded und CorrectionNeededReason dürfen geändert werden.','E',TIMESTAMP '2026-05-26 00:00:00',100,'TaxDeclaration_ProcessedLocked')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545718,0,TIMESTAMP '2026-05-26 00:00:00',100,'de.metas.acct','Y','Berichtigung ist fertiggestellt (Processed=Y). Nur IsCorrectionNeeded und CorrectionNeededReason dürfen geändert werden.','E',TIMESTAMP '2026-05-26 00:00:00',100,'TaxDeclaration_ProcessedLocked','TAXDECLARATION_PROCESSED_LOCKED')
 ;
 
 -- 2026-05-26T00:00:00Z
