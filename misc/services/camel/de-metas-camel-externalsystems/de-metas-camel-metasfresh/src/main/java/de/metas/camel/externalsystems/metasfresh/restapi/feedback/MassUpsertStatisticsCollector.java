@@ -28,10 +28,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Value
 @Builder
 public class MassUpsertStatisticsCollector
@@ -59,6 +61,7 @@ public class MassUpsertStatisticsCollector
 
 	public void collectError(@NonNull final String errorMessage)
 	{
+		log.warn("Mass-upsert batchId={} collected error: {}", batchId, errorMessage);
 		errorsCollector.add(errorMessage);
 	}
 
