@@ -292,6 +292,18 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | bp_S29231_130  | p_S29231_130  |
 
     # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_Products:
+      | Identifier             |
+      | pmProdLU_S29231_130    |
+      | pmProdTU_S29231_130    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_130         | pmProdLU_S29231_130 | 0.0      | PCE      | Normal           |
+      | plv_S29231_130         | pmProdTU_S29231_130 | 0.0      | PCE      | Normal           |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                    |
+      | pm_LU_S29231_130                   | pmProdLU_S29231_130         | Pallet_S29231_130       |
+      | pm_TU_S29231_130                   | pmProdTU_S29231_130         | Karton_S29231_130       |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID          |
       | pi_LU_S29231_130    |
@@ -303,9 +315,13 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | piv_TU_S29231_130   | pi_TU_S29231_130    | TU          | Y         |
       | piv_VHU_S29231_130  | pi_VHU_S29231_130   | V           | Y         |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   |
-      | pii_LU_S29231_130   | piv_LU_S29231_130   | 20  | HU       | pi_TU_S29231_130    |
-      | pii_TU_S29231_130   | piv_TU_S29231_130   | 0   | PM       |                     |
+      | M_HU_PI_Item_ID        | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   | OPT.M_HU_PackingMaterial_ID |
+      | pii_LU_S29231_130      | piv_LU_S29231_130   | 20  | HU       | pi_TU_S29231_130    |                             |
+      | pii_LU_PM_S29231_130   | piv_LU_S29231_130   | 0   | PM       |                     | pm_LU_S29231_130            |
+      | pii_TU_S29231_130      | piv_TU_S29231_130   | 0   | PM       |                     | pm_TU_S29231_130            |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID  | M_Attribute.Value |
+      | piv_LU_S29231_130   | SSCC18            |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
       | pip_S29231_130          | pii_TU_S29231_130 | p_S29231_130  | 10  | 2020-01-01 |
