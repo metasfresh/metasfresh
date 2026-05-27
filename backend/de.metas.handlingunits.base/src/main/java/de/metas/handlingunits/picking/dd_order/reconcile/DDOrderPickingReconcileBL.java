@@ -17,7 +17,7 @@ public interface DDOrderPickingReconcileBL
 	 * Async handler entry point. Re-reads schedule, classifies the action (NONE/CREATE/RECREATE/VOID), executes it.
 	 *
 	 * <p><b>No transaction boundary.</b> The RECREATE branch voids the existing DD_Order then creates a fresh one;
-	 * this is only atomic if the caller wraps the call in a transaction. The caller (the async event handler, T17)
+	 * this is only atomic if the caller wraps the call in a transaction. The caller ({@code DDOrderReconciliationEventHandler})
 	 * MUST invoke this via {@code trxManager.runInNewTrx(() -> bl.reconcile(scheduleId))} so a create-failure rolls
 	 * back the void — never call {@code reconcile()} bare.</p>
 	 */

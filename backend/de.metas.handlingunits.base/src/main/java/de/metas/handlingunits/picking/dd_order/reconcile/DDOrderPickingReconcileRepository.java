@@ -144,7 +144,7 @@ public class DDOrderPickingReconcileRepository
 	 */
 	public boolean existsPickingJobLineForDDOrder(@NonNull final DDOrderId ddOrderId)
 	{
-		final org.compiere.model.IQuery<I_DD_Order> ddOrderSubQuery = queryBL
+		final IQuery<I_DD_Order> ddOrderSubQuery = queryBL
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId)
 				.create();

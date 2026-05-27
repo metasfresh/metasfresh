@@ -24,9 +24,9 @@ import javax.annotation.PostConstruct;
  *
  * <p>The processing is routed through {@link EventLogUserService#invokeHandlerAndLog} so that:
  * <ul>
- *   <li>A <em>Done</em> {@code AD_EventLog_Entry} is written on success (REQUIREMENTS §5 TC1/TC3/TC7).</li>
+ *   <li>A <em>Done</em> {@code AD_EventLog_Entry} is written on success.</li>
  *   <li>An <em>Error</em> {@code AD_EventLog_Entry} (with an {@code AD_Issue} attached) is written on
- *       failure, making the event repostable via {@code AD_EventLog_Entry_RepostEvent} (REQUIREMENTS §3.3).</li>
+ *       failure, making the event repostable via {@code AD_EventLog_Entry_RepostEvent}.</li>
  * </ul>
  * The reconcile itself still runs in its own transaction (as mandated by
  * {@link DDOrderPickingReconcileBL#reconcile}); {@code invokeHandlerAndLog} does not open a transaction.</p>

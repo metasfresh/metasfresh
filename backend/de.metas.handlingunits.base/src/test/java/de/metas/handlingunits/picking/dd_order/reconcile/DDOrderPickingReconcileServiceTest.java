@@ -87,7 +87,7 @@ class DDOrderPickingReconcileServiceTest
 	}
 
 	@Test
-	void isPickerBusy_returnsTrueWhenPickingJobLineReferencesMovement()
+	void isPickerBusy_returnsTrueWhenPickingJobLineReferencesShipmentSchedule()
 	{
 		// create a shipment schedule (simulated by repoId = 100)
 		final int shipmentScheduleRepoId = 100;

@@ -101,7 +101,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	 * {@inheritDoc}
 	 *
 	 * <p><b>No transaction boundary here.</b> The VOID-then-CREATE of the RECREATE branch is only atomic if
-	 * the caller wraps this call in a transaction. The caller (the async event handler, T17) MUST invoke this
+	 * the caller wraps this call in a transaction. The caller ({@code DDOrderReconciliationEventHandler}) MUST invoke this
 	 * via {@code trxManager.runInNewTrx(() -> bl.reconcile(scheduleId))} so that a create-failure rolls back
 	 * the void — never call {@code reconcile()} bare.</p>
 	 */
@@ -238,8 +238,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	 * Picker-busy guard first: if busy, throw without touching anything.
 	 * Then void the existing DD_Order and create a fresh one from the current schedule data.
 	 *
-	 * <p><b>No transaction boundary here.</b> The void + create is only atomic if the caller (the async event
-	 * handler, T17) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
+	 * <p><b>No transaction boundary here.</b> The void + create is only atomic if the caller
+	 * ({@code DDOrderReconciliationEventHandler}) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
 	 * create-failure rolls back the void.</p>
 	 *
 	 * <p>{@code existingDDOrderId} is resolved exactly once by the caller ({@link #reconcile}) — no re-query here.</p>
