@@ -217,11 +217,10 @@ public class EDIDesadvPackRepository
 	@Nullable
 	public EDIDesadvPack getPackByDesadvAndHUId(@NonNull final EDIDesadvId desadvId, @NonNull final HuId huId)
 	{
-		// One pack per (DESADV, HU). When two M_InOuts ship the same physical LU (LAF1010-3:
-		// picker consolidates two orders onto one pallet, each shipment has its own DESADV),
+		// One pack per (DESADV, HU). When two M_InOuts ship the same physical LU
+		// (picker consolidates two orders onto one pallet, each shipment has its own DESADV),
 		// each DESADV must get its own edi_desadv_pack row. Looking up by huId alone would
-		// reuse the first DESADV's pack and attach the second DESADV's items to it — see
-		// https://github.com/metasfresh/me03/issues/29231
+		// reuse the first DESADV's pack and attach the second DESADV's items to it.
 		final I_EDI_Desadv_Pack packRecord = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, huId)
