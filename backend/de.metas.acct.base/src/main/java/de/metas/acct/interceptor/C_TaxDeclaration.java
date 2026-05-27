@@ -55,19 +55,19 @@ public class C_TaxDeclaration
 		}
 		if (td.getC_TaxDeclaration_Original_ID() <= 0)
 		{
-			throw new AdempiereException(MSG_OriginalRequired).markAsUserValidationError();
+			throw new AdempiereException(MSG_OriginalRequired);
 		}
 		final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_Original_ID());
 		final I_C_TaxDeclaration original = taxDeclarationRepository.getById(originalId);
 		if (original.isIsCorrection())
 		{
-			throw new AdempiereException(MSG_OriginalMustBeOriginal).markAsUserValidationError();
+			throw new AdempiereException(MSG_OriginalMustBeOriginal);
 		}
 		if (td.getC_Period_ID() != original.getC_Period_ID()
 				|| td.getC_AcctSchema_ID() != original.getC_AcctSchema_ID()
 				|| !Objects.equals(td.getDateAcct(), original.getDateAcct()))
 		{
-			throw new AdempiereException(MSG_CorrectionInheritsPeriod).markAsUserValidationError();
+			throw new AdempiereException(MSG_CorrectionInheritsPeriod);
 		}
 	}
 

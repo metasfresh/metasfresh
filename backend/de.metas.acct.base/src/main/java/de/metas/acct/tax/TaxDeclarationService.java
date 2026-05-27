@@ -30,7 +30,7 @@ public class TaxDeclarationService
 		final I_C_TaxDeclaration record = taxDeclarationRepository.getById(id);
 		if (record.isProcessed())
 		{
-			throw new AdempiereException(MSG_TaxDeclaration_AlreadyProcessed).markAsUserValidationError();
+			throw new AdempiereException(MSG_TaxDeclaration_AlreadyProcessed);
 		}
 
 		DB.executeFunctionCallEx(
@@ -39,26 +39,17 @@ public class TaxDeclarationService
 				new Object[] { id });
 	}
 
-	/**
-	 * Spawn a new Correction declaration anchored to {@code originalId}. The new declaration
-	 * starts in NEW state ({@code Processed='N'}) and inherits {@code (C_AcctSchema_ID,
-	 * C_Period_ID, DateAcct)} from the Original (interceptor in iter 7 enforces equality).
-	 *
-	 * @throws AdempiereException if the Original is not yet locked ({@code Processed='Y'})
-	 * @throws AdempiereException if the Original is itself a Correction (star topology)
-	 */
+	/** Spawns a Correction for {@code originalId}, inheriting its acctSchema/period/dateAcct. */
 	public TaxDeclarationId createCorrection(@NonNull final TaxDeclarationId originalId)
 	{
 		final I_C_TaxDeclaration original = taxDeclarationRepository.getById(originalId);
 		if (!original.isProcessed())
 		{
-			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_OriginalNotLocked)
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_OriginalNotLocked);
 		}
 		if (original.isIsCorrection())
 		{
-			throw new AdempiereException(MSG_TaxDeclaration_OriginalMustBeOriginal)
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_TaxDeclaration_OriginalMustBeOriginal);
 		}
 
 		return taxDeclarationRepository.createTaxDeclaration(TaxDeclarationCreateRequest.builder()
