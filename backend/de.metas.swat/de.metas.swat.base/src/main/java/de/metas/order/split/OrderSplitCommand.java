@@ -1,5 +1,7 @@
 package de.metas.order.split;
 
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutQuery;
@@ -10,9 +12,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -33,8 +37,47 @@ public class OrderSplitCommand
 
 		validate(request.getOrderId(), oldLines);
 
-		// Continuation order creation lands in Tasks 8a/8b/9.
-		throw new UnsupportedOperationException("createContinuationOrder not yet wired (Tasks 8a/8b/9)");
+		final I_C_Order newOrder = createContinuationOrderHeader(oldOrder);
+
+		// Line cloning lands in Task 8b
+		throw new UnsupportedOperationException("Line cloning not yet wired (Task 8b)");
+	}
+
+	private I_C_Order createContinuationOrderHeader(@NonNull final I_C_Order oldOrder)
+	{
+		final I_C_Order newOrder = InterfaceWrapperHelper.copy()
+				.setFrom(oldOrder)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_C_Order.class);
+
+		// Reset doc state
+		newOrder.setDocStatus(DocStatus.Drafted.getCode());
+		newOrder.setDocAction(IDocument.ACTION_Complete);
+		newOrder.setDocumentNo(null);
+		newOrder.setProcessed(false);
+		newOrder.setIsApproved(false);
+		newOrder.setIsDelivered(false);
+		newOrder.setIsInvoiced(false);
+		newOrder.setIsPrinted(false);
+		newOrder.setPosted(false);
+		newOrder.setGrandTotal(BigDecimal.ZERO);
+		newOrder.setTotalLines(BigDecimal.ZERO);
+		newOrder.setDatePrinted(null);
+		newOrder.setRef_Order_ID(0);
+		newOrder.setLink_Order_ID(0);
+
+		// D1 — clear project
+		newOrder.setC_Project_ID(0);
+		// D5 — backref to old SO
+		newOrder.setPOReference(oldOrder.getDocumentNo());
+
+		// D11 — German audit suffix on Description (preserve existing text)
+		final String oldDesc = newOrder.getDescription();
+		final String suffix = " (Fortsetzung von " + oldOrder.getDocumentNo() + ")";
+		newOrder.setDescription(oldDesc == null ? suffix.trim() : oldDesc + suffix);
+
+		InterfaceWrapperHelper.save(newOrder);
+		return newOrder;
 	}
 
 	private void validate(
