@@ -31,6 +31,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -197,8 +198,17 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
 
 		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
+		// Prefer the effective QtyToDeliver (honours QtyToDeliver_Override). That column is computed by an async
+		// ShipmentScheduleUpdater workpackage which races with this reconcile event — right after the schedule is
+		// created it can still be 0. In that case fall back to the ordered demand (QtyOrdered_Calculated, set
+		// synchronously at schedule creation in OrderLineShipmentScheduleHandler) so the DD_Order never carries qty 0.
 		final UomId stockUomId = productBL.getStockUOMId(productId);
-		final Quantity qty = Quantitys.of(schedule.getQtyToDeliver(), stockUomId);
+		BigDecimal qtyToMoveBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(schedule);
+		if (qtyToMoveBD == null || qtyToMoveBD.signum() <= 0)
+		{
+			qtyToMoveBD = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
+		}
+		final Quantity qty = Quantitys.of(qtyToMoveBD, stockUomId);
 
 		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
