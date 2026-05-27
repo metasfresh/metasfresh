@@ -52,7 +52,7 @@ Feature: Split sales order line after partial delivery
       | line_OL2   | order_O2   | product_P1   | 10         |
     And the order identified by order_O2 is completed
     When the C_OrderLine_SplitQty process is run on "line_OL2" with QtyToSplitOff = 10 expecting validation failure
-    Then the validation error message includes "less than"
+    Then the validation error message includes "(10)"
 
   @from:cucumber
   @Id:S_OLSplit_30

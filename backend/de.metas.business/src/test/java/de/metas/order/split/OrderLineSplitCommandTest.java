@@ -22,6 +22,7 @@
 
 package de.metas.order.split;
 
+import de.metas.document.engine.IDocumentBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -43,7 +44,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class OrderLineSplitCommandTest
@@ -51,6 +51,7 @@ class OrderLineSplitCommandTest
 	private IOrderLineBL orderLineBL;
 	private IOrderBL orderBL;
 	private IOrderDAO orderDAO;
+	private IDocumentBL documentBL;
 	private IOrderLineSplitListener splitListener;
 	private OrderLineSplitCommand command;
 
@@ -62,9 +63,10 @@ class OrderLineSplitCommandTest
 		orderLineBL = Mockito.mock(IOrderLineBL.class);
 		orderBL = Mockito.mock(IOrderBL.class);
 		orderDAO = Mockito.mock(IOrderDAO.class);
+		documentBL = Mockito.mock(IDocumentBL.class);
 		splitListener = Mockito.mock(IOrderLineSplitListener.class);
 
-		command = new OrderLineSplitCommand(orderLineBL, orderBL, orderDAO, splitListener);
+		command = new OrderLineSplitCommand(orderLineBL, orderBL, orderDAO, documentBL, splitListener);
 	}
 
 	@Test
@@ -246,8 +248,13 @@ class OrderLineSplitCommandTest
 		assertThat(newLine.getPriceActual()).isEqualByComparingTo(new BigDecimal("5.00"));
 		assertThat(newLine.getLine()).isEqualTo(20); // next step-10 after line 10
 
-		// Listener was called for both side-effects
+		// Listener was called to shrink reservations on the original line.
+		// Shipment-schedule + invoice-candidate creation for the new line is delegated
+		// to the order-completion cascade (verified at cucumber level on CI).
 		Mockito.verify(splitListener).onOriginalLineReduced(originalLineId);
-		Mockito.verify(splitListener).onNewLineSaved(any());
+
+		// IDocumentBL is invoked twice: reactivate (before the line edits) + re-complete (after).
+		Mockito.verify(documentBL).processEx(order, "RE");
+		Mockito.verify(documentBL).processEx(order, "CO");
 	}
 }

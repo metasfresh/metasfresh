@@ -22,25 +22,19 @@
 
 package de.metas.order.split.impl;
 
-import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.split.IOrderLineSplitListener;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
- * Bridges {@link OrderLineSplitCommand} (in de.metas.business) to the swat-side side-effect services.
+ * Bridges {@link de.metas.order.split.OrderLineSplitCommand} (in de.metas.business) to the swat-side side-effect services.
  *
- * <p>On split:
- * <ul>
- *   <li>{@link #onNewLineSaved} — enqueues shipment-schedule creation and invalidates invoice candidates for the new line.</li>
- *   <li>{@link #onOriginalLineReduced} — shrinks qty-reservations on the original (now-reduced) line.</li>
- * </ul>
+ * <p>On split — {@link #onOriginalLineReduced} shrinks qty-reservations on the original (now-reduced) line.
+ * Shipment-schedule + invoice-candidate creation for the new line happens automatically via the
+ * order-reactivate / re-complete cycle inside the split command.
  *
  * me03 #29261 — Order Line Split.
  */
@@ -49,13 +43,6 @@ import org.springframework.stereotype.Service;
 public class OrderLineSplitListener implements IOrderLineSplitListener
 {
 	@NonNull private final QtyReservationService qtyReservationService;
-
-	@Override
-	public void onNewLineSaved(@NonNull final I_C_OrderLine newLine)
-	{
-		CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(newLine);
-		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(newLine);
-	}
 
 	@Override
 	public void onOriginalLineReduced(@NonNull final OrderLineId originalOrderLineId)
