@@ -39,8 +39,62 @@ public class OrderSplitCommand
 
 		final I_C_Order newOrder = createContinuationOrderHeader(oldOrder);
 
-		// Line cloning lands in Task 8b
-		throw new UnsupportedOperationException("Line cloning not yet wired (Task 8b)");
+		final int copiedLineCount = createContinuationOrderLines(oldLines, newOrder);
+
+		// closeOldShipmentSchedules + closeOldReservations land in Task 9
+		throw new UnsupportedOperationException("Old SO finalization not yet wired (Task 9)");
+	}
+
+	private int createContinuationOrderLines(
+			@NonNull final List<I_C_OrderLine> oldLines,
+			@NonNull final I_C_Order newOrder)
+	{
+		int copiedLineCount = 0;
+		int nextLineNo = 10;
+
+		for (final I_C_OrderLine oldLine : oldLines)
+		{
+			final BigDecimal residue = oldLine.getQtyOrdered().subtract(oldLine.getQtyDelivered());
+			if (residue.signum() <= 0)
+			{
+				continue;  // QtyOrdered <= QtyDelivered → stays on OLD SO (D0/D0')
+			}
+
+			final I_C_OrderLine newLine = InterfaceWrapperHelper.copy()
+					.setFrom(oldLine)
+					.setSkipCalculatedColumns(true)
+					.copyToNew(I_C_OrderLine.class);
+
+			newLine.setC_Order_ID(newOrder.getC_Order_ID());
+			newLine.setLine(nextLineNo);
+			nextLineNo += 10;
+
+			newLine.setQtyDelivered(BigDecimal.ZERO);
+			newLine.setQtyInvoiced(BigDecimal.ZERO);
+			newLine.setDateDelivered(null);
+			newLine.setDateInvoiced(null);
+			newLine.setProcessed(false);
+
+			// D1 — defence: clear project on the line
+			newLine.setC_Project_ID(0);
+
+			// D6 — let price-lookup interceptor populate pricing on save
+			newLine.setIsManualPrice(false);
+
+			// D12 — German audit suffix on Description (preserve existing text)
+			final String oldDesc = newLine.getDescription();
+			final String descSuffix = " (aus Position " + oldLine.getLine() + ")";
+			newLine.setDescription(oldDesc == null ? descSuffix.trim() : oldDesc + descSuffix);
+
+			// Set QtyEntered LAST so the BL price-lookup interceptor sees a fresh,
+			// non-manual line with the correct qty.
+			newLine.setQtyEntered(residue);
+
+			InterfaceWrapperHelper.save(newLine);
+			copiedLineCount++;
+		}
+
+		return copiedLineCount;
 	}
 
 	private I_C_Order createContinuationOrderHeader(@NonNull final I_C_Order oldOrder)

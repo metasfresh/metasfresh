@@ -1,5 +1,6 @@
 package de.metas.order.split;
 
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -150,5 +151,116 @@ class OrderSplitCommandTest
 		assertThat(newOrder.getDescription())
 				.contains("Original description")
 				.contains("Fortsetzung von SO-ORIG-001");
+	}
+
+	@Test
+	void selectsOnlyLinesWithUnshippedResidue()
+	{
+		final I_C_Order order = createOrderWithShipment("SO-RES-001");
+		// 3 lines: fully delivered (10/10 → stays), partial (10/4 → moves residue 6), over-delivered (5/7 → stays)
+		newOrderLine(order, "10", "10");                // fully delivered → stays on OLD
+		newOrderLine(order, "10", "4");                 // residue 6 → moves to NEW
+		newOrderLineOverDelivered(order, "5", "7");     // over-delivered → stays on OLD
+
+		try
+		{
+			command.split(OrderSplitRequest.builder()
+					.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+					.build());
+		}
+		catch (final UnsupportedOperationException expected) { /* Task 9 stub */ }
+
+		final I_C_Order newOrder = findNewOrderByPOReference("SO-RES-001");
+		final java.util.List<de.metas.interfaces.I_C_OrderLine> newLines = Services.get(IOrderDAO.class)
+				.retrieveOrderLines(OrderId.ofRepoId(newOrder.getC_Order_ID()));
+
+		assertThat(newLines).hasSize(1);
+		assertThat(newLines.get(0).getQtyEntered()).isEqualByComparingTo(new BigDecimal("6"));
+	}
+
+	@Test
+	void clonesLineQtyAndAllowsPriceLookupToRun()
+	{
+		final I_C_Order order = createOrderWithShipment("SO-PR-001");
+		final I_C_OrderLine line = newOrderLine(order, "10", "8");           // residue 2
+
+		line.setPriceActual(new BigDecimal("12.50"));
+		line.setPriceEntered(new BigDecimal("12.50"));
+		save(line);
+
+		try
+		{
+			command.split(OrderSplitRequest.builder()
+					.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+					.build());
+		}
+		catch (final UnsupportedOperationException expected) { /* Task 9 stub */ }
+
+		final I_C_Order newOrder = findNewOrderByPOReference("SO-PR-001");
+		final java.util.List<de.metas.interfaces.I_C_OrderLine> newLines = Services.get(IOrderDAO.class)
+				.retrieveOrderLines(OrderId.ofRepoId(newOrder.getC_Order_ID()));
+
+		assertThat(newLines).hasSize(1);
+		final de.metas.interfaces.I_C_OrderLine newLine = newLines.get(0);
+		assertThat(newLine.getQtyEntered()).isEqualByComparingTo(new BigDecimal("2"));
+		assertThat(newLine.isManualPrice()).isFalse();
+		// Pricing may have been re-derived by the interceptor OR may equal the cloned value;
+		// either way it should be non-null and non-negative.
+		assertThat(newLine.getPriceActual()).isNotNull();
+		assertThat(newLine.getPriceActual().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	// -------------------------------------------------------------------------
+	// Test helpers
+	// -------------------------------------------------------------------------
+
+	private I_C_Order createOrderWithShipment(final String documentNo)
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setDocStatus("CO");
+		order.setDocumentNo(documentNo);
+		order.setIsSOTrx(true);
+		save(order);
+
+		final I_M_InOut shipment = newInstance(I_M_InOut.class);
+		shipment.setC_Order_ID(order.getC_Order_ID());
+		shipment.setDocStatus("CO");
+		shipment.setIsSOTrx(true);
+		save(shipment);
+
+		return order;
+	}
+
+	private I_C_OrderLine newOrderLine(
+			final I_C_Order order,
+			final String qtyOrdered,
+			final String qtyDelivered)
+	{
+		final I_C_OrderLine line = newInstance(I_C_OrderLine.class);
+		line.setC_Order_ID(order.getC_Order_ID());
+		line.setQtyOrdered(new BigDecimal(qtyOrdered));
+		line.setQtyDelivered(new BigDecimal(qtyDelivered));
+		line.setLine(10);
+		save(line);
+		return line;
+	}
+
+	private I_C_OrderLine newOrderLineOverDelivered(
+			final I_C_Order order,
+			final String qtyOrdered,
+			final String qtyDelivered)
+	{
+		// Same as newOrderLine but explicit naming for over-delivered case (QtyDelivered > QtyOrdered).
+		// In-memory tests don't enforce QtyDelivered <= QtyOrdered, so we can simulate over-delivery here.
+		return newOrderLine(order, qtyOrdered, qtyDelivered);
+	}
+
+	private I_C_Order findNewOrderByPOReference(final String poReference)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_POReference, poReference)
+				.create()
+				.firstOnlyNotNull();
 	}
 }
