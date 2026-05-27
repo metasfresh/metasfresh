@@ -16,7 +16,7 @@
 UPDATE AD_Column
 SET AD_Reference_ID       = 18,
     AD_Reference_Value_ID = 295,
-    Updated               = now(),
+    Updated               = '2026-05-27 10:00:00.000000',
     UpdatedBy             = 99
 WHERE AD_Column_ID = 589364
 ;
