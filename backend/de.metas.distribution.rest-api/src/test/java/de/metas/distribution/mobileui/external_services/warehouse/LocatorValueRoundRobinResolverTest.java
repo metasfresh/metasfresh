@@ -48,7 +48,7 @@ class LocatorValueRoundRobinResolverTest
 		final LocatorId b = locator("B", true);
 		locator("C", true);
 
-		assertThat(resolver.resolveNext(warehouseId, a)).isEqualTo(b);
+		assertThat(resolver.resolveNext(a)).isEqualTo(b);
 	}
 
 	@Test
@@ -58,7 +58,7 @@ class LocatorValueRoundRobinResolverTest
 		locator("B", true);
 		final LocatorId c = locator("C", true);
 
-		assertThat(resolver.resolveNext(warehouseId, c)).isEqualTo(a);
+		assertThat(resolver.resolveNext(c)).isEqualTo(a);
 	}
 
 	@Test
@@ -71,9 +71,9 @@ class LocatorValueRoundRobinResolverTest
 		final LocatorId m = locator("M", true);
 
 		// Value ordering: A -> M -> Z -> A
-		assertThat(resolver.resolveNext(warehouseId, a)).isEqualTo(m);
-		assertThat(resolver.resolveNext(warehouseId, m)).isEqualTo(z);
-		assertThat(resolver.resolveNext(warehouseId, z)).isEqualTo(a);
+		assertThat(resolver.resolveNext(a)).isEqualTo(m);
+		assertThat(resolver.resolveNext(m)).isEqualTo(z);
+		assertThat(resolver.resolveNext(z)).isEqualTo(a);
 	}
 
 	@Test
@@ -85,7 +85,7 @@ class LocatorValueRoundRobinResolverTest
 		locator("B", false);
 		final LocatorId c = locator("C", true);
 
-		assertThat(resolver.resolveNext(warehouseId, a)).isEqualTo(c);
+		assertThat(resolver.resolveNext(a)).isEqualTo(c);
 	}
 
 	@Test
@@ -95,7 +95,7 @@ class LocatorValueRoundRobinResolverTest
 		locator("B", true);
 
 		final LocatorId nonexistent = LocatorId.ofRepoId(warehouseId.getRepoId(), 99_999_999);
-		assertThat(resolver.resolveNext(warehouseId, nonexistent)).isEqualTo(a);
+		assertThat(resolver.resolveNext(nonexistent)).isEqualTo(a);
 	}
 
 	@Test
@@ -105,9 +105,9 @@ class LocatorValueRoundRobinResolverTest
 		final LocatorId a = locator("A", true);
 		locator("B", false);
 
-		assertThatThrownBy(() -> resolver.resolveNext(warehouseId, a))
+		assertThatThrownBy(() -> resolver.resolveNext(a))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(LocatorValueRoundRobinResolver.MSG_NO_ALTERNATIVE.toAD_Message());
+				.hasMessageContaining(NextPickFromLocatorResolver.MSG_NO_ALTERNATIVE.toAD_Message());
 	}
 
 	@Test
@@ -118,8 +118,8 @@ class LocatorValueRoundRobinResolverTest
 		locator("B", false);
 
 		final LocatorId syntheticId = LocatorId.ofRepoId(warehouseId.getRepoId(), 99_999_999);
-		assertThatThrownBy(() -> resolver.resolveNext(warehouseId, syntheticId))
+		assertThatThrownBy(() -> resolver.resolveNext(syntheticId))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(LocatorValueRoundRobinResolver.MSG_NO_ALTERNATIVE.toAD_Message());
+				.hasMessageContaining(NextPickFromLocatorResolver.MSG_NO_ALTERNATIVE.toAD_Message());
 	}
 }

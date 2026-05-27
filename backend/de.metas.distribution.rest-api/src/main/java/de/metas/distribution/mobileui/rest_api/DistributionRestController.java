@@ -90,9 +90,7 @@ public class DistributionRestController
 	{
 		assertApplicationAccess();
 		final WFProcess wfProcess = distributionMobileApplication.switchPickFromLocatorToNext(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
-		// Serialize the full job (incl. activity detail: lines, pickFromLocator, canSwitchPickFromLocator)
-		// like /event does. Returning the raw WFProcess yields a summary-only payload, so the mobile UI
-		// would keep showing the old locator after the switch.
+		// toJson carries the activity detail with the switched locator; a raw WFProcess serializes summary-only.
 		return workflowRestController.toJson(wfProcess);
 	}
 

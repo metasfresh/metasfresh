@@ -1,10 +1,12 @@
 package de.metas.distribution.mobileui.external_services.warehouse;
 
+import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 
 public interface NextPickFromLocatorResolver
 {
-	@NonNull LocatorId resolveNext(@NonNull WarehouseId warehouseId, @NonNull LocatorId currentLocatorId);
+	AdMessageKey MSG_NO_ALTERNATIVE = AdMessageKey.of("MobileUI_DDOrder_SwitchPickFromLocator_NoAlternative");
+
+	@NonNull LocatorId resolveNext(@NonNull LocatorId currentLocatorId);
 }

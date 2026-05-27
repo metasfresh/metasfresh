@@ -67,7 +67,7 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
       {canSwitchPickFromLocator && (
         <ButtonWithIndicator
           testId="switchPickFromLocator-button"
-          data-pickfromlocator={lines[0]?.pickFromLocator?.caption}
+          data-pickfromlocator={lines[0]?.pickFromLocator?.id}
           caption={trl('activities.distribution.switchPickFromLocator')}
           disabled={!isUserEditable}
           onClick={onSwitchPickFromLocator}

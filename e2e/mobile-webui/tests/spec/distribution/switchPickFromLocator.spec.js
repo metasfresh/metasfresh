@@ -8,6 +8,13 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
 
+// The 3 source locators sorted by M_Locator.Value — the resolver's ordering key. The masterdata
+// `code` is the locator Value, so this is the exact sequence the round-robin advances through.
+const locatorIdsOrderedByValue = (masterdata) =>
+    Object.values(masterdata.warehouses.wh1.locators)
+        .sort((a, b) => a.code.localeCompare(b.code))
+        .map((locator) => locator.id);
+
 const createMasterdata = async ({ qtyToMove }) => {
     return await Backend.createMasterdata({
         language: "en_US",
@@ -61,13 +68,14 @@ test('Switch pick-from locator — button advances to next active locator', asyn
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });
 
-    await test.step('Press "Lagerort leer" — locator advances, button remains visible (still has alternatives)', async () => {
-        const locatorBefore = await DistributionJobScreen.getPickFromLocator();
-        expect(locatorBefore).toBeTruthy();
-        await DistributionJobScreen.switchPickFromLocator();
-        // The thunk dispatches the redux update after the POST resolves, so the rendered
-        // attribute settles a render-tick later — poll until it reflects the new locator.
-        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locatorBefore);
+    await test.step('Press "Lagerort leer" — locator advances to the exact next active locator (by Value)', async () => {
+        const orderedLocatorIds = locatorIdsOrderedByValue(masterdata);
+        const currentLocatorId = Number(await DistributionJobScreen.getPickFromLocator());
+        const currentIdx = orderedLocatorIds.indexOf(currentLocatorId);
+        expect(currentIdx).toBeGreaterThanOrEqual(0);
+        const expectNextLocatorId = orderedLocatorIds[(currentIdx + 1) % orderedLocatorIds.length];
+
+        await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId });
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });
 });
@@ -89,30 +97,27 @@ test('Switch pick-from locator — successive presses cycle round-robin', async 
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
-    // The warehouse has 3 active locators. Three presses cycle wh1_l1 -> wh1_l2 -> wh1_l3 -> wh1_l1.
-    // Each press succeeds without error and the button stays available (no "no-alternative" rejection
-    // until picking starts or the warehouse has <=1 active locators).
-    await test.step('Press 3 times — round-robin cycles through all 3 locators and wraps back to the start', async () => {
-        // After each switch the rendered attribute settles a render-tick after the POST resolves,
-        // so poll until it changes from the previous value before capturing the settled locator.
-        const locator0 = await DistributionJobScreen.getPickFromLocator();
+    // The warehouse has 3 active locators. Three presses cycle through all of them by Value and wrap
+    // back to the start. Each press lands on the exact locator the resolver dictates (not just "a
+    // different one"), and the button stays available until picking starts.
+    await test.step('Press 3 times — round-robin advances through the exact Value-ordered sequence and wraps back', async () => {
+        const orderedLocatorIds = locatorIdsOrderedByValue(masterdata);
+        const startLocatorId = Number(await DistributionJobScreen.getPickFromLocator());
+        let idx = orderedLocatorIds.indexOf(startLocatorId);
+        expect(idx).toBeGreaterThanOrEqual(0);
 
-        await DistributionJobScreen.switchPickFromLocator();
-        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locator0);
-        const locator1 = await DistributionJobScreen.getPickFromLocator();
+        const visited = [startLocatorId];
+        for (let press = 0; press < 3; press++) {
+            const expectNextLocatorId = orderedLocatorIds[(idx + 1) % orderedLocatorIds.length];
+            await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId });
+            idx = (idx + 1) % orderedLocatorIds.length;
+            visited.push(expectNextLocatorId);
+        }
 
-        await DistributionJobScreen.switchPickFromLocator();
-        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locator1);
-        const locator2 = await DistributionJobScreen.getPickFromLocator();
-
-        await DistributionJobScreen.switchPickFromLocator();
-        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locator2);
-        const locator3 = await DistributionJobScreen.getPickFromLocator();
-
-        // Each of the first three reads is a distinct active locator...
-        expect(new Set([locator0, locator1, locator2]).size).toEqual(3);
-        // ...and the fourth read wraps back to the first (round-robin).
-        expect(locator3).toEqual(locator0);
+        // The first three presses visit each of the 3 active locators exactly once...
+        expect(new Set([visited[0], visited[1], visited[2]]).size).toEqual(3);
+        // ...and the third press wraps back to the starting locator (round-robin).
+        expect(visited[3]).toEqual(startLocatorId);
 
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });

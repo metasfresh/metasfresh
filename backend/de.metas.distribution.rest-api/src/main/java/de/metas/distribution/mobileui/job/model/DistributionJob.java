@@ -195,6 +195,17 @@ public class DistributionJob
 				.collect(GuavaCollectors.singleElementOrNull());
 	}
 
+	@NonNull
+	public LocatorId getSinglePickFromLocatorId()
+	{
+		final LocatorId locatorId = getSinglePickFromLocatorIdOrNull();
+		if (locatorId == null)
+		{
+			throw new AdempiereException("No single pick-from locator for " + this);
+		}
+		return locatorId;
+	}
+
 	public Optional<LocatorInfo> getSinglePickFromLocator()
 	{
 		return lines.stream()
