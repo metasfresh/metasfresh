@@ -32,6 +32,8 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -95,6 +97,7 @@ public class DDOrderPickingReconcile_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -277,6 +280,27 @@ public class DDOrderPickingReconcile_StepDef
 		org.assertj.core.api.Assertions.assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(Throwable.class);
+	}
+
+	/**
+	 * Voids the single live DD_Order linked to a schedule directly via the document engine, WITHOUT going through
+	 * the reconcile flow — simulating the "DD_Order was never created / got lost between commit and publish" state
+	 * that the drift watchdog is designed to heal (REQUIREMENTS.md §3.5 / TC7).
+	 *
+	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule whose DD_Order is voided.</p>
+	 */
+	@When("^the DD_Order linked to M_ShipmentSchedule (.*) is voided directly$")
+	public void void_DD_Order_directly(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final I_DD_Order liveDDOrder = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+
+		documentBL.processEx(liveDDOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
 	/**
