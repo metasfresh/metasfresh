@@ -37,7 +37,7 @@ public class ShipperServiceLevelConfigList
 		if (externalSystemId != null)
 		{
 			final Optional<String> specific = list.stream()
-					.filter(c -> externalSystemId.equals(c.getExternalSystemId()))
+					.filter(config -> ExternalSystemId.equals(externalSystemId, config.getExternalSystemId()))
 					.map(ShipperServiceLevelConfig::getServiceLevel)
 					.findFirst();
 			if (specific.isPresent())
@@ -47,7 +47,7 @@ public class ShipperServiceLevelConfigList
 		}
 
 		return list.stream()
-				.filter(c -> c.getExternalSystemId() == null)
+				.filter(config -> config.getExternalSystemId() == null)
 				.map(ShipperServiceLevelConfig::getServiceLevel)
 				.findFirst();
 	}

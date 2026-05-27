@@ -38,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Shipper_ServiceLevel_Config;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,27 +76,28 @@ public class ShipperServiceLevelConfig_StepDef
 		final int seqNo = row.getAsInt(I_M_Shipper_ServiceLevel_Config.COLUMNNAME_SeqNo);
 		final String serviceLevel = row.getAsString(I_M_Shipper_ServiceLevel_Config.COLUMNNAME_ServiceLevel);
 
-		I_M_Shipper_ServiceLevel_Config record = queryBL.createQueryBuilder(I_M_Shipper_ServiceLevel_Config.class)
+		final I_M_Shipper_ServiceLevel_Config existingRecord = queryBL.createQueryBuilder(I_M_Shipper_ServiceLevel_Config.class)
 				.addEqualsFilter(I_M_Shipper_ServiceLevel_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.addEqualsFilter(I_M_Shipper_ServiceLevel_Config.COLUMNNAME_SeqNo, seqNo)
 				.create()
 				.firstOnly();
-		if (record == null)
+
+		final I_M_Shipper_ServiceLevel_Config record;
+		if (existingRecord == null)
 		{
 			record = InterfaceWrapperHelper.newInstance(I_M_Shipper_ServiceLevel_Config.class);
 			record.setM_Shipper_ID(shipperId);
 			record.setSeqNo(seqNo);
 		}
+		else
+		{
+			record = existingRecord;
+		}
+
 		record.setServiceLevel(serviceLevel);
 
-		@Nullable final String externalSystemValue = row.getAsOptionalString(
-				I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value).orElse(null);
-		if (externalSystemValue != null)
-		{
-			final int externalSystemId = externalSystemRepository
-					.getIdByType(ExternalSystemType.ofValue(externalSystemValue)).getRepoId();
-			record.setExternal_System_ID(externalSystemId);
-		}
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> record.setExternal_System_ID(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue)).getRepoId()));
 
 		InterfaceWrapperHelper.save(record);
 		createdConfigIds.add(record.getM_Shipper_ServiceLevel_Config_ID());

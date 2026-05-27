@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.nshift.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -192,7 +193,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.orElse(baseConfig);
 	}
 
-	static JsonShipperConfig buildConfigWithOverriddenServiceLevel(
+	@VisibleForTesting
+	protected static JsonShipperConfig buildConfigWithOverriddenServiceLevel(
 			@NonNull final JsonShipperConfig base,
 			@NonNull final String serviceLevel)
 	{
