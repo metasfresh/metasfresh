@@ -26,8 +26,10 @@ import javax.annotation.PostConstruct;
 @RequiredArgsConstructor
 public class DDOrderReconciliationEventHandler implements IEventListener
 {
+	// EventBusFactory is a Spring @Service — must be constructor-injected, NOT Services.get.
 	@NonNull private final DDOrderPickingReconcileBL reconcileBL;
-	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+	@NonNull private final IEventBusFactory eventBusFactory;
+	// ITrxManager is an ISingletonService — Services.get is correct.
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@PostConstruct

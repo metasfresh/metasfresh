@@ -3,8 +3,8 @@ package de.metas.handlingunits.picking.dd_order.reconcile.event;
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -18,12 +18,15 @@ import java.util.LinkedHashSet;
  * packing-warehouse gating, after-commit registration) — that logic lives in the BL service.</p>
  */
 @Component
+@RequiredArgsConstructor
 public class DDOrderReconciliationEventPublisher
 {
 	public static final String PROPERTY_shipmentScheduleId = "shipmentScheduleId";
 	private static final String EVENT_NAME = "DDOrderPickingReconcile";
 
-	@NonNull private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+	// EventBusFactory is a Spring @Service — must be constructor-injected, NOT Services.get
+	// (Services.get can only instantiate ISingletonService impls with a default constructor).
+	@NonNull private final IEventBusFactory eventBusFactory;
 
 	public void publishOne(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
