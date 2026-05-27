@@ -934,9 +934,8 @@ class DDOrderPickingReconcileServiceTest
 		final de.metas.event.IEventBusFactory eventBusFactory = mock(de.metas.event.IEventBusFactory.class);
 		final de.metas.event.IEventBus eventBus = mock(de.metas.event.IEventBus.class);
 		org.mockito.Mockito.when(eventBusFactory.getEventBus(any())).thenReturn(eventBus);
-		Services.registerService(de.metas.event.IEventBusFactory.class, eventBusFactory);
 
-		final DDOrderReconciliationEventPublisher realPublisher = new DDOrderReconciliationEventPublisher();
+		final DDOrderReconciliationEventPublisher realPublisher = new DDOrderReconciliationEventPublisher(eventBusFactory);
 
 		final ShipmentScheduleId id1 = ShipmentScheduleId.ofRepoId(501);
 		final ShipmentScheduleId id2 = ShipmentScheduleId.ofRepoId(502);
