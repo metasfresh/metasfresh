@@ -149,7 +149,9 @@ BEGIN
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
                                        ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
-                                       'QtyDeliveredInDesadvLineUOM', dl.qtydeliveredinuom,
+                                       -- Per-inout qty from edi_desadvline_inoutline; fallback to cumulative
+                                       -- dl.qtydeliveredinuom for single-inout DESADVs.
+                                       'QtyDeliveredInDesadvLineUOM', COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom),
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
                                        'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,
                                        'InvoicingUOM', COALESCE(inv_uom.uom_json, '{}'::jsonb),
