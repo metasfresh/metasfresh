@@ -881,6 +881,27 @@ public interface I_AD_Process
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Open Target.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenTarget (@Nullable java.lang.String OpenTarget);
+
+	/**
+	 * Get Open Target.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOpenTarget();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_OpenTarget = new ModelColumn<>(I_AD_Process.class, "OpenTarget", null);
+	String COLUMNNAME_OpenTarget = "OpenTarget";
+
+	/**
 	 * Set Response format.
 	 *
 	 * <br>Type: List
