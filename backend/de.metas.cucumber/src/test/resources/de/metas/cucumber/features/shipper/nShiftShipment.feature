@@ -215,6 +215,51 @@ Feature: nShift Shipment
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | ParcelGrossWeightKg |
       | cp1                | cgt1                  | cs1                | cs2                 | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 21                  |
 
+  Scenario: nShift Carrier Advise uses ExternalSystem-specific service level
+    Given metasfresh contains External System
+      | Name      | Value     |
+      | Shopware6 | Shopware6 |
+    And metasfresh contains M_Shipper_ServiceLevel_Configs:
+      | M_Shipper_ID | SeqNo | ServiceLevel | ExternalSystem.Value |
+      | nShift       | 10    | EXPRESS      | Shopware6            |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
+      | cp1                | cgt1                  | cs1                | cs2                 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.ExternalSystem.Value |
+      | so_sl1     | true    | customer      | 2025-04-01  | wh             | nShift       | Shopware6                |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_sl1_l1  | so_sl1     | product      | 10         |
+    When the order identified by so_sl1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_sl1     | so_sl1_l1      | N             | cp1                | cgt1                  |
+    Then the last nShift ship advisor request had shipperConfig serviceLevel "EXPRESS"
+
+  Scenario: nShift Carrier Advise falls back to default service level when no ExternalSystem matches
+    Given metasfresh contains External System
+      | Name      | Value     |
+      | Shopware6 | Shopware6 |
+    And metasfresh contains M_Shipper_ServiceLevel_Configs:
+      | M_Shipper_ID | SeqNo | ServiceLevel | ExternalSystem.Value |
+      | nShift       | 10    | EXPRESS      | Shopware6            |
+      | nShift       | 20    | FALLBACK     |                      |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
+      | cp1                | cgt1                  | cs1                | cs2                 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_sl2     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_sl2_l1  | so_sl2     | product      | 10         |
+    When the order identified by so_sl2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_sl2     | so_sl2_l1      | N             | cp1                | cgt1                  |
+    Then the last nShift ship advisor request had shipperConfig serviceLevel "FALLBACK"
+
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
     And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder

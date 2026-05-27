@@ -31,6 +31,7 @@ import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
@@ -65,6 +66,7 @@ import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
+import de.metas.shipper.gateway.spi.ShipperConfigRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
@@ -219,9 +221,9 @@ public class CarrierAdviseCommand
 				.pickupContact(getJsonContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.deliveryAddress(getJsonAddress(deliverToBPartner, deliverToBPLocation))
 				.deliveryContact(getJsonContact(deliverToBPartner, deliverToBPLocation, deliverToContact))
-				.shipperConfig(Objects.requireNonNull(client.getJsonShipperConfig()))
 				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule));
 
+		@Nullable ExternalSystemId externalSystemId = null;
 		final OrderAndLineId orderAndLineId = shipmentSchedule.getOrderAndLineId();
 		if (orderAndLineId != null)
 		{
@@ -235,14 +237,21 @@ public class CarrierAdviseCommand
 				requestBuilder.incotermsValue(incoterms.getValue());
 			}
 
-			final ExternalSystemId externalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
-			if(externalSystemId != null)
+			externalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
+			if (externalSystemId != null)
 			{
 				requestBuilder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
 			}
-
 		}
 
+		final ShipperConfigRequest shipperConfigRequest = ShipperConfigRequest.builder()
+				.externalSystemId(externalSystemId)
+				.build();
+		final JsonShipperConfig effectiveShipperConfig = client.getJsonShipperConfigEffective(shipperConfigRequest);
+		if (effectiveShipperConfig != null)
+		{
+			requestBuilder.shipperConfig(effectiveShipperConfig);
+		}
 
 		return requestBuilder.build();
 	}
