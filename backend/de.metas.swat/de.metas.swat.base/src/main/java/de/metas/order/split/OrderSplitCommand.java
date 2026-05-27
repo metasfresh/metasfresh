@@ -57,11 +57,34 @@ public class OrderSplitCommand
 
 	private void closeOldShipmentSchedules(@NonNull final List<I_C_OrderLine> oldLines)
 	{
-		final com.google.common.collect.ImmutableList<TableRecordReference> orderLineRefs = oldLines.stream()
-				.map(ol -> TableRecordReference.of(
-						org.compiere.model.I_C_OrderLine.Table_Name, ol.getC_OrderLine_ID()))
-				.collect(com.google.common.collect.ImmutableList.toImmutableList());
-		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRefs);
+		// Load all M_ShipmentSchedules for the OLD order lines and close (IsClosed=Y) the ones
+		// that are not yet closed AND not yet processed. Already-processed schedules (those of
+		// fully-delivered lines) need no action — they're effectively closed by completion.
+		// We deliberately avoid IShipmentScheduleBL.closeShipmentSchedulesFor here because that
+		// API throws on processed schedules, which is too strict for our multi-line case where
+		// some schedules complete naturally via shipment.
+		final java.util.Set<Integer> oldOrderLineIds = oldLines.stream()
+				.map(org.compiere.model.I_C_OrderLine::getC_OrderLine_ID)
+				.collect(java.util.stream.Collectors.toSet());
+		if (oldOrderLineIds.isEmpty())
+		{
+			return;
+		}
+		final java.util.List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> schedules =
+				Services.get(org.adempiere.ad.dao.IQueryBL.class)
+						.createQueryBuilder(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, oldOrderLineIds)
+						.create()
+						.list();
+		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule : schedules)
+		{
+			if (schedule.isClosed() || schedule.isProcessed())
+			{
+				continue;
+			}
+			shipmentScheduleBL.closeShipmentSchedule(schedule);
+		}
 	}
 
 	private void closeOldReservations(@NonNull final List<I_C_OrderLine> oldLines)
