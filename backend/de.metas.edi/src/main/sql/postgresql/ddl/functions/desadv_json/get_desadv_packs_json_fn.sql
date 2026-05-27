@@ -115,7 +115,8 @@ BEGIN
                            'IPA_SSCC18', ph.ipa_sscc18,
                            'M_HU_PackagingCode_Text', pc_lu.packagingcode,
                            'LineItems', COALESCE(items_lat.items_data, '[]'::jsonb),
-                           'GTIN_PackingMaterial', ph.gtin_packingmaterial
+                           -- Defensive trim: master-data sometimes carries stray whitespace
+                           'GTIN_PackingMaterial', NULLIF(btrim(ph.gtin_packingmaterial), '')
                    ) ORDER BY ph.seqno
            )
     INTO v_packs_json
@@ -148,7 +149,9 @@ BEGIN
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
                                        ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
-                                       'QtyDeliveredInDesadvLineUOM', dl.qtydeliveredinuom,
+                                       -- Per-inout qty from edi_desadvline_inoutline; fallback to cumulative
+                                       -- dl.qtydeliveredinuom for single-inout DESADVs.
+                                       'QtyDeliveredInDesadvLineUOM', COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom),
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
                                        'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,
                                        'InvoicingUOM', COALESCE(inv_uom.uom_json, '{}'::jsonb),
@@ -162,7 +165,7 @@ BEGIN
                                ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
                                'Line', ia.pi_line,
-                               'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
+                               'GTIN_TU_PackingMaterial', NULLIF(btrim(ia.gtin_tu_packingmaterial), ''),
                                'IsSubArticle', ia.is_sub_article,
                                'MainArticleLine',
                                CASE WHEN ia.is_sub_article THEN ia.main_desadv_line END

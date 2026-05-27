@@ -72,6 +72,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setIsArrayFanOut (final boolean IsArrayFanOut)
+	{
+		set_Value (COLUMNNAME_IsArrayFanOut, IsArrayFanOut);
+	}
+
+	@Override
+	public boolean isArrayFanOut()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsArrayFanOut);
+	}
+
+	@Override
 	public void setClientId (final @Nullable java.lang.String ClientId)
 	{
 		set_Value (COLUMNNAME_ClientId, ClientId);
