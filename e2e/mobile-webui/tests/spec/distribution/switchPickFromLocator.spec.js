@@ -43,6 +43,7 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Switch pick-from locator — button advances to next active locator', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
     allure.story('mobileUI DD_Order picker can switch from-locator when current locator is empty');
     allure.severity('normal');
@@ -74,6 +75,7 @@ test('Switch pick-from locator — button advances to next active locator', asyn
 // noinspection JSUnusedLocalSymbols
 test('Switch pick-from locator — successive presses cycle round-robin', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
     allure.story('mobileUI DD_Order switch from-locator wraps round-robin through all active locators');
     allure.severity('normal');
@@ -119,6 +121,7 @@ test('Switch pick-from locator — successive presses cycle round-robin', async 
 // noinspection JSUnusedLocalSymbols
 test('Switch pick-from locator — button hidden once picking has started', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
     allure.story('mobileUI DD_Order switch from-locator is unavailable after the first pick');
     allure.severity('normal');
