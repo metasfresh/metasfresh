@@ -578,9 +578,30 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # m_hu_assignment row (5 crates).
     # Uses real metasfresh BL (InterfaceWrapperHelper + IHUAssignmentBL) instead of raw SQL.
     And one shared LU created via BL with SSCC18 '987654321000001400' carries HA aggregates assigned to inout lines:
-      | M_InOut_ID     | crateCount |
-      | ioA_S29231_140 | 5          |
-      | ioB_S29231_140 | 10         |
+      | M_InOut_ID     | crateCount | OPT.LU_HU_ID        |
+      | ioA_S29231_140 | 5          | sharedLu_S29231_140 |
+      | ioB_S29231_140 | 10         |                     |
+
+    # ─── Bind each DESADV identifier (needed for pack assertion below) ───────────────
+    # The orders have distinct POReferences (1140000001 / 1140000002) → two separate DESADVs.
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | dA_S29231_140            | bp_S29231_140            | oA_S29231_140         |
+      | dB_S29231_140            | bp_S29231_140            | oB_S29231_140         |
+
+    # ─── Regression: per-(DESADV, HU) pack creation via real BL ──────────────────────
+    # Invokes EDIDesadvPackService.createOrExtendPacks for each inout line of each shipment.
+    # Without the fix in PR #24271 only ONE EDI_Desadv_Pack row would be created for
+    # the shared LU — the second shipment's items would be attached to the first DESADV's pack.
+    When EDIDesadvPackService creates packs for M_InOut identified by ioA_S29231_140
+    When EDIDesadvPackService creates packs for M_InOut identified by ioB_S29231_140
+
+    # Assert two distinct pack rows: one per (DESADV, LU) pair.
+    # Without the fix the second row would be missing → assertion fails on "no record found".
+    Then after not more than 10s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID  | EDI_Desadv_ID | M_HU_ID             | OPT.IsManual_IPA_SSCC18 |
+      | packA_S29231_140    | dA_S29231_140 | sharedLu_S29231_140 | false                   |
+      | packB_S29231_140    | dB_S29231_140 | sharedLu_S29231_140 | false                   |
 
     # ─── Shipment A: only its own 5 crates ───────────────────────────────────────────
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S29231_140

@@ -24,25 +24,34 @@ package de.metas.cucumber.stepdefs.edi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.inout.IInOutDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -67,6 +76,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EPCIS_JSON_Export_StepDef
 {
 	private final @NonNull M_InOut_StepDefData inoutTable;
+	private final @NonNull M_HU_StepDefData huTable;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private JsonNode lastEpcisResult;
@@ -454,13 +464,17 @@ public class EPCIS_JSON_Export_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>M_InOut_ID</b> — (required, identifier-ref) shipment that "owns" this HA aggregate<br>
-	 *   <b>crateCount</b> — (required) number of TUs aggregated under this HA (sets {@code ha_item.qty})
+	 *   <b>crateCount</b> — (required) number of TUs aggregated under this HA (sets {@code ha_item.qty})<br>
+	 *   <b>OPT.LU_HU_ID</b> — (optional, first row only) identifier under which the created LU's
+	 *     {@code I_M_HU} record is registered in {@link M_HU_StepDefData} for later reference
+	 *     (e.g. asserting {@code EDI_Desadv_Pack.M_HU_ID}). Only the <em>first row</em> is evaluated;
+	 *     values on subsequent rows are silently ignored.
 	 * @cucumber.example
 	 * <pre>
 	 * And one shared LU created via BL with SSCC18 '987654321000001400' carries HA aggregates assigned to inout lines:
-	 *   | M_InOut_ID     | crateCount |
-	 *   | ioA_S29231_140 | 5          |
-	 *   | ioB_S29231_140 | 10         |
+	 *   | M_InOut_ID     | crateCount | OPT.LU_HU_ID        |
+	 *   | ioA_S29231_140 | 5          | sharedLu_S29231_140 |
+	 *   | ioB_S29231_140 | 10         |                     |
 	 * </pre>
 	 */
 	@And("^one shared LU created via BL with SSCC18 '(.*)' carries HA aggregates assigned to inout lines:$")
@@ -523,13 +537,36 @@ public class EPCIS_JSON_Export_StepDef
 		injectedLuHuIds.add(luHuId);
 
 		// ── Set SSCC18 attribute on the shared LU via BL ──────────────────────────────
+		// Look up the M_HU_PI_Attribute record for the LU PI version + SSCC18 attribute.
+		// Without this, M_HU_Attribute.M_HU_PI_Attribute_ID would be 0 and
+		// HUAttributesDAO.createPIAttributes() would build an empty PIAttributes map,
+		// causing PIAttributes.getByAttributeId() to throw "No AttributeId found" when
+		// EDIDesadvPackService calls HURepository.getById() on this synthetic LU.
+		final int sscc18PiAttributeId = DB.getSQLValueEx(Trx.TRXNAME_None,
+				"SELECT m_hu_pi_attribute_id FROM m_hu_pi_attribute"
+						+ " WHERE m_hu_pi_version_id=" + luPIVersionId
+						+ " AND m_attribute_id=" + sscc18AttributeId
+						+ " AND isactive='Y' LIMIT 1");
+
 		final I_M_HU_Attribute sscc18Attr = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
 		sscc18Attr.setAD_Org_ID(adOrgId);
 		sscc18Attr.setM_HU_ID(luHuId);
 		sscc18Attr.setM_Attribute_ID(sscc18AttributeId);
+		if (sscc18PiAttributeId > 0)
+		{
+			sscc18Attr.setM_HU_PI_Attribute_ID(sscc18PiAttributeId);
+		}
 		sscc18Attr.setValue(sscc18);
 		sscc18Attr.setIsActive(true);
 		InterfaceWrapperHelper.save(sscc18Attr);
+
+		// ── Bind LU identifier from first row (OPT.LU_HU_ID) ──────────────────────────
+		final java.util.List<DataTableRow> allRows = DataTableRows.of(dataTable).toList();
+		if (!allRows.isEmpty())
+		{
+			allRows.get(0).getAsOptionalIdentifier("LU_HU_ID")
+					.ifPresent(luIdentifier -> huTable.putOrReplace(luIdentifier, luHu));
+		}
 
 		// ── Per-row: create HA item + VTU + assignment via BL ────────────────────────
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
@@ -592,7 +629,87 @@ public class EPCIS_JSON_Export_StepDef
 			builder.setVHU(vtu);
 			builder.setQty(BigDecimal.ZERO);
 			builder.build();
+
+			// Create M_HU_Storage on the VTU so EDIDesadvPackService.createOrExtendPackUsingHU
+			// can find the product quantity via HURepository.getById(vtu).retain(inoutLine, productId).
+			// Without this, HU.retain() returns null for leaf nodes with no product quantities
+			// (line: !getProductQtysInStockUOM().containsKey(productId) → null → parent LU also null).
+			final I_M_HU_Storage vtuStorage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
+			vtuStorage.setAD_Org_ID(adOrgId);
+			vtuStorage.setM_HU_ID(vtuHuId);
+			vtuStorage.setM_Product_ID(inoutLine.getM_Product_ID());
+			vtuStorage.setQty(inoutLine.getMovementQty());
+			vtuStorage.setC_UOM_ID(inoutLine.getC_UOM_ID());
+			vtuStorage.setIsActive(true);
+			InterfaceWrapperHelper.save(vtuStorage);
 		});
+	}
+
+	/**
+	 * Invokes the real {@link EDIDesadvPackService#createOrExtendPacks} business logic for every
+	 * {@code M_InOutLine} of the given shipment. This mirrors exactly what the
+	 * {@code M_InOut} model interceptor does in production when a shipment is completed.
+	 *
+	 * <p>After this step, each (DESADV, LU) pair must have exactly one {@code EDI_Desadv_Pack} row.
+	 * Without the fix in PR #24271 only one pack would be created regardless of how many DESADVs
+	 * reference the same LU — making the assertion in {@code EDI_Desadv_Pack records are found:}
+	 * fail with "only one row found instead of two".
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   none — the shipment identifier is the single regex capture group
+	 * @cucumber.example
+	 * <pre>
+	 * When EDIDesadvPackService creates packs for M_InOut identified by ioA_S29231_140
+	 * </pre>
+	 */
+	@When("^EDIDesadvPackService creates packs for M_InOut identified by (.*)$")
+	public void createPacksForInOut(@NonNull final String inoutIdentifier)
+	{
+		final EDIDesadvPackService ediDesadvPackService =
+				SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
+
+		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(inout))
+		{
+			final de.metas.edi.model.I_M_InOutLine ediInoutLine =
+					InterfaceWrapperHelper.create(inoutLine, de.metas.edi.model.I_M_InOutLine.class);
+
+			final int desadvLineId = ediInoutLine.getEDI_DesadvLine_ID();
+			if (desadvLineId <= 0)
+			{
+				// no DESADV line linked — skip defensively
+				continue;
+			}
+
+			// IMPORTANT: When the shipment was completed earlier in the scenario, the production code
+			// (DesadvBL.addToDesadvCreateForInOutIfNotExist) already invoked createOrExtendPacks on this
+			// inOutLine — but at that time no HU assignment existed yet, so it created a "fallback"
+			// pack item via createPackUsingJustInOutLine (no HU, full inOutLine qty on the pack item).
+			//
+			// Our test then injects the shared LU + HA + VTU + HU assignment in createSharedLuHaViaBL,
+			// and now wants to invoke the real BL again so the per-(DESADV, HU) pack logic runs against
+			// the actual HU graph. We must FIRST remove the existing fallback pack item — otherwise the
+			// validateMovementQtySum interceptor sees:
+			//     existing-pack-item.qty (50) + new-pack-item.qty (50) = 100 > line.qty (50) → throw.
+			//
+			// removePackAndItemRecords deletes all EDI_Desadv_Pack_Items for this inOutLine (and the
+			// containing EDI_Desadv_Pack if it becomes empty). After this, createOrExtendPacks runs as
+			// if it were the production interceptor seeing the inOutLine for the first time WITH HUs
+			// attached.
+			ediDesadvPackService.removePackAndItemRecords(ediInoutLine);
+
+			// Resolve the EDI_Desadv_ID from the DESADV line record
+			final de.metas.esb.edi.model.I_EDI_DesadvLine desadvLineRecord =
+					InterfaceWrapperHelper.load(desadvLineId, de.metas.esb.edi.model.I_EDI_DesadvLine.class);
+			final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadvLineRecord.getEDI_Desadv_ID());
+
+			final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadvId);
+			ediDesadvPackService.createOrExtendPacks(ediInoutLine, bpartnerId, sequences);
+		}
 	}
 
 	/**
@@ -606,35 +723,68 @@ public class EPCIS_JSON_Export_StepDef
 	@After
 	public void cleanupInjectedHUs()
 	{
-		if (injectedLuHuIds.isEmpty())
-		{
-			return;
-		}
-
-		final List<Integer> allHuIds = new ArrayList<>(injectedLuHuIds);
-		allHuIds.addAll(injectedTuHuIds);
-
-		// Build comma-separated ID list for SQL IN clauses
-		final String luIdList = injectedLuHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
-		final String tuIdList = injectedTuHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
-		final String allIdList = allHuIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("0");
-
-		// Delete in FK-dependency order. Each TU m_hu carries m_hu_item_parent_id → the LU's m_hu_item,
-		// so the TU m_hu rows must go before the LU's m_hu_item rows.
+		// Always clean up all EPCIS_BL* HUs by value-pattern, regardless of whether this scenario
+		// created any. This also catches stragglers from prior failed runs whose @After exited early.
+		//
+		// Delete in FK-dependency order:
+		//  1. m_hu_assignment (FK from m_lu_hu_id → m_hu)
+		//  2. m_hu_storage (FK m_hu_id → m_hu)
+		//  3. child m_hu rows (TU/VTU children — their m_hu_item_parent_id → parent LU's m_hu_item)
+		//  4. m_hu_item rows of LU
+		//  5. m_hu_attribute rows
+		//  6. m_hu rows (LU)
+		//
+		// Steps 1–6 use subselects on m_hu.value LIKE 'EPCIS_BL_%' to avoid needing to pass ID lists.
+		// TU children are found via the LU's m_hu_item records.
+		//
+		// edi_desadv_pack_item.edi_desadv_pack_id → edi_desadv_pack.m_hu_id → m_hu.
+		// When the scenario invokes EDIDesadvPackService.createOrExtendPacks against the injected LU,
+		// edi_desadv_pack rows get written referencing m_hu — these must be removed before m_hu.
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM m_hu_assignment WHERE m_lu_hu_id IN (" + luIdList + ")",
+				"DELETE FROM edi_desadv_pack_item"
+						+ " WHERE edi_desadv_pack_id IN ("
+						+ "   SELECT edi_desadv_pack_id FROM edi_desadv_pack"
+						+ "     WHERE m_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')"
+						+ " )",
 				Trx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM m_hu WHERE m_hu_id IN (" + tuIdList + ")",
+				"DELETE FROM edi_desadv_pack"
+						+ " WHERE m_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')",
 				Trx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM m_hu_item WHERE m_hu_id IN (" + luIdList + ")",
+				"DELETE FROM m_hu_assignment"
+						+ " WHERE m_lu_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')",
 				Trx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM m_hu_attribute WHERE m_hu_id IN (" + allIdList + ")",
+				"DELETE FROM m_hu_storage"
+						+ " WHERE m_hu_id IN ("
+						+ "   SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%'"
+						+ "   UNION"
+						+ "   SELECT m_hu_id FROM m_hu"
+						+ "     WHERE m_hu_item_parent_id IN ("
+						+ "       SELECT m_hu_item_id FROM m_hu_item"
+						+ "         WHERE m_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')"
+						+ "     )"
+						+ " )",
+				Trx.TRXNAME_None);
+		// Delete VTU/TU children before parent LU items
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu"
+						+ " WHERE m_hu_item_parent_id IN ("
+						+ "   SELECT m_hu_item_id FROM m_hu_item"
+						+ "     WHERE m_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')"
+						+ " )",
 				Trx.TRXNAME_None);
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM m_hu WHERE m_hu_id IN (" + luIdList + ")",
+				"DELETE FROM m_hu_item"
+						+ " WHERE m_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')",
+				Trx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu_attribute"
+						+ " WHERE m_hu_id IN (SELECT m_hu_id FROM m_hu WHERE value LIKE 'EPCIS_BL_%')",
+				Trx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM m_hu WHERE value LIKE 'EPCIS_BL_%'",
 				Trx.TRXNAME_None);
 
 		injectedLuHuIds.clear();
