@@ -5,15 +5,20 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutQuery;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,9 +31,12 @@ public class OrderSplitCommand
 	public static final AdMessageKey MSG_NO_SHIPMENTS = AdMessageKey.of("C_Order_Split_NoShipments");
 	public static final AdMessageKey MSG_NOTHING_TO_SPLIT = AdMessageKey.of("C_Order_Split_NothingToSplit");
 
+	private final QtyReservationService qtyReservationService;
+
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	public OrderSplitResult split(@NonNull final OrderSplitRequest request)
 	{
@@ -41,8 +49,31 @@ public class OrderSplitCommand
 
 		final int copiedLineCount = createContinuationOrderLines(oldLines, newOrder);
 
-		// closeOldShipmentSchedules + closeOldReservations land in Task 9
-		throw new UnsupportedOperationException("Old SO finalization not yet wired (Task 9)");
+		closeOldShipmentSchedules(oldLines);
+		closeOldReservations(oldLines);
+
+		return OrderSplitResult.builder()
+				.oldOrderId(de.metas.order.OrderId.ofRepoId(oldOrder.getC_Order_ID()))
+				.newOrderId(de.metas.order.OrderId.ofRepoId(newOrder.getC_Order_ID()))
+				.copiedLineCount(copiedLineCount)
+				.build();
+	}
+
+	private void closeOldShipmentSchedules(@NonNull final List<I_C_OrderLine> oldLines)
+	{
+		final com.google.common.collect.ImmutableList<TableRecordReference> orderLineRefs = oldLines.stream()
+				.map(ol -> TableRecordReference.of(
+						I_C_OrderLine.Table_Name, ol.getC_OrderLine_ID()))
+				.collect(com.google.common.collect.ImmutableList.toImmutableList());
+		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRefs);
+	}
+
+	private void closeOldReservations(@NonNull final List<I_C_OrderLine> oldLines)
+	{
+		final List<OrderLineId> orderLineIds = oldLines.stream()
+				.map(ol -> OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
+				.collect(java.util.stream.Collectors.toList());
+		qtyReservationService.closeAllActiveForOrderLines(orderLineIds);
 	}
 
 	private int createContinuationOrderLines(

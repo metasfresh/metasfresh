@@ -1,5 +1,9 @@
 package de.metas.order.split;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
@@ -13,6 +17,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,7 +35,20 @@ class OrderSplitCommandTest
 	void setup()
 	{
 		AdempiereTestHelper.get().init();
-		command = new OrderSplitCommand();
+
+		// Register mock IShipmentScheduleBL so the call does not NPE
+		final IShipmentScheduleBL mockBL = Mockito.mock(IShipmentScheduleBL.class);
+		Services.registerService(IShipmentScheduleBL.class, mockBL);
+
+		// Create QtyReservationService with mock dependencies
+		final IShipmentScheduleInvalidateBL mockInvalidateBL =
+				Mockito.mock(IShipmentScheduleInvalidateBL.class);
+		final QtyReservationRepository repository = new QtyReservationRepository();
+		final QtyReservationService qtyReservationService = new QtyReservationService(
+				mockInvalidateBL,
+				repository);
+
+		command = new OrderSplitCommand(qtyReservationService);
 	}
 
 	@Test
@@ -123,17 +141,10 @@ class OrderSplitCommandTest
 		shipmentLine.setMovementQty(new BigDecimal("8"));
 		save(shipmentLine);
 
-		// Act — expect Task-8b stub to throw; we assert on the already-saved NEW header
-		try
-		{
-			command.split(OrderSplitRequest.builder()
-					.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
-					.build());
-		}
-		catch (final UnsupportedOperationException expected)
-		{
-			// Task 8b will replace this throw with line cloning
-		}
+		// Act
+		command.split(OrderSplitRequest.builder()
+				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+				.build());
 
 		// Assert — exactly one NEW C_Order exists with POReference = old DocumentNo
 		final List<I_C_Order> newOrders = Services.get(IQueryBL.class)
@@ -162,14 +173,12 @@ class OrderSplitCommandTest
 		newOrderLine(order, "10", "4");                 // residue 6 → moves to NEW
 		newOrderLineOverDelivered(order, "5", "7");     // over-delivered → stays on OLD
 
-		try
-		{
-			command.split(OrderSplitRequest.builder()
-					.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
-					.build());
-		}
-		catch (final UnsupportedOperationException expected) { /* Task 9 stub */ }
+		// Act
+		command.split(OrderSplitRequest.builder()
+				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+				.build());
 
+		// Assert
 		final I_C_Order newOrder = findNewOrderByPOReference("SO-RES-001");
 		final java.util.List<de.metas.interfaces.I_C_OrderLine> newLines = Services.get(IOrderDAO.class)
 				.retrieveOrderLines(OrderId.ofRepoId(newOrder.getC_Order_ID()));
@@ -188,14 +197,12 @@ class OrderSplitCommandTest
 		line.setPriceEntered(new BigDecimal("12.50"));
 		save(line);
 
-		try
-		{
-			command.split(OrderSplitRequest.builder()
-					.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
-					.build());
-		}
-		catch (final UnsupportedOperationException expected) { /* Task 9 stub */ }
+		// Act
+		command.split(OrderSplitRequest.builder()
+				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+				.build());
 
+		// Assert
 		final I_C_Order newOrder = findNewOrderByPOReference("SO-PR-001");
 		final java.util.List<de.metas.interfaces.I_C_OrderLine> newLines = Services.get(IOrderDAO.class)
 				.retrieveOrderLines(OrderId.ofRepoId(newOrder.getC_Order_ID()));
@@ -208,6 +215,56 @@ class OrderSplitCommandTest
 		// either way it should be non-null and non-negative.
 		assertThat(newLine.getPriceActual()).isNotNull();
 		assertThat(newLine.getPriceActual().signum()).isGreaterThanOrEqualTo(0);
+	}
+
+	@Test
+	void closesOldShipmentSchedulesAndReservations()
+	{
+		final I_C_Order order = createOrderWithShipment("SO-CLOSE-001");
+		final I_C_OrderLine line = newOrderLine(order, "10", "4");           // residue 6
+
+		// Add an active M_QtyReservation row for the line.
+		// Setup mirrors the QtyReservationServiceCloseAllActiveTest fixture from Task 7.
+		final org.compiere.model.I_C_UOM uom = newInstance(org.compiere.model.I_C_UOM.class);
+		save(uom);
+		final org.compiere.model.I_M_Product product = newInstance(org.compiere.model.I_M_Product.class);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		save(product);
+		final org.compiere.model.I_M_Warehouse warehouse = newInstance(org.compiere.model.I_M_Warehouse.class);
+		save(warehouse);
+		// Wire the line to the product/uom so QtyReservation's loader can build the domain.
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		save(line);
+
+		final org.compiere.model.I_M_QtyReservation reservation = newInstance(org.compiere.model.I_M_QtyReservation.class);
+		reservation.setC_OrderLine_ID(line.getC_OrderLine_ID());
+		reservation.setM_Product_ID(product.getM_Product_ID());
+		reservation.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		reservation.setC_UOM_ID(uom.getC_UOM_ID());
+		reservation.setQty(new BigDecimal("6"));
+		reservation.setQtyDelivered(BigDecimal.ZERO);
+		reservation.setQtyTU(new BigDecimal("1"));
+		reservation.setProcessed(false);
+		reservation.setAttributesKey("");
+		reservation.setSupplyType("OH");
+		save(reservation);
+
+		// Act
+		final OrderSplitResult result = command.split(OrderSplitRequest.builder()
+				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+				.build());
+
+		// Assert — reservation closed
+		org.adempiere.model.InterfaceWrapperHelper.refresh(reservation);
+		assertThat(reservation.isProcessed()).as("Reservation should be Processed=Y").isTrue();
+		assertThat(reservation.getQtyDelivered()).as("QtyDelivered should equal Qty (6)")
+				.isEqualByComparingTo(new BigDecimal("6"));
+
+		// Result populated
+		assertThat(result.getCopiedLineCount()).isEqualTo(1);
+		assertThat(result.getOldOrderId().getRepoId()).isEqualTo(order.getC_Order_ID());
+		assertThat(result.getNewOrderId().getRepoId()).isNotEqualTo(order.getC_Order_ID());
 	}
 
 	// -------------------------------------------------------------------------
