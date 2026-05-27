@@ -70,14 +70,13 @@ public class TaxDeclarationRepository
 			@NonNull final AcctSchemaId acctSchemaId,
 			final int periodId)
 	{
-		// Iter 7 (me03#29631): Corrections legitimately share their Original's period.
-		// The skip-the-check-for-Corrections branch in TaxDeclarationDocumentHandler.completeIt
-		// covers that case; this DAO method only runs from the Original-completion path now.
-		// (We previously added an IsCorrection='N' filter here too, but the boolean-false
-		// translation interacted badly with the cucumber suite; the completeIt-side skip is
-		// sufficient given the call-site invariant.)
+		// Period-uniqueness rule: at most one declaration with IsCorrection='N' and
+		// Processed='Y' may exist per (C_AcctSchema_ID, C_Period_ID). Corrections
+		// (IsCorrection='Y') legitimately share their Original's period and must NOT count,
+		// otherwise a completed Correction would wrongly block completing a new Original.
 		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, false)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_Period_ID, periodId)
 				.addNotEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID, selfId)
