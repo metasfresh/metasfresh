@@ -251,10 +251,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 
-		// F00127.1 — propagate free-of-charge flag
-		icRecord.setIsWithoutCharge(orderLine.isWithoutCharge());
-		icRecord.setReason(orderLine.getReason());
-
 		// external identifiers
 		icRecord.setExternalSystem_ID(order.getExternalSystem_ID());
 		icRecord.setExternalLineId(orderLine.getExternalId());
@@ -361,6 +357,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
+
+		// F00127.1 — propagate free-of-charge flag. Lives in setOrderedData so amendments
+		// to the order line after IC creation also flow through.
+		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
+		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
 	}
 
 	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)

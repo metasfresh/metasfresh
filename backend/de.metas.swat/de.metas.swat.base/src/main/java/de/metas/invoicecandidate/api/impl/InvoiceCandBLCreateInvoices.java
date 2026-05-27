@@ -742,7 +742,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				// F00127.1 — propagate free-of-charge flag from IC to invoice line
 				invoiceLine.setIsWithoutCharge(cand.isWithoutCharge());
-				invoiceLine.setReason(cand.getReason());
+				invoiceLine.setReason(cand.isWithoutCharge() ? cand.getReason() : null);
 
 				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
 				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
