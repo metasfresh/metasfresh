@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -27,7 +26,6 @@ public class C_TaxDeclaration
 	private static final AdMessageKey MSG_OriginalRequired = AdMessageKey.of("TaxDeclaration_OriginalRequired");
 	private static final AdMessageKey MSG_OriginalMustBeOriginal = AdMessageKey.of("TaxDeclaration_OriginalMustBeOriginal");
 	private static final AdMessageKey MSG_CorrectionInheritsPeriod = AdMessageKey.of("TaxDeclaration_CorrectionInheritsPeriod");
-	private static final AdMessageKey MSG_TaxDeclaration_ProcessedLocked = AdMessageKey.of("TaxDeclaration_ProcessedLocked");
 
 	@NonNull private final TaxDeclarationRepository taxDeclarationRepository;
 
@@ -70,37 +68,6 @@ public class C_TaxDeclaration
 				|| !Objects.equals(td.getDateAcct(), original.getDateAcct()))
 		{
 			throw new AdempiereException(MSG_CorrectionInheritsPeriod).markAsUserValidationError();
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
-	public void lockProcessedDeclaration(final I_C_TaxDeclaration td)
-	{
-		if (!td.isProcessed())
-		{
-			return;
-		}
-		// Skip the Processed:N→Y transition (completeIt) itself — only already-locked rows are guarded.
-		if (InterfaceWrapperHelper.isValueChanged(td, I_C_TaxDeclaration.COLUMNNAME_Processed))
-		{
-			return;
-		}
-
-		final String[] disallowedColumns = {
-			I_C_TaxDeclaration.COLUMNNAME_Description,
-			I_C_TaxDeclaration.COLUMNNAME_C_Period_ID,
-			I_C_TaxDeclaration.COLUMNNAME_DateAcct,
-			I_C_TaxDeclaration.COLUMNNAME_C_AcctSchema_ID,
-			I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_Original_ID,
-			I_C_TaxDeclaration.COLUMNNAME_IsCorrection
-		};
-
-		for (final String columnName : disallowedColumns)
-		{
-			if (InterfaceWrapperHelper.isValueChanged(td, columnName))
-			{
-				throw new AdempiereException(MSG_TaxDeclaration_ProcessedLocked).markAsUserValidationError();
-			}
 		}
 	}
 
