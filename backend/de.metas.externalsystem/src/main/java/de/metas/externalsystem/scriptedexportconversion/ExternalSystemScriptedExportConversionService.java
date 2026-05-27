@@ -240,11 +240,13 @@ public class ExternalSystemScriptedExportConversionService
 		final String rootTableName = tableDAO.retrieveTableName(config.getTableId());
 		final String rootKeyColumnName = columnBL.getSingleKeyColumn(rootTableName);
 
-		final ProcessExecutor processExecutor = ProcessInfo.builder()
+		final ProcessInfo.ProcessInfoBuilder outboundProcessInfoBuilder = ProcessInfo.builder()
 				.setCtx(context)
 				.setRecord(TableRecordReference.of(config.getTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
 				.setAD_Process_ID(config.getOutboundDataProcessId())
-				.addParameter(rootKeyColumnName, outboundDataProcessRecordId)
+				.addParameter(rootKeyColumnName, outboundDataProcessRecordId);
+
+		final ProcessExecutor processExecutor = outboundProcessInfoBuilder
 				.buildAndPrepareExecution()
 				.executeSync();
 

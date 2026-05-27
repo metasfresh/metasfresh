@@ -3,6 +3,9 @@
 drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
 CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
 SELECT io.m_inout_id,
+       -- Top-level column so PostgREST can filter by (m_inout_id, edi_desadv_id).
+       -- A consolidated shipment links to N DESADVs via edi_desadv_m_inout; view emits N rows.
+       d.edi_desadv_id AS edi_desadv_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
                'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
@@ -47,7 +50,12 @@ SELECT io.m_inout_id,
        ) as embedded_json
                          FROM m_inout io
                          LEFT JOIN c_order o ON io.c_order_id = o.c_order_id 
-                         JOIN edi_desadv d ON io.edi_desadv_id = d.edi_desadv_id
+                         -- Enumerate DESADVs via edi_desadv_m_inout junction.
+                         -- View emits one row per (m_inout_id, edi_desadv_id) pair.
+                         JOIN edi_desadv_m_inout link
+                              ON link.m_inout_id = io.m_inout_id AND link.isactive = 'Y'
+                         JOIN edi_desadv d
+                              ON d.edi_desadv_id = link.edi_desadv_id
                          JOIN c_bpartner buyer ON d.c_bpartner_id = buyer.c_bpartner_id
     -- Joins for other lookup objects
                          LEFT JOIN "de.metas.edi".edi_currency_object_v curr ON curr.c_currency_id = d.c_currency_id

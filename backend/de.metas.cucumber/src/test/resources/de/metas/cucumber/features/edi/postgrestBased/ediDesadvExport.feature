@@ -135,7 +135,7 @@ Feature: EDI DESADV export via postgREST
     """
     Then the metasfresh REST-API responds with
     """
-{
+[{
   "metasfresh_DESADV": {
     "Parties": {
       "Buyer": {
@@ -276,7 +276,7 @@ Feature: EDI DESADV export via postgREST
     "TechnicalRecipientGLN": "1234567890",
     "DesadvLineWithNoPacking": []
   }
-}
+}]
     """
 
 #   no need to wait. the process runs synchronously
@@ -798,7 +798,7 @@ Feature: EDI DESADV export via postgREST
     #   - M_Product.GTIN is NULL (not provided in fixture)
     Then the metasfresh REST-API responds with
     """
-{
+[{
   "metasfresh_DESADV": {
     "Parties": {
       "Buyer": {
@@ -938,7 +938,7 @@ Feature: EDI DESADV export via postgREST
     "TechnicalRecipientGLN": "1234567890",
     "DesadvLineWithNoPacking": []
   }
-}
+}]
     """
 
     And after not more than 1s, M_InOut records have the following export status
@@ -1051,7 +1051,7 @@ Feature: EDI DESADV export via postgREST
     #   - M_Product.GTIN is NULL (not provided in fixture)
     Then the metasfresh REST-API responds with
     """
-{
+[{
   "metasfresh_DESADV": {
     "Packings": [
       {
@@ -1074,9 +1074,488 @@ Feature: EDI DESADV export via postgREST
     "M_InOut_ID": @shipment_S0468_060_ID@,
     "EDI_Desadv_ID": @d_060@
   }
-}
+}]
     """
 
     And after not more than 1s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_060      | S                |
+
+  @Id:S29231_100
+  @from:cucumber
+  Scenario: S29231_100 — Two orders, one consolidated shipment → export view emits two DESADV JSONs
+  ## Two EDI-configured orders, same BPartner, distinct POReferences → consolidated shipment.
+  ## The PostgREST export endpoint must emit exactly 2 array elements — one per source-order
+  ## DESADV — each carrying its own POReference and EDI_Desadv_ID.
+  ## Uses two DISTINCT products (pA + pB) with non-trivial line counts to allow strict
+  ## projection testing: DESADV A has 2 lines (pA qty 10, pB qty 5); DESADV B has 1 line
+  ## (pB qty 7). The shared product pB appears in BOTH DESADVs at DIFFERENT qtys.
+
+    Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
+    And metasfresh is configured for One-DESADV-Per-ORDERS
+    And metasfresh initially has no EDI_Desadv_Pack_Item data
+    And metasfresh initially has no EDI_Desadv_Pack data
+    And destroy existing M_HUs
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
+
+    # Two distinct products so each DESADV element can be verified to contain only its own lines
+    And metasfresh contains M_Products:
+      | Identifier      |
+      | pA_S29231_100   |
+      | pB_S29231_100   |
+    And metasfresh contains M_PricingSystems
+      | Identifier      |
+      | ps_S29231_100   |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_100   | ps_S29231_100      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID  |
+      | plv_S29231_100  | pl_S29231_100   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID    | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_100         | pA_S29231_100   | 10.0     | PCE      | Normal           |
+      | plv_S29231_100         | pB_S29231_100   | 5.0      | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient — the gate condition for DESADV creation at order-complete
+    And metasfresh contains C_BPartners:
+      | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S29231_100   | Y          | ps_S29231_100      | 9900000290010 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | bp_S29231_100  | true                 | 9900000290010         |
+
+    # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE (for pA) or 5 PCE (for pB)
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | pi_LU_S29231_100  |
+      | pi_TU_S29231_100  |
+      | pi_VHU_S29231_100 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID        | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_100   | pi_LU_S29231_100  | LU          | Y         |
+      | piv_TU_S29231_100   | pi_TU_S29231_100  | TU          | Y         |
+      | piv_VHU_S29231_100  | pi_VHU_S29231_100 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID  |
+      | pii_LU_S29231_100   | piv_LU_S29231_100   | 20  | HU       | pi_TU_S29231_100   |
+      | pii_TU_S29231_100   | piv_TU_S29231_100   | 0   | PM       |                    |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID  | M_HU_PI_Item_ID   | M_Product_ID    | Qty | ValidFrom  |
+      | pipA_S29231_100          | pii_TU_S29231_100 | pA_S29231_100   | 10  | 2020-01-01 |
+      | pipB_S29231_100          | pii_TU_S29231_100 | pB_S29231_100   | 5   | 2020-01-01 |
+
+    # Order A — 2 lines: pA qty 10 + pB qty 5 → DESADV A must contain exactly those 2 lines
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference                 |
+      | oA_S29231    | true    | bp_S29231_100  | 2026-05-20  | PO_A_S29231_100_@Date@      |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID  | M_Product_ID    | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olA1_S29231    | oA_S29231   | pA_S29231_100   | 10         | pipA_S29231_100          |
+      | olA2_S29231    | oA_S29231   | pB_S29231_100   | 5          | pipB_S29231_100          |
+
+    When the order identified by oA_S29231 is completed
+
+    # Order A must now have an EDI_Desadv_ID set (precondition for the export fix to matter)
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dA_S29231                | bp_S29231_100            | oA_S29231             | P                |
+
+    # Order B — 1 line: pB qty 7 → DESADV B must contain exactly that 1 line
+    # pB appears in BOTH orders at DIFFERENT qtys (5 vs 7) — the projection check must
+    # distinguish pB-in-A (qty 5) from pB-in-B (qty 7).
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference                 |
+      | oB_S29231    | true    | bp_S29231_100  | 2026-05-20  | PO_B_S29231_100_@Date@      |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID  | M_Product_ID    | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olB1_S29231    | oB_S29231   | pB_S29231_100   | 7          | pipB_S29231_100          |
+
+    When the order identified by oB_S29231 is completed
+
+    # Order B must also have its own EDI_Desadv_ID (distinct from A's)
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dB_S29231                | bp_S29231_100            | oB_S29231             | P                |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # All three shipment schedules (2 from order A, 1 from order B) must be ready before batching
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssA1_S29231    | olA1_S29231    | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssA2_S29231    | olA2_S29231    | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssB1_S29231    | olB1_S29231    | N             |
+
+    # Batch-generate ONE shipment covering all three schedules (the aggregated M_InOut)
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ssA1_S29231           |
+      | ssA2_S29231           |
+      | ssB1_S29231           |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    | REST.Context.M_InOut_ID |
+      | ssA1_S29231           | io_S29231_100 | io_S29231_100_ID        |
+
+    # Wait for DESADV pack records to be written (async, triggered by M_InOut BEFORE_COMPLETE)
+    # IsManual_IPA_SSCC18=true: this scenario does not set up M_HU_Attribute SSCC18 (no
+    # real picked-LU); EDIDesadvPackService.createPackUsingJustInOutLine synthesises the SSCC
+    # and sets IsManual_IPA_SSCC18=true. Pack-side SSCC sourced-from-LU is exercised
+    # separately in ediDesadvAggregateHU.feature.
+    # Consolidated multi-source-order shipment, multi-line orders: production creates ONE
+    # pack per (source DESADV, M_InOutLine). Order A has 2 lines → DESADV A has 2 packs
+    # (SeqNo 1, 2). Order B has 1 line → DESADV B has 1 pack (SeqNo 1).
+    # Disambiguate each pack by (EDI_Desadv_ID, SeqNo) so each row matches exactly one.
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 | SeqNo |
+      | packA1_S29231      | dA_S29231                | true                | 1     |
+      | packA2_S29231      | dA_S29231                | true                | 2     |
+      | packB_S29231       | dB_S29231                | true                | 1     |
+
+    # ─── CORE ASSERTION ───────────────────────────
+    # The REST endpoint must return exactly 2 elements — one per source-order DESADV.
+    # Asserted at header level (POReference + EDI_Desadv_ID pairing per element) AND
+    # line level (every LineItem.DesadvLine.OrderPOReference belongs to its element's source order).
+    And the following API_Audit_Config records are created:
+      | Identifier    | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_100  | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@io_S29231_100_ID@"
+    }
+  ]
+}
+    """
+    # Header+line intersection: 2 elements, each with all line items belonging to its source order.
+    # ExpectedQtyDeliveredPerOrder is intentionally absent from the intersection step;
+    # per-line qty verification is handled by the strict-projection step below.
+    Then verify DESADV JSON export response has multi-source-order intersection:
+      | ExpectedRowCount | DistinctDesadvIds | OrderA_Identifier | OrderB_Identifier | ExpectedQtyDeliveredPerOrder |
+      | 2                | 2                 | oA_S29231         | oB_S29231         | 0                            |
+
+    # ─── STRICT PROJECTION ASSERTION ──────────────────────────────────────────────────────────────
+    # Each DESADV element must be an exact projection of its source order's lines: correct
+    # LineItem count, correct product set (DesadvLine.Product.SupplierProductNo), correct qty
+    # multiset (QtyDeliveredInDesadvLineUOM). pB appears in BOTH DESADVs at different qtys
+    # (5 in A, 7 in B) — this distinguishes per-line ownership from a naive product-set check.
+    # Pack-item dimensions are verified at LineItem level (sorted by Line asc).
+    # Per EDIDesadvPackService.createPackUsingJustInOutLine: QtyCUsPerLU stored = min(qtyDelivered, maxLUCapacity)
+    # (the ACTUAL fill of this LU, not the LU's max capacity), and QtyTU = ceil(qtyInLU / QtyCUsPerTU).
+    # In DESADV A, the consolidated-shipment InOutLine ordering puts pB before pA (independent of
+    # C_OrderLine sequence) → Line 10 = pB and Line 20 = pA. Verified by running the test.
+    # - DESADV A: pB (Line 10) qty=5,  TU-cap=5,  LU-max=100 → QtyTU=1, QtyCUsPerTU=5,  QtyCUsPerLU=5
+    #             pA (Line 20) qty=10, TU-cap=10, LU-max=200 → QtyTU=1, QtyCUsPerTU=10, QtyCUsPerLU=10
+    # - DESADV B: pB (Line 10) qty=7,  TU-cap=5,  LU-max=100 → QtyTU=ceil(7/5)=2, QtyCUsPerTU=5, QtyCUsPerLU=7
+    # The distinct QtyCUsPerTU values (10 vs 5) across DESADVs prove the projection preserves
+    # each source order's pack-item configuration rather than mixing them.
+    Then verify DESADV JSON export response is a strict projection of source orders:
+      | DESADV_Identifier | Order_Identifier | ExpectedLineCount | ExpectedProductIdentifiers  | ExpectedQtys | ExpectedQtyTUs | ExpectedQtyCUsPerTU | ExpectedQtyCUsPerLU |
+      | dA_S29231         | oA_S29231        | 2                 | pA_S29231_100,pB_S29231_100 | 10,5         | 1,1            | 5,10                | 5,10                |
+      | dB_S29231         | oB_S29231        | 1                 | pB_S29231_100               | 7            | 2              | 5                   | 7                   |
+
+
+  @Id:S29231_110
+  @from:cucumber
+  Scenario: S29231_110 — One order, one shipment → export view emits exactly one DESADV JSON (1-order regression)
+  ## Single-order baseline regression. A single EDI-configured order is completed and
+  ## generates one M_InOut. The export view M_InOut_Export_EDI_DESADV_JSON_V must still
+  ## return exactly 1 row for that M_InOut (1-source-order case not broken by junction logic).
+
+    Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
+    And metasfresh is configured for One-DESADV-Per-ORDERS
+    And metasfresh initially has no EDI_Desadv_Pack_Item data
+    And metasfresh initially has no EDI_Desadv_Pack data
+    And destroy existing M_HUs
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
+
+    And metasfresh contains M_Products:
+      | Identifier      |
+      | p_S29231_110    |
+    And metasfresh contains M_PricingSystems
+      | Identifier      |
+      | ps_S29231_110   |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_110   | ps_S29231_110      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID  |
+      | plv_S29231_110  | pl_S29231_110   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_110         | p_S29231_110  | 10.0     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S29231_110   | Y          | ps_S29231_110      | 9900000291100 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | bp_S29231_110  | true                 | 9900000291100         |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID          |
+      | pi_LU_S29231_110    |
+      | pi_TU_S29231_110    |
+      | pi_VHU_S29231_110   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_110   | pi_LU_S29231_110    | LU          | Y         |
+      | piv_TU_S29231_110   | pi_TU_S29231_110    | TU          | Y         |
+      | piv_VHU_S29231_110  | pi_VHU_S29231_110   | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   |
+      | pii_LU_S29231_110   | piv_LU_S29231_110   | 20  | HU       | pi_TU_S29231_110    |
+      | pii_TU_S29231_110   | piv_TU_S29231_110   | 0   | PM       |                     |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S29231_110          | pii_TU_S29231_110 | p_S29231_110  | 10  | 2020-01-01 |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference              |
+      | o_S29231_110 | true    | bp_S29231_110  | 2026-05-20  | PO_S29231_110_@Date@     |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID   | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S29231_110 | o_S29231_110 | p_S29231_110  | 10         | pip_S29231_110          |
+
+    When the order identified by o_S29231_110 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_S29231_110             | bp_S29231_110            | o_S29231_110          | P                |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ss_S29231_110  | ol_S29231_110  | N             |
+
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S29231_110         |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    | REST.Context.M_InOut_ID |
+      | ss_S29231_110         | io_S29231_110 | io_S29231_110_ID        |
+
+    # IsManual_IPA_SSCC18=true: no M_HU_Attribute SSCC18 in this scenario — see TC1 note.
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 |
+      | pack_S29231_110    | true                |
+
+    # ─── CORE ASSERTION (TC2 regression predicate) ────────────────────────────
+    # REST endpoint must still return exactly 1 element for the single-order case.
+    # Line-level intersection asserted: the single element's LineItems must reference
+    # the one source order's POReference and carry its delivered qty.
+    And the following API_Audit_Config records are created:
+      | Identifier    | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_110  | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@io_S29231_110_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | o_S29231_110     | 10                   |
+
+
+  # TC3 (N=3 generalisation) was removed: it exercises the same production code path as TC1
+  # (per-line loop + sequencesByDesadv map) with no additional branch coverage.
+
+
+  @Id:S29231_160
+  @from:cucumber
+  Scenario: S29231_160 — One order, two partial shipments → one DESADV linked to two M_InOuts via junction
+  ## Covers the "1 DESADV → N M_InOuts" direction (partial deliveries on the same source order).
+  ## S29231_100/110 cover the inverse ("N DESADVs → 1 M_InOut" — consolidated shipment).
+  ## A single order with QtyEntered=20 is shipped in two partial M_InOuts of 10 each.
+  ## The junction must end up with exactly 2 rows for the one EDI_Desadv, one per M_InOut.
+
+    Given set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
+    And metasfresh is configured for One-DESADV-Per-ORDERS
+    And metasfresh initially has no EDI_Desadv_Pack_Item data
+    And metasfresh initially has no EDI_Desadv_Pack data
+    And destroy existing M_HUs
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
+
+    And metasfresh contains M_Products:
+      | Identifier      |
+      | p_S29231_160    |
+    And metasfresh contains M_PricingSystems
+      | Identifier      |
+      | ps_S29231_160   |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S29231_160   | ps_S29231_160      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier      | M_PriceList_ID  |
+      | plv_S29231_160  | pl_S29231_160   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S29231_160         | p_S29231_160  | 10.0     | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient — gate condition for DESADV creation at order-complete
+    And metasfresh contains C_BPartners:
+      | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S29231_160   | Y          | ps_S29231_160      | 9900000291600 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | bp_S29231_160  | true                 | 9900000291600         |
+
+    # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID          |
+      | pi_LU_S29231_160    |
+      | pi_TU_S29231_160    |
+      | pi_VHU_S29231_160   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_160   | pi_LU_S29231_160    | LU          | Y         |
+      | piv_TU_S29231_160   | pi_TU_S29231_160    | TU          | Y         |
+      | piv_VHU_S29231_160  | pi_VHU_S29231_160   | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID     | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   |
+      | pii_LU_S29231_160   | piv_LU_S29231_160   | 20  | HU       | pi_TU_S29231_160    |
+      | pii_TU_S29231_160   | piv_TU_S29231_160   | 0   | PM       |                     |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S29231_160          | pii_TU_S29231_160 | p_S29231_160  | 10  | 2020-01-01 |
+
+    # Single order with QtyEntered=20 — large enough to be split into two complete-TU shipments of 10 each
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference              |
+      | o_S29231_160 | true    | bp_S29231_160  | 2026-05-20  | PO_S29231_160_@Date@     |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID   | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S29231_160 | o_S29231_160 | p_S29231_160  | 20         | pip_S29231_160          |
+
+    When the order identified by o_S29231_160 is completed
+
+    # Order-complete must create the single EDI_Desadv (one DESADV per ORDERS)
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_S29231_160             | bp_S29231_160            | o_S29231_160          | P                |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S29231_160 | ol_S29231_160  | N             |
+
+    # ─── First partial: ship 10 of 20 ──────────────────────────────────────────
+    # QtyToDeliver_Override_For_M_ShipmentSchedule_ID is the workpackage-parameter name that
+    # ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override resolves to; using the
+    # short alias "QtyToDeliver_Override" does NOT match and results in no override being applied,
+    # so the first run would consume all 20 PCE and the second would have nothing to ship.
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_S29231_160         | 10                                              |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     | REST.Context.M_InOut_ID |
+      | ss_S29231_160         | ioA_S29231_160 | ioA_S29231_160_ID       |
+
+    # Wait for the schedule to reflect the first partial delivery before invoking the second
+    # generate-shipments run.  Without this recompute-wait the second workpackage may see a
+    # stale QtyToDeliver and produce no shipment (same pattern as duplicateShipmentLineGuard.feature).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S29231_160 | ol_S29231_160  | N             |
+
+    # ─── Second partial: ship the remaining 10 of 20 ───────────────────────────
+    # Use OPT.IgnoreCreated to exclude the first M_InOut (otherwise the
+    # 'M_InOut is found' step throws on size>1).
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | ss_S29231_160         | 10                                              |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.IgnoreCreated.M_InOut_ID.Identifier | REST.Context.M_InOut_ID |
+      | ss_S29231_160         | ioB_S29231_160 | ioA_S29231_160                          | ioB_S29231_160_ID       |
+
+    # Wait for DESADV packs (triggered synchronously by M_InOut BEFORE_COMPLETE — one pack per
+    # M_InOut).  Both packs share the same EDI_Desadv_ID + IsManual_IPA_SSCC18, so we use SeqNo
+    # to disambiguate: the pack created for ioA gets SeqNo=1, ioB gets SeqNo=2 (DesadvDAO uses
+    # increment=1 starting from the max existing SeqNo, which is 0 after the initial delete).
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 | OPT.SeqNo |
+      | packA_S29231_160   | d_S29231_160             | true                | 1         |
+      | packB_S29231_160   | d_S29231_160             | true                | 2         |
+
+    # ─── CORE ASSERTION ───────────────────────────────────────────────────────
+    # The EDI_Desadv_M_InOut junction must contain exactly 2 rows for the single
+    # EDI_Desadv — one per partial M_InOut.
+    Then EDI_Desadv_M_InOut records are found:
+      | EDI_Desadv_ID | M_InOut_ID     | ExpectedRowCountForDesadv |
+      | d_S29231_160  | ioA_S29231_160 | 2                         |
+      | d_S29231_160  | ioB_S29231_160 | 2                         |
+
+    # ─── PER-INOUT EXPORT ASSERTION ────────────────────────────────────────────
+    # Each partial M_InOut's export view emits exactly 1 DESADV JSON (the shared
+    # EDI_Desadv) whose LineItems carry only that partial's delivered qty (10).
+    # This complements the junction-count assertion: the junction proves the link
+    # exists; this proves the export uses it correctly to emit per-M_InOut JSONs.
+    And the following API_Audit_Config records are created:
+      | Identifier       | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_160     | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioA_S29231_160_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | o_S29231_160     | 10                   |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioB_S29231_160_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | o_S29231_160     | 10                   |
