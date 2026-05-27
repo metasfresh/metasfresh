@@ -336,6 +336,7 @@ public class C_Order_Split_StepDef
 				.setAD_Process_ID(processId.getRepoId())
 				.setRecord(I_C_Order.Table_Name, order.getC_Order_ID())
 				.buildAndPrepareExecution()
-				.executeSync();
+				.executeSync()
+				.getResult();
 	}
 }
