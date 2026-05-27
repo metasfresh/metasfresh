@@ -19,6 +19,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.AdProcessId;
@@ -201,7 +202,8 @@ public class HUQRCodesService
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return getHuIdByQRCodeIfExists(qrCode)
-				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code `" + qrCode.toDisplayableQRCode() + "`"));
+				.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
+						.setParameter("qrCode", qrCode.toDisplayableQRCode()));
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
@@ -440,6 +442,10 @@ public class HUQRCodesService
 			return ean13HUQRCode;
 		}
 
-		throw new AdempiereException("QR code is not handled: " + scannedCode);
+		if (globalQRCode != null)
+		{
+			throw MobileQRCodeMessages.newWrongGlobalQRTypeException(globalQRCode);
+		}
+		throw MobileQRCodeMessages.newNotRecognizedException(scannedCode);
 	}
 }
