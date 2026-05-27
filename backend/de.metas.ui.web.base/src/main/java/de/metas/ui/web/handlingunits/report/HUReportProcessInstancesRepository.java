@@ -324,7 +324,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 					request.getSingleDocumentPath(),
 					"singleDocumentPath shall be set when viewRowIdsSelection is null; request={}",
 					request);
-			singleHuId = HuId.ofRepoId(singleDocumentPath.getDocumentId().toInt());
+			singleHuId = HuId.ofRepoId(singleDocumentPath.getDocumentId().toInt()); // M_HU always uses integer-based DocumentIds
 		}
 		else
 		{

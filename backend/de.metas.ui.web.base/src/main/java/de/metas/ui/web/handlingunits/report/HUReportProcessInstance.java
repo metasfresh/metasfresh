@@ -108,6 +108,10 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		{
 			throw new AdempiereException("Either viewRowIdsSelection or singleHuId must be non-null");
 		}
+		if (viewRowIdsSelection != null && singleHuId != null)
+		{
+			throw new AdempiereException("viewRowIdsSelection and singleHuId are mutually exclusive; exactly one must be non-null");
+		}
 
 		this.instanceId = instanceId;
 		this.viewRowIdsSelection = viewRowIdsSelection;
@@ -191,7 +195,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		else
 		{
 			viewId = null;
-			husToReport = extractHUsToReportForSingleHu(singleHuId);
+			// Constructor invariant: if viewRowIdsSelection == null then singleHuId != null
+			husToReport = extractHUsToReportForSingleHu(Objects.requireNonNull(singleHuId, "singleHuId"));
 		}
 
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
