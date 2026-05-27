@@ -62,17 +62,20 @@ public class M_HU_Report_QRCode extends JavaProcess
 		}
 		else
 		{
-			final PrintCopies printCopies = getParameters().stream()
-					.filter(processInfoParameter -> IMassPrintingService.PARAM_PrintCopies.equals(processInfoParameter.getParameterName()))
-					.findFirst()
-					.map(ProcessInfoParameter::getParameterAsInt)
-					.filter(nrOfCopies -> nrOfCopies > 0)
-					.map(PrintCopies::ofInt)
-					.orElse(PrintCopies.ONE);
-
-			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, printCopies);
+			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, getPrintCopies());
 		}
 
 		return MSG_OK;
+	}
+
+	private PrintCopies getPrintCopies()
+	{
+		return getParameters().stream()
+				.filter(p -> IMassPrintingService.PARAM_PrintCopies.equals(p.getParameterName()))
+				.findFirst()
+				.map(ProcessInfoParameter::getParameterAsInt)
+				.filter(nrOfCopies -> nrOfCopies > 0)
+				.map(PrintCopies::ofInt)
+				.orElse(PrintCopies.ONE);
 	}
 }

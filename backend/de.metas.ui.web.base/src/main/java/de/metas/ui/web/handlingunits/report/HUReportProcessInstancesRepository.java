@@ -17,8 +17,11 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.handlingunits.HuId;
+import de.metas.util.Check;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
@@ -44,6 +47,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.util.Services;
 import lombok.NonNull;
+import javax.annotation.Nullable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Process;
@@ -211,14 +215,47 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			final DocumentPreconditionsAsContext documentContext = (DocumentPreconditionsAsContext) preconditionsContext;
 			if (I_M_HU.Table_Name.equals(documentContext.getTableName()))
 			{
+				final I_M_HU hu = documentContext.getSelectedModel(I_M_HU.class);
+				final HuUnitType huUnitType = resolveHUUnitType(hu);
+				if (huUnitType == null)
+				{
+					return Stream.empty();
+				}
 				return getIndexedWebuiHUProcessDescriptors()
 						.getAll()
 						.stream()
+						.filter(descriptor -> descriptor.appliesToHUUnitType(huUnitType))
 						.map(WebuiHUProcessDescriptor::toWebuiRelatedProcessDescriptorForSingleDocument);
 			}
 		}
 
 		return Stream.empty();
+	}
+
+	/**
+	 * Resolves the {@link HuUnitType} for the given HU.
+	 * Returns {@code null} for unknown/degenerate HU types (processes should not be shown for them).
+	 */
+	@Nullable
+	private static HuUnitType resolveHUUnitType(@NonNull final I_M_HU hu)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (handlingUnitsBL.isLoadingUnit(hu))
+		{
+			return HuUnitType.LU;
+		}
+		else if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
+		{
+			return HuUnitType.TU;
+		}
+		else if (handlingUnitsBL.isVirtual(hu))
+		{
+			return HuUnitType.VHU;
+		}
+		else
+		{
+			return null; // unknown/degenerate HU type — show no processes
+		}
 	}
 
 	private boolean checkApplies(final WebuiHUProcessDescriptor descriptor, @NonNull final ViewAsPreconditionsContext viewContext)
@@ -278,9 +315,11 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		if (viewRowIdsSelection == null)
 		{
 			// Launched from a single-document (detail) view — resolve the HU ID from the document path
-			singleHuId = request.getSingleDocumentPath() != null
-					? HuId.ofRepoId(request.getSingleDocumentPath().getDocumentId().toInt())
-					: null;
+			final DocumentPath singleDocumentPath = Check.assumeNotNull(
+					request.getSingleDocumentPath(),
+					"singleDocumentPath shall be set when viewRowIdsSelection is null; request={}",
+					request);
+			singleHuId = HuId.ofRepoId(singleDocumentPath.getDocumentId().toInt());
 		}
 		else
 		{
