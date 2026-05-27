@@ -37,7 +37,7 @@ public class C_TaxDeclaration_CreateCorrection extends JavaProcess implements IP
 	@Override
 	protected String doIt()
 	{
-		final TaxDeclarationId correctionId = taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(getRecord_ID()));
-		return "@Created@ " + correctionId.getRepoId();
+		taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(getRecord_ID()));
+		return MSG_OK;
 	}
 }

@@ -19,8 +19,9 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class TaxDeclarationDocumentHandler implements DocumentHandler
 {
-	private static final AdMessageKey MSG_NoLinesYet    = AdMessageKey.of("TaxDeclaration_NoLinesYet");
-	private static final AdMessageKey MSG_PeriodOverlap = AdMessageKey.of("TaxDeclaration_PeriodOverlap");
+	private static final AdMessageKey MSG_NoLinesYet      = AdMessageKey.of("TaxDeclaration_NoLinesYet");
+	private static final AdMessageKey MSG_PeriodOverlap   = AdMessageKey.of("TaxDeclaration_PeriodOverlap");
+	private static final AdMessageKey MSG_HasCorrections  = AdMessageKey.of("TaxDeclaration_HasCorrections");
 
 	@NonNull private final TaxDeclarationRepository repo;
 
@@ -54,14 +55,9 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		final I_C_TaxDeclaration td = extract(docFields);
 		final TaxDeclarationId id = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_ID());
 
-		// Iter 7 (me03#29631): period-uniqueness applies to Originals only, and must be checked
-		// BEFORE the no-lines guard. A second Original on an already-declared period builds EMPTY
-		// by construction — the build engine excludes facts already snapshotted in the locked
-		// Original (tax_declaration_build.sql NOT-EXISTS branch). If the no-lines guard ran first,
-		// the user would see the misleading TAXDECLARATION_NO_LINES_YET instead of the meaningful
-		// "a declaration already exists for this period — create a Correction" (PERIOD_OVERLAP).
-		// A Correction legitimately shares its Original's period (the whole point of the lifecycle),
-		// so it skips this check.
+		// Period-uniqueness applies to Originals only; a Correction legitimately shares its Original's period.
+		// Checked before the no-lines guard so the user gets the meaningful PeriodOverlap message rather than
+		// NoLinesYet (a second Original on an already-declared period always builds empty).
 		if (!td.isIsCorrection()
 				&& repo.existsCompletedOverlappingPeriod(id, AcctSchemaId.ofRepoId(td.getC_AcctSchema_ID()), td.getC_Period_ID()))
 		{
@@ -75,8 +71,7 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		td.setProcessed(true);
 		td.setDocAction(IDocument.ACTION_ReActivate);
 
-		// Iter 7: completing a Correction clears its Original's "Berichtigung erforderlich" flag.
-		// REQUIREMENTS.md §5.2 step 4 + §7 AC#9.
+		// Completing a Correction clears its Original's "correction needed" flag.
 		if (td.isIsCorrection())
 		{
 			final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_Original_ID());
@@ -100,7 +95,7 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 
 		if (repo.existsCorrectionFor(taxDeclarationId))
 		{
-			throw new AdempiereException(AdMessageKey.of("TaxDeclaration_HasCorrections"));
+			throw new AdempiereException(MSG_HasCorrections);
 		}
 
 		td.setProcessed(false);

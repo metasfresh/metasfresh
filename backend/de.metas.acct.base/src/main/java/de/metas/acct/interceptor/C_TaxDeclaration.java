@@ -17,6 +17,8 @@ import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @Interceptor(I_C_TaxDeclaration.class)
 @RequiredArgsConstructor
@@ -65,7 +67,7 @@ public class C_TaxDeclaration
 		}
 		if (td.getC_Period_ID() != original.getC_Period_ID()
 				|| td.getC_AcctSchema_ID() != original.getC_AcctSchema_ID()
-				|| !java.util.Objects.equals(td.getDateAcct(), original.getDateAcct()))
+				|| !Objects.equals(td.getDateAcct(), original.getDateAcct()))
 		{
 			throw new AdempiereException(MSG_CorrectionInheritsPeriod).markAsUserValidationError();
 		}
@@ -74,21 +76,16 @@ public class C_TaxDeclaration
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void lockProcessedDeclaration(final I_C_TaxDeclaration td)
 	{
-		// Once Processed='Y', prevent most field mutations except for IsCorrectionNeeded and CorrectionNeededReason.
-		// This guard enforces AC#3 and AC#4 (prevents accidental edits to locked declarations).
-		// Iter 8 drift-detector needs to modify IsCorrectionNeeded / CorrectionNeededReason even when Processed='Y'.
 		if (!td.isProcessed())
 		{
 			return;
 		}
-		// The very transition Processed:N→Y (= completeIt) is legitimate and must not be guarded against —
-		// only PERSISTED locked rows are subject to the disallowed-column check.
+		// Skip the Processed:N→Y transition (completeIt) itself — only already-locked rows are guarded.
 		if (InterfaceWrapperHelper.isValueChanged(td, I_C_TaxDeclaration.COLUMNNAME_Processed))
 		{
 			return;
 		}
 
-		// Check critical disallowed columns. Other system columns (IsActive, Updated, etc.) are excluded from the check.
 		final String[] disallowedColumns = {
 			I_C_TaxDeclaration.COLUMNNAME_Description,
 			I_C_TaxDeclaration.COLUMNNAME_C_Period_ID,
@@ -98,7 +95,6 @@ public class C_TaxDeclaration
 			I_C_TaxDeclaration.COLUMNNAME_IsCorrection
 		};
 
-		// Check if ANY disallowed column changed
 		for (final String columnName : disallowedColumns)
 		{
 			if (InterfaceWrapperHelper.isValueChanged(td, columnName))
