@@ -16,6 +16,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
@@ -272,9 +273,24 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final Document parameters = Document.builder(descriptor.getParametersDescriptor())
 				.initializeAsNewDocument(instanceId, /* version */"0");
 
+		final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
+		final HuId singleHuId;
+		if (viewRowIdsSelection == null)
+		{
+			// Launched from a single-document (detail) view — resolve the HU ID from the document path
+			singleHuId = request.getSingleDocumentPath() != null
+					? HuId.ofRepoId(request.getSingleDocumentPath().getDocumentId().toInt())
+					: null;
+		}
+		else
+		{
+			singleHuId = null;
+		}
+
 		final HUReportProcessInstance instance = HUReportProcessInstance.builder()
 				.instanceId(instanceId)
-				.viewRowIdsSelection(request.getViewRowIdsSelection())
+				.viewRowIdsSelection(viewRowIdsSelection)
+				.singleHuId(singleHuId)
 				.reportAdProcessId(descriptor.getReportAdProcessId())
 				.parameters(parameters)
 				.build();
