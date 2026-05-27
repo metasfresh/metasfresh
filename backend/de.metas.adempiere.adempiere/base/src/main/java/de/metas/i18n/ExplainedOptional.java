@@ -34,43 +34,45 @@ import java.util.function.Supplier;
  * #L%
  */
 
-@EqualsAndHashCode(exclude = "adMessageKey")
+@EqualsAndHashCode(exclude = {"adMessageKey", "params"})
 public final class ExplainedOptional<T>
 {
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final String explanation)
 	{
-		return new ExplainedOptional<>(null, TranslatableStrings.anyLanguage(explanation), null);
+		return new ExplainedOptional<>(null, TranslatableStrings.anyLanguage(explanation), null, null);
 	}
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey adMessageKey)
 	{
-		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey), adMessageKey);
+		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey), adMessageKey, null);
 	}
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey adMessageKey, @Nullable final Object... params)
 	{
-		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey, params), adMessageKey);
+		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey, params), adMessageKey, params);
 	}
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
 	{
-		return new ExplainedOptional<>(null, explanation, null);
+		return new ExplainedOptional<>(null, explanation, null, null);
 	}
 
 	public static <T> ExplainedOptional<T> of(@NonNull final T value)
 	{
-		return new ExplainedOptional<>(value, null, null);
+		return new ExplainedOptional<>(value, null, null, null);
 	}
 
 	@Nullable private final T value;
 	@Getter @NonNull private final ITranslatableString explanation;
 	@Nullable private final AdMessageKey adMessageKey;
+	@Nullable private final Object[] params;
 
-	private ExplainedOptional(@Nullable final T value, @Nullable final ITranslatableString explanation, @Nullable final AdMessageKey adMessageKey)
+	private ExplainedOptional(@Nullable final T value, @Nullable final ITranslatableString explanation, @Nullable final AdMessageKey adMessageKey, @Nullable final Object[] params)
 	{
 		this.value = value;
 		this.explanation = TranslatableStrings.nullToEmpty(explanation);
 		this.adMessageKey = adMessageKey;
+		this.params = params;
 	}
 
 	@Override
@@ -116,11 +118,18 @@ public final class ExplainedOptional<T>
 		{
 			return value;
 		}
-		if (adMessageKey != null)
+		else if (adMessageKey != null && (params == null || params.length == 0))
 		{
 			throw new AdempiereException(adMessageKey);
 		}
-		throw new AdempiereException(explanation);
+		else if (adMessageKey != null)
+		{
+			throw new AdempiereException(adMessageKey, params);
+		}
+		else
+		{
+			throw new AdempiereException(explanation);
+		}
 	}
 
 	public T orElseThrow(@NonNull final AdMessageKey adMessageKey)
