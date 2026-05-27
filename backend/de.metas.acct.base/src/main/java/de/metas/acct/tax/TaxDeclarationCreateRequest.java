@@ -1,6 +1,7 @@
 package de.metas.acct.tax;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.calendar.PeriodId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,7 +22,7 @@ public class TaxDeclarationCreateRequest
 {
 	@NonNull OrgId adOrgId;
 	@NonNull AcctSchemaId acctSchemaId;
-	int cPeriodId;
+	@NonNull PeriodId cPeriodId;
 	@NonNull Timestamp dateAcct;
 	boolean isCorrection;
 	@Nullable TaxDeclarationId originalId;

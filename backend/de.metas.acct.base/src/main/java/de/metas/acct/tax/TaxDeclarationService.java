@@ -1,6 +1,7 @@
 package de.metas.acct.tax;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.calendar.PeriodRepo;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
@@ -15,12 +16,17 @@ public class TaxDeclarationService
 {
 	private static final AdMessageKey MSG_TaxDeclaration_AlreadyProcessed = AdMessageKey.of("TaxDeclaration_AlreadyProcessed");
 	private static final AdMessageKey MSG_TaxDeclaration_CreateCorrection_OriginalNotLocked = AdMessageKey.of("TaxDeclaration_CreateCorrection_OriginalNotLocked");
+	private static final AdMessageKey MSG_TaxDeclaration_OriginalMustBeOriginal = AdMessageKey.of("TaxDeclaration_OriginalMustBeOriginal");
 
 	@NonNull private final TaxDeclarationRepository taxDeclarationRepository;
+	@NonNull private final PeriodRepo periodRepo;
 
-	public TaxDeclarationService(@NonNull final TaxDeclarationRepository taxDeclarationRepository)
+	public TaxDeclarationService(
+			@NonNull final TaxDeclarationRepository taxDeclarationRepository,
+			@NonNull final PeriodRepo periodRepo)
 	{
 		this.taxDeclarationRepository = taxDeclarationRepository;
+		this.periodRepo = periodRepo;
 	}
 
 	public void build(@NonNull final TaxDeclarationId id)
@@ -55,18 +61,17 @@ public class TaxDeclarationService
 		}
 		if (original.isIsCorrection())
 		{
-			throw new AdempiereException(AdMessageKey.of("TaxDeclaration_OriginalMustBeOriginal"))
+			throw new AdempiereException(MSG_TaxDeclaration_OriginalMustBeOriginal)
 					.markAsUserValidationError();
 		}
 
-		final TaxDeclarationCreateRequest request = TaxDeclarationCreateRequest.builder()
+		return taxDeclarationRepository.createTaxDeclaration(TaxDeclarationCreateRequest.builder()
 				.adOrgId(OrgId.ofRepoId(original.getAD_Org_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(original.getC_AcctSchema_ID()))
-				.cPeriodId(original.getC_Period_ID())
+				.cPeriodId(periodRepo.getPeriodId(original.getC_Period_ID()))
 				.dateAcct(original.getDateAcct())
 				.isCorrection(true)
 				.originalId(originalId)
-				.build();
-		return taxDeclarationRepository.createTaxDeclaration(request);
+				.build());
 	}
 }

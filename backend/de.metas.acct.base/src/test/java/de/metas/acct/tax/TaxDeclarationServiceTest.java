@@ -1,10 +1,13 @@
 package de.metas.acct.tax;
 
+import de.metas.calendar.PeriodRepo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_TaxDeclaration;
+import org.compiere.model.I_C_Year;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +21,22 @@ class TaxDeclarationServiceTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		service = new TaxDeclarationService(new TaxDeclarationRepository());
+		service = new TaxDeclarationService(new TaxDeclarationRepository(), new PeriodRepo());
+	}
+
+	/** Persists a minimal {@code C_Period} (with its {@code C_Year}) so {@code PeriodRepo} can resolve it. */
+	private int createPeriod()
+	{
+		final I_C_Year year = InterfaceWrapperHelper.newInstance(I_C_Year.class);
+		year.setC_Calendar_ID(10);
+		InterfaceWrapperHelper.save(year);
+
+		final I_C_Period period = InterfaceWrapperHelper.newInstance(I_C_Period.class);
+		period.setC_Year_ID(year.getC_Year_ID());
+		period.setStartDate(Timestamp.valueOf("2026-01-01 00:00:00"));
+		period.setEndDate(Timestamp.valueOf("2026-12-31 00:00:00"));
+		InterfaceWrapperHelper.save(period);
+		return period.getC_Period_ID();
 	}
 
 	// ---------------------------------------------------------------------------
@@ -83,12 +101,13 @@ class TaxDeclarationServiceTest
 	public void createCorrection_returnsCorrectionWithInheritedFields()
 	{
 		// Given: a locked Original with specific C_AcctSchema_ID, C_Period_ID, DateAcct, Description
+		final int periodId = createPeriod();
 		final I_C_TaxDeclaration original = InterfaceWrapperHelper.newInstance(I_C_TaxDeclaration.class);
 		original.setIsCorrection(false);
 		original.setProcessed(true);
 		original.setIsActive(true);
 		original.setC_AcctSchema_ID(1);
-		original.setC_Period_ID(5);
+		original.setC_Period_ID(periodId);
 		original.setDateAcct(Timestamp.valueOf("2026-01-15 00:00:00"));
 		original.setDescription("Q4 Report");
 		original.setDocAction("CO");
@@ -105,7 +124,7 @@ class TaxDeclarationServiceTest
 		Assertions.assertThat(correctionRecord.isIsCorrection()).isTrue();
 		Assertions.assertThat(correctionRecord.getC_TaxDeclaration_Original_ID()).isEqualTo(originalId.getRepoId());
 		Assertions.assertThat(correctionRecord.getC_AcctSchema_ID()).isEqualTo(1);
-		Assertions.assertThat(correctionRecord.getC_Period_ID()).isEqualTo(5);
+		Assertions.assertThat(correctionRecord.getC_Period_ID()).isEqualTo(periodId);
 		Assertions.assertThat(correctionRecord.getDateAcct()).isEqualTo(Timestamp.valueOf("2026-01-15 00:00:00"));
 		Assertions.assertThat(correctionRecord.isProcessed()).isFalse();
 		// Description is intentionally NOT set on a Correction (dropped per reviewer: the Original link

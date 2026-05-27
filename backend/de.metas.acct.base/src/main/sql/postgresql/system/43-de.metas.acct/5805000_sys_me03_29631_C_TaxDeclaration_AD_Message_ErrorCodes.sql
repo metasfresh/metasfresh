@@ -1,5 +1,5 @@
 -- Backfill ErrorCode on the Tax Declaration Corrections AD_Messages.
--- Aligns these messages with the Iter-5 convention (UPPER_SNAKE ErrorCode prefixed TAXDECLARATION_).
+-- UPPER_SNAKE ErrorCode matching AD_Message.Value, required for error-code assertions in cucumber/JUnit (prefixed TAXDECLARATION_).
 -- Idempotent: only sets ErrorCode where it is still NULL, so it is a no-op on fresh DBs
 -- (the INSERTs already carry the ErrorCode).
 

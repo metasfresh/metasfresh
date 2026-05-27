@@ -35,7 +35,7 @@ public class TaxDeclarationRepository
 		final I_C_TaxDeclaration record = InterfaceWrapperHelper.newInstance(I_C_TaxDeclaration.class);
 		record.setAD_Org_ID(request.getAdOrgId().getRepoId());
 		record.setC_AcctSchema_ID(request.getAcctSchemaId().getRepoId());
-		record.setC_Period_ID(request.getCPeriodId());
+		record.setC_Period_ID(request.getCPeriodId().getRepoId());
 		record.setDateAcct(request.getDateAcct());
 		record.setIsCorrection(request.isCorrection());
 		record.setC_TaxDeclaration_Original_ID(TaxDeclarationId.toRepoId(request.getOriginalId()));
