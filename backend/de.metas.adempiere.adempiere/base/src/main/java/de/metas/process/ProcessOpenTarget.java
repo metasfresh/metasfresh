@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_AD_Process;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -41,11 +43,10 @@ public enum ProcessOpenTarget implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ProcessOpenTarget> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
-	private final String code;
+	@NonNull @Getter private final String code;
 
-	public static ProcessOpenTarget ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
+	public static ProcessOpenTarget ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	@Nullable
+	public static ProcessOpenTarget ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 }
