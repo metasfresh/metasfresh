@@ -18,7 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -63,7 +62,7 @@ public class OrderSplitCommand
 	{
 		final com.google.common.collect.ImmutableList<TableRecordReference> orderLineRefs = oldLines.stream()
 				.map(ol -> TableRecordReference.of(
-						I_C_OrderLine.Table_Name, ol.getC_OrderLine_ID()))
+						org.compiere.model.I_C_OrderLine.Table_Name, ol.getC_OrderLine_ID()))
 				.collect(com.google.common.collect.ImmutableList.toImmutableList());
 		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRefs);
 	}
