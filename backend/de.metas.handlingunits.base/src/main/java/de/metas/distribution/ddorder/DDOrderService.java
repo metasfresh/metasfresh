@@ -104,7 +104,7 @@ public class DDOrderService
 		ddOrderLowLevelDAO.save(ddOrder);
 	}
 
-	public void saveLine(final I_DD_OrderLine ddOrderLine)
+	public void saveLine(@NonNull final I_DD_OrderLine ddOrderLine)
 	{
 		ddOrderLowLevelDAO.save(ddOrderLine);
 	}
