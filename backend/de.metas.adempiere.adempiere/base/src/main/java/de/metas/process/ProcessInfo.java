@@ -127,7 +127,7 @@ public final class ProcessInfo implements Serializable
 
 		adProcessId = builder.getAD_Process_ID();
 		adRelationTypeId = builder.getAD_RelationType_ID();
-		openTarget = builder.openTarget;
+		openTarget = builder.getOpenTarget();
 		pinstanceId = builder.getPInstanceId();
 
 		clientId = builder.getAdClientId();
@@ -1142,14 +1142,29 @@ public final class ProcessInfo implements Serializable
 			return RelationTypeId.ofRepoIdOrNull(process.getAD_RelationType_ID());
 		}
 
+		@Nullable
+		public ProcessOpenTarget getOpenTarget()
+		{
+			if (openTarget != null)
+			{
+				return openTarget;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return null;
+			}
+			return ProcessOpenTarget.ofNullableCode(process.getOpenTarget());
+		}
+
 		public ProcessInfoBuilder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
 		{
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
-			// CoalesceUtil not applicable: getOpenTarget() returns String, ofCode() returns ProcessOpenTarget (type mismatch)
-			setOpenTarget(_adProcess.getOpenTarget() != null ? ProcessOpenTarget.ofCode(_adProcess.getOpenTarget()) : null);
+			setOpenTarget(ProcessOpenTarget.ofNullableCode(_adProcess.getOpenTarget()));
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());
 			return this;

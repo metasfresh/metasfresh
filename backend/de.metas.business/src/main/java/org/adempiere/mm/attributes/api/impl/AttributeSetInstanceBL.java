@@ -612,8 +612,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public List<I_M_AttributeInstance> getAttributeInstances(final I_M_AttributeSetInstance attributeSetInstance)
+	public List<I_M_AttributeInstance> getAttributeInstances(@Nullable final I_M_AttributeSetInstance attributeSetInstance)
 	{
+		if (attributeSetInstance == null)
+		{
+			return ImmutableList.of();
+		}
 		//
 		// Ordering by M_AttributeUse.SeqNo
 		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSet_ID());
