@@ -1,6 +1,6 @@
 -- 2026-05-25
 -- Tax Declaration — AD_Process for C_TaxDeclaration_CreateCorrection + AD_Table_Process wiring
--- Iter 7 of me03 epic 28717. See ai-work/29631/PLAN.md Task 5.
+-- Iter 7 of me03 epic 28717. See https://github.com/metasfresh/me03/issues/29631
 --
 -- NOTE: Task spec requested AD_Menu + AD_Menu_Trl + AD_TreeNodeMM, but the discovery query
 -- returned 0 rows for existing C_TaxDeclaration_Build/Reactivate menus. In practice, these
