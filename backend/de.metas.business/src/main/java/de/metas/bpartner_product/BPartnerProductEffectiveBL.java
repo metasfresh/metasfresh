@@ -31,6 +31,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class BPartnerProductEffectiveBL
@@ -38,9 +40,18 @@ public class BPartnerProductEffectiveBL
 	@NonNull private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
 
+	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId vendorId, @NonNull final ProductId productId, @NonNull final OrgId orgId)
+	{
+		final Optional<Integer> fromBPartnerProduct = bpartnerProductDAO.getDeliveryTimePromised(vendorId, productId, orgId);
+		if (fromBPartnerProduct.isPresent())
+		{
+			return fromBPartnerProduct;
+		}
+		return bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId);
+	}
+
 	public int getPurchaseTransportDays(@NonNull final BPartnerId vendorId, @NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
-		return bpartnerProductDAO.getDeliveryTimePromised(vendorId, productId, orgId)
-				.orElseGet(() -> bpartnerEffectiveBL.getPurchaseTransportDays(vendorId));
+		return getPurchaseTransportDaysIfSet(vendorId, productId, orgId).orElse(0);
 	}
 }
