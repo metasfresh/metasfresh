@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfoLoadingCache;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
@@ -184,7 +185,14 @@ public class GetNextEligibleLineToPackCommand
 						getCustomerId(line),
 						getWarehouseId(line)
 				));
-		if (!result.isPresent() && result.getAdMessageKey() != null)
+		// HU_PRODUCT_NOT_MATCHING is a per-line soft reject (each line has its own productId, so the
+		// same HU may match a different line). For this case we intentionally fall through to notFound(),
+		// which causes the frontend (PickProductsScanScreen.jsx) to throw "activities.picking.noMatchingLines".
+		// All other error keys (e.g. HU_DESTROYED) are line-independent hard errors that should be
+		// surfaced to the user directly instead of the generic "no matching lines" message.
+		if (!result.isPresent()
+				&& result.getAdMessageKey() != null
+				&& !MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING.equals(result.getAdMessageKey()))
 		{
 			lastUserErrorResult = result;
 		}

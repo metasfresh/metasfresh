@@ -16,7 +16,6 @@ import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -79,8 +78,7 @@ class PickFromHUQRCodeResolveCommand
 			}
 			if (!huService.containsProduct(activeHuId, productId))
 			{
-				return ExplainedOptional.emptyBecause(
-						TranslatableStrings.adMessage(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(productId)));
+				return ExplainedOptional.emptyBecause(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, productService.getProductNameTrl(productId));
 			}
 
 			return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(activeHuId, huQRCode));
