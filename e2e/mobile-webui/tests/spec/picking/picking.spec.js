@@ -13,6 +13,7 @@ import { expect } from '@playwright/test';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
 import { InventoryJobScreen } from '../../utils/screens/inventory/InventoryJobScreen';
+import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 
 const createMasterdata = async ({
                                     language = 'en_US',
@@ -836,20 +837,22 @@ test('Scan custom QR code with wrong product code → user-friendly error', asyn
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    // Select the P1 line explicitly — routes through PickingJobPickCommand (line-specific),
+    // which surfaces the error via orElseThrow() instead of the generic "no matching lines" path.
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.clickScanButton();
+    await PickLineScanScreen.waitForScreen();
 
     // "TST2" matches the Constant anchor (pos 1-4); "WRONGPROD9" (pos 5-14) is the product code.
     // "WRONGPROD9" does not match P1's product value → PICKING_QR_PRODUCT_NOT_MATCHING.
     await expectErrorToast('Scan custom QR with wrong product code', async () => {
-        await PickingJobScreen.pickHU({
-            qrCode: 'TST2WRONGPROD9',
-            isScanDirectly: true,
-            expectedPickDirectly: true,
-        });
+        await PickLineScanScreen.typeQRCode('TST2WRONGPROD9');
     }, ({ textContent }) => {
         expect(textContent).toContain('PICKING_QR_PRODUCT_NOT_MATCHING');
     });
 
-    await PickingJobScreen.waitForScreen();
+    await PickLineScanScreen.waitForScreen();
 });
 
 //
