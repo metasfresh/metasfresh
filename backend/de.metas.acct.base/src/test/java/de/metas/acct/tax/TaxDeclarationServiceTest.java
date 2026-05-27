@@ -66,8 +66,11 @@ class TaxDeclarationServiceTest
 	@Test
 	public void createCorrection_throws_whenOriginalIsItselfACorrection()
 	{
-		// Given: a record with IsCorrection='Y' that is also locked (Processed='Y')
-		final I_C_TaxDeclaration correction = createTaxDeclaration(true, 0, true, true);
+		// Given: a real Original, plus a record with IsCorrection='Y' pointing at it that is also
+		// locked (Processed='Y'). The Correction needs a valid C_TaxDeclaration_Original_ID to satisfy
+		// the star-topology CHECK on save; the createCorrection guard then rejects correcting a Correction.
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		final I_C_TaxDeclaration correction = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
 		final TaxDeclarationId correctionId = TaxDeclarationId.ofRepoId(correction.getC_TaxDeclaration_ID());
 
 		// When / Then: star topology is forbidden — corrections of corrections are not allowed
@@ -105,6 +108,8 @@ class TaxDeclarationServiceTest
 		Assertions.assertThat(correctionRecord.getC_Period_ID()).isEqualTo(5);
 		Assertions.assertThat(correctionRecord.getDateAcct()).isEqualTo(Timestamp.valueOf("2026-01-15 00:00:00"));
 		Assertions.assertThat(correctionRecord.isProcessed()).isFalse();
-		Assertions.assertThat(correctionRecord.getDescription()).startsWith("Correction of ");
+		// Description is intentionally NOT set on a Correction (dropped per reviewer: the Original link
+		// + IsCorrection flag already convey the relationship).
+		Assertions.assertThat(correctionRecord.getDescription()).isNull();
 	}
 }

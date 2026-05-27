@@ -1,10 +1,11 @@
 package de.metas.acct.tax;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
@@ -58,18 +59,14 @@ public class TaxDeclarationService
 					.markAsUserValidationError();
 		}
 
-		final I_C_TaxDeclaration correction = InterfaceWrapperHelper.newInstance(I_C_TaxDeclaration.class);
-		correction.setAD_Org_ID(original.getAD_Org_ID());
-		correction.setC_AcctSchema_ID(original.getC_AcctSchema_ID());
-		correction.setC_Period_ID(original.getC_Period_ID());
-		correction.setDateAcct(original.getDateAcct());
-		correction.setIsCorrection(true);
-		correction.setC_TaxDeclaration_Original_ID(originalId.getRepoId());
-		final String prefix = "Correction of ";
-		final String origDesc = original.getDescription();
-		correction.setDescription(origDesc != null ? prefix + origDesc : prefix.trim());
-		correction.setProcessed(false);
-		InterfaceWrapperHelper.save(correction);
-		return TaxDeclarationId.ofRepoId(correction.getC_TaxDeclaration_ID());
+		final TaxDeclarationCreateRequest request = TaxDeclarationCreateRequest.builder()
+				.adOrgId(OrgId.ofRepoId(original.getAD_Org_ID()))
+				.acctSchemaId(AcctSchemaId.ofRepoId(original.getC_AcctSchema_ID()))
+				.cPeriodId(original.getC_Period_ID())
+				.dateAcct(original.getDateAcct())
+				.isCorrection(true)
+				.originalId(originalId)
+				.build();
+		return taxDeclarationRepository.createTaxDeclaration(request);
 	}
 }

@@ -71,8 +71,18 @@ class C_TaxDeclarationInterceptorTest
 	@Test
 	public void enforceCorrectionInvariants_throws_whenOriginalRequired()
 	{
-		// Given: IsCorrection='Y' but no Original set
-		final I_C_TaxDeclaration td = createTaxDeclaration(true, 0, PERIOD_ID, ACCT_SCHEMA_ID, DATE_ACCT);
+		// Given: IsCorrection='Y' but no Original set.
+		// The row is NOT saved here: the interceptor (BEFORE_NEW) is the guard under test, and it must
+		// reject this combination before it ever reaches the DB star-topology CHECK. We invoke the
+		// interceptor directly on an unsaved instance (same pattern as the other invariant tests below).
+		final I_C_TaxDeclaration td = InterfaceWrapperHelper.newInstance(I_C_TaxDeclaration.class);
+		td.setIsCorrection(true);
+		td.setC_TaxDeclaration_Original_ID(0);
+		td.setC_Period_ID(PERIOD_ID);
+		td.setC_AcctSchema_ID(ACCT_SCHEMA_ID);
+		td.setDateAcct(DATE_ACCT);
+		td.setDocAction("CO");
+		td.setDocStatus("DR");
 
 		// When / Then: must throw with OriginalRequired message
 		assertThatThrownBy(() -> interceptor.enforceCorrectionInvariants(td))
