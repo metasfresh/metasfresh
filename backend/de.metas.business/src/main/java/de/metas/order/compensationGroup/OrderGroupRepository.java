@@ -20,6 +20,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -53,6 +54,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -782,6 +784,14 @@ public class OrderGroupRepository implements GroupRepository
 
 		orderLine.setIsHideWhenPrinting(from.isHideWhenPrinting());
 		orderLineBL.save(orderLine);
+
+		if (from.isWithoutCharge())
+		{
+			orderLine.setIsWithoutCharge(true);
+			final String reason = Services.get(IMsgBL.class).getMsg(getCtx(orderLine), "Bestandteil_Handelsstueckliste");
+			orderLine.setReason(reason);
+			orderLineBL.save(orderLine);
+		}
 
 		return orderLine;
 	}
