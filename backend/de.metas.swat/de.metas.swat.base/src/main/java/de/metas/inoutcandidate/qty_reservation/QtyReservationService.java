@@ -1,10 +1,12 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -17,6 +19,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
@@ -108,6 +112,25 @@ public class QtyReservationService
 	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
 	{
 		return repository.getReservedQtyTU(orderLineId);
+	}
+
+	/**
+	 * Closes every active (Processed=N, IsActive=Y) M_QtyReservation row for the given order lines by
+	 * setting QtyDelivered = Qty — the persistence layer then flips Processed=Y derived from
+	 * isFullyDelivered(). Rows are not deleted; they're preserved for audit.
+	 * <p>
+	 * Used by OrderSplitCommand after the continuation order has been created, to free the
+	 * "promised but no longer ship-able" qty from the original SO's reservations.
+	 */
+	public void closeAllActiveForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return;
+		}
+		repository.updateByOrderLineIds(
+				ImmutableSet.copyOf(orderLineIds),
+				r -> r.withQtyDelivered(r.getQty()));
 	}
 
 }
