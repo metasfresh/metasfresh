@@ -473,6 +473,35 @@ public class BPartnerEffectiveBLTest
 		return incotermsRecord.getC_Incoterms_ID();
 	}
 
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSet_returnsValue()
+	{
+		final BPartnerId vendorId = createVendor(5);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(5);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnNotSet_returnsEmpty()
+	{
+		final BPartnerId vendorId = createVendor(null);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).isEmpty();
+	}
+
+	private BPartnerId createVendor(final Integer poTransportDays)
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		vendor.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		if (poTransportDays != null)
+		{
+			vendor.setPO_TransportDays(poTransportDays);
+		}
+		saveRecord(vendor);
+		return BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
+	}
+
 	@Nullable
 	private String extractIncotermsLocation(@Nullable final Incoterms incoterms)
 	{

@@ -50,6 +50,7 @@ import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -79,9 +80,14 @@ public class BPartnerEffectiveBL
 		return getByRecord(bpartnerDAO.getById(bPartnerId));
 	}
 
+	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
+	{
+		return bpartnerDAO.getPurchaseTransportDays(bPartnerId);
+	}
+
 	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
 	{
-		return getById(bPartnerId).getPurchaseTransportDays();
+		return getPurchaseTransportDaysIfSet(bPartnerId).orElse(0);
 	}
 
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
