@@ -17,6 +17,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.handlingunits.HuId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.util.Check;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
