@@ -88,3 +88,7 @@ Feature: DD_Order picking reconcile — update (void + recreate) and reverse (vo
     # The existing DD_Order is voided and NO new live DD_Order is created.
     Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
     And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
+    # The async reconcile event handler records a Done AD_EventLog_Entry on success (REQUIREMENTS §5 TC3).
+    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+      | IsError |
+      | false   |

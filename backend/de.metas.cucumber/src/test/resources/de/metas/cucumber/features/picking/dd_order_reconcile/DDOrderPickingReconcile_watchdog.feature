@@ -75,6 +75,11 @@ Feature: DD_Order picking reconcile — drift watchdog (manual rebuild + hourly 
     Then after not more than 30s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+    # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
+    # AD_EventLog_Entry on success (REQUIREMENTS §5 TC7).
+    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+      | IsError |
+      | false   |
 
   @from:cucumber
   Scenario: The hourly scheduler self-heals drift via the same rebuild process (TC8)
@@ -87,3 +92,8 @@ Feature: DD_Order picking reconcile — drift watchdog (manual rebuild + hourly 
     Then after not more than 30s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+    # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
+    # AD_EventLog_Entry on success (REQUIREMENTS §5 TC8).
+    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+      | IsError |
+      | false   |

@@ -75,6 +75,10 @@ Feature: DD_Order picking reconcile — create a distribution order for a packin
     And after not more than 120s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | Completed | stockWH             | packingWH         | 5          |
+    # The async reconcile event handler records a Done AD_EventLog_Entry on success (REQUIREMENTS §5 TC1).
+    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+      | IsError |
+      | false   |
 
   @from:cucumber
   Scenario: Flagging a warehouse as packing without a distribution network is rejected
