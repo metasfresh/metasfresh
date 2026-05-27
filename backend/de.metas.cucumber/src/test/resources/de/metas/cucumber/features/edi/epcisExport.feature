@@ -261,8 +261,8 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   Scenario: S29231_130 — Two orders, one consolidated shipment → EPCIS pallets[] populated, desadvReferences[] and poReferences[] arrays of size 2
   ## Asserts that the EPCIS event JSON for a 2-source-order consolidated shipment carries
   ## pallets[] of size 2 (one LU per DESADV), desadvReferences[] of size 2, and
-  ## poReferences[] of size 2.  Two real LU HUs with distinct SSCC18 values are injected
-  ## directly via SQL (QuantityType=D shipments skip the normal HU-picking flow).
+  ## poReferences[] of size 2.  Each order gets its own LU via the real metasfresh
+  ## BL (Inventory → CU → TU → LU → SSCC18 → TU-level pick → QuantityType=PD shipment).
     Given metasfresh contains M_Products:
       | Identifier      | GTIN          |
       | p_S29231_130    | 4060000000130 |
@@ -347,33 +347,92 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | Identifier      | C_OrderLine_ID  | IsToRecompute |
       | ssB_S29231_130  | olB_S29231_130  | N             |
 
-    # Batch-generate ONE shipment covering both schedules
-    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
-      | M_ShipmentSchedule_ID |
-      | ssA_S29231_130        |
-      | ssB_S29231_130        |
+    # ─── Order A: Inventory → CU → TU → LU → SSCC18 ─────────────────────────────────
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | invA_S29231_130           | 2026-05-20   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | invA_S29231_130           | invLineA_S29231_130           | p_S29231_130            | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'invA_S29231_130'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLineA_S29231_130           | cuA_S29231_130     |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cuA_S29231_130      | 10    | pip_S29231_130                     | tuA_S29231_130                |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | tuA_S29231_130      | 1     | pii_LU_S29231_130          | luA_S29231_130            |
+
+    And M_HU_Attribute is changed
+      | M_HU_ID        | M_Attribute_ID.Value | Value              |
+      | luA_S29231_130 | SSCC18               | 987654321000000016 |
+
+    # ─── Order B: Inventory → CU → TU → LU → SSCC18 ─────────────────────────────────
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | invB_S29231_130           | 2026-05-20   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | invB_S29231_130           | invLineB_S29231_130           | p_S29231_130            | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'invB_S29231_130'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLineB_S29231_130           | cuB_S29231_130     |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cuB_S29231_130      | 10    | pip_S29231_130                     | tuB_S29231_130                |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | tuB_S29231_130      | 1     | pii_LU_S29231_130          | luB_S29231_130            |
+
+    And M_HU_Attribute is changed
+      | M_HU_ID        | M_Attribute_ID.Value | Value              |
+      | luB_S29231_130 | SSCC18               | 987654321000000023 |
+
+    # ─── TU-level picking — m_tu_hu_id must be set for EPCIS individual_tu_ids gate ──
+    # Critical invariant (RESEARCH-picking-bl.md Q3): picking at TU level writes
+    # m_tu_hu_id=TU.m_hu_id on m_hu_assignment, satisfying the EPCIS EXISTS filter.
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tuA_S29231_130     | ssA_S29231_130                   | 10        | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tuA_S29231_130     | ssA_S29231_130                   |
+
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tuB_S29231_130     | ssB_S29231_130                   | 10        | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tuB_S29231_130     | ssB_S29231_130                   |
+
+    # ─── Generate ONE consolidated shipment (QuantityType=PD ships picked HUs only) ──
+    # Both schedules share BPartner+warehouse+date → consolidate into one M_InOut.
+    # Batch step enqueues both in one work package so consolidation logic can group them.
+    When 'generate shipments' process is invoked with QuantityType=PD, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID   |
+      | ssA_S29231_130          |
+      | ssB_S29231_130          |
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID      |
-      | ssA_S29231_130        | io_S29231_130   |
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ssA_S29231_130        | io_S29231_130 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ssB_S29231_130        | io_S29231_130 |
 
     # Consolidated multi-source-order shipment: one pack per source DESADV.
-    # IsManual_IPA_SSCC18=true: this scenario does not set up M_HU_Attribute SSCC18 — the
-    # no-HU createPackUsingJustInOutLine path synthesises the SSCC and sets IsManual=true.
+    # IsManual_IPA_SSCC18=false: real LUs with SSCC18 attributes are present.
     And after not more than 60s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
-      | packA_S29231_130   | dA_S29231_130            | true                |
-      | packB_S29231_130   | dB_S29231_130            | true                |
-
-    # ─── Inject real LU HUs so pallets[] is populated ────────────────────────────────
-    # QuantityType=D shipments do not create M_HU records; inject minimal M_HU +
-    # M_HU_Attribute (SSCC18) + M_HU_Assignment rows directly so the EPCIS pallet-
-    # discovery CTE finds them.  Each LU is assigned only to the InOutLines of its
-    # specific source order so that per-LU POReference derivation works correctly.
-    And real LU HUs with SSCC18 are assigned to inout lines by source order of M_InOut identified by io_S29231_130
-      | sscc18             | C_Order_ID    |
-      | 987654321000000016 | oA_S29231_130 |
-      | 987654321000000023 | oB_S29231_130 |
+      | packA_S29231_130   | dA_S29231_130            | false               |
+      | packB_S29231_130   | dB_S29231_130            | false               |
 
     # ─── CORE ASSERTION ──────────────────────────────────────────────────────────────
     # The EPCIS function must return ONE event document with pallets[] of size 2,
