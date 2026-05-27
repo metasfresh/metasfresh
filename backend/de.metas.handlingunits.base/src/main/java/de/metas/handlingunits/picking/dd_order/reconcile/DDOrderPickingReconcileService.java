@@ -108,7 +108,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	public void reconcile(@NonNull final ShipmentScheduleId scheduleId)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(scheduleId);
-		final DDOrderReconcileAction action = classifyAction(schedule);
+		final DDOrderId existingDDOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
+		final DDOrderReconcileAction action = classifyAction(schedule, existingDDOrderId);
 		switch (action)
 		{
 			case NONE:
@@ -117,10 +118,10 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				createDDOrderFor(schedule);
 				return;
 			case RECREATE:
-				recreateDDOrderFor(scheduleId, schedule);
+				recreateDDOrderFor(schedule, existingDDOrderId);
 				return;
 			case VOID:
-				voidDDOrderFor(scheduleId);
+				voidDDOrderFor(existingDDOrderId);
 				return;
 			default:
 				throw new AdempiereException("Unexpected action: " + action);
@@ -130,24 +131,28 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	/**
 	 * Classifies the reconcile action based on the truth-table:
 	 * <pre>
-	 * warehouseIsPacking | scheduleActive | existingDDOrder | action
-	 * false              | *              | *               | NONE
-	 * true               | false          | none            | NONE
-	 * true               | false          | exists          | VOID
-	 * true               | true           | none            | CREATE
-	 * true               | true           | exists          | RECREATE
+	 * warehouseIsPacking | scheduleActive | existingDDOrderId | action
+	 * false              | *              | *                 | NONE
+	 * true               | false          | null              | NONE
+	 * true               | false          | non-null          | VOID
+	 * true               | true           | null              | CREATE
+	 * true               | true           | non-null          | RECREATE
 	 * </pre>
+	 *
+	 * <p>Pure decision method — no DB queries. The caller is responsible for resolving
+	 * {@code existingDDOrderId} exactly once before calling this method.</p>
 	 */
 	@VisibleForTesting
-	DDOrderReconcileAction classifyAction(@NonNull final I_M_ShipmentSchedule schedule)
+	DDOrderReconcileAction classifyAction(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@Nullable final DDOrderId existingDDOrderId)
 	{
 		if (!isOnPackingWarehouse(schedule))
 		{
 			return DDOrderReconcileAction.NONE;
 		}
 
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final boolean hasExistingDDOrder = repository.findActiveDDOrderForSchedule(scheduleId).isPresent();
+		final boolean hasExistingDDOrder = existingDDOrderId != null;
 		final boolean scheduleActive = schedule.isActive();
 
 		if (!scheduleActive && !hasExistingDDOrder)
@@ -209,18 +214,13 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		repository.createCompletedDDOrder(request);
 	}
 
-	private void voidDDOrderFor(@NonNull final ShipmentScheduleId scheduleId)
+	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
 	{
-		final DDOrderId ddOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
-		if (ddOrderId == null)
+		if (isPickerBusy(existingDDOrderId))
 		{
-			return;
+			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingDDOrderId);
 		}
-		if (isPickerBusy(ddOrderId))
-		{
-			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, ddOrderId);
-		}
-		repository.voidDDOrder(ddOrderId);
+		repository.voidDDOrder(existingDDOrderId);
 	}
 
 	/**
@@ -231,28 +231,21 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	 * <p><b>No transaction boundary here.</b> The void + create is only atomic if the caller (the async event
 	 * handler, T17) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
 	 * create-failure rolls back the void.</p>
+	 *
+	 * <p>{@code existingDDOrderId} is resolved exactly once by the caller ({@link #reconcile}) — no re-query here.</p>
 	 */
 	private void recreateDDOrderFor(
-			@NonNull final ShipmentScheduleId scheduleId,
-			@NonNull final I_M_ShipmentSchedule schedule)
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final DDOrderId existingDDOrderId)
 	{
-		final DDOrderId existingId = repository.findActiveDDOrderForSchedule(scheduleId)
-				.orElse(null);
-		if (existingId == null)
-		{
-			// should not happen under normal flow (classifyAction only returns RECREATE when one exists)
-			createDDOrderFor(schedule);
-			return;
-		}
-
 		// Picker-busy guard: checked ONCE up front, before any mutation
-		if (isPickerBusy(existingId))
+		if (isPickerBusy(existingDDOrderId))
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingId);
+			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingDDOrderId);
 		}
 
 		// Void the existing DD_Order (picker already checked — no double check needed)
-		repository.voidDDOrder(existingId);
+		repository.voidDDOrder(existingDDOrderId);
 
 		// Create a fresh DD_Order from the current schedule data
 		createDDOrderFor(schedule);

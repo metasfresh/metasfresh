@@ -396,14 +396,13 @@ class DDOrderPickingReconcileServiceTest
 		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
 		schedule.setIsActive(false);
 		save(schedule);
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
 		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
-		ddOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
 		save(ddOrder);
+		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-		assertThat(service.classifyAction(schedule)).isEqualTo(DDOrderReconcileAction.VOID);
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.VOID);
 	}
 
 	@Test
@@ -419,14 +418,13 @@ class DDOrderPickingReconcileServiceTest
 		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
 		schedule.setIsActive(true);
 		save(schedule);
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
 		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
-		ddOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
 		save(ddOrder);
+		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-		assertThat(service.classifyAction(schedule)).isEqualTo(DDOrderReconcileAction.RECREATE);
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.RECREATE);
 	}
 
 	@Test
