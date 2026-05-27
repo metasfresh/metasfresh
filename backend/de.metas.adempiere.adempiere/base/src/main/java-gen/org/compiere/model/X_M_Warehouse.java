@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehouse, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 340685776L;
+	private static final long serialVersionUID = 461286522L;
 
     /** Standard Constructor */
     public X_M_Warehouse (final Properties ctx, final int M_Warehouse_ID, @Nullable final String trxName)
@@ -173,6 +173,18 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
+	public void setIsAutoDistributionOrder (final boolean IsAutoDistributionOrder)
+	{
+		set_Value (COLUMNNAME_IsAutoDistributionOrder, IsAutoDistributionOrder);
+	}
+
+	@Override
+	public boolean isAutoDistributionOrder() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoDistributionOrder);
+	}
+
+	@Override
 	public void setIsDropShipWarehouse (final boolean IsDropShipWarehouse)
 	{
 		set_Value (COLUMNNAME_IsDropShipWarehouse, IsDropShipWarehouse);
@@ -206,18 +218,6 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	public boolean isIssueWarehouse() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsIssueWarehouse);
-	}
-
-	@Override
-	public void setIsPackingWarehouse (final boolean IsPackingWarehouse)
-	{
-		set_Value (COLUMNNAME_IsPackingWarehouse, IsPackingWarehouse);
-	}
-
-	@Override
-	public boolean isPackingWarehouse() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPackingWarehouse);
 	}
 
 	@Override

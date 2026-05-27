@@ -154,9 +154,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertCanChange_doesNothing_whenWarehouseNotPacking()
 	{
-		// warehouse with IsPackingWarehouse = false (default)
+		// warehouse with IsAutoDistributionOrder = false (default)
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(false);
+		warehouse.setIsAutoDistributionOrder(false);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -171,9 +171,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertCanChange_doesNothing_whenNoExistingDDOrder()
 	{
-		// warehouse with IsPackingWarehouse = true
+		// warehouse with IsAutoDistributionOrder = true
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -191,9 +191,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertCanChange_doesNothing_whenPickerNotBusy()
 	{
-		// warehouse with IsPackingWarehouse = true
+		// warehouse with IsAutoDistributionOrder = true
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -217,9 +217,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertCanChange_throws_whenPickerBusy()
 	{
-		// warehouse with IsPackingWarehouse = true
+		// warehouse with IsAutoDistributionOrder = true
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -254,7 +254,7 @@ class DDOrderPickingReconcileServiceTest
 	void resolveSourceWarehouse_returns_resolvedWarehouse_whenNetworkLineMatches()
 	{
 		final WarehouseId sourceWarehouseId = WarehouseId.ofRepoId(10);
-		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(20);
+		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(20);
 		final ProductId productId = ProductId.ofRepoId(30);
 
 		// create distribution network with a line: source → packing
@@ -265,13 +265,13 @@ class DDOrderPickingReconcileServiceTest
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, networkId);
 
 		assertThat(result).isPresent();
 		assertThat(result.get()).isEqualTo(sourceWarehouseId);
@@ -280,11 +280,11 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void resolveSourceWarehouse_returnsEmpty_whenNoMatchingLine()
 	{
-		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(21);
+		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(21);
 		final WarehouseId differentWarehouseId = WarehouseId.ofRepoId(22);
 		final ProductId productId = ProductId.ofRepoId(31);
 
-		// create distribution network with a line that does NOT target packingWarehouseId
+		// create distribution network with a line that does NOT target autoDistributionOrderId
 		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
 		network.setName("TestNetwork2");
 		save(network);
@@ -292,13 +292,13 @@ class DDOrderPickingReconcileServiceTest
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(WarehouseId.ofRepoId(50).getRepoId());
-		line.setM_Warehouse_ID(differentWarehouseId.getRepoId()); // target is NOT packingWarehouseId
+		line.setM_Warehouse_ID(differentWarehouseId.getRepoId()); // target is NOT autoDistributionOrderId
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, networkId);
 
 		assertThat(result).isNotPresent();
 	}
@@ -306,10 +306,10 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void resolveSourceWarehouse_returnsEmpty_whenNetworkIsNull()
 	{
-		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(23);
+		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(23);
 		final ProductId productId = ProductId.ofRepoId(32);
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, null);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, null);
 
 		assertThat(result).isNotPresent();
 	}
@@ -319,11 +319,11 @@ class DDOrderPickingReconcileServiceTest
 	// -----------------------------------------------------------------------
 
 	@Test
-	void reconcile_doesNothing_whenScheduleNotOnPackingWarehouse()
+	void reconcile_doesNothing_whenScheduleNotOnAutoDistributionOrder()
 	{
-		// warehouse with IsPackingWarehouse = false (default)
+		// warehouse with IsAutoDistributionOrder = false (default)
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(false);
+		warehouse.setIsAutoDistributionOrder(false);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -353,9 +353,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void reconcile_doesNothing_whenScheduleInactive_andNoExistingDDOrder()
 	{
-		// warehouse with IsPackingWarehouse = true
+		// warehouse with IsAutoDistributionOrder = true
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -388,7 +388,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse, INACTIVE schedule, existing live DD_Order => VOID
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -410,7 +410,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse, ACTIVE schedule, existing live DD_Order => RECREATE
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -432,7 +432,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		final WarehouseId sourceA = WarehouseId.ofRepoId(40);  // priorityNo=10 → highest priority
 		final WarehouseId sourceB = WarehouseId.ofRepoId(41);  // priorityNo=20 → lower priority
-		final WarehouseId packingWarehouseId = WarehouseId.ofRepoId(42);
+		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(42);
 		final ProductId productId = ProductId.ofRepoId(33);
 
 		// create distribution network with two lines targeting the same packing warehouse
@@ -443,7 +443,7 @@ class DDOrderPickingReconcileServiceTest
 		final I_DD_NetworkDistributionLine lineA = newInstance(I_DD_NetworkDistributionLine.class);
 		lineA.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		lineA.setM_WarehouseSource_ID(sourceA.getRepoId());
-		lineA.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		lineA.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		lineA.setM_Shipper_ID(1);
 		lineA.setPriorityNo(10);
 		save(lineA);
@@ -451,14 +451,14 @@ class DDOrderPickingReconcileServiceTest
 		final I_DD_NetworkDistributionLine lineB = newInstance(I_DD_NetworkDistributionLine.class);
 		lineB.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		lineB.setM_WarehouseSource_ID(sourceB.getRepoId());
-		lineB.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		lineB.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		lineB.setM_Shipper_ID(1);
 		lineB.setPriorityNo(20);
 		save(lineB);
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(packingWarehouseId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, networkId);
 
 		// expect: sourceA is returned because priorityNo=10 < 20
 		assertThat(result).isPresent();
@@ -472,7 +472,7 @@ class DDOrderPickingReconcileServiceTest
 	private static WarehouseId createWarehouse(final boolean packing, final int networkRepoId)
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(packing);
+		warehouse.setIsAutoDistributionOrder(packing);
 		if (networkRepoId > 0)
 		{
 			warehouse.setDD_NetworkDistribution_ID(networkRepoId);
@@ -539,18 +539,18 @@ class DDOrderPickingReconcileServiceTest
 		network.setName("CreateBranchNetwork");
 		save(network);
 
-		final WarehouseId packingWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		// active schedule on the packing warehouse
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
 		schedule.setQtyToDeliver(new BigDecimal("17"));
 		schedule.setIsActive(true);
@@ -572,7 +572,7 @@ class DDOrderPickingReconcileServiceTest
 		// header warehouse = IN-TRANSIT (mirrors HUs2DDOrderProducer); source/target on dedicated columns
 		assertThat(ddOrder.getM_Warehouse_ID()).as("header warehouse is in-transit").isEqualTo(inTransitWarehouseId.getRepoId());
 		assertThat(ddOrder.getM_Warehouse_From_ID()).isEqualTo(sourceWarehouseId.getRepoId());
-		assertThat(ddOrder.getM_Warehouse_To_ID()).isEqualTo(packingWarehouseId.getRepoId());
+		assertThat(ddOrder.getM_Warehouse_To_ID()).isEqualTo(autoDistributionOrderId.getRepoId());
 		assertThat(ddOrder.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
 		assertThat(ddOrder.getDatePromised()).as("DatePromised is set").isNotNull();
 		assertThat(ddOrder.getDateOrdered()).as("DateOrdered is set").isNotNull();
@@ -603,7 +603,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -645,7 +645,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -703,18 +703,18 @@ class DDOrderPickingReconcileServiceTest
 		network.setName("RecreateNetwork");
 		save(network);
 
-		final WarehouseId packingWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		// ACTIVE schedule on the packing warehouse
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
 		schedule.setQtyToDeliver(new BigDecimal("25"));
 		schedule.setIsActive(true);
@@ -768,7 +768,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse (no network needed — exception thrown before create)
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -822,10 +822,10 @@ class DDOrderPickingReconcileServiceTest
 		network.setName("EmptyNetwork");
 		save(network);
 
-		final WarehouseId packingWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(packingWarehouseId.getRepoId());
+		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		schedule.setM_Product_ID(556);
 		schedule.setQtyToDeliver(new BigDecimal("5"));
 		schedule.setIsActive(true);
@@ -854,11 +854,11 @@ class DDOrderPickingReconcileServiceTest
 	// -----------------------------------------------------------------------
 
 	@Test
-	void scheduleReconcileAfterCommit_skips_whenNotPackingWarehouse()
+	void scheduleReconcileAfterCommit_skips_whenNotAutoDistributionOrder()
 	{
-		// warehouse with IsPackingWarehouse = false (default)
+		// warehouse with IsAutoDistributionOrder = false (default)
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(false);
+		warehouse.setIsAutoDistributionOrder(false);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -877,7 +877,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -898,7 +898,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -953,7 +953,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -976,7 +976,7 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// packing warehouse
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -1000,10 +1000,10 @@ class DDOrderPickingReconcileServiceTest
 	}
 
 	@Test
-	void rebuildDrift_skips_scheduleOnNonPackingWarehouse()
+	void rebuildDrift_skips_scheduleOnNonAutoDistributionOrder()
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(false);
+		warehouse.setIsAutoDistributionOrder(false);
 		save(warehouse);
 
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
@@ -1021,7 +1021,7 @@ class DDOrderPickingReconcileServiceTest
 	void rebuildDrift_skips_inactiveSchedule()
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		save(warehouse);
 
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
@@ -1041,11 +1041,11 @@ class DDOrderPickingReconcileServiceTest
 	{
 		// base warehouse is NON-packing, but the Override points at a packing warehouse → effective = packing
 		final I_M_Warehouse baseWarehouse = newInstance(I_M_Warehouse.class);
-		baseWarehouse.setIsPackingWarehouse(false);
+		baseWarehouse.setIsAutoDistributionOrder(false);
 		save(baseWarehouse);
 
 		final I_M_Warehouse overrideWarehouse = newInstance(I_M_Warehouse.class);
-		overrideWarehouse.setIsPackingWarehouse(true);
+		overrideWarehouse.setIsAutoDistributionOrder(true);
 		save(overrideWarehouse);
 
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
@@ -1067,11 +1067,11 @@ class DDOrderPickingReconcileServiceTest
 		// base warehouse IS packing, but the Override points at a NON-packing warehouse → effective = non-packing.
 		// This is the divergence case the plain-OR filter wrongly included; the effective-priority filter excludes it.
 		final I_M_Warehouse baseWarehouse = newInstance(I_M_Warehouse.class);
-		baseWarehouse.setIsPackingWarehouse(true);
+		baseWarehouse.setIsAutoDistributionOrder(true);
 		save(baseWarehouse);
 
 		final I_M_Warehouse overrideWarehouse = newInstance(I_M_Warehouse.class);
-		overrideWarehouse.setIsPackingWarehouse(false);
+		overrideWarehouse.setIsAutoDistributionOrder(false);
 		save(overrideWarehouse);
 
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
@@ -1094,9 +1094,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertWarehouseConfigurationIsValid_throws_whenPacking_andNoNetwork()
 	{
-		// IsPackingWarehouse=Y, DD_NetworkDistribution_ID=0 → must throw
+		// IsAutoDistributionOrder=Y, DD_NetworkDistribution_ID=0 → must throw
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		warehouse.setDD_NetworkDistribution_ID(0);
 		save(warehouse);
 
@@ -1109,9 +1109,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertWarehouseConfigurationIsValid_ok_whenPacking_withNetwork()
 	{
-		// IsPackingWarehouse=Y + network set → no throw
+		// IsAutoDistributionOrder=Y + network set → no throw
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(true);
+		warehouse.setIsAutoDistributionOrder(true);
 		warehouse.setDD_NetworkDistribution_ID(42);
 		save(warehouse);
 
@@ -1122,9 +1122,9 @@ class DDOrderPickingReconcileServiceTest
 	@Test
 	void assertWarehouseConfigurationIsValid_ok_whenNotPacking()
 	{
-		// IsPackingWarehouse=N → no throw (network irrelevant)
+		// IsAutoDistributionOrder=N → no throw (network irrelevant)
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setIsPackingWarehouse(false);
+		warehouse.setIsAutoDistributionOrder(false);
 		warehouse.setDD_NetworkDistribution_ID(0);
 		save(warehouse);
 

@@ -194,13 +194,13 @@ public class M_Warehouse_StepDef
 							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
 							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));
 
-					// IsPackingWarehouse marks a warehouse as a "packing warehouse" for which the dedicated DD_Order
+					// IsAutoDistributionOrder marks a warehouse as a "packing warehouse" for which the dedicated DD_Order
 					// reconciliation flow runs (combined with MRP_Exclude=Y to keep material-dispo out). When Y,
 					// DD_NetworkDistribution_ID is mandatory and is validated by the M_Warehouse interceptor on save.
-					final OptionalBoolean isPackingWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsPackingWarehouse);
-					if (isPackingWarehouse.isPresent())
+					final OptionalBoolean isAutoDistributionOrder = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder);
+					if (isAutoDistributionOrder.isPresent())
 					{
-						warehouseRecord.setIsPackingWarehouse(isPackingWarehouse.isTrue());
+						warehouseRecord.setIsAutoDistributionOrder(isAutoDistributionOrder.isTrue());
 					}
 
 					// DD_NetworkDistribution_ID resolves the source warehouse for the packing warehouse via the
@@ -226,8 +226,8 @@ public class M_Warehouse_StepDef
 	/**
 	 * Attempts to save an {@code M_Warehouse} and asserts that the save is rejected by a model interceptor.
 	 *
-	 * <p>Used to verify the "DD_NetworkDistribution_ID is mandatory when IsPackingWarehouse=Y" rule
-	 * (enforced by {@code M_Warehouse_DDOrderPickingInterceptor}): setting {@code IsPackingWarehouse=Y}
+	 * <p>Used to verify the "DD_NetworkDistribution_ID is mandatory when IsAutoDistributionOrder=Y" rule
+	 * (enforced by {@code M_Warehouse_DDOrderPickingInterceptor}): setting {@code IsAutoDistributionOrder=Y}
 	 * without a {@code DD_NetworkDistribution_ID} must throw on save.
 	 *
 	 * <p>Required columns:
@@ -237,14 +237,14 @@ public class M_Warehouse_StepDef
 	 * </ul>
 	 * Optional columns:
 	 * <ul>
-	 *   <li>{@code IsPackingWarehouse} — {@code Y} / {@code N}.</li>
+	 *   <li>{@code IsAutoDistributionOrder} — {@code Y} / {@code N}.</li>
 	 *   <li>{@code DD_NetworkDistribution_ID} — identifier of a previously created DD_NetworkDistribution.</li>
 	 * </ul>
 	 *
 	 * <p>Gherkin usage:
 	 * <pre>
 	 * Then saving M_Warehouse is rejected:
-	 *   | M_Warehouse_ID | IsPackingWarehouse |
+	 *   | M_Warehouse_ID | IsAutoDistributionOrder |
 	 *   | wh_pack        | Y                  |
 	 * </pre>
 	 */
@@ -263,10 +263,10 @@ public class M_Warehouse_StepDef
 					warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(StepDefConstants.METASFRESH_AG_BPARTNER_ID));
 					warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID));
 
-					final OptionalBoolean isPackingWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsPackingWarehouse);
-					if (isPackingWarehouse.isPresent())
+					final OptionalBoolean isAutoDistributionOrder = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder);
+					if (isAutoDistributionOrder.isPresent())
 					{
-						warehouseRecord.setIsPackingWarehouse(isPackingWarehouse.isTrue());
+						warehouseRecord.setIsAutoDistributionOrder(isAutoDistributionOrder.isTrue());
 					}
 
 					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_DD_NetworkDistribution_ID)
@@ -274,8 +274,8 @@ public class M_Warehouse_StepDef
 							.ifPresent(networkId -> warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId()));
 
 					assertThatThrownBy(() -> saveRecord(warehouseRecord))
-							.as("Saving M_Warehouse %s with IsPackingWarehouse=%s and no DD_NetworkDistribution_ID must be rejected",
-									valueAndName.getValue(), isPackingWarehouse.toBooleanString())
+							.as("Saving M_Warehouse %s with IsAutoDistributionOrder=%s and no DD_NetworkDistribution_ID must be rejected",
+									valueAndName.getValue(), isAutoDistributionOrder.toBooleanString())
 							.isInstanceOf(Throwable.class);
 				});
 	}

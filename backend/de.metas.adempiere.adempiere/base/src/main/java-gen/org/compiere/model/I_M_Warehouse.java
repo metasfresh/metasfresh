@@ -279,6 +279,29 @@ public interface I_M_Warehouse
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Auto Distribution Order.
+	 * If Yes, this warehouse runs the dedicated DD_Order reconcile flow for picking — instead of the general material-disposition flow. Requires MRP_Exclude=Y and a distribution network to be set.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoDistributionOrder (boolean IsAutoDistributionOrder);
+
+	/**
+	 * Get Auto Distribution Order.
+	 * If Yes, this warehouse runs the dedicated DD_Order reconcile flow for picking — instead of the general material-disposition flow. Requires MRP_Exclude=Y and a distribution network to be set.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoDistributionOrder();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_IsAutoDistributionOrder = new ModelColumn<>(I_M_Warehouse.class, "IsAutoDistributionOrder", null);
+	String COLUMNNAME_IsAutoDistributionOrder = "IsAutoDistributionOrder";
+
+	/**
 	 * Set Dropship Warehouse.
 	 * If Yes, sales orders on this warehouse are handled as dropship. On sales-order completion a single purchase order is automatically created for the vendor.
 	 *
@@ -344,29 +367,6 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_IsIssueWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsIssueWarehouse", null);
 	String COLUMNNAME_IsIssueWarehouse = "IsIssueWarehouse";
-
-	/**
-	 * Set Picking Warehouse.
-	 * If Yes, this warehouse runs the dedicated DD_Order reconcile flow for picking — instead of the general material-disposition flow. Requires MRP_Exclude=Y and a distribution network to be set.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPackingWarehouse (boolean IsPackingWarehouse);
-
-	/**
-	 * Get Picking Warehouse.
-	 * If Yes, this warehouse runs the dedicated DD_Order reconcile flow for picking — instead of the general material-disposition flow. Requires MRP_Exclude=Y and a distribution network to be set.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPackingWarehouse();
-
-	ModelColumn<I_M_Warehouse, Object> COLUMN_IsPackingWarehouse = new ModelColumn<>(I_M_Warehouse.class, "IsPackingWarehouse", null);
-	String COLUMNNAME_IsPackingWarehouse = "IsPackingWarehouse";
 
 	/**
 	 * Set Kommissionierlager.

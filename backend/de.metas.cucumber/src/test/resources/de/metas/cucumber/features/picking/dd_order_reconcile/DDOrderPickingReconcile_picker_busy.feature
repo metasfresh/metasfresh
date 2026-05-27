@@ -43,7 +43,7 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | stockWH        | customer      | customerLocation       |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsPackingWarehouse | DD_NetworkDistribution_ID |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID |
       | packingWH      | customer      | customerLocation       | Y           | Y                  | network                   |
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |

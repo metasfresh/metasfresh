@@ -40,7 +40,7 @@ Feature: DD_Order picking reconcile — create a distribution order for a packin
   @from:cucumber
   Scenario: One Completed DD_Order is created for a sales order on the packing warehouse
     # The stocking warehouse holds the goods; the packing warehouse is where the picker delivers them.
-    # The packing warehouse is flagged IsPackingWarehouse=Y and excluded from material-dispo (MRP_Exclude=Y),
+    # The packing warehouse is flagged IsAutoDistributionOrder=Y and excluded from material-dispo (MRP_Exclude=Y),
     # so the dedicated reconcile flow (not material-dispo) drives DD_Order creation.
     Given metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID |
@@ -49,7 +49,7 @@ Feature: DD_Order picking reconcile — create a distribution order for a packin
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | stockWH        | customer      | customerLocation       |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsPackingWarehouse | DD_NetworkDistribution_ID |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID |
       | packingWH      | customer      | customerLocation       | Y           | Y                  | network                   |
     # The network resolves source = stockWH for target = packingWH (per warehouse-pair, product-agnostic).
     And metasfresh contains DD_NetworkDistributionLine
@@ -82,8 +82,8 @@ Feature: DD_Order picking reconcile — create a distribution order for a packin
 
   @from:cucumber
   Scenario: Flagging a warehouse as packing without a distribution network is rejected
-    # DD_NetworkDistribution_ID is mandatory when IsPackingWarehouse=Y — the M_Warehouse interceptor
+    # DD_NetworkDistribution_ID is mandatory when IsAutoDistributionOrder=Y — the M_Warehouse interceptor
     # refuses the save so an operator cannot create an unresolvable packing warehouse.
     Then saving M_Warehouse is rejected:
-      | M_Warehouse_ID | IsPackingWarehouse |
+      | M_Warehouse_ID | IsAutoDistributionOrder |
       | packingWH      | Y                  |

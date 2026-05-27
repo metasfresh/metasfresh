@@ -61,7 +61,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		if (!isOnPackingWarehouse(schedule))
+		if (!isOnAutoDistributionOrder(schedule))
 		{
 			return;
 		}
@@ -81,7 +81,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		if (!isOnPackingWarehouse(schedule))
+		if (!isOnAutoDistributionOrder(schedule))
 		{
 			return;
 		}
@@ -148,7 +148,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@Nullable final DDOrderId existingDDOrderId)
 	{
-		if (!isOnPackingWarehouse(schedule))
+		if (!isOnAutoDistributionOrder(schedule))
 		{
 			return DDOrderReconcileAction.NONE;
 		}
@@ -174,11 +174,11 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		}
 	}
 
-	private boolean isOnPackingWarehouse(@NonNull final I_M_ShipmentSchedule schedule)
+	private boolean isOnAutoDistributionOrder(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-		return warehouse.isPackingWarehouse();
+		return warehouse.isAutoDistributionOrder();
 	}
 
 	/**
@@ -188,13 +188,13 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	 */
 	private void createDDOrderFor(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final WarehouseId packingWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse packingWarehouse = warehouseDAO.getById(packingWarehouseId);
+		final WarehouseId autoDistributionOrderId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+		final I_M_Warehouse autoDistributionOrder = warehouseDAO.getById(autoDistributionOrderId);
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
-		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(packingWarehouse.getDD_NetworkDistribution_ID());
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(autoDistributionOrder.getDD_NetworkDistribution_ID());
 
-		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(packingWarehouseId, productId, networkId)
+		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(autoDistributionOrderId, productId, networkId)
 				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
 
 		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
@@ -213,7 +213,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
-				.targetWarehouseId(packingWarehouseId)
+				.targetWarehouseId(autoDistributionOrderId)
 				.productId(productId)
 				.qty(qty)
 				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
@@ -274,7 +274,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@Override
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)
 	{
-		if (warehouse.isPackingWarehouse() && warehouse.getDD_NetworkDistribution_ID() <= 0)
+		if (warehouse.isAutoDistributionOrder() && warehouse.getDD_NetworkDistribution_ID() <= 0)
 		{
 			throw new AdempiereException(MSG_DDOrderPickingReconcile_MandatoryNetwork);
 		}
@@ -301,7 +301,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	 */
 	@VisibleForTesting
 	Optional<WarehouseId> resolveSourceWarehouse(
-			@NonNull final WarehouseId packingWarehouseId,
+			@NonNull final WarehouseId autoDistributionOrderId,
 			@NonNull final ProductId productId,
 			@Nullable final DistributionNetworkId networkId)
 	{
@@ -311,7 +311,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		}
 
 		final DistributionNetwork network = distributionNetworkRepository.getById(networkId);
-		final List<DistributionNetworkLine> lines = network.getLinesByTargetWarehouse(packingWarehouseId);
+		final List<DistributionNetworkLine> lines = network.getLinesByTargetWarehouse(autoDistributionOrderId);
 		if (lines.isEmpty())
 		{
 			return Optional.empty();

@@ -35,9 +35,9 @@ Feature: DD_Order picking reconcile — non-packing warehouses are not touched b
 
   @from:cucumber
   Scenario: A sales order on a regular warehouse produces no reconcile DD_Order (TC9)
-    # A plain warehouse: IsPackingWarehouse=N (default), no MRP_Exclude, no DD_NetworkDistribution.
+    # A plain warehouse: IsAutoDistributionOrder=N (default), no MRP_Exclude, no DD_NetworkDistribution.
     Given metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsPackingWarehouse |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsAutoDistributionOrder |
       | regularWH      | customer      | customerLocation       | N                  |
 
     When metasfresh contains C_Orders:

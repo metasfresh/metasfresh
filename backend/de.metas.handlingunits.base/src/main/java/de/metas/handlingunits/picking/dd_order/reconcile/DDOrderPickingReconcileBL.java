@@ -26,7 +26,7 @@ public interface DDOrderPickingReconcileBL
 	/** Drift watchdog. Scans packing-warehouse schedules with no live DD_Order and republishes events. Called by the DD_Order_Picking_Rebuild JavaProcess + the hourly AD_Scheduler. */
 	void rebuildDrift();
 
-	/** Throws AdempiereException if the warehouse has IsPackingWarehouse=Y but no DD_NetworkDistribution_ID set. */
+	/** Throws AdempiereException if the warehouse has IsAutoDistributionOrder=Y but no DD_NetworkDistribution_ID set. */
 	void assertWarehouseConfigurationIsValid(I_M_Warehouse warehouse);
 
 	/** Shared picker-busy check: returns true iff a PickingJobLine references the DD_Order's M_Movement. */

@@ -40,7 +40,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-27 01:0
 -- Message 2: DDOrderPickingReconcile_NetworkGap
 -- 2026-05-27T01:00:06.000Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545726 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-27 01:00:06','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Kein Quelllager im Verteilungsnetz {0} für Produkt {1} im Kommissionierungslager gefunden.','E',TO_TIMESTAMP('2026-05-27 01:00:06','YYYY-MM-DD HH24:MI:SS'),100,'DDOrderPickingReconcile_NetworkGap')
+VALUES (0,545726 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-27 01:00:06','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Kein Quelllager im Verteilungsnetz {0} für Produkt {1} im Lager mit Auto-Verteilungsauftrag gefunden.','E',TO_TIMESTAMP('2026-05-27 01:00:06','YYYY-MM-DD HH24:MI:SS'),100,'DDOrderPickingReconcile_NetworkGap')
 ;
 
 -- 2026-05-27T01:00:07.000Z
@@ -73,7 +73,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-27 01:0
 -- Message 3: DDOrderPickingReconcile_MandatoryNetwork
 -- 2026-05-27T01:00:12.000Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545727 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-27 01:00:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Ein Verteilungsnetz ist Pflicht, wenn Kommissionierungslager=Ja gesetzt ist.','E',TO_TIMESTAMP('2026-05-27 01:00:12','YYYY-MM-DD HH24:MI:SS'),100,'DDOrderPickingReconcile_MandatoryNetwork')
+VALUES (0,545727 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-27 01:00:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Ein Verteilungsnetz ist Pflicht, wenn Auto-Verteilungsauftrag=Ja gesetzt ist.','E',TO_TIMESTAMP('2026-05-27 01:00:12','YYYY-MM-DD HH24:MI:SS'),100,'DDOrderPickingReconcile_MandatoryNetwork')
 ;
 
 -- 2026-05-27T01:00:13.000Z
@@ -91,7 +91,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y') AND t.AD_Message_ID=545727 /*F
 
 -- Override en_US with the English translation.
 -- 2026-05-27T01:00:15.000Z
-UPDATE AD_Message_Trl SET MsgText='A distribution network (DD_NetworkDistribution_ID) is mandatory when IsPackingWarehouse=Y.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-27 01:00:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545727 /*From ID Server*/
+UPDATE AD_Message_Trl SET MsgText='A distribution network (DD_NetworkDistribution_ID) is mandatory when IsAutoDistributionOrder=Y.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-05-27 01:00:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545727 /*From ID Server*/
 ;
 
 -- Mark de_DE and de_CH as actively translated (same text as base; flips IsTranslated to Y).

@@ -49,16 +49,16 @@ public class DDOrderPickingReconcileRepository
 
 	/**
 	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
-	 * ({@code M_Warehouse.IsPackingWarehouse='Y'}), and have NO live (non-voided) DD_Order linked.
+	 * ({@code M_Warehouse.IsAutoDistributionOrder='Y'}), and have NO live (non-voided) DD_Order linked.
 	 *
 	 * <p>These are the "drifted" schedules that need to be re-reconciled by the watchdog scan.</p>
 	 */
 	public Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder()
 	{
 		// Sub-query: packing warehouse IDs
-		final IQuery<I_M_Warehouse> packingWarehouseSubQuery = queryBL
+		final IQuery<I_M_Warehouse> autoDistributionOrderSubQuery = queryBL
 				.createQueryBuilder(I_M_Warehouse.class)
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsPackingWarehouse, true)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
@@ -97,7 +97,7 @@ public class DDOrderPickingReconcileRepository
 				.addInSubQueryFilter(
 						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
 						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
-						packingWarehouseSubQuery);
+						autoDistributionOrderSubQuery);
 
 		// branch 2: Override not set → base warehouse decides
 		effectivePackingFilter.addCompositeQueryFilter()
@@ -106,7 +106,7 @@ public class DDOrderPickingReconcileRepository
 				.addInSubQueryFilter(
 						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
 						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
-						packingWarehouseSubQuery);
+						autoDistributionOrderSubQuery);
 
 		// schedule must have NO live DD_Order
 		scheduleQueryBuilder.addNotInSubQueryFilter(
