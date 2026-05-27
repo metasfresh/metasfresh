@@ -68,6 +68,11 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override |
       | sched_os10_1          | D            | true                | false       | 8                     |
 
+    # Wait for the async shipment workpackage to complete and create the M_InOut
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | sched_os10_1          | inout_os10  |
+
     When the C_Order_Split process is invoked on "so_os10"
 
     # NEW continuation order must exist with POReference = old SO's DocumentNo
@@ -122,13 +127,19 @@ Feature: Split sales order — create a continuation order for unshipped quantit
       | sched_os20_B | sol_os20_B     | N             |
       | sched_os20_C | sol_os20_C     | N             |
 
-    # Ship all 5 of line A and 4 of line B in one generate-shipments run
+    # Ship all 5 of line A and 4 of line B in two generate-shipments runs
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | sched_os20_A          | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | sched_os20_A          | inout_os20_A  |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override |
       | sched_os20_B          | D            | true                | false       | 4                     |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | sched_os20_B          | inout_os20_B  |
 
     When the C_Order_Split process is invoked on "so_os20"
 
@@ -182,9 +193,15 @@ Feature: Split sales order — create a continuation order for unshipped quantit
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | sched_os30_A          | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | sched_os30_A          | inout_os30_A  |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override |
       | sched_os30_B          | D            | true                | false       | 6                     |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | sched_os30_B          | inout_os30_B  |
 
     When the C_Order_Split process is invoked on "so_os30"
 
@@ -229,6 +246,9 @@ Feature: Split sales order — create a continuation order for unshipped quantit
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override |
       | sched_os40_1          | D            | true                | false       | 4                     |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | sched_os40_1          | inout_os40  |
 
     And metasfresh contains M_QtyReservations:
       | Identifier      | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
@@ -274,6 +294,9 @@ Feature: Split sales order — create a continuation order for unshipped quantit
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | sched_os50_A          | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | sched_os50_A          | inout_os50_A  |
 
     When the C_Order_Split process is invoked on "so_os50"
 
@@ -335,6 +358,9 @@ Feature: Split sales order — create a continuation order for unshipped quantit
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | sched_os70_1          | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  |
+      | sched_os70_1          | inout_os70  |
 
     When the C_Order_Split process is invoked on "so_os70" expecting validation failure
 
