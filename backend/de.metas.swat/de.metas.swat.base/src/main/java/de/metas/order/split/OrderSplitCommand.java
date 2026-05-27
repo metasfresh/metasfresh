@@ -3,8 +3,6 @@ package de.metas.order.split;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutQuery;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -34,7 +32,6 @@ public class OrderSplitCommand
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	public OrderSplitResult split(@NonNull final OrderSplitRequest request)
@@ -168,11 +165,13 @@ public class OrderSplitCommand
 			@NonNull final de.metas.order.OrderId oldOrderId,
 			@NonNull final List<I_C_OrderLine> oldLines)
 	{
-		// Guard 1: ≥1 completed shipment (DocStatus IN ('CO', 'CL'))
-		final boolean hasCompletedShipment = inOutDAO.retrieveByQuery(
-						InOutQuery.builder().orderId(oldOrderId).build())
-				.anyMatch(io -> "CO".equals(io.getDocStatus()) || "CL".equals(io.getDocStatus()));
-		if (!hasCompletedShipment)
+		// Guard 1: ≥1 line has been shipped (QtyDelivered > 0).
+		// Using QtyDelivered as the canonical "has shipments" indicator avoids querying
+		// M_InOut directly (M_InOut.C_Order_ID is not always populated when shipments
+		// are generated from shipment schedules — the relation lives in M_InOutLine.C_OrderLine_ID).
+		final boolean hasAnyShipment = oldLines.stream()
+				.anyMatch(ol -> ol.getQtyDelivered().signum() > 0);
+		if (!hasAnyShipment)
 		{
 			throw new AdempiereException(MSG_NO_SHIPMENTS);
 		}
