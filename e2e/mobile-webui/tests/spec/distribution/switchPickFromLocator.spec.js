@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { expect } from '@playwright/test';
 import { Backend } from "../../utils/screens/Backend";
 import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -60,7 +61,12 @@ test('Switch pick-from locator — button advances to next active locator', asyn
     });
 
     await test.step('Press "Lagerort leer" — locator advances, button remains visible (still has alternatives)', async () => {
+        const locatorBefore = await DistributionJobScreen.getPickFromLocator();
+        expect(locatorBefore).toBeTruthy();
         await DistributionJobScreen.switchPickFromLocator();
+        // The thunk dispatches the redux update after the POST resolves, so the rendered
+        // attribute settles a render-tick later — poll until it reflects the new locator.
+        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locatorBefore);
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });
 });
@@ -84,10 +90,28 @@ test('Switch pick-from locator — successive presses cycle round-robin', async 
     // The warehouse has 3 active locators. Three presses cycle wh1_l1 -> wh1_l2 -> wh1_l3 -> wh1_l1.
     // Each press succeeds without error and the button stays available (no "no-alternative" rejection
     // until picking starts or the warehouse has <=1 active locators).
-    await test.step('Press 3 times — round-robin cycles through all locators', async () => {
+    await test.step('Press 3 times — round-robin cycles through all 3 locators and wraps back to the start', async () => {
+        // After each switch the rendered attribute settles a render-tick after the POST resolves,
+        // so poll until it changes from the previous value before capturing the settled locator.
+        const locator0 = await DistributionJobScreen.getPickFromLocator();
+
         await DistributionJobScreen.switchPickFromLocator();
+        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locator0);
+        const locator1 = await DistributionJobScreen.getPickFromLocator();
+
         await DistributionJobScreen.switchPickFromLocator();
+        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locator1);
+        const locator2 = await DistributionJobScreen.getPickFromLocator();
+
         await DistributionJobScreen.switchPickFromLocator();
+        await expect.poll(async () => await DistributionJobScreen.getPickFromLocator()).not.toEqual(locator2);
+        const locator3 = await DistributionJobScreen.getPickFromLocator();
+
+        // Each of the first three reads is a distinct active locator...
+        expect(new Set([locator0, locator1, locator2]).size).toEqual(3);
+        // ...and the fourth read wraps back to the first (round-robin).
+        expect(locator3).toEqual(locator0);
+
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });
 });

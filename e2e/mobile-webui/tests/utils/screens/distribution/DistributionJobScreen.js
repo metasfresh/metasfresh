@@ -93,10 +93,23 @@ export const DistributionJobScreen = {
         }
     }),
 
+    getPickFromLocator: async () => await test.step(`${NAME} - Get current pick-from locator`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        await expect(button).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        return await button.getAttribute('data-pickfromlocator');
+    }),
+
     switchPickFromLocator: async () => await test.step(`${NAME} - Switch pick-from locator to next`, async () => {
         const button = switchPickFromLocatorButtonLocator();
         await expect(button).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
+        // Set up the response listener immediately before the tap so we don't return
+        // while the (spinner-less) switch POST is still in flight.
+        const responsePromise = page.waitForResponse(
+            (response) => response.url().includes('/switchPickFromLocatorToNext') && response.request().method() === 'POST',
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
         await button.tap();
+        await responsePromise;
         await DistributionJobScreen.waitForScreen();
     }),
 
