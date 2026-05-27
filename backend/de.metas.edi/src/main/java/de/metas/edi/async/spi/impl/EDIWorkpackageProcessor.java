@@ -294,7 +294,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			return ExternalSystemInvocationResult.error(new AdempiereException("More than one matching ExternalSystemScriptedExportConversionConfig found for ediDocumentNo=" + ediDocument.getDocumentNo()));
 		}
 
-
 		return externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAndGetResult(
 				configs.get(0),
 				documentRecordId,
