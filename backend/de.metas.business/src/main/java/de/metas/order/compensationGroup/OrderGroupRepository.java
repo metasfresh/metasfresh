@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -20,7 +22,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -85,6 +86,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
+	private static final AdMessageKey MSG_BESTANDTEIL_HANDELSSTUECKLISTE = AdMessageKey.of("Bestandteil_Handelsstueckliste");
+
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -783,15 +786,14 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setIsAllowSeparateInvoicing(from.isAllowSeparateInvoicing());
 
 		orderLine.setIsHideWhenPrinting(from.isHideWhenPrinting());
-		orderLineBL.save(orderLine);
 
 		if (from.isWithoutCharge())
 		{
 			orderLine.setIsWithoutCharge(true);
-			final String reason = Services.get(IMsgBL.class).getMsg(getCtx(orderLine), "Bestandteil_Handelsstueckliste");
-			orderLine.setReason(reason);
-			orderLineBL.save(orderLine);
+			orderLine.setReason(Services.get(IMsgBL.class).getMsg(getCtx(orderLine), MSG_BESTANDTEIL_HANDELSSTUECKLISTE));
 		}
+
+		orderLineBL.save(orderLine);
 
 		return orderLine;
 	}
