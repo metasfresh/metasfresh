@@ -99,6 +99,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.build();
 
 	private final ADProcessInstancesRepository processInstancesRepository;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public HUReportProcessInstancesRepository(@NonNull final ADProcessInstancesRepository processInstancesRepository)
 	{
@@ -214,6 +215,10 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		if (preconditionsContext instanceof DocumentPreconditionsAsContext)
 		{
 			final DocumentPreconditionsAsContext documentContext = (DocumentPreconditionsAsContext) preconditionsContext;
+			if (!documentContext.isConsiderTableRelatedProcessDescriptors(PROCESS_HANDLER_TYPE))
+			{
+				return Stream.empty();
+			}
 			if (I_M_HU.Table_Name.equals(documentContext.getTableName()))
 			{
 				final I_M_HU hu = documentContext.getSelectedModel(I_M_HU.class);
@@ -238,9 +243,8 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	 * Returns {@code null} for unknown/degenerate HU types (processes should not be shown for them).
 	 */
 	@Nullable
-	private static HuUnitType resolveHUUnitType(@NonNull final I_M_HU hu)
+	private HuUnitType resolveHUUnitType(@NonNull final I_M_HU hu)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
 			return HuUnitType.LU;

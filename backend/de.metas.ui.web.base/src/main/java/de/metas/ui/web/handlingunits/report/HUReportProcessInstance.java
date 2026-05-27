@@ -6,6 +6,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import javax.annotation.Nullable;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
@@ -79,11 +80,13 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	public static final String PARAM_AD_Process_ID = "AD_Process_ID";
 	public static final String PARAM_IsPrintPreview = "IsPrintPreview";
 
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	private final DocumentId instanceId;
 	/** Non-null when launched from a grid/HU-editor view. Null when launched from a single-document (detail) view. */
-	private final ViewRowIdsSelection viewRowIdsSelection;
+	@Nullable private final ViewRowIdsSelection viewRowIdsSelection;
 	/** Non-null when launched from a single-document (detail) view. Null when launched from a grid view. */
-	private final HuId singleHuId;
+	@Nullable private final HuId singleHuId;
 	private final AdProcessId reportAdProcessId;
 	private final Document parameters;
 	@Getter
@@ -103,7 +106,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	{
 		if (viewRowIdsSelection == null && singleHuId == null)
 		{
-			throw new IllegalArgumentException("Either viewRowIdsSelection or singleHuId must be non-null");
+			throw new AdempiereException("Either viewRowIdsSelection or singleHuId must be non-null");
 		}
 
 		this.instanceId = instanceId;
@@ -221,9 +224,9 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return getHUsToProcess(husToCheck);
 	}
 
-	private static List<HUToReport> extractHUsToReportForSingleHu(@NonNull final HuId huId)
+	private List<HUToReport> extractHUsToReportForSingleHu(@NonNull final HuId huId)
 	{
-		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 		final HUToReport huToReport = HUToReportWrapper.of(hu);
 		return getHUsToProcess(ImmutableSet.of(huToReport));
 	}

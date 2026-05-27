@@ -68,6 +68,15 @@ public class M_HU_Report_QRCode extends JavaProcess
 		return MSG_OK;
 	}
 
+	/**
+	 * Reads the print-copies count from the runtime parameters.
+	 *
+	 * <p>Note: PrintCopies is intentionally NOT bound via {@code @Param} because it is NOT a formal
+	 * {@code AD_Process_Para} record in the database. Instead, it is a runtime parameter injected by
+	 * the HU report infrastructure ({@code HUReportProcessInstance.setCopies()}) before the process
+	 * executes. Adding a {@code @Param} binding without a matching {@code AD_Process_Para} would
+	 * cause a silent no-op at injection time and break the copy-count behaviour.
+	 */
 	private PrintCopies getPrintCopies()
 	{
 		return getParameters().stream()
