@@ -14,6 +14,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -67,6 +68,16 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 
 	List<I_M_InOutLine> retrieveLines(I_M_InOut inOut);
+
+	/**
+	 * Retrieve all distinct source {@link I_C_Order} records for the given shipment,
+	 * resolved via {@code M_InOutLine.C_OrderLine_ID → C_OrderLine.C_Order_ID}.
+	 * Lines without a {@code C_OrderLine_ID} (e.g. manual lines) are skipped.
+	 *
+	 * @return distinct, non-null source orders (empty list if no lines reference an order)
+	 */
+	@NonNull
+	List<I_C_Order> retrieveSourceOrders(@NonNull I_M_InOut inOut);
 
 	List<I_M_InOutLine> retrieveAllLines(I_M_InOut inOut);
 
