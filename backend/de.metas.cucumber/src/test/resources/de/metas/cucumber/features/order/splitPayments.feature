@@ -679,6 +679,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | true         |
     And the payment identified by s6_payment is completed
 
+    # ── Post-payment: V_Prepayment_Acct must be non-zero (payment opened it) ──
+    Then Fact_Acct records balances for documents s6_payment are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | -5000       |
+
     # ── Allocate payment to invoice ──
     And allocate payments to invoices
       | C_Invoice_ID | C_Payment_ID |

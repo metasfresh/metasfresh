@@ -113,6 +113,7 @@ public class C_Payment_StepDef
 	/**
 	 * Creates one or more {@link I_C_Payment} records in Draft status.
 	 *
+	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) vendor or customer BPartner<br>
