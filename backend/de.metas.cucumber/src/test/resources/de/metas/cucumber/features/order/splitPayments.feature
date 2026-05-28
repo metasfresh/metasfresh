@@ -178,6 +178,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.32 EUR.
     # (No C_AllocationHdr in S1 — proforma payment never creates allocation lines.)
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID |
+      | V_Prepayment_Acct     | 20596.32 EUR |              | lcPayment |
+      | B_InTransit_Acct      |              | 20596.32 EUR | lcPayment |
     Then Fact_Acct records balances for documents lcPayment are matching
       | AccountConceptualName | SourceBalance  |
       | V_Prepayment_Acct     | 20596.32 EUR   |
@@ -326,6 +330,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | lcInvoice  | Y      |
 
     # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.32 EUR.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID |
+      | V_Prepayment_Acct     | 20596.32 EUR |              | lcPayment |
+      | B_InTransit_Acct      |              | 20596.32 EUR | lcPayment |
     Then Fact_Acct records balances for documents lcPayment are matching
       | AccountConceptualName | SourceBalance  |
       | V_Prepayment_Acct     | 20596.32 EUR   |
@@ -365,6 +373,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | BL                | 68654.40 | 48058.08 | null          | null          | 9999-12-01 | PR     |
 
     # Accounting: original payment + reversal cancel each other → V_Prepayment nets to 0.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID         |
+      | V_Prepayment_Acct     | 20596.32 EUR |              | lcPayment         |
+      | B_InTransit_Acct      |              | 20596.32 EUR | lcPayment         |
+      | V_Prepayment_Acct     |              | 20596.32 EUR | lcPaymentReversal |
+      | B_InTransit_Acct      | 20596.32 EUR |              | lcPaymentReversal |
     Then Fact_Acct records balances for documents lcPayment,lcPaymentReversal are matching
       | AccountConceptualName | AcctBalance |
       | V_Prepayment_Acct     | 0           |
@@ -546,6 +560,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | customerPayment         | 20596.31 |
 
     # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.31 EUR.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID       |
+      | V_Prepayment_Acct     | 20596.31 EUR |              | customerPayment |
+      | B_InTransit_Acct      |              | 20596.31 EUR | customerPayment |
     Then Fact_Acct records balances for documents customerPayment are matching
       | AccountConceptualName | SourceBalance  |
       | V_Prepayment_Acct     | 20596.31 EUR   |
@@ -668,6 +686,15 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # customerPayment opened V_Prepayment; s5_alloc1 + s5_alloc2 closed it.
     # Note: V_Liability does NOT net to zero here — the prepayment (20596.31) only partially covers
     # the total invoices (68899.98). The remaining open liability stays until the invoices are fully paid.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr   | AmtSourceCr   | Record_ID       |
+      | V_Prepayment_Acct     | 20596.31 EUR  |               | customerPayment |
+      | V_Liability_Acct      |               | 31807.99 EUR  | inv1Partial     |
+      | V_Liability_Acct      |               | 37091.99 EUR  | inv2Final       |
+      | V_Liability_Acct      | 9542.4 EUR    |               | s5_alloc1       |
+      | V_Prepayment_Acct     |               | 9542.4 EUR    | s5_alloc1       |
+      | V_Liability_Acct      | 11053.91 EUR  |               | s5_alloc2       |
+      | V_Prepayment_Acct     |               | 11053.91 EUR  | s5_alloc2       |
     Then Fact_Acct records balances for documents customerPayment,inv1Partial,inv2Final,s5_alloc1,s5_alloc2 are matching
       | AccountConceptualName | AcctBalance |
       | V_Prepayment_Acct     | 0           |
@@ -721,6 +748,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # ── Post-payment: V_Prepayment_Acct must be non-zero (payment opened it) ──
     # AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +5000.
     # SourceBalance (source-currency amount) avoids accounting-schema FX conversion uncertainty.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID  |
+      | V_Prepayment_Acct     | 5000 EUR    |             | s6_payment |
+      | B_InTransit_Acct      |             | 5000 EUR    | s6_payment |
     Then Fact_Acct records balances for documents s6_payment are matching
       | AccountConceptualName | SourceBalance |
       | V_Prepayment_Acct     | 5000 EUR      |
@@ -737,6 +768,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # V_Prepayment_Acct: opened by payment posting, reversed by allocation → net 0
     # V_Liability_Acct:  opened by invoice posting, reversed by allocation → net 0
     # Regression: without the fix the allocation used B_PaymentSelect_Acct → V_Prepayment stayed non-zero.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID  |
+      | V_Prepayment_Acct     | 5000 EUR    |             | s6_payment |
+      | V_Liability_Acct      |             | 5000 EUR    | s6_invoice |
+      | V_Liability_Acct      | 5000 EUR    |             | s6_alloc   |
+      | V_Prepayment_Acct     |             | 5000 EUR    | s6_alloc   |
     Then Fact_Acct records balances for documents s6_payment,s6_invoice,s6_alloc are matching
       | AccountConceptualName | AcctBalance |
       | V_Prepayment_Acct     | 0           |
