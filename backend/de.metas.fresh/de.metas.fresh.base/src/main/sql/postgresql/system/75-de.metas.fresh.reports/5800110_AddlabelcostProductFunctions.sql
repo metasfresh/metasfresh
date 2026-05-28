@@ -1,3 +1,48 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.getLabelCostForInvoiceLine(p_C_InvoiceLine_ID NUMERIC)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getLabelCostForInvoiceLine(p_C_InvoiceLine_ID NUMERIC)
+    RETURNS TABLE
+            (
+                C_InvoiceLine_ID NUMERIC,
+                M_Product_ID     NUMERIC,
+                label            VARCHAR,
+                labelAmount      NUMERIC,
+                labelUOM         VARCHAR,
+                currencyLabel    VARCHAR,
+                qty              NUMERIC,
+                total            NUMERIC
+            )
+    LANGUAGE sql
+    STABLE
+AS
+$$
+SELECT base.C_InvoiceLine_ID,
+       base.M_Product_ID,
+       base.label,
+       base.labelAmount,
+       base.labelUOM,
+       base.currencyLabel,
+       base.qty,
+       base.qty * base.labelAmount AS total
+FROM (SELECT il.C_InvoiceLine_ID,
+             il.M_Product_ID,
+             pcl.label,
+             pcl.amount                                                                                                           AS labelAmount,
+             u.UOMSymbol                                                                                                          AS labelUOM,
+             c.CurSymbol                                                                                                          AS currencyLabel,
+             COALESCE(uomConvert(il.M_Product_ID, il.C_UOM_ID, pcl.c_uom_id, il.qtyinvoicedinpriceuom), il.qtyinvoicedinpriceuom) AS qty
+      FROM c_invoiceline il
+               JOIN M_Product_Labelcost pcl ON il.M_Product_ID = pcl.M_Product_ID
+               JOIN C_UOM u ON pcl.C_UOM_ID = u.C_UOM_ID
+               JOIN C_Currency c ON pcl.C_Currency_ID = c.C_Currency_ID
+      WHERE pcl.IsActive = 'Y'
+        AND il.C_InvoiceLine_ID = p_C_InvoiceLine_ID) base
+$$
+;
+
+
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details (IN p_C_Invoice_ID numeric,
                                                                                           IN p_AD_Language  Character Varying(6))
 ;
@@ -37,10 +82,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invo
                 p_description             character varying(255),
                 invoice_description       character varying(1024),
                 cursymbol                 character varying(10),
-                PricePattern              text,
-                AmountPattern             text,
-                QtyPattern                text,
-                PriceQtyPattern           text,
                 IsDisplayProductCostLabel character(1)
             )
 AS
@@ -92,10 +133,6 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
        p.description                                                                AS p_description,
        i.description                                                                AS invoice_description,
        c.cursymbol,
-       report.getPricePatternForJasper(i.m_pricelist_id)                            AS PricePattern,
-       report.getAmountPatternForJasper(c.c_currency_id)                            AS AmountPattern,
-       report.getQtyPattern(uom.StdPrecision)                                       AS QtyPattern,
-       report.getQtyPattern(puom.StdPrecision)                                      AS PriceQtyPattern,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'ProductCostLabel') = 'N' THEN 'Y'
                                                                                        ELSE 'N'
@@ -238,7 +275,6 @@ GROUP BY InOuts,
          COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
          COALESCE(puomt.UOMSymbol, puom.UOMSymbol),
          puom.StdPrecision,
-         uom.StdPrecision,
          t.rate,
          bpg.IsPrintTax,
          COALESCE(io1.DateFrom, io2.DateFrom),
@@ -249,8 +285,6 @@ GROUP BY InOuts,
          p.description,
          i.description,
          c.cursymbol,
-         i.m_pricelist_id,
-         c.c_currency_id,
          i.C_DocType_ID
 
 ORDER BY COALESCE(io1.DateFrom, io2.DateFrom),

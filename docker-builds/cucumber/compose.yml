@@ -75,6 +75,26 @@ services:
       mode: replicated
       replicas: 1
 
+  # Local SMTP relay for cucumber's `Test sending an outbound mail` scenario.
+  # Replaces the previous external-secrets-based SMTP relay: the external
+  # provider rejected our credentials on 2026-05-21 (locked out the test
+  # account) and the cucumber profile4 job has been red since. MailPit with
+  # --smtp-auth-accept-any removes the external dependency entirely.
+  # Image pinned (no :latest) so a future upstream change can't silently
+  # re-break the test.
+  mailpit:
+    image: axllent/mailpit:v1.20.5
+    command: ["--smtp-auth-accept-any", "--smtp-auth-allow-insecure", "--smtp=0.0.0.0:587"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8025 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 10
+    deploy:
+      mode: replicated
+      replicas: 1
+
   cucumber:
     image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
     environment:
