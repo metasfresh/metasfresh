@@ -22,7 +22,6 @@
 
 package de.metas.shipper.gateway.nshift.client;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -189,25 +188,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	{
 		final JsonShipperConfig baseConfig = jsonConverter.toJsonShipperConfig(shipperConfig);
 		return serviceLevelConfigs.getEffectiveServiceLevel(request)
-				.map(effectiveLevel -> buildConfigWithOverriddenServiceLevel(baseConfig, effectiveLevel))
+				.map(effectiveLevel -> baseConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, effectiveLevel))
 				.orElse(baseConfig);
-	}
-
-	@VisibleForTesting
-	protected static JsonShipperConfig buildConfigWithOverriddenServiceLevel(
-			@NonNull final JsonShipperConfig base,
-			@NonNull final String serviceLevel)
-	{
-		return JsonShipperConfig.builder()
-				.url(base.getUrl())
-				.username(base.getUsername())
-				.password(base.getPassword())
-				.clientId(base.getClientId())
-				.clientSecret(base.getClientSecret())
-				.trackingUrlTemplate(base.getTrackingUrlTemplate())
-				.additionalProperties(base.getAdditionalProperties())
-				.additionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel)
-				.build();
 	}
 
 }
