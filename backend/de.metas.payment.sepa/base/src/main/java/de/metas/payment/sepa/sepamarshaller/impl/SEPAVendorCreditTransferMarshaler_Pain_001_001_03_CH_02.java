@@ -336,11 +336,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final CreditTransferTransactionInformation10CH cdtTrfTxInf = createCreditTransferTransactionInformation(pmtInf, sepaLine);
 			pmtInf.getCdtTrfTxInf().add(cdtTrfTxInf);
 
-			if (sepaLine.isGroupLine() && sepaLine.getNumberOfReferences() > 0)
-			{
-				pmtInf.setNbOfTxs(String.valueOf(sepaLine.getNumberOfReferences()));
-			}
-
 			final BigDecimal transactionAmount = cdtTrfTxInf.getAmt().getInstdAmt().getValue();
 			pmtInf.setCtrlSum(pmtInf.getCtrlSum().add(transactionAmount));
 
@@ -349,6 +344,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		for (final PaymentInstructionInformation3CH pmtInf : currency2pmtInf.values())
 		{
+			// NbOfTxs must equal the actual number of CdtTrfTxInf elements in this PmtInf block.
+			// (A previous approach set this from sepaLine.getNumberOfReferences() for group lines,
+			// which produced a value that didn't match the real transaction count and caused
+			// ISO error AM18 at UBS and other banks that enforce this field strictly.)
+			pmtInf.setNbOfTxs(String.valueOf(pmtInf.getCdtTrfTxInf().size()));
+
 			// Update GroupHeader's control amount
 			final BigDecimal groupHeaderCtrlAmt = creditTransferInitiation.getGrpHdr().getCtrlSum();
 			final BigDecimal groupHeaderCtrlAmtNew = groupHeaderCtrlAmt.add(pmtInf.getCtrlSum());
