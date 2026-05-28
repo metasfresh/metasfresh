@@ -72,8 +72,7 @@ class DDOrderPickingReconcileServiceTest
 		}).when(documentBL).processEx(any(), any(), any());
 		Services.registerService(IDocumentBL.class, documentBL);
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final DDOrderPickingReconcileRepository repository = new DDOrderPickingReconcileRepository(queryBL);
+		final DDOrderPickingReconcileRepository repository = new DDOrderPickingReconcileRepository();
 		final DistributionNetworkRepository distributionNetworkRepository = new DistributionNetworkRepository();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		publisher = mock(DDOrderReconciliationEventPublisher.class);

@@ -37,15 +37,10 @@ import java.util.stream.Stream;
 @Repository
 public class DDOrderPickingReconcileRepository
 {
-	private final IQueryBL queryBL;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
-	public DDOrderPickingReconcileRepository(@NonNull final IQueryBL queryBL)
-	{
-		this.queryBL = queryBL;
-	}
 
 	/**
 	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
