@@ -366,6 +366,17 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.anyMatch();
 	}
 
+	@Override
+	public boolean isFirstNodeOfWorkflow(@NonNull final PPRoutingActivityId activityId)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_Workflow.class)
+				.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, activityId.getRoutingId())
+				.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID, activityId.getRepoId())
+				.create()
+				.anyMatch();
+	}
+
 	private List<I_AD_WF_Node> retrieveNodes(@NonNull final I_AD_Workflow routingRecord)
 	{
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(routingRecord.getAD_Workflow_ID());
