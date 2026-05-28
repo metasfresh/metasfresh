@@ -32,6 +32,7 @@ import org.compiere.model.I_S_Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class AD_WorkflowInterceptorTest
@@ -112,6 +113,22 @@ public class AD_WorkflowInterceptorTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("PPRouting_FirstNodeInvalid")
 				.hasMessageContaining("different workflow");
+	}
+
+	@Test
+	public void setFirstNode_to_validNode_allowed()
+	{
+		// Happy path: target node is active, in the same workflow, and has S_Resource_ID.
+		// Guards must NOT fire here — without this test, an accidental inversion of the
+		// wfNodeId<=0 early-return or any of the three failure-condition checks would
+		// silently block ALL first-node assignments and only surface in manual UAT.
+		final I_S_Resource resource = createResource();
+		final I_AD_Workflow wf = createWorkflow("WF1");
+		final I_AD_WF_Node validNode = createNode(wf, resource, "valid", true);
+
+		wf.setAD_WF_Node_ID(validNode.getAD_WF_Node_ID());
+
+		assertThatCode(() -> InterfaceWrapperHelper.save(wf)).doesNotThrowAnyException();
 	}
 
 	@Test

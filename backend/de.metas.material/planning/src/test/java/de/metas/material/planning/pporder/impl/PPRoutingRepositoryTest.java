@@ -105,6 +105,34 @@ public class PPRoutingRepositoryTest
 	}
 
 	@Test
+	public void firstActivityId_deactivated_throws_clear_error()
+	{
+		// Reproduces the actual ic114 me03 30094 scenario: AD_WF_Node still exists in the DB but has
+		// IsActive='N', so retrieveNodes filters it out of the loaded activity set, and the
+		// firstActivityId pointer becomes orphan from the loader's perspective.
+		final I_S_Resource resource = createResource();
+		final I_AD_Workflow wf = createWorkflow();
+
+		final I_AD_WF_Node node1 = createNode(wf, resource, "N1");
+		createNode(wf, resource, "N2");
+		createNode(wf, resource, "N3");
+
+		// Keep node1 as the workflow's first node, then soft-delete it. PPRoutingRepositoryTest does
+		// not register the AD_WF_Node interceptor that would normally block this, so the bad-data
+		// shape is reproducible here for the loader's own defence.
+		wf.setAD_WF_Node_ID(node1.getAD_WF_Node_ID());
+		InterfaceWrapperHelper.save(wf);
+		node1.setIsActive(false);
+		InterfaceWrapperHelper.save(node1);
+
+		final PPRoutingId routingId = PPRoutingId.ofRepoId(wf.getAD_Workflow_ID());
+
+		assertThatThrownBy(() -> ppRoutingRepository.getById(routingId))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("PPRouting_FirstNodeInvalid");
+	}
+
+	@Test
 	public void firstActivityId_valid_loads_successfully()
 	{
 		final I_S_Resource resource = createResource();
