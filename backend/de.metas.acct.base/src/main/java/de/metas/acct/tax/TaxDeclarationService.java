@@ -45,7 +45,7 @@ public class TaxDeclarationService
 		{
 			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_OriginalNotLocked);
 		}
-		if (original.isIsCorrection())
+		if (original.isCorrection())
 		{
 			throw new AdempiereException(MSG_TaxDeclaration_OriginalMustBeOriginal);
 		}

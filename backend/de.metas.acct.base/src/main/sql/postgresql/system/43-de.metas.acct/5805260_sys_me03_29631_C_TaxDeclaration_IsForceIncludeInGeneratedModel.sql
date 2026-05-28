@@ -27,7 +27,7 @@ INSERT INTO AD_Reference
     (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
      Name, ValidationType, EntityType)
 VALUES
-    (542099, 0, 0, 'Y', TIMESTAMP '2026-05-28 00:00:00', 100, TIMESTAMP '2026-05-28 00:00:00', 100,
+    (542099 /*From ID Server*/, 0, 0, 'Y', TIMESTAMP '2026-05-28 00:00:00', 100, TIMESTAMP '2026-05-28 00:00:00', 100,
      'C_TaxDeclaration', 'T', 'de.metas.acct');
 
 -- ====================================================================================
@@ -43,7 +43,7 @@ VALUES
     (542099 /*AD_Reference_ID: C_TaxDeclaration*/,
      0, 0, 'Y', TIMESTAMP '2026-05-28 00:00:00', 100, TIMESTAMP '2026-05-28 00:00:00', 100,
      818   /*AD_Table_ID: C_TaxDeclaration*/,
-     14451 /*AD_Key: C_TaxDeclaration.C_TaxDeclaration_ID*/,
+     (SELECT AD_Column_ID FROM AD_Column WHERE AD_Table_ID = 818 AND ColumnName = 'C_TaxDeclaration_ID') /*AD_Key*/,
      (SELECT AD_Column_ID FROM AD_Column
       WHERE AD_Table_ID = 818 AND ColumnName = 'DocumentNo') /*AD_Display*/,
      NULL  /*WhereClause*/,

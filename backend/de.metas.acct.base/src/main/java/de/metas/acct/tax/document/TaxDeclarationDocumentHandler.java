@@ -58,7 +58,7 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		// Period-uniqueness applies to Originals only; a Correction legitimately shares its Original's period.
 		// Checked before the no-lines guard so the user gets the meaningful PeriodOverlap message rather than
 		// NoLinesYet (a second Original on an already-declared period always builds empty).
-		if (!td.isIsCorrection()
+		if (!td.isCorrection()
 				&& repo.existsCompletedOverlappingPeriod(id, AcctSchemaId.ofRepoId(td.getC_AcctSchema_ID()), td.getC_Period_ID()))
 		{
 			throw new AdempiereException(MSG_PeriodOverlap);
@@ -72,11 +72,11 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		td.setDocAction(IDocument.ACTION_ReActivate);
 
 		// Completing a Correction clears its Original's "correction needed" flag.
-		if (td.isIsCorrection())
+		if (td.isCorrection())
 		{
 			final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_Original_ID());
 			final I_C_TaxDeclaration original = repo.getById(originalId);
-			if (original.isIsCorrectionNeeded() || original.getCorrectionNeededReason() != null)
+			if (original.isCorrectionNeeded() || original.getCorrectionNeededReason() != null)
 			{
 				original.setIsCorrectionNeeded(false);
 				original.setCorrectionNeededReason(null);
