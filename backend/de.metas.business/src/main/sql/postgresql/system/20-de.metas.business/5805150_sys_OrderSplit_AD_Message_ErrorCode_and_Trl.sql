@@ -9,7 +9,6 @@
 
 -- Set ErrorCode on both error messages
 UPDATE AD_Message
-UPDATE AD_Message
    SET ErrorCode = 'ORDER_SPLIT_NO_SHIPMENTS',
        Updated = TO_TIMESTAMP('2026-05-28 06:30:00', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy = 100
