@@ -369,6 +369,9 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	@Override
 	public boolean isFirstNodeOfWorkflow(@NonNull final PPRoutingActivityId activityId)
 	{
+		// Note: intentionally NO addOnlyActiveRecordsFilter() — the first-node-guard interceptors
+		// must also fire for soft-deleted workflows (IsActive='N') whose AD_WF_Node_ID pointer is
+		// still set. Adding an active-only filter would silently disable the guard for those rows.
 		return queryBL
 				.createQueryBuilder(I_AD_Workflow.class)
 				.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, activityId.getRoutingId())

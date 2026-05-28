@@ -29,7 +29,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -64,16 +63,10 @@ public class AD_WF_Node
 			ifColumnsChanged = I_AD_WF_Node.COLUMNNAME_IsActive)
 	public void preventDeactivateFirstNode(final I_AD_WF_Node node)
 	{
-		// Only block if IsActive is being changed from Y to N.
+		// ifColumnsChanged=IsActive only fires when the value differs from the DB row, so
+		// reaching here with node.isActive()==true means the transition is N→Y — not our case.
 		if (node.isActive())
 		{
-			return;
-		}
-
-		final I_AD_WF_Node oldNode = InterfaceWrapperHelper.createOld(node, I_AD_WF_Node.class);
-		if (!oldNode.isActive())
-		{
-			// was already inactive — nothing to do
 			return;
 		}
 
