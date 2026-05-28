@@ -44,8 +44,6 @@ async function navigateToTemplateLinesTab(page) {
     state: 'visible',
     timeout: VERY_SLOW_ACTION_TIMEOUT,
   });
-  await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-  await page.waitForTimeout(500);
 
   // Open the first record
   const firstRow = page.locator('table tbody tr').first();
@@ -54,8 +52,6 @@ async function navigateToTemplateLinesTab(page) {
 
   // Wait for detail view URL pattern
   await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
-  await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-  await page.waitForTimeout(500);
 
   // Template Lines tab: data-testid is tab-AD_Tab-544005 (verified from live WebAPI
   // GET /rest/api/window/540415/layout — tabId=AD_Tab-544005, caption=Template Lines).
@@ -63,8 +59,6 @@ async function navigateToTemplateLinesTab(page) {
   const templateLinesTab = page.locator('[data-testid="tab-AD_Tab-544005"]');
   await templateLinesTab.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await templateLinesTab.click();
-  await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-  await page.waitForTimeout(500);
   console.log('[PASS] Clicked Template Lines tab (tab-AD_Tab-544005)');
 }
 

@@ -11,6 +11,8 @@ import { InvoicePage } from '../utils/pages/InvoicePage';
 import { PdfDownloader } from '../utils/PdfDownloader';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Compensation Group bundle end-to-end E2E test.
@@ -125,44 +127,31 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         // ============================================================
         // Step 2b: Drive shipment + invoice creation via the UI (same as
         // invoice-reversal.spec.js — masterdata's shipment command needs
-        // HU/picking setup we don't have).
+        // HU/picking setup we don't have). Async waits are absorbed by the
+        // retry loops in openRelatedShipmentCandidate / openRelatedInvoiceCandidate.
         // ============================================================
-        // Wait for async shipment-schedule creation after order completion.
-        await page.waitForTimeout(5000);
-
-        // Navigate to the completed SO
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(500);
 
         await SalesOrderPage.openRelatedShipmentCandidate({ maxRetries: 15, retryDelay: 3000 });
         await ShipmentSchedulePage.expectVisible();
         await ShipmentSchedulePage.createShipment();
         console.log(`[F00127.1] Shipment created`);
 
-        await page.waitForTimeout(5000);
-
         // Back to SO -> create invoice from invoice candidates
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(500);
 
         await SalesOrderPage.openRelatedInvoiceCandidate(5000);
         await InvoiceCandidatePage.expectVisibleForSalesOrder();
         await InvoiceCandidatePage.createInvoiceForSalesOrder();
         console.log(`[F00127.1] Invoice created from candidates`);
 
-        await page.waitForTimeout(5000);
-
         // ============================================================
         // Step 3: Navigate to SO and download the order PDF
         // ============================================================
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
         await page.locator('.rotating, .panel-spaced-lg')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
             .catch(() => {});
-        await page.waitForTimeout(500);
 
         // Take a UI screenshot before printing (rendered SO header in UI)
         const soUiScreenshot = await page.screenshot({ fullPage: true });
@@ -180,8 +169,6 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         allure.attachment('Sales Order PDF — extracted text', soPdfText, 'text/plain');
 
         // Save the order PDF as the "rendered" artefact (it IS the rendered PDF)
-        const fs = require('fs');
-        const path = require('path');
         const screenshotsDir = path.resolve(process.cwd(), '..', '..', 'ai-work', '29558', 'screenshots');
         try {
             fs.mkdirSync(screenshotsDir, { recursive: true });
@@ -220,8 +207,6 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         // and download invoice PDF
         // ============================================================
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(500);
 
         await SalesOrderPage.openRelatedInvoice();
         await InvoicePage.expectVisible();
@@ -230,7 +215,6 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         console.log(`[F00127.1] Invoice: ${invDocNo}`);
 
         await InvoicePage.openDetailView();
-        await page.waitForTimeout(500);
 
         const invUiScreenshot = await page.screenshot({ fullPage: true });
         allure.attachment('Invoice — UI', invUiScreenshot, 'image/png');
@@ -296,8 +280,7 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
  * Extract raw text from a PDF on disk via pdf-parse.
  */
 async function extractPdfText(pdfPath) {
-    const fs = require('fs');
-    const pdfParse = require('pdf-parse');
+    const pdfParse = (await import('pdf-parse')).default;
     const buffer = fs.readFileSync(pdfPath);
     const data = await pdfParse(buffer);
     return data.text;
