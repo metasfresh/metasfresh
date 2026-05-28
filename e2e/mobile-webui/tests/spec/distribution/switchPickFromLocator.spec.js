@@ -177,8 +177,8 @@ test('Switch pick-from locator — round-robin wrap then pick + drop completes e
     let idx = orderedLocatorIds.indexOf(startLocatorId);
     expect(idx).toBeGreaterThanOrEqual(0);
 
-    await test.step('Press switch 3 times — round-robin returns to the starting locator', async () => {
-        for (let press = 0; press < 3; press++) {
+    await test.step(`Press switch ${orderedLocatorIds.length} times — round-robin returns to the starting locator`, async () => {
+        for (let press = 0; press < orderedLocatorIds.length; press++) {
             const expectNextLocatorId = orderedLocatorIds[(idx + 1) % orderedLocatorIds.length];
             await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId });
             idx = (idx + 1) % orderedLocatorIds.length;
@@ -196,11 +196,11 @@ test('Switch pick-from locator — round-robin wrap then pick + drop completes e
         await DistributionLineScreen.goBack();
     });
 
-    await test.step('Drop HU1 to target warehouse + assert backend state', async () => {
+    await test.step('Drop HU1 to target warehouse + complete job + assert backend state', async () => {
         await DistributionJobScreen.dropAllTo({
             dropToLocatorQRCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode,
-            expectNextScreen: 'DistributionJobsListScreen',
         });
+        await DistributionJobScreen.complete();
         await Backend.expect({
             title: 'After switch + pick + drop: HU1 is in wh2',
             hus: {
