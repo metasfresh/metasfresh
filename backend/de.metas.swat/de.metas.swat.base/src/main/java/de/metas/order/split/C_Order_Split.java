@@ -9,9 +9,8 @@ import org.compiere.model.I_C_Order;
 /**
  * AD_Process Java implementation for {@code C_Order_Split}.
  * <p>
- * Wired by the AD_Process row (migration {@code 5804910_sys_me03_29261_AD_Process_C_Order_Split.sql})
- * via the {@code Classname} column. Invoked from the sales-order window action menu (binding via
- * {@code AD_Table_Process} — migration {@code 5804940_*.sql}).
+ * Wired by the AD_Process row with {@code Value='C_Order_Split'} via the {@code Classname} column.
+ * Invoked from the sales-order window action menu (bound via {@code AD_Table_Process}).
  * <p>
  * Reads the current {@code C_Order} record, delegates to {@link OrderSplitCommand#split(OrderSplitRequest)},
  * and reports the new continuation-order ID + copied line count in the process result summary.

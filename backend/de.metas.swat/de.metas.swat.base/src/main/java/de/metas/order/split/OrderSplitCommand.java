@@ -4,22 +4,25 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,69 +36,70 @@ public class OrderSplitCommand
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public OrderSplitResult split(@NonNull final OrderSplitRequest request)
 	{
 		final I_C_Order oldOrder = orderBL.getById(request.getOrderId());
 		final List<I_C_OrderLine> oldLines = orderDAO.retrieveOrderLines(request.getOrderId());
 
-		validate(request.getOrderId(), oldLines);
+		validate(oldLines);
 
 		final I_C_Order newOrder = createContinuationOrderHeader(oldOrder);
 
 		final int copiedLineCount = createContinuationOrderLines(oldLines, newOrder);
 
-		closeOldShipmentSchedules(oldLines);
-		closeOldReservations(oldLines);
+		final List<OrderLineId> oldOrderLineIds = toOrderLineIds(oldLines);
+		closeOldShipmentSchedules(oldOrderLineIds);
+		closeOldReservations(oldOrderLineIds);
 
 		return OrderSplitResult.builder()
-				.oldOrderId(de.metas.order.OrderId.ofRepoId(oldOrder.getC_Order_ID()))
-				.newOrderId(de.metas.order.OrderId.ofRepoId(newOrder.getC_Order_ID()))
+				.oldOrderId(OrderId.ofRepoId(oldOrder.getC_Order_ID()))
+				.newOrderId(OrderId.ofRepoId(newOrder.getC_Order_ID()))
 				.copiedLineCount(copiedLineCount)
 				.build();
 	}
 
-	private void closeOldShipmentSchedules(@NonNull final List<I_C_OrderLine> oldLines)
+	private static List<OrderLineId> toOrderLineIds(@NonNull final List<I_C_OrderLine> oldLines)
 	{
-		// Load all M_ShipmentSchedules for the OLD order lines and close (IsClosed=Y) the ones
-		// that are not yet closed AND not yet processed. Already-processed schedules (those of
-		// fully-delivered lines) need no action — they're effectively closed by completion.
-		// We deliberately avoid IShipmentScheduleBL.closeShipmentSchedulesFor here because that
-		// API throws on processed schedules, which is too strict for our multi-line case where
-		// some schedules complete naturally via shipment.
-		final java.util.Set<Integer> oldOrderLineIds = oldLines.stream()
-				.map(org.compiere.model.I_C_OrderLine::getC_OrderLine_ID)
-				.collect(java.util.stream.Collectors.toSet());
+		return oldLines.stream()
+				.map(ol -> OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
+				.collect(Collectors.toList());
+	}
+
+	private void closeOldShipmentSchedules(@NonNull final List<OrderLineId> oldOrderLineIds)
+	{
+		// Load all M_ShipmentSchedules for the OLD order lines and close (IsClosed=Y) every
+		// non-closed schedule — including already-Processed ones (those of fully-delivered
+		// lines). This uniformly freezes the OLD SO for further shipping. We deliberately
+		// avoid IShipmentScheduleBL.closeShipmentSchedulesFor because that API throws on
+		// Processed schedules, which is too strict for our multi-line case where some
+		// schedules complete naturally via shipment.
 		if (oldOrderLineIds.isEmpty())
 		{
 			return;
 		}
-		final java.util.List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> schedules =
-				Services.get(org.adempiere.ad.dao.IQueryBL.class)
-						.createQueryBuilder(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)
-						.addOnlyActiveRecordsFilter()
-						.addInArrayFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, oldOrderLineIds)
-						.create()
-						.list();
-		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule : schedules)
+		final List<I_M_ShipmentSchedule> schedules = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, oldOrderLineIds)
+				.create()
+				.list();
+		for (final I_M_ShipmentSchedule schedule : schedules)
 		{
 			if (schedule.isClosed())
 			{
 				continue;  // already closed → idempotent skip
 			}
-			// Close all non-closed schedules — including Processed ones (fully-shipped) — so
-			// the OLD SO is uniformly frozen for further shipping. The singular
-			// closeShipmentSchedule API does NOT check Processed, so it works for both states.
+			// The singular closeShipmentSchedule API does NOT check Processed, so it works
+			// for both fully-shipped and partial-shipment cases.
 			shipmentScheduleBL.closeShipmentSchedule(schedule);
 		}
 	}
 
-	private void closeOldReservations(@NonNull final List<I_C_OrderLine> oldLines)
+	private void closeOldReservations(@NonNull final List<OrderLineId> oldOrderLineIds)
 	{
-		final List<OrderLineId> orderLineIds = oldLines.stream()
-				.map(ol -> OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
-				.collect(java.util.stream.Collectors.toList());
-		qtyReservationService.closeAllActiveForOrderLines(orderLineIds);
+		qtyReservationService.closeAllActiveForOrderLines(oldOrderLineIds);
 	}
 
 	private int createContinuationOrderLines(
@@ -192,9 +196,7 @@ public class OrderSplitCommand
 		return newOrder;
 	}
 
-	private void validate(
-			@NonNull final de.metas.order.OrderId oldOrderId,
-			@NonNull final List<I_C_OrderLine> oldLines)
+	private void validate(@NonNull final List<I_C_OrderLine> oldLines)
 	{
 		// Guard 1: ≥1 line has been shipped (QtyDelivered > 0).
 		// Using QtyDelivered as the canonical "has shipments" indicator avoids querying
