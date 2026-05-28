@@ -5,10 +5,14 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { HUConsolidationJobsListScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobsListScreen';
 import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobScreen';
+import { SelectHUConsolidationTargetScreen } from '../../utils/screens/huConsolidation/SelectHUConsolidationTargetScreen';
+import { ScanHUConsolidationTargetScreen } from '../../utils/screens/huConsolidation/ScanHUConsolidationTargetScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSlotScreen';
+import { expectErrorToast } from '../../utils/common';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async ({
                                     products,
@@ -264,5 +268,47 @@ test('Consolidate to an existing LU', async ({ page }) => {
                 },
             }
         }
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan TU instead of LU at Set Target step in HU consolidation → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00248');
+    allure.story('HU Consolidation - Scan errors');
+    allure.severity('normal');
+
+    // HU_TU is a TU-level HU (packing instruction has no "lu" field).
+    // Scanning its QR code at the Set Target step (which expects an LU) fires LU_EXPECTED_AT_TARGET.
+    const masterdata = await createMasterdata({
+        packingInstructions: {
+            "PI_TU": { tu: "TU_bare", product: "P1", qtyCUsPerTU: 4 },
+        },
+        handlingUnits: {
+            "HU_TU": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_TU' },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    await pickHUsToPickingSlot({ masterdata });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huConsolidation');
+    await HUConsolidationJobsListScreen.waitForScreen();
+    await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+
+    await HUConsolidationJobScreen.clickLUTargetButton();
+    await SelectHUConsolidationTargetScreen.waitForScreen();
+    await SelectHUConsolidationTargetScreen.clickScanQRCodeButton();
+    await ScanHUConsolidationTargetScreen.waitForScreen();
+
+    await expectErrorToast('Scan TU QR at Set Target step', async () => {
+        await ScanHUConsolidationTargetScreen.typeQRCode({ qrCode: masterdata.handlingUnits.HU_TU.qrCode });
+        await HUConsolidationJobScreen.waitForScreen();
+    }, ({ textContent }) => {
+        expect(textContent).toContain('HU_CONSOL_LU_EXPECTED_AT_TARGET');
     });
 });

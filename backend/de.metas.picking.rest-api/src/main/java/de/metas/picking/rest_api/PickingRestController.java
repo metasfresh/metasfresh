@@ -32,6 +32,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
@@ -247,12 +248,11 @@ public class PickingRestController
 
 		if (hus.isEmpty())
 		{
-			throw new AdempiereException("No HU found for scanned code: " + scannedCode);
+			throw new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND);
 		}
 		else if (hus.size() > 1)
 		{
-			throw new AdempiereException("More than one HU found for scanned code: " + scannedCode)
-					.setParameter("hus", hus);
+			throw new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS);
 		}
 		final JsonHU hu = hus.get(0);
 
@@ -295,9 +295,7 @@ public class PickingRestController
 		}
 		else
 		{
-			throw new AdempiereException("Cannot convert " + scannedCode + " to actual HUQRCode")
-					.setParameter("parsedHUQRCode", parsedHUQRCode)
-					.setParameter("parsedHUQRCode type", parsedHUQRCode.getClass().getSimpleName());
+			throw new AdempiereException(MobileQRCodeMessages.WRONG_TYPE, parsedHUQRCode.getClass().getSimpleName());
 		}
 	}
 

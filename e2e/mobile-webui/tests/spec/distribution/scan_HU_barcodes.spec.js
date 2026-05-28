@@ -6,7 +6,11 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
+import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
 import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
+import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
+import { expectErrorToast } from '../../utils/common';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async ({ externalBarcode } = {}) => {
     return await Backend.createMasterdata({
@@ -124,4 +128,60 @@ test('Scan by ExternalBarcode', async ({ page }) => {
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
     await standardTest({ masterdata, huBarcodeToScan: externalBarcode });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan locator QR code where HU is expected → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.openPickFromScreen();
+
+    await expectErrorToast('Scan locator QR code where HU is expected', async () => {
+        await DistributionLinePickFromScreen.typeHUQRCode(masterdata.warehouses.wh1.locatorQRCode);
+        await GetQuantityDialog.waitForDialog();
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_WRONG_TYPE_LOCATOR');
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan unrecognized barcode where HU is expected → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.openPickFromScreen();
+
+    await expectErrorToast('Scan unrecognized barcode where HU is expected', async () => {
+        await DistributionLinePickFromScreen.typeHUQRCode('TOTALLY_UNKNOWN_FORMAT_XYZ');
+        await GetQuantityDialog.waitForDialog();
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
+    });
 });
