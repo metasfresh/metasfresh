@@ -176,12 +176,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | C_Payment_ID.Identifier | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt   |
       | lcPayment               | Y            | null         | lcInvoice           | 20596.32 |
 
-    # Accounting: payment posts to V_Prepayment_Acct (IsPrepayment=Y, APP).
-    # V_Prepayment_Acct is credited by the payment → balance = AmtAcctDr − AmtAcctCr = −20596.32.
+    # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.32 EUR.
     # (No C_AllocationHdr in S1 — proforma payment never creates allocation lines.)
     Then Fact_Acct records balances for documents lcPayment are matching
-      | AccountConceptualName | AcctBalance |
-      | V_Prepayment_Acct     | -20596.32   |
+      | AccountConceptualName | SourceBalance  |
+      | V_Prepayment_Acct     | 20596.32 EUR   |
 
     # The proforma flips to IsPaid=Y when its full payment completes — the regular
     # allocation-driven IsPaid update doesn't fire because proforma payments have no
@@ -326,10 +325,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | Identifier | IsPaid |
       | lcInvoice  | Y      |
 
-    # Accounting: payment posts to V_Prepayment_Acct (IsPrepayment=Y, APP).
+    # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.32 EUR.
     Then Fact_Acct records balances for documents lcPayment are matching
-      | AccountConceptualName | AcctBalance |
-      | V_Prepayment_Acct     | -20596.32   |
+      | AccountConceptualName | SourceBalance  |
+      | V_Prepayment_Acct     | 20596.32 EUR   |
 
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
@@ -546,10 +545,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | C_Payment_ID.Identifier | OpenAmt  |
       | customerPayment         | 20596.31 |
 
-    # Accounting: payment posts to V_Prepayment_Acct (IsPrepayment=Y, APP).
+    # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.31 EUR.
     Then Fact_Acct records balances for documents customerPayment are matching
-      | AccountConceptualName | AcctBalance |
-      | V_Prepayment_Acct     | -20596.31   |
+      | AccountConceptualName | SourceBalance  |
+      | V_Prepayment_Acct     | 20596.31 EUR   |
 
     # ── R1: line A received 195 PCE (ordered 196, 1 short) ──
     # HU receipt: QtyCUsPerTU=195 → 1 HU with 195 PCE → receipt r1 QtyEntered=195.
