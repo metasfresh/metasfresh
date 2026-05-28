@@ -21,6 +21,7 @@
  */
 package de.metas.material.planning.interceptor;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,6 +44,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class AD_Workflow
 {
+	private static final AdMessageKey MSG_FirstNodeInvalid = AdMessageKey.of("PPRouting_FirstNodeInvalid");
+
 	@ModelChange(
 			timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ifColumnsChanged = I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID)
@@ -60,25 +63,26 @@ public class AD_Workflow
 		final I_AD_WF_Node targetNode = InterfaceWrapperHelper.load(wfNodeId, I_AD_WF_Node.class);
 		if (targetNode == null)
 		{
-			throw new AdempiereException("@PPRouting_FirstNodeInvalid@ - target AD_WF_Node_ID=" + wfNodeId + " not found");
+			throw new AdempiereException(MSG_FirstNodeInvalid, "target AD_WF_Node_ID=" + wfNodeId + " not found");
 		}
 
 		if (!targetNode.isActive())
 		{
-			throw new AdempiereException("@PPRouting_FirstNodeInvalid@ - target AD_WF_Node_ID=" + wfNodeId + " is inactive");
+			throw new AdempiereException(MSG_FirstNodeInvalid, "target AD_WF_Node_ID=" + wfNodeId + " is inactive");
 		}
 
 		if (targetNode.getAD_Workflow_ID() != workflow.getAD_Workflow_ID())
 		{
-			throw new AdempiereException("@PPRouting_FirstNodeInvalid@ - target AD_WF_Node_ID=" + wfNodeId
-					+ " belongs to a different workflow (AD_Workflow_ID=" + targetNode.getAD_Workflow_ID()
-					+ "), expected AD_Workflow_ID=" + workflow.getAD_Workflow_ID());
+			throw new AdempiereException(MSG_FirstNodeInvalid,
+					"target AD_WF_Node_ID=" + wfNodeId
+							+ " belongs to a different workflow (AD_Workflow_ID=" + targetNode.getAD_Workflow_ID()
+							+ "), expected AD_Workflow_ID=" + workflow.getAD_Workflow_ID());
 		}
 
 		if (targetNode.getS_Resource_ID() <= 0)
 		{
-			throw new AdempiereException("@PPRouting_FirstNodeInvalid@ - target AD_WF_Node_ID=" + wfNodeId
-					+ " has no S_Resource_ID; the routing-loader filters such nodes out");
+			throw new AdempiereException(MSG_FirstNodeInvalid,
+					"target AD_WF_Node_ID=" + wfNodeId + " has no S_Resource_ID; the routing-loader filters such nodes out");
 		}
 	}
 }

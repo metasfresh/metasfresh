@@ -22,6 +22,7 @@
 
 package de.metas.material.planning.interceptor;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingId;
@@ -37,6 +38,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AD_WF_Node
 {
+	private static final AdMessageKey MSG_CannotDeactivateFirstNode = AdMessageKey.of("PPRouting_CannotDeactivateFirstNode");
+	private static final AdMessageKey MSG_CannotDeleteFirstNode = AdMessageKey.of("PPRouting_CannotDeleteFirstNode");
+	private static final AdMessageKey MSG_FirstNodeRequiresResource = AdMessageKey.of("PPRouting_FirstNodeRequiresResource");
+
 	final IPPRoutingRepository ppRoutingRepo = Services.get(IPPRoutingRepository.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -78,7 +83,7 @@ public class AD_WF_Node
 
 		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
 		{
-			throw new AdempiereException("@PPRouting_CannotDeactivateFirstNode@");
+			throw new AdempiereException(MSG_CannotDeactivateFirstNode);
 		}
 	}
 
@@ -93,7 +98,7 @@ public class AD_WF_Node
 
 		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
 		{
-			throw new AdempiereException("@PPRouting_CannotDeleteFirstNode@");
+			throw new AdempiereException(MSG_CannotDeleteFirstNode);
 		}
 	}
 
@@ -116,7 +121,7 @@ public class AD_WF_Node
 
 		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
 		{
-			throw new AdempiereException("@PPRouting_FirstNodeRequiresResource@");
+			throw new AdempiereException(MSG_FirstNodeRequiresResource);
 		}
 	}
 
