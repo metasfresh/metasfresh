@@ -518,10 +518,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 
-				// IsPrepayment overrides the default bank-clearing account on both sides.
-				// Must be checked BEFORE the PurchasePayment branch — otherwise an AP prepayment
-				// would resolve to B_PaymentSelect_Acct and the V_Prepayment account opened by
-				// Doc_Payment would never be cleared.
+				// IsPrepayment must come first — see method Javadoc
 				final boolean isPrepayment = StringUtils.toBoolean(rs.getString(4));
 				if (isPrepayment)
 				{

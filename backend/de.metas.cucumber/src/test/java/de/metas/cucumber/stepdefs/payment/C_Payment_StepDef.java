@@ -322,6 +322,8 @@ public class C_Payment_StepDef
 				.map(invoiceTable::getId)
 				.orElse(null);
 
+		final boolean isPrepayment = row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment).orElse(false);
+
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
@@ -332,6 +334,7 @@ public class C_Payment_StepDef
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
+				.prepayment(isPrepayment)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 

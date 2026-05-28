@@ -651,3 +651,47 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
       | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1Partial  |
       | BL                | r2         | 37092.00 | 25964.40 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2Final    |
+
+
+  Scenario: S6 - V_Prepayment cleared by allocation — vendor advance payment + invoice (regression: DocLine_Allocation.getPaymentAcct prepayment-before-PurchasePayment)
+
+    # ── Product + price for S6 (standalone accounting regression — no PO or pay-schedule) ──
+    And metasfresh contains M_Products:
+      | Identifier |
+      | s6_product |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_purchase           | s6_product   | 5000.00  | PCE      |
+
+    # ── Vendor invoice ──
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | s6_invoice | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | s6_line    | s6_invoice   | s6_product   | 1 PCE       |
+    And the invoice identified by s6_invoice is completed
+
+    # ── Vendor prepayment — IsPrepayment=Y causes Doc_Payment to post to V_Prepayment_Acct ──
+    # Bug (pre-fix): allocation resolved B_PaymentSelect_Acct instead → V_Prepayment stayed permanently open.
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID | OPT.IsPrepayment |
+      | s6_payment | vendor        | 5000 EUR  | false     | org_EUR_account     | true             |
+    And the payment identified by s6_payment is completed
+
+    # ── Allocate payment to invoice ──
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID |
+      | s6_invoice   | s6_payment   |
+    And validate C_AllocationLines
+      | C_Invoice_ID | C_Payment_ID | C_AllocationHdr_ID |
+      | s6_invoice   | s6_payment   | s6_alloc           |
+
+    # ── Core assertion: V_Prepayment and V_Liability must both net to zero ──
+    # V_Prepayment_Acct: opened by payment posting, reversed by allocation → net 0
+    # V_Liability_Acct:  opened by invoice posting, reversed by allocation → net 0
+    # Regression: without the fix the allocation used B_PaymentSelect_Acct → V_Prepayment stayed non-zero.
+    Then Fact_Acct records balances for documents s6_payment,s6_invoice,s6_alloc are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | 0           |
+      | V_Liability_Acct      | 0           |
