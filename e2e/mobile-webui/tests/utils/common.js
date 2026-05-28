@@ -72,7 +72,7 @@ export const expectErrorToast = async (title, func, toastValidator) => {
             // Grace period: if func() returned cleanly but a toast is still pending, give
             // React time to render before declaring "not detected". The original Promise.race
             // could lose against a ~20ms-late toast render under CI load, producing false
-            // "not detected" failures (me03#29474). The hang-on-error semantic of Promise.race
+            // "not detected" failures. The hang-on-error semantic of Promise.race
             // is preserved: if func() never returns (waiting for a screen that won't come),
             // we never reach this sleep and the toast branch wins as before.
             await new Promise(resolve => setTimeout(resolve, 2000));
