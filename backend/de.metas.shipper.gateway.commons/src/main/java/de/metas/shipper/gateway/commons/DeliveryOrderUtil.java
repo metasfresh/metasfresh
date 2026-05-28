@@ -33,6 +33,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -113,7 +114,8 @@ public final class DeliveryOrderUtil
 		final String name = CoalesceUtil.firstNotEmptyTrimmedNotNull(contactPersonName, bPartner.getName());
 
 		final String contactPersonPhoneNumber = contact != null ? contact.getPhone() : null;
-		final String phoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
+		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
+		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
 
 		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
 		final String emailAddress = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartner.getEMail());
