@@ -1,5 +1,5 @@
 -- 2026-05-27T00:00:00.000Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545730,0,TO_TIMESTAMP('2026-05-27 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',$msg$Bestandteil Handelsstückliste$msg$,'I',TO_TIMESTAMP('2026-05-27 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Bestandteil_Handelsstueckliste')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545730 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-27 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',$msg$Bestandteil Handelsstückliste$msg$,'I',TO_TIMESTAMP('2026-05-27 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'BundleComponentWithoutCharge')
 ;
 
 -- 2026-05-27T00:00:00.001Z
