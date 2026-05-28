@@ -106,11 +106,10 @@ class TaxDeclarationDocumentHandlerTest
 	@Test
 	public void completeIt_onCorrection_clearsOriginalIsCorrectionNeeded()
 	{
-		// Given: a LOCKED Original with IsCorrectionNeeded='Y' + CorrectionNeededReason='something'
+		// Given: a LOCKED Original with IsCorrectionNeeded='Y'
 		// (must be Processed=Y so the Iter 7 Correction-lifecycle precondition holds.)
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		original.setIsCorrectionNeeded(true);
-		original.setCorrectionNeededReason("Test correction reason");
 		InterfaceWrapperHelper.save(original);
 
 		// AND: a draft Correction pointing to it, with a Line so completeIt's NoLinesYet check passes
@@ -129,7 +128,6 @@ class TaxDeclarationDocumentHandlerTest
 		// copy of the Original via repo.getById, so the local 'original' reference is stale.)
 		final I_C_TaxDeclaration reloadedOriginal = InterfaceWrapperHelper.load(original.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
 		Assertions.assertThat(reloadedOriginal.isCorrectionNeeded()).isFalse();
-		Assertions.assertThat(reloadedOriginal.getCorrectionNeededReason()).isNull();
 	}
 
 	@Test
