@@ -653,7 +653,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | BL                | r2         | 37092.00 | 25964.40 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2Final    |
 
 
-  Scenario: S6 - V_Prepayment cleared by allocation — vendor advance payment + invoice (regression: DocLine_Allocation.getPaymentAcct prepayment-before-PurchasePayment)
+  Scenario: S6 - Vendor advance payment (IsPrepayment=Y) allocation must clear V_Prepayment_Acct
 
     # ── Product + price for S6 (standalone accounting regression — no PO or pay-schedule) ──
     And metasfresh contains M_Products:
@@ -675,8 +675,8 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # ── Vendor prepayment — IsPrepayment=Y causes Doc_Payment to post to V_Prepayment_Acct ──
     # Bug (pre-fix): allocation resolved B_PaymentSelect_Acct instead → V_Prepayment stayed permanently open.
     And metasfresh contains C_Payment
-      | Identifier | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID | OPT.IsPrepayment |
-      | s6_payment | vendor        | 5000 EUR  | false     | org_EUR_account     | true             |
+      | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | IsPrepayment |
+      | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | true         |
     And the payment identified by s6_payment is completed
 
     # ── Allocate payment to invoice ──
