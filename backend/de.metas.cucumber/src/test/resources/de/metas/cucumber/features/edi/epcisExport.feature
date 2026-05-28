@@ -477,125 +477,225 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @Id:S29231_170
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S29231_170 — Two shipments share one LU with HA aggregates: each shipment sees only its own crates
+  Scenario: S29231_170 — Two mobile-picking jobs share one LU: each shipment's EPCIS JSON sees only its own crates
   ## Regression for get_epcis_events_json_fn (CTE ha_items_with_vtu, me03#29231).
-  ## Real-world LAF1010-3 scenario: a picker consolidates two orders' goods onto one
-  ## physical pallet. The EPCIS export for shipment-1 must only enumerate the HA
-  ## aggregates allocated to shipment-1 via m_hu_assignment.vhu_id — NOT every HA
-  ## aggregate physically present on the LU. Original bug: shipment-1's JSON
-  ## contained 35 crates instead of 15.
+  ## Production scenario LAF1010-3: picker A picks order 1 onto a fresh LU; picker B then
+  ## targets that same physical LU as the pick-to target for order 2. Both shipments
+  ## reference the same LU via m_hu_assignment. Before the fix, shipment-1's EPCIS JSON
+  ## also enumerated shipment-2's TUs (35 crates instead of 15).
+  ##
+  ## The test uses two real mobile picking jobs (LUPickingTarget.ofExistingHU on the
+  ## second job) to produce the bug shape via the production code path — no synthetic
+  ## HU injection. With IsAlwaysSplitHUsEnabled=N the LU survives across both jobs.
+    And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
+    And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | 200.0      | 200.0       | Y         |
+
     Given metasfresh contains M_Products:
       | Identifier   | GTIN          |
-      | p_S29231_140 | 4060000000147 |
+      | p_S29231_170 | 4060000000178 |
     And metasfresh contains M_PricingSystems
       | Identifier    |
-      | ps_S29231_140 |
+      | ps_S29231_170 |
     And metasfresh contains M_PriceLists
       | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_S29231_140 | ps_S29231_140      | DE           | EUR           | true  | false         | 2              |
+      | pl_S29231_170 | ps_S29231_170      | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier     | M_PriceList_ID |
-      | plv_S29231_140 | pl_S29231_140  |
+      | plv_S29231_170 | pl_S29231_170  |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | plv_S29231_140         | p_S29231_140 | 5.0      | PCE      | Normal           |
+      | plv_S29231_170         | p_S29231_170 | 5.0      | PCE      | Normal           |
 
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
-      | bp_S29231_140 | Y          | ps_S29231_140      | 9900000291400 |
+      | bp_S29231_170 | Y          | ps_S29231_170      | 9900000291700 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
+      | bpLoc_S29231_170 | 2900000291700 | bp_S29231_170 | true                | true         |
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_140 | true                 | 9900000291400         |
+      | bp_S29231_170 | true                 | 9900000291700         |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
-      | bp_S29231_140 | p_S29231_140 |
+      | bp_S29231_170 | p_S29231_170 |
 
     # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID        |
-      | pi_LU_S29231_140  |
-      | pi_TU_S29231_140  |
-      | pi_VHU_S29231_140 |
+      | M_HU_PI_ID       |
+      | pi_LU_S29231_170 |
+      | pi_TU_S29231_170 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent |
-      | piv_LU_S29231_140  | pi_LU_S29231_140  | LU          | Y         |
-      | piv_TU_S29231_140  | pi_TU_S29231_140  | TU          | Y         |
-      | piv_VHU_S29231_140 | pi_VHU_S29231_140 | V           | Y         |
+      | M_HU_PI_Version_ID | M_HU_PI_ID       | HU_UnitType | IsCurrent |
+      | piv_LU_S29231_170  | pi_LU_S29231_170 | LU          | Y         |
+      | piv_TU_S29231_170  | pi_TU_S29231_170 | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID   | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
-      | pii_LU_S29231_140 | piv_LU_S29231_140  | 20  | HU       | pi_TU_S29231_140  |
-      | pii_TU_S29231_140 | piv_TU_S29231_140  | 0   | PM       |                   |
+      | pii_LU_S29231_170 | piv_LU_S29231_170  | 20  | HU       | pi_TU_S29231_170  |
+      | pii_TU_S29231_170 | piv_TU_S29231_170  | 0   | MI       |                   |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | piv_LU_S29231_170  | SSCC18            |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID | Qty | ValidFrom  |
-      | pip_S29231_140          | pii_TU_S29231_140 | p_S29231_140 | 10  | 2020-01-01 |
+      | pip_S29231_170          | pii_TU_S29231_170 | p_S29231_170 | 10  | 2020-01-01 |
 
-    # Order A — 50 PCE → 5 TU. POReference is 10 digits so LPAD is a no-op.
+    # Mobile UI picking profile — IsAlwaysSplitHUsEnabled=N keeps the LU intact across both jobs
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | IsAlwaysSplitHUsEnabled |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | N                       |
+
+    # Source: aggregated LU with 150 PCE (5 TUs for order A + 10 TUs for order B)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_S29231_170 | 2026-05-25   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID  | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S29231_170 | invLine_S29231_170  | p_S29231_170 | 0       | 150      | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S29231_170'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID           |
+      | invLine_S29231_170 | pickFromCU_S29231_170 |
+
+    And transform CU to new LU
+      | sourceCU              | newLU                       | TU_PI_ID          | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU_S29231_170 | pickFromAggregatedLU        | pi_TU_S29231_170  | 10          | 15          |
+
+    # Order A — 50 PCE → 5 TUs. POReference is 10 digits so LPAD is a no-op.
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
-      | oA_S29231_140 | true    | bp_S29231_140 | 2026-05-25  | 1140000001  |
+      | oA_S29231_170 | true    | bp_S29231_170 | 2026-05-25  | 1170000001  |
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID    | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | olA_S29231_140 | oA_S29231_140 | p_S29231_140 | 50         | pip_S29231_140          |
+      | olA_S29231_170 | oA_S29231_170 | p_S29231_170 | 50         | pip_S29231_170          |
 
-    When the order identified by oA_S29231_140 is completed
+    When the order identified by oA_S29231_170 is completed
 
-    # Order B — 100 PCE → 10 TU. Distinct POReference.
+    # Order B — 100 PCE → 10 TUs. Distinct POReference.
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
-      | oB_S29231_140 | true    | bp_S29231_140 | 2026-05-25  | 1140000002  |
+      | oB_S29231_170 | true    | bp_S29231_170 | 2026-05-25  | 1170000002  |
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID    | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
-      | olB_S29231_140 | oB_S29231_140 | p_S29231_140 | 100        | pip_S29231_140          |
+      | olB_S29231_170 | oB_S29231_170 | p_S29231_170 | 100        | pip_S29231_170          |
 
-    When the order identified by oB_S29231_140 is completed
+    When the order identified by oB_S29231_170 is completed
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ssA_S29231_140 | olA_S29231_140 | N             |
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssA_S29231_170 | olA_S29231_170 | N             |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID | IsToRecompute |
-      | ssB_S29231_140 | olB_S29231_140 | N             |
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssB_S29231_170 | olB_S29231_170 | N             |
 
-    # Generate ONE shipment per schedule (independent M_InOuts that we'll then share an LU between)
-    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ssA_S29231_140        | D            | true                | false       |
-      | ssB_S29231_140        | D            | true                | false       |
+    # ─── Picking job 1: order A → new LU 'sharedLu' ─────────────────────────────────
+    And start picking job for sales order identified by oA_S29231_170
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by pi_LU_S29231_170
+    And pick lines
+      | PickingLine.byProduct | PickFromHU           | QtyPicked |
+      | p_S29231_170          | pickFromAggregatedLU | 5         |
+    And expect current picking target
+      | Existing_LU |
+      | sharedLu    |
+    And complete picking job
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID    |
-      | ssA_S29231_140        | ioA_S29231_140 |
-    Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID    |
-      | ssB_S29231_140        | ioB_S29231_140 |
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus | REST.Context.M_InOut_ID |
+      | ssA_S29231_170        | ioA_S29231_170 | CO            | ioA_S29231_170_ID       |
 
-    # ─── Create ONE shared LU with two HA aggregates via real BL ────────────────────
-    # Without the bug fix, shipment_A's EPCIS would see BOTH HA aggregates (5+10=15 crates);
-    # with the fix it only sees the HA aggregate whose VTU is referenced by shipment_A's
-    # m_hu_assignment row (5 crates).
-    # Uses real metasfresh BL (InterfaceWrapperHelper + IHUAssignmentBL) instead of raw SQL.
-    And one shared LU created via BL with SSCC18 '987654321000001400' carries HA aggregates assigned to inout lines:
-      | M_InOut_ID     | crateCount |
-      | ioA_S29231_140 | 5          |
-      | ioB_S29231_140 | 10         |
+    # Stamp a deterministic SSCC18 on the shared LU so the EPCIS assertions can match it.
+    And M_HU_Attribute is changed
+      | M_HU_ID  | M_Attribute_ID.Value | Value              |
+      | sharedLu | SSCC18               | 987654321000001700 |
+
+    # ─── Picking job 2: order B targets the SAME LU (LUPickingTarget.ofExistingHU) ──
+    And start picking job for sales order identified by oB_S29231_170
+    And scan picking slot identified by 200.0
+    And set picking target as existing LU identified by sharedLu
+    And pick lines
+      | PickingLine.byProduct | PickFromHU           | QtyPicked |
+      | p_S29231_170          | pickFromAggregatedLU | 10        |
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus | REST.Context.M_InOut_ID |
+      | ssB_S29231_170        | ioB_S29231_170 | CO            | ioB_S29231_170_ID       |
+
+    # ─── Bind each DESADV (per order POReference → its own DESADV) ──────────────────
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | dA_S29231_170            | bp_S29231_170            | oA_S29231_170         |
+      | dB_S29231_170            | bp_S29231_170            | oB_S29231_170         |
 
     # ─── Shipment A: only its own 5 crates ───────────────────────────────────────────
-    When the EPCIS JSON export function is called for M_InOut identified by ioA_S29231_140
+    When the EPCIS JSON export function is called for M_InOut identified by ioA_S29231_170
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
-      | 987654321000001400 |
+      | 987654321000001700 |
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
-      | 0           | 987654321000001400 | 5          |
+      | 0           | 987654321000001700 | 5          |
 
     # ─── Shipment B: only its own 10 crates ──────────────────────────────────────────
-    When the EPCIS JSON export function is called for M_InOut identified by ioB_S29231_140
+    When the EPCIS JSON export function is called for M_InOut identified by ioB_S29231_170
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
-      | 987654321000001400 |
+      | 987654321000001700 |
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
-      | 0           | 987654321000001400 | 10         |
+      | 0           | 987654321000001700 | 10         |
+
+    # ─── DESADV-JSON regression via M_InOut_EDI_Export_JSON/invoke ───────────────────
+    # Exercises get_desadv_packs_json_fn's per-M_InOut filter through the production REST
+    # path. Without the SQL fix, the response for shipment A would also include shipment B's
+    # packs (and vice versa) because both DESADVs reference the same shared LU.
+    And the following API_Audit_Config records are created:
+      | Identifier   | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_170 | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+
+    # Shipment A → must return exactly 1 DESADV element (dA), 50 PCE delivered.
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioA_S29231_170_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | oA_S29231_170    | 50                   |
+
+    # Shipment B → must return exactly 1 DESADV element (dB), 100 PCE delivered.
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioB_S29231_170_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | oB_S29231_170    | 100                  |
