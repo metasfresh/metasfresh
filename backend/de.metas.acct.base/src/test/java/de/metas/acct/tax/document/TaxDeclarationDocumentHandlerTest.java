@@ -128,7 +128,7 @@ class TaxDeclarationDocumentHandlerTest
 		// AND: the Original's IsCorrectionNeeded flag is cleared (reload from DB — completeIt loads a fresh
 		// copy of the Original via repo.getById, so the local 'original' reference is stale.)
 		final I_C_TaxDeclaration reloadedOriginal = InterfaceWrapperHelper.load(original.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
-		Assertions.assertThat(reloadedOriginal.isIsCorrectionNeeded()).isFalse();
+		Assertions.assertThat(reloadedOriginal.isCorrectionNeeded()).isFalse();
 		Assertions.assertThat(reloadedOriginal.getCorrectionNeededReason()).isNull();
 	}
 
@@ -140,7 +140,7 @@ class TaxDeclarationDocumentHandlerTest
 		original.setIsCorrectionNeeded(true);
 		InterfaceWrapperHelper.save(original);
 		addLine(original);
-		final boolean expectedIsCorrectionNeeded = original.isIsCorrectionNeeded();
+		final boolean expectedIsCorrectionNeeded = original.isCorrectionNeeded();
 
 		// When: completeIt is called on the Original (not a Correction)
 		final String result = handler.completeIt(asDocFields(original));
@@ -151,6 +151,6 @@ class TaxDeclarationDocumentHandlerTest
 		Assertions.assertThat(original.getDocAction()).isEqualTo("RE");
 
 		// AND: the Original's IsCorrectionNeeded flag is NOT mutated
-		Assertions.assertThat(original.isIsCorrectionNeeded()).isEqualTo(expectedIsCorrectionNeeded);
+		Assertions.assertThat(original.isCorrectionNeeded()).isEqualTo(expectedIsCorrectionNeeded);
 	}
 }

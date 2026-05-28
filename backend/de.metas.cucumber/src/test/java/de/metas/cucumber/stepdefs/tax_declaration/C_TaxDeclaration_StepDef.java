@@ -97,7 +97,7 @@ public class C_TaxDeclaration_StepDef
 		{
 			decl.setProcessed(false);
 			decl.setIsCorrection(false);
-			decl.setC_TaxDeclaration_Original_ID(0); // 0 → NULL for FK columns
+			decl.setC_TaxDeclaration_Original_ID(-1);
 			decl.setDocStatus(IDocument.STATUS_Voided);
 			decl.setIsActive(false);
 			InterfaceWrapperHelper.saveRecord(decl);
@@ -202,7 +202,7 @@ public class C_TaxDeclaration_StepDef
 		final I_C_TaxDeclaration correction = InterfaceWrapperHelper.load(correctionRef.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
 		final I_C_TaxDeclaration original = InterfaceWrapperHelper.load(originalRef.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
 
-		assertThat(correction.isIsCorrection()).as("IsCorrection").isTrue();
+		assertThat(correction.isCorrection()).as("IsCorrection").isTrue();
 		assertThat(correction.getC_TaxDeclaration_Original_ID()).as("C_TaxDeclaration_Original_ID").isEqualTo(original.getC_TaxDeclaration_ID());
 		assertThat(correction.getC_Period_ID()).as("C_Period_ID inherited from Original").isEqualTo(original.getC_Period_ID());
 		assertThat(correction.getDateAcct()).as("DateAcct inherited from Original").isEqualTo(original.getDateAcct());
@@ -288,7 +288,7 @@ public class C_TaxDeclaration_StepDef
 		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
 		final I_C_TaxDeclaration reloaded = InterfaceWrapperHelper.load(decl.getC_TaxDeclaration_ID(), I_C_TaxDeclaration.class);
 		final boolean expected = "Y".equalsIgnoreCase(expectedFlag);
-		assertThat(reloaded.isIsCorrectionNeeded()).as("IsCorrectionNeeded").isEqualTo(expected);
+		assertThat(reloaded.isCorrectionNeeded()).as("IsCorrectionNeeded").isEqualTo(expected);
 	}
 
 	/** Set the declaration's {@code IsCorrectionNeeded} flag ({@code Y}/{@code N}) and save; when {@code Y}, writes a {@code "test-drift"} reason. Used to simulate drift in tests. */

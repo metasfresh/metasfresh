@@ -47,7 +47,7 @@ public class C_TaxDeclaration
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void enforceCorrectionInvariants(final I_C_TaxDeclaration td)
 	{
-		if (!td.isIsCorrection())
+		if (!td.isCorrection())
 		{
 			return;
 		}
@@ -57,7 +57,7 @@ public class C_TaxDeclaration
 		}
 		final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_Original_ID());
 		final I_C_TaxDeclaration original = taxDeclarationRepository.getById(originalId);
-		if (original.isIsCorrection())
+		if (original.isCorrection())
 		{
 			throw new AdempiereException(MSG_OriginalMustBeOriginal);
 		}

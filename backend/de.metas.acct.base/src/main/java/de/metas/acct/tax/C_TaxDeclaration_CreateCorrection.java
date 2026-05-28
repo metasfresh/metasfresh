@@ -26,7 +26,7 @@ public class C_TaxDeclaration_CreateCorrection extends JavaProcess implements IP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Tax declaration is not yet locked");
 		}
 
-		if (taxDeclaration.isIsCorrection())
+		if (taxDeclaration.isCorrection())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Cannot create correction of a correction");
 		}
