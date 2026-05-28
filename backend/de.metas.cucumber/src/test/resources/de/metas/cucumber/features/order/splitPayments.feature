@@ -176,6 +176,13 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | C_Payment_ID.Identifier | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt   |
       | lcPayment               | Y            | null         | lcInvoice           | 20596.32 |
 
+    # Accounting: payment posts to V_Prepayment_Acct (IsPrepayment=Y, APP).
+    # V_Prepayment_Acct is credited by the payment → balance = AmtAcctDr − AmtAcctCr = −20596.32.
+    # (No C_AllocationHdr in S1 — proforma payment never creates allocation lines.)
+    Then Fact_Acct records balances for documents lcPayment are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | -20596.32   |
+
     # The proforma flips to IsPaid=Y when its full payment completes — the regular
     # allocation-driven IsPaid update doesn't fire because proforma payments have no
     # C_AllocationLine rows; the C_Payment AFTER_COMPLETE interceptor sets the flag directly.
@@ -319,6 +326,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | Identifier | IsPaid |
       | lcInvoice  | Y      |
 
+    # Accounting: payment posts to V_Prepayment_Acct (IsPrepayment=Y, APP).
+    Then Fact_Acct records balances for documents lcPayment are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | -20596.32   |
+
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
       | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | P      |
@@ -352,6 +364,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
       | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | WP     |
       | BL                | 68654.40 | 48058.08 | null          | null          | 9999-12-01 | PR     |
+
+    # Accounting: original payment + reversal cancel each other → V_Prepayment nets to 0.
+    Then Fact_Acct records balances for documents lcPayment,lcPaymentReversal are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | 0           |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment reversal:
     # The reversal payment ends at DocStatus='RE' which the SUM-based paid-detection excludes,
@@ -529,6 +546,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | C_Payment_ID.Identifier | OpenAmt  |
       | customerPayment         | 20596.31 |
 
+    # Accounting: payment posts to V_Prepayment_Acct (IsPrepayment=Y, APP).
+    Then Fact_Acct records balances for documents customerPayment are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | -20596.31   |
+
     # ── R1: line A received 195 PCE (ordered 196, 1 short) ──
     # HU receipt: QtyCUsPerTU=195 → 1 HU with 195 PCE → receipt r1 QtyEntered=195.
     # receiptValue_R1 = round(OL_A_gross / 196 × 195, 2)
@@ -570,8 +592,8 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # AC #4: alloc = MIN(R1×0.30, prepay) = MIN(31807.99×0.30, 20596.31) = MIN(9542.40, 20596.31) = 9,542.40
     Then validate C_AllocationLines for invoice inv1Partial
-      | Amount   |
-      | -9542.40 |
+      | C_AllocationHdr_ID | Amount   |
+      | s5_alloc1          | -9542.40 |
 
     # AC #5: R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1Partial
     #        prepay.AvailableAmt = 20,596.31 − 9,542.40 = 11,053.91
@@ -624,8 +646,8 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # AC #8: alloc = remaining prepay = 11,053.91 (Final rule — full prepay consumed)
     Then validate C_AllocationLines for invoice inv2Final
-      | Amount    |
-      | -11053.91 |
+      | C_AllocationHdr_ID | Amount    |
+      | s5_alloc2          | -11053.91 |
 
     # AC #9: R2 sub-row → Status=Awaiting_Pay; prepay.AvailableAmt = 0
     Then the order identified by customerOrder has following pay schedules
@@ -642,6 +664,14 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then validate created invoices
       | Identifier | OpenAmt  |
       | inv2Final  | 26038.08 |
+
+    # Accounting: full prepay consumed — V_Prepayment and V_Liability both net to zero.
+    # customerPayment opened V_Prepayment; s5_alloc1 + s5_alloc2 closed it.
+    # inv1Partial + inv2Final opened V_Liability; the same allocs closed it.
+    Then Fact_Acct records balances for documents customerPayment,inv1Partial,inv2Final,s5_alloc1,s5_alloc2 are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | 0           |
+      | V_Liability_Acct      | 0           |
 
     # ── Final state: LC Paid; R1 + R2 both Awaiting_Pay; no remainder; Σ alloc = 20,596.31 ──
     # Σ alloc = 9,542.40 + 11,053.91 = 20,596.31 = full LC prepay consumed ✓
