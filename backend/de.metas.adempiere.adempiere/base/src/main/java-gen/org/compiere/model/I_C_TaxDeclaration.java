@@ -100,27 +100,6 @@ public interface I_C_TaxDeclaration
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Reason for Correction.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCorrectionNeededReason (@Nullable java.lang.String CorrectionNeededReason);
-
-	/**
-	 * Get Reason for Correction.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCorrectionNeededReason();
-
-	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_CorrectionNeededReason = new ModelColumn<>(I_C_TaxDeclaration.class, "CorrectionNeededReason", null);
-	String COLUMNNAME_CorrectionNeededReason = "CorrectionNeededReason";
-
-	/**
 	 * Set Period.
 	 * Period of the Calendar
 	 *
