@@ -209,3 +209,40 @@ test('Switch pick-from locator — round-robin wrap then pick + drop completes e
         });
     });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Switch pick-from locator — after switch, scanning an HU from the original locator yields an error', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.tag('F5114');
+    allure.story('mobileUI DD_Order picker cannot pick an HU whose locator does not match the (just-switched) from-locator');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ qtyToMove: 100 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+
+    const orderedLocatorIds = locatorIdsOrderedByValue(masterdata);
+    const startLocatorId = Number(await DistributionJobScreen.getPickFromLocator());
+    const startIdx = orderedLocatorIds.indexOf(startLocatorId);
+    expect(startIdx).toBeGreaterThanOrEqual(0);
+    const nextLocatorId = orderedLocatorIds[(startIdx + 1) % orderedLocatorIds.length];
+
+    await test.step('Switch to the next locator (HU1 now lives in the old, no-longer-current locator)', async () => {
+        await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId: nextLocatorId });
+    });
+
+    await test.step('Scan HU1 → expect "HU is not at the target trolley" error', async () => {
+        await DistributionJobScreen.clickLineButton({ index: 1 });
+        await DistributionLineScreen.scanHUToMove({
+            huQRCode: masterdata.handlingUnits.HU1.qrCode,
+            expectedQtyToMove: '100',
+            expectedError: `HU is not at the target trolley`,
+        });
+    });
+});
