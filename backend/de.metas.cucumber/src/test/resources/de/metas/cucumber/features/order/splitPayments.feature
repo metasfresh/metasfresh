@@ -611,6 +611,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then validate C_AllocationLines for invoice inv1Partial
       | C_AllocationHdr_ID | Amount   |
       | s5_alloc1          | -9542.40 |
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 9542.4 EUR  |             | s5_alloc1 |
+      | V_Prepayment_Acct     |             | 9542.4 EUR  | s5_alloc1 |
 
     # AC #5: R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1Partial
     #        prepay.AvailableAmt = 20,596.31 − 9,542.40 = 11,053.91
@@ -665,6 +669,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then validate C_AllocationLines for invoice inv2Final
       | C_AllocationHdr_ID | Amount    |
       | s5_alloc2          | -11053.91 |
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID |
+      | V_Liability_Acct      | 11053.91 EUR |              | s5_alloc2 |
+      | V_Prepayment_Acct     |              | 11053.91 EUR | s5_alloc2 |
 
     # AC #9: R2 sub-row → Status=Awaiting_Pay; prepay.AvailableAmt = 0
     Then the order identified by customerOrder has following pay schedules
@@ -687,14 +695,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # Note: V_Liability does NOT net to zero here — the prepayment (20596.31) only partially covers
     # the total invoices (68899.98). The remaining open liability stays until the invoices are fully paid.
     Then Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr   | AmtSourceCr   | Record_ID       |
-      | V_Prepayment_Acct     | 20596.31 EUR  |               | customerPayment |
-      | V_Liability_Acct      |               | 31807.99 EUR  | inv1Partial     |
-      | V_Liability_Acct      |               | 37091.99 EUR  | inv2Final       |
-      | V_Liability_Acct      | 9542.4 EUR    |               | s5_alloc1       |
-      | V_Prepayment_Acct     |               | 9542.4 EUR    | s5_alloc1       |
-      | V_Liability_Acct      | 11053.91 EUR  |               | s5_alloc2       |
-      | V_Prepayment_Acct     |               | 11053.91 EUR  | s5_alloc2       |
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID       |
+      | V_Prepayment_Acct     | 20596.31 EUR |              | customerPayment |
+      | V_Liability_Acct      | 9542.4 EUR   |              | s5_alloc1       |
+      | V_Prepayment_Acct     |              | 9542.4 EUR   | s5_alloc1       |
+      | V_Liability_Acct      | 11053.91 EUR |              | s5_alloc2       |
+      | V_Prepayment_Acct     |              | 11053.91 EUR | s5_alloc2       |
     Then Fact_Acct records balances for documents customerPayment,inv1Partial,inv2Final,s5_alloc1,s5_alloc2 are matching
       | AccountConceptualName | AcctBalance |
       | V_Prepayment_Acct     | 0           |
@@ -763,6 +769,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And validate C_AllocationLines
       | C_Invoice_ID | C_Payment_ID | C_AllocationHdr_ID |
       | s6_invoice   | s6_payment   | s6_alloc           |
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5000 EUR    |             | s6_alloc  |
+      | V_Prepayment_Acct     |             | 5000 EUR    | s6_alloc  |
 
     # ── Core assertion: V_Prepayment and V_Liability must both net to zero ──
     # V_Prepayment_Acct: opened by payment posting, reversed by allocation → net 0
@@ -771,7 +781,6 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     Then Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID  |
       | V_Prepayment_Acct     | 5000 EUR    |             | s6_payment |
-      | V_Liability_Acct      |             | 5000 EUR    | s6_invoice |
       | V_Liability_Acct      | 5000 EUR    |             | s6_alloc   |
       | V_Prepayment_Acct     |             | 5000 EUR    | s6_alloc   |
     Then Fact_Acct records balances for documents s6_payment,s6_invoice,s6_alloc are matching
