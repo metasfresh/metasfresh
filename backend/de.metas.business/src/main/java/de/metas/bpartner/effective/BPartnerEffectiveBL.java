@@ -95,7 +95,7 @@ public class BPartnerEffectiveBL
 	 *   <li>{@code Optional.of(n)} for {@code n &gt; 0} — explicit configured value.</li>
 	 * </ul>
 	 *
-	 * @see BPartnerProductEffectiveBL#getPurchaseTransportDaysIfSet(BPartnerId, ProductId, OrgId)
+	 * @see de.metas.bpartner_product.BPartnerProductEffectiveBL#getPurchaseTransportDaysIfSet(BPartnerId, de.metas.product.ProductId, OrgId)
 	 *      for the higher-priority vendor-product variant that chains into this method.
 	 */
 	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
@@ -222,8 +222,6 @@ public class BPartnerEffectiveBL
 		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
 		return parentGroupId != null ? bpGroupDAO.getById(parentGroupId) : null;
 	}
-
-
 
 	@Nullable
 	private <T, V> T getEffectiveValue(
