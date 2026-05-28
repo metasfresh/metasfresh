@@ -237,12 +237,12 @@ test('Switch pick-from locator — after switch, scanning an HU from the origina
         await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId: nextLocatorId });
     });
 
-    await test.step('Scan HU1 → expect "locator does not match" error', async () => {
+    await test.step('Scan HU1 → expect "HU is not at the target trolley" error', async () => {
         await DistributionJobScreen.clickLineButton({ index: 1 });
         await DistributionLineScreen.scanHUToMove({
             huQRCode: masterdata.handlingUnits.HU1.qrCode,
             expectedQtyToMove: '100',
-            expectedError: `The HU's locator does not match the order's locator.`,
+            expectedError: `HU is not at the target trolley`,
         });
     });
 });
