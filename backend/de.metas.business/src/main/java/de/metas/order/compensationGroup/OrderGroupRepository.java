@@ -6,8 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -55,7 +53,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -86,7 +83,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
-	private static final AdMessageKey MSG_BESTANDTEIL_HANDELSSTUECKLISTE = AdMessageKey.of("Bestandteil_Handelsstueckliste");
+	/**
+	 * Ref-list code for AD_Reference 541968 ("Reason for without charge"), entry 'B' = "Bestandteil Handelsstückliste".
+	 * Auto-set on a component order line when its template line has IsWithoutCharge=Y.
+	 */
+	private static final String REASON_BESTANDTEIL_HANDELSSTUECKLISTE = "B";
 
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -790,7 +791,7 @@ public class OrderGroupRepository implements GroupRepository
 		if (from.isWithoutCharge())
 		{
 			orderLine.setIsWithoutCharge(true);
-			orderLine.setReason(Services.get(IMsgBL.class).getMsg(getCtx(orderLine), MSG_BESTANDTEIL_HANDELSSTUECKLISTE));
+			orderLine.setReason(REASON_BESTANDTEIL_HANDELSSTUECKLISTE);
 		}
 
 		orderLineBL.save(orderLine);

@@ -76,7 +76,7 @@ import de.metas.util.Services;
  */
 public class OrderGroupRepositoryTest
 {
-	private static final String REASON_TEXT = "Bestandteil Handelsstückliste";
+	private static final String REASON_TEXT = "B"; // AD_Reference 541968 "Reason for without charge" — value 'B' = Bestandteil Handelsstückliste
 
 	private UomId uomId;
 	private ProductId productId;
@@ -105,9 +105,6 @@ public class OrderGroupRepositoryTest
 
 		// Register stub IOrderLineBL (concrete class, not Mockito mock, to avoid proxy-cast issues).
 		Services.registerService(IOrderLineBL.class, new StubOrderLineBL(order));
-
-		// Register stub IMsgBL that returns REASON_TEXT for our key.
-		Services.registerService(IMsgBL.class, new StubMsgBL());
 
 		// Build repo (no advisors needed for this test).
 		repo = new OrderGroupRepository(
@@ -283,36 +280,4 @@ public class OrderGroupRepositoryTest
 		@Override public Money getLineGrossAmt(de.metas.interfaces.I_C_OrderLine orderLine) { throw new UnsupportedOperationException(); }
 	}
 
-	/**
-	 * Minimal IMsgBL stub: returns REASON_TEXT for our AD_Message key, key-string for others.
-	 */
-	private static class StubMsgBL implements IMsgBL
-	{
-		private String resolve(final AdMessageKey key)
-		{
-			return "Bestandteil_Handelsstueckliste".equals(key.toAD_Message()) ? REASON_TEXT : key.toAD_Message();
-		}
-
-		@Override public String getMsg(String lang, AdMessageKey key) { return resolve(key); }
-		@Override public String getMsg(String lang, AdMessageKey key, Object[] p) { return resolve(key); }
-		@Override public String getMsg(String lang, AdMessageKey key, List<Object> p) { return resolve(key); }
-		@Override public String getMsg(Properties ctx, AdMessageKey key) { return resolve(key); }
-		@Override public String getMsg(Properties ctx, AdMessageKey key, Object[] p) { return resolve(key); }
-		@Override public String getMsg(AdMessageKey key, List<Object> p) { return resolve(key); }
-		@Override public String getMsg(Properties ctx, AdMessageKey key, boolean text) { return resolve(key); }
-		@Override public String parseTranslation(Properties ctx, String msg) { return msg; }
-		@Override public String parseTranslation(String lang, String msg) { return msg; }
-		@Override public String translate(Properties ctx, String text) { return text; }
-		@Override public String translate(String lang, String text) { return text; }
-		@Override public String translate(Properties ctx, String text, boolean isSOTrx) { return text; }
-		@Override public ITranslatableString translatable(String text) { return TranslatableStrings.constant(text); }
-		@Override public ITranslatableString getTranslatableMsgText(AdMessageKey key, Object... p) { return TranslatableStrings.constant(resolve(key)); }
-		@Override public Map<String, String> getMsgMap(String lang, String prefix, boolean removePrefix) { return Collections.emptyMap(); }
-		@Override public void cacheReset() { /* no-op */ }
-		@Override public String getBaseLanguageMsg(AdMessageKey key, Object... p) { return resolve(key); }
-		@Override public Optional<AdMessageId> getIdByAdMessage(AdMessageKey key) { return Optional.empty(); }
-		@Override public boolean isMessageExists(AdMessageKey key) { return false; }
-		@Override public Optional<AdMessageKey> getAdMessageKeyById(AdMessageId id) { return Optional.empty(); }
-		@Override @Nullable public String getErrorCode(AdMessageKey key) { return null; }
-	}
 }
