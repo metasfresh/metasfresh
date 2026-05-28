@@ -74,8 +74,8 @@ Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async
     # Attempting to change the schedule qty is rejected by the M_ShipmentSchedule.beforeSave guard
     # (the tx rolls back; the schedule's persisted value stays unchanged and no event is published).
     Then changing the M_ShipmentSchedule quantity is rejected:
-      | M_ShipmentSchedule_ID | QtyToDeliver_Override |
-      | shipmentSchedule      | 8                     |
+      | M_ShipmentSchedule_ID | QtyOrdered_Override |
+      | shipmentSchedule      | 8                   |
 
     # The DD_Order is untouched (still the original Completed one, qty 5).
     And after not more than 5s, the DD_Order linked to shipment schedule is found:

@@ -158,12 +158,15 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	/**
 	 * Classifies the reconcile action based on the truth-table:
 	 * <pre>
-	 * warehouseIsAutoDistributionOrder | scheduleActive | existingDDOrderId | action
-	 * false              | *              | *                 | NONE
-	 * true               | false          | null              | NONE
-	 * true               | false          | non-null          | VOID
-	 * true               | true           | null              | CREATE
-	 * true               | true           | non-null          | RECREATE
+	 * warehouseIsAutoDistributionOrder | scheduleRelevant (*) | existingDDOrderId | action
+	 * false              | *                    | *                 | NONE
+	 * true               | false                | null              | NONE
+	 * true               | false                | non-null          | VOID
+	 * true               | true                 | null              | CREATE
+	 * true               | true                 | non-null          | RECREATE
+	 *
+	 * (*) scheduleRelevant = IsActive=Y AND Processed=N AND IsClosed=N.
+	 *     Processed=Y or IsClosed=Y is treated the same as IsActive=N.
 	 * </pre>
 	 *
 	 * <p>Pure decision method — no DB queries. The caller is responsible for resolving
@@ -181,12 +184,14 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 
 		final boolean hasExistingDDOrder = existingDDOrderId != null;
 		final boolean scheduleActive = schedule.isActive();
+		final boolean scheduleTerminated = scheduleActive && (schedule.isProcessed() || schedule.isClosed());
+		final boolean scheduleRelevant = scheduleActive && !scheduleTerminated;
 
-		if (!scheduleActive && !hasExistingDDOrder)
+		if (!scheduleRelevant && !hasExistingDDOrder)
 		{
 			return DDOrderReconcileAction.NONE;
 		}
-		else if (!scheduleActive)
+		else if (!scheduleRelevant)
 		{
 			return DDOrderReconcileAction.VOID;
 		}

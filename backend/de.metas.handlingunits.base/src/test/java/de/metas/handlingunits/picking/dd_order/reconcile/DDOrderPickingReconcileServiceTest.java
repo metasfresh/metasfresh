@@ -422,6 +422,90 @@ class DDOrderPickingReconcileServiceTest
 	}
 
 	@Test
+	void classifyAction_returnsVOID_whenProcessedScheduleHasLiveDDOrder()
+	{
+		// packing warehouse, ACTIVE but Processed=Y schedule, existing live DD_Order => VOID
+		// (Processed=Y is treated the same as !scheduleActive)
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsAutoDistributionOrder(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		schedule.setProcessed(true);
+		save(schedule);
+
+		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
+		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(ddOrder);
+		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.VOID);
+	}
+
+	@Test
+	void classifyAction_returnsNONE_whenProcessedScheduleHasNoDDOrder()
+	{
+		// packing warehouse, ACTIVE but Processed=Y schedule, no existing DD_Order => NONE
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsAutoDistributionOrder(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		schedule.setProcessed(true);
+		save(schedule);
+
+		assertThat(service.classifyAction(schedule, null)).isEqualTo(DDOrderReconcileAction.NONE);
+	}
+
+	@Test
+	void classifyAction_returnsVOID_whenClosedScheduleHasLiveDDOrder()
+	{
+		// packing warehouse, ACTIVE but IsClosed=Y schedule, existing live DD_Order => VOID
+		// (IsClosed=Y is treated the same as !scheduleActive)
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsAutoDistributionOrder(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		schedule.setIsClosed(true);
+		save(schedule);
+
+		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
+		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(ddOrder);
+		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.VOID);
+	}
+
+	@Test
+	void classifyAction_returnsNONE_whenClosedScheduleHasNoDDOrder()
+	{
+		// packing warehouse, ACTIVE but IsClosed=Y schedule, no existing DD_Order => NONE
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsAutoDistributionOrder(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setIsActive(true);
+		schedule.setIsClosed(true);
+		save(schedule);
+
+		assertThat(service.classifyAction(schedule, null)).isEqualTo(DDOrderReconcileAction.NONE);
+	}
+
+	@Test
 	void resolveSourceWarehouse_returns_highestPriority_whenMultipleLinesMatch()
 	{
 		final WarehouseId sourceA = WarehouseId.ofRepoId(40);  // priorityNo=10 → highest priority

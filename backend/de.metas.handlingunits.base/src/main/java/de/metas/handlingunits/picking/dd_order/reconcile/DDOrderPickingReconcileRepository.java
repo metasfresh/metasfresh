@@ -69,14 +69,15 @@ public class DDOrderPickingReconcileRepository
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		// Main query: active schedules on a packing warehouse with no live DD_Order.
+		// Main query: active + not processed + not closed schedules on a packing warehouse with no live DD_Order.
 		//
-		// NOTE on "active": this definition (IsActive='Y', no Processed/IsClosed filter) intentionally
-		// matches DDOrderPickingReconcileService#classifyAction — the watchdog only republishes; the BL
-		// re-decides per schedule. If one changes, change both.
+		// NOTE: active + not processed + not closed — matches DDOrderPickingReconcileService#classifyAction.
+		// If one changes, change both.
 		final IQueryBuilder<I_M_ShipmentSchedule> scheduleQueryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
 
 		// Schedule must be on a packing EFFECTIVE warehouse, mirroring IShipmentScheduleEffectiveBL#getWarehouseId
 		// (Override-takes-priority) used by the BL. A plain OR over base/Override would wrongly include a schedule

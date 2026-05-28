@@ -66,10 +66,10 @@ Feature: DD_Order picking reconcile — update (void + recreate) and reverse (vo
 
   @from:cucumber
   Scenario: Changing the schedule quantity voids the old DD_Order and recreates a fresh one (picker not busy)
-    # Raise the effective qty to 8 via QtyToDeliver_Override; the M_ShipmentSchedule afterSave reconcile fires.
+    # Raise the effective qty to 8 via QtyOrdered_Override; the M_ShipmentSchedule afterSave reconcile fires.
     When the M_ShipmentSchedule quantity is changed:
-      | M_ShipmentSchedule_ID | QtyToDeliver_Override |
-      | shipmentSchedule      | 8                     |
+      | M_ShipmentSchedule_ID | QtyOrdered_Override |
+      | shipmentSchedule      | 8                   |
 
     # The new live DD_Order carries qty 8 and the schedule linkage; the old one is voided.
     Then after not more than 120s, the DD_Order linked to shipment schedule is found:
