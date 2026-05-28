@@ -607,8 +607,8 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And complete picking job
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus |
-      | ssA_S29231_170        | ioA_S29231_170 | CO            |
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus | REST.Context.M_InOut_ID |
+      | ssA_S29231_170        | ioA_S29231_170 | CO            | ioA_S29231_170_ID       |
 
     # Stamp a deterministic SSCC18 on the shared LU so the EPCIS assertions can match it.
     And M_HU_Attribute is changed
@@ -625,8 +625,14 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And complete picking job
 
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus |
-      | ssB_S29231_170        | ioB_S29231_170 | CO            |
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus | REST.Context.M_InOut_ID |
+      | ssB_S29231_170        | ioB_S29231_170 | CO            | ioB_S29231_170_ID       |
+
+    # ─── Bind each DESADV (per order POReference → its own DESADV) ──────────────────
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | dA_S29231_170            | bp_S29231_170            | oA_S29231_170         |
+      | dB_S29231_170            | bp_S29231_170            | oB_S29231_170         |
 
     # ─── Shipment A: only its own 5 crates ───────────────────────────────────────────
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S29231_170
@@ -645,3 +651,51 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000001700 | 10         |
+
+    # ─── DESADV-JSON regression via M_InOut_EDI_Export_JSON/invoke ───────────────────
+    # Exercises get_desadv_packs_json_fn's per-M_InOut filter through the production REST
+    # path. Without the SQL fix, the response for shipment A would also include shipment B's
+    # packs (and vice versa) because both DESADVs reference the same shared LU.
+    And the following API_Audit_Config records are created:
+      | Identifier   | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_S29231_170 | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+
+    # Shipment A → must return exactly 1 DESADV element (dA), 50 PCE delivered.
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioA_S29231_170_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | oA_S29231_170    | 50                   |
+
+    # Shipment B → must return exactly 1 DESADV element (dB), 100 PCE delivered.
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+    "processParameters": [
+    {
+      "name": "M_InOut_ID",
+      "value": "@ioB_S29231_170_ID@"
+    }
+  ]
+}
+    """
+    Then verify DESADV JSON export response has exactly 1 element matching:
+      | Order_Identifier | ExpectedQtyDelivered |
+      | oB_S29231_170    | 100                  |
