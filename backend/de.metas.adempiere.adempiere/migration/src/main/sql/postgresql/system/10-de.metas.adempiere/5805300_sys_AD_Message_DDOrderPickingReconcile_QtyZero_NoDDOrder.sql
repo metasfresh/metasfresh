@@ -6,15 +6,15 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-05-28:
 --   AD_MigrationScript  5805300 (this script)
---   AD_Message          545735  (DDOrderPickingReconcile_QtyZero_NoDDOrder)
+--   AD_Message          545735  (DDOrderPickingReconcile_QtyZero)
 
 -- 2026-05-28T01:00:00.000Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545735 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-28 01:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Kein DD_Order erzeugt: effektive QtyOrdered = {1} für M_ShipmentSchedule_ID={2}{3}.','I',TO_TIMESTAMP('2026-05-28 01:00:00','YYYY-MM-DD HH24:MI:SS'),100,'DDOrderPickingReconcile_QtyZero_NoDDOrder')
+VALUES (0,545735 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-28 01:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Kein DD_Order erzeugt: effektive QtyOrdered = {1} für M_ShipmentSchedule_ID={2}{3}.','I',TO_TIMESTAMP('2026-05-28 01:00:00','YYYY-MM-DD HH24:MI:SS'),100,'DDOrderPickingReconcile_QtyZero')
 ;
 
 -- 2026-05-28T01:00:01.000Z
-UPDATE AD_Message SET ErrorCode='DDOrderPickingReconcile_QtyZero_NoDDOrder', Updated=TO_TIMESTAMP('2026-05-28 01:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545735 /*From ID Server*/
+UPDATE AD_Message SET ErrorCode='DDOrderPickingReconcile_QtyZero', Updated=TO_TIMESTAMP('2026-05-28 01:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545735 /*From ID Server*/
 ;
 
 -- Seed AD_Message_Trl for every active system language using the base (DE) text.

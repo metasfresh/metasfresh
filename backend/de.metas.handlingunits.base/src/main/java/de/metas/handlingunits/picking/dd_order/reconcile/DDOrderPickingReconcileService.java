@@ -46,7 +46,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
 	@VisibleForTesting
-	static final AdMessageKey MSG_DDOrderPickingReconcile_QtyZero_NoDDOrder = AdMessageKey.of("DDOrderPickingReconcile_QtyZero_NoDDOrder");
+	static final AdMessageKey MSG_DDOrderPickingReconcile_QtyZero = AdMessageKey.of("DDOrderPickingReconcile_QtyZero");
 
 	// FQN trx-property key: avoids collisions with any other service that might register an
 	// after-commit accumulator under a shorter, easier-to-clash name.
@@ -127,7 +127,7 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				final boolean willVoidExisting = (action == DDOrderReconcileAction.RECREATE);
 				Loggables.addLog(
 						"{0}: effective QtyOrdered={1} for M_ShipmentSchedule_ID={2}; no DD_Order will be created{3}",
-						MSG_DDOrderPickingReconcile_QtyZero_NoDDOrder.toAD_Message(),
+						MSG_DDOrderPickingReconcile_QtyZero.toAD_Message(),
 						effectiveQtyOrdered,
 						scheduleId.getRepoId(),
 						willVoidExisting ? " and the existing DD_Order will be voided" : "");
