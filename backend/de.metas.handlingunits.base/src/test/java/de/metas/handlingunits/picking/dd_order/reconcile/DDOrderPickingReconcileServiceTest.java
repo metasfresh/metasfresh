@@ -81,12 +81,6 @@ class DDOrderPickingReconcileServiceTest
 	}
 
 	@Test
-	void scaffold_compiles()
-	{
-		// placeholder — actual tests come in T8-T16
-	}
-
-	@Test
 	void isPickerBusy_returnsTrueWhenPickingJobLineReferencesShipmentSchedule()
 	{
 		// create a shipment schedule (simulated by repoId = 100)
