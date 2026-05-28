@@ -12,6 +12,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.product.ProductId;
@@ -83,12 +84,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
-	/**
-	 * Ref-list code for AD_Reference 541968 ("Reason for without charge"), entry 'B' = "Bestandteil Handelsstückliste".
-	 * Auto-set on a component order line when its template line has IsWithoutCharge=Y.
-	 */
-	private static final String REASON_BESTANDTEIL_HANDELSSTUECKLISTE = "B";
-
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -791,7 +786,7 @@ public class OrderGroupRepository implements GroupRepository
 		if (from.isWithoutCharge())
 		{
 			orderLine.setIsWithoutCharge(true);
-			orderLine.setReason(REASON_BESTANDTEIL_HANDELSSTUECKLISTE);
+			orderLine.setReason(OrderLineReasonForWithoutCharge.BundleComponent.getCode());
 		}
 
 		orderLineBL.save(orderLine);

@@ -54,8 +54,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  *     <li>{@code C_UOM_ID} (required) — X12DE355 code of the UOM (e.g., "PCE", "KGM")</li>
  *     <li>{@code SeqNo} (required) — sequence number for ordering</li>
  *     <li>{@code IsWithoutCharge} (optional, default N) — if Y, the component order line created from
- *         this template line will have its price zeroed out and {@code Reason} set to the auto-pricing
- *         constant (e.g., "Bestandteil Handelsstückliste").</li>
+ *         this template line will have its price zeroed out and {@code Reason} set to the
+ *         ref-list code {@code "B"} (AD_Reference 541968 "Reason for without charge").</li>
  * </ul>
  */
 @RequiredArgsConstructor

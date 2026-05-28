@@ -37,6 +37,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
@@ -76,7 +77,7 @@ import de.metas.util.Services;
  */
 public class OrderGroupRepositoryTest
 {
-	private static final String REASON_TEXT = "B"; // AD_Reference 541968 "Reason for without charge" — value 'B' = Bestandteil Handelsstückliste
+	private static final String REASON_TEXT = OrderLineReasonForWithoutCharge.BundleComponent.getCode();
 
 	private UomId uomId;
 	private ProductId productId;
