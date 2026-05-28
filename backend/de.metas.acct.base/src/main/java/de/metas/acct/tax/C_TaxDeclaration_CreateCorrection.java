@@ -21,7 +21,7 @@ public class C_TaxDeclaration_CreateCorrection extends JavaProcess implements IP
 		}
 
 		final I_C_TaxDeclaration taxDeclaration = context.getSelectedModel(I_C_TaxDeclaration.class);
-		if (!taxDeclaration.isProcessed())
+		if (taxDeclaration == null || !taxDeclaration.isProcessed())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Tax declaration is not yet locked");
 		}
@@ -37,7 +37,8 @@ public class C_TaxDeclaration_CreateCorrection extends JavaProcess implements IP
 	@Override
 	protected String doIt()
 	{
-		taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(getRecord_ID()));
+		final TaxDeclarationId correctionId = taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(getRecord_ID()));
+		getResult().setRecordToOpen(I_C_TaxDeclaration.Table_Name, correctionId);
 		return MSG_OK;
 	}
 }
