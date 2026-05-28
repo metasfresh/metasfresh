@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.commons.model;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
@@ -36,14 +38,33 @@ public class CarrierProductServiceAllocRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public boolean exists(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierServiceId serviceId)
+	private final CCache<Integer, ImmutableSet<String>> cache = CCache.<Integer, ImmutableSet<String>>builder()
+			.tableName(I_Carrier_Product_Service_Alloc.Table_Name)
+			.build();
+
+	private ImmutableSet<String> getAllocSet()
+	{
+		return cache.getOrLoadNonNull(0, this::loadAllAllocKeys);
+	}
+
+	private ImmutableSet<String> loadAllAllocKeys()
 	{
 		return queryBL.createQueryBuilder(I_Carrier_Product_Service_Alloc.class)
-				.addEqualsFilter(I_Carrier_Product_Service_Alloc.COLUMNNAME_Carrier_Product_ID, carrierProductId)
-				.addEqualsFilter(I_Carrier_Product_Service_Alloc.COLUMNNAME_Carrier_Service_ID, serviceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.anyMatch(); // at most one active row per pair — enforced by carrier_product_service_alloc_active_uidx
+				.stream()
+				.map(r -> buildKey(r.getCarrier_Product_ID(), r.getCarrier_Service_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public boolean exists(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierServiceId serviceId)
+	{
+		return getAllocSet().contains(buildKey(carrierProductId.getRepoId(), serviceId.getRepoId()));
+	}
+
+	private static String buildKey(final int carrierProductId, final int serviceId)
+	{
+		return carrierProductId + "#" + serviceId;
 	}
 
 	public void save(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierServiceId serviceId)
