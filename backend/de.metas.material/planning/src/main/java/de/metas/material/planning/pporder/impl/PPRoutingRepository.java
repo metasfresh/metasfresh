@@ -148,6 +148,16 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		}
 		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofRepoId(routingId, wfNodeId);
 
+		final boolean firstActivityInActivities = activities.stream()
+				.map(PPRoutingActivity::getId)
+				.anyMatch(firstActivityId::equals);
+		if (!firstActivityInActivities)
+		{
+			throw new AdempiereException("@PPRouting_FirstNodeInvalid@ - workflow=" + routingRecord.getName()
+					+ " (AD_Workflow_ID=" + routingId.getRepoId() + "), first node AD_WF_Node_ID=" + wfNodeId
+					+ " is not in the active node set (deactivated, different workflow, or missing S_Resource_ID)");
+		}
+
 		return PPRouting.builder()
 				.id(routingId)
 				.valid(routingRecord.isValid())
