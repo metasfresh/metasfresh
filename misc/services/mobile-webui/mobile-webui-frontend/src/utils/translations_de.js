@@ -5,6 +5,8 @@ const translations = {
       differentProduct: 'The scanned QR Product does not match',
     },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    InternalError:
+      'Bitte erneut versuchen. Sollte das Problem weiterhin auftreten, wenden Sie sich an den Support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Verbindung Fehler',
     },
@@ -89,6 +91,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
       scanLuOrLocator: 'Scannen LU oder Lagerplatz',
+      action: {
+        bulkActions: {
+          windowName: 'Massenaktionen',
+          closeScanner: 'Scanner schließen',
+          move: 'Verschieben',
+          moveSuccess: 'HU erfolgreich verschoben',
+          scanHUPlaceholder: 'HU scannen',
+          scanTargetPlaceholder: 'Ziellagerplatz scannen',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packzeile',
@@ -131,6 +143,7 @@ const translations = {
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
+      noMatchingLines: 'Keine passende Packzeile gefunden',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
