@@ -154,3 +154,58 @@ test('Switch pick-from locator — button hidden once picking has started', asyn
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: false });
     });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Switch pick-from locator — round-robin wrap then pick + drop completes end-to-end', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.tag('F5114');
+    allure.story('mobileUI DD_Order picker can complete a full pick-and-drop after round-robin wrapping back to the starting locator');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ qtyToMove: 100 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+
+    const orderedLocatorIds = locatorIdsOrderedByValue(masterdata);
+    const startLocatorId = Number(await DistributionJobScreen.getPickFromLocator());
+    let idx = orderedLocatorIds.indexOf(startLocatorId);
+    expect(idx).toBeGreaterThanOrEqual(0);
+
+    await test.step('Press switch 3 times — round-robin returns to the starting locator', async () => {
+        for (let press = 0; press < 3; press++) {
+            const expectNextLocatorId = orderedLocatorIds[(idx + 1) % orderedLocatorIds.length];
+            await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId });
+            idx = (idx + 1) % orderedLocatorIds.length;
+        }
+        expect(Number(await DistributionJobScreen.getPickFromLocator())).toEqual(startLocatorId);
+    });
+
+    await test.step('After wrap: pick HU1 from the (now-restored) starting locator', async () => {
+        await DistributionJobScreen.clickLineButton({ index: 1 });
+        await DistributionLineScreen.scanHUToMove({
+            huQRCode: masterdata.handlingUnits.HU1.qrCode,
+            qtyToMove: '100',
+            expectedQtyToMove: '100',
+        });
+        await DistributionLineScreen.goBack();
+    });
+
+    await test.step('Drop HU1 to target warehouse + assert backend state', async () => {
+        await DistributionJobScreen.dropAllTo({
+            dropToLocatorQRCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode,
+            expectNextScreen: 'DistributionJobsListScreen',
+        });
+        await Backend.expect({
+            title: 'After switch + pick + drop: HU1 is in wh2',
+            hus: {
+                HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
+            },
+        });
+    });
+});
