@@ -720,10 +720,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     And the payment identified by s6_payment is completed
 
     # ── Post-payment: V_Prepayment_Acct must be non-zero (payment opened it) ──
-    # SourceBalance (source-currency amount) avoids accounting-schema conversion uncertainty.
+    # AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +5000.
+    # SourceBalance (source-currency amount) avoids accounting-schema FX conversion uncertainty.
     Then Fact_Acct records balances for documents s6_payment are matching
       | AccountConceptualName | SourceBalance |
-      | V_Prepayment_Acct     | -5000 EUR     |
+      | V_Prepayment_Acct     | 5000 EUR      |
 
     # ── Allocate payment to invoice ──
     And allocate payments to invoices
