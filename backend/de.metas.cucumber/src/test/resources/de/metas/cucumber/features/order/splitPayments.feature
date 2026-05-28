@@ -375,10 +375,10 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # Accounting: original payment + reversal cancel each other → V_Prepayment nets to 0.
     Then Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID         |
-      | V_Prepayment_Acct     | 20596.32 EUR |              | lcPayment         |
-      | B_InTransit_Acct      |              | 20596.32 EUR | lcPayment         |
-      | V_Prepayment_Acct     |              | 20596.32 EUR | lcPaymentReversal |
-      | B_InTransit_Acct      | 20596.32 EUR |              | lcPaymentReversal |
+      | V_Prepayment_Acct     | 20596.32 EUR  |               | lcPayment         |
+      | B_InTransit_Acct      |               | 20596.32 EUR  | lcPayment         |
+      | V_Prepayment_Acct     | -20596.32 EUR |               | lcPaymentReversal |
+      | B_InTransit_Acct      |               | -20596.32 EUR | lcPaymentReversal |
     Then Fact_Acct records balances for documents lcPayment,lcPaymentReversal are matching
       | AccountConceptualName | AcctBalance |
       | V_Prepayment_Acct     | 0           |
@@ -696,6 +696,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # the total invoices (68899.98). The remaining open liability stays until the invoices are fully paid.
     Then Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID       |
+      | *                     |              |              | customerPayment |
       | V_Prepayment_Acct     | 20596.31 EUR |              | customerPayment |
       | V_Liability_Acct      | 9542.4 EUR   |              | s5_alloc1       |
       | V_Prepayment_Acct     |              | 9542.4 EUR   | s5_alloc1       |
@@ -780,6 +781,7 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
     # Regression: without the fix the allocation used B_PaymentSelect_Acct → V_Prepayment stayed non-zero.
     Then Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID  |
+      | *                     |             |             | s6_payment |
       | V_Prepayment_Acct     | 5000 EUR    |             | s6_payment |
       | V_Liability_Acct      | 5000 EUR    |             | s6_alloc   |
       | V_Prepayment_Acct     |             | 5000 EUR    | s6_alloc   |
