@@ -589,7 +589,7 @@ $P{ExcludeYearEndBooking}
 	</background>
 	<pageHeader>
 		<band height="103" splitType="Stretch">
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="10" width="594" height="13" uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893"/>
 				<textElement textAlignment="Center" markup="none">
 					<font fontName="Arial" size="10" isBold="true"/>
@@ -624,21 +624,21 @@ $P{ExcludeYearEndBooking}
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="44" width="594" height="12" uuid="15cb15a1-6dd2-4b73-a4f6-8f0fbce298ae"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="56" width="593" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a"/>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="27" width="594" height="13" uuid="cff0872e-77e9-4718-9558-cd19d401f2bd"/>
 				<textElement textAlignment="Center" markup="none">
 					<font fontName="Arial" size="10" isBold="true"/>
