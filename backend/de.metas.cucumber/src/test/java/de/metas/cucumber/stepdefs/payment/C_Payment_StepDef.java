@@ -120,8 +120,12 @@ public class C_Payment_StepDef
 	 *   <b>PayAmt</b> — (required) amount with currency code, e.g. {@code 5000 EUR}<br>
 	 *   <b>IsReceipt</b> — (required) {@code true} = inbound (AR), {@code false} = outbound (AP)<br>
 	 *   <b>C_BP_BankAccount_ID</b> — (optional, identifier-ref) bank account; defaults to the org's EUR account<br>
-	 *   <b>IsPrepayment</b> — (optional) when {@code true}, {@link org.compiere.acct.Doc_Payment} posts to
-	 *                          {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP); default {@code false}<br>
+	 *   <b>Proforma_Invoice_ID</b> — (optional, identifier-ref) links the payment to a proforma invoice;
+	 *                                {@link org.compiere.model.MPayment} {@code beforeSave} auto-sets
+	 *                                {@code IsPrepayment=Y} when this is non-null, causing
+	 *                                {@link org.compiere.acct.Doc_Payment} to post to
+	 *                                {@code C_Prepayment_Acct} (AR) or {@code V_Prepayment_Acct} (AP).
+	 *                                {@code PayAmt} must equal the proforma's {@code GrandTotal}.<br>
 	 *   <b>C_Invoice_ID</b> — (optional, identifier-ref) pre-linked invoice<br>
 	 * @cucumber.depends {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData},
 	 *                   {@link de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData},
@@ -129,8 +133,8 @@ public class C_Payment_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_Payment
-	 *   | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | IsPrepayment |
-	 *   | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | true         |
+	 *   | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+	 *   | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | s6_proforma         |
 	 * </pre>
 	 */
 	@And("metasfresh contains C_Payment")
@@ -345,7 +349,9 @@ public class C_Payment_StepDef
 				.map(invoiceTable::getId)
 				.orElse(null);
 
-		final boolean isPrepayment = row.getAsOptionalBoolean(I_C_Payment.COLUMNNAME_IsPrepayment).orElse(false);
+		final InvoiceId proformaInvoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
 
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
@@ -357,7 +363,7 @@ public class C_Payment_StepDef
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
-				.prepayment(isPrepayment)
+				.proformaInvoiceId(proformaInvoiceId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 

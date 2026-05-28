@@ -693,26 +693,37 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv_purchase           | s6_product   | 5000.00  | PCE      |
 
-    # ── Vendor invoice ──
+    # ── Proforma invoice — sets IsPrepayment=Y on the payment via MPayment.beforeSave ──
+    # (MPayment.beforeSave computes IsPrepayment from Proforma_Invoice_ID; direct setIsPrepayment is overridden.)
+    And metasfresh contains C_Invoice:
+      | Identifier   | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | s6_proforma  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   |
+      | s6_proforma_line | s6_proforma  | s6_product   | 1 PCE       | 5000.00 |
+    And the invoice identified by s6_proforma is completed
+
+    # ── Vendor invoice (real invoice to allocate against) ──
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
       | s6_invoice | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | s6_line    | s6_invoice   | s6_product   | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   |
+      | s6_line    | s6_invoice   | s6_product   | 1 PCE       | 5000.00 |
     And the invoice identified by s6_invoice is completed
 
-    # ── Vendor prepayment — IsPrepayment=Y causes Doc_Payment to post to V_Prepayment_Acct ──
+    # ── Vendor prepayment — Proforma_Invoice_ID triggers IsPrepayment=Y → Doc_Payment posts to V_Prepayment_Acct ──
     # Bug (pre-fix): allocation resolved B_PaymentSelect_Acct instead → V_Prepayment stayed permanently open.
     And metasfresh contains C_Payment
-      | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | IsPrepayment |
-      | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | true         |
+      | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+      | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | s6_proforma         |
     And the payment identified by s6_payment is completed
 
     # ── Post-payment: V_Prepayment_Acct must be non-zero (payment opened it) ──
+    # SourceBalance (source-currency amount) avoids accounting-schema conversion uncertainty.
     Then Fact_Acct records balances for documents s6_payment are matching
-      | AccountConceptualName | AcctBalance |
-      | V_Prepayment_Acct     | -5000       |
+      | AccountConceptualName | SourceBalance |
+      | V_Prepayment_Acct     | -5000 EUR     |
 
     # ── Allocate payment to invoice ──
     And allocate payments to invoices
