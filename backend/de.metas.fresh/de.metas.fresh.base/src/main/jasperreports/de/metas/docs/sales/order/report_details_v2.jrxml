@@ -372,7 +372,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.OhneBerechnung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="126" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
@@ -498,7 +498,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.OhneBerechnung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="469" y="0" width="8" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">

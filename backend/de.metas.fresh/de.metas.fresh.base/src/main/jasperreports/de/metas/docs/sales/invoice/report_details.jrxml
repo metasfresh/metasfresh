@@ -586,7 +586,7 @@ $F{shiplocation}
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.OhneBerechnung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="389" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
@@ -668,7 +668,7 @@ $F{shiplocation}
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.OhneBerechnung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="491" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
@@ -752,7 +752,7 @@ $F{shiplocation}
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.OhneBerechnung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="389" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
@@ -795,7 +795,7 @@ $F{shiplocation}
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.OhneBerechnung}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="295" y="0" width="49" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
