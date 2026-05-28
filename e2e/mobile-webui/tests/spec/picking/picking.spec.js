@@ -11,8 +11,6 @@ import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
-import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
-import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 import { expect } from '@playwright/test';
 import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
 import { InventoryJobScreen } from '../../utils/screens/inventory/InventoryJobScreen';
@@ -23,7 +21,6 @@ const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
-                                    qtyCUsPerTU = 4,
                                     shipperConfig = null,
                                 } = {}) => {
     const shippers = shipperConfig ? {
