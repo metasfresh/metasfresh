@@ -359,5 +359,24 @@ class HUQRCodesServiceTest
 			System.out.println("parsedHUQRCode: " + parsedHUQRCode + " (" + parsedHUQRCode.getClass() + ")");
 			assertThat(parsedHUQRCode).isInstanceOf(HUQRCode.class);
 		}
+
+		@Test
+		void locatorQRCode_throwsUserFriendlyError()
+		{
+			// LOC# prefix is a locator QR code, not an HU QR code
+			final String locatorQRCodeString = "LOC#1#{\"warehouseId\":1,\"locatorId\":2,\"caption\":\"Regal-01\"}";
+			assertThatThrownBy(() -> huQRCodesService.parse(locatorQRCodeString))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
+
+		@Test
+		void unrecognized_throwsUserFriendlyError()
+		{
+			final String junkCode = "TOTALLY_UNKNOWN_FORMAT_XYZ";
+			assertThatThrownBy(() -> huQRCodesService.parse(junkCode))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
 	}
 }

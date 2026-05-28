@@ -27,6 +27,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
+    code = extractErrorCodeFromAxiosError(axiosError);
   } else if (messageKey) {
     message = trl(messageKey);
     code = messageKey;
@@ -56,8 +57,24 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   });
 };
 
+export const extractErrorCodeFromAxiosError = (axiosError) => {
+  const responseData = axiosError?.response && unboxAxiosResponse(axiosError.response);
+  if (responseData?.errors?.[0]?.errorCode) {
+    return responseData.errors[0].errorCode;
+  } else if (axiosError?.response?.data?.error?.errorCode) {
+    return axiosError.response.data.error.errorCode;
+  }
+  return null;
+};
+
 export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
   // console.log('extractUserFriendlyErrorMessageFromAxiosError', { axiosError });
+
+  // Read the UI trace ID from the request config (not from uiTrace.getCurrentTraceId()) because the trace
+  // context is cleaned up before the .catch() handler fires, so the live axios default header is already gone.
+  // This UUID matches UI_Trace.ExternalId in the metasfresh WebUI trace window; from there support can
+  // navigate to the linked API Request Audit record for the full request/response details.
+  const traceId = axiosError?.config?.headers?.['X-Ui-Trace-Id'];
 
   if (axiosError) {
     if (axiosError.request && !axiosError.response) {
@@ -66,12 +83,16 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
       const data = axiosError.response && unboxAxiosResponse(axiosError.response);
       if (data && data.errors && data.errors[0] && data.errors[0].message) {
         const error = data.errors[0];
-        return extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey });
+        return extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey, traceId });
       } else if (axiosError.response.data.error) {
-        return extractUserFriendlyErrorSingleErrorObject({ error: axiosError.response.data.error, fallbackMessageKey });
+        return extractUserFriendlyErrorSingleErrorObject({
+          error: axiosError.response.data.error,
+          fallbackMessageKey,
+          traceId,
+        });
       }
     } else if (axiosError.message) {
-      return extractUserFriendlyErrorSingleErrorObject({ error: axiosError, fallbackMessageKey });
+      return extractUserFriendlyErrorSingleErrorObject({ error: axiosError, fallbackMessageKey, traceId });
     }
   }
 
@@ -106,7 +127,7 @@ export const extractErrorResponseFromAxiosError = (axiosError) => {
   return unboxAxiosResponse(axiosError.response);
 };
 
-function extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey }) {
+function extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey, traceId }) {
   if (!error) {
     // null/empty error message... shall not happen
     return trl(fallbackMessageKey ?? 'error.PleaseTryAgain');
@@ -115,8 +136,9 @@ function extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey }
     if (error.userFriendlyError || window.showAllErrorMessages) {
       return error.message;
     } else {
-      // don't scare the user with weird errors. Better show him some generic error.
-      return trl(fallbackMessageKey ?? 'error.PleaseTryAgain');
+      // Non-user-friendly error: show generic message with UI trace ID so users can report it to support.
+      // The trace ID matches UI_Trace.ExternalId in the metasfresh WebUI trace window.
+      return trl(fallbackMessageKey ?? 'error.InternalError', { traceId: traceId ?? '-' });
     }
   } else {
     // assume it's a string
