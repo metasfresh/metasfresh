@@ -10,6 +10,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
+import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
 import { expect } from '@playwright/test';
 import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
 import { InventoryJobScreen } from '../../utils/screens/inventory/InventoryJobScreen';

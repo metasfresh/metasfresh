@@ -35,7 +35,9 @@ public class TaxDeclarationService
 				new Object[] { id });
 	}
 
-	/** Spawns a Correction for {@code originalId}, inheriting its acctSchema/period/dateAcct. */
+	/**
+	 * Spawns a Correction for {@code originalId}, inheriting its acctSchema/period/dateAcct.
+	 */
 	public TaxDeclarationId createCorrection(@NonNull final TaxDeclarationId originalId)
 	{
 		final I_C_TaxDeclaration original = taxDeclarationRepository.getById(originalId);
@@ -48,7 +50,7 @@ public class TaxDeclarationService
 			throw new AdempiereException(MSG_TaxDeclaration_OriginalMustBeOriginal);
 		}
 
-		return taxDeclarationRepository.createTaxDeclaration(TaxDeclarationCreateRequest.builder()
+		final TaxDeclarationId correctionId = taxDeclarationRepository.createTaxDeclaration(TaxDeclarationCreateRequest.builder()
 				.adOrgId(OrgId.ofRepoId(original.getAD_Org_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(original.getC_AcctSchema_ID()))
 				.periodRepoId(original.getC_Period_ID())
@@ -56,5 +58,9 @@ public class TaxDeclarationService
 				.isCorrection(true)
 				.originalId(originalId)
 				.build());
+
+		build(correctionId);
+
+		return correctionId;
 	}
 }
