@@ -96,26 +96,17 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
                         ],
                     },
                 },
-                salesOrders: {
-                    SO1: {
-                        bpartner: 'CUSTOMER1',
-                        warehouse: 'wh',
-                        datePromised: '2026-06-15T00:00:00.000+02:00',
-                        lines: [{ product: 'BUNDLE', qty: 1 }],
-                    },
-                },
-                // Shipment + invoice creation is done via the UI below; the
-                // masterdata `shipments` command requires HU/picking infra not set
-                // up here, so we mirror the invoice-reversal.spec.js UI flow.
+                // NOTE: NO `salesOrders:` block here. The masterdata REST API's
+                // SalesOrderCreateCommand creates order lines directly via
+                // JsonSalesOrderCreateLineRequest, which BYPASSES the
+                // OrderLineQuickInputCallout. The callout is what triggers the
+                // compensation-group expansion (bundle → bundle + ink + ethernet).
+                // We therefore create the order via the UI quickinput below,
+                // mirroring the real user flow.
             },
         });
 
         allure.attachment('Masterdata', JSON.stringify(masterdata, null, 2), 'application/json');
-
-        const soId = masterdata.salesOrders.SO1.id;
-        const soDocNo = masterdata.salesOrders.SO1.documentNo;
-        expect(soDocNo, 'Sales Order should be created').toBeTruthy();
-        console.log(`[F00127.1] SO=${soDocNo} (id=${soId})`);
 
         // ============================================================
         // Step 2: Log in
@@ -123,6 +114,56 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         await LoginPage.goto();
         await LoginPage.login(masterdata.login.user);
         await DashboardPage.expectVisible();
+
+        // ============================================================
+        // Step 2a: Create sales order via UI quickinput (fires the callout
+        // that expands the bundle product into bundle + ink + ethernet lines).
+        // ============================================================
+        await SalesOrderPage.goto();
+        await SalesOrderPage.clickNew();
+
+        const soId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+        console.log(`[F00127.1] SO record created via UI: id=${soId}`);
+
+        // Enter the bundle product via batch entry — this fires
+        // OrderLineQuickInputCallout → compensation-group expansion → 3 lines.
+        await SalesOrderPage.addOrderLine({
+            product: masterdata.products.BUNDLE.productCode,
+            quantity: '1',
+            recordId: soId,
+        });
+
+        // Give the async callout time to materialise the component lines
+        // (the OrderLineQuickInputCallout fires the compensation-group
+        // expansion asynchronously after the bundle line is saved).
+        await page.waitForTimeout(5000);
+
+        // Reload the page so the order-lines grid picks up any lines the
+        // callout created after the quickinput closed.
+        await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
+        await page.locator('.rotating, .panel-spaced-lg')
+            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+            .catch(() => {});
+        await page.waitForTimeout(2000);
+
+        // Best-effort row-count log (not asserted — the authoritative check
+        // is the PDF content downstream).
+        try {
+            await SalesOrderPage.goToOrderLineTab();
+            const gridRowCount = await page.locator('table tbody tr').count();
+            console.log(`[F00127.1] Order lines visible in grid: ${gridRowCount} (expected 3 = bundle + ink + ethernet)`);
+        } catch (e) {
+            console.log(`[F00127.1] Could not count order lines: ${e.message}`);
+        }
+
+        await SalesOrderPage.complete();
+
+        const soDocNo = await SalesOrderPage.getDocumentNo();
+        expect(soDocNo, 'Sales Order should be completed and have a DocumentNo').toBeTruthy();
+        console.log(`[F00127.1] SO completed: ${soDocNo} (id=${soId})`);
+
+        // Wait for async shipment schedule creation after order completion.
+        await page.waitForTimeout(5000);
 
         // ============================================================
         // Step 2b: Drive shipment + invoice creation via the UI (same as
