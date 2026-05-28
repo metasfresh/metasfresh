@@ -298,10 +298,6 @@ public class C_TaxDeclaration_StepDef
 		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
 		final boolean value = "Y".equalsIgnoreCase(flagValue);
 		decl.setIsCorrectionNeeded(value);
-		if (value)
-		{
-			decl.setCorrectionNeededReason("test-drift");
-		}
 		InterfaceWrapperHelper.saveRecord(decl);
 	}
 }
