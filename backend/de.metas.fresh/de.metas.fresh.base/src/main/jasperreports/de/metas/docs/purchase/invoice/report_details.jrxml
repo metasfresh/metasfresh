@@ -155,9 +155,10 @@
 	<field name="priceqtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
+	</field>
 	<field name="isdisplayproductcostlabel" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="isdisplayproductcostlabel"/>
-		<property name="com.jaspersoft.studio.field.label" value="isdisplayproductcostlabel"/>a
+		<property name="com.jaspersoft.studio.field.label" value="isdisplayproductcostlabel"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
