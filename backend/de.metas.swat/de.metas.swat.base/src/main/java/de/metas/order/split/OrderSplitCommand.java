@@ -79,10 +79,13 @@ public class OrderSplitCommand
 						.list();
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule : schedules)
 		{
-			if (schedule.isClosed() || schedule.isProcessed())
+			if (schedule.isClosed())
 			{
-				continue;
+				continue;  // already closed → idempotent skip
 			}
+			// Close all non-closed schedules — including Processed ones (fully-shipped) — so
+			// the OLD SO is uniformly frozen for further shipping. The singular
+			// closeShipmentSchedule API does NOT check Processed, so it works for both states.
 			shipmentScheduleBL.closeShipmentSchedule(schedule);
 		}
 	}
