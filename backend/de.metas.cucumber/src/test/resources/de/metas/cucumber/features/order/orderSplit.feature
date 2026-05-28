@@ -324,7 +324,7 @@ Feature: Split sales order — create a continuation order for unshipped quantit
 
     When the C_Order_Split process is invoked on "so_os60" expecting validation failure
 
-    Then the validation error message includes "C_Order_Split_NoShipments"
+    Then the validation error message includes "keine fertig gestellten Lieferscheine"
 
     # No continuation order created
     And no continuation order exists for "so_os60"
@@ -364,7 +364,7 @@ Feature: Split sales order — create a continuation order for unshipped quantit
 
     When the C_Order_Split process is invoked on "so_os70" expecting validation failure
 
-    Then the validation error message includes "C_Order_Split_NothingToSplit"
+    Then the validation error message includes "keine offene Liefermenge"
 
     # No continuation order created
     And no continuation order exists for "so_os70"
