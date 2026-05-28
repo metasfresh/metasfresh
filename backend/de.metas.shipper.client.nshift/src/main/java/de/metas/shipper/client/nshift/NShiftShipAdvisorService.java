@@ -172,7 +172,7 @@ public class NShiftShipAdvisorService
 
 	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
 	{
-		Check.assume(!response.getProducts().isEmpty(), "response should contain at least 1 shipperProduct, pls check defined shipment rules");
+		Check.assumeNotEmpty(response.getProducts(), "response should contain at least 1 shipperProduct, pls check defined shipment rules");
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
