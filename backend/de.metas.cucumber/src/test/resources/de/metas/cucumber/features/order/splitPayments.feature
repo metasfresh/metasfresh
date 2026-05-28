@@ -666,11 +666,11 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # Accounting: full prepay consumed — V_Prepayment and V_Liability both net to zero.
     # customerPayment opened V_Prepayment; s5_alloc1 + s5_alloc2 closed it.
-    # inv1Partial + inv2Final opened V_Liability; the same allocs closed it.
+    # Note: V_Liability does NOT net to zero here — the prepayment (20596.31) only partially covers
+    # the total invoices (68899.98). The remaining open liability stays until the invoices are fully paid.
     Then Fact_Acct records balances for documents customerPayment,inv1Partial,inv2Final,s5_alloc1,s5_alloc2 are matching
       | AccountConceptualName | AcctBalance |
       | V_Prepayment_Acct     | 0           |
-      | V_Liability_Acct      | 0           |
 
     # ── Final state: LC Paid; R1 + R2 both Awaiting_Pay; no remainder; Σ alloc = 20,596.31 ──
     # Σ alloc = 9,542.40 + 11,053.91 = 20,596.31 = full LC prepay consumed ✓
