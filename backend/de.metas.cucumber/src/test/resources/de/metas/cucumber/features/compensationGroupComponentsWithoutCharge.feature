@@ -62,7 +62,7 @@ Feature: Compensation group component auto-pricing (F00127.1)
       | ps_y       | ps_bspF00127_Y | ps_bspF00127_Y |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_bsp     | ps_y               | AT                        | EUR                 | pl_bspF00127_Y | true  | false         | 2              |
+      | pl_bsp     | ps_y               | DE                        | EUR                 | pl_bspF00127_Y | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name          | ValidFrom  |
       | plv_bsp    | pl_bsp         | plv_bspF00127 | 2026-01-01 |
@@ -104,7 +104,7 @@ Feature: Compensation group component auto-pricing (F00127.1)
       | ps_m       | ps_bspF00127_M | ps_bspF00127_M |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_bsp     | ps_m               | CH                        | EUR                 | pl_bspF00127_M | true  | false         | 2              |
+      | pl_bsp     | ps_m               | DE                        | EUR                 | pl_bspF00127_M | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name          | ValidFrom  |
       | plv_bsp    | pl_bsp         | plv_bspF00127 | 2026-01-01 |
@@ -152,7 +152,7 @@ Feature: Compensation group component auto-pricing (F00127.1)
       | ps_e2e     | ps_bspF00127_E2E | ps_bspF00127_E2E |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name             | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_bsp     | ps_e2e             | IT                        | EUR                 | pl_bspF00127_E2E | true  | false         | 2              |
+      | pl_bsp     | ps_e2e             | DE                        | EUR                 | pl_bspF00127_E2E | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name          | ValidFrom  |
       | plv_bsp    | pl_bsp         | plv_bspF00127 | 2026-01-01 |
@@ -217,7 +217,7 @@ Feature: Compensation group component auto-pricing (F00127.1)
       | ps_g       | ps_bspF00127_G | ps_bspF00127_G |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_bsp     | ps_g               | FR                        | EUR                 | pl_bspF00127_G | true  | false         | 2              |
+      | pl_bsp     | ps_g               | DE                        | EUR                 | pl_bspF00127_G | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | Name          | ValidFrom  |
       | plv_bsp    | pl_bsp         | plv_bspF00127 | 2026-01-01 |
