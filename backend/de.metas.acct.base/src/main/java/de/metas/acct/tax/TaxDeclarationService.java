@@ -50,7 +50,7 @@ public class TaxDeclarationService
 			throw new AdempiereException(MSG_TaxDeclaration_OriginalMustBeOriginal);
 		}
 
-		final TaxDeclarationId correctionId = taxDeclarationRepository.createTaxDeclaration(TaxDeclarationCreateRequest.builder()
+		return taxDeclarationRepository.createTaxDeclaration(TaxDeclarationCreateRequest.builder()
 				.adOrgId(OrgId.ofRepoId(original.getAD_Org_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(original.getC_AcctSchema_ID()))
 				.periodRepoId(original.getC_Period_ID())
@@ -58,9 +58,5 @@ public class TaxDeclarationService
 				.isCorrection(true)
 				.originalId(originalId)
 				.build());
-
-		build(correctionId);
-
-		return correctionId;
 	}
 }

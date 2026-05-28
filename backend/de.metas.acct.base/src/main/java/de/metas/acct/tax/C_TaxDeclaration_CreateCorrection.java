@@ -38,6 +38,7 @@ public class C_TaxDeclaration_CreateCorrection extends JavaProcess implements IP
 	protected String doIt()
 	{
 		final TaxDeclarationId correctionId = taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(getRecord_ID()));
+		taxDeclarationService.build(correctionId);
 		getResult().setRecordToOpen(I_C_TaxDeclaration.Table_Name, correctionId);
 		return MSG_OK;
 	}
