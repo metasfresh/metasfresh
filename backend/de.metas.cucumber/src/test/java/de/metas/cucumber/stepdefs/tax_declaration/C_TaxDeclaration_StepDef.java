@@ -97,7 +97,7 @@ public class C_TaxDeclaration_StepDef
 		{
 			decl.setProcessed(false);
 			decl.setIsCorrection(false);
-			decl.setC_TaxDeclaration_Original_ID(0); // 0 → NULL for FK columns
+			decl.setC_TaxDeclaration_Original_ID(-1);
 			decl.setDocStatus(IDocument.STATUS_Voided);
 			decl.setIsActive(false);
 			InterfaceWrapperHelper.saveRecord(decl);
