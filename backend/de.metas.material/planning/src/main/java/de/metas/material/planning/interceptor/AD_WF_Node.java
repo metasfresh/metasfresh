@@ -116,7 +116,7 @@ public class AD_WF_Node
 
 		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
 		{
-			throw new AdempiereException("@PPRouting_CannotRemoveResourceFromFirstNode@");
+			throw new AdempiereException("@PPRouting_FirstNodeRequiresResource@");
 		}
 	}
 

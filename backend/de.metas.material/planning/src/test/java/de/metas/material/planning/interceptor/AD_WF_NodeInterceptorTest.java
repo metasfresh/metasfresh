@@ -159,7 +159,7 @@ public class AD_WF_NodeInterceptorTest
 		firstNode.setS_Resource_ID(0);
 		assertThatThrownBy(() -> InterfaceWrapperHelper.save(firstNode))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("PPRouting_CannotRemoveResourceFromFirstNode");
+				.hasMessageContaining("PPRouting_FirstNodeRequiresResource");
 	}
 
 	@Test

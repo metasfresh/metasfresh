@@ -35,10 +35,10 @@ UPDATE AD_Message_Trl SET MsgText='The first activity of a workflow cannot be de
 WHERE AD_Message_ID=545732 AND AD_Language='en_US'
 ;
 
--- PPRouting_CannotRemoveResourceFromFirstNode ---------------------------------------------------
+-- PPRouting_FirstNodeRequiresResource ---------------------------------------------------
 -- 2026-05-28T12:10:06
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,ErrorCode,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545733 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-28 12:10:06','YYYY-MM-DD HH24:MI:SS'),100,'D','PPROUTING_CANNOT_REMOVE_RESOURCE_FROM_FIRST_NODE','Y','Die Ressource des ersten Arbeitsschritts eines Arbeitsablaufs darf nicht leer sein.','E',TO_TIMESTAMP('2026-05-28 12:10:06','YYYY-MM-DD HH24:MI:SS'),100,'PPRouting_CannotRemoveResourceFromFirstNode')
+VALUES (0,545733 /*From ID Server*/,0,TO_TIMESTAMP('2026-05-28 12:10:06','YYYY-MM-DD HH24:MI:SS'),100,'D','PPROUTING_FIRST_NODE_REQUIRES_RESOURCE','Y','Die Ressource des ersten Arbeitsschritts eines Arbeitsablaufs darf nicht leer sein.','E',TO_TIMESTAMP('2026-05-28 12:10:06','YYYY-MM-DD HH24:MI:SS'),100,'PPRouting_FirstNodeRequiresResource')
 ;
 -- 2026-05-28T12:10:07
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
