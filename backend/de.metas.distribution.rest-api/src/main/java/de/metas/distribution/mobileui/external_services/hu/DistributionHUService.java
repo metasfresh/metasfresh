@@ -15,6 +15,7 @@ import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -25,6 +26,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.LocatorId;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -65,9 +67,7 @@ public class DistributionHUService
 		}
 		else
 		{
-			throw new AdempiereException("Cannot convert " + scannedCode + " to actual HUQRCode")
-					.setParameter("parsedHUQRCode", parsedHUQRCode)
-					.setParameter("parsedHUQRCode type", parsedHUQRCode.getClass().getSimpleName());
+			throw new AdempiereException(MobileQRCodeMessages.WRONG_TYPE, parsedHUQRCode.getClass().getSimpleName());
 		}
 	}
 
@@ -123,6 +123,25 @@ public class DistributionHUService
 	{
 		final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
 		getProductQuantity(huId, productId); // shall throw exception if no qty found
+	}
+
+	public void assertHUCanBePickedFrom(@NonNull final HuId huId, @NonNull final LocatorId pickFromLocatorId, @NonNull final LocatorId dropToLocatorId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
+		if (hu.isReserved())
+		{
+			throw new AdempiereException(MobileQRCodeMessages.HU_RESERVED_BY_OTHER);
+		}
+
+		if (LocatorId.equalsByRepoId(hu.getM_Locator_ID(), dropToLocatorId.getRepoId()))
+		{
+			throw new AdempiereException(MobileQRCodeMessages.HU_ALREADY_AT_TARGET);
+		}
+		if (!LocatorId.equalsByRepoId(hu.getM_Locator_ID(), pickFromLocatorId.getRepoId()))
+		{
+			throw new AdempiereException(MobileQRCodeMessages.HU_NOT_AT_TARGET);
+		}
 	}
 
 	public void deleteReservationsByDocumentRefs(final ImmutableSet<HUReservationDocRef> huReservationDocRefs)
