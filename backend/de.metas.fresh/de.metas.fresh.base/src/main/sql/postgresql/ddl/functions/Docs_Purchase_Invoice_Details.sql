@@ -12,6 +12,7 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details
                 inouts_isdatacomplete boolean,
                 ishu                  boolean,
                 line                  numeric,
+                c_invoiceline_id      numeric,
                 description           character varying,
                 productdescription    character varying,
                 name                  character varying,
@@ -35,6 +36,7 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details
                 p_description         character varying,
                 invoice_description   character varying,
                 cursymbol             character varying,
+                IsDisplayProductCostLabel character(1),
                 PricePattern          text,
                 AmountPattern         text,
                 QtyPattern            text,
@@ -51,6 +53,7 @@ FROM (SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, i
              COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL                                   AS InOuts_IsDataComplete,
              COALESCE(pc.IsHU, FALSE)                                                     AS IsHU,
              MAX(il.line)                                                                 AS line,
+             MAX(il.c_invoiceline_id)                                                     AS c_invoiceline_id,
              -- ts: QnD: appending the invoice line description to the product name.
              -- TODO: create a dedicated field for it etc
              il.Description,
@@ -90,6 +93,10 @@ FROM (SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, i
              p.description                                                                AS p_description,
              i.description                                                                AS invoice_description,
              c.cursymbol,
+             CASE
+                 WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'ProductCostLabel') = 'N' THEN 'Y'
+                                                                                             ELSE 'N'
+             END                                                                          AS IsDisplayProductCostLabel,
              report.getPricePatternForJasper(i.m_pricelist_id)                            AS PricePattern,
              report.getAmountPatternForJasper(c.c_currency_id)                            AS AmountPattern,
              report.getQtyPattern(uom.StdPrecision)                                       AS QtyPattern,
@@ -235,6 +242,7 @@ FROM (SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, i
                p.description,
                i.description,
                c.cursymbol,
+               i.C_DocType_ID,
                i.m_pricelist_id,
                c.c_currency_id
 
