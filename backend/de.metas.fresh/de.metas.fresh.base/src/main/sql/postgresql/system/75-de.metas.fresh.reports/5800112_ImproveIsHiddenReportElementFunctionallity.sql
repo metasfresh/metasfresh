@@ -43,3 +43,11 @@ END
 $$
     LANGUAGE plpgsql STABLE
 ;
+
+
+---
+
+
+CREATE UNIQUE INDEX ON C_DocType_ReportElement(C_DocType_ID, ReportElement) WHERE IsActive = 'Y';
+
+

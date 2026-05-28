@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -43,6 +43,10 @@
 	<field name="line" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="line"/>
 		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="c_invoiceline_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_invoiceline_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_invoiceline_id"/>
 	</field>
 	<field name="description" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="description"/>
@@ -136,6 +140,11 @@
 		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
+    <field name="isdisplayproductcostlabel" class="java.lang.String">
+        <property name="com.jaspersoft.studio.field.name" value="isdisplayproductcostlabel"/>
+        <property name="com.jaspersoft.studio.field.label" value="isdisplayproductcostlabel"/>
+    </field>
+
 	<field name="pricepattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="pricepattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="pricepattern"/>
@@ -677,6 +686,25 @@
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
+		</band>
+		<band height="7">
+			<printWhenExpression><![CDATA[("Y").equals( $F{isdisplayproductcostlabel})]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="5" uuid="5e4ea1f0-99ac-41ea-8749-7c48317eb78d">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="c_invoiceline_id">
+					<subreportParameterExpression><![CDATA[$F{c_invoiceline_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_details_labelcost.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</detail>
 	<columnFooter>
