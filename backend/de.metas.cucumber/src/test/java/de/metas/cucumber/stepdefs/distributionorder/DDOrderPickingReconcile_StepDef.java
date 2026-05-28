@@ -124,12 +124,12 @@ public class DDOrderPickingReconcile_StepDef
 	}
 
 	/**
-	 * Changes a shipment schedule's effective quantity by setting {@code QtyToDeliver_Override} and saving.
+	 * Changes a shipment schedule's effective quantity by setting {@code QtyOrdered_Override} and saving.
 	 * The save fires the {@code M_ShipmentSchedule} interceptor (sync picker-busy guard + after-commit reconcile),
 	 * which on a packing warehouse with no busy picker voids the old DD_Order and recreates a fresh one with the
 	 * new quantity (REQUIREMENTS.md TC2).
 	 *
-	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyToDeliver_Override} (new quantity).</p>
+	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyOrdered_Override} (new quantity).</p>
 	 */
 	@When("the M_ShipmentSchedule quantity is changed:")
 	public void change_M_ShipmentSchedule_qty(@NonNull final DataTable dataTable)
@@ -138,8 +138,8 @@ public class DDOrderPickingReconcile_StepDef
 				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.forEach(row -> {
 					final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(row.getAsIdentifier().getAsString());
-					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
-					schedule.setQtyToDeliver_Override(newQty);
+					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override);
+					schedule.setQtyOrdered_Override(newQty);
 					InterfaceWrapperHelper.saveRecord(schedule);
 				});
 	}
@@ -150,7 +150,7 @@ public class DDOrderPickingReconcile_StepDef
 	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
 	 * The schedule record is reloaded and asserted unchanged.
 	 *
-	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyToDeliver_Override} (attempted quantity).</p>
+	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyOrdered_Override} (attempted quantity).</p>
 	 */
 	@Then("changing the M_ShipmentSchedule quantity is rejected:")
 	public void change_M_ShipmentSchedule_qty_is_rejected(@NonNull final DataTable dataTable)
@@ -159,11 +159,11 @@ public class DDOrderPickingReconcile_StepDef
 				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.forEach(row -> {
 					final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(row.getAsIdentifier().getAsString());
-					final BigDecimal originalQtyOverride = schedule.getQtyToDeliver_Override();
-					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
+					final BigDecimal originalQtyOverride = schedule.getQtyOrdered_Override();
+					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override);
 
 					assertThatThrownBy(() -> {
-								schedule.setQtyToDeliver_Override(newQty);
+								schedule.setQtyOrdered_Override(newQty);
 								InterfaceWrapperHelper.saveRecord(schedule);
 							})
 							.as("Changing the schedule while the picker is busy must be rejected by the beforeSave interceptor")
@@ -173,8 +173,8 @@ public class DDOrderPickingReconcile_StepDef
 
 					// Reload and assert the persisted value is unchanged (the rolled-back save left no mark).
 					final I_M_ShipmentSchedule reloaded = InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
-					assertThat(reloaded.getQtyToDeliver_Override())
-							.as("M_ShipmentSchedule.QtyToDeliver_Override must be unchanged after the rejected save")
+					assertThat(reloaded.getQtyOrdered_Override())
+							.as("M_ShipmentSchedule.QtyOrdered_Override must be unchanged after the rejected save")
 							.isEqualByComparingTo(originalQtyOverride == null ? BigDecimal.ZERO : originalQtyOverride);
 				});
 	}
