@@ -1,5 +1,5 @@
--- Add M_ShipmentSchedule_ID to DD_Order (FK + partial index)
--- Used by DD_Order picking reconcile flow (me03 #29966) — 1 DD_Order per shipment-schedule line.
+-- DD_Order picking reconcile — add DD_Order.M_ShipmentSchedule_ID FK + partial index.
+-- Used by the picking reconcile flow: 1 DD_Order per shipment-schedule line.
 --
 -- IDs allocated from idserver.metas.de on 2026-05-26:
 --   AD_MigrationScript  5804730 (this script)

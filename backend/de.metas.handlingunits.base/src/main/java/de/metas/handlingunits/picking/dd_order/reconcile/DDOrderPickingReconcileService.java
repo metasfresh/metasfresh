@@ -20,6 +20,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,8 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
+	@VisibleForTesting
+	static final AdMessageKey MSG_DDOrderPickingReconcile_QtyZero_NoDDOrder = AdMessageKey.of("DDOrderPickingReconcile_QtyZero_NoDDOrder");
 
 	// FQN trx-property key: avoids collisions with any other service that might register an
 	// after-commit accumulator under a shorter, easier-to-clash name.
@@ -110,7 +113,30 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(scheduleId);
 		final DDOrderId existingDDOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
-		final DDOrderReconcileAction action = classifyAction(schedule, existingDDOrderId);
+		DDOrderReconcileAction action = classifyAction(schedule, existingDDOrderId);
+
+		// Zero-qty soft no-op: if the schedule's effective QtyOrdered* (Override → Calculated) is <= 0
+		// we must not create a DD_Order (no demand to plan). For CREATE we downgrade to NONE; for
+		// RECREATE the existing DD_Order must be voided — downgrade to VOID. An informational entry
+		// is written to the Event Log so operators can see why no DD_Order was produced.
+		if (action == DDOrderReconcileAction.CREATE || action == DDOrderReconcileAction.RECREATE)
+		{
+			final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
+			if (effectiveQtyOrdered == null || effectiveQtyOrdered.signum() <= 0)
+			{
+				final boolean willVoidExisting = (action == DDOrderReconcileAction.RECREATE);
+				Loggables.addLog(
+						"{0}: effective QtyOrdered={1} for M_ShipmentSchedule_ID={2}; no DD_Order will be created{3}",
+						MSG_DDOrderPickingReconcile_QtyZero_NoDDOrder.toAD_Message(),
+						effectiveQtyOrdered,
+						scheduleId.getRepoId(),
+						willVoidExisting ? " and the existing DD_Order will be voided" : "");
+				action = willVoidExisting
+						? DDOrderReconcileAction.VOID
+						: DDOrderReconcileAction.NONE;
+			}
+		}
+
 		switch (action)
 		{
 			case NONE:
@@ -198,16 +224,13 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
 
 		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
-		// Prefer the effective QtyToDeliver (honours QtyToDeliver_Override). That column is computed by an async
-		// ShipmentScheduleUpdater workpackage which races with this reconcile event — right after the schedule is
-		// created it can still be 0. In that case fall back to the ordered demand (QtyOrdered_Calculated, set
-		// synchronously at schedule creation in OrderLineShipmentScheduleHandler) so the DD_Order never carries qty 0.
+		// Source: the effective QtyOrdered (QtyOrdered_Override → QtyOrdered_Calculated, per IShipmentScheduleEffectiveBL).
+		// QtyOrdered_Calculated is set synchronously at schedule creation in OrderLineShipmentScheduleHandler, so it is
+		// always populated by the time this reconcile runs. The zero/negative case is intercepted up in
+		// {@link #reconcile} — if QtyOrdered is 0 we skip the create (or void the existing DD_Order) and write an
+		// informational Event Log entry; the DD_Order code path is never reached with a non-positive qty.
 		final UomId stockUomId = productBL.getStockUOMId(productId);
-		BigDecimal qtyToMoveBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(schedule);
-		if (qtyToMoveBD == null || qtyToMoveBD.signum() <= 0)
-		{
-			qtyToMoveBD = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
-		}
+		final BigDecimal qtyToMoveBD = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
 		final Quantity qty = Quantitys.of(qtyToMoveBD, stockUomId);
 
 		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()

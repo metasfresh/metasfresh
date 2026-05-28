@@ -1,5 +1,4 @@
--- DD_Order picking reconcile — hourly AD_Scheduler for DD_Order_Picking_Rebuild
--- me03 #29966
+-- DD_Order picking reconcile — hourly AD_Scheduler for DD_Order_Picking_Rebuild.
 
 -- 2026-05-27T12:00:00Z
 INSERT INTO AD_Scheduler (

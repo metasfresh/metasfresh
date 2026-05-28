@@ -1,5 +1,5 @@
--- Add M_ShipmentSchedule_ID to DD_OrderLine (FK + partial index)
--- Used by DD_Order picking reconcile flow (me03 #29966) — line links back to schedule for the audit trail.
+-- DD_Order picking reconcile — add DD_OrderLine.M_ShipmentSchedule_ID FK + partial index.
+-- Line links back to the schedule for the audit trail.
 --
 -- IDs allocated from idserver.metas.de on 2026-05-26:
 --   AD_MigrationScript  5804740 (this script)

@@ -1,5 +1,4 @@
--- DD_Order picking reconcile — drift watchdog rebuild trigger process
--- me03 #29966
+-- DD_Order picking reconcile — drift watchdog rebuild trigger process.
 
 INSERT INTO AD_Process (
 	AccessLevel, AD_Client_ID, AD_Org_ID, AD_Process_ID,

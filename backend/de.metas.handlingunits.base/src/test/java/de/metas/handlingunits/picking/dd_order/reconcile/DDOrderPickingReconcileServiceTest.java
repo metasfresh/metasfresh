@@ -543,10 +543,11 @@ class DDOrderPickingReconcileServiceTest
 		save(line);
 
 		// active schedule on the packing warehouse
+		// QtyOrdered_Calculated is the qty source (M1: QtyOrdered* only — no QtyToDeliver fallback)
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
 		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
-		schedule.setQtyToDeliver(new BigDecimal("17"));
+		schedule.setQtyOrdered_Calculated(new BigDecimal("17"));
 		schedule.setIsActive(true);
 		save(schedule);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
@@ -707,10 +708,11 @@ class DDOrderPickingReconcileServiceTest
 		save(line);
 
 		// ACTIVE schedule on the packing warehouse
+		// QtyOrdered_Calculated is the qty source (M1: QtyOrdered* only — no QtyToDeliver fallback)
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
 		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
-		schedule.setQtyToDeliver(new BigDecimal("25"));
+		schedule.setQtyOrdered_Calculated(new BigDecimal("25"));
 		schedule.setIsActive(true);
 		save(schedule);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
@@ -821,7 +823,8 @@ class DDOrderPickingReconcileServiceTest
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
 		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
 		schedule.setM_Product_ID(556);
-		schedule.setQtyToDeliver(new BigDecimal("5"));
+		// QtyOrdered_Calculated is the qty source (M1: QtyOrdered* only — no QtyToDeliver fallback)
+		schedule.setQtyOrdered_Calculated(new BigDecimal("5"));
 		schedule.setIsActive(true);
 		save(schedule);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
@@ -841,6 +844,111 @@ class DDOrderPickingReconcileServiceTest
 				.create()
 				.count();
 		assertThat(ddOrderCountAfter).isEqualTo(ddOrderCountBefore);
+	}
+
+	// -----------------------------------------------------------------------
+	// reconcile() — zero-qty soft no-op (M1)
+	// -----------------------------------------------------------------------
+
+	@Test
+	void createDDOrderFor_QtyOrderedZero_doesNothing()
+	{
+		// Packing warehouse with a valid network — would normally create a DD_Order,
+		// but the schedule's effective QtyOrdered is 0 → CREATE must be downgraded to NONE
+		// and no DD_Order may be produced.
+		createDistributionOrderDocType();
+		createInTransitWarehouse(0);
+
+		final WarehouseId sourceWarehouseId = createWarehouse(false, 0);
+		final int[] uomRepoIdOut = new int[1];
+		final ProductId productId = createProductWithStockUom(uomRepoIdOut);
+
+		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
+		network.setName("ZeroQtyNoCreateNetwork");
+		save(network);
+
+		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+
+		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
+		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
+		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
+		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		line.setM_Shipper_ID(1);
+		save(line);
+
+		// ACTIVE schedule on the packing warehouse, but QtyOrdered_Calculated is 0
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		schedule.setM_Product_ID(productId.getRepoId());
+		schedule.setQtyOrdered_Calculated(BigDecimal.ZERO);
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		final int ddOrderCountBefore = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.create()
+				.count();
+
+		// must not throw — zero qty is a soft no-op
+		service.reconcile(scheduleId);
+
+		// no DD_Order created
+		final int ddOrderCountAfter = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.create()
+				.count();
+		assertThat(ddOrderCountAfter).as("no DD_Order created when QtyOrdered=0").isEqualTo(ddOrderCountBefore);
+
+		final int linkedCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.count();
+		assertThat(linkedCount).as("no DD_Order linked to the zero-qty schedule").isZero();
+	}
+
+	@Test
+	void createDDOrderFor_QtyOrderedZero_voidsExistingDDOrder()
+	{
+		// ACTIVE schedule with an existing live DD_Order, but the effective QtyOrdered is now 0
+		// → RECREATE must be downgraded to VOID (existing DD_Order voided, no new one created).
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setIsAutoDistributionOrder(true);
+		save(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		schedule.setQtyOrdered_Calculated(BigDecimal.ZERO);
+		schedule.setIsActive(true);
+		save(schedule);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		final I_DD_Order existingDDOrder = newInstance(I_DD_Order.class);
+		existingDDOrder.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
+		existingDDOrder.setDocStatus(X_DD_Order.DOCSTATUS_Completed);
+		save(existingDDOrder);
+		final int existingDDOrderId = existingDDOrder.getDD_Order_ID();
+
+		// no PickingJobLine → picker is NOT busy
+
+		service.reconcile(scheduleId);
+
+		// the existing DD_Order must now be Voided; no new DD_Order created
+		final I_DD_Order reloaded = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, existingDDOrderId)
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		assertThat(reloaded.getDocStatus()).as("existing DD_Order voided when QtyOrdered=0").isEqualTo(X_DD_Order.DOCSTATUS_Voided);
+
+		final int linkedCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.count();
+		assertThat(linkedCount).as("no new DD_Order created; only the existing (now voided) one").isEqualTo(1);
 	}
 
 	// -----------------------------------------------------------------------
