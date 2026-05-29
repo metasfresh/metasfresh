@@ -28,7 +28,7 @@ const FAILURES_HEADER = [
   'Scenario', 'Bucket', 'Exception', 'Message',
 ];
 const METRICS_HEADER = [
-  'Branch', 'Scenario', 'Bucket', 'Test type', 'Fail count', 'Runs failed',
+  'Branch', 'Scenario', 'Bucket', 'Test type', 'Fail count',
   'First failed', 'Last failed', 'Last failure run',
 ];
 
@@ -76,6 +76,26 @@ async function ensureTab(sheets, spreadsheetId, title, header) {
   const matches = current.length === header.length && header.every((h, i) => current[i] === h);
   if (!matches) {
     await sheets.spreadsheets.values.clear({ spreadsheetId, range: `${title}!A:Z` });
+    // Reset the data rows' number format to automatic. Google Sheets keeps a
+    // column's format across schema changes, so when a column shifts (e.g. a new
+    // column is inserted) a count can inherit a stale date format from whatever
+    // used to live in that column. Clearing the format lets each value render by
+    // its own type (numbers as numbers, parsed dates as dates).
+    const sheetId = (meta.data.sheets || []).find((s) => s.properties.title === title)?.properties.sheetId;
+    if (sheetId !== undefined) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [{
+            repeatCell: {
+              range: { sheetId, startRowIndex: 1 },
+              cell: {},
+              fields: 'userEnteredFormat.numberFormat',
+            },
+          }],
+        },
+      });
+    }
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: `${title}!A1`,
@@ -132,7 +152,7 @@ async function upsert(spreadsheetId, { failures }) {
 
   // Clear the old Metrics data block first so a shrinking set never leaves
   // stale trailing rows (defensive — the log only grows in practice).
-  await sheets.spreadsheets.values.clear({ spreadsheetId, range: `${METRICS_TAB}!A2:I` });
+  await sheets.spreadsheets.values.clear({ spreadsheetId, range: `${METRICS_TAB}!A2:H` });
   if (metricRows.length) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
@@ -152,24 +172,23 @@ async function upsert(spreadsheetId, { failures }) {
 function computeMetricsFromFailures(rows) {
   const byKey = new Map();
   for (const r of rows) {
-    const key = r[0] || '';
     const runUrl = r[1] || '';
     const branch = r[2] || '';
     const date = r[3] || '';
     const testType = r[5] || '';
     const scenario = r[7] || '';
     const bucket = r[8] || '';
-    const runId = key.split('::')[0];
     if (!scenario) continue;
 
+    // One Failures row per (run, scenario) — the key is runId::scenario — so a
+    // simple row count per (branch, scenario) IS the distinct-runs-failed count.
     const groupKey = `${branch} ${scenario}`;
     let m = byKey.get(groupKey);
     if (!m) {
-      m = { branch, scenario, bucket, testType, failCount: 0, runs: new Set(), firstFailed: date, lastFailed: date, lastRun: runUrl };
+      m = { branch, scenario, bucket, testType, failCount: 0, firstFailed: date, lastFailed: date, lastRun: runUrl };
       byKey.set(groupKey, m);
     }
     m.failCount += 1;
-    m.runs.add(runId);
     if (date && (!m.firstFailed || date < m.firstFailed)) m.firstFailed = date;
     if (date && (!m.lastFailed || date >= m.lastFailed)) {
       m.lastFailed = date;
@@ -179,7 +198,7 @@ function computeMetricsFromFailures(rows) {
   }
   return [...byKey.values()]
     .sort((a, b) => b.failCount - a.failCount)
-    .map((m) => [m.branch, m.scenario, m.bucket, m.testType, m.failCount, m.runs.size, m.firstFailed, m.lastFailed, m.lastRun]);
+    .map((m) => [m.branch, m.scenario, m.bucket, m.testType, m.failCount, m.firstFailed, m.lastFailed, m.lastRun]);
 }
 
 module.exports = { upsert, computeMetricsFromFailures, FAILURES_HEADER, METRICS_HEADER };

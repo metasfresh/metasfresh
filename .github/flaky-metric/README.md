@@ -21,8 +21,9 @@ For each `cicd.yaml` run on `new_dawn_uat`:
    - **Failures** — append-only event log, one row per `(run, failed scenario)`.
      Idempotent: re-running over an overlapping window appends nothing new
      (dedup on the `runId::scenario` key).
-   - **Metrics** — one row per scenario, upserted in place: running fail count,
-     distinct runs failed, first/last failed, current bucket.
+   - **Metrics** — one row per `(branch, scenario)`, recomputed from the Failures
+     log each run: fail count (= distinct runs failed, since the Failures key is
+     `runId::scenario`), first/last failed, current bucket.
 
 ## Usage
 

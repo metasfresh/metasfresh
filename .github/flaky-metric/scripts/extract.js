@@ -122,7 +122,6 @@ function aggregate(records) {
         bucket: r.bucketLabel,
         testType: r.testType,
         failCount: 0,
-        _runs: new Set(),
         firstFailed: r.dateUtc,
         lastFailed: r.dateUtc,
         lastRun: r.runUrl,
@@ -130,7 +129,6 @@ function aggregate(records) {
       byKey.set(k, m);
     }
     m.failCount += 1;
-    m._runs.add(r.runId);
     m.bucket = r.bucketLabel;
     if (r.dateUtc < m.firstFailed) m.firstFailed = r.dateUtc;
     if (r.dateUtc >= m.lastFailed) {
@@ -144,7 +142,6 @@ function aggregate(records) {
     bucket: m.bucket,
     testType: m.testType,
     failCount: m.failCount,
-    runsFailed: m._runs.size,
     firstFailed: m.firstFailed,
     lastFailed: m.lastFailed,
     lastRun: m.lastRun,
@@ -202,8 +199,8 @@ async function main() {
     const failRows = allRecords.map((r) => [
       r.key, r.runUrl, r.branch, r.dateUtc, r.commit, r.testType, r.profile, r.scenario, r.bucketLabel, r.exceptionType, (r.message||'').slice(0,500),
     ]);
-    const metricHeader = ['Branch','Scenario','Bucket','Test type','Fail count','Runs failed','First failed','Last failed','Last failure run'];
-    const metricRows = metrics.map((m) => [m.branch,m.scenario,m.bucket,m.testType,m.failCount,m.runsFailed,m.firstFailed,m.lastFailed,m.lastRun]);
+    const metricHeader = ['Branch','Scenario','Bucket','Test type','Fail count','First failed','Last failed','Last failure run'];
+    const metricRows = metrics.map((m) => [m.branch,m.scenario,m.bucket,m.testType,m.failCount,m.firstFailed,m.lastFailed,m.lastRun]);
 
     fs.writeFileSync(path.join(outDir, 'failures.csv'), toCsv(failRows, failHeader));
     fs.writeFileSync(path.join(outDir, 'metrics.csv'), toCsv(metricRows, metricHeader));

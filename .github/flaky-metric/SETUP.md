@@ -8,7 +8,7 @@ This doc covers promoting it to the unattended GitHub Action.
 | Step | Owner | Status |
 |---|---|---|
 | Google service-account JSON at `~/.credentials/google-sheets-service-account.json` | human | ✅ done (`metasfresh-e2e-sheets@feature-and-test-management.iam.gserviceaccount.com`) |
-| Target sheet created + shared with the service account | human | ✅ done — https://docs.google.com/spreadsheets/d/1D9oMjC7uG0H427v2kWyUFt9FcnMErtXnQpS97yAl_RM |
+| Target sheet created + shared with the service account | human | ✅ done — https://docs.google.com/spreadsheets/d/1B4WtERTrjg6TRYcJ15b4LWdDGZofducKcOOQS1EkU70 |
 | Tool extracts + classifies + upserts | tool | ✅ done (17 failures / 12 metric rows for the 05-25→29 window) |
 | **Repo placement** | done | ✅ metasfresh/metasfresh — https://github.com/metasfresh/metasfresh/pull/24334 (CI green) |
 | **Secret `QA_SHEETS_SERVICE_ACCOUNT_JSON` available to metasfresh/metasfresh** | human | ⛔ pending — see below |
@@ -27,7 +27,7 @@ This doc covers promoting it to the unattended GitHub Action.
      or
    - create a **repo-level** secret of the same name in metasfresh/metasfresh with
      the same JSON value (Settings → Secrets and variables → Actions → New secret).
-3. Add repo **variable** **`FLAKY_SHEET_ID`** = `1D9oMjC7uG0H427v2kWyUFt9FcnMErtXnQpS97yAl_RM`.
+3. Add repo **variable** **`FLAKY_SHEET_ID`** = `1B4WtERTrjg6TRYcJ15b4LWdDGZofducKcOOQS1EkU70`.
 4. After merge + 2 + 3, the Action fires on every failed `cicd` run on
    `new_dawn_uat` + the nightly backfill.
 
