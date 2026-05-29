@@ -30,8 +30,8 @@
 -- guarantees: `_trl.sql` < `_trl_translated.sql` < `5802040_`. AD_MigrationScript tracking
 -- keys on the full filename, so both entries are distinct and tracked independently.
 --
--- Idempotent: matches 0 rows on DBs where the original 5802039 (or 5802040 itself, on a re-run)
--- has already cleaned the stubs.
+-- Idempotent: produces no net data change on DBs where the original 5802039 (or 5802040 itself,
+-- on a re-run) has already cleaned the stubs.
 
 UPDATE AD_Window_Trl
 SET    Name      = CASE
