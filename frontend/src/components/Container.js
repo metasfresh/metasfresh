@@ -8,7 +8,7 @@ import {
   setRawModalTitle,
 } from '../actions/WindowActions';
 
-import DocumentList from '../containers/DocumentList';
+import DocumentListContainer from '../containers/DocumentListContainer';
 import ErrorScreen from './app/ErrorScreen';
 import SpinnerOverlay from './app/SpinnerOverlay';
 import Modal from './app/Modal';
@@ -152,7 +152,7 @@ class Container extends PureComponent {
               featureType={modal.dataId} // 'SEARCH'
             >
               <div className="document-lists-wrapper">
-                <DocumentList
+                <DocumentListContainer
                   type="grid"
                   windowId={rawModal.windowId}
                   defaultViewId={rawModal.viewId}
@@ -174,7 +174,7 @@ class Container extends PureComponent {
                 {includedView &&
                   includedView.windowId &&
                   includedView.viewId && (
-                    <DocumentList
+                    <DocumentListContainer
                       type="includedView"
                       windowId={includedView.windowId}
                       viewProfileId={includedView.viewProfileId}

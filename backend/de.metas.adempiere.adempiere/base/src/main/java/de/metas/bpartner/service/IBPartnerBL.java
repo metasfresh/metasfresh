@@ -1,39 +1,8 @@
-package de.metas.bpartner.service;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.i18n.Language;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.location.LocationId;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.user.User;
-import de.metas.user.UserId;
-import de.metas.util.ISingletonService;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-
-import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,9 +20,49 @@ import java.util.function.Predicate;
  * #L%
  */
 
+package de.metas.bpartner.service;
+
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.i18n.Language;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.LocationId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
+import de.metas.tax.api.VATIdentifier;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
 public interface IBPartnerBL extends ISingletonService
 {
+	String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
+	
 	I_C_BPartner getById(BPartnerId bpartnerId);
+
+	<T extends I_C_BPartner> T getById(@NonNull BPartnerId bpartnerId, @NonNull Class<T> type);
 
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
@@ -67,6 +76,8 @@ public interface IBPartnerBL extends ISingletonService
 	 * make full address
 	 */
 	String mkFullAddress(@NonNull I_C_BPartner bpartner, @Nullable I_C_BPartner_Location bpLocation, @Nullable LocationId locationId, @Nullable I_AD_User bpContact);
+
+	User getContactById(UserId userId);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.
@@ -172,11 +183,48 @@ public interface IBPartnerBL extends ISingletonService
 	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
+	/**
+	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
+	 */
+	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, @NonNull SOTrx soTrx);
+
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
+
+	boolean isInvoiceEmailCcToMember(@NonNull BPartnerId bpartnerId);
+
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	List<I_C_BPartner_Location> getBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
+
+	@Nullable
+	I_AD_User retrieveContact(
+			Properties ctx,
+			int bpartnerId,
+			boolean isSOTrx,
+			String trxName);
+
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull IBPartnerDAO.BPartnerLocationQuery query);
+
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationById(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Nullable
+	I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@Nullable
+	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
+
+	@Nullable
+	PricingSystemId retrievePricingSystemIdOrNull(@NonNull BPartnerId bpartnerId, SOTrx soTrx);
+
+	@Nullable
+	ShipperId getEffectiveShipperId(@Nullable BPartnerLocationId bPartnerDropShipLocationId,
+									@NonNull BPartnerLocationId bPartnerLocationId);
 
 	@Value
 	@Builder
@@ -240,11 +288,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	Optional<PaymentTermId> getPaymentTermIdForBPartner(BPartnerId bpartnerId, SOTrx soTrx);
 
-	/**
-	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
-	 */
-	Optional<PaymentRule> getPaymentRuleForBPartner(BPartnerId bpartnerId);
-
 	boolean isSalesRep(BPartnerId bpartnerId);
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
@@ -255,11 +298,15 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * extracted logic from legacy code
-	 * @param bp
-	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 
 	@NonNull
 	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+
+	/**
+	 * Gets the partner's VAT-ID either from the C_BPArtner or from its C_BPArtner_Location, depending on AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID}.
+	 */
+	@NonNull
+	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 }

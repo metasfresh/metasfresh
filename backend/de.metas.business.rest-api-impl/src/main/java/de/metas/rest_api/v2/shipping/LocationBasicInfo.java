@@ -22,22 +22,19 @@
 
 package de.metas.rest_api.v2.shipping;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.Joiner;
-
 import de.metas.common.shipping.v2.shipment.JsonLocation;
 import de.metas.location.CountryCode;
-import de.metas.location.ICountryCodeFactory;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Value
 @Builder
@@ -56,17 +53,13 @@ class LocationBasicInfo
 	String streetAndNumber;
 
 	@NonNull
-	public static Optional<LocationBasicInfo> ofNullable(
-			@Nullable final JsonLocation location,
-			@NonNull final ICountryCodeFactory countryCodeFactory)
+	public static Optional<LocationBasicInfo> ofNullable(@Nullable final JsonLocation location)
 	{
-		return location != null ? of(location, countryCodeFactory) : Optional.empty();
+		return location != null ? of(location) : Optional.empty();
 	}
 
 	@NonNull
-	public static Optional<LocationBasicInfo> of(
-			@NonNull final JsonLocation location,
-			@NonNull final ICountryCodeFactory countryCodeFactory)
+	public static Optional<LocationBasicInfo> of(@NonNull final JsonLocation location)
 	{
 		if (Check.isBlank(location.getCountryCode())
 				|| Check.isBlank(location.getCity())
@@ -84,7 +77,7 @@ class LocationBasicInfo
 				: null;
 
 		return Optional.of(LocationBasicInfo.builder()
-				.countryCode(countryCodeFactory.getCountryCodeByAlpha2(location.getCountryCode()))
+				.countryCode(CountryCode.ofAlpha2(location.getCountryCode()))
 				.city(location.getCity())
 				.postalCode(location.getZipCode())
 				.streetAndNumber(streetAndHouseNo)

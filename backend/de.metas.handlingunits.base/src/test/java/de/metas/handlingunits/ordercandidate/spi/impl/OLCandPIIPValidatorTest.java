@@ -1,10 +1,8 @@
-package de.metas.handlingunits.ordercandidate.spi.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.ordercandidate.spi.impl;
 
 import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -31,18 +31,18 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class OLCandPIIPValidatorTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -61,7 +61,7 @@ public class OLCandPIIPValidatorTest
 		// invoke the method under test
 		new OLCandPIIPPriceValidator().validate(olCand);
 
-		assertThat(olCand.getQtyEntered(), comparesEqualTo(BigDecimal.TEN));
+		assertThat(olCand.getQtyEntered()).isEqualByComparingTo(BigDecimal.TEN);
 	}
 
 	@Test
@@ -87,7 +87,7 @@ public class OLCandPIIPValidatorTest
 		// invoke the method under test
 		new OLCandPIIPPriceValidator().validate(olCand);
 
-		assertThat(olCand.getC_UOM_Internal_ID(), comparesEqualTo(eachUOM.getC_UOM_ID()));
+		assertThat(olCand.getC_UOM_Internal_ID()).isEqualTo(eachUOM.getC_UOM_ID());
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class OLCandPIIPValidatorTest
 		// invoke the method under test
 		new OLCandPIIPPriceValidator().validate(olCand);
 
-		assertThat(olCand.getC_UOM_Internal_ID(), comparesEqualTo(coliUOM.getC_UOM_ID()));
+		assertThat(olCand.getC_UOM_Internal_ID()).isEqualTo(coliUOM.getC_UOM_ID());
 	}
 
 	private I_C_UOM createUOM(final X12DE355 coli)

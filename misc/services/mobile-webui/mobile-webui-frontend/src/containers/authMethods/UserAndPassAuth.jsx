@@ -34,7 +34,7 @@ const UserAndPassAuth = () => {
   }, []);
 
   return (
-    <div className="section is-size-5">
+    <div id="password-auth" className="section is-size-5">
       <div className="container px-6">
         <form>
           <p className="help is-danger is-size-6 login-error">{errorMessage}</p>

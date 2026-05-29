@@ -13,6 +13,9 @@ SELECT fact.fact_acct_id,
        fact.updatedby,
        fact.c_acctschema_id,
        fact.account_id,
+       fact.accountconceptualname,
+       fact.C_CostClassification_ID,
+       fact.C_CostClassification_Category_ID,
        fact.datetrx,
        fact.dateacct,
        fact.c_period_id,
@@ -71,7 +74,6 @@ SELECT fact.fact_acct_id,
        --NEW_DAWN_MERGE_ARTIFACT
        -- fact.userElementDate1,
        -- fact.userElementDate2,
-       -- fact.m_sectioncode_id,
        fact.C_OrderSO_ID,
        acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance,
        fact.m_costelement_id,
@@ -82,8 +84,6 @@ SELECT fact.fact_acct_id,
        fact.IsOpenItemsReconciled,
        fact.OI_OpenAmount,
        fact.OI_OpenAmountSource
---NEW_DAWN_MERGE_ARTIFACT
--- ,fact.c_harvesting_calendar_id,
--- fact.harvesting_year_id
 FROM fact_acct fact
 ;
+

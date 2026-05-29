@@ -70,7 +70,8 @@ CREATE TABLE report.umsatzliste_bpartner_report_sub
 	param_Product_Category character varying(60),
 	Param_Attributes character varying(255),
 	currency character(3),
-	ad_org_id numeric
+	ad_org_id numeric,
+	delivery_bp_name character varying(100)
 )
 WITH (
 	OIDS=FALSE
@@ -94,7 +95,7 @@ CREATE FUNCTION report.umsatzliste_bpartner_report_sub
 	RETURNS SETOF report.umsatzliste_bpartner_report_sub AS
 $BODY$
 SELECT
-	bp.Name AS bp_name,
+	report._merge_bp_name(bp.Name, a.delivery_bp_name) AS bp_name,
 	pc.Name AS pc_name, 
 	COALESCE(pt.Name, p.Name) AS P_name,
 	SamePeriodSum,
@@ -126,7 +127,8 @@ SELECT
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $10) AS Param_Attributes,
 
 	c.iso_code AS currency,
-	a.ad_org_id
+	a.ad_org_id,
+	a.delivery_bp_name
 
 FROM
 	(
@@ -139,7 +141,11 @@ FROM
 			SUM( CASE WHEN IsInPeriod THEN 	il.qtyinvoiced ELSE 0 END ) AS SamePeriodQtySum,
 			SUM( CASE WHEN IsInCompPeriod THEN il.qtyinvoiced ELSE 0 END  ) AS CompPeriodQtySum,
 			1 AS Line_Order,
-			fa.ad_org_id
+			fa.ad_org_id,
+			COALESCE(
+				CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END,
+				bp_orderer.Name
+			) AS delivery_bp_name
 		FROM
 			(
 				SELECT 	fa.*, 
@@ -157,6 +163,12 @@ FROM
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
 			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
+
+			-- DropShip / delivery recipient joins
+			LEFT JOIN C_OrderLine ol_ds ON il.C_OrderLine_ID = ol_ds.C_OrderLine_ID AND ol_ds.isActive = 'Y'
+			LEFT JOIN C_Order ord ON ol_ds.C_Order_ID = ord.C_Order_ID AND ord.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_dropship ON ord.DropShip_BPartner_ID = bp_dropship.C_BPartner_ID AND bp_dropship.isActive = 'Y'
+			LEFT JOIN C_BPartner bp_orderer ON ord.C_BPartner_ID = bp_orderer.C_BPartner_ID AND bp_orderer.isActive = 'Y'
 		WHERE
 			AD_Table_ID = ( SELECT Get_Table_ID( 'C_Invoice' ) )
 			AND ( IsInPeriod OR IsInCompPeriod )
@@ -193,7 +205,8 @@ FROM
 		GROUP BY
 			fa.C_BPartner_ID,
 			fa.M_Product_ID,
-			fa.ad_org_id
+			fa.ad_org_id,
+			COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)
 	) a
 
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
@@ -237,6 +250,7 @@ CREATE TABLE report.umsatzliste_bpartner_report
 	Param_Attributes character varying(255),
 	currency character(3),
 	ad_org_id numeric,
+	delivery_bp_name character varying(100),
 	unionorder integer
 )
 WITH (
@@ -287,6 +301,7 @@ UNION ALL
 		
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id,
+		NULL::varchar(100) AS delivery_bp_name,
 		2 AS UnionOrder
 	FROM 	
 		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -316,6 +331,7 @@ UNION ALL
 		
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id,
+		NULL::varchar(100) AS delivery_bp_name,
 		3 AS UnionOrder
 	FROM 	
 		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)

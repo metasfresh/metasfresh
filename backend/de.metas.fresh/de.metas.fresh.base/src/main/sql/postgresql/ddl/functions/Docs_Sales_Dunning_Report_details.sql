@@ -42,9 +42,12 @@ WITH TableIds AS (SELECT get_table_id('C_Invoice') AS InvoiceTableId,
                                             COALESCE(i.C_Doctype_ID, o.C_Doctype_ID)         AS C_Doctype_ID,
                                             COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID) AS C_PaymentTerm_ID,
                                             COALESCE(i.GrandTotal, o.GrandTotal)             AS GrandTotal,
-                                            paymenttermduedate(
-                                                    COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID),
-                                                    COALESCE(i.DateInvoiced, o.DateOrdered)::TIMESTAMP WITH TIME ZONE
+                                            COALESCE(
+                                                    i.DueDate::TIMESTAMP WITH TIME ZONE,
+                                                    paymenttermduedate(
+                                                            o.C_PaymentTerm_ID,
+                                                            o.DateOrdered::TIMESTAMP WITH TIME ZONE
+                                                    )
                                             )                                                AS duedate
                                      FROM C_DunningDoc dd
                                               JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID

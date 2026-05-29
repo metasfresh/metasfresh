@@ -22,15 +22,6 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_Transaction;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -40,7 +31,14 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.MockedAllocationSourceDestination;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_Transaction;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -79,9 +77,8 @@ public class HULoaderTest extends AbstractHUTest
 		// Create incoming mtrx reversal
 		final I_M_Transaction mtrxReversal = helper.createMTransactionReversal(mtrx);
 		POJOWrapper.setInstanceName(mtrxReversal, "Incoming trx reversal");
-		Assert.assertThat("Reversal qty shall be original qty negated",
-				mtrxReversal.getMovementQty(),
-				Matchers.comparesEqualTo(mtrx.getMovementQty().negate()));
+		assertThat(mtrxReversal.getMovementQty()).as("Reversal qty shall be original qty negated")
+				.isEqualByComparingTo(mtrx.getMovementQty().negate());
 
 		//
 		// Create incoming "source" and validate
@@ -162,12 +159,8 @@ public class HULoaderTest extends AbstractHUTest
 
 		//
 		// Validate
-		Assert.assertThat("Invalid QtyToAllocate",
-				result.getQtyToAllocate(),
-				Matchers.comparesEqualTo(new BigDecimal("0")));
-		Assert.assertThat("Invalid QtyAllocated",
-				result.getQtyAllocated(),
-				Matchers.comparesEqualTo(new BigDecimal("7")));
+		assertThat(result.getQtyToAllocate()).as("Invalid QtyToAllocate").isEqualByComparingTo(BigDecimal.valueOf(0));
+		assertThat(result.getQtyAllocated()).as("Invalid QtyAllocated").isEqualByComparingTo(BigDecimal.valueOf(7));
 	}
 
 	// pure unit test
@@ -203,11 +196,7 @@ public class HULoaderTest extends AbstractHUTest
 
 		//
 		// Validate
-		Assert.assertThat("Invalid QtyToAllocate",
-				result.getQtyToAllocate(),
-				Matchers.comparesEqualTo(new BigDecimal(10 - 7)));
-		Assert.assertThat("Invalid QtyAllocated",
-				result.getQtyAllocated(),
-				Matchers.comparesEqualTo(new BigDecimal(7)));
+		assertThat(result.getQtyToAllocate()).as("Invalid QtyToAllocate").isEqualByComparingTo(BigDecimal.valueOf(10 - 7));
+		assertThat(result.getQtyAllocated()).as("Invalid QtyAllocated").isEqualByComparingTo(BigDecimal.valueOf(7));
 	}
 }

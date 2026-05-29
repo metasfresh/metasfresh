@@ -22,15 +22,14 @@ package de.metas.util.collections;
  * #L%
  */
 
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.util.collections.IteratorChain;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IteratorChainTest
 {
@@ -56,23 +55,22 @@ public class IteratorChainTest
 	}
 
 	@SuppressWarnings("resource")
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void addingNullIterator()
 	{
 		IteratorChain<String> it = new IteratorChain<String>();
-		it.addIterator(null); // shall throw IllegalArgumentException
-
+		assertThrows(IllegalArgumentException.class, () -> it.addIterator(null)); // shall throw IllegalArgumentException
 	}
 
 	@SuppressWarnings("resource")
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void lockedChain()
 	{
 		IteratorChain<String> it = new IteratorChain<String>();
 		it.addIterator(new ArrayList<String>().iterator());
 		it.hasNext(); // this one locks the iterator for adding
 
-		it.addIterator(new ArrayList<String>().iterator()); // throws IllegalStateException
+		assertThrows(IllegalStateException.class, () -> it.addIterator(new ArrayList<String>().iterator())); // throws IllegalStateException
 	}
 
 	private <E> void test(List<List<E>> testData)
@@ -81,7 +79,7 @@ public class IteratorChainTest
 		final IteratorChain<E> it = createIteratorChain(testData);
 		final List<E> dataActual = join(it);
 
-		Assert.assertEquals(dataExpected, dataActual);
+		assertThat(dataActual).isEqualTo(dataExpected);
 	}
 
 	private List<String> createTestList(String prefix, int size)

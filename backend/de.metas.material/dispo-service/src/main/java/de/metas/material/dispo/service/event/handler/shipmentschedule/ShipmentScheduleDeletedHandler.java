@@ -72,6 +72,13 @@ public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<Ship
 	@Override
 	public void handleEvent(@NonNull final ShipmentScheduleDeletedEvent event)
 	{
+		// dropship-warehouse shipment-schedules bypass material-disposition entirely —
+		// the C_Order_DropshipPO interceptor creates a direct SO→PO instead of going through MD_Candidate.
+		if (event.isDropShipWarehouse())
+		{
+			return;
+		}
+
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofShipmentScheduleId(event.getShipmentScheduleId());
 		final CandidatesQuery candidatesQuery = CandidatesQuery
 				.builder()

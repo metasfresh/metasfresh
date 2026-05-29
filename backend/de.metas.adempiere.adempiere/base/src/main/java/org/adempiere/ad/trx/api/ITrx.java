@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming.BEFORE_COMMIT;
+
 /**
  * Transaction interface
  *
@@ -75,6 +77,8 @@ public interface ITrx
 	 * @return true if transaction active (e.g. not already committed/closed)
 	 */
 	boolean isActive();
+	
+	boolean isCommittedOK();
 
 	/**
 	 * Then this trx obtains a connection, it will check and invoke {@link Connection#setAutoCommit(boolean)} if necessary.
@@ -211,6 +215,26 @@ public interface ITrx
 				.addAll(itemsToAccumulate);
 	}
 
+	default <T> void accumulateAndProcessBeforeCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
+	{
+		if (getTrxListenerManager().canRegisterOnTiming(BEFORE_COMMIT))
+		{
+			getProperty(propertyName, () -> {
+				final ListAccumulator<T> accum = new ListAccumulator<>();
+				runBeforeCommit(() -> accum.flush(beforeCommitListProcessor));
+				return accum;
+			}).addAll(itemsToAccumulate);
+		}
+		else
+		{
+			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
+		}
+
+	}
+
 	default <T> void accumulateAndProcessAfterRollback(
 			@NonNull final String propertyName,
 			@NonNull final Collection<T> itemsToAccumulate,
@@ -237,6 +261,11 @@ public interface ITrx
 	default void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		getTrxListenerManager().runAfterCommit(runnable);
+	}
+
+	default void runBeforeCommit(@NonNull final Runnable runnable)
+	{
+		getTrxListenerManager().runBeforeCommit(runnable);
 	}
 
 	default void runAfterRollback(@NonNull final Runnable runnable)

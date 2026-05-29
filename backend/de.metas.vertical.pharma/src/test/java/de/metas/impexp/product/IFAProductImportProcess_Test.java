@@ -1,33 +1,29 @@
 package de.metas.impexp.product;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.impexp.product.IFAProductImportTestHelper.IFAFlags;
+import de.metas.pricing.PriceListId;
+import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.impexp.format.ImportTableDescriptorRepository;
-import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.impexp.product.IFAProductImportTestHelper.IFAFlags;
-import de.metas.pricing.PriceListId;
-import de.metas.vertical.pharma.PharmaProductRepository;
-import de.metas.vertical.pharma.model.I_I_Pharma_Product;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -51,16 +47,6 @@ import de.metas.vertical.pharma.model.I_I_Pharma_Product;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		// needed to register the spring context with the Adempiere main class
-		StartupListener.class, ShutdownListener.class,
-
-		// needed so that the spring context can discover those components
-		PharmaProductRepository.class,
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class
-})
 public class IFAProductImportProcess_Test
 {
 	private Properties ctx;
@@ -79,14 +65,17 @@ public class IFAProductImportProcess_Test
 	private final BigDecimal A01UVP = BigDecimal.valueOf(4);
 	private final BigDecimal A01ZBV = BigDecimal.valueOf(5);
 
-	private final String adLanguage ="de_DE";
-	private final String countryCode ="DE";
+	private final String adLanguage = "de_DE";
+	private final String countryCode = "DE";
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
-		final AdempiereTestHelper adempiereTestHelper = AdempiereTestHelper.get();
-		adempiereTestHelper.init();
+		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		ctx = Env.getCtx();
 		IFAProductImportTestHelper.createUOM("PCE");
@@ -175,8 +164,6 @@ public class IFAProductImportProcess_Test
 	 * <code>1			20181115	04811250	product1	productDesc1	productCateg1			36620			20			ST			01			02			01		01		6		2		1		3		4		5		</code><br>
 	 * <code>1			20181115	05811250	product2	productDesc2	productCateg2			36622			23			ST			00			01			00		00		6		2		1		3		4		5		</code><br>
 	 * <code>1			20181115	05834260	product3	productDesc3	productCateg3			42512			14			ST			00			00			02		00		6		2		1		3		4		5		</code><br>
-	 *
-	 * @param lines
 	 */
 	private List<I_I_Pharma_Product> prepareImportRecords()
 	{

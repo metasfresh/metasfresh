@@ -29,20 +29,7 @@ import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
 import Breadcrumb from './breadcrumb/Breadcrumb';
 import SideList from './SideList';
-import Subheader, {
-  ACTION_ABOUT_DOCUMENT,
-  ACTION_BREADCRUMB_CLICK,
-  ACTION_CLONE_DOCUMENT,
-  ACTION_DELETE_DOCUMENT,
-  ACTION_DOWNLOAD_SELECTED,
-  ACTION_NEW_DOCUMENT,
-  ACTION_OPEN_ADVANCED_EDIT,
-  ACTION_OPEN_COMMENTS,
-  ACTION_OPEN_EMAIL,
-  ACTION_OPEN_LETTER,
-  ACTION_OPEN_PRINT_RAPORT,
-  ACTION_TOGGLE_EDIT_MODE,
-} from './SubHeader';
+import Subheader, { getStandardActions } from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -56,6 +43,7 @@ import { getSelection, getTableId } from '../../reducers/tables';
 import RedirectHandler from './RedirectHandler';
 import { requestRedirect } from '../../reducers/redirect';
 import * as StaticModalType from '../../constants/StaticModalType';
+import { DocumentAction } from '../../constants/DocumentAction';
 
 const PROMPT_TYPE_CONFIRM_DELETE = 'confirmDelete';
 
@@ -588,33 +576,43 @@ class Header extends PureComponent {
   };
 
   handleAction = ({ action, payload }) => {
-    const { windowId, dataId } = this.props;
+    const { windowId, dataId, standardActionsAllowed } = this.props;
+    if (
+      DocumentAction.isStandardAction(action) &&
+      !standardActionsAllowed.includes(action)
+    ) {
+      console.log(`Action ${action} not allowed`, {
+        standardActionsAllowed,
+        payload,
+      });
+      return;
+    }
 
     switch (action) {
-      case ACTION_BREADCRUMB_CLICK: {
+      case DocumentAction.BREADCRUMB_CLICK: {
         this.handleUpdateBreadcrumb(payload);
         break;
       }
-      case ACTION_TOGGLE_EDIT_MODE: {
+      case DocumentAction.TOGGLE_EDIT_MODE: {
         const { handleEditModeToggle } = this.props;
         handleEditModeToggle();
         this.closeSubheader();
         break;
       }
-      case ACTION_ABOUT_DOCUMENT: {
+      case DocumentAction.ABOUT_DOCUMENT: {
         this.handleAboutButton();
         break;
       }
-      case ACTION_DOWNLOAD_SELECTED: {
+      case DocumentAction.DOWNLOAD_SELECTED: {
         this.handleDownloadSelected();
         break;
       }
-      case ACTION_NEW_DOCUMENT: {
+      case DocumentAction.NEW_DOCUMENT: {
         this.redirect('/window/' + windowId + '/new');
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_ADVANCED_EDIT: {
+      case DocumentAction.OPEN_ADVANCED_EDIT: {
         this.openModal(
           windowId,
           'window',
@@ -624,34 +622,34 @@ class Header extends PureComponent {
         this.closeSubheader();
         break;
       }
-      case ACTION_CLONE_DOCUMENT: {
+      case DocumentAction.CLONE_DOCUMENT: {
         this.handleClone(windowId, dataId);
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_EMAIL: {
+      case DocumentAction.OPEN_EMAIL: {
         this.handleEmail();
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_LETTER: {
+      case DocumentAction.OPEN_LETTER: {
         this.handleLetter();
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_PRINT_RAPORT: {
+      case DocumentAction.OPEN_PRINT_RAPORT: {
         const { docNoData } = this.props;
         const docNo = docNoData?.value;
         this.closeSubheader();
         return this.handlePrint(windowId, dataId, docNo);
         // break;
       }
-      case ACTION_DELETE_DOCUMENT: {
+      case DocumentAction.DELETE_DOCUMENT: {
         this.handleDelete();
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_COMMENTS: {
+      case DocumentAction.OPEN_COMMENTS: {
         this.handleComments();
         this.closeSubheader();
         break;
@@ -688,6 +686,7 @@ class Header extends PureComponent {
       saveStatus,
       isShowComments,
       hasComments,
+      standardActionsAllowed,
     } = this.props;
 
     const {
@@ -962,6 +961,7 @@ class Header extends PureComponent {
           />
         )}
         <GlobalContextShortcuts
+          standardActionsAllowed={standardActionsAllowed}
           handleSidelistToggle={this.handleSidelistToggle}
           handleMenuOverlay={
             isMenuOverlayShow
@@ -971,7 +971,7 @@ class Header extends PureComponent {
           }
           handleInboxToggle={this.handleInboxToggle}
           handleUDToggle={this.handleUDToggle}
-          openModal={
+          handleOpenAdvancedEdit={
             dataId
               ? () =>
                   this.openModal(
@@ -994,7 +994,7 @@ class Header extends PureComponent {
           handleClone={
             dataId ? () => this.handleClone(windowId, dataId) : undefined
           }
-          redirect={
+          handleNewDocument={
             windowId
               ? () => this.redirect(`/window/${windowId}/new`)
               : undefined
@@ -1042,6 +1042,7 @@ Header.propTypes = {
   isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
   selected: PropTypes.array,
+  standardActionsAllowed: PropTypes.array,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -1069,6 +1070,12 @@ const mapStateToProps = (state, ownProps) => {
     indicator,
     saveStatus,
     selected,
+    standardActionsAllowed: getStandardActions({
+      state,
+      windowId,
+      documentId,
+      viewId,
+    }),
   };
 };
 

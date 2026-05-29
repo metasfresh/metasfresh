@@ -1,16 +1,16 @@
 package org.adempiere.ad.callout.api.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+@Disabled
 public class MockedCalloutProvider implements ICalloutProvider
 {
 	private final Map<String, TableCalloutsMap> calloutsMap = new HashMap<>();

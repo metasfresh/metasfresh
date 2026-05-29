@@ -57,7 +57,7 @@ public interface IPricingResult
 		return CurrencyId.toRepoId(getCurrencyId());
 	}
 
-	void setPriceUomId(final UomId uomId);
+	void setPriceUomId(@Nullable final UomId uomId);
 
 	UomId getPriceUomId();
 
@@ -127,7 +127,7 @@ public interface IPricingResult
 
 	void setPriceListVersionId(PriceListVersionId priceListVersionId);
 
-	void setProductCategoryId(ProductCategoryId productCategoryId);
+	void setProductCategoryId(@Nullable ProductCategoryId productCategoryId);
 
 	ProductCategoryId getProductCategoryId();
 

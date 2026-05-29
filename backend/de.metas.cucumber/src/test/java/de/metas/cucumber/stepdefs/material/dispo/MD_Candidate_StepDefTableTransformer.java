@@ -52,6 +52,38 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Transforms Cucumber DataTables into {@link MD_Candidate_StepDefTable} for MD_Candidate assertion steps.
+ *
+ * <h3>Required columns</h3>
+ * <ul>
+ *   <li>{@code Identifier} — record identifier for cross-step references (auto-generated if absent)</li>
+ *   <li>{@code MD_Candidate_Type} — e.g. DEMAND, SUPPLY, STOCK, STOCK_UP</li>
+ *   <li>{@code M_Product_ID} — product identifier</li>
+ *   <li>{@code DateProjected} — candidate date in ISO-8601 UTC (e.g. {@code 2024-09-22T21:00:00Z}).
+ *       <b>Mandatory</b> — used both as query filter and assertion.
+ *       Alternative: {@code DateProjected_LocalTimeZone} (converted via system timezone).</li>
+ *   <li>{@code Qty} — expected quantity (automatically negated for stock-decreasing types)</li>
+ * </ul>
+ *
+ * <h3>Optional columns</h3>
+ * <ul>
+ *   <li>{@code MD_Candidate_BusinessCase} — e.g. SHIPMENT, PRODUCTION, PURCHASE, DISTRIBUTION</li>
+ *   <li>{@code ATP} or {@code Qty_AvailableToPromise} — expected ATP (defaults to 0)</li>
+ *   <li>{@code M_Warehouse_ID} — warehouse identifier</li>
+ *   <li>{@code M_AttributeSetInstance_ID} — ASI identifier</li>
+ *   <li>{@code simulated} — whether the candidate is simulated (defaults to false)</li>
+ *   <li>Production detail columns: {@code PP_Order_Candidate_ID}, {@code PP_OrderLine_Candidate_ID},
+ *       {@code PP_Order_ID}, {@code PP_Order_BOMLine_ID}</li>
+ *   <li>Distribution detail columns (stored in MD_Candidate_Dist_Detail):
+ *       {@code DD_Order_Candidate_ID} — identifier of the DD_Order_Candidate that created this candidate,
+ *       {@code DD_Order_ID} — identifier of the completed DD_Order,
+ *       {@code DD_OrderLine_ID} — identifier of the DD_OrderLine</li>
+ *   <li>Distribution forward PP_Order columns:
+ *       {@code Forward_PP_Order_Candidate_ID}, {@code Forward_PP_OrderLine_Candidate_ID},
+ *       {@code Forward_PP_Order_ID}, {@code Forward_PP_Order_BOMLine_ID}</li>
+ * </ul>
+ */
 @RequiredArgsConstructor
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
@@ -126,6 +158,13 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		return row.getAsEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 	}
 
+	/**
+	 * Extracts the projected date from the data table row.
+	 * Tries {@code DateProjected_LocalTimeZone} first (converted via system timezone),
+	 * falls back to {@code DateProjected} (parsed as UTC instant).
+	 * <p>
+	 * <b>At least one of these columns must be present</b> — otherwise an {@link org.adempiere.exceptions.AdempiereException} is thrown.
+	 */
 	private static Instant extractDateProjected(final DataTableRow row)
 	{
 		return row.getAsOptionalLocalDateTime("DateProjected_LocalTimeZone")

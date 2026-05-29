@@ -182,7 +182,7 @@ public class MaterialCockpitRowsLoader
 
 		return queryBuilder
 				.create()
-				.listIds(ProductId::ofRepoId);
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	@Value

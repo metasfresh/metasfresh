@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.spi.impl.aggregator.standard;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -44,6 +44,7 @@ import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -74,10 +75,27 @@ public class DefaultAggregator implements IAggregator
 	 */
 	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<>();
 
+	/**
+	 * When set, {@link #aggregate()} uses this externally-supplied map instead of building
+	 * its own via {@link #createInvoiceableQtysMap()}. The engine populates a single shared
+	 * map and threads it through every bucket's aggregator, so allocations in one bucket
+	 * reduce what subsequent buckets see — preventing over-allocation when ICIOLs of one IC
+	 * are split across multiple invoice headers (e.g. via the "Per each shipment/receipt"
+	 * header aggregation attribute).
+	 */
+	@Nullable
+	private Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedIc2QtyInvoiceable;
+
 	@Override
 	public void setMatchInvoiceService(final MatchInvoiceService matchInvoiceService)
 	{
 		this.matchInvoiceService = matchInvoiceService;
+	}
+
+	@Override
+	public void setSharedIc2QtyInvoiceable(@Nullable final Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedMap)
+	{
+		this.sharedIc2QtyInvoiceable = sharedMap;
 	}
 
 	@Override
@@ -113,7 +131,7 @@ public class DefaultAggregator implements IAggregator
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();
 
-		if (Check.isEmpty(lineAggregationKeyStr))
+		if (Check.isBlank(lineAggregationKeyStr))
 		{
 			// 'ic' has an empty LineAggregationKey;
 			// don't aggregate it with any other candidate
@@ -134,7 +152,7 @@ public class DefaultAggregator implements IAggregator
 				final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
 						.invoiceCandidate(request.getC_Invoice_Candidate())
 						.inoutLine(inoutLine)
-						.invoiceLineAttributes(request.getInvoiceLineAttributes())
+						.invoiceLineAttributes(request.getAttributesFromInoutLines())
 						.build();
 				final AggregationKey lineAggregationKey = lineAggregationKeyUnparsed.parse(evalCtx);
 				aggregationKeyToUse.append(lineAggregationKey.getAggregationKeyString());
@@ -182,8 +200,14 @@ public class DefaultAggregator implements IAggregator
 		final List<IInvoiceCandAggregate> invoiceCandAggregates = new ArrayList<>();
 
 		// ic2QtyInvoiceable keeps track of the qty that we have left to invoice,
-		// to make sure that we don't invoice more that the invoice candidate allows us to
-		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable = createInvoiceableQtysMap();
+		// to make sure that we don't invoice more that the invoice candidate allows us to.
+		// When the engine supplies a shared map, we use it so that allocations from earlier
+		// buckets are visible here; otherwise fall back to a local map for stand-alone callers.
+		// IMPORTANT: must be built BEFORE the bucket-removal loop below — the fallback
+		// createInvoiceableQtysMap() iterates aggKey2iciol.values() to seed every IC; later in
+		// the loop those entries are removed via aggKey2iciol.remove(aggKey).
+		final Map<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable =
+				sharedIc2QtyInvoiceable != null ? sharedIc2QtyInvoiceable : createInvoiceableQtysMap();
 
 		for (final String aggKey : new ArrayList<>(aggKey2iciol.keySet()))
 		{
@@ -215,7 +239,9 @@ public class DefaultAggregator implements IAggregator
 		return invoiceCandAggregates;
 	}
 
-	/** @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced */
+	/**
+	 * @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced
+	 */
 	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> createInvoiceableQtysMap()
 	{
 		// ic2QtyInvoiceable keeps track of the stockQty that we have left to invoice, to make sure that we don't invoice more than the invoice candidate allows us to

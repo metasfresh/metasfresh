@@ -165,6 +165,12 @@ public interface IQuery<T>
 		return idMapper.apply(firstId());
 	}
 
+	@NonNull
+	default <ID extends RepoIdAware> Optional<ID> firstIdOptional(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return Optional.ofNullable(idMapper.apply(firstId()));
+	}
+
 	/**
 	 * @return first ID or -1 if no records are found.
 	 * An exception is thrown if multiple results exist.
@@ -221,7 +227,8 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
-	@NonNull <ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+	@NonNull
+	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
@@ -242,7 +249,8 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
-	@NonNull <ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
+	@NonNull
+	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there are more then one record <code>null</code> will be returned instead of throwing exception.
@@ -291,6 +299,7 @@ public interface IQuery<T>
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
 
+	@SuppressWarnings("unused")
 	default <ET extends T> Iterator<ET> iterateWithGuaranteedIterator(final Class<ET> clazz) throws DBException
 	{
 		setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
@@ -319,6 +328,7 @@ public interface IQuery<T>
 	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and this method are complementary and NOT exclusive.
 	 */
+	@SuppressWarnings("unused")
 	IQuery<T> setNotInSelection(PInstanceId pinstanceId);
 
 	/**
@@ -502,9 +512,14 @@ public interface IQuery<T>
 	 */
 	List<Integer> listIds();
 
-	default <ID extends RepoIdAware> ImmutableSet<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	default <ID extends RepoIdAware> ImmutableSet<ID> idsAsSet(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
+	}
+
+	default <ID extends RepoIdAware> ImmutableList<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return listIds().stream().map(idMapper).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -530,6 +545,11 @@ public interface IQuery<T>
 	 */
 	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
+	default <AT> ImmutableSet<AT> listDistinctAsImmutableSet(String columnName, Class<AT> valueType)
+	{
+		return ImmutableSet.copyOf(listDistinct(columnName, valueType));
+	}
+
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
 	 */
@@ -546,6 +566,7 @@ public interface IQuery<T>
 	<K, ET extends T> ImmutableMap<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
 
 	<K> ImmutableMap<K, T> map(Function<T, K> keyFunction);
+
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
 	 *
@@ -554,6 +575,7 @@ public interface IQuery<T>
 	 */
 	<K, ET extends T> ListMultimap<K, ET> listMultimap(Class<ET> modelClass, Function<ET, K> keyFunction);
 
+	@SuppressWarnings("unused")
 	default <K> ListMultimap<K, T> listMultimap(@NonNull Function<T, K> keyFunction) {return listMultimap(getModelClass(), keyFunction);}
 
 	/**

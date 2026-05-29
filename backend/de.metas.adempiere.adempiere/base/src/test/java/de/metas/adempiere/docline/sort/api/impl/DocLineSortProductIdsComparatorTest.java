@@ -22,16 +22,15 @@ package de.metas.adempiere.docline.sort.api.impl;
  * #L%
  */
 
+import org.compiere.model.I_C_DocLine_Sort;
+import org.compiere.model.X_C_DocType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import org.compiere.model.I_C_DocLine_Sort;
-import org.compiere.model.X_C_DocType;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Test {@link DocLineSortProductIdsComparator} - comparator shall correctly assess sequence number of different products against C_BPartner configuration.
@@ -83,11 +82,11 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(0).intValue());
-		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(1).intValue());
-		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(2).intValue());
-		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
-		Assert.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
+		Assertions.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assertions.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(1).intValue());
+		Assertions.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(2).intValue());
+		Assertions.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
+		Assertions.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
 	}
 
 	@Test
@@ -100,11 +99,11 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(0).intValue());
-		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(1).intValue());
-		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(2).intValue());
-		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(3).intValue());
-		Assert.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
+		Assertions.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assertions.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(1).intValue());
+		Assertions.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(2).intValue());
+		Assertions.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(3).intValue());
+		Assertions.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
 	}
 
 	@Test
@@ -117,11 +116,11 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(0).intValue());
-		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(1).intValue());
-		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(2).intValue());
-		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
-		Assert.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
+		Assertions.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assertions.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(1).intValue());
+		Assertions.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(2).intValue());
+		Assertions.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
+		Assertions.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
 	}
 
 	@Test
@@ -134,10 +133,10 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(0).intValue());
-		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(1).intValue());
-		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(2).intValue());
-		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
-		Assert.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
+		Assertions.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assertions.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(1).intValue());
+		Assertions.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(2).intValue());
+		Assertions.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
+		Assertions.assertEquals(product5.getM_Product_ID(), orderedProductLines.get(4).intValue());
 	}
 }

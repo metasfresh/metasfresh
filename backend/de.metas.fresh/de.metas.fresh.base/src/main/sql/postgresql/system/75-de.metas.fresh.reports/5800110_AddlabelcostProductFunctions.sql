@@ -82,6 +82,10 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invo
                 p_description             character varying(255),
                 invoice_description       character varying(1024),
                 cursymbol                 character varying(10),
+                PricePattern              text,
+                AmountPattern             text,
+                QtyPattern                text,
+                PriceQtyPattern           text,
                 IsDisplayProductCostLabel character(1)
             )
 AS
@@ -133,6 +137,10 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
        p.description                                                                AS p_description,
        i.description                                                                AS invoice_description,
        c.cursymbol,
+       report.getPricePatternForJasper(i.m_pricelist_id)                            AS PricePattern,
+       report.getAmountPatternForJasper(c.c_currency_id)                            AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                                       AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                                      AS PriceQtyPattern,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'ProductCostLabel') = 'N' THEN 'Y'
                                                                                        ELSE 'N'
@@ -275,6 +283,7 @@ GROUP BY InOuts,
          COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
          COALESCE(puomt.UOMSymbol, puom.UOMSymbol),
          puom.StdPrecision,
+         uom.StdPrecision,
          t.rate,
          bpg.IsPrintTax,
          COALESCE(io1.DateFrom, io2.DateFrom),
@@ -285,6 +294,8 @@ GROUP BY InOuts,
          p.description,
          i.description,
          c.cursymbol,
+         i.m_pricelist_id,
+         c.c_currency_id,
          i.C_DocType_ID
 
 ORDER BY COALESCE(io1.DateFrom, io2.DateFrom),

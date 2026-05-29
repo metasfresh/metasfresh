@@ -1,0 +1,68 @@
+de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
+  {
+    "data": {
+      "Addresses": [
+        {
+          "Attention": "metas GmbH",
+          "City": "Bonn",
+          "CountryCode": "DE",
+          "Email": "noreply@metasfresh.com",
+          "Kind": 2,
+          "Name1": "metas GmbH",
+          "Name2": "",
+          "Phone": "12345678",
+          "PostCode": "53179",
+          "Street1": "Am Noßbacher Weg 2",
+          "Street2": ""
+        },
+        {
+          "Attention": "Test Delivery Contact Name",
+          "City": "Timisoara",
+          "CountryCode": "RO",
+          "Email": "noreply@metasfresh.com",
+          "Kind": 1,
+          "Name1": "metas.ro SRL",
+          "Name2": "",
+          "Phone": "12341234",
+          "PostCode": "300078",
+          "Street1": "Alecsandri 3",
+          "Street2": ""
+        }
+      ],
+      "DangerousGoods": [ ],
+      "DetailGroups": [ ],
+      "Lines": [
+        {
+          "Height": 150,
+          "Length": 1000,
+          "LineWeight": 10000,
+          "Number": 1,
+          "Pkgs": [ ],
+          "References": [
+            {
+              "Kind": 23,
+              "Value": "Test Product Value"
+            }
+          ],
+          "Width": 200
+        }
+      ],
+      "OrderNo": "randomUUID",
+      "ProdConceptID": 0,
+      "References": [
+        {
+          "Kind": 63,
+          "Value": "incoterms"
+        },
+        {
+          "Kind": 64,
+          "Value": "Other"
+        }
+      ],
+      "Services": [ ]
+    },
+    "options": {
+      "ServiceLevel": "Test"
+    }
+  }
+]

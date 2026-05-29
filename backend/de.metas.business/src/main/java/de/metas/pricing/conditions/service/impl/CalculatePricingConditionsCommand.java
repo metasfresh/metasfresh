@@ -242,7 +242,7 @@ import java.util.Optional;
 		newPricingCtx.setPricingSystemId(basePricingSystemId);
 		newPricingCtx.setPriceListId(null); // will be recomputed
 		newPricingCtx.setPriceListVersionId(null); // will be recomputed
-		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
+		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(false);
 		newPricingCtx.setDisallowDiscount(true);
 		newPricingCtx.setFailIfNotCalculated();
 

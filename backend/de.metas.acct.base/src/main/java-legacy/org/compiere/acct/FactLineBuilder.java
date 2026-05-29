@@ -8,10 +8,13 @@ import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cost.classification.CostClassificationCategoryId;
+import de.metas.cost.classification.CostClassificationId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.elementvalue.ElementValue;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -91,6 +94,8 @@ public final class FactLineBuilder
 	@Nullable private BPartnerId bpartnerId;
 	@Nullable private BPartnerLocationId bPartnerLocationId;
 	@Nullable private TaxId C_Tax_ID;
+	@Nullable private Boolean vatCodeIsSOTrxOverride;
+	@Nullable private String vatCode;
 	@Nullable private Integer locatorId;
 	@Nullable private Optional<ActivityId> activityId;
 	@Nullable private ProjectId projectId;
@@ -171,6 +176,12 @@ public final class FactLineBuilder
 		//
 		final Doc<?> doc = fact.m_doc;
 		final AcctDocRequiredServicesFacade services = doc.getServices();
+		final ElementValue elementValue = services.getElementValueById(elementValueId);
+		final CostClassificationId costClassificationId = elementValue.getCostClassificationId();
+		final CostClassificationCategoryId costClassificationCategoryId = Optional.ofNullable(costClassificationId)
+				.map(services::getCostClassificationCategoryId)
+				.orElse(null);
+
 		final FactLine line = FactLine.builder()
 				.services(services)
 				.doc(doc)
@@ -183,6 +194,8 @@ public final class FactLineBuilder
 				.accountId(elementValueId)
 				.account(validCombination)
 				.accountConceptualName(accountConceptualName)
+				.costClassificationId(costClassificationId)
+				.costClassificationCategoryId(costClassificationCategoryId)
 				.productId(productId)
 				.qty(qty)
 				.orgTrxId(orgTrxId)
@@ -243,7 +256,18 @@ public final class FactLineBuilder
 		//
 		if (C_Tax_ID != null)
 		{
-			line.setTaxIdAndUpdateVatCode(C_Tax_ID);
+			if (vatCodeIsSOTrxOverride != null)
+			{
+				line.setTaxIdAndUpdateVatCode(C_Tax_ID, vatCodeIsSOTrxOverride);
+			}
+			else
+			{
+				line.setTaxIdAndUpdateVatCode(C_Tax_ID);
+			}
+		}
+		if (vatCode != null)
+		{
+			line.setVatCode(vatCode);
 		}
 
 		if (fromLocationId != null)
@@ -646,6 +670,27 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	/**
+	 * Sets the TaxId and forces the {@code IsSOTrx} used for VATCode lookup. For reverse-charge
+	 * legs: pass {@code true} on the T_Due_Acct leg (§13b output, KZ 84/85) and {@code false} on
+	 * the T_Credit_Acct leg (§13b input, KZ 67).
+	 */
+	public FactLineBuilder setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
+	{
+		assertNotBuild();
+		this.C_Tax_ID = taxId;
+		this.vatCodeIsSOTrxOverride = isSOTrxOverride;
+		return this;
+	}
+
+	/** Pre-resolved VATCode (e.g. copied from a source Fact_Acct row in allocation corrections). */
+	public FactLineBuilder vatCode(@Nullable final String vatCode)
+	{
+		assertNotBuild();
+		this.vatCode = vatCode;
+		return this;
+	}
+
 	public FactLineBuilder locatorId(final int locatorId)
 	{
 		assertNotBuild();
@@ -701,7 +746,6 @@ public final class FactLineBuilder
 	{
 		return fromLocationOfLocator(locatorId != null ? locatorId.getRepoId() : -1);
 	}
-
 
 	public FactLineBuilder toLocation(final Optional<LocationId> optionalLocationId)
 	{

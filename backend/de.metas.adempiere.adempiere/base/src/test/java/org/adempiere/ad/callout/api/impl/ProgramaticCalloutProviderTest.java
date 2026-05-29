@@ -10,12 +10,12 @@ package org.adempiere.ad.callout.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,17 +33,17 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.ProgramaticCalloutProvider;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ProgramaticCalloutProviderTest
 {
 	private ProgramaticCalloutProvider provider;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -61,9 +61,8 @@ public class ProgramaticCalloutProviderTest
 
 		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getTableName())
 				.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callout instances retrieved",
-				Collections.singletonList(calloutInstance),
-				calloutInstances);
+		Assertions.assertEquals(Collections.singletonList(calloutInstance),
+				calloutInstances, "Invalid callout instances retrieved");
 	}
 
 	@Test
@@ -77,9 +76,9 @@ public class ProgramaticCalloutProviderTest
 
 		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getTableName())
 				.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callout instances retrieved",
-				Collections.emptyList(),
-				calloutInstances);
+		Assertions.assertEquals(Collections.emptyList(),
+				calloutInstances,
+				"Invalid callout instances retrieved");
 	}
 
 	@Test
@@ -90,12 +89,12 @@ public class ProgramaticCalloutProviderTest
 		MockedCalloutField.createNewField("MyTableName", "MyColumnName"); // calling it just to have the AD_Table and AD_Column records
 
 		final MockedCalloutInstance calloutInstance1 = new MockedCalloutInstance(calloutInstanceId);
-		Assert.assertTrue("Callout " + calloutInstance1 + " shall be registered",
-				provider.registerCallout("MyTableName", "MyColumnName", calloutInstance1));
+		Assertions.assertTrue(provider.registerCallout("MyTableName", "MyColumnName", calloutInstance1),
+				"Callout " + calloutInstance1 + " shall be registered");
 
 		final MockedCalloutInstance calloutInstance2 = new MockedCalloutInstance(calloutInstanceId);
-		Assert.assertFalse("Callout " + calloutInstance2 + " shall not be registered because it has the same ID as " + calloutInstance1,
-				provider.registerCallout("MyTableName", "MyColumnName", calloutInstance2));
+		Assertions.assertFalse(provider.registerCallout("MyTableName", "MyColumnName", calloutInstance2),
+				"Callout " + calloutInstance2 + " shall not be registered because it has the same ID as " + calloutInstance1);
 
 	}
 
@@ -103,8 +102,8 @@ public class ProgramaticCalloutProviderTest
 	public void test_integration_RegisterTo_CalloutFactory()
 	{
 		final CalloutFactory calloutFactory = (CalloutFactory)Services.get(ICalloutFactory.class);
-		Assert.assertFalse("Provider " + provider + " shall not be registered at this moment",
-				calloutFactory.getCalloutProvidersList().contains(provider));
+		Assertions.assertFalse(calloutFactory.getCalloutProvidersList().contains(provider),
+				"Provider " + provider + " shall not be registered at this moment");
 
 		MockedCalloutField.createNewField("MyTableName", "MyColumnName"); // calling it just to have the AD_Table and AD_Column records
 
@@ -113,8 +112,8 @@ public class ProgramaticCalloutProviderTest
 		{
 			final MockedCalloutInstance calloutInstance = new MockedCalloutInstance();
 			provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
-			Assert.assertTrue("Provider " + provider + " shall not be registered at this moment",
-					calloutFactory.getCalloutProvidersList().contains(provider));
+			Assertions.assertTrue(calloutFactory.getCalloutProvidersList().contains(provider),
+					"Provider " + provider + " shall not be registered at this moment");
 		}
 
 		// Make sure provider is registered only once
@@ -126,8 +125,8 @@ public class ProgramaticCalloutProviderTest
 				programaticProviders.add(p);
 			}
 		}
-		Assert.assertEquals("Provider " + provider + " shall be registered only once",
-				Collections.singletonList(provider),
-				programaticProviders);
+		Assertions.assertEquals(Collections.singletonList(provider),
+				programaticProviders,
+				"Provider " + provider + " shall be registered only once");
 	}
 }

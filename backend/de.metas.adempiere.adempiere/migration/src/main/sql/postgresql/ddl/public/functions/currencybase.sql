@@ -43,7 +43,7 @@ BEGIN
 	RETURN currencyConvert (p_Amount, p_CurFrom_ID, v_CurTo_ID, p_ConvDate, p_conversiontype_id, p_Client_ID, p_Org_ID);
 END;
 $BODY$
-LANGUAGE plpgsql VOLATILE
+LANGUAGE plpgsql STABLE
 COST 100;
 
 CREATE OR REPLACE FUNCTION currencybase(p_amount numeric, p_curfrom_id numeric, p_convdate timestamp with time zone, p_client_id numeric, p_org_id numeric)
@@ -53,6 +53,6 @@ BEGIN
 	return currencyBase(p_amount, p_curfrom_id, p_convdate, null, p_client_id, p_org_id);
 END;
 $BODY$
-LANGUAGE plpgsql VOLATILE
+LANGUAGE plpgsql STABLE
 COST 100;
 

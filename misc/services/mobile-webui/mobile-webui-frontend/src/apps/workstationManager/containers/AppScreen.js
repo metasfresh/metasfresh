@@ -34,14 +34,17 @@ import Spinner from '../../../components/Spinner';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const AppScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
+  const { history } = useScreenDefinition({
+    screenId: 'WorkstationManagerScreen',
+    back: '/',
+  });
 
   const [loading, setLoading] = useState(true);
   const [workstation, setWorkstation] = useState();
 
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');
-  const parentApplicationId = queryParameters.get('parent');
+  const callerApplicationId = queryParameters.get('callerApplicationId');
   useEffect(() => {
     if (qrCodeParam && !workstation) {
       setLoading(true);
@@ -53,7 +56,7 @@ const AppScreen = () => {
 
   const setWorkstationAndUpdateUrl = (newWorkstation) => {
     setWorkstation(newWorkstation);
-    history.replace(appLocation({ qrCode: newWorkstation?.qrCode, parent: parentApplicationId }));
+    history.replace(appLocation({ qrCode: newWorkstation?.qrCode, callerApplicationId }));
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
@@ -70,7 +73,7 @@ const AppScreen = () => {
   };
 
   const onScanAgainClick = () => {
-    if (parentApplicationId === APPLICATION_ID_scanAnything) {
+    if (callerApplicationId === APPLICATION_ID_scanAnything) {
       history.push(scanAnythingRoutes.appLocation());
     } else {
       setWorkstationAndUpdateUrl(null);

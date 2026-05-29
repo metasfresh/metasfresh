@@ -23,7 +23,7 @@ package de.metas.edi.process;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
@@ -52,8 +52,9 @@ import java.util.List;
 public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
 
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);

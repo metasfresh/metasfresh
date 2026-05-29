@@ -121,6 +121,12 @@ public class OrderDropShipLocationAdapter
 		IDocumentDeliveryLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
 	}
 
+	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentDeliveryLocationAdapter.super.setRenderedAddress(from);
+	}
+
 	public void setFromDeliveryLocation(@NonNull final I_C_Order from)
 	{
 		setFrom(new OrderDropShipLocationAdapter(from).toDocumentLocation());

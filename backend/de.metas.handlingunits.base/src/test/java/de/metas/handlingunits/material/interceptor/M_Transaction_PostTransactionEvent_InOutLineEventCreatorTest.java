@@ -132,7 +132,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
-				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false, false);
 		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -164,7 +164,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
-				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false, false);
 
 		assertThat(events).hasSize(1);
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -197,7 +197,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		//
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
-				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false, false);
 
 		assertThat(events).hasSize(1);
 
@@ -272,7 +272,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
-				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false, false);
 
 		assertThat(events).hasSize(1);
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -301,7 +301,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
-				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
+				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false, false);
 		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);

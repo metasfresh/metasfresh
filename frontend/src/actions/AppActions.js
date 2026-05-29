@@ -1,13 +1,9 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
-import numeral from 'numeral';
 
 import * as types from '../constants/ActionTypes';
-import { setCurrentActiveLocale } from '../utils/locale';
-import {
-  getNotificationsEndpointRequest,
-  getNotificationsRequest,
-} from '../api';
+import { initNumeralLocales, setCurrentActiveLocale } from '../utils/locale';
+import { getNotificationsRequest } from '../api/notifications';
 import { updateDefaultPrecisionsFromUserSettings } from '../utils/tableHelpers';
 import { getUserSession } from '../api/userSession';
 
@@ -47,29 +43,6 @@ export function createUrlAttachment({ windowId, documentId, name, url }) {
     `${config.API_URL}/window/${windowId}/${documentId}/attachments/addUrl`,
     { name, url }
   );
-}
-
-function initNumeralLocales(lang, locale) {
-  const language = lang.toLowerCase();
-  const LOCAL_NUMERAL_FORMAT = {
-    defaultFormat: '0,0.00[000]',
-    delimiters: {
-      thousands: locale.numberGroupingSeparator || ',',
-      decimal: locale.numberDecimalSeparator || '.',
-    },
-  };
-
-  if (typeof numeral.locales[language] === 'undefined') {
-    numeral.register('locale', language, LOCAL_NUMERAL_FORMAT);
-  }
-
-  if (typeof numeral.locales[language] !== 'undefined') {
-    numeral.locale(language);
-
-    if (LOCAL_NUMERAL_FORMAT.defaultFormat) {
-      numeral.defaultFormat(LOCAL_NUMERAL_FORMAT.defaultFormat);
-    }
-  }
 }
 
 // REDUX ACTIONS
@@ -232,79 +205,6 @@ export function setLanguages(data) {
   };
 }
 
-export function initKeymap(keymap) {
-  return {
-    type: types.INIT_KEYMAP,
-    payload: keymap,
-  };
-}
-
-export function updateKeymap(keymap) {
-  return {
-    type: types.UPDATE_KEYMAP,
-    payload: keymap,
-  };
-}
-
-export function initHotkeys(hotkeys) {
-  return {
-    type: types.INIT_HOTKEYS,
-    payload: hotkeys,
-  };
-}
-
-export function updateHotkeys(hotkeys) {
-  return {
-    type: types.UPDATE_HOTKEYS,
-    payload: hotkeys,
-  };
-}
-
-export function getNotificationsEndpoint(auth) {
-  return (dispatch) => {
-    return getNotificationsEndpointRequest().then((topic) => {
-      auth.initNotificationClient(topic, (msg) => {
-        const notification = JSON.parse(msg.body);
-
-        if (notification.eventType === 'Read') {
-          dispatch(
-            readNotification(
-              notification.notificationId,
-              notification.unreadCount
-            )
-          );
-        } else if (notification.eventType === 'ReadAll') {
-          dispatch(readAllNotifications());
-        } else if (notification.eventType === 'Delete') {
-          dispatch(
-            removeNotification(
-              notification.notificationId,
-              notification.unreadCount
-            )
-          );
-        } else if (notification.eventType === 'DeleteAll') {
-          dispatch(deleteAllNotifications());
-        } else if (notification.eventType === 'New') {
-          dispatch(
-            newNotification(notification.notification, notification.unreadCount)
-          );
-          const notif = notification.notification;
-          if (notif.important) {
-            dispatch(
-              addNotification(
-                'Important notification',
-                notif.message,
-                5000,
-                'primary'
-              )
-            );
-          }
-        }
-      });
-    });
-  };
-}
-
 export function getNotifications() {
   return (dispatch, getState) => {
     const state = getState();
@@ -323,43 +223,29 @@ export function getNotifications() {
             response.data.unreadCount
           )
         );
+        //console.log('User notifications loaded');
       })
-      .catch((e) => e);
+      .catch((error) => {
+        console.log('Failed to load user notifications', error);
+      });
   };
 }
 
-export function loginSuccess(auth) {
+export function loginSuccess() {
   return async (dispatch) => {
-    const requests = [];
-
     dispatch({ type: types.LOGIN_SUCCESS });
 
-    requests.push(
-      getUserSession()
-        .then(({ data }) => {
-          dispatch(userSessionInit(data));
+    return await getUserSession()
+      .then(({ data }) => {
+        dispatch(userSessionInit(data));
 
-          setCurrentActiveLocale(data.language['key']);
-          initNumeralLocales(data.language['key'], data.locale);
-          MomentTZ.tz.setDefault(data.timeZone);
-          updateDefaultPrecisionsFromUserSettings(data.settings);
-
-          auth.initSessionClient(data.websocketEndpoint, (msg) => {
-            const me = JSON.parse(msg.body);
-            dispatch(userSessionUpdate(me));
-
-            me.language && setCurrentActiveLocale(me.language['key']);
-            me.locale && initNumeralLocales(me.language['key'], me.locale);
-
-            dispatch(getNotifications());
-          });
-        })
-        .catch((e) => e)
-    );
-
-    requests.push(dispatch(getNotificationsEndpoint(auth)));
-    requests.push(dispatch(getNotifications()));
-
-    return await Promise.all(requests);
+        setCurrentActiveLocale(data.language['key']);
+        initNumeralLocales(data.language['key'], data.locale);
+        MomentTZ.tz.setDefault(data.timeZone);
+        updateDefaultPrecisionsFromUserSettings(data.settings);
+      })
+      .catch((error) => {
+        console.log('Failed to getting user session', error);
+      });
   };
 }

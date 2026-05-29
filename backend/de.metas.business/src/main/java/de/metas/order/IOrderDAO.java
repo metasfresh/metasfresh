@@ -1,5 +1,28 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order;
 
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -8,6 +31,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -30,12 +54,13 @@ public interface IOrderDAO extends ISingletonService
 	I_C_Order getById(final OrderId orderId);
 
 	Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds);
+
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 *
 	 * @return order for given orderId
 	 */
-	<T extends I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
+	<T extends I_C_Order> T getById(@NonNull final OrderId orderId, Class<T> clazz);
 
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 
@@ -60,6 +85,8 @@ public interface IOrderDAO extends ISingletonService
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
 	}
 
+	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Set<OrderLineId> orderLineIds);
+
 	/**
 	 * @return order lines for given order
 	 */
@@ -76,7 +103,9 @@ public interface IOrderDAO extends ISingletonService
 
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(OrderId orderId, Class<T> modelClass);
 
-	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
+	/**
+	 * @return all C_OrderLine_IDs for given order, including the inactive ones
+	 */
 	List<OrderAndLineId> retrieveAllOrderLineIds(OrderId orderId);
 
 	<T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz);
@@ -142,4 +171,10 @@ public interface IOrderDAO extends ISingletonService
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+	
+	boolean hasDeliveredItems(@NonNull OrderId orderId);
+
+	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
+	Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
 }

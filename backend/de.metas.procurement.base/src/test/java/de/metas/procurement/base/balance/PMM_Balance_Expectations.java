@@ -15,12 +15,12 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
 
 import com.google.common.base.Function;
 
 import de.metas.procurement.base.model.I_PMM_Balance;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ import de.metas.util.Services;
 
 public class PMM_Balance_Expectations
 {
-	public static final PMM_Balance_Expectations newExpectations()
+	public static PMM_Balance_Expectations newExpectations()
 	{
 		return new PMM_Balance_Expectations();
 	}
@@ -83,7 +83,7 @@ public class PMM_Balance_Expectations
 
 		if (strictMatching)
 		{
-			Assert.assertEquals("No other balance entries were expected", Collections.emptyMap(), balanceRecords);
+			Assertions.assertEquals(Collections.emptyMap(), balanceRecords, "No other balance entries were expected");
 		}
 	}
 
@@ -136,11 +136,11 @@ public class PMM_Balance_Expectations
 		return Util.mkKey(
 				"BP=" + balanceRecord.getC_BPartner_ID() //
 				, "P=" + balanceRecord.getM_Product_ID() //
-		// , "PIIP=" + balanceRecord.getM_HU_PI_Item_Product_ID() //
-		, "ASI=" + balanceRecord.getM_AttributeSetInstance_ID() //
-		, "C_Flatrate_DataEntry_ID=" + normalizeId(balanceRecord.getC_Flatrate_DataEntry_ID()) //
-		, "Month=" + normalizeDate(balanceRecord.getMonthDate())  //
-		, "Week=" + normalizeDate(balanceRecord.getWeekDate()) //
+				// , "PIIP=" + balanceRecord.getM_HU_PI_Item_Product_ID() //
+				, "ASI=" + balanceRecord.getM_AttributeSetInstance_ID() //
+				, "C_Flatrate_DataEntry_ID=" + normalizeId(balanceRecord.getC_Flatrate_DataEntry_ID()) //
+				, "Month=" + normalizeDate(balanceRecord.getMonthDate())  //
+				, "Week=" + normalizeDate(balanceRecord.getWeekDate()) //
 		);
 	}
 
@@ -149,11 +149,11 @@ public class PMM_Balance_Expectations
 		return Util.mkKey(
 				"BP=" + expectation.C_BPartner_ID //
 				, "P=" + expectation.M_Product_ID //
-		// , "PIIP=" + expectation.M_HU_PI_Item_Product_ID //
-		, "ASI=" + expectation.M_AttributeSetInstance_ID //
-		, "C_Flatrate_DataEntry_ID=" + normalizeId(expectation.C_Flatrate_DataEntry_ID) //
-		, "Month=" + normalizeDate(expectation.dateMonth)  //
-		, "Week=" + normalizeDate(expectation.dateWeek) //
+				// , "PIIP=" + expectation.M_HU_PI_Item_Product_ID //
+				, "ASI=" + expectation.M_AttributeSetInstance_ID //
+				, "C_Flatrate_DataEntry_ID=" + normalizeId(expectation.C_Flatrate_DataEntry_ID) //
+				, "Month=" + normalizeDate(expectation.dateMonth)  //
+				, "Week=" + normalizeDate(expectation.dateWeek) //
 		);
 	}
 
@@ -187,7 +187,6 @@ public class PMM_Balance_Expectations
 		return id != null && id > 0 ? id : null;
 	}
 
-	@ToStringBuilder(skip = true)
-	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+	@ToStringBuilder(skip = true) final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
 }

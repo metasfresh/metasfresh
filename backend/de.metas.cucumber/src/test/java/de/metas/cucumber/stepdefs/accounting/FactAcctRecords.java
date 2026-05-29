@@ -4,7 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.money.CurrencyId;
+import de.metas.money.MixedMoney;
 import de.metas.money.Money;
+import de.metas.quantity.MixedQuantity;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -14,8 +19,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 @Builder(toBuilder = true)
@@ -88,49 +92,40 @@ public class FactAcctRecords
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
-	public SingleCurrencySum getAmtSourceDr()
+	public MixedMoney getAmtSourceDr()
 	{
-		return SingleCurrencySum.sum(list, record -> Money.of(record.getAmtSourceDr(), CurrencyId.ofRepoId(record.getC_Currency_ID())));
+		return list.stream()
+				.map(record -> Money.of(record.getAmtSourceDr(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.collect(MixedMoney.collectAndSum());
 	}
 
-	public SingleCurrencySum getAmtSourceCr()
+	public MixedMoney getAmtSourceCr()
 	{
-		return SingleCurrencySum.sum(list, record -> Money.of(record.getAmtSourceCr(), CurrencyId.ofRepoId(record.getC_Currency_ID())));
+		return list.stream()
+				.map(record -> Money.of(record.getAmtSourceCr(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.collect(MixedMoney.collectAndSum());
 	}
 
-	public SingleCurrencySum getSourceBalance()
+	public MixedMoney getSourceBalance()
 	{
-		return SingleCurrencySum.sum(list, record -> Money.of(record.getAmtSourceDr().subtract(record.getAmtSourceCr()), CurrencyId.ofRepoId(record.getC_Currency_ID())));
+		return list.stream()
+				.map(record -> Money.of(record.getAmtSourceDr().subtract(record.getAmtSourceCr()), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.collect(MixedMoney.collectAndSum());
 	}
 
-	/** Returns null — MixedQuantity not available on this branch */
+	public MixedQuantity getQty()
+	{
+		return list.stream()
+				.map(FactAcctRecords::extractQtyOrNull)
+				.filter(Objects::nonNull)
+				.collect(MixedQuantity.collectAndSum());
+	}
+
 	@Nullable
-	public SingleCurrencySum getQty() { return null; }
-
-	/**
-	 * Replacement for MixedMoney (not available on soft_panda_hotfix).
-	 * Sums Money values assuming single currency (which is the case for all our tests).
-	 */
-	public static class SingleCurrencySum
+	private static Quantity extractQtyOrNull(final I_Fact_Acct record)
 	{
-		@Nullable private final Money value;
-
-		private SingleCurrencySum(@Nullable final Money value) { this.value = value; }
-
-		public static SingleCurrencySum sum(
-				@NonNull final ImmutableList<I_Fact_Acct> records,
-				@NonNull final Function<I_Fact_Acct, Money> extractor)
-		{
-			Money result = null;
-			for (final I_Fact_Acct record : records)
-			{
-				final Money money = extractor.apply(record);
-				result = result == null ? money : result.add(money);
-			}
-			return new SingleCurrencySum(result);
-		}
-
-		public Optional<Money> toNoneOrSingleValue() { return Optional.ofNullable(value); }
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
+		return uomId != null ? Quantitys.of(record.getQty(), uomId) : null;
 	}
 
 }

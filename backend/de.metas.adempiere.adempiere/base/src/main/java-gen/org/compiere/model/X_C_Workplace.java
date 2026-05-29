@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Workplace
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 541219646L;
+	private static final long serialVersionUID = -991045398L;
 
     /** Standard Constructor */
     public X_C_Workplace (final Properties ctx, final int C_Workplace_ID, @Nullable final String trxName)
@@ -62,6 +62,18 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	}
 
 	@Override
+	public void setMaxPickingJobs (final int MaxPickingJobs)
+	{
+		set_Value (COLUMNNAME_MaxPickingJobs, MaxPickingJobs);
+	}
+
+	@Override
+	public int getMaxPickingJobs() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxPickingJobs);
+	}
+
+	@Override
 	public void setM_PickingSlot_ID (final int M_PickingSlot_ID)
 	{
 		if (M_PickingSlot_ID < 1) 
@@ -101,5 +113,80 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * OrderPickingType AD_Reference_ID=542022
+	 * Reference name: OrderPickingType List
+	 */
+	public static final int ORDERPICKINGTYPE_AD_Reference_ID=542022;
+	/** Single = SG */
+	public static final String ORDERPICKINGTYPE_Single = "SG";
+	/** Multiple = MP */
+	public static final String ORDERPICKINGTYPE_Multiple = "MP";
+	@Override
+	public void setOrderPickingType (final @Nullable java.lang.String OrderPickingType)
+	{
+		set_Value (COLUMNNAME_OrderPickingType, OrderPickingType);
+	}
+
+	@Override
+	public java.lang.String getOrderPickingType() 
+	{
+		return get_ValueAsString(COLUMNNAME_OrderPickingType);
+	}
+
+	@Override
+	public void setPickFrom_Locator_ID (final int PickFrom_Locator_ID)
+	{
+		if (PickFrom_Locator_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_Locator_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_Locator_ID, PickFrom_Locator_ID);
+	}
+
+	@Override
+	public int getPickFrom_Locator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
+	}
+
+	/** 
+	 * PriorityRule AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
+	public static final int PRIORITYRULE_AD_Reference_ID=154;
+	/** High = 3 */
+	public static final String PRIORITYRULE_High = "3";
+	/** Medium = 5 */
+	public static final String PRIORITYRULE_Medium = "5";
+	/** Low = 7 */
+	public static final String PRIORITYRULE_Low = "7";
+	/** Urgent = 1 */
+	public static final String PRIORITYRULE_Urgent = "1";
+	/** Minor = 9 */
+	public static final String PRIORITYRULE_Minor = "9";
+	@Override
+	public void setPriorityRule (final @Nullable java.lang.String PriorityRule)
+	{
+		set_Value (COLUMNNAME_PriorityRule, PriorityRule);
+	}
+
+	@Override
+	public java.lang.String getPriorityRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PriorityRule);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

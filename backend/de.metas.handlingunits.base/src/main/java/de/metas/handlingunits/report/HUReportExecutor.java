@@ -204,7 +204,7 @@ public class HUReportExecutor
 				// Execute report in a new transaction
 				.buildAndPrepareExecution()
 				.onErrorThrowException(request.isOnErrorThrowException())
-				.callBefore(processInfo -> DB.createT_Selection(processInfo.getPinstanceId(), HuId.toRepoIds(huIdsToProcess), ITrx.TRXNAME_ThreadInherited))
+				.callBefore(processInfo -> DB.createT_Selection(processInfo.getPinstanceId(), HuId.toRepoIds(huIdsToProcess), ITrx.TRXNAME_None))
 				.executeSync();
 
 		return HUReportExecutorResult.builder()

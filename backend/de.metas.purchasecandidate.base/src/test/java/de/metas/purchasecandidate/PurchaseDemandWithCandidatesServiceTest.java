@@ -14,6 +14,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -42,6 +43,7 @@ import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
@@ -50,11 +52,11 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -67,7 +69,7 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -91,7 +93,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PurchaseDemandWithCandidatesServiceTest
 {
@@ -119,11 +121,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 	private OrgId orgId;
 	private PurchaseDemand purchaseDemand;
 
-	private I_M_DiscountSchemaBreak discountSchemaBreakRecord;
-
-	private I_C_PaymentTerm paymentTermRecord;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -160,12 +158,12 @@ public class PurchaseDemandWithCandidatesServiceTest
 		discountSchemaRecord.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		saveRecord(discountSchemaRecord);
 
-		paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
 		paymentTermRecord.setValue("test payment term");
 		paymentTermRecord.setName("test payment term");
 		saveRecord(paymentTermRecord);
 
-		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
+		final I_M_DiscountSchemaBreak discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
 		discountSchemaBreakRecord.setM_DiscountSchema(discountSchemaRecord);
 		discountSchemaBreakRecord.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
 		discountSchemaBreakRecord.setPaymentDiscount(TEN);
@@ -181,8 +179,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		orgId = OrgId.ofRepoId(1000000);
 		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-																  .orgId(orgId)
-																  .build());
+				.orgId(orgId)
+				.build());
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());
@@ -195,6 +193,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
 		saveRecord(purchaseCandidateRecord);
 
+		//noinspection UnnecessaryLocalVariable
 		final I_C_OrderLine purchaseOrderLineRecord = salesOrderLineRecord;
 		purchaseOrderLineRecord.setQtyOrdered(PO_QTY_ORDERED_ONE);
 		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
@@ -221,12 +220,16 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new ReferenceGenerator(),
-				bpPurchaseScheduleService,
-				dimensionService
+				dimensionService,
+				new ExternalSystemRepository()
 		);
 
 		final MoneyService moneyService = new MoneyService(currencyRepository);
-		final ProfitPriceActualFactory profitPriceActualFactory = new ProfitPriceActualFactory(Optional.of(ImmutableList.of(new PaymentProfitPriceActualComponentProvider(moneyService))));
+		final ProfitPriceActualFactory profitPriceActualFactory = new ProfitPriceActualFactory(Optional.of(ImmutableList.of(
+				new PaymentProfitPriceActualComponentProvider(
+						SpringContextHolder.instance.getBean(PaymentTermService.class),
+						moneyService)
+		)));
 
 		final PurchaseProfitInfoService purchaseProfitInfoService = new PurchaseProfitInfoServiceImpl(
 				moneyService,
@@ -310,16 +313,13 @@ public class PurchaseDemandWithCandidatesServiceTest
 		assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(ZERO);
 		assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(ZERO);
 		assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
-		assertThat(candidatesGroup.isReadonly()).isEqualTo(false);
+		assertThat(candidatesGroup.isReadonly()).isFalse();
 
 		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfoOrNull();
 		assertThat(profitInfo).isNotNull();
 		assertThat(profitInfo.getCommonCurrency()).isEqualTo(currencyId);
-		assertThat(profitInfo.getPurchasePriceActual()).isPresent();
 		assertThat(profitInfo.getPurchasePriceActual()).hasValue(Money.of(TEN, currencyId)); // coming from the discount schema break
-		assertThat(profitInfo.getProfitSalesPriceActual()).isPresent();
 		assertThat(profitInfo.getProfitSalesPriceActual()).hasValue(Money.of(TWENTY, currencyId)); // coming from the sales order line record
-		assertThat(profitInfo.getProfitPurchasePriceActual()).isPresent();
 		assertThat(profitInfo.getProfitPurchasePriceActual()).hasValue(Money.of(NINE, currencyId)); // coming from the discount schema break (10% payment discount!)
 	}
 
@@ -338,13 +338,13 @@ public class PurchaseDemandWithCandidatesServiceTest
 		// invoke the method under test
 		final List<PurchaseDemandWithCandidates> result = purchaseDemandWithCandidatesService.getOrCreatePurchaseCandidatesGroups(ImmutableList.of(purchaseDemand));
 
-		assertThat(result).isNotNull().hasSize(1);
+		assertThat(result).hasSize(1);
 
 		final PurchaseDemandWithCandidates purchaseDemandWithCandidates = result.get(0);
 		assertThat(purchaseDemandWithCandidates.getPurchaseDemand()).isEqualTo(purchaseDemand);
 
 		final List<PurchaseCandidatesGroup> purchaseCandidatesGroups = purchaseDemandWithCandidates.getPurchaseCandidatesGroups();
-		assertThat(purchaseCandidatesGroups).isNotNull().hasSize(2); // one group for the "1" we already ordered, one of the 9 we still need to order
+		assertThat(purchaseCandidatesGroups).hasSize(2); // one group for the "1" we already ordered, one of the 9 we still need to order
 
 		// the new group needs to inherit the older group's reference
 		// TODO
@@ -353,7 +353,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		// assertThat(purchaseCandidatesGroups.get(0).getDemandGroupReferences().get(0)).isEqualTo(purchaseCandidatesGroups.get(1).getDemandGroupReferences().get(0));
 
 		assertThat(purchaseCandidatesGroups)
-				.filteredOn(g -> g.isReadonly())
+				.filteredOn(PurchaseCandidatesGroup::isReadonly)
 				.hasSize(1)
 				.allSatisfy(candidatesGroup -> {
 					assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
@@ -361,7 +361,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 					assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
 					assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE); // the 9 is loaded from out candidate record.
 					assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
-					assertThat(candidatesGroup.isReadonly()).isEqualTo(true);
+					assertThat(candidatesGroup.isReadonly()).isTrue();
 				});
 
 		assertThat(purchaseCandidatesGroups)
@@ -373,7 +373,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 					assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(ZERO);
 					assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(ZERO);
 					assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
-					assertThat(candidatesGroup.isReadonly()).isEqualTo(false);
+					assertThat(candidatesGroup.isReadonly()).isFalse();
 				});
 	}
 
@@ -388,13 +388,13 @@ public class PurchaseDemandWithCandidatesServiceTest
 		// invoke the method under test
 		final List<PurchaseDemandWithCandidates> result = purchaseDemandWithCandidatesService.getOrCreatePurchaseCandidatesGroups(ImmutableList.of(purchaseDemand));
 
-		assertThat(result).isNotNull().hasSize(1);
+		assertThat(result).hasSize(1);
 
 		final PurchaseDemandWithCandidates purchaseDemandWithCandidates = result.get(0);
 		assertThat(purchaseDemandWithCandidates.getPurchaseDemand()).isEqualTo(purchaseDemand);
 
 		final List<PurchaseCandidatesGroup> purchaseCandidatesGroups = purchaseDemandWithCandidates.getPurchaseCandidatesGroups();
-		assertThat(purchaseCandidatesGroups).isNotNull().hasSize(1);
+		assertThat(purchaseCandidatesGroups).hasSize(1);
 
 		final PurchaseCandidatesGroup candidatesGroup = purchaseCandidatesGroups.get(0);
 		assertThat(candidatesGroup.isReadonly()).isFalse();

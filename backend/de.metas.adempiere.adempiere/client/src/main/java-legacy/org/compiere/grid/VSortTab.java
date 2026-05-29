@@ -60,6 +60,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.model.GridTabVO;
+import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.swing.CButton;
@@ -526,7 +527,7 @@ public class VSortTab extends CPanel implements APanelTab
 				sql.append("\n , (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID) AS ColumnName");
 				hasColumnName = true;
 			}
-			else if ("AD_UI_Element".equals(m_TableName))
+			else if (I_AD_UI_Element.Table_Name.equals(m_TableName))
 			{
 				sql.append("\n , (SELECT c.ColumnName "
 						+ " FROM AD_Field f "

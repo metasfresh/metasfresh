@@ -2,6 +2,7 @@ package de.metas.acct.vatcode.impl;
 
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
@@ -97,6 +98,86 @@ public class VATCodeDAOTest
 
 		// Test not matching
 		assertVATCode(null, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax3.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
+	}
+
+	@Test
+	public void test_findVATCode_WithAmountTypeFilter_NetType()
+	{
+		final VATCode codeNet = VATCode.of("VATCode_Net", 11);
+		final VATCode codeTax = VATCode.of("VATCode_Tax", 12);
+
+		// Create two VAT codes for the same (AcctSchema, Tax, IsSOTrx) but different AmountType
+		newVATCodeBuilder()
+				.setC_Tax(tax1)
+				.setIsSOTrx(false)
+				.setValidFrom(date_1970_01_01)
+				.setAmountType(VATCodeAmountType.Net)
+				.setVATCode(codeNet)
+				.build();
+
+		newVATCodeBuilder()
+				.setC_Tax(tax1)
+				.setIsSOTrx(false)
+				.setValidFrom(date_1970_01_01)
+				.setAmountType(VATCodeAmountType.Tax)
+				.setVATCode(codeTax)
+				.build();
+
+		// When requesting with AmountType=Net, should get the Net code
+		assertVATCode(codeNet, VATCodeMatchingRequest.builder()
+				.setC_AcctSchema_ID(acctSchemaId)
+				.setC_Tax_ID(tax1.getC_Tax_ID())
+				.setIsSOTrx(false)
+				.setDate(date_2016_01_01)
+				.setAmountType(VATCodeAmountType.Net)
+				.build());
+
+		// When requesting with AmountType=Tax, should get the Tax code
+		assertVATCode(codeTax, VATCodeMatchingRequest.builder()
+				.setC_AcctSchema_ID(acctSchemaId)
+				.setC_Tax_ID(tax1.getC_Tax_ID())
+				.setIsSOTrx(false)
+				.setDate(date_2016_01_01)
+				.setAmountType(VATCodeAmountType.Tax)
+				.build());
+	}
+
+	@Test
+	public void test_findVATCode_WithAmountTypeFilter_BackwardCompatibility_NullAmountType()
+	{
+		final VATCode codeNet = VATCode.of("VATCode_Net_BC", 21);
+		final VATCode codeTax = VATCode.of("VATCode_Tax_BC", 22);
+
+		// Create two VAT codes for the same (AcctSchema, Tax, IsSOTrx) but different AmountType
+		newVATCodeBuilder()
+				.setC_Tax(tax1)
+				.setIsSOTrx(true)
+				.setValidFrom(date_1970_01_01)
+				.setAmountType(VATCodeAmountType.Net)
+				.setVATCode(codeNet)
+				.build();
+
+		newVATCodeBuilder()
+				.setC_Tax(tax1)
+				.setIsSOTrx(true)
+				.setValidFrom(date_1970_01_01)
+				.setAmountType(VATCodeAmountType.Tax)
+				.setVATCode(codeTax)
+				.build();
+
+		// When requesting with AmountType=null, any matching code is acceptable (backward compat).
+		// The contract is: at least one match is returned; which one is an implementation detail of the ordering.
+		final VATCode actualVATCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
+				.setC_AcctSchema_ID(acctSchemaId)
+				.setC_Tax_ID(tax1.getC_Tax_ID())
+				.setIsSOTrx(true)
+				.setDate(date_2016_01_01)
+				.setAmountType(null)
+				.build()).orElse(null);
+
+		assertThat(actualVATCode)
+				.as("When AmountType is null, some matching code must be returned")
+				.isIn(codeNet, codeTax);
 	}
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)

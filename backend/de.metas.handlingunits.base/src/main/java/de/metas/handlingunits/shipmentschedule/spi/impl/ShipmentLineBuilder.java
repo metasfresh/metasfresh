@@ -24,11 +24,18 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.organization.OrgId;
+import org.adempiere.mm.attributes.AttributeId;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.interfaces.I_C_OrderLine;
@@ -38,6 +45,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -53,7 +61,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
@@ -95,6 +102,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -179,52 +187,48 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		// Disallow creating shipment lines with negative or ZERO qty
-		if (qtyEntered.signum() <= 0)
-		{
-			return false;
-		}
-
-		return true;
+		return qtyEntered.signum() > 0;
 	}
 
 	/**
-	 * @return true if we can append to current shipment line
+	 * @return BooleanWithReason.TRUE if we can append to the current shipment line, or a reason why that's not possible
 	 */
-	boolean canAdd(final ShipmentScheduleWithHU candidate)
+	@NonNull
+	BooleanWithReason canAdd(final ShipmentScheduleWithHU candidate)
 	{
 		// If there were no candidates added so far, obviously we allow our first candidate
 		if (isEmpty())
 		{
-			return true;
+			return BooleanWithReason.TRUE;
 		}
 
 		// Check: HU context
 		if (!Objects.equals(huContext, candidate.getHUContext()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different HU context : " + huContext + " vs " + candidate.getHUContext());
 		}
 
 		// Check: same product
 		if (!ProductId.equals(productId, candidate.getProductId()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different product : " + productId + " vs " + candidate.getProductId());
 		}
 
 		// Check: same attributes aggregation key
 		if (!Objects.equals(this.attributesAggregationKey, candidate.getAttributesAggregationKey()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different attributeAggregationKey : " + attributesAggregationKey + " vs " + candidate.getAttributesAggregationKey());
 		}
 
 		// Check: same Order Line
 		// NOTE: this is also EDI requirement
 		if (!OrderAndLineId.equals(orderLineId, candidate.getOrderLineId()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different orderLine : " + orderLineId + " vs " + candidate.getOrderLineId());
 		}
+		return BooleanWithReason.TRUE;
 
 		// Else, we can allow this candidate to be added here
-		return true;
 	}
 
 	public void add(@NonNull final ShipmentScheduleWithHU candidate)
@@ -271,7 +275,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 	private void append(@NonNull final ShipmentScheduleWithHU candidate)
 	{
-		Check.assume(canAdd(candidate), "The given candidate can be added to shipment line builder; candidate={}", candidate);
+		Check.assume(canAdd(candidate).isTrue(), "The given candidate can be added to shipment line builder; candidate={}", candidate);
 		attributeValues.addAll(candidate.getAttributeValues()); // because of canAdd()==true, we may assume that it's all fine
 
 		logger.trace("Adding candidate to {}: candidate={}", this, candidate);
@@ -324,8 +328,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				// * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picked
 				// * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
 				// * note: updating that column should happen from the shipment-schedule-updater
+				final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 				final List<I_M_InOutLine> shipmentLinesOfShipmentSchedule = Services.get(IShipmentScheduleAllocDAO.class)
-						.retrieveOnShipmentLineRecordsQuery(shipmentSchedule)
+						.retrieveOnShipmentLineRecordsQuery(shipmentScheduleId)
 						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID)
 						.addOnlyActiveRecordsFilter()
 						.create()
@@ -416,10 +421,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// Product & ASI (retrieved from Shipment Schedule)
 		shipmentLine.setM_Product_ID(productId.getRepoId());
 
-		final I_M_AttributeSetInstance newASI;
+		final AttributeSetInstanceId newAsiId;
 		if (attributeValues.isEmpty())
 		{
-			newASI = Services.get(IAttributeDAO.class).retrieveNoAttributeSetInstance();
+			newAsiId = getShipmentScheduleAsiFromCandidates();
 		}
 		else
 		{
@@ -430,9 +435,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						attributeValue.getM_Attribute(),
 						attributeValue.getValue());
 			}
-			newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
+			final I_M_AttributeSetInstance newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
+			newAsiId = AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID());
 		}
-		shipmentLine.setM_AttributeSetInstance(newASI);
+		shipmentLine.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
 
 		//
 		// Order Line Link (retrieved from current Shipment)
@@ -442,6 +448,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		if (orderLine != null)
 		{
 			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
+			shipmentLine.setExternalId(orderLine.getExternalId());
+		}
+		else
+		{
+			final ProjectId projectId = huShipmentScheduleBL.extractSingleProjectIdOrNull(candidates);
+			shipmentLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		}
 
 		optimisticallySetLineNo(shipmentLine);
@@ -607,7 +619,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			}
 			final IAttributeStorage shipmentLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(asi);
 
-			final Collection<I_M_Attribute> attributes = shipmentLineAttributeStorageTo.getAttributes();
+			final Collection<I_M_Attribute> attributes = filterAttributesForHUTransfer(shipmentLineAttributeStorageTo.getAttributes());
 			final ImmutableAttributeSet fromAttributes = extractAttributeValuesToTransfer(attributes, attributeStorageFactory);
 
 			trxAttributesBuilder.transferAttributes(
@@ -622,6 +634,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			return IHUContextProcessor.NULL_RESULT;
 		});
+	}
+
+	/**
+	 * Filters out attributes where {@code IsHUAttributeOverridesASI=N} in {@link I_M_ShipmentSchedule_AttributeConfig}.
+	 * For those attributes, the schedule ASI value (already set on the shipment line by
+	 * {@link ShipmentScheduleWithHU#computeAttributeValues()}) must not be overwritten by HU attribute transfer.
+	 */
+	private Collection<I_M_Attribute> filterAttributesForHUTransfer(@NonNull final Collection<I_M_Attribute> allAttributes)
+	{
+		if (candidates.isEmpty())
+		{
+			return allAttributes;
+		}
+
+		final ShipmentScheduleWithHU firstCandidate = candidates.get(0);
+		final OrgId orgId = OrgId.ofRepoId(firstCandidate.getM_ShipmentSchedule().getAD_Org_ID());
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class)
+				.getHandlerFor(firstCandidate.getM_ShipmentSchedule());
+
+		return allAttributes.stream()
+				.filter(attr -> handler.isHUAttributeOverridesASI(orgId, AttributeId.ofRepoId(attr.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableAttributeSet extractAttributeValuesToTransfer(final Collection<I_M_Attribute> attributes, final IAttributeStorageFactory attributeStorageFactory)
@@ -682,6 +716,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	public List<ShipmentScheduleWithHU> getCandidates()
 	{
 		return ImmutableList.copyOf(candidates);
+	}
+
+	/**
+	 * When no HU attribute values are available (e.g. no HUs were picked on-the-fly),
+	 * fall back to the shipment schedule's own ASI so that storage attributes
+	 * (e.g. Herkunft, Kaliber) are still propagated to the shipment line.
+	 */
+	private AttributeSetInstanceId getShipmentScheduleAsiFromCandidates()
+	{
+		return candidates.stream()
+				.map(c -> AttributeSetInstanceId.ofRepoIdOrNone(c.getM_AttributeSetInstance_ID()))
+				.filter(id -> id.isRegular())
+				.findFirst()
+				.orElse(AttributeSetInstanceId.NONE);
 	}
 
 	/**

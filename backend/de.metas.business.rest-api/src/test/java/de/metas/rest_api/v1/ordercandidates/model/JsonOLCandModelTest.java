@@ -14,12 +14,12 @@ import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -221,6 +221,7 @@ public class JsonOLCandModelTest
 						.contact(jsonContact)
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
+				.externalSystemCode("Other")
 				.dataSource("int-dataSourceInternalName")
 				.poReference("poReference")
 				.build();

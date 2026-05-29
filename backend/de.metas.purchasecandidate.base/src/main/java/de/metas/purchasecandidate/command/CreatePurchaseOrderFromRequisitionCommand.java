@@ -150,11 +150,14 @@ public class CreatePurchaseOrderFromRequisitionCommand
 
 	private void createPurchaseOrderAllocRecord(final I_C_OrderLine newOrderLine, final I_C_OrderLine fromOrderLine)
 	{
-
 		final I_C_PurchaseCandidate_Alloc alloc = queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
 				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_OrderLinePO_ID, fromOrderLine.getC_OrderLine_ID())
 				.create().first();
-		Check.assumeNotNull(alloc, "Could not find an allocation for line C_OrderLinePO_ID {}", fromOrderLine.getC_OrderLine_ID());
+		if(alloc == null)
+		{
+			return;
+		}
+		
 		final I_C_PurchaseCandidate_Alloc purchaseCandidateAlloc = InterfaceWrapperHelper.copy()
 				.setFrom(alloc)
 				.copyToNew(I_C_PurchaseCandidate_Alloc.class);

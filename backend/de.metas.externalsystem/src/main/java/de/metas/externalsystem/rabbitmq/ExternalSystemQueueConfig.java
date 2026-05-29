@@ -34,7 +34,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 public class ExternalSystemQueueConfig
 {
 	@Bean(name = QUEUE_NAME_MF_TO_ES)
-	public Queue metasfreshToProcurementWebQueue()
+	public Queue metasfreshToExternalSystemsQueue()
 	{
 		return new Queue(QUEUE_NAME_MF_TO_ES);
 	}

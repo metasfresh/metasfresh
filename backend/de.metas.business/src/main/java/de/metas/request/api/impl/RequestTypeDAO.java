@@ -5,6 +5,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_R_RequestType;
@@ -44,7 +45,6 @@ public class RequestTypeDAO implements IRequestTypeDAO
 
 	static final String InternalName_C_BPartner_CreatedFromAnotherOrg = "C_BPartner_CreatedFromAnotherOrg";
 
-
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -63,17 +63,16 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveOrgChangeRequestTypeId()
 	{
 		return retrieveRequestTypeIdByInternalName(InternalName_OrgSwitch);
-
 	}
 
 	@Override
 	public RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId()
 	{
 		return retrieveRequestTypeIdByInternalName(InternalName_C_BPartner_CreatedFromAnotherOrg);
-
 	}
 
-	private RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)
+	@Override
+	public RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)
 	{
 		final RequestTypeId requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
 				.addOnlyActiveRecordsFilter()
@@ -93,8 +92,8 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive()
 	{
 		return Optionals.firstPresentOfSuppliers(
-				this::retrieveDefaultRequestTypeId,
-				this::retrieveFirstActiveRequestTypeId)
+						this::retrieveDefaultRequestTypeId,
+						this::retrieveFirstActiveRequestTypeId)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @R_RequestType_ID@").markAsUserValidationError());
 	}
 
@@ -118,5 +117,14 @@ public class RequestTypeDAO implements IRequestTypeDAO
 				.firstId(RequestTypeId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(requestTypeId);
+	}
+
+	@Override
+	public I_R_RequestType getById(@NonNull final RequestTypeId requestTypeId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
+				.addEqualsFilter(I_R_RequestType.COLUMNNAME_R_RequestType_ID, requestTypeId)
+				.create()
+				.firstOnlyNotNull();
 	}
 }

@@ -1,6 +1,7 @@
 package de.metas.picking.qrcode;
 
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -25,6 +26,10 @@ public class PickingSlotQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return toGlobalQRCodeJsonString();}
+
 	public String toGlobalQRCodeJsonString() {return PickingSlotQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
 	public static PickingSlotQRCode ofGlobalQRCodeJsonString(@NonNull final String json) {return PickingSlotQRCodeJsonConverter.fromGlobalQRCodeJsonString(json);}
@@ -47,4 +52,8 @@ public class PickingSlotQRCode
 				.build();
 	}
 
+	public JsonDisplayableQRCode toJsonDisplayableQRCode()
+	{
+		return toPrintableQRCode().toJsonDisplayableQRCode();
+	}
 }

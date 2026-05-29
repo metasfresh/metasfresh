@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="QR Label" printOrder="Horizontal" pageWidth="300" pageHeight="272" columnWidth="290" leftMargin="5" rightMargin="5" topMargin="5" bottomMargin="5" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\json.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -29,9 +29,11 @@
 				<textFieldExpression><![CDATA[$F{topText}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="250" width="290" height="12" uuid="b2642765-1637-464a-b6b7-936576bc02e9"/>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="Arial" size="9"/>
+				<reportElement positionType="Float" x="0" y="232" width="290" height="30" uuid="b2642765-1637-464a-b6b7-936576bc02e9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="20"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bottomText}]]></textFieldExpression>
 			</textField>

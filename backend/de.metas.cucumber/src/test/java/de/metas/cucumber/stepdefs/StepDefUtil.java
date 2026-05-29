@@ -111,7 +111,7 @@ public class StepDefUtil
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -185,10 +185,10 @@ public class StepDefUtil
 			throw e;
 		}
 
-			if (logContext != null)
-			{
-				logContext.run();
-			}
+		if (logContext != null)
+		{
+			logContext.run();
+		}
 		Assertions.fail("the given worker didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
 	}
@@ -263,6 +263,11 @@ public class StepDefUtil
 		return ItemFetcherExecutor.<T>builder().query(query);
 	}
 
+	public <T> ItemFetcherExecutor.ItemFetcherExecutorBuilder<T> tryAndWaitForData(@NonNull final Supplier<T> dataSupplier)
+	{
+		return ItemFetcherExecutor.<T>builder().dataSupplier(dataSupplier);
+	}
+
 	static long getMaxWaitSecondsEffective(final long maxWaitSecondsParam)
 	{
 		final Long sys_maxWaitSeconds = getSysMaxWaitSeconds().orElse(null);
@@ -318,10 +323,12 @@ public class StepDefUtil
 	}
 
 	@NonNull
-	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
+	public ImmutableList<StepDefDataIdentifier> extractIdentifiers(@NonNull final String identifier)
 	{
 		return Arrays.stream(identifier.split(","))
 				.map(StringUtils::trim)
+				.filter(Check::isNotBlank)
+				.map(StepDefDataIdentifier::ofString)
 				.collect(ImmutableList.toImmutableList());
 	}
 

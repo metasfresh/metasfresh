@@ -22,9 +22,8 @@
 
 package de.metas.picking.workflow;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -35,16 +34,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DisplayValueProviderService
 {
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocumentLocationBL documentLocationBL;
+	private final PickingJobBPartnerService bpartnerService;
 
 	public DisplayValueProvider newDisplayValueProvider(@NonNull final MobileUIPickingUserProfile profile)
 	{
 		return DisplayValueProvider.builder()
-				.partnerDAO(partnerDAO)
 				.orgDAO(orgDAO)
-				.documentLocationBL(documentLocationBL)
+				.bpartnerService(bpartnerService)
 				//
 				.profile(profile)
 				//

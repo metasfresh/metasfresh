@@ -7,6 +7,7 @@ import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -77,7 +78,8 @@ public class SupplyCandidateHandlerTest
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository, candidateQtyDetailsRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,

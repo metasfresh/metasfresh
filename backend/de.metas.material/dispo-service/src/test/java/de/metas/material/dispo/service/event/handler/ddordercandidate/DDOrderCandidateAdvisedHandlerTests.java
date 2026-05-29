@@ -7,6 +7,7 @@ import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -14,7 +15,7 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.EventTestHelper;
@@ -25,6 +26,8 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
@@ -130,7 +133,8 @@ public class DDOrderCandidateAdvisedHandlerTests
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository, candidateQtyDetailsRepository);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
@@ -140,15 +144,17 @@ public class DDOrderCandidateAdvisedHandlerTests
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 
-		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
+		final DemandCandidateHandler demandCandidateHandler = new DemandCandidateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				postMaterialEventService,
 				availableToPromiseRepository,
 				stockCandidateService,
-				supplyCandidateHandler);
+				supplyCandidateHandler,
+				Mockito.mock(MaterialPlanningContextHelper.class),
+				new PPOrderCandidateDemandMatcher());
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
-				demandCandiateHandler,
+				demandCandidateHandler,
 				supplyCandidateHandler));
 
 		ddOrderCandidateAdvisedHandler = new DDOrderCandidateAdvisedHandler(

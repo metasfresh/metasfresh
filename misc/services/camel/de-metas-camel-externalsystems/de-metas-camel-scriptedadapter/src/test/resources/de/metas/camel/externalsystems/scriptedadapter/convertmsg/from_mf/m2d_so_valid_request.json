@@ -1,0 +1,29 @@
+{
+  "orgCode": "001",
+  "orderNumber": 123,
+  "dateOrdered": "2022-06-17T00:00:00",
+  "datePromised": "2025-04-30T22:00:00",
+  "partnerIdentifier": "@customer_ID@",
+  "partnerValue": "customerValue",
+  "partnerName": "customerName",
+  "currency": "EUR",
+  "Lines": [
+    {
+      "qty": 10,
+      "uom": "PCE",
+      "price": 2.0,
+      "discount": 0,
+      "orderLineId": 1,
+      "productName": "@postgRESTExportProductName1@",
+      "orderLineNumber": 10,
+      "productIdentifier": "@postgRESTExportProductValue1@",
+      "productDescription": "postgRESTExportProductDescription1"
+    }
+  ],
+  "charges": [
+    {
+      "price": 2.0,
+      "chargeIdentifier": 2
+    }
+  ]
+}

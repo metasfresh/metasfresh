@@ -50,7 +50,7 @@ public class ExternalSystem_Config_Alberta
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(albertaConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Alberta.getCode().equals(parentType))
+		if (!ExternalSystemType.Alberta.getValue().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

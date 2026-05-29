@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -117,8 +117,14 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
+	/**
+	 * Used by apache-camel to request an API-token from metasfresh. See readme for more details. Note that the queue uses the default exchange.
+	 */
 	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";
 
+	/**
+	 * Analog to {@link #QUEUE_NAME_ES_TO_MF_CUSTOM}, just for the opposite direction.
+	 */
 	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
 
 
@@ -188,5 +194,37 @@ public class ExternalSystemConstants
 	public static final String PARAM_LOCAL_FILE_PURCHASE_ORDER_FILE_NAME_PATTERN = "LocalFilePurchaseOrderFileNamePattern";
 
 	public static final String PARAM_TAX_CATEGORY_MAPPINGS = "TaxCategoryMappings";
+
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT = "messageFromMetasfresh";
+	public static final String PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS = "outboundEndpointData";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP = "outboundHttpEP";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN = "outboundHttpToken";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD = "outboundHttpMethod";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME = "outboundRecordTableName";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID = "outboundRecordId";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO = "outboundDocumentNo";
+	public static final String PARAM_ERROR_CONTEXT = "errorContext";
+	public static final String COMMAND_CONVERT_MESSAGE_FROM_METASFRESH = "ConvertMsgFromMF";
+
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME = "endpointName";
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN = "token";
+
+	// SFTP polling parameters (for ScriptedImportConversion inbound polling)
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_HOST = "sftpHost";
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_PORT = "sftpPort";
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_USERNAME = "sftpUsername";
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_PASSWORD = "sftpPassword";
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY = "sshPrivateKey";
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE = "sftpAuthType";
+	public static final String PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH = "sftpRemotePath";
+	public static final String PARAM_SFTP_POLLING_INTERVAL_MS = "sftpPollingIntervalMs";
+	public static final String PARAM_SFTP_POLLING_PROCESSED_DIR = "sftpProcessedDirectory";
+	public static final String PARAM_SFTP_POLLING_ERROR_DIR = "sftpErrorDirectory";
+
+	// Shared SFTP auth type values (used by both backend enum and Camel routes)
+	public static final String SFTP_AUTH_TYPE_PASSWORD = "PASSWORD";
+	public static final String SFTP_AUTH_TYPE_SSH_KEY = "SSH_KEY";
 }
 

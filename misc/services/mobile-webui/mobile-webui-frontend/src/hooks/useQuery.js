@@ -50,6 +50,7 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) 
       if (doLog) console.log(`useQuery(${queryId}) - stopped`, { queryKey, queryFn });
     };
   }, [enabled, ...queryKey]);
+  // useWhyDidYouUpdate('useQuery', queryKey);
 
   //
   // fire onSuccess
@@ -61,5 +62,5 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) 
 
   //
   //
-  return { isPending, data };
+  return { isPending, data, setData };
 };

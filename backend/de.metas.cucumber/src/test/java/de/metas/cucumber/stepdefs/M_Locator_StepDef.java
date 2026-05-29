@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Locator;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
@@ -112,7 +111,7 @@ public class M_Locator_StepDef
 						locatorRecord.setIsDefault(isDefault.orElse(true));
 					}
 
-					final OptionalInt priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
+					final Optional<Integer> priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
 					if (isNew || priorityNo.isPresent())
 					{
 						locatorRecord.setPriorityNo(priorityNo.orElse(50));

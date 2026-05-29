@@ -115,6 +115,12 @@ public class DocumentLocationAdapter
 		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
 	}
 
+	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddress(from);
+	}
+	
 	public void setFrom(@NonNull final I_M_InOut from)
 	{
 		setFrom(new DocumentLocationAdapter(from).toDocumentLocation());

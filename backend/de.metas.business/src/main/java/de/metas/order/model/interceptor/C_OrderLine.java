@@ -41,6 +41,7 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -72,6 +73,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
+@Component
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
@@ -83,6 +85,7 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -255,7 +258,7 @@ public class C_OrderLine
 		if (developerModeBL.isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
-																		 + "\nStorage: " + ol);
+					+ "\nStorage: " + ol);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
@@ -271,8 +274,8 @@ public class C_OrderLine
 		final boolean qtyOrderedLessThanZero = ol.getQtyOrdered().signum() < 0;
 
 		Check.errorIf(qtyOrderedLessThanZero,
-					  "QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
-					  ol.getQtyOrdered(), ol, ol.getC_Order_ID());
+				"QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
+				ol.getQtyOrdered(), ol, ol.getC_Order_ID());
 	}
 
 	// task 06727
@@ -377,11 +380,11 @@ public class C_OrderLine
 		orderLine.setM_DiscountSchemaBreak(null);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-										 .orderLine(orderLine)
-										 .resultUOM(ResultUOM.PRICE_UOM)
-										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
-										 .updateLineNetAmt(true)
-										 .build());
+				.orderLine(orderLine)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
+				.updateLineNetAmt(true)
+				.build());
 
 		logger.debug("Setting TaxAmtInfo for {}", orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
@@ -429,7 +432,51 @@ public class C_OrderLine
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		orderBL.setWeightFromLines(order);
-		
+
 		saveRecord(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_QtyOrdered })
+	public void updateGrossWeightInKg(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderLineBL.setGrossWeightInKg(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge, I_C_OrderLine.COLUMNNAME_PriceActual, I_C_OrderLine.COLUMNNAME_PriceEntered })
+	public void updatePriceToZero(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(BigDecimal.ZERO);
+			orderLine.setPriceEntered(BigDecimal.ZERO);
+			orderLine.setIsManualPrice(true);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge })
+	public void updatePriceToStd(final I_C_OrderLine orderLine)
+	{
+		if (!orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(orderLine.getPriceStd());
+			orderLine.setPriceEntered(orderLine.getPriceStd());
+			orderLine.setIsManualPrice(false);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Project_ID })
+	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderBL.updateASIFromProjectId(orderLine);
 	}
 }

@@ -39,9 +39,9 @@ import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -52,7 +52,7 @@ public class InOutBLTest
 {
 	private InOutBL inoutBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -69,7 +69,7 @@ public class InOutBLTest
 		final I_M_InOut record = InterfaceWrapperHelper.create(Env.getCtx(), I_M_InOut.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(record);
 
-		Assert.assertEquals("", false, inoutBL.isReversal(record));
+		Assertions.assertEquals(false, inoutBL.isReversal(record));
 	}
 
 	@Test
@@ -85,11 +85,11 @@ public class InOutBLTest
 		record.setReversal_ID(InterfaceWrapperHelper.getId(reversal));
 		InterfaceWrapperHelper.save(record);
 
-		Assert.assertEquals(false, inoutBL.isReversal(record));
-		Assert.assertEquals(true, inoutBL.isReversal(reversal));
+		Assertions.assertEquals(false, inoutBL.isReversal(record));
+		Assertions.assertEquals(true, inoutBL.isReversal(reversal));
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_isReversal_SelfReferencing()
 	{
 		final I_M_InOut record = InterfaceWrapperHelper.create(Env.getCtx(), I_M_InOut.class, ITrx.TRXNAME_None);
@@ -98,8 +98,8 @@ public class InOutBLTest
 		record.setReversal_ID(InterfaceWrapperHelper.getId(record));
 		InterfaceWrapperHelper.save(record);
 
-		final boolean isReversalActual = inoutBL.isReversal(record);
-		Assert.fail("This test shall throw exception because self referencing is not ok, but instead returned: " + isReversalActual);
+		Assertions.assertThrows(AdempiereException.class, () -> inoutBL.isReversal(record));
+
 	}
 
 	@Test

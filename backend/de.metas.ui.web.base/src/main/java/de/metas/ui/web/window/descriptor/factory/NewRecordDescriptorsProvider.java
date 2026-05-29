@@ -2,10 +2,12 @@ package de.metas.ui.web.window.descriptor.factory;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
+import de.metas.document.NewRecordContext;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
+import de.metas.ui.web.window.descriptor.NewRecordDescriptor.ProcessNewRecordDocumentRequest;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,15 +44,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides {@link NewRecordDescriptor}s.
- * <p>
- * Task https://github.com/metasfresh/metasfresh/issues/1090
+ *
+ * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/1090">task</a>
  */
 @Component
 public class NewRecordDescriptorsProvider
 {
 	// services
-	private static final Logger logger = LogManager.getLogger(NewRecordDescriptorsProvider.class);
-	private final DocumentDescriptorFactory documentDescriptors;
+	@NonNull private static final Logger logger = LogManager.getLogger(NewRecordDescriptorsProvider.class);
+	@NonNull private final DocumentDescriptorFactory documentDescriptors;
+	@NonNull private final BPartnerQuickInputService bpartnerQuickInputService;
 
 	private final ConcurrentHashMap<String, NewRecordDescriptor> newRecordDescriptorsByTableName = new ConcurrentHashMap<>();
 
@@ -59,23 +62,40 @@ public class NewRecordDescriptorsProvider
 			@NonNull final BPartnerQuickInputService bpartnerQuickInputService)
 	{
 		this.documentDescriptors = documentDescriptors;
+		this.bpartnerQuickInputService = bpartnerQuickInputService;
 
+		addBpartnerRecordDescriptor();
+	}
+
+	private void addBpartnerRecordDescriptor()
+	{
 		final AdWindowId bpartnerQuickInputAdWindowId = bpartnerQuickInputService.getNewBPartnerWindowId().orElse(null);
 		if (bpartnerQuickInputAdWindowId != null)
 		{
 			addNewRecordDescriptor(NewRecordDescriptor.of(
 					I_C_BPartner.Table_Name,
 					WindowId.of(bpartnerQuickInputAdWindowId),
-					(document, newRecordContext) -> {
-						final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(document);
-						final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template, newRecordContext);
-						return bpartnerId.getRepoId();
-					}));
+					this::handleNewBPartnerRequest));
 		}
 		else
 		{
 			logger.warn("No window found for " + I_C_BPartner_QuickInput.Table_Name);
 		}
+	}
+
+	private int handleNewBPartnerRequest(final ProcessNewRecordDocumentRequest request)
+	{
+		final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(request.getDocument());
+		final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(
+				template,
+				NewRecordContext.builder()
+						.loginOrgId(request.getLoginOrgId())
+						.loggedUserId(request.getLoggedUserId())
+						.loginLanguage(request.getLoginLanguage())
+						.build()
+		);
+
+		return bpartnerId.getRepoId();
 	}
 
 	public void addNewRecordDescriptor(@NonNull final NewRecordDescriptor newRecordDescriptor)

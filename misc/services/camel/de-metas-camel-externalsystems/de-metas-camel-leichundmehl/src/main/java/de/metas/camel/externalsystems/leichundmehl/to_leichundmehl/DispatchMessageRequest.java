@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 @Value
 public class DispatchMessageRequest
@@ -36,6 +37,7 @@ public class DispatchMessageRequest
 
 	@NonNull
 	@JsonProperty("payload")
+	@With
 	String payload;
 
 	@Builder

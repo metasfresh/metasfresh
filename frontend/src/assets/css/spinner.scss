@@ -1,0 +1,36 @@
+@import './layers.scss';
+
+.spinner {
+  .icon {
+    z-index: 99;
+    animation: spin 2s linear infinite;
+    opacity: 0.7;
+
+    &.spinner {
+      position: absolute;
+      background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
+    }
+  }
+}
+
+.spinner-wrapper-overlay {
+  position: absolute !important;
+  z-index: $z-index-spinner-overlay !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.spinner-wrapper-modal {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: transparent !important;
+}
+
+.spinner-wrapper-inline {
+  width: 100%;
+  padding: 2px;
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  background-color: transparent !important;
+}

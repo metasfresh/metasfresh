@@ -334,6 +334,33 @@ public class DataTableRow
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(StepDefDataIdentifier.ofString(string));
+	}
+
+	@NonNull
+	public ImmutableList<StepDefDataIdentifier> getAsIdentifierList(@NonNull final String columnName)
+	{
+		final String string = getAsOptionalIdentifierString(columnName);
+
+		if (string == null || Check.isBlank(string))
+		{
+			return ImmutableList.of();
+		}
+		return StepDefUtil.extractIdentifiers(string);
+	}
+
+	/**
+	 * Not to be used directly, but extracts the common logic identifier lookup
+	 */
+	private String getAsOptionalIdentifierString(final @NonNull String columnName)
+	{
 		String string = null;
 		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
@@ -356,13 +383,7 @@ public class DataTableRow
 		{
 			string = map.get(columnName);
 		}
-
-		if (string == null || Check.isBlank(string))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(StepDefDataIdentifier.ofString(string));
+		return string;
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
@@ -395,17 +416,10 @@ public class DataTableRow
 	}
 
 	@NonNull
-	public Optional<Integer> getAsOptionalInteger(@NonNull final String columnName)
+	public Optional<Integer> getAsOptionalInt(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName)
 				.flatMap(valueStr -> parseOptionalInt(valueStr, columnName));
-	}
-
-	@NonNull
-	public java.util.OptionalInt getAsOptionalInt(@NonNull final String columnName)
-	{
-		final Optional<Integer> opt = getAsOptionalInteger(columnName);
-		return opt.isPresent() ? java.util.OptionalInt.of(opt.get()) : java.util.OptionalInt.empty();
 	}
 
 	private static Optional<Integer> parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
@@ -573,7 +587,7 @@ public class DataTableRow
 						() -> getAsOptionalString(columnName),
 						() -> getAsOptionalString(columnName + ".CountryCode")
 				)
-				.map(code -> CountryCode.builder().alpha2(code).alpha3(code).build());
+				.map(CountryCode::ofAlpha2);
 	}
 
 	public Money getAsMoney(

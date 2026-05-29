@@ -25,6 +25,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Set;
@@ -89,10 +91,10 @@ public class PaymentRow implements IViewRow
 	private final PaymentAmtMultiplier paymentAmtMultiplier;
 
 	@Getter
-	private final LocalDate dateAcct;
+	private final PaymentCurrencyContext paymentCurrencyContext;
 
 	@Getter
-	private final PaymentCurrencyContext paymentCurrencyContext;
+	private final LocalDate dateAcct;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
@@ -106,7 +108,6 @@ public class PaymentRow implements IViewRow
 			.documentNo("NO PAYMENTS")
 			.bpartner(LookupValue.StringLookupValue.of("NO PAYMENTS", "NO PAYMENTS"))
 			.dateTrx(LocalDate.of(2020, Month.JUNE, 2))
-			.dateAcct(LocalDate.of(2020, Month.JUNE, 2))
 			.paymentDirection(PaymentDirection.INBOUND)
 			.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(PaymentDirection.INBOUND).isOutboundAdjusted(false).build())
 			.payAmt(Amount.zero(CurrencyCode.EUR))
@@ -119,7 +120,7 @@ public class PaymentRow implements IViewRow
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateTrx,
-			@NonNull final LocalDate dateAcct,
+			@Nullable final LocalDate dateAcct,
 			@NonNull final LookupValue bpartner,
 			@NonNull final PaymentAmtMultiplier paymentAmtMultiplier,
 			@NonNull final Amount payAmt,
@@ -130,7 +131,7 @@ public class PaymentRow implements IViewRow
 		this.inboundPayment = paymentDirection.isInboundPayment();
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
-		this.dateAcct = dateAcct;
+		this.dateAcct = dateAcct != null ? dateAcct : dateTrx;
 		this.bpartner = bpartner;
 		this.paymentAmtMultiplier = paymentAmtMultiplier;
 		this.payAmt = payAmt;

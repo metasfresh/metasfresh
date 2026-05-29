@@ -69,11 +69,21 @@ BEGIN
                 END IF;
 
                 -- get the sequence's next value
-                EXECUTE 'select max('
-                            || quote_ident(v_record_to_process.column_name)
-                            || ') from '
-                    || quote_ident(v_record_to_process.Table_Name)
-                    INTO v_nextid;
+                -- in case of AD_PInstance table, get the greatest _ID from both AD_PInstance and T_Selection
+                IF lower(v_record_to_process.Table_Name) = lower('AD_PInstance') 
+                THEN
+                    EXECUTE 'SELECT GREATEST(
+                    (select max(' || quote_ident(v_record_to_process.column_name) || ') from ' || quote_ident(v_record_to_process.Table_Name) || '), 
+                    (SELECT max(' || quote_ident(v_record_to_process.column_name) || ') from public.T_Selection)
+                )'
+                        INTO v_nextid;
+                ELSE
+                    EXECUTE 'select max('
+                                || quote_ident(v_record_to_process.column_name)
+                                || ') from '
+                        || quote_ident(v_record_to_process.Table_Name)
+                        INTO v_nextid;
+                END IF;
 
                 IF (v_nextid IS NULL)
                 THEN
@@ -131,6 +141,7 @@ In both cases, it ignores AD_Tables that have an AD_Column with
 In other words, you can use an AD_Column record to explicitly tell this function not to do anything about the respective table''s native sequence.
 Also note that the function won''t do anything unless there is a physical column named like "<tablename>_id".
 
-Otherwise, the sequence is named lower(tableName||''_seq'') and its next value is set from the maximum value of the key or parent column.';
+Otherwise, the sequence is named lower(tableName||''_seq'') and its next value is set from the maximum value of the key or parent column.
+Note: In case of ''AD_PInstance'' table the next value of the sequence is set from the maximum value of the key or parent column or ''AD_PInstance_ID'' from public.T_Selection';
 
 

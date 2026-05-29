@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,33 +28,38 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 
 public interface CoreConstants
 {
-	/** This is the header-key for our API-token when doing http. */
+	/**
+	 * This is the header-key for our API-token when doing http.
+	 */
 	String AUTHORIZATION = "Authorization";
 	String ACCEPT = "accept";
-	
+
 	String AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY = "metasfresh.audit.sensitive-data.pattern";
 	String AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY = "metasfresh.audit.sensitive-data.pattern.group";
 
 	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT = "\".*?(auth|key|pass|token).*?\":(.*?\"(.+?)\")";
 	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT_GROUP = "3";
 
-	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
-			+ "?durable=true"
-			+ "&autoDelete=false"
+	/**
+	 * The queue is bound to the default exchange, hence the "default"
+	 * (see <a href="https://camel.apache.org/components/4.10.x/spring-rabbitmq-component.html#_default_exchange_name">camel-docu</a>)
+	 */
+	String FROM_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_MF_TO_ES
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
+			+ "&arg.queue.durable=true" 
+			+ "&autoDeclare=true";
 
-	String CUSTOM_TO_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&autoAck=false"
-			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "&queue=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
-
-	String CUSTOM_FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES_CUSTOM
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&autoAck=false"
+	String CUSTOM_FROM_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_MF_TO_ES_CUSTOM
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES_CUSTOM;
+			+ "&arg.queue.durable=true" 
+			+ "&autoDeclare=true";
+
+	/**
+	 * This is for sending only, so we will send to the default-exchange and tell it to forward the message to the queue named {@link de.metas.common.externalsystem.ExternalSystemConstants#QUEUE_NAME_ES_TO_MF_CUSTOM}.
+	 * <br>
+	 * To make sure that queue actually exists, we absolutely need {@link de.metas.camel.externalsystems.core.authorization.RabbitMQConfig}.
+	 * If the queue does not exist - for example, because metasfresh-{@code app} didn't create it yet - our message would otherwise be discarded!
+	 */
+	String CUSTOM_TO_MF_ROUTE = "spring-rabbitmq:default"
+			+ "?routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
 }

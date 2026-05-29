@@ -233,6 +233,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 				.lookupDescriptor(lookupDescriptor)
 				.mandatory(false)
 				.showIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
+				.showInactiveValues(filteringInfo.isShowInactiveValues())
 				.autoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
 	}
 

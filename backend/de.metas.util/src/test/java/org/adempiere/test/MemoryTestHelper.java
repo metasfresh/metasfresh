@@ -23,9 +23,10 @@ package org.adempiere.test;
  */
 
 
+import org.junit.jupiter.api.Assertions;
+
 import java.math.BigDecimal;
 
-import org.junit.Assert;
 
 /**
  * Helper class used to test memory informations while the tests run.
@@ -112,6 +113,6 @@ public class MemoryTestHelper
 				+ "\n            Usage delta%: " + usageDelta
 				+ "\n             Tollerance%: " + usageIncreasePercentTolerance;
 
-		Assert.fail(messageToUse);
+		Assertions.fail(messageToUse);
 	}
 }

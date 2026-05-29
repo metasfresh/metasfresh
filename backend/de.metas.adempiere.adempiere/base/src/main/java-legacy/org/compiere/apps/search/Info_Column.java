@@ -16,80 +16,44 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.compiere.minigrid.ColumnInfo;
 
 /**
- *  Info Column Details
+ * Info Column Details
  *
- * @author 	Jorg Janke
- * @version 	$Id: Info_Column.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * 
+ * @author Jorg Janke
+ * @version $Id: Info_Column.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  * NOTE: Use {@link org.compiere.minigrid.ColumnInfo} instead
  */
 public class Info_Column extends ColumnInfo
 {
-	/**
-	 *  Create Info Column (r/o and not color column)
-	 *
-	 *  @param colHeader Column Header
-	 *  @param colSQL    SQL select code for column
-	 *  @param colClass  class of column - determines display
-	 */
-	public Info_Column (String colHeader, String colSQL, Class<?> colClass)
-	{
-		super(colHeader, colSQL, colClass);
-	}   //  Info_Column
+	@Getter @Setter private int seqNo;
 
-	/**
-	 *  Create Info Column (r/o and not color column)
-	 *
-	 *  @param colHeader Column Header
-	 *  @param colSQL    SQL select code for column
-	 *  @param colClass  class of column - determines display
-	 *  @param IDcolSQL  SQL select for the ID of the for the displayed column (KeyNamePair)
-	 */
-	public Info_Column (String colHeader, String colSQL, Class<?> colClass, String IDcolSQL)
+	public Info_Column(String colHeader, @NonNull String columnName, Class<?> colClass)
+	{
+		super(colHeader, columnName, colClass);
+		setColumnName(columnName);
+	}
+
+	public Info_Column(@NonNull String columnName, String colHeader, String colSQL, Class<?> colClass, String IDcolSQL)
 	{
 		super(colHeader, colSQL, colClass, true, false, IDcolSQL);
-	}   //  Info_Column
-	
-	/**
-	 *  Create Info Column (not color column)
-	 *
-	 *  @param colHeader Column Header
-	 *  @param colSQL    SQL select code for column
-	 *  @param colClass  class of column - determines display
-	 *  @param readOnly  column is read only
-	 *  @author ashley
-	 */
-	 public Info_Column (String colHeader, String colSQL, Class<?> colClass, boolean readOnly)
-	 {
-	    super(colHeader, colSQL, colClass, readOnly, false, null);
-	 }   //  Info_Column
+		setColumnName(columnName);
+	}
 
-	/**
-	 *  Create Info Column
-	 *
-	 *  @param colHeader Column Header
-	 *  @param colSQL    SQL select code for column
-	 *  @param colClass  class of column - determines display
-	 *  @param readOnly  column is read only
-	 *  @param colorColumn   if true, value of column determines foreground color
-	 *  @param IDcolSQL  SQL select for the ID of the for the displayed column
-	 */
-	public Info_Column (String colHeader, String colSQL, Class<?> colClass, 
-		boolean readOnly, boolean colorColumn, String IDcolSQL)
-	{
-		super(colHeader, colSQL, colClass, readOnly, colorColumn, IDcolSQL);
-	}   //  Info_Column
 	public void setIDcolSQL(String IDcolSQL)
 	{
 		super.setKeyPairColSQL(IDcolSQL);
 	}
+
 	public String getIDcolSQL()
 	{
 		return super.getKeyPairColSQL();
 	}
+
 	public boolean isIDcol()
 	{
 		return super.isKeyPairCol();

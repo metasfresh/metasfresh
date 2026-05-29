@@ -70,6 +70,13 @@ public class ReceiptScheduleKeyValueHandler implements IAggregationKeyValueHandl
 			values.add(externalResourceURL);
 		}
 
+		values.add(rs.getExternalHeaderId());
+
+		if (rs.getExternalSystem_ID() > 0)
+		{
+			values.add(rs.getExternalSystem_ID());
+		}
+		
 		return values;
 	}
 }

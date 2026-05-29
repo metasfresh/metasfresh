@@ -81,32 +81,60 @@ public class FlatrateTermImportTableSqlUpdater
 
 	private void dbUpdateBPartnerIds(final String sqlImportWhereClause)
 	{
-		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+		final String sqlCountByValue = "select count(*) from " + I_C_BPartner.Table_Name + " bp "
+				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Flatrate_Term.COLUMNNAME_BPartnerValue
+				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID
+				+ " and bp.IsActive='Y'";
+		final String sqlSelectByValue = "select MAX(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " from " + I_C_BPartner.Table_Name + " bp "
 				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Flatrate_Term.COLUMNNAME_BPartnerValue
-				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID;
+				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID
+				+ " and bp.IsActive='Y'";
 		final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
-				+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByValue + ")"
+				+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + "=CASE WHEN (" + sqlCountByValue + ") > 1 THEN NULL ELSE (" + sqlSelectByValue + ") END"
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + " IS NULL";
 
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set C_BPartner_ID for {} records", no);
+
+		// Mark ambiguous rows as errors
+		final String sqlError = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
+				+ "\n SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for BPartnerValue'"
+				+ "\n WHERE " + sqlImportWhereClause
+				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + " IS NULL"
+				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_BPartnerValue + " IS NOT NULL"
+				+ "\n AND (" + sqlCountByValue + ") > 1";
+		DB.executeUpdateAndThrowExceptionOnFail(sqlError, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateDropshipPartnerIds(final String sqlImportWhereClause)
 	{
-		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+		final String sqlCountByValue = "select count(*) from " + I_C_BPartner.Table_Name + " bp "
+				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_Value
+				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID
+				+ " and bp.IsActive='Y'";
+		final String sqlSelectByValue = "select MAX(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " from " + I_C_BPartner.Table_Name + " bp "
 				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_Value
-				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID;
+				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID
+				+ " and bp.IsActive='Y'";
 		final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
-				+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + "=(" + sqlSelectByValue + ")"
+				+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + "=CASE WHEN (" + sqlCountByValue + ") > 1 THEN NULL ELSE (" + sqlSelectByValue + ") END"
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + " IS NULL";
 
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set DropShip_BPartner_ID for {} records", no);
+
+		// Mark ambiguous rows as errors
+		final String sqlError = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
+				+ "\n SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for DropShip_BPartner_Value'"
+				+ "\n WHERE " + sqlImportWhereClause
+				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + " IS NULL"
+				+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_Value + " IS NOT NULL"
+				+ "\n AND (" + sqlCountByValue + ") > 1";
+		DB.executeUpdateAndThrowExceptionOnFail(sqlError, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateC_Flatrate_Conditions_IDs(final String sqlImportWhereClause)

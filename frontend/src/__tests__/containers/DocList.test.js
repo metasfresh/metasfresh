@@ -42,15 +42,13 @@ import viewHandler, {
 import tables from '../../reducers/tables';
 import filters, {
   initialState as tablesHandlerState,
-  initialState as filtersHandlerState,
+  initialState as filtersHandlerState
 } from '../../reducers/tables';
 import actionsHandler, {
   getQuickActionsId,
   initialState as actionsHandlerState,
 } from '../../reducers/actionsHandler';
 
-import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../test_setup/fixtures/keymap.json';
 import propsFixtures from '../../../test_setup/fixtures/doclist.json';
 import dataFixtures from '../../../test_setup/fixtures/grid/doclist_data.json';
 import layoutFixtures
@@ -253,7 +251,7 @@ describe.skip('DocList', () => {
         wrapper = await mount(
           <Provider store={store}>
             <ProvideAuth>
-              <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+              <ShortcutProvider>
                 <Router history={history}>
                   <Routes />
                 </Router>

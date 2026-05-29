@@ -1,3 +1,5 @@
+-- FIXME: it shall be dropped/replaced by GenerateHUAttributesKey
+
 -- Function: GenerateHUStorageHUKey(numeric)
 
 -- DROP FUNCTION IF EXISTS GenerateHUStorageHUKey(numeric);

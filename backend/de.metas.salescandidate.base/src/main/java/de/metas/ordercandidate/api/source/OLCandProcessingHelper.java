@@ -26,8 +26,8 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -129,7 +129,9 @@ public class OLCandProcessingHelper
 				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
 				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
 				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
-				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
+				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId())
+				|| !Objects.equals(previousCandidate.getExternalSystemId(), candidate.getExternalSystemId())
+				|| !Objects.equals(previousCandidate.getExternalHeaderId(), candidate.getExternalHeaderId()))
 
 		{
 			return true;

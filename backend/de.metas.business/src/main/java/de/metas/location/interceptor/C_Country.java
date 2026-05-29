@@ -9,13 +9,13 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -63,7 +63,7 @@ public class C_Country
 			final IAttributesBL attributesService = Services.get(IAttributesBL.class);
 			final ICountryAttributeDAO countryAttributeDAO = Services.get(ICountryAttributeDAO.class);
 
-			final I_M_Attribute countryAttribute = countryAttributeDAO.retrieveCountryAttribute(ctx);
+			final Attribute countryAttribute = countryAttributeDAO.retrieveCountryAttribute(ctx);
 			final IAttributeValueGenerator generator = attributesService.getAttributeValueGenerator(countryAttribute);
 			generator.generateAttributeValue(ctx, c_countryTableId.getRepoId(), country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
 		}

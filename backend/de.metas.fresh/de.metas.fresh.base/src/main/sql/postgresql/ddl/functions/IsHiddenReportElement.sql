@@ -41,5 +41,5 @@ BEGIN
     RETURN COALESCE(IsHiddenElement, 'N');
 END
 $$
-    LANGUAGE plpgsql STABLE
+    LANGUAGE plpgsql
 ;

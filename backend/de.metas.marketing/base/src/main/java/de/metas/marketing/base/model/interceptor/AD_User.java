@@ -2,7 +2,6 @@ package de.metas.marketing.base.model.interceptor;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
@@ -90,11 +89,7 @@ public class AD_User
 			if (!defaultcampaignId.isPresent())
 			{
 				final String orgName = orgDAO.retrieveOrgName(userRecord.getAD_Org_ID());
-				final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(
-						MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org,
-						orgName);
-
-				throw new AdempiereException(translatableMsgText);
+				throw new AdempiereException(MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org, orgName);
 			}
 			final User user = userRepository.ofRecord(userRecord);
 			campaignService.addToCampaignIfHasEmailAddress(user, defaultcampaignId.get());

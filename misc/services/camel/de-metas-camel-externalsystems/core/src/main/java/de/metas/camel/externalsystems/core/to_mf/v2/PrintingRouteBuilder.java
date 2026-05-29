@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,7 +27,7 @@ import de.metas.common.rest_api.v2.printing.request.JsonPrintingResultRequest;
 import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PRINTING_QUEUE_ID;
@@ -46,16 +46,16 @@ public class PrintingRouteBuilder extends RouteBuilder
 	{
 		from(direct(MF_GET_PRINTING_DATA_ROUTE_ID))
 				.routeId(MF_GET_PRINTING_DATA_ROUTE_ID)
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.toD("{{" + MF_PRINT_V2_BASE + "}}/getPrintingData/" + "${header." + HEADER_PRINTING_QUEUE_ID + "}")
-				.streamCaching()
+				.streamCache("true")
 				.to(direct(UNPACK_V2_API_RESPONSE))
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonPrintingDataResponse.class));
 
 		from(direct(MF_SET_PRINTING_RESULT_ROUTE_ID))
 				.routeId(MF_SET_PRINTING_RESULT_ROUTE_ID)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(),JsonPrintingResultRequest.class))
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.toD("{{" + MF_PRINT_V2_BASE + "}}/setPrintingResult/" + "${header." + HEADER_PRINTING_QUEUE_ID + "}");
 	}
 

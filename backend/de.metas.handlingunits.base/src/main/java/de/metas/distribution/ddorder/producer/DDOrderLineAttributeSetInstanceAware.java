@@ -5,7 +5,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_OrderLine;

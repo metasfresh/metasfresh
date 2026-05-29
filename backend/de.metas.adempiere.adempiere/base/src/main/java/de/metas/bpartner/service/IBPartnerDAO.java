@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
@@ -32,6 +33,7 @@ import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -164,7 +166,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
 
-	List<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
+	ImmutableList<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getByIdInTrx(@NonNull BPartnerId bpartnerId, @NonNull Class<T> modelClass);
 
@@ -322,7 +324,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
 
-	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
@@ -335,6 +338,12 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
 	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@NonNull
+	List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+
+	@Nullable
+	ShipperId getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Value
 	@Builder
@@ -402,4 +411,7 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 
 	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
+
+	@NonNull
+	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
 }

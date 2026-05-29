@@ -126,7 +126,7 @@ public class C_Campaign_Price
 		{
 			record.setM_PricingSystem_ID(pricingSystemId.getRepoId());
 
-			final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, SOTrx.SALES);
+			final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, SOTrx.SALES, null);
 			if (priceListId != null)
 			{
 				final OrgId orgId = OrgId.ofRepoIdOrAny(record.getAD_Org_ID());

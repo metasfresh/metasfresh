@@ -175,10 +175,10 @@
 		</band>
 	</detail>
 	<lastPageFooter>
-		<band height="13">
+		<band height="22">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="1" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
+				<reportElement key="textField-16" x="37" y="6" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -195,7 +195,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="470" y="1" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+				<reportElement key="textField-20" x="470" y="6" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<box>
@@ -209,6 +209,11 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="3" width="545" height="1" uuid="914bcfb6-116d-49fe-93a0-94727e0eb1ab">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</lastPageFooter>
 </jasperReport>

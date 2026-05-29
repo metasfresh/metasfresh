@@ -2,12 +2,14 @@ package org.adempiere.mm.attributes.listeners.adr;
 
 import java.util.List;
 
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.LotNumberAttributeUpdater;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.order.grossprofit.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -31,12 +33,13 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
  * #L%
  */
 
+@Component
 public class OrderLineLotNumberModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_OrderLine.Table_Name;
 	}

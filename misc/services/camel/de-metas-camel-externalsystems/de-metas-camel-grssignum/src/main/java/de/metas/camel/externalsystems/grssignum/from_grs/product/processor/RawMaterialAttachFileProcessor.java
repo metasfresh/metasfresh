@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,13 +25,13 @@ package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.grssignum.from_grs.JsonAttachmentUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.product.PushRawMaterialsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import de.metas.common.rest_api.v2.attachment.JsonTag;
 import de.metas.common.util.Check;
@@ -40,9 +40,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXTERNAL_REF_TYPE_BPARTNER;
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXTERNAL_REF_TYPE_PRODUCT;
@@ -98,14 +95,10 @@ public class RawMaterialAttachFileProcessor implements Processor
 	@NonNull
 	private JsonAttachment buildJsonAttachment(@NonNull final de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAttachment attachment)
 	{
-		final Path attachmentPath = Paths.get(attachment.getFileName());
-
-		return JsonAttachment.builder()
-				.fileName(attachmentPath.getFileName().toString())
-				.data(attachmentPath.toUri().toString())
-				.type(JsonAttachmentSourceType.LocalFileURL)
-				.tags(buildJsonTags(attachment))
-				.build();
+		return JsonAttachmentUtil.createLocalFileJsonAttachment(
+				"",
+				attachment.getFileName(),
+				buildJsonTags(attachment));
 	}
 
 	@NonNull

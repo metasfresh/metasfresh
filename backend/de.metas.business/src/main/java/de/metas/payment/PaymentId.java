@@ -55,7 +55,7 @@ public class PaymentId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final PaymentId id)
+	public static int toRepoId(@Nullable final PaymentId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

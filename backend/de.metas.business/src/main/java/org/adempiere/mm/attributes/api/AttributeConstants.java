@@ -78,4 +78,11 @@ public class AttributeConstants
 	public static final AttributeCode HU_ExternalLotNumber = AttributeCode.ofString("ExternalLotNumber");
 
 	public static final AttributeCode ProductionDate = AttributeCode.ofString("ProductionDate");
+
+	public static final AttributeCode ATTR_SSCC18_Value = AttributeCode.ofString("SSCC18");
+
+	public static final AttributeCode ATTR_GRAI = AttributeCode.ofString("GRAI");
+
+	public static final AttributeCode ATTR_ExternalBarcode = AttributeCode.ofString("ExternalBarcode");
+	public static final AttributeCode ATTR_Project = AttributeCode.ofString("ProjectValue");
 }

@@ -48,7 +48,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.util.DB;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
@@ -60,6 +59,9 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID, mandatory = true)
 	private AcctSchemaId p_C_AcctSchema_ID;
+
+	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_CostingMethod, mandatory = false)
+	private CostingMethod p_costingMethod;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -76,7 +78,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 	protected String doIt() throws Exception
 	{
 		final PInstanceId productsSelectionId = createProductsSelection();
-		final Instant startDate = getStartDate().minus(1, ChronoUnit.DAYS);
+		final Instant startDate = getStartDate();
 
 		getCostElements().forEach(costElement -> recomputeCosts(costElement, productsSelectionId, startDate));
 
@@ -109,11 +111,18 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 			@NonNull final PInstanceId productsSelectionId,
 			@NonNull final Instant startDate)
 	{
+		// IMPORTANT: pass 'DD' explicitly so the repost queue is reordered per-day, not per-month.
+		// With monthly truncation ('MM'), all documents of a calendar month share one bucket and
+		// are ordered inside it by tablename_prio — which puts M_Inventory after M_InOut sales.
+		// A cost-update inventory dated mid-month then re-posts AFTER same-month shipments, so
+		// those shipments compute their COGS from the pre-recompute running cost (often 0).
+		// Day-level truncation guarantees the inventory's day is strictly before any later-dated
+		// shipment in the same month.
 		DB.executeFunctionCallEx(getTrxName()
 				, "select \"de_metas_acct\".product_costs_recreate_from_date( p_C_AcctSchema_ID :=" + getAccountingSchemaId().getRepoId()
 						+ ", p_M_CostElement_ID:=" + costElement.getId().getRepoId()
 						+ ", p_m_product_selection_id:=" + productsSelectionId.getRepoId()
-						+ " , p_ReorderDocs_DateAcct_Trunc:='MM'"
+						+ " , p_ReorderDocs_DateAcct_Trunc:='DD'"
 						+ ", p_StartDateAcct:=" + DB.TO_SQL(startDate) + "::date)"  //
 				, null //
 		);
@@ -127,10 +136,12 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 
 	private List<CostElement> getCostElements()
 	{
-		final AcctSchema schema = acctSchemaDAO.getById(getAccountingSchemaId());
-		final CostingMethod costingMethod = schema.getCosting().getCostingMethod();
+		if (p_costingMethod != null)
+		{
+			return costElementRepository.getMaterialCostingElementsForCostingMethod(p_costingMethod);
+		}
 
-		return costElementRepository.getMaterialCostingElementsForCostingMethod(costingMethod);
+		return costElementRepository.getActiveMaterialCostingElements(getClientID());
 	}
 
 	private AcctSchemaId getAccountingSchemaId() {return p_C_AcctSchema_ID;}

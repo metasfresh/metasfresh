@@ -1,16 +1,6 @@
 package de.metas.purchasecandidate;
 
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarId;
 import de.metas.util.Check;
@@ -20,6 +10,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -60,9 +58,6 @@ public class BPPurchaseSchedule
 	private final Duration reminderTime;
 
 	@Getter
-	private final Duration leadTimeOffset;
-
-	@Getter
 	private final BPartnerId bpartnerId;
 
 	@Getter
@@ -79,18 +74,15 @@ public class BPPurchaseSchedule
 			@NonNull final Frequency frequency,
 			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes,
 			@NonNull final Duration reminderTime,
-			@NonNull final Duration leadTimeOffset,
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final CalendarId nonBusinessDaysCalendarId)
 	{
 		Check.assume(!reminderTime.isNegative(), "reminderTime shall be >= 0 but it was {}", reminderTime);
-		Check.assume(!leadTimeOffset.isNegative(), "leadTimeOffset shall be >= 0 but it was {}", leadTimeOffset);
 
 		this.validFrom = validFrom != null ? validFrom : DEFAULT_VALID_FROM;
 		this.frequency = frequency;
 		this.dailyPreparationTimes = dailyPreparationTimes;
 		this.reminderTime = reminderTime;
-		this.leadTimeOffset = leadTimeOffset;
 		this.bpPurchaseScheduleId = bpPurchaseScheduleId;
 		this.bpartnerId = bpartnerId;
 		this.nonBusinessDaysCalendarId = nonBusinessDaysCalendarId;

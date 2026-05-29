@@ -11,6 +11,8 @@ import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Transaction;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -64,6 +66,8 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final boolean directMovementWarehouse;
 
+	private final boolean isDropShipWarehouse;
+
 	private final int ppOrderId;
 	private final int ppOrderLineId;
 
@@ -90,6 +94,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final int inventoryLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse,
+			final boolean isDropShipWarehouse,
 			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId", transactionId);
@@ -116,12 +121,17 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.inventoryLineId = inventoryLineId;
 
 		this.directMovementWarehouse = directMovementWarehouse;
+		this.isDropShipWarehouse = isDropShipWarehouse;
 	}
 
-	/** Never return {@code null}. */
+	/**
+	 * Never return {@code null}.
+	 */
 	public abstract BigDecimal getQuantity();
 
-	/** Never return {@code null}. */
+	/**
+	 * Never return {@code null}.
+	 */
 	public abstract BigDecimal getQuantityDelta();
 
 	@OverridingMethodsMustInvokeSuper
@@ -131,5 +141,12 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
 		materialDescriptor.asssertMaterialDescriptorComplete();
+	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_M_Transaction.Table_Name, transactionId);
 	}
 }

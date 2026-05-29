@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,7 +31,7 @@ import java.io.InputStream;
 
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_UPSERT;
 import static de.metas.camel.externalsystems.shopware6.customer.GetCustomersRouteBuilder.GET_CUSTOMERS_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetCustomersRouteBuilderTest_withCustomFields extends GetCustomersRouteBuilderTest
 {
@@ -67,7 +67,7 @@ public class GetCustomersRouteBuilderTest_withCustomFields extends GetCustomersR
 		template.sendBody("direct:" + GET_CUSTOMERS_ROUTE_ID, invokeExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockPrepareContextProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
 		// dev-note: when `JsonExternalSystemRequest` does not contain `UpdatedAfterOverride` param, `UPSERT_RUNTIME_PARAMS_ROUTE_ID` route is called

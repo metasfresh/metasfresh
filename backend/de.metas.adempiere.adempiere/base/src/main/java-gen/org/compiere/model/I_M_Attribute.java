@@ -98,6 +98,27 @@ public interface I_M_Attribute
 	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
+	 * Set Attribute Values Order By.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAttributeValuesOrderBy (java.lang.String AttributeValuesOrderBy);
+
+	/**
+	 * Get Attribute Values Order By.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAttributeValuesOrderBy();
+
+	ModelColumn<I_M_Attribute, Object> COLUMN_AttributeValuesOrderBy = new ModelColumn<>(I_M_Attribute.class, "AttributeValuesOrderBy", null);
+	String COLUMNNAME_AttributeValuesOrderBy = "AttributeValuesOrderBy";
+
+	/**
 	 * Set Attribute Value Type.
 	 * Type of Attribute Value
 	 *
@@ -149,7 +170,7 @@ public interface I_M_Attribute
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -159,13 +180,34 @@ public interface I_M_Attribute
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Default Value (SQL).
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDefaultValueSQL (@Nullable java.lang.String DefaultValueSQL);
+
+	/**
+	 * Get Default Value (SQL).
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDefaultValueSQL();
+
+	ModelColumn<I_M_Attribute, Object> COLUMN_DefaultValueSQL = new ModelColumn<>(I_M_Attribute.class, "DefaultValueSQL", null);
+	String COLUMNNAME_DefaultValueSQL = "DefaultValueSQL";
 
 	/**
 	 * Set Description.

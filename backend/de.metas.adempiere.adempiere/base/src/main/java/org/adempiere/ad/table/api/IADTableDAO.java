@@ -24,6 +24,7 @@ package org.adempiere.ad.table.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
@@ -88,6 +89,7 @@ public interface IADTableDAO extends ISingletonService
 	/**
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
 	 */
+	@NonNull
 	String retrieveTableName(AdTableId adTableId);
 
 	@Nullable
@@ -102,6 +104,13 @@ public interface IADTableDAO extends ISingletonService
 	}
 
 	Optional<String> getTableNameIfPresent(@NonNull AdTableId adTableId);
+
+	/**
+	 * @return the translatable display name of the table (translations come from {@code AD_Element_Trl} via {@code AD_Table.AD_Element_ID}).
+	 * Empty if no record is found for the given id.
+	 */
+	@NonNull
+	ITranslatableString getTableNameTrl(@NonNull AdTableId adTableId);
 
 	/**
 	 * @param tableName, can be case insensitive

@@ -1,25 +1,13 @@
 package de.metas.notification.impl;
 
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_NotificationGroup;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_AD_User_NotificationGroup;
-import org.compiere.model.X_AD_User_NotificationGroup;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.email.EMailAddress;
-import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.INotificationGroupRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
+import de.metas.notification.NotificationGroupId;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationsConfig;
@@ -29,6 +17,18 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_NotificationGroup;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_User_NotificationGroup;
+import org.compiere.model.X_AD_User_NotificationGroup;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -40,12 +40,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +54,7 @@ import de.metas.util.Services;
 
 public class UserNotificationsConfigRepository implements IUserNotificationsConfigRepository
 {
-	private final CCache<UserId, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<UserId, UserNotificationsConfig> builder()
+	private final CCache<UserId, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<UserId, UserNotificationsConfig>builder()
 			.tableName(I_AD_User_NotificationGroup.Table_Name)
 			.initialCapacity(100)
 			.cacheMapType(CacheMapType.LRU)
@@ -63,11 +63,12 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 			.build();
 
 	@Override
-	public UserNotificationsConfig getByUserId(final UserId adUserId)
+	public @NonNull UserNotificationsConfig getByUserId(final UserId adUserId)
 	{
 		return userNotificationsConfigsByUserId.getOrLoad(adUserId, this::retrieveUserNotificationsConfig);
 	}
 
+	@NonNull
 	private UserNotificationsConfig retrieveUserNotificationsConfig(final UserId adUserId)
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
@@ -79,7 +80,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_AD_User_NotificationGroup.class)
-				.map(notificationsGroupRecord -> toUserNotificationsGroup(notificationsGroupRecord))
+				.map(this::toUserNotificationsGroup)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
@@ -106,8 +107,8 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 			return null;
 		}
 
-		final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
-		final NotificationGroupName groupInternalName = notificationGroupNamesRepo.getById(notificationsGroupRecord.getAD_NotificationGroup_ID());
+		final INotificationGroupRepository notificationGroupRepo = Services.get(INotificationGroupRepository.class);
+		final NotificationGroupName groupInternalName = notificationGroupRepo.getNameById(NotificationGroupId.ofRepoId(notificationsGroupRecord.getAD_NotificationGroup_ID())).orElse(null);
 		if (groupInternalName == null)
 		{
 			// group does not exist or it was deactivated

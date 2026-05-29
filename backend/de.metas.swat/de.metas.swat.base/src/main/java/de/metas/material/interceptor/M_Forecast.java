@@ -29,6 +29,7 @@ import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.mforecast.IForecastDAO;
+import de.metas.mforecast.impl.ForecastId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,10 +68,8 @@ public class M_Forecast
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_CLOSE,
-			ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_VOID
 	})
 	public void preventUnsupportedDocActions(@NonNull final I_M_Forecast forecast)
 	{
@@ -111,7 +110,7 @@ public class M_Forecast
 	})
 	public void updateForecastLines(@NonNull final I_M_Forecast forecast)
 	{
-		final List<I_M_ForecastLine> forecastLines = forecastsRepo.retrieveLinesByForecastId(forecast.getM_Forecast_ID());
+		final List<I_M_ForecastLine> forecastLines = forecastsRepo.retrieveLinesByForecastId(ForecastId.ofRepoId(forecast.getM_Forecast_ID()));
 		forecastLines.forEach(forecastLine -> updateForecastLineFromHeaderAndSave(forecastLine, forecast));
 	}
 

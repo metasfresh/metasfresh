@@ -13,10 +13,6 @@
 
     <description>Print Processing (Mass &amp; Single)</description>
 
-    <properties>
-        <migration-sql-basedir/>
-    </properties>
-
     <dependencies>
 
         <dependency>

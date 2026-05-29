@@ -122,7 +122,8 @@ final class POServicesFacade
 			{
 				logger.warn("Spring context is not yet started => using an empty ModelCacheInvalidationService instance");
 
-				return new ModelCacheInvalidationService(Optional.empty());
+				//return ModelCacheInvalidationService.newInstanceForUnitTesting();
+				return new ModelCacheInvalidationService(null, Optional.empty());
 			}
 
 			cacheInvalidationService = this._cacheInvalidationService = ModelCacheInvalidationService.get();
@@ -170,6 +171,7 @@ final class POServicesFacade
 		return adReferenceService;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isPerfMonActive()
 	{
 		return getSysConfigBooleanValue(PM_SYSCONFIG_NAME, PM_SYS_CONFIG_DEFAULT_VALUE);

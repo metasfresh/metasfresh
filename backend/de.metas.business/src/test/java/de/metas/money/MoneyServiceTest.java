@@ -1,15 +1,14 @@
 package de.metas.money;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.util.lang.Percent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ public class MoneyServiceTest
 
 	private CurrencyId currencyId;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

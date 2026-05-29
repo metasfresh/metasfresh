@@ -2,14 +2,13 @@ package de.metas.edi.process;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -19,6 +18,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.ReportResultData;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -41,9 +41,9 @@ import java.util.Set;
  */
 public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final IDesadvBL desadvBL = SpringContextHolder.instance.getBean(IDesadvBL.class);
-	private final SSCC18CodeBL sscc18CodeService = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
-	private final EDIDesadvPackService ediDesadvPackService = SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
+	@NonNull private final SSCC18CodeBL sscc18CodeService = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
+	@NonNull private final EDIDesadvPackService ediDesadvPackService = SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final String PARAM_IsDefault = "IsDefault";

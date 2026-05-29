@@ -8,7 +8,6 @@ import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
@@ -91,7 +90,7 @@ public class SAPGLJournalRepository
 
 	public SAPGLJournalLineId acquireLineId(@NonNull final SAPGLJournalId sapGLJournalId)
 	{
-		final int lineRepoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_SAP_GLJournalLine.Table_Name, ITrx.TRXNAME_ThreadInherited);
+		final int lineRepoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_SAP_GLJournalLine.Table_Name);
 		return SAPGLJournalLineId.ofRepoId(sapGLJournalId, lineRepoId);
 	}
 }

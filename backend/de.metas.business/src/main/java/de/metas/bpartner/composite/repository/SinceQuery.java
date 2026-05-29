@@ -1,13 +1,13 @@
 package de.metas.bpartner.composite.repository;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
-
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+
+import static de.metas.util.Check.assumeGreaterThanZero;
 
 /*
  * #%L
@@ -35,15 +35,16 @@ import lombok.Value;
 @Value
 public class SinceQuery
 {
-	public static SinceQuery anyEntity(@Nullable final Instant sinceInstant, final int pageSize)
+	public static SinceQuery anyEntity(@Nullable final Instant sinceInstant, final int pageSize, @Nullable final OrgId orgId, @Nullable final String externalSystem)
 	{
-		return new SinceQuery(SinceEntity.ALL, sinceInstant, pageSize);
+		return new SinceQuery(SinceEntity.ALL, sinceInstant, pageSize, orgId, externalSystem);
 	}
 
 	public static SinceQuery onlyContacts(@Nullable final Instant sinceInstant, final int pageSize)
 	{
-		return new SinceQuery(SinceEntity.CONTACT_ONLY, sinceInstant, pageSize);
+		return new SinceQuery(SinceEntity.CONTACT_ONLY, sinceInstant, pageSize,null, null);
 	}
+
 
 	SinceEntity sinceEntity;
 
@@ -51,13 +52,23 @@ public class SinceQuery
 
 	int pageSize;
 
+	@Nullable
+	OrgId orgId;
+
+	@Nullable
+	String externalSystem;
+
 	private SinceQuery(
 			@NonNull final SinceEntity sinceEntity,
 			@NonNull final Instant sinceInstant,
-			final int pageSize)
+			final int pageSize,
+			@Nullable final OrgId orgId,
+			@Nullable final String externalSystem)
 	{
 		this.sinceEntity = sinceEntity;
 		this.sinceInstant = sinceInstant;
 		this.pageSize = assumeGreaterThanZero(pageSize, "pageSize");
+		this.orgId = orgId;
+		this.externalSystem = externalSystem;
 	}
 }

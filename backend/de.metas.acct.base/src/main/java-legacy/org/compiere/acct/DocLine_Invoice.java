@@ -29,7 +29,6 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceAndLineId;
-import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -209,42 +208,8 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		if (_qtyInvoiced == null)
 		{
 			_qtyInvoiced = invoiceBL.getQtyInvoicedStockUOM(invoiceLine);
-
-			// FIXME: dirty workaround to make generated vendor credit memos book correctly
-			// NOTE: 
-			// 1. on those generated CMs, the QtyInvoiced is negative instead of being positive.
-			// 2. avoid merging this fix into new_dawn_uat because an actual fix is provided there.
-			if (isVendorCreditMemo())
-			{
-				_qtyInvoiced = _qtyInvoiced.negate();
-			}
 		}
 		return _qtyInvoiced;
-	}
-
-	private boolean isVendorCreditMemo()
-	{
-		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofDocBaseType(getDoc().getDocBaseType());
-		return invoiceDocBaseType.isVendorCreditMemo();
-	}
-
-	/**
-	 * @return quantity invoiced but not received
-	 */
-	public final Quantity getQtyNotReceived()
-	{
-		Quantity qtyReceived = getQtyReceivedInStockUOM();
-		
-		// FIXME: dirty workaround to make generated vendor credit memos book correctly
-		// NOTE: 
-		// 1. on those generated CMs, the QtyInvoiced is negative instead of being positive.
-		// 2. avoid merging this fix into new_dawn_uat because an actual fix is provided there.
-		if(isVendorCreditMemo())
-		{
-			qtyReceived = qtyReceived.negate();
-		}
-
-		return getQtyInvoiced().subtract(qtyReceived);
 	}
 
 	/**
@@ -252,7 +217,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	 */
 	final Quantity getQtyNotReceivedAbs()
 	{
-		return adjustQtySignByCreditMemoAndSOTrx(getQtyNotReceived());
+		return getQtyInvoiced().subtract(getQtyReceivedAbs());
 	}
 
 	/**

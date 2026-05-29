@@ -5,6 +5,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -73,13 +74,35 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository);
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryWriteService);
 		final Collection<CandidateHandler> candidateChangeHandlers = ImmutableList.of(new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService));
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateChangeHandlers);
 
 		receiptsScheduleCreatedHandler = new ReceiptsScheduleCreatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 		receiptsScheduleUpdatedHandler = new ReceiptsScheduleUpdatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
+	}
+
+	@Test
+	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	{
+		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent
+				.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
+				.receiptScheduleId(ReceiptsScheduleCreatedHandlerTest.RECEIPT_SCHEDULE_ID)
+				.reservedQuantity(new BigDecimal("11"))
+				.reservedQuantityDelta(ONE)
+				.orderedQuantityDelta(ONE)
+				.isDropShipWarehouse(true)
+				.build()
+				.validate();
+
+		receiptsScheduleUpdatedHandler.handleEvent(event);
+
+		// dropship-warehouse receipts bypass material-disposition entirely — no candidates of any type are created.
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
 	}
 
 	/** The update's timestamp is at the same date as the original creation (not sure how realisitic that is) */

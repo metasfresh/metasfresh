@@ -3,17 +3,18 @@ package de.metas.workflow.rest_api.controller.v2.ws;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
-import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.security.UserAuthToken;
+import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
-import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	private static final String TOPIC_PARAM_facetIds = "facetIds";
 	private static final String TOPIC_PARAM_qrCode = "qrCode";
 	private static final String TOPIC_PARAM_documentNo = "documentNo";
+	private static final String TOPIC_PARAM_filterByQtyAvailableAtPickFromLocator = "filterByQtyAvailableAtPickFromLocator";
 
 	@Override
 	public String getTopicNamePrefix() {return TOPIC_PREFIX;}
@@ -61,30 +63,38 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 		try
 		{
 			final MultiValueMap<String, String> queryParams = UriComponentsBuilder.fromUriString(topicName.getAsString()).build().getQueryParams();
-			final UserAuthToken token = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_userToken))
-					.map(userAuthTokenService::getByToken)
-					.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_userToken + " is mandatory"));
-			final MobileApplicationId applicationId = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_applicationId))
-					.map(MobileApplicationId::ofString)
-					.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_applicationId + " is mandatory"));
-			final GlobalQRCode filterByQRCode = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_qrCode))
-					.map(GlobalQRCode::ofString)
-					.orElse(null);
-			final DocumentNoFilter filterByDocumentNo = DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo));
-			final ImmutableSet<WorkflowLaunchersFacetId> facetIds = extractFacetIdsFromQueryParams(queryParams);
 
 			return WorkflowLaunchersQuery.builder()
-					.applicationId(applicationId)
-					.userId(token.getUserId())
-					.filterByQRCode(filterByQRCode)
-					.filterByDocumentNo(filterByDocumentNo)
-					.facetIds(facetIds)
+					.applicationId(extractApplicationId(queryParams))
+					.userId(extractUserId(queryParams))
+					.filterByQRCode(ScannedCode.ofNullableString(queryParams.getFirst(TOPIC_PARAM_qrCode)))
+					.filterByDocumentNo(DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo)))
+					.filterByQtyAvailableAtPickFromLocator(StringUtils.toOptionalBoolean(queryParams.getFirst(TOPIC_PARAM_filterByQtyAvailableAtPickFromLocator)).orElseFalse())
+					.facetIds(extractFacetIdsFromQueryParams(queryParams))
+					.computeActions(true)
 					.build();
 		}
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Invalid topic: " + topicName, ex);
 		}
+	}
+
+	@NonNull
+	private UserId extractUserId(final MultiValueMap<String, String> queryParams)
+	{
+		return StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_userToken))
+				.map(userAuthTokenService::getByToken)
+				.map(UserAuthToken::getUserId)
+				.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_userToken + " is mandatory"));
+	}
+
+	@NonNull
+	private static MobileApplicationId extractApplicationId(final MultiValueMap<String, String> queryParams)
+	{
+		return StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_applicationId))
+				.map(MobileApplicationId::ofString)
+				.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_applicationId + " is mandatory"));
 	}
 
 	private static ImmutableSet<WorkflowLaunchersFacetId> extractFacetIdsFromQueryParams(final MultiValueMap<String, String> queryParams) throws IOException

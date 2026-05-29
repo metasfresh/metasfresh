@@ -24,12 +24,16 @@ package org.eevolution.api;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.eevolution.model.X_PP_Product_BOMLine;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
+@RequiredArgsConstructor
 public enum BOMComponentIssueMethod implements ReferenceListAwareEnum
 {
 	Issue(X_PP_Product_BOMLine.ISSUEMETHOD_Issue),
@@ -39,15 +43,9 @@ public enum BOMComponentIssueMethod implements ReferenceListAwareEnum
 
 	public static final int AD_REFERENCE_ID = X_PP_Product_BOMLine.ISSUEMETHOD_AD_Reference_ID;
 
-	private static final ReferenceListAwareEnums.ValuesIndex<BOMComponentIssueMethod> index = ReferenceListAwareEnums.index(values());
+	private static final ValuesIndex<BOMComponentIssueMethod> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
-	private final String code;
-
-	BOMComponentIssueMethod(@NonNull final String code)
-	{
-		this.code = code;
-	}
+	@Getter private final String code;
 
 	@Nullable
 	public static String toCodeOrNull(final BOMComponentIssueMethod type)
@@ -65,4 +63,11 @@ public enum BOMComponentIssueMethod implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
+
+	public static Optional<BOMComponentIssueMethod> optionalOfCode(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
+	}
+
+	public boolean isIssueOnlyForReceived() {return this == IssueOnlyForReceived;}
 }

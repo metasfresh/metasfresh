@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -35,82 +35,196 @@ $P{IncludePostingTypeStatistical},
 $P{ExcludeYearEndBooking}
 );]]>
 	</queryString>
+	<field name="orgvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="orgvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="orgvalue"/>
+	</field>
+	<field name="orgname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="orgname"/>
+		<property name="com.jaspersoft.studio.field.label" value="orgname"/>
+	</field>
 	<field name="parentname1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname1"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentname1"/>
 	</field>
 	<field name="parentvalue1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue1"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentvalue1"/>
 	</field>
 	<field name="parentname2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname2"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentname2"/>
 	</field>
 	<field name="parentvalue2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue2"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentvalue2"/>
 	</field>
 	<field name="parentname3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname3"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentname3"/>
 	</field>
 	<field name="parentvalue3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue3"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentvalue3"/>
 	</field>
 	<field name="parentname4" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname4"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentname4"/>
 	</field>
 	<field name="parentvalue4" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue4"/>
 		<property name="com.jaspersoft.studio.field.label" value="parentvalue4"/>
 	</field>
+	<field name="parentname5" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname5"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentname5"/>
+	</field>
+	<field name="parentvalue5" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue5"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue5"/>
+	</field>
+	<field name="parentname6" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname6"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentname6"/>
+	</field>
+	<field name="parentvalue6" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue6"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue6"/>
+	</field>
+	<field name="parentname7" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname7"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentname7"/>
+	</field>
+	<field name="parentvalue7" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue7"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue7"/>
+	</field>
+	<field name="parentname8" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname8"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentname8"/>
+	</field>
+	<field name="parentvalue8" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue8"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue8"/>
+	</field>
+	<field name="parentname9" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentname9"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentname9"/>
+	</field>
+	<field name="parentvalue9" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="parentvalue9"/>
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue9"/>
+	</field>
 	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
 		<property name="com.jaspersoft.studio.field.label" value="name"/>
 	</field>
 	<field name="namevalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="namevalue"/>
 		<property name="com.jaspersoft.studio.field.label" value="namevalue"/>
 	</field>
 	<field name="accounttype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="accounttype"/>
 		<property name="com.jaspersoft.studio.field.label" value="accounttype"/>
 	</field>
 	<field name="sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sameyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="sameyearsum"/>
 	</field>
 	<field name="lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="lastyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="lastyearsum"/>
 	</field>
 	<field name="eurosaldo" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="eurosaldo"/>
 		<property name="com.jaspersoft.studio.field.label" value="eurosaldo"/>
 	</field>
+	<field name="l9_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l9_sameyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l9_sameyearsum"/>
+	</field>
+	<field name="l9_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l9_lastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l9_lastyearsum"/>
+	</field>
+	<field name="l8_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l8_sameyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l8_sameyearsum"/>
+	</field>
+	<field name="l8_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l8_lastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l8_lastyearsum"/>
+	</field>
+	<field name="l7_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l7_sameyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l7_sameyearsum"/>
+	</field>
+	<field name="l7_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l7_lastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l7_lastyearsum"/>
+	</field>
+	<field name="l6_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l6_sameyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l6_sameyearsum"/>
+	</field>
+	<field name="l6_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l6_lastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l6_lastyearsum"/>
+	</field>
+	<field name="l5_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l5_sameyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l5_sameyearsum"/>
+	</field>
+	<field name="l5_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l5_lastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="l5_lastyearsum"/>
+	</field>
 	<field name="l4_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l4_sameyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l4_sameyearsum"/>
 	</field>
 	<field name="l4_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l4_lastyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l4_lastyearsum"/>
 	</field>
 	<field name="l3_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l3_sameyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l3_sameyearsum"/>
 	</field>
 	<field name="l3_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l3_lastyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l3_lastyearsum"/>
 	</field>
 	<field name="l2_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l2_sameyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l2_sameyearsum"/>
 	</field>
 	<field name="l2_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l2_lastyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l2_lastyearsum"/>
 	</field>
 	<field name="l1_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l1_sameyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l1_sameyearsum"/>
 	</field>
 	<field name="l1_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="l1_lastyearsum"/>
 		<property name="com.jaspersoft.studio.field.label" value="l1_lastyearsum"/>
 	</field>
 	<field name="c_calendar_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_calendar_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_calendar_id"/>
 	</field>
 	<field name="c_elementvalue_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_elementvalue_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_elementvalue_id"/>
 	</field>
 	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currency"/>
 		<property name="com.jaspersoft.studio.field.label" value="currency"/>
 	</field>
 	<group name="lvl1">
@@ -272,66 +386,246 @@ $P{ExcludeYearEndBooking}
 			</band>
 		</groupHeader>
 	</group>
+	<group name="lvl5">
+		<groupExpression><![CDATA[$F{parentvalue5}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<printWhenExpression><![CDATA[$F{parentname5}!=null && !$F{parentvalue5}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="f76489a6-42a7-4729-bd44-2ea7e9fe80c8"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue5}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="87" y="0" width="259" height="12" uuid="e13ad72f-8c82-42cd-97b1-6df56ade5a5a"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname5}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="0" width="102" height="12" uuid="932c1239-6d62-4d5c-8e04-adfc6199cf8f"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l5_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="102" height="12" uuid="ff1f2d70-c97c-40d3-8410-ece9be0ad6dd"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l5_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl6">
+		<groupExpression><![CDATA[$F{parentvalue6}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<printWhenExpression><![CDATA[$F{parentname6}!=null && !$F{parentvalue6}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="51cec05a-7e05-44d3-8091-ffd0679e6b94"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue6}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="87" y="0" width="259" height="12" uuid="a8aa384c-ceab-4182-9f0e-0773a9f9c62d"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname6}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="0" width="102" height="12" uuid="7f6da663-d1cf-47ea-a578-37f91153c882"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l6_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="102" height="12" uuid="bcffc6bb-7338-4f51-823d-7bdc17cb8fa2"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l6_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl7">
+		<groupExpression><![CDATA[$F{parentvalue7}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<printWhenExpression><![CDATA[$F{parentname7}!=null && !$F{parentvalue7}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="6a4ce829-6bf9-4e5f-aa1c-b4cb02330c56"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue7}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="87" y="0" width="259" height="12" uuid="4a33303c-d6b7-4cdf-b848-443e2fedad6c"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname7}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="0" width="102" height="12" uuid="bd4145af-229d-4997-9968-e319d534fbda"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l7_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="102" height="12" uuid="57fed341-7e9e-42eb-9648-dd796a563b2b"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l7_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl8">
+		<groupExpression><![CDATA[$F{parentvalue8}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<printWhenExpression><![CDATA[$F{parentname8}!=null && !$F{parentvalue8}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="81fdd4d0-c69e-43ec-9542-b1bf30ff571e"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue8}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="87" y="0" width="259" height="12" uuid="0dfbe1c7-717b-4153-9f1c-bc18788638b7"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname8}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="0" width="102" height="12" uuid="3236a896-df83-40dc-b985-7ef9c1945558"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l8_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="102" height="12" uuid="1bb181fe-1ffb-4536-a2dd-9eba04b7309f"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l8_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl9">
+		<groupExpression><![CDATA[$F{parentvalue9}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<printWhenExpression><![CDATA[$F{parentname9}!=null && !$F{parentvalue9}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="52e0aa0e-a674-419c-a1d9-35c16c8d5df1"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue9}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="87" y="0" width="259" height="12" uuid="cfb4312a-c648-40b7-baf2-dbba6d75d428"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname9}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="0" width="102" height="12" uuid="f6232caf-b935-4e52-8d37-cbdead52de05"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l9_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="102" height="12" uuid="89e4347e-99cc-43fc-bdf0-20ee8661f708"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l9_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<pageHeader>
-		<band height="77" splitType="Stretch">
-			<textField>
-				<reportElement x="206" y="10" width="73" height="13" uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893"/>
-				<textElement markup="none">
+		<band height="103" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="10" width="594" height="13" uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893"/>
+				<textElement textAlignment="Center" markup="none">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Balance} + "   " + new java.text.SimpleDateFormat("dd.MM.yyyy").format($P{Date})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="47" width="50" height="12" uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97"/>
+				<reportElement x="37" y="68" width="50" height="12" uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="87" y="47" width="259" height="12" uuid="21c2a674-61a4-4668-b689-b0264221a282"/>
+				<reportElement x="87" y="68" width="259" height="12" uuid="21c2a674-61a4-4668-b689-b0264221a282"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="353" y="47" width="102" height="12" uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2"/>
+				<reportElement x="353" y="68" width="102" height="12" uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="454" y="47" width="102" height="12" uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74"/>
+				<reportElement x="454" y="68" width="102" height="12" uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="247" y="23" width="100" height="12" uuid="15cb15a1-6dd2-4b73-a4f6-8f0fbce298ae"/>
-				<textElement>
-					<font size="8"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="44" width="594" height="12" uuid="15cb15a1-6dd2-4b73-a4f6-8f0fbce298ae"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd.MM.yyyy">
-				<reportElement x="279" y="10" width="90" height="13" uuid="68f3a29c-8833-4395-b12e-542c09097be4"/>
-				<textElement>
-					<font fontName="Arial" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="206" y="35" width="163" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a"/>
-				<textElement>
-					<font size="8"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="56" width="593" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="27" width="594" height="13" uuid="cff0872e-77e9-4718-9558-cd19d401f2bd"/>
+				<textElement textAlignment="Center" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{orgvalue} + "   "+ $F{orgname}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

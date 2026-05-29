@@ -1,26 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.v2;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.xml.bind.JAXBElement;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.vertical.pharma.msv3.protocol.order.DeliverySpecifications;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
@@ -61,6 +40,26 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Verfuegbarkeitsanf
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
 import lombok.NonNull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import javax.xml.bind.JAXBElement;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -85,7 +84,7 @@ import lombok.NonNull;
  */
 
 @ActiveProfiles("test")
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = IntegrationTestConfiguration.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @TestPropertySource(locations = "classpath:application-integrationtest.properties") // shall reset the DB
@@ -238,7 +237,6 @@ public class IntegrationTest
 		testStockAvailability(PZN_4, 44, 44); // PZN_4 is still there because of its higher event version!
 	}
 
-
 	@Test
 	public void testStockAvailability_UnknownPZN()
 	{
@@ -262,7 +260,7 @@ public class IntegrationTest
 	}
 
 	@Test
-	@Ignore // ATM it's failing on some H2 unique index issue
+	@Disabled // ATM it's failing on some H2 unique index issue
 	public void testOrder()
 	{
 		createOrUpdateUser(MSV3MetasfreshUserId.of(10), "user", "pass", BPartnerId.of(1234, 5678));

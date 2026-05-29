@@ -1,9 +1,5 @@
 package org.adempiere.ad.trx.processor.api.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +17,10 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.util.Services;
-import junit.framework.AssertionFailedError;
+import org.junit.jupiter.api.Assertions;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * #%L
@@ -111,7 +110,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			public void run(final String localTrxName) throws Exception
 			{
 				final ITrx trx = trxManager.getTrx(localTrxName);
-				assertEquals("Null transaction", !isRunInTrx(), trxManager.isNull(trx));
+				assertEquals(!isRunInTrx(), trxManager.isNull(trx), "Null transaction");
 
 				//
 				// Create the context
@@ -158,19 +157,20 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		//
 		// Check the result
 		assertException(getExpectedExceptionClass(), exceptionActual.getValue());
-		assertEquals("Invalid result", getExpectedResult(), resultActual.getValue());
+		assertEquals( getExpectedResult(), resultActual.getValue(),"Invalid result");
 
 		//
 		// Make sure all all transactions were closed
 		final List<ITrx> activeTrxs = trxManager.getActiveTransactionsList();
-		assertTrue("All transactions shall be closed: " + activeTrxs, activeTrxs.isEmpty());
+		assertTrue( activeTrxs.isEmpty(),"All transactions shall be closed: " + activeTrxs);
 
 		//
 		// Make sure the thread inherited transaction was restored
 		final String threadIneritedTrxNameAfter = trxManager.getThreadInheritedTrxName();
-		assertEquals("ThreadInherited transaction shall be restored to the value that it was before",
+		assertEquals(
 				threadIneritedTrxNameBefore,    // expected,
-				threadIneritedTrxNameAfter // actual
+				threadIneritedTrxNameAfter, // actual
+				"ThreadInherited transaction shall be restored to the value that it was before"
 		);
 		trxManager.setThreadInheritedTrxName(null); // just reset it to have it clean
 	}
@@ -187,7 +187,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			else
 			{
 				// no exception expected but we got an exception
-				final AssertionFailedError ex = new AssertionFailedError("We were not expecting an exception but we got: " + exceptionActual.toString());
+				final RuntimeException ex = new RuntimeException("We were not expecting an exception but we got: " + exceptionActual.toString());
 				ex.initCause(exceptionActual);
 				throw ex;
 			}
@@ -197,7 +197,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			if (exceptionActual == null)
 			{
 				// exception expected but we got no exception
-				fail("We were expecting expection " + expectedExceptionClass + " but we got nothing");
+				Assertions.fail("We were expecting expection " + expectedExceptionClass + " but we got nothing");
 				return;
 			}
 			else if (expectedExceptionClass.isAssignableFrom(exceptionActual.getClass()))
@@ -208,7 +208,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			else
 			{
 				// exception expected but we got an exception of different type
-				final AssertionFailedError ex = new AssertionFailedError("We were expecting an exception of type " + expectedExceptionClass
+				final RuntimeException ex = new RuntimeException("We were expecting an exception of type " + expectedExceptionClass
 						+ " but we got an exception of type " + exceptionActual.getClass());
 				ex.initCause(exceptionActual);
 				throw ex;
@@ -282,5 +282,4 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		this.onItemErrorPolicy = onItemErrorPolicy;
 		return this;
 	}
-
 }

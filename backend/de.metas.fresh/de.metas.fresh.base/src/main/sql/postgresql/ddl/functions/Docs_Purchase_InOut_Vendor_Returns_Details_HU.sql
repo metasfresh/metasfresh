@@ -1,6 +1,6 @@
-﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN record_id numeric, IN AD_Language Character Varying (6));
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric, IN AD_Language Character Varying (6));
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN record_id numeric, IN AD_Language Character Varying (6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric, IN AD_Language Character Varying (6))
 RETURNS TABLE 
 (
 	Name character varying, 

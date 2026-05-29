@@ -1,0 +1,63 @@
+name: check-jaxb-sync
+
+# Fails when a PR changes an XSD/WSDL schema without also updating the
+# corresponding generated java-xjc sources.
+# Generated sources are committed to avoid build-time regeneration;
+# run misc/dev-support/scripts/regenerate-jaxb-sources.sh after schema changes.
+
+on:
+  pull_request:
+    paths:
+      - '**/*.xsd'
+      - '**/*.wsdl'
+
+permissions:
+  contents: read
+
+jobs:
+  check-jaxb-sync:
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that java-xjc sources were updated alongside schema changes
+        # Note: this is a coarse-grained check — it verifies that *any* java-xjc path changed
+        # when schemas changed, but does not correlate specific modules. A schema change in module
+        # A satisfied by a java-xjc update in module B would still pass. Good enough as a guardrail.
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          CHANGED_SCHEMAS=$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" \
+            | grep -E '\.(xsd|wsdl)$' || true)
+
+          if [[ -z "${CHANGED_SCHEMAS}" ]]; then
+            echo "No schema files changed — nothing to check."
+            exit 0
+          fi
+
+          echo "Changed schema files:"
+          echo "${CHANGED_SCHEMAS}" | sed 's/^/  /'
+          echo ""
+
+          CHANGED_JAXB=$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" \
+            | grep -E 'java-xjc' || true)
+
+          if [[ -z "${CHANGED_JAXB}" ]]; then
+            echo "ERROR: Schema files were changed but no java-xjc generated sources were updated."
+            echo ""
+            echo "After modifying XSD/WSDL schemas, regenerate the Java sources and commit them:"
+            echo ""
+            echo "  ./misc/dev-support/scripts/regenerate-jaxb-sources.sh"
+            echo ""
+            echo "Then commit the updated java-xjc files in the same PR as the schema change."
+            exit 1
+          fi
+
+          echo "Generated sources updated — check passed."
+          echo ""
+          echo "Updated java-xjc paths:"
+          echo "${CHANGED_JAXB}" | sed 's/^/  /'

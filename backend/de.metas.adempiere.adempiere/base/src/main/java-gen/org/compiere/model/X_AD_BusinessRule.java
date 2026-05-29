@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_BusinessRule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 472130672L;
+	private static final long serialVersionUID = -2101639503L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule (final Properties ctx, final int AD_BusinessRule_ID, @Nullable final String trxName)
@@ -65,6 +65,18 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	}
 
 	@Override
+	public void setIsCreateWarningOnTarget (final boolean IsCreateWarningOnTarget)
+	{
+		set_Value (COLUMNNAME_IsCreateWarningOnTarget, IsCreateWarningOnTarget);
+	}
+
+	@Override
+	public boolean isCreateWarningOnTarget() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateWarningOnTarget);
+	}
+
+	@Override
 	public void setIsDebug (final boolean IsDebug)
 	{
 		set_Value (COLUMNNAME_IsDebug, IsDebug);
@@ -86,6 +98,27 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * Severity AD_Reference_ID=541949
+	 * Reference name: Severity
+	 */
+	public static final int SEVERITY_AD_Reference_ID=541949;
+	/** Notice = N */
+	public static final String SEVERITY_Notice = "N";
+	/** Error = E */
+	public static final String SEVERITY_Error = "E";
+	@Override
+	public void setSeverity (final java.lang.String Severity)
+	{
+		set_Value (COLUMNNAME_Severity, Severity);
+	}
+
+	@Override
+	public java.lang.String getSeverity() 
+	{
+		return get_ValueAsString(COLUMNNAME_Severity);
 	}
 
 	@Override
@@ -116,14 +149,17 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	}
 
 	@Override
-	public void setWarningMessage (final @Nullable java.lang.String WarningMessage)
+	public void setWarning_Message_ID (final int Warning_Message_ID)
 	{
-		set_Value (COLUMNNAME_WarningMessage, WarningMessage);
+		if (Warning_Message_ID < 1) 
+			set_Value (COLUMNNAME_Warning_Message_ID, null);
+		else 
+			set_Value (COLUMNNAME_Warning_Message_ID, Warning_Message_ID);
 	}
 
 	@Override
-	public java.lang.String getWarningMessage() 
+	public int getWarning_Message_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_WarningMessage);
+		return get_ValueAsInt(COLUMNNAME_Warning_Message_ID);
 	}
 }

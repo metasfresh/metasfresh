@@ -22,6 +22,7 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -73,6 +74,11 @@ public interface IAttributeSet
 	default boolean hasAttribute(@NonNull final I_M_Attribute attribute)
 	{
 		return hasAttribute(attribute.getValue());
+	}
+
+	default boolean hasAttribute(@NonNull final Attribute attribute)
+	{
+		return hasAttribute(attribute.getAttributeCode());
 	}
 
 	/**
@@ -192,7 +198,8 @@ public interface IAttributeSet
 		return getValueAsDate(attribute.getValue());
 	}
 
-	@Nullable default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
+	@Nullable
+	default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
 	{
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeCode));
 	}
@@ -237,6 +244,17 @@ public interface IAttributeSet
 	default AttributeValueId getAttributeValueIdOrNull(final AttributeCode attributeCode)
 	{
 		return null;
+	}
+
+	default boolean isValueSet(final Attribute attribute)
+	{
+		if (!hasAttribute(attribute))
+		{
+			return false;
+		}
+
+		final String value = getValueAsStringOrNull(attribute.getAttributeCode());
+		return value != null && !Check.isBlank(value);
 	}
 
 	/**

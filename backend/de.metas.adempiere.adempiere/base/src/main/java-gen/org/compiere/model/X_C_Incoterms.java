@@ -84,4 +84,28 @@ public class X_C_Incoterms extends org.compiere.model.PO implements I_C_Incoterm
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
+	@Override
+	public void setIsDefault (final boolean IsDefault)
+	{
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
+	}
+
+	@Override
+	public boolean isDefault()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+	}
+
+	@Override
+	public void setDefaultLocation (final @Nullable java.lang.String DefaultLocation)
+	{
+		set_Value (COLUMNNAME_DefaultLocation, DefaultLocation);
+	}
+
+	@Override
+	public java.lang.String getDefaultLocation()
+	{
+		return get_ValueAsString(COLUMNNAME_DefaultLocation);
+	}
 }

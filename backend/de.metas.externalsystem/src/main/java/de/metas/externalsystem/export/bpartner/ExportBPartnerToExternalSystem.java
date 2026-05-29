@@ -125,7 +125,7 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 		final String orgCode = orgDAO.getById(bpartner.getAD_Org_ID()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
-								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
+								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getValue()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))

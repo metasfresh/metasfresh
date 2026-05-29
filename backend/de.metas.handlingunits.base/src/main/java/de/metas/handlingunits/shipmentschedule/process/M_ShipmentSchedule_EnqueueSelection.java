@@ -22,18 +22,13 @@ package de.metas.handlingunits.shipmentschedule.process;
  * #L%
  */
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Ini;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -43,6 +38,15 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+
+import java.time.Instant;
 
 /**
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
@@ -54,7 +58,9 @@ public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 
+	private final Instant nowInstant = Env.getZonedDateTime().toInstant();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = "QuantityType", mandatory = true)
@@ -95,13 +101,13 @@ public class M_ShipmentSchedule_EnqueueSelection
 				.isShipmentDateToday(isShipToday)
 				.build();
 
-		final Result result = new ShipmentScheduleEnqueuer()
-				.setContext(getCtx(), getTrxName())
+		final Result result = ShipmentScheduleEnqueuer.newInstance(getCtx(), getTrxName())
 				.createWorkpackages(workPackageParameters);
 
 		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}
 
+	@NonNull
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()
 	{
 		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class);
@@ -125,10 +131,6 @@ public class M_ShipmentSchedule_EnqueueSelection
 			filters.addFilter(selectionFilter);
 		}
 
-		//
-		// Filter only those which are not yet processed
-		filters.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed, false);
-
-		return filters;
+		return shipmentService.createShipmentScheduleEnqueuerQueryFilters(filters, nowInstant);
 	}
 }

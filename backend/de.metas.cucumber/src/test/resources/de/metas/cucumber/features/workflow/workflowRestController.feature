@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 @ignore
 @ghActions:run_on_executor7
 Feature: workflow rest controller tests
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -35,6 +38,8 @@ Feature: workflow rest controller tests
 
   @Id:S0179_100
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: create and start picking workflow
 
     And metasfresh contains C_BPartners without locations:
@@ -106,6 +111,8 @@ Feature: workflow rest controller tests
 
   @Id:S0179_110
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: create and start distribution workflow
 
     And metasfresh contains C_BPartners without locations:
@@ -178,6 +185,8 @@ Feature: workflow rest controller tests
 
   @Id:S0179_120
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: create and start manufacturing workflow
 
     And metasfresh contains M_Products:

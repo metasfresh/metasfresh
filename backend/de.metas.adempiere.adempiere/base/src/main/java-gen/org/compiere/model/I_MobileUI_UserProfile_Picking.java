@@ -51,6 +51,111 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Pick to top level CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_CU (boolean AllowPickToStructure_CU);
+
+	/**
+	 * Get Pick to top level CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_CU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_CU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_CU", null);
+	String COLUMNNAME_AllowPickToStructure_CU = "AllowPickToStructure_CU";
+
+	/**
+	 * Set Pick to LU/CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_LU_CU (boolean AllowPickToStructure_LU_CU);
+
+	/**
+	 * Get Pick to LU/CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_LU_CU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_LU_CU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_LU_CU", null);
+	String COLUMNNAME_AllowPickToStructure_LU_CU = "AllowPickToStructure_LU_CU";
+
+	/**
+	 * Set Pick to LU/TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_LU_TU (boolean AllowPickToStructure_LU_TU);
+
+	/**
+	 * Get Pick to LU/TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_LU_TU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_LU_TU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_LU_TU", null);
+	String COLUMNNAME_AllowPickToStructure_LU_TU = "AllowPickToStructure_LU_TU";
+
+	/**
+	 * Set Pick to top level TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_TU (boolean AllowPickToStructure_TU);
+
+	/**
+	 * Get Pick to top level TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_TU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_TU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_TU", null);
+	String COLUMNNAME_AllowPickToStructure_TU = "AllowPickToStructure_TU";
+
+	/**
+	 * Set Best before date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBestBeforeDate (boolean BestBeforeDate);
+
+	/**
+	 * Get Best before date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBestBeforeDate();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_BestBeforeDate = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "BestBeforeDate", null);
+	String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -122,6 +227,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Active Workplace required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActiveWorkplaceRequired (boolean IsActiveWorkplaceRequired);
+
+	/**
+	 * Get Active Workplace required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActiveWorkplaceRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsActiveWorkplaceRequired = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsActiveWorkplaceRequired", null);
+	String COLUMNNAME_IsActiveWorkplaceRequired = "IsActiveWorkplaceRequired";
+
+	/**
 	 * Set Allow any Customer.
 	 *
 	 * <br>Type: YesNo
@@ -143,25 +269,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
-	 * Set Allow new TU.
+	 * Set Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAllowNewTU (boolean IsAllowNewTU);
+	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
 
 	/**
-	 * Get Allow new TU.
+	 * Get Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAllowNewTU();
+	boolean isAllowCompletingPartialPickingJob();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewTU", null);
-	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowCompletingPartialPickingJob", null);
+	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
 
 	/**
 	 * Set Allow picking any HU.
@@ -183,6 +311,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowPickingAnyHU", null);
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
+
+	/**
+	 * Set Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowQuickPackAll (boolean IsAllowQuickPackAll);
+
+	/**
+	 * Get Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowQuickPackAll();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowQuickPackAll = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowQuickPackAll", null);
+	String COLUMNNAME_IsAllowQuickPackAll = "IsAllowQuickPackAll";
 
 	/**
 	 * Set Allow picking with no rejected qty reason.
@@ -231,6 +380,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
 
 	/**
+	 * Set Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
+
+	/**
+	 * Get Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAnonymousHuPickedOnTheFly();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAnonymousHuPickedOnTheFly", null);
+	String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
+
+	/**
 	 * Set Allow picking TU with catch weight.
 	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
 	 *
@@ -252,6 +422,50 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCatchWeightTUPickingEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCatchWeightTUPickingEnabled", null);
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
+
+	/**
+	 * Set Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCompleteJobAutomatically (boolean IsCompleteJobAutomatically);
+
+	/**
+	 * Get Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCompleteJobAutomatically();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCompleteJobAutomatically = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCompleteJobAutomatically", null);
+	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
+
+	/**
+	 * Set Consider only scheduled jobs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConsideredOnlyScheduledJobs (boolean IsConsideredOnlyScheduledJobs);
+
+	/**
+	 * Get Consider only scheduled jobs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConsideredOnlyScheduledJobs();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsideredOnlyScheduledJobs = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsideredOnlyScheduledJobs", null);
+	String COLUMNNAME_IsConsideredOnlyScheduledJobs = "IsConsideredOnlyScheduledJobs";
 
 	/**
 	 * Set Consider sales order capacity.
@@ -277,25 +491,67 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
-	 * Set Pick with LU.
+	 * Set Show Picking Tray Suggestions.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPickingWithNewLU (boolean IsPickingWithNewLU);
+	void setIsDisplayPickingSlotSuggestions (boolean IsDisplayPickingSlotSuggestions);
 
 	/**
-	 * Get Pick with LU.
+	 * Get Show Picking Tray Suggestions.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPickingWithNewLU();
+	boolean isDisplayPickingSlotSuggestions();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingWithNewLU", null);
-	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsDisplayPickingSlotSuggestions = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsDisplayPickingSlotSuggestions", null);
+	String COLUMNNAME_IsDisplayPickingSlotSuggestions = "IsDisplayPickingSlotSuggestions";
+
+	/**
+	 * Set Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterByBarcode (boolean IsFilterByBarcode);
+
+	/**
+	 * Get Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFilterByBarcode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsFilterByBarcode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsFilterByBarcode", null);
+	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
+
+	/**
+	 * Set Ship after closing LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShipOnCloseLU (boolean IsShipOnCloseLU);
+
+	/**
+	 * Get Ship after closing LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShipOnCloseLU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShipOnCloseLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShipOnCloseLU", null);
+	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
 
 	/**
 	 * Set Ask User when Over Picking.
@@ -317,6 +573,50 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowConfirmationPromptWhenOverPick", null);
 	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
+
+	/**
+	 * Set Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowLastPickedBestBeforeDateForLines (boolean IsShowLastPickedBestBeforeDateForLines);
+
+	/**
+	 * Get Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowLastPickedBestBeforeDateForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowLastPickedBestBeforeDateForLines", null);
+	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
+
+	/**
+	 * Set Lot number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLotNumber (boolean LotNumber);
+
+	/**
+	 * Get Lot number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLotNumber();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_LotNumber = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "LotNumber", null);
+	String COLUMNNAME_LotNumber = "LotNumber";
 
 	/**
 	 * Set Mobile UI Picking Profile.
@@ -359,6 +659,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickingJobAggregationType (java.lang.String PickingJobAggregationType);
+
+	/**
+	 * Get Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getPickingJobAggregationType();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_PickingJobAggregationType = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "PickingJobAggregationType", null);
+	String COLUMNNAME_PickingJobAggregationType = "PickingJobAggregationType";
 
 	/**
 	 * Set Picking line group by.

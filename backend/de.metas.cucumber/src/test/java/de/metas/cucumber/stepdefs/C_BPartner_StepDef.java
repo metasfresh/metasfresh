@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,8 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -35,14 +37,22 @@ import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.edi.api.EDISendingMode;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.InvoiceRule;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -61,8 +71,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -86,13 +96,17 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IncotermLocation;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsTaxExempt;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_Lookup_Label;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
@@ -108,20 +122,26 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final M_PricingSystem_StepDefData pricingSystemTable;
-	private final M_Product_StepDefData productTable;
-	private final M_DiscountSchema_StepDefData discountSchemaTable;
-	private final AD_Org_StepDefData orgTable;
-	private final C_Aggregation_StepDefData aggregationTable;
-	private final @NonNull TestContext restTestContext;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
+	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
+	@NonNull private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
+	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
@@ -223,9 +243,13 @@ public class C_BPartner_StepDef
 
 		bPartnerRecord.setName(valueAndName.getName());
 		bPartnerRecord.setValue(valueAndName.getValue());
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
+		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
 		bPartnerRecord.setIsCustomer(row.getAsOptionalBoolean(COLUMNNAME_IsCustomer).orElseFalse());
+		bPartnerRecord.setIsTaxExempt(row.getAsOptionalBoolean(COLUMNNAME_IsTaxExempt).orElseFalse());
 		bPartnerRecord.setIsSalesRep(row.getAsOptionalBoolean(COLUMNNAME_IsSalesRep).orElseFalse());
 		bPartnerRecord.setAD_Org_ID(orgId);
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
@@ -261,13 +285,6 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_PricingSystem_ID(poPricingSystemId);
 		}
 
-		final int paymentTermId = row.getAsOptionalInt("C_PaymentTerm_ID").orElse(-1);
-		if (paymentTermId > 0)
-		{
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTermId);
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermId);
-		}
-
 		bPartnerRecord.setAD_Language(row.getAsOptionalString(COLUMNNAME_AD_Language).orElse(null));
 
 		final StepDefDataIdentifier salesRepIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_SalesRep_ID).orElse(null);
@@ -294,13 +311,17 @@ public class C_BPartner_StepDef
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
 		{
-			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
-					.create()
-					.firstOnlyNotNull(I_C_PaymentTerm.class);
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermValue)
+					.build()).getRepoId());
+		}
 
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		final String paymentTermPOValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + ".Value").orElse(null);
+		if (Check.isNotBlank(paymentTermPOValue))
+		{
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermPOValue)
+					.build()).getRepoId());
 		}
 
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
@@ -312,9 +333,23 @@ public class C_BPartner_StepDef
 				.map(orgTable::getIdAsInt)
 				.ifPresent(bPartnerRecord::setAD_OrgBP_ID);
 
+		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
+				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
+		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
+
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
+
+		// Automatically set SOCreditStatus=NoCreditCheck for all test BPartners to prevent
+		// credit stop issues in CI environments where the seed DB may have strict credit settings.
+		// See me03#28143.
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartnerRecord);
+		bpartnerStatsDAO.setSOCreditStatus(stats, "X"); // X = No Credit Check
 
 		if (alsoCreateLocation)
 		{
@@ -336,13 +371,29 @@ public class C_BPartner_StepDef
 
 			InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
-			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
-					.ifPresent(locationIdentifier -> bPartnerLocationTable.put(locationIdentifier, bPartnerLocationRecord));
+			// if a location was cretaed "on-they-fly", add it to bPartnerLocationTable.
+			// if no C_BPartner_Location_ID-identifer was given, use the C_BPartner_ID identifier
+			final StepDefDataIdentifier locationIdentifier =
+					CoalesceUtil.coalesceSuppliers(
+							() -> row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID).orElse(null),
+							() -> row.getAsOptionalIdentifier().orElse(null));
+			if (locationIdentifier != null)
+			{
+				bPartnerLocationTable.put(locationIdentifier, bPartnerLocationRecord);
+			}
 		}
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
 		restTestContext.setIntVariableFromRow(row, bPartnerRecord::getC_BPartner_ID);
+
+		row.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getValue()));
+		row.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
+		row.getAsOptionalIdentifier("REST.Context.C_BPartner_ID")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getC_BPartner_ID()));
+
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)
@@ -362,6 +413,14 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN).ifPresent(ediInvoicRecipientGLN -> bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN)));
 
 		bPartnerRecord.setIsEdiInvoicRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient).orElseFalse());
+
+		bPartnerRecord.setEdiDESADVSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADVSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
+		bPartnerRecord.setEdiINVOICSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOICSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
+
+		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID)
+				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
+		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID)
+				.ifPresent(identifier -> bPartnerRecord.setEdiINVOIC_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
 
@@ -384,8 +443,11 @@ public class C_BPartner_StepDef
 
 	private void load_bpartner(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
+		// I don't dare to open the can of worms of overhauling this entirely,
+		// because we have "C_BPartner_ID.Identifier" and "OPT.C_BPartner_ID"
+		final DataTableRow tableRow = DataTableRow.singleRow(row);
 
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
 
 		if (id != null)
@@ -394,17 +456,23 @@ public class C_BPartner_StepDef
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+
+			tableRow.getAsOptionalIdentifier("REST.Context")
+					.ifPresent(ident -> restTestContext.setVariable(ident.getAsString(), bPartnerRecord.getC_BPartner_ID()));
 		}
 
 		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
-
 		if (Check.isNotBlank(value))
 		{
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+
+			tableRow.getAsOptionalIdentifier("REST.Context")
+					.ifPresent(ident -> restTestContext.setVariable(ident.getAsString(), bPartnerRecord.getC_BPartner_ID()));
 		}
+
 	}
 
 	private void updateBPartner(@NonNull final Map<String, String> tableRow)
@@ -439,6 +507,13 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
 			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
+		}
+
+		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_Dunning_ID);
+		if (EmptyUtil.isNotBlank(dunningIdentifier))
+		{
+			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
+			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);

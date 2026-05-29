@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,12 +27,14 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.support.DefaultExchange;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -49,30 +51,27 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 	private final static String JSON_LOG_MESSAGE_REQUEST = "0_LogMessageRequest.json";
 
 	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
-
-	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
 		return new ErrorReportRouteBuilder();
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(ErrorReportBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Test
@@ -92,11 +91,11 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 				.writeValueAsString(jsonApiResponse);
 
 		final HttpOperationFailedException exception = new HttpOperationFailedException("www.does-not-matter.com",
-																						500,
-																						"TestLogMessage",
-																						"Location",
-																						null,
-																						jsonApiResponseAsString);
+				500,
+				"TestLogMessage",
+				"Location",
+				null,
+				jsonApiResponseAsString);
 		exception.setStackTrace(new StackTraceElement[0]);
 
 		final Exchange exchange = new DefaultExchange(template.getCamelContext());
@@ -115,15 +114,15 @@ public class ErrorReportBuilderTest extends CamelTestSupport
 		template.send("direct:" + ERROR_SEND_LOG_MESSAGE, exchange);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting() throws Exception
 	{
 		AdviceWith.adviceWith(context, ERROR_SEND_LOG_MESSAGE,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_LOG_MESSAGE));
+				advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID)
+						.skipSendToOriginalEndpoint()
+						.to(MOCK_LOG_MESSAGE));
 	}
 
 }

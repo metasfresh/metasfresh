@@ -10,33 +10,30 @@ package de.metas.util.collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.util.collections.CompositePredicate;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CompositePredicateTest
 {
-	@Test(expected = Exception.class)
+	@Test
 	public void testEmpty()
 	{
 		final CompositePredicate<Object> predicate = new CompositePredicate<Object>();
 
 		// shall throw exception because no predicate was added
-		predicate.test(new Object());
+		Assertions.assertThrows(Exception.class, () -> predicate.test(new Object()));
 	}
 
 	@Test
@@ -49,7 +46,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", true, predicate.test(new Object()));
+		Assertions.assertTrue(predicate.test(new Object()), "Invalid result");
 	}
 
 	@Test
@@ -62,7 +59,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(false));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", false, predicate.test(new Object()));
+		Assertions.assertFalse(predicate.test(new Object()), "Invalid result");
 	}
 
 	@Test
@@ -75,7 +72,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", true, predicate.test(new Object()));
+		Assertions.assertTrue(predicate.test(new Object()));
 	}
 
 	@Test
@@ -88,7 +85,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(false));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", true, predicate.test(new Object()));
+		Assertions.assertTrue(predicate.test(new Object()));
 	}
 
 }

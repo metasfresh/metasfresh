@@ -1,6 +1,9 @@
 package de.metas.payment.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -26,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
@@ -89,6 +93,16 @@ public class PaymentBLTest
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		createClientInfo(acctSchemaId);
+	}
+
+	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		save(clientInfo);
 	}
 
 	@Nested
@@ -121,6 +135,7 @@ public class PaymentBLTest
 			invoice.setC_DocType_ID(docType.getC_DocType_ID());
 			invoice.setIsSOTrx(docType.isSOTrx());
 			invoice.setProcessed(true);
+			invoice.setIsFinancial(InvoiceDocBaseType.ofCode(docType.getDocBaseType()).isFinancial());
 			saveRecord(invoice);
 		}
 
@@ -262,7 +277,7 @@ public class PaymentBLTest
 			// Called manually because we can't test properly with "creditMemoAdjusted" true
 			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-			Assertions.assertTrue(new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0, "Incorrect payment amount in CHF");
+			Assertions.assertEquals(0, new BigDecimal("120.0").compareTo(payment.getPayAmt()), "Incorrect payment amount in CHF");
 
 			payment.setC_Invoice_ID(0);
 			payment.setC_Order_ID(order.getC_Order_ID());
@@ -314,6 +329,7 @@ public class PaymentBLTest
 		public void beforeEach()
 		{
 			payment = newInstance(I_C_Payment.class);
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
 		}
 
 		@Test
@@ -349,6 +365,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
 			assertThat(payment.getReversal_ID()).isEqualTo(123);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -366,6 +384,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
 			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -384,6 +404,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
 			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isEqualTo(3);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -401,6 +423,24 @@ public class PaymentBLTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Payment with DocumentNo=");
 		}
+
+		@Test
+		public void glJournalLine()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.glJournalLine(SAPGLJournalLineId.ofRepoId(1, 2));
+
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
+			assertThat(payment.isReconciled()).isTrue();
+			assertThat(payment.getC_BankStatement_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isEqualTo(1);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isEqualTo(2);
+
+			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
+			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
+		}
+
 	}
 
 	@Nested
@@ -415,6 +455,7 @@ public class PaymentBLTest
 			public void preloaded()
 			{
 				final I_C_Payment payment = newInstance(I_C_Payment.class);
+				payment.setC_Currency_ID(currencyEUR.getRepoId());
 				saveRecord(payment);
 				assertThat(payment.isReconciled()).isFalse();
 				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
@@ -434,6 +475,7 @@ public class PaymentBLTest
 				final PaymentId paymentId;
 				{
 					final I_C_Payment payment = newInstance(I_C_Payment.class);
+					payment.setC_Currency_ID(currencyEUR.getRepoId());
 					saveRecord(payment);
 					assertThat(payment.isReconciled()).isFalse();
 					paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
@@ -463,6 +505,7 @@ public class PaymentBLTest
 				final PaymentId paymentId1;
 				{
 					payment1 = newInstance(I_C_Payment.class);
+					payment1.setC_Currency_ID(currencyEUR.getRepoId());
 					saveRecord(payment1);
 					paymentId1 = PaymentId.ofRepoId(payment1.getC_Payment_ID());
 				}
@@ -470,6 +513,7 @@ public class PaymentBLTest
 				final PaymentId paymentId2;
 				{
 					final I_C_Payment payment2 = newInstance(I_C_Payment.class);
+					payment2.setC_Currency_ID(currencyEUR.getRepoId());
 					saveRecord(payment2);
 					paymentId2 = PaymentId.ofRepoId(payment2.getC_Payment_ID());
 				}

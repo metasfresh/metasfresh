@@ -22,19 +22,17 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.money.MoneyService;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+import java.math.BigDecimal;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestTwoShipmentsOneInvoice extends AbstractTwoInOutsOneInvoiceSalesTests
 {

@@ -16,6 +16,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 {
@@ -102,6 +103,13 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.retrieveAllAttributesNoCache(huIds);
+	}
+
+	@Override
+	public Optional<String> extractCommonStringAttributeValue(final Collection<HuId> huIds, final AttributeId attributeId)
+	{
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
+		return delegate.extractCommonStringAttributeValue(huIds, attributeId);
 	}
 
 	@Override

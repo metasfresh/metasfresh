@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
 
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.uom.UomId;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

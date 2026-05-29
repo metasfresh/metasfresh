@@ -1,8 +1,10 @@
 package org.adempiere.util.concurrent;
 
 import org.adempiere.util.lang.IAutoCloseable;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /*
  * #%L
@@ -33,12 +35,12 @@ public class AutoClosableThreadLocalBooleanTest
 	{
 		final AutoClosableThreadLocalBoolean flag = AutoClosableThreadLocalBoolean.newInstance();
 
-		Assert.assertEquals(false, flag.booleanValue());
+		assertThat(flag.booleanValue()).isFalse();
 		try (final IAutoCloseable c = flag.enable())
 		{
-			Assert.assertEquals(true, flag.booleanValue());
+			assertThat(flag.booleanValue()).isTrue();
 		}
-		Assert.assertEquals(false, flag.booleanValue());
+		assertThat(flag.booleanValue()).isFalse();
 	}
 
 	@Test
@@ -46,19 +48,19 @@ public class AutoClosableThreadLocalBooleanTest
 	{
 		final AutoClosableThreadLocalBoolean flag = AutoClosableThreadLocalBoolean.newInstance();
 
-		Assert.assertEquals(false, flag.booleanValue());
+		assertThat(flag.booleanValue()).isFalse();
 		try (final IAutoCloseable c1 = flag.enable())
 		{
-			Assert.assertEquals(true, flag.booleanValue());
+			assertThat(flag.booleanValue()).isTrue();
 
 			try (final IAutoCloseable c2 = flag.enable())
 			{
-				Assert.assertEquals(true, flag.booleanValue());
+				assertThat(flag.booleanValue()).isTrue();
 			}
 
-			Assert.assertEquals(true, flag.booleanValue());
+			assertThat(flag.booleanValue()).isTrue();
 		}
-		Assert.assertEquals(false, flag.booleanValue());
+		assertThat(flag.booleanValue()).isFalse();
 	}
 
 	@Test
@@ -66,38 +68,38 @@ public class AutoClosableThreadLocalBooleanTest
 	{
 		final AutoClosableThreadLocalBoolean flag = AutoClosableThreadLocalBoolean.newInstance();
 
-		Assert.assertEquals(false, flag.booleanValue());
+		assertThat(flag.booleanValue()).isFalse();
 		try (final IAutoCloseable c1 = flag.enable())
 		{
-			Assert.assertEquals(true, flag.booleanValue());
+			assertThat(flag.booleanValue()).isTrue();
 
 			try (final IAutoCloseable c2 = flag.enable())
 			{
-				Assert.assertEquals(true, flag.booleanValue());
+				assertThat(flag.booleanValue()).isTrue();
 				throw new Exception("Test exception");
 			}
 			catch (final Exception e)
 			{
-				Assert.assertEquals(true, flag.booleanValue());
+				assertThat(flag.booleanValue()).isTrue();
 				throw e;
 			}
 			finally
 			{
-				Assert.assertEquals(true, flag.booleanValue());
+				assertThat(flag.booleanValue()).isTrue();
 			}
 		}
 		catch (final Exception e)
 		{
-			Assert.assertEquals(false, flag.booleanValue());
+			assertThat(flag.booleanValue()).isFalse();
 
 			// discard the exception
 		}
 		finally
 		{
-			Assert.assertEquals(false, flag.booleanValue());
+			assertThat(flag.booleanValue()).isFalse();
 		}
 
-		Assert.assertEquals(false, flag.booleanValue());
+		assertThat(flag.booleanValue()).isFalse();
 	}
 
 }

@@ -30,7 +30,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
@@ -84,6 +83,7 @@ public class NotificationSenderTemplate
 	private final IUserDAO usersRepo = Services.get(IUserDAO.class);
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
+	private final INotificationGroupRepository notificationGroupRepository = Services.get(INotificationGroupRepository.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -106,31 +106,26 @@ public class NotificationSenderTemplate
 
 	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
-		if (requests.isEmpty())
-		{
-			return;
-		}
+		if (requests.isEmpty()) {return;}
 
-		final ImmutableList<UserNotificationRequest> requestsEffective = ImmutableList.copyOf(requests);
-
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(true)
-				.registerHandlingMethod(innerTrx -> send(requestsEffective));
+		trxManager.accumulateAndProcessAfterCommit(
+				"NotificationSenderTemplate.sendAfterCommit",
+				requests,
+				this::sendNow);
 	}
 
-	private void send(@NonNull final List<UserNotificationRequest> requests)
+	private void sendNow(@NonNull final List<UserNotificationRequest> requests)
 	{
-		requests.forEach(this::send);
+		requests.forEach(this::sendNow);
 	}
 
-	public void send(@NonNull final UserNotificationRequest request)
+	public void sendNow(@NonNull final UserNotificationRequest request)
 	{
 		logger.trace("Prepare sending notification: {}", request);
 		try
 		{
 			Stream.of(resolve(request))
-					.flatMap(this::explodeByUser)
+					.flatMap(this::explodeByRecipient)
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
@@ -174,13 +169,20 @@ public class NotificationSenderTemplate
 				.build();
 	}
 
-	private Stream<UserNotificationRequest> explodeByUser(final UserNotificationRequest request)
+	private Stream<UserNotificationRequest> explodeByRecipient(final UserNotificationRequest request)
 	{
-		return explodeRecipients(request.getRecipient())
+		final LinkedHashSet<Recipient> recipients = new LinkedHashSet<>();
+		recipients.add(request.getRecipient());
+		notificationGroupRepository.getNotificationGroupByName(request.getNotificationGroupName())
+				.ifPresent(notificationGroup -> recipients.addAll(notificationGroup.getCcs().toSet()));
+
+		return recipients.stream()
+				.flatMap(this::explodeRecipient)
+				.distinct()
 				.map(request::deriveByRecipient);
 	}
 
-	private Stream<Recipient> explodeRecipients(final Recipient recipient)
+	private Stream<Recipient> explodeRecipient(final Recipient recipient)
 	{
 		if (recipient.isAllUsers())
 		{
@@ -261,12 +263,11 @@ public class NotificationSenderTemplate
 		try
 		{
 			final Object targetRecordModel = record.getModel(PlainContextAware.createUsingOutOfTransaction());
-			final String documentNo = documentBL.getDocumentNo(targetRecordModel);
-			return documentNo;
+			return documentBL.getDocumentNo(targetRecordModel);
 		}
 		catch (final Exception ex)
 		{
-			logger.info("Failed retrieving record for " + record, ex);
+			logger.info("Failed retrieving record for {}", record, ex);
 		}
 
 		//
@@ -279,13 +280,8 @@ public class NotificationSenderTemplate
 		{
 			return targetRecordAction.getAdWindowId();
 		}
-		if (targetRecordAction.getRecord() == null)
-		{
-			return Optional.empty();
-		}
 
-		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAdWindowId();
+		return RecordWindowFinder.newInstance(targetRecordAction.getRecord()).findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)
@@ -354,7 +350,6 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isUser())
 		{
-
 			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId());
 
 			if (recipient.isRoleIdSet())
@@ -444,19 +439,17 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
+		final Mailbox mailbox = mailService.findMailbox(mailboxQuery(notificationsConfig));
+
+
 		mailService.sendEMail(EMailRequest.builder()
-				.mailboxQuery(mailboxQuery(notificationsConfig))
+				.mailbox(mailbox)
 				.to(notificationsConfig.getEmail())
 				.subject(subject)
 				.message(content)
 				.html(html)
 				.attachments(request.getAttachments().stream().map(EMailAttachment::of).collect(Collectors.toList()))
 				.build());
-	}
-
-	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
-	{
-		return mailService.findMailbox(mailboxQuery(notificationsConfig));
 	}
 
 	private static MailboxQuery mailboxQuery(final @NonNull UserNotificationsConfig notificationsConfig)

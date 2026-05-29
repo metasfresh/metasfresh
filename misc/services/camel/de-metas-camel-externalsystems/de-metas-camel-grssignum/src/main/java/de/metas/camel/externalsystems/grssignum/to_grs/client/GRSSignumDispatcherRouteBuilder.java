@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
@@ -65,7 +65,7 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 
 		from(direct(GRS_DISPATCHER_ROUTE_ID))
 				.routeId(GRS_DISPATCHER_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::extractAndAttachGRSSignumHttpRequest)
 				.to(direct(GRS_MESSAGE_SENDER));
 
@@ -98,7 +98,7 @@ public class GRSSignumDispatcherRouteBuilder extends RouteBuilder
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().removeHeader(AUTHORIZATION); // remove the token from metasfresh's API
 		exchange.getIn().setHeader(HTTP_URI, dispatchMessageRequest.getUrl());
-		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
 
 		if (Check.isNotBlank(dispatchMessageRequest.getAuthToken()))
 		{

@@ -83,6 +83,9 @@ class QuickActionsDropdown extends PureComponent {
             id={`quickAction_${
               action.internalName ? action.internalName : action.processId
             }`}
+            data-testid={`quick-action-${
+              action.internalName || action.processId || 'unknown'
+            }`}
             tabIndex={0}
             ref={this.handleRefs}
             className={

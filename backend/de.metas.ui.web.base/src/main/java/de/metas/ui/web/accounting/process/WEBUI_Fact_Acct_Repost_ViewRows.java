@@ -74,8 +74,9 @@ public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate im
 	private void enqueueChunk(final Collection<DocumentToRepost> documentsToRepost)
 	{
 		FactAcctRepostCommand.builder()
-				.forcePosting(forcePosting)
 				.documentsToRepost(documentsToRepost)
+				.forcePosting(forcePosting)
+				.onErrorNotifyUserId(getUserId())
 				.build()
 				.execute();
 	}

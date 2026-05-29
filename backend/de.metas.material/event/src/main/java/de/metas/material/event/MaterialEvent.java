@@ -10,9 +10,11 @@ import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateDeletedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
@@ -40,18 +42,20 @@ import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.simulation.SimulatedDemandCreatedEvent;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
-import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.tracking.AllEventsProcessedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
@@ -74,12 +78,13 @@ import javax.annotation.Nullable;
 
 		@JsonSubTypes.Type(name = DDOrderCandidateAdvisedEvent.TYPE, value = DDOrderCandidateAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateCreatedEvent.TYPE, value = DDOrderCandidateCreatedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderCandidateDeletedEvent.TYPE, value = DDOrderCandidateDeletedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateUpdatedEvent.TYPE, value = DDOrderCandidateUpdatedEvent.class),
 		// @JsonSubTypes.Type(name = DDOrderCandidateDocStatusChangedEvent.TYPE, value = DDOrderCandidateDocStatusChangedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateRequestedEvent.TYPE, value = DDOrderCandidateRequestedEvent.class),
-		// @JsonSubTypes.Type(name = DDOrderCandidateDeletedEvent.TYPE, value = DDOrderCandidateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
+		@JsonSubTypes.Type(name = ForecastDeletedEvent.TYPE, value = ForecastDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = PickingRequestedEvent.TYPE, value = PickingRequestedEvent.class),
 
@@ -117,12 +122,12 @@ import javax.annotation.Nullable;
 		@JsonSubTypes.Type(name = StockEstimateDeletedEvent.TYPE, value = StockEstimateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
+		@JsonSubTypes.Type(name = SupplyRequiredDecreasedEvent.TYPE, value = SupplyRequiredDecreasedEvent.class),
 		@JsonSubTypes.Type(name = NoSupplyAdviceEvent.TYPE, value = NoSupplyAdviceEvent.class),
 
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),
 
-		@JsonSubTypes.Type(name = StockCandidateChangedEvent.TYPE, value = StockCandidateChangedEvent.class),
 		@JsonSubTypes.Type(name = MaterialCandidateChangedEvent.TYPE, value = MaterialCandidateChangedEvent.class),
 
 		@JsonSubTypes.Type(name = SimulatedDemandCreatedEvent.TYPE, value = SimulatedDemandCreatedEvent.class),
@@ -132,6 +137,16 @@ import javax.annotation.Nullable;
 public interface MaterialEvent
 {
 	EventDescriptor getEventDescriptor();
+
+	/**
+	 * Implement to provide accurate event data, like name & parent object
+	 */
+	@Nullable
+	@JsonIgnore
+	default TableRecordReference getSourceTableReference() {return null;}
+
+	@JsonIgnore
+	String getEventName();
 
 	@NonNull
 	@JsonIgnore
@@ -149,7 +164,13 @@ public interface MaterialEvent
 	@JsonIgnore
 	default ClientAndOrgId getClientAndOrgId() {return getEventDescriptor().getClientAndOrgId();}
 
+	@JsonIgnore
+	default UserId getUserId() {return getEventDescriptor().getUserId(); }
+
 	@Nullable
 	@JsonIgnore
-	default String getTraceId() {return getEventDescriptor().getTraceId();}
+	default String getTraceId()
+	{
+		return getEventDescriptor().getTraceId();
+	}
 }

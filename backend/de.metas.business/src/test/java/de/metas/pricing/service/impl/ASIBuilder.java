@@ -60,7 +60,7 @@ public class ASIBuilder
 		return asi;
 	}
 
-	private final void createAttributeInstance(final I_M_AttributeSetInstance asi, final AttributeId attributeId, final Object value)
+	private void createAttributeInstance(final I_M_AttributeSetInstance asi, final AttributeId attributeId, final Object value)
 	{
 		final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 		ai.setM_AttributeSetInstance(asi);

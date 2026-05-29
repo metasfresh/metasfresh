@@ -14,12 +14,16 @@ select commoditynumber,
        C_Period_ID,
        Period,
        AD_Org_ID,
-       OrgName
+       OrgName,
+       CustomsTariff,
+       sum(weight)  as weight,
+       vataxid,
+       c_year_id
 from (
          select cn.value        as commoditynumber,
                 p.Name          as productName,
                 p.description   as productDescription,
-                wlc.countrycode as deliveredFromCountry,
+                coalesce(wlc.countrycode, org_country.countrycode) as deliveredFromCountry,
                 co.countrycode  as deliveryCountry,
                 pco.countrycode as OriginCountry,
 
@@ -57,9 +61,25 @@ from (
                 C_Period_ID,
                 per.name        as Period,
                 io.AD_Org_ID,
-                o.Name          as OrgName
+                o.Name          as OrgName,
+                ct.value           AS CustomsTariff,
+                -- Per-line weight: catch weight first, then UOM conversion to KG, then product weight fallback
+                coalesce(
+                    coalesce(iol.qtydeliveredcatch,
+                             uomConvert(iol.M_Product_ID, iol.C_UOM_ID,
+                                        (select C_UOM_ID from C_UOM where x12de355 = 'KGM' and isactive = 'Y' order by isdefault desc limit 1),
+                                        iol.qtyentered)),
+                    iol.qtyentered * p.weight
+                )                  AS weight,
+                bp.vataxid,
+                per.c_year_id
          from M_InOut io
                   join AD_Org o on io.ad_org_id = o.ad_org_id
+                  -- Org's country via AD_OrgInfo → OrgBP_Location → C_Location → C_Country
+                  join AD_OrgInfo org_info on io.ad_org_id = org_info.ad_org_id
+                  left join C_BPartner_Location org_bpl on org_info.OrgBP_Location_ID = org_bpl.C_BPartner_Location_ID
+                  left join C_Location org_loc on org_bpl.C_Location_ID = org_loc.C_Location_ID
+                  left join C_Country org_country on org_loc.C_Country_ID = org_country.C_Country_ID
                   left join m_warehouse w on w.m_warehouse_id = io.m_warehouse_id
                   left join c_location wl on wl.c_location_id = w.c_location_id
                   left join C_country wlc on wlc.c_country_id = wl.c_country_id
@@ -69,6 +89,7 @@ from (
                   join m_product p on p.m_product_id = iol.m_product_id
                   left join m_commoditynumber cn on cn.m_commoditynumber_id = p.m_commoditynumber_id
                   left join C_country pco on pco.c_country_id = p.rawmaterialorigin_id
+                  JOIN c_bpartner bp ON bp.c_bpartner_id = io.c_bpartner_id
                   join c_bpartner_location bpl on bpl.c_bpartner_location_id = io.c_bpartner_location_id
                   join c_location l on l.c_location_id = bpl.c_location_id
                   join C_country co on co.c_country_id = l.c_country_id
@@ -84,11 +105,21 @@ from (
 
                   JOIN C_Period per on i.dateinvoiced >= per.startdate and i.dateinvoiced <= per.enddate
 
+                  LEFT OUTER JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
+
          where io.issotrx = 'Y'
            and io.isactive = 'Y'
            and iol.ispackagingmaterial = 'N'
-           and wlc.countrycode = 'DE'
-           and co.countrycode != 'DE'
+           -- Exclude lines with no customs tariff AND zero invoice value.
+           -- These are typically packaging materials (e.g. EUR pallets) that were added
+           -- as regular shipment lines rather than packaging lines (ispackagingmaterial='N').
+           -- Lines with a missing tariff but non-zero value are kept so the gap is visible
+           -- in the Intrastat export, prompting the user to assign the correct CN8 code.
+           and not (ct.M_CustomsTariff_ID is null and il.linenetamt = 0)
+           -- Only international dispatches: delivery country differs from dispatch country.
+           -- Dispatch country: warehouse location first, org's BP country as fallback.
+           and coalesce(wlc.countrycode, org_country.countrycode) is not null
+           and co.countrycode != coalesce(wlc.countrycode, org_country.countrycode)
      ) as v
 group by commoditynumber,
          productName,
@@ -101,5 +132,8 @@ group by commoditynumber,
          C_Period_ID,
          Period,
          AD_Org_ID,
-         OrgName
+         OrgName,
+         CustomsTariff,
+         vataxid,
+         c_year_id
 order by deliveryCountry, commoditynumber;

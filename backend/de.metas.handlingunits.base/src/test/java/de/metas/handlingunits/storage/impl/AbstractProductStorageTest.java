@@ -1,10 +1,8 @@
-package de.metas.handlingunits.storage.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,24 +11,16 @@ package de.metas.handlingunits.storage.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Assume;
+package de.metas.handlingunits.storage.impl;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IMutableHUContext;
@@ -41,7 +31,14 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public abstract class AbstractProductStorageTest extends AbstractHUTest
 {
@@ -54,7 +51,6 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 	 * @param qtyStr qty
 	 * @param reversal true if it's a reversal transaction
 	 * @param outboundTrx true if it's a outbound transaction
-	 * @return
 	 */
 	protected abstract IProductStorage createStorage(final String qtyStr, final boolean reversal, final boolean outboundTrx);
 
@@ -334,7 +330,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 		final boolean reversal = false;
 		final boolean outboundTrx = false;
 		final IProductStorage storage = createStorage("10", reversal, outboundTrx);
-		Assume.assumeTrue(!storage.isAllowNegativeStorage());
+		Assumptions.assumeTrue(!storage.isAllowNegativeStorage());
 
 		//
 		// Initial storage checking (Total/Qty/Free)
@@ -361,7 +357,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 		final boolean outboundTrx = false;
 		final IProductStorage storage = createStorage("10", reversal, outboundTrx);
 		//
-		Assume.assumeTrue("storage allows negative storage", storage.isAllowNegativeStorage());
+		Assumptions.assumeTrue(storage.isAllowNegativeStorage(),"storage allows negative storage");
 		final boolean forceQtyAllocation = false;
 		//
 		test_removeQty_More_inboundTrx_NegativeStorageAllowed(storage, forceQtyAllocation);
@@ -403,10 +399,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 	protected void assertRequestedQty(final IAllocationRequest request, final String expectedQtyStr)
 	{
-		Assert.assertThat("Invalid requested qty - " + request,
-				request.getQty(),
-				Matchers.comparesEqualTo(new BigDecimal(expectedQtyStr)));
-
+		Assertions.assertEquals(0,	request.getQty().compareTo(new BigDecimal(expectedQtyStr)),"Invalid requested qty - " + request);
 	}
 
 	protected IAllocationRequest createAllocationRequest(final BigDecimal qty)
@@ -446,6 +439,6 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			considerForceQtyAllocationFromRequest = true;
 		}
 
-		Assume.assumeTrue("Product storage is considering the Request's ForceQtyAllocation flag", considerForceQtyAllocationFromRequest);
+		Assumptions.assumeTrue( considerForceQtyAllocationFromRequest,"Product storage is considering the Request's ForceQtyAllocation flag");
 	}
 }

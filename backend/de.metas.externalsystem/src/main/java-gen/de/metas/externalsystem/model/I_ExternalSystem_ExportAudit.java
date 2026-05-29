@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_ExportAudit
  *  @author metasfresh (generated) 
@@ -132,7 +131,7 @@ public interface I_ExternalSystem_ExportAudit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExportParameters (@Nullable String ExportParameters);
+	void setExportParameters (@Nullable java.lang.String ExportParameters);
 
 	/**
 	 * Get Export parameters.
@@ -141,7 +140,7 @@ public interface I_ExternalSystem_ExportAudit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExportParameters();
+	@Nullable java.lang.String getExportParameters();
 
 	ModelColumn<I_ExternalSystem_ExportAudit, Object> COLUMN_ExportParameters = new ModelColumn<>(I_ExternalSystem_ExportAudit.class, "ExportParameters", null);
 	String COLUMNNAME_ExportParameters = "ExportParameters";
@@ -234,25 +233,29 @@ public interface I_ExternalSystem_ExportAudit
 	String COLUMNNAME_ExternalSystem_ExportAudit_ID = "ExternalSystem_ExportAudit_ID";
 
 	/**
-	 * Set External system type.
+	 * Set External System.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemType (@Nullable String ExternalSystemType);
+	void setExternalSystem_ID (int ExternalSystem_ID);
 
 	/**
-	 * Get External system type.
+	 * Get External System.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalSystemType();
+	int getExternalSystem_ID();
 
-	ModelColumn<I_ExternalSystem_ExportAudit, Object> COLUMN_ExternalSystemType = new ModelColumn<>(I_ExternalSystem_ExportAudit.class, "ExternalSystemType", null);
-	String COLUMNNAME_ExternalSystemType = "ExternalSystemType";
+	@Nullable de.metas.externalsystem.model.I_ExternalSystem getExternalSystem();
+
+	void setExternalSystem(@Nullable de.metas.externalsystem.model.I_ExternalSystem ExternalSystem);
+
+	ModelColumn<I_ExternalSystem_ExportAudit, de.metas.externalsystem.model.I_ExternalSystem> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_ExternalSystem_ExportAudit.class, "ExternalSystem_ID", de.metas.externalsystem.model.I_ExternalSystem.class);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Active.

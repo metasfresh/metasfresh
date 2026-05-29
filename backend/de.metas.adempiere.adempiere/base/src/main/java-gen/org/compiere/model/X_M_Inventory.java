@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -352852431L;
+	private static final long serialVersionUID = -694364668L;
 
     /** Standard Constructor */
     public X_M_Inventory (final Properties ctx, final int M_Inventory_ID, @Nullable final String trxName)
@@ -51,6 +51,21 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	}
 
 	@Override
+	public void setAD_User_Responsible_ID (final int AD_User_Responsible_ID)
+	{
+		if (AD_User_Responsible_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_Responsible_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_Responsible_ID, AD_User_Responsible_ID);
+	}
+
+	@Override
+	public int getAD_User_Responsible_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_Responsible_ID);
+	}
+
+	@Override
 	public void setApprovalAmt (final @Nullable BigDecimal ApprovalAmt)
 	{
 		set_Value (COLUMNNAME_ApprovalAmt, ApprovalAmt);
@@ -76,6 +91,36 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
@@ -118,6 +163,33 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_PO_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PO_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_PO_Order(final org.compiere.model.I_C_Order C_PO_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PO_Order_ID, org.compiere.model.I_C_Order.class, C_PO_Order);
+	}
+
+	@Override
+	public void setC_PO_Order_ID (final int C_PO_Order_ID)
+	{
+		if (C_PO_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_PO_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_PO_Order_ID, C_PO_Order_ID);
+	}
+
+	@Override
+	public int getC_PO_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PO_Order_ID);
 	}
 
 	@Override
@@ -233,6 +305,17 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
+	}
+
+	@Override
+	public void setDocSubType (final @Nullable java.lang.String DocSubType)
+	{
+		throw new IllegalArgumentException ("DocSubType is virtual column");	}
+
+	@Override
+	public java.lang.String getDocSubType() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}
 
 	@Override

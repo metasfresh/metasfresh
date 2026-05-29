@@ -139,6 +139,31 @@ public interface I_ExternalSystem_Config
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	de.metas.externalsystem.model.I_ExternalSystem getExternalSystem();
+
+	void setExternalSystem(de.metas.externalsystem.model.I_ExternalSystem ExternalSystem);
+
+	ModelColumn<I_ExternalSystem_Config, de.metas.externalsystem.model.I_ExternalSystem> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_ExternalSystem_Config.class, "ExternalSystem_ID", de.metas.externalsystem.model.I_ExternalSystem.class);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -181,29 +206,6 @@ public interface I_ExternalSystem_Config
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setType (java.lang.String Type);
-
-	/**
-	 * Get Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getType();
-
-	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Config.class, "Type", null);
-	String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Updated.

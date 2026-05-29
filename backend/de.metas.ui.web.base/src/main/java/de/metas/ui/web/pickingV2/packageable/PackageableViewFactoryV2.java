@@ -24,6 +24,8 @@
 package de.metas.ui.web.pickingV2.packageable;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.money.MoneyService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -47,6 +49,8 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Set;
 
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_PackageableView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PackageableViewFactoryV2 implements IViewFactory
@@ -84,8 +88,10 @@ public class PackageableViewFactoryV2 implements IViewFactory
 		viewId.assertWindowId(PickingConstantsV2.WINDOWID_PackageableView);
 
 		final DocumentFilterDescriptorsProvider filterDescriptors = getFilterDescriptorsProvider();
+		final Set<ShipmentScheduleId> onlyShipmentScheduleIds = extractShipmentScheduleIds(request);
 
 		final PackageableRowsData rowsData = rowsRepo.newPackageableRowsData()
+				.onlyShipmentScheduleIds(onlyShipmentScheduleIds.isEmpty() ? null : onlyShipmentScheduleIds)
 				.filters(request.getFiltersUnwrapped(filterDescriptors))
 				.stickyFilters(request.getStickyFilters())
 				.build();
@@ -96,6 +102,14 @@ public class PackageableViewFactoryV2 implements IViewFactory
 				.relatedProcessDescriptors(getRelatedProcessDescriptors())
 				.viewFilterDescriptors(filterDescriptors)
 				.build();
+	}
+
+	private static Set<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final CreateViewRequest request)
+	{
+		return request.getFilterOnlyIds()
+				.stream()
+				.map(ShipmentScheduleId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private Iterable<? extends RelatedProcessDescriptor> getRelatedProcessDescriptors()

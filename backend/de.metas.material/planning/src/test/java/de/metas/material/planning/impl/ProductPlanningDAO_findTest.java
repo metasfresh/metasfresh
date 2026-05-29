@@ -10,8 +10,8 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.ASICopy;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -169,7 +169,7 @@ public class ProductPlanningDAO_findTest
 	{
 		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicASIRecord();
 
-		final I_M_AttributeSetInstance organicAndMadeInCologneASI = ASICopy.newInstance(organicAttributeSetInstance).copy();
+		final I_M_AttributeSetInstance organicAndMadeInCologneASI = Services.get(IAttributeSetInstanceBL.class).copy(organicAttributeSetInstance);
 
 		final I_M_AttributeInstance madeInCologneAttributeInstance = newInstance(I_M_AttributeInstance.class);
 		madeInCologneAttributeInstance.setM_AttributeSetInstance(organicAndMadeInCologneASI);

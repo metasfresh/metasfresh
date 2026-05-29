@@ -3,17 +3,18 @@ import cx from 'classnames';
 import PropTypes from 'prop-types';
 import { useBooleanSetting } from '../reducers/settings';
 
-const DateInput = ({ value, readOnly, onChange }) => {
+const DateInput = ({ value, readOnly, onChange, testId }) => {
   const isUseNativeComponent = useBooleanSetting('dateInput.isUseNativeComponent');
 
   if (isUseNativeComponent) {
-    return <DateInputNative value={value} readOnly={readOnly} onChange={onChange} />;
+    return <DateInputNative value={value} readOnly={readOnly} onChange={onChange} testId={testId} />;
   } else {
-    return <DateInputLegacy value={value} readOnly={readOnly} onChange={onChange} />;
+    return <DateInputLegacy value={value} readOnly={readOnly} onChange={onChange} testId={testId} />;
   }
 };
 
 DateInput.propTypes = {
+  testId: PropTypes.string,
   value: PropTypes.any,
   readOnly: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -27,7 +28,7 @@ export default DateInput;
 //
 //
 
-const DateInputNative = ({ value, readOnly, onChange }) => {
+const DateInputNative = ({ value, readOnly, onChange, testId }) => {
   const handleChange = useCallback(
     (e) => {
       const dateNew = e.target.value ? e.target.value : '';
@@ -35,9 +36,19 @@ const DateInputNative = ({ value, readOnly, onChange }) => {
     },
     [onChange]
   );
-  return <input className="input" type="date" value={value} disabled={readOnly} onChange={handleChange} />;
+  return (
+    <input
+      className="input"
+      type="date"
+      value={value}
+      disabled={readOnly}
+      onChange={handleChange}
+      data-testid={testId}
+    />
+  );
 };
 DateInputNative.propTypes = {
+  testId: PropTypes.string,
   value: PropTypes.any,
   readOnly: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -49,7 +60,7 @@ DateInputNative.propTypes = {
 //
 //
 
-const DateInputLegacy = ({ value, readOnly, onChange }) => {
+const DateInputLegacy = ({ value, readOnly, onChange, testId }) => {
   let displayedDate = value;
   let isValid = true;
   try {
@@ -79,21 +90,24 @@ const DateInputLegacy = ({ value, readOnly, onChange }) => {
 
   return (
     <input
+      data-testid={testId}
       className={cx('input', { 'is-danger': !isValid })}
       type="text"
       value={displayedDate}
-      placeholder="DD.MM.YYYY"
+      placeholder={DISPLAY_DATE_FORMAT_USER_FRIENDLY}
       disabled={readOnly}
       onChange={handleChange}
     />
   );
 };
 DateInputLegacy.propTypes = {
+  testId: PropTypes.string,
   value: PropTypes.any,
   readOnly: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
 };
 
+const DISPLAY_DATE_FORMAT_USER_FRIENDLY = 'DD.MM.YYYY';
 const DISPLAY_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const convertDateFromDisplay = (displayedDate) => {
   if (!displayedDate) return '';
@@ -106,7 +120,11 @@ const convertDateFromDisplay = (displayedDate) => {
 const STANDARD_DATE_FORMAT = /^(\d{4})-(\d{2})-(\d{2})$/;
 const convertDateToDisplay = (date) => {
   if (!date) return '';
-  const [, year, month, day] = STANDARD_DATE_FORMAT.exec(date);
+  const parts = STANDARD_DATE_FORMAT.exec(date);
+  if (!parts) {
+    throw new Error(`Date string '${date}' is not matching '${STANDARD_DATE_FORMAT}' format`);
+  }
+  const [, year, month, day] = parts;
   assertDayMonthYearValid({ day, month, year, dateString: date });
   return `${day}.${month}.${year}`;
 };

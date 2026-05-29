@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,19 +26,16 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.from_grs.JsonAttachmentUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.attachment.BPartnerAttachmentsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXTERNAL_REF_TYPE_BPARTNER;
 
@@ -61,14 +58,8 @@ public class BPartnerAttachmentsProcessor implements Processor
 			@NonNull final JsonBPartnerAttachment jsonBPartnerAttachment,
 			@NonNull final String basePathForExportDirectories)
 	{
-		final Path attachmentPath = Paths.get(basePathForExportDirectories, jsonBPartnerAttachment.getAttachmentFilePath());
-
-		final JsonAttachment attachment = JsonAttachment.builder()
-				.type(JsonAttachmentSourceType.LocalFileURL)
-				.fileName(attachmentPath.getFileName().toString())
-				.data(attachmentPath.toUri().toString())
-				.build();
-
+		final JsonAttachment attachment = JsonAttachmentUtil.createLocalFileJsonAttachment(basePathForExportDirectories, jsonBPartnerAttachment.getAttachmentFilePath());
+		
 		return JsonAttachmentRequest.builder()
 				.targets(ImmutableList.of(JsonExternalReferenceTarget.ofTypeAndId(EXTERNAL_REF_TYPE_BPARTNER, jsonBPartnerAttachment.getMetasfreshId())))
 				.orgCode(getAuthOrgCode())

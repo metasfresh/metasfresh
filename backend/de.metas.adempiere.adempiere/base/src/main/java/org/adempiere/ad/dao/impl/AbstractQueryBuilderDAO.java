@@ -1,11 +1,10 @@
 package org.adempiere.ad.dao.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderDAO;
@@ -13,14 +12,12 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.IQuery;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.process.PInstanceId;
-import lombok.NonNull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -48,7 +45,6 @@ import lombok.NonNull;
  * Base implementation for {@link IQueryBuilderDAO}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 {
@@ -97,7 +93,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	 * <pre>
 	 * SELECT .. FROM MyTable WHERE Value1=1 OR Value2=2 OR Value3=3
 	 * </pre>
-	 *
+	 * <p>
 	 * to
 	 *
 	 * <pre>
@@ -157,7 +153,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	 * <pre>
 	 * SELECT .. FROM MyTable WHERE AD_Client_ID=1 and IsActive=2 and (Value1=1 OR Value2=2 OR Value3=3)
 	 * </pre>
-	 *
+	 * <p>
 	 * to
 	 *
 	 * <pre>
@@ -179,7 +175,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		{
 			return null;
 		}
-		if(!mainFilterAsComposite.isJoinAnd())
+		if (!mainFilterAsComposite.isJoinAnd())
 		{
 			return null;
 		}
@@ -216,7 +212,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		final IQuery<T> query;
 		{
 			final IQueryFilter<T> firstSubFilter = subFilters.get(0);
-			final IPair<ISqlQueryFilter, IQueryFilter<T>> sqlAndNonSqlFilters = extractSqlAndNonSqlFilters(new CompositeQueryFilter<T>(queryBuildCtx.getModelTableName())
+			final IPair<ISqlQueryFilter, IQueryFilter<T>> sqlAndNonSqlFilters = extractSqlAndNonSqlFilters(CompositeQueryFilter.<T>newInstance(queryBuildCtx.getModelTableName())
 					.addFilters(otherFilters)
 					.addFilter(firstSubFilter));
 			final ISqlQueryFilter sqlFilters = sqlAndNonSqlFilters.getLeft();
@@ -271,7 +267,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	/**
 	 * Actually creates the {@link IQuery} instance for given context.
 	 *
-	 * @param sqlFilters SQL filters part
+	 * @param sqlFilters    SQL filters part
 	 * @param nonSqlFilters nonSQL filters part
 	 */
 	protected abstract <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx, final ISqlQueryFilter sqlFilters, final IQueryFilter<T> nonSqlFilters);
@@ -390,11 +386,6 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		public IQueryOrderBy getQueryOrderBy()
 		{
 			return queryOrderBy;
-		}
-
-		public void setQueryOrderBy(final IQueryOrderBy queryOrderBy)
-		{
-			this.queryOrderBy = queryOrderBy;
 		}
 
 		public QueryLimit getQueryLimit()

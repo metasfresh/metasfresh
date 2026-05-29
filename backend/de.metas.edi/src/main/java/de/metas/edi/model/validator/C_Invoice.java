@@ -23,17 +23,14 @@ package de.metas.edi.model.validator;
  */
 
 import de.metas.edi.api.EDIDocOutBoundLogService;
-import de.metas.edi.api.IEDIDocumentBL;
-import de.metas.edi.api.ValidationState;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,52 +39,33 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice
 {
-	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
-
-	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
-
-	private C_Invoice(@NonNull final EDIDocOutBoundLogService ediDocOutBoundLogService)
-	{
-		this.ediDocOutBoundLogService = ediDocOutBoundLogService;
-	}
+	@NonNull private final EDIDocumentBL ediDocumentBL;
+	@NonNull private final EDIDocOutBoundLogService ediDocOutBoundLogService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateEdiStatus(final I_C_Invoice document)
+	public void updateEdiStatus(final I_C_Invoice invoice)
 	{
-		try (final MDCCloseable mdcCloseable = TableRecordMDC.putTableRecordReference(document))
+		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+		if(ediExportStatus != null && ediExportStatus.isInProgressOrSend())
 		{
-			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-			if (!ediDocumentBL.updateEdiEnabled(document))
-			{
-				return;
-			}
-
-			final List<Exception> feedback = ediDocumentBL.isValidInvoice(document);
-
-			final String EDIStatus = document.getEDI_ExportStatus();
-			final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, false); // saveLocally=false
-
-			if (ValidationState.INVALID == validationState)
-			{
-				logger.debug("validationState={}; persisting error-message in C_Invoice", validationState);
-				// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
-				// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
-				final String errorMessage = ediDocumentBL.buildFeedback(feedback);
-				document.setEDIErrorMsg(errorMessage);
-				document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Invalid);
-			}
+			return;
 		}
+
+		if(ediExportStatus != null && ediExportStatus.isError())
+		{
+			return;
+		}
+
+		ediDocumentBL.updateEdiExportStatus(invoice);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, //
@@ -109,16 +87,23 @@ public class C_Invoice
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
-	public void forbiddReversal(final I_C_Invoice invoice)
+	public void forbidReversal(final I_C_Invoice invoice)
 	{
-		final String ediStatus = invoice.getEDI_ExportStatus();
-		if (I_EDI_Document_Extension.EDI_EXPORTSTATUS_Sent.equals(ediStatus)
-				|| I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted.equals(ediStatus)
-				|| I_EDI_Document_Extension.EDI_EXPORTSTATUS_Enqueued.equals(ediStatus))
+		final EDIExportStatus ediExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+		if (ediExportStatus.isInProgressOrSend())
 		{
 			throw new AdempiereException(" EDI was already sent / enqueued. Can not reverse the invoice!")
 					.appendParametersToMessage()
 					.setParameter("invoice", invoice);
 		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID })
+	public void updateEdiExportStatusOnReverse(final I_C_Invoice invoice)
+	{
+		invoice.setEDI_ExportStatus(EDIExportStatus.DontSend.getCode());
 	}
 }

@@ -25,7 +25,6 @@ package de.metas.order.location.adapter;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
@@ -33,7 +32,6 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
-import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -67,7 +65,7 @@ class OrderMainLocationAdapterTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		documentLocationBL = new DocumentLocationBL(new BPartnerBL(new UserRepository()));
+		documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		countryDE = createCountry("DE", "@A1@ @CO@");

@@ -25,7 +25,10 @@ package de.metas.edi.process.export;
 
 import java.util.List;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.model.I_EDI_Document;
+import lombok.NonNull;
 
 /**
  * Interface whose implementors can export a certain document to EDI.
@@ -51,4 +54,10 @@ public interface IExport<T extends I_EDI_Document>
 	 * @return table identifier
 	 */
 	String getTableIdentifier();
+
+	@NonNull
+	BPartnerId getBPartnerId();
+
+	@NonNull
+	EDIType getEDIType();
 }

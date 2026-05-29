@@ -40,7 +40,7 @@ import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.ToggableSideAction;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Use this class as a playground for {@link ISideAction} related Swing components.
@@ -50,7 +50,7 @@ import org.junit.Ignore;
  * @author tsa
  *
  */
-@Ignore
+@Disabled
 public class SideActionsGroupsListPanel_Manual_Test
 {
 	static int nextActionId = 1;

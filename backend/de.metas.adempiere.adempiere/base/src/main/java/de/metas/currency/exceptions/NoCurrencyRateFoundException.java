@@ -25,8 +25,10 @@ package de.metas.currency.exceptions;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -48,7 +50,7 @@ public class NoCurrencyRateFoundException extends AdempiereException
 			@Nullable final Instant conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
-		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod));
+		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod), Services.get(IMsgBL.class).getErrorCode(MSG));
 	}
 
 	private static ITranslatableString buildMsg(

@@ -1,9 +1,11 @@
 package org.adempiere.ad.dao;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -33,6 +35,7 @@ import java.util.Collection;
 @EqualsAndHashCode
 public final class QueryLimit
 {
+	@JsonCreator
 	public static QueryLimit ofInt(final int limit)
 	{
 		if (isNoLimit(limit))
@@ -115,11 +118,15 @@ public final class QueryLimit
 		return value;
 	}
 
+	public int toIntOrInfinit()
+	{
+		return toIntOr(Integer.MAX_VALUE);
+	}
+
 	public int toIntOr(final int noLimitValue)
 	{
 		return isNoLimit() ? noLimitValue : value;
 	}
-
 
 	public boolean isLimited()
 	{
@@ -141,6 +148,7 @@ public final class QueryLimit
 		return isNoLimit() ? ofInt(limit) : this;
 	}
 
+	@SuppressWarnings("unused")
 	public QueryLimit ifNoLimitUse(@NonNull final QueryLimit limit)
 	{
 		return isNoLimit() ? limit : this;
@@ -153,7 +161,22 @@ public final class QueryLimit
 
 	public boolean isLimitHitOrExceeded(@NonNull final Collection<?> collection)
 	{
-		return isLimited() && value <= collection.size();
+		return isLimitHitOrExceeded(collection.size());
+	}
+
+	public boolean isLimitHitOrExceeded(@NonNull final MutableInt countHolder)
+	{
+		return isLimitHitOrExceeded(countHolder.getValue());
+	}
+
+	public boolean isLimitHitOrExceeded(final int count)
+	{
+		return isLimited() && value <= count;
+	}
+
+	public boolean isBelowLimit(@NonNull final Collection<?> collection)
+	{
+		return isNoLimit() || value > collection.size();
 	}
 
 	public QueryLimit minusSizeOf(@NonNull final Collection<?> collection)

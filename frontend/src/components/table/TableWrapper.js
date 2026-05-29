@@ -336,7 +336,8 @@ class TableWrapper extends PureComponent {
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
-    let showPagination = !!(page && pageLength);
+    const showPagination = !!(page && pageLength);
+    const isAllowDeleteRow = !isModal && tabInfo?.allowDelete;
 
     this.rowRefs = {};
 
@@ -370,11 +371,7 @@ class TableWrapper extends PureComponent {
               handleFieldEdit={this.handleFieldEdit}
               handleAdvancedEdit={onHandleAdvancedEdit}
               onOpenNewTab={handleOpenNewTab}
-              handleDelete={
-                !isModal && tabInfo && tabInfo.allowDelete
-                  ? this.handleDelete
-                  : null
-              }
+              handleDelete={isAllowDeleteRow ? this.handleDelete : null}
               handleZoomInto={onHandleZoomInto}
               updateTableHeight={this.fwdUpdateHeight}
               supportOpenRecord={supportOpenRecord}
@@ -417,7 +414,10 @@ class TableWrapper extends PureComponent {
           }
         </div>
         {showPagination ? (
-          <div onClick={this.handleClickOutside}>
+          <div
+            className="table-padding-bottom"
+            onClick={this.handleClickOutside}
+          >
             <TablePagination
               {...{
                 handleChangePage,
@@ -468,7 +468,7 @@ class TableWrapper extends PureComponent {
                 : null
             }
             onDelete={
-              selected && selected.length > 0 && selected[0]
+              isAllowDeleteRow && selected && selected.length > 0 && selected[0]
                 ? this.handleDelete
                 : null
             }

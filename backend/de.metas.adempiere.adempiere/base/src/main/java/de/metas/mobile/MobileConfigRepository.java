@@ -26,6 +26,7 @@ import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileConfiguration;
 import org.springframework.stereotype.Repository;
 
@@ -50,11 +51,23 @@ public class MobileConfigRepository
 	@NonNull
 	private Optional<MobileConfig> retrieveConfig()
 	{
+		return retrieveRecord().map(MobileConfigRepository::ofRecord);
+	}
+
+	@NonNull
+	private Optional<I_MobileConfiguration> retrieveRecord()
+	{
 		return queryBL.createQueryBuilder(I_MobileConfiguration.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnlyOptional(I_MobileConfiguration.class)
-				.map(MobileConfigRepository::ofRecord);
+				.firstOnlyOptional(I_MobileConfiguration.class);
+	}
+
+	public void save(@NonNull final MobileConfig mobileConfig)
+	{
+		final I_MobileConfiguration record = retrieveRecord().orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileConfiguration.class));
+		updateRecord(record, mobileConfig);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	@NonNull
@@ -63,5 +76,10 @@ public class MobileConfigRepository
 		return MobileConfig.builder()
 				.defaultAuthMethod(MobileAuthMethod.ofCode(mobileConfiguration.getDefaultAuthenticationMethod()))
 				.build();
+	}
+
+	private static void updateRecord(@NonNull final I_MobileConfiguration record, @NonNull final MobileConfig from)
+	{
+		record.setDefaultAuthenticationMethod(from.getDefaultAuthMethod().getCode());
 	}
 }

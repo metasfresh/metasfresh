@@ -90,7 +90,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -172,7 +172,8 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		log.debug("Set R_RequestType_ID for {} records", no);
 	}
 
-	private final void markAsError(final String errorMsg, final String sqlWhereClause)
+	@SuppressWarnings("SameParameterValue")
+	private void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
@@ -183,7 +184,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	}
 
 	@Override
-	protected I_I_User retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_User retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final PO po = TableModelLoader.instance.getPO(ctx, I_I_User.Table_Name, rs, ITrx.TRXNAME_ThreadInherited);
 		return InterfaceWrapperHelper.create(po, I_I_User.class);
@@ -217,7 +218,11 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 		//
 		// Assign Role
-		final RoleId roleId = RoleId.ofRepoIdOrNull(importRecord.getAD_Role_ID());
+		// NOTE: we must use getValueOrNull because getAD_Role_ID() returns 0 for NULL,
+		// and RoleId.ofRepoIdOrNull(0) returns SYSTEM (System Administrator) instead of null.
+		// See https://github.com/metasfresh/mf15/issues/3948
+		final Integer roleRepoId = InterfaceWrapperHelper.getValueOrNull(importRecord, I_I_User.COLUMNNAME_AD_Role_ID);
+		final RoleId roleId = roleRepoId != null ? RoleId.ofRepoIdOrNull(roleRepoId) : null;
 
 		if (roleId != null)
 		{

@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,21 +1,25 @@
 ARG REFNAME=local
-FROM metasfresh/metas-db:$REFNAME as db
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-db:$REFNAME AS db
 
 # we are prepopulating the image with pgdata
 # https://cadu.dev/creating-a-docker-image-with-database-preloaded/
 # dirty but works
 
-FROM db as init
+FROM db AS init
+
+# Setup de_DE locales so they are available for postgres initdb
+# thx to https://stackoverflow.com/a/48311129/1012103
+RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen en_US.UTF-8 && locale-gen de_DE.UTF-8
+
+ENV POSTGRES_INITDB_ARGS="--encoding=UTF-8 --lc-collate=de_DE.UTF-8 --lc-ctype=de_DE.UTF-8 --lc-messages=en_US.UTF-8 --lc-monetary=de_DE.UTF-8 --lc-numeric=de_DE.UTF-8 --lc-time=de_DE.UTF-8"
 
 RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
 RUN /usr/local/bin/docker-entrypoint.sh postgres
 
-FROM postgres:15.4 as final
+FROM postgres:15.4 AS final
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
-
-# thx to https://stackoverflow.com/a/48311129/1012103
-RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && locale-gen en_US.UTF-8
 
 ENV POSTGRES_USER=postgres
 ENV POSTGRES_PASSWORD=postgres

@@ -8,6 +8,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+
+import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
 
 @Value
 @Builder
@@ -18,7 +23,7 @@ public class NoSupplyAdviceEvent implements MaterialEvent
 
 	@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor;
 
-	public static NoSupplyAdviceEvent of(@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public static NoSupplyAdviceEvent of(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		return NoSupplyAdviceEvent.builder().supplyRequiredDescriptor(supplyRequiredDescriptor).build();
 	}
@@ -32,4 +37,14 @@ public class NoSupplyAdviceEvent implements MaterialEvent
 
 	@JsonIgnore
 	public int getSupplyCandidateId() {return supplyRequiredDescriptor.getSupplyCandidateId();}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(MD_CANDIDATE_TABLE_NAME, supplyRequiredDescriptor.getPpOrderCandidateId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

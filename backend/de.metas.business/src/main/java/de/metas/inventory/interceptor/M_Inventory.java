@@ -1,5 +1,15 @@
 package de.metas.inventory.interceptor;
 
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.event.IEventBusFactory;
+import de.metas.i18n.AdMessageKey;
+import de.metas.inventory.AggregationType;
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -8,19 +18,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.event.IEventBusFactory;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.inventory.AggregationType;
-import de.metas.inventory.IInventoryDAO;
-import de.metas.inventory.InventoryId;
-import de.metas.inventory.event.InventoryUserNotificationsProducer;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -74,9 +71,7 @@ public class M_Inventory
 
 		if (!allLinesCounted)
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final ITranslatableString msgNotAllLinesCounted = msgBL.getTranslatableMsgText(MSG_NOT_ALL_LINES_COUNTED);
-			throw new AdempiereException(msgNotAllLinesCounted)
+			throw new AdempiereException(MSG_NOT_ALL_LINES_COUNTED)
 					.markAsUserValidationError();
 		}
 	}
@@ -88,7 +83,7 @@ public class M_Inventory
 		{
 			return false;
 		}
-		
+
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final DocBaseAndSubType docBaseAndSubType = docTypesRepo.getDocBaseAndSubTypeById(docTypeId);
 

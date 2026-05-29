@@ -48,15 +48,15 @@ public final class Account
 	}
 
 	@NonNull
-	public static Account of(@NonNull final AccountId accountId, @NonNull final AccountConceptualName accountConceptualName)
+	public static Account of(@NonNull final AccountId accountId, @Nullable final AccountConceptualName accountConceptualName)
 	{
 		return new Account(accountId, accountConceptualName);
 	}
 
 	@NonNull
-	public static Account of(@NonNull final AccountId accountId, @NonNull final String accountConceptualName)
+	public static Account of(@NonNull final AccountId accountId, @Nullable final String accountConceptualName)
 	{
-		return new Account(accountId, AccountConceptualName.ofString(accountConceptualName));
+		return new Account(accountId, AccountConceptualName.ofNullableString(accountConceptualName));
 	}
 
 	@NonNull
@@ -64,6 +64,19 @@ public final class Account
 	{
 		final AccountId accountId = AccountId.ofRepoIdOrNull(accountRepoId);
 		return accountId != null ? Optional.of(of(accountId, accountConceptualNameAware.getAccountConceptualName())) : Optional.empty();
+	}
+
+	@NonNull
+	public static Optional<Account> optionalOfRepoId(final int accountRepoId, @Nullable final String accountConceptualNameStr)
+	{
+		final AccountId accountId = AccountId.ofRepoIdOrNull(accountRepoId);
+		if (accountId == null)
+		{
+			return Optional.empty();
+		}
+
+		final AccountConceptualName accountConceptualName = AccountConceptualName.ofNullableString(accountConceptualNameStr);
+		return Optional.of(of(accountId, accountConceptualName));
 	}
 
 	@NonNull
@@ -77,5 +90,4 @@ public final class Account
 	{
 		return new Account(accountId, null);
 	}
-
 }

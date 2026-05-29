@@ -59,6 +59,13 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 
 	protected final void handleReceiptScheduleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
+		// dropship-warehouse receipt-schedules bypass material-disposition entirely —
+		// the goods are shipped supplier → customer and never reach our warehouse.
+		if (event.isDropShipWarehouse())
+		{
+			return;
+		}
+
 		final Candidate existingSupplyCandidate = retrieveExistingSupplyCandidateOrNull(event);
 
 		final CandidateBuilder supplyCandidateBuilder = existingSupplyCandidate != null

@@ -1,4 +1,4 @@
-FROM node:14 as build
+FROM node:14 AS build
 
 RUN npm install -g webpack webpack-cli
 
@@ -25,7 +25,7 @@ ENV PUBLIC_URL=/
 RUN yarn build
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.21.6 AS runtime
 
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 

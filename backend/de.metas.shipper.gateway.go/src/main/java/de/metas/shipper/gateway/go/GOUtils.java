@@ -34,12 +34,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class GOUtils
 {
-	public static final OrderId createOrderId(final String orderIdStr)
+	public static OrderId createOrderId(final String orderIdStr)
 	{
 		return OrderId.of(GOConstants.SHIPPER_GATEWAY_ID, orderIdStr);
 	}
 
-	public static final OrderId createOrderIdOrNull(@Nullable final String orderIdStr)
+	public static OrderId createOrderIdOrNull(@Nullable final String orderIdStr)
 	{
 		if (Check.isEmpty(orderIdStr, true))
 		{

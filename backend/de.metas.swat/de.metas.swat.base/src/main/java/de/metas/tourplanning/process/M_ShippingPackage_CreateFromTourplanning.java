@@ -22,16 +22,6 @@ package de.metas.tourplanning.process;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -39,7 +29,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -50,6 +40,15 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+
+import java.sql.Timestamp;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implements IProcessPrecondition
 {
@@ -59,7 +58,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
-	private final PurchaseOrderToShipperTransportationRepository orderToShipperTransportationRepo = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationRepository.class);
+	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 
 	@Param(parameterName = I_M_Tour.COLUMNNAME_M_Tour_ID)
 	private TourId p_M_Tour_ID;
@@ -137,7 +136,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 		// Iterate collected orders and create shipment packages for them
 		for (final I_C_Order order : orderId2order.values())
 		{
-			orderToShipperTransportationRepo.addPurchaseOrderToShipperTransportation(
+			orderToShipperTransportationService.addPurchaseOrderToShipperTransportation(
 					OrderId.ofRepoId(order.getC_Order_ID()),
 					ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 		}

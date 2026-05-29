@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_points" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryNewPage="true" resourceBundle="de/metas/docs/purchase/commission/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.report.description" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_BPartner_SalesRep_ID" class="java.lang.Integer"/>
+	<parameter name="CommissionDate_From" class="java.sql.Timestamp"/>
+	<parameter name="CommissionDate_To" class="java.sql.Timestamp"/>
+	<parameter name="Bill_BPartner_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Calculation($P{C_BPartner_SalesRep_ID},$P{CommissionDate_From},$P{CommissionDate_To},$P{Bill_BPartner_ID}, $P{ad_language});]]>
+	</queryString>
+	<field name="c_invoice_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_invoice_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_invoice_id"/>
+	</field>
+	<field name="c_invoiceline_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_invoiceline_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_invoiceline_id"/>
+	</field>
+	<field name="bpvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="bpvalue"/>
+	</field>
+	<field name="bpname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bpname"/>
+		<property name="com.jaspersoft.studio.field.label" value="bpname"/>
+	</field>
+	<field name="c_bpartner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_bpartner_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
+	</field>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="qtyinvoicedinpriceuom" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyinvoicedinpriceuom"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyinvoicedinpriceuom"/>
+	</field>
+	<field name="invoiceproductvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="invoiceproductvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="invoiceproductvalue"/>
+	</field>
+	<field name="invoiceproductname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="invoiceproductname"/>
+		<property name="com.jaspersoft.studio.field.label" value="invoiceproductname"/>
+	</field>
+	<field name="productvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="productvalue"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productname"/>
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="qtyentered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyentered"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyentered"/>
+	</field>
+	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
+		<property name="com.jaspersoft.studio.field.label" value="uom"/>
+	</field>
+	<field name="pointsbase_invoiced" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="pointsbase_invoiced"/>
+		<property name="com.jaspersoft.studio.field.label" value="pointsbase_invoiced"/>
+	</field>
+	<field name="pointssum_settled" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="pointssum_settled"/>
+		<property name="com.jaspersoft.studio.field.label" value="pointssum_settled"/>
+	</field>
+	<field name="percentofbasepoints" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="percentofbasepoints"/>
+		<property name="com.jaspersoft.studio.field.label" value="percentofbasepoints"/>
+	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="poreference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="poreference"/>
+		<property name="com.jaspersoft.studio.field.label" value="poreference"/>
+	</field>
+	<variable name="point_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="C_InvoiceLine" calculation="Sum">
+		<variableExpression><![CDATA[$F{pointssum_settled}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<variable name="pointsbase_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="C_InvoiceLine" calculation="Sum">
+		<variableExpression><![CDATA[$F{pointsbase_invoiced}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<group name="C_InvoiceLine">
+		<groupExpression><![CDATA[$F{c_invoiceline_id}]]></groupExpression>
+		<groupHeader>
+			<band height="15" splitType="Prevent">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="50" y="1" width="370" height="13" uuid="e18b333c-28db-48f4-9689-76c3f6d3cc3c"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{line}  + "  " + $F{invoiceproductname} + ($F{documentno} != null ? " | " + $R{POrder} + $F{documentno} :  " ")+ ($F{poreference} != null ? " | " + $R{POReference} + $F{poreference} :  " ")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="15" splitType="Prevent">
+				<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="448" y="2" width="72" height="12" uuid="b7cf848a-c0ab-4817-bb63-c5386011dbbd"/>
+					<textElement textAlignment="Right" markup="html">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["&Sigma;      " +  ($V{point_sum}!=null ? $V{point_sum} : "")]]></textFieldExpression>
+				</textField>
+				<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="378" y="2" width="70" height="12" uuid="273264b0-7c78-4d3e-acde-845834d2c66e"/>
+					<textElement textAlignment="Right" markup="html">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["&Sigma;      " +( $V{pointsbase_sum} != null ?  $V{pointsbase_sum} : "")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Group_C_Bpartner">
+		<groupExpression><![CDATA[$F{c_bpartner_id}]]></groupExpression>
+		<groupHeader>
+			<band height="14" splitType="Prevent">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="50" y="1" width="370" height="12" uuid="91d0da46-099d-4d6a-a36f-76a50f6e7610"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bpvalue}+ " "+$F{bpname}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<pageHeader>
+		<band height="100" splitType="Prevent">
+			<textField>
+				<reportElement x="50" y="71" width="250" height="25" backcolor="#D9D7D7" uuid="18a69f3e-bf8a-406e-ad71-627592b23f7b"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="71" width="52" height="25" backcolor="#D9D7D7" uuid="a2dc306c-c273-4989-9f97-994063d86ac6"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="71" width="46" height="25" uuid="a164435c-a4f2-43d3-9ba3-421557d279c8"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="378" y="71" width="70" height="25" backcolor="#D9D7D7" uuid="24fcd3c9-c18e-4211-bce3-035d8356d755"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pointsbase_invoiced}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="448" y="71" width="72" height="25" backcolor="#D9D7D7" uuid="ae273795-9e92-4a1a-8e20-81134a8be356"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pointssum_settled}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="200" y="18" width="240" height="30" uuid="9ef59085-2d42-45d6-b154-86635b95ca2d"/>
+				<textElement textAlignment="Center">
+					<font size="20"/>
+				</textElement>
+				<text><![CDATA[Provisionsberechnung]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="13" splitType="Prevent">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="50" y="0" width="240" height="13" uuid="c348b769-49f5-4733-b2bd-bc7d67826d14"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="292" y="0" width="40" height="13" uuid="0c15b2e7-a40a-4525-a9f2-a05b6cfa4703"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyentered}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="334" y="0" width="46" height="13" uuid="503bad58-773d-4b00-91f0-aaf93cec5e80"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="378" y="0" width="70" height="13" uuid="4372a570-3672-4c61-9bea-11b86ce88d06"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pointsbase_invoiced}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="448" y="0" width="72" height="13" uuid="b0242f01-1a18-4879-8ab4-db129aaac9f0"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pointssum_settled}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="24">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+		</band>
+	</pageFooter>
+</jasperReport>

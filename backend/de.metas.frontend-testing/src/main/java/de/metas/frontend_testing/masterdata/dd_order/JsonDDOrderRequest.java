@@ -1,0 +1,43 @@
+package de.metas.frontend_testing.masterdata.dd_order;
+
+import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.util.lang.SeqNo;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
+@Value
+@Builder
+@Jacksonized
+public class JsonDDOrderRequest
+{
+	@NonNull Identifier warehouseFrom;
+	@NonNull Identifier warehouseTo;
+	@NonNull Identifier warehouseInTransit;
+	@Nullable Identifier plant;
+	@Nullable String priority;
+	@Nullable SeqNo seqNo;
+	@NonNull List<Line> lines;
+	@Nullable Identifier forwardPPOrder;
+	@Nullable Identifier forwardPPOrderBOMLine;
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Line
+	{
+		@Nullable Identifier locatorFrom;
+		@Nullable Identifier locatorTo;
+		@NonNull Identifier product;
+		@NonNull BigDecimal qtyEntered;
+	}
+}

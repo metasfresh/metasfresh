@@ -43,6 +43,7 @@ public class TaxNotFoundException extends AdempiereException
 
 	private final TaxCategoryId taxCategoryId;
 	private final Boolean isSOTrx;
+	private final Boolean isTaxExempt;
 
 	private final OrgId orgId;
 
@@ -64,6 +65,7 @@ public class TaxNotFoundException extends AdempiereException
 			final int chargeId,
 			final TaxCategoryId taxCategoryId,
 			final Boolean isSOTrx,
+			final Boolean isTaxExempt,
 			//
 			final OrgId orgId,
 			//
@@ -89,6 +91,8 @@ public class TaxNotFoundException extends AdempiereException
 		setParameter("taxCategoryId", taxCategoryId);
 		this.isSOTrx = isSOTrx;
 		setParameter("isSOTrx", isSOTrx);
+		this.isTaxExempt = isTaxExempt;
+		setParameter("isTaxExempt", isTaxExempt);
 
 		this.orgId = orgId;
 		setParameter("orgId", orgId);
@@ -121,6 +125,7 @@ public class TaxNotFoundException extends AdempiereException
 		return TaxNotFoundException.builder()
 				.taxCategoryId(taxQuery.getTaxCategoryId())
 				.isSOTrx(taxQuery.getSoTrx().isSales())
+				.isTaxExempt(taxQuery.getIsTaxExempt())
 				.billDate(taxQuery.getDateOfInterest())
 				.billFromCountryId(taxQuery.getFromCountryId())
 				.build();
@@ -154,6 +159,11 @@ public class TaxNotFoundException extends AdempiereException
 		if (isSOTrx != null)
 		{
 			message.append(" - ").appendADElement("IsSOTrx").append(": ").append(isSOTrx);
+		}
+
+		if (isTaxExempt != null)
+		{
+			message.append(" - ").appendADElement("IsTaxExempt").append(": ").append(isTaxExempt);
 		}
 
 		if (orgId != null)

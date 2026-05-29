@@ -12,8 +12,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -62,9 +61,9 @@ public class TestQueue_InheritPriority_WorkPackageProcessor implements IWorkpack
 
 		// guard assertions, just to make illustrate that we deal with the package 'wp1' from test_retrieveAllElements()
 		final List<I_C_Queue_Element> elements = Services.get(IQueueDAO.class).retrieveQueueElements(workpackage, false);
-		assertThat(elements.size(), is(1));
-		assertThat(elements.get(0).getAD_Table_ID(), is(12345));
-		assertThat(elements.get(0).getRecord_ID(), is(456));
+		assertThat(elements.size()).isEqualTo(1);
+		assertThat(elements.get(0).getAD_Table_ID()).isEqualTo(12345);
+		assertThat(elements.get(0).getRecord_ID()).isEqualTo(456);
 
 		final IWorkPackageQueue queueForEnqueuing = Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(
@@ -75,7 +74,7 @@ public class TestQueue_InheritPriority_WorkPackageProcessor implements IWorkpack
 				.buildAndEnqueue();
 
 		// this is the actual test!
-		assertThat("wp2 did not inherit wp1's prio", wp2.getPriority(), is(expectedPriority.getPrioriy(queueForEnqueuing)));
+		assertThat( wp2.getPriority()).as("wp2 did not inherit wp1's prio").isEqualTo(expectedPriority.getPrioriy(queueForEnqueuing));
 
 		// comment in to make the test fail and thus verify that the test-code works.
 		// assertThat("wp2 did not inherit wp1's prio", wp2.getPriority(), is(ConstantWorkpackagePrio.medium().getPrioriy(queueForEnqueuing)));

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_UI_Element
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_Element, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1880954666L;
+	private static final long serialVersionUID = 199845871L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (final Properties ctx, final int AD_UI_Element_ID, @Nullable final String trxName)
@@ -168,6 +168,8 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public static final String AD_UI_ELEMENTTYPE_Labels = "L";
 	/** InlineTab = T */
 	public static final String AD_UI_ELEMENTTYPE_InlineTab = "T";
+	/** Attributes = A */
+	public static final String AD_UI_ELEMENTTYPE_Attributes = "A";
 	@Override
 	public void setAD_UI_ElementType (final java.lang.String AD_UI_ElementType)
 	{

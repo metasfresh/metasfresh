@@ -55,7 +55,7 @@ public class JsonConverterV1
 		final IExternalSystemChildConfigId childConfigId = qrCode.getChildConfigId();
 
 		return JsonPayload.builder()
-				.externalSystemType(childConfigId.getType().getCode())
+				.externalSystemType(childConfigId.getType().getValue())
 				.childConfigId(childConfigId.getRepoId())
 				.build();
 	}
@@ -69,7 +69,7 @@ public class JsonConverterV1
 
 	private static ExternalSystemConfigQRCode fromJson(@NonNull final JsonPayload json)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(json.getExternalSystemType());
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(json.getExternalSystemType());
 		final int repoId = json.getChildConfigId();
 		return ExternalSystemConfigQRCode.builder()
 				.childConfigId(toExternalSystemChildConfigId(externalSystemType, repoId))
@@ -78,25 +78,35 @@ public class JsonConverterV1
 
 	private static IExternalSystemChildConfigId toExternalSystemChildConfigId(final ExternalSystemType externalSystemType, final int repoId)
 	{
-		switch (externalSystemType)
+		if (externalSystemType.isAlberta())
 		{
-			case Alberta:
-				return ExternalSystemAlbertaConfigId.ofRepoId(repoId);
-			case Shopware6:
-				return ExternalSystemShopware6ConfigId.ofRepoId(repoId);
-			// case Other:
-			// 	return ExternalSystemOtherConfigId.ofRepoId(repoId);
-			case RabbitMQ:
-				return ExternalSystemRabbitMQConfigId.ofRepoId(repoId);
-			case WOO:
-				return ExternalSystemWooCommerceConfigId.ofRepoId(repoId);
-			case GRSSignum:
-				return ExternalSystemGRSSignumConfigId.ofRepoId(repoId);
-			case LeichUndMehl:
-				return ExternalSystemLeichMehlConfigId.ofRepoId(repoId);
-			default:
-				throw new AdempiereException("Unsupported externalSystemType: " + externalSystemType);
+			return ExternalSystemAlbertaConfigId.ofRepoId(repoId);
 		}
+		else if (externalSystemType.isShopware6())
+		{
+			return ExternalSystemShopware6ConfigId.ofRepoId(repoId);
+		}
+		// else if (externalSystemType.isOther())
+		// {
+		// 	return ExternalSystemOtherConfigId.ofRepoId(repoId);
+		// }
+		else if (externalSystemType.isRabbitMQ())
+		{
+			return ExternalSystemRabbitMQConfigId.ofRepoId(repoId);
+		}
+		else if (externalSystemType.isWOO())
+		{
+			return ExternalSystemWooCommerceConfigId.ofRepoId(repoId);
+		}
+		else if (externalSystemType.isGRSSignum())
+		{
+			return ExternalSystemGRSSignumConfigId.ofRepoId(repoId);
+		}
+		else if (externalSystemType.isLeichUndMehl())
+		{
+			return ExternalSystemLeichMehlConfigId.ofRepoId(repoId);
+		}
+		throw new AdempiereException("Unsupported externalSystemType: " + externalSystemType);
 	}
 
 	//

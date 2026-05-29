@@ -10,21 +10,21 @@ package de.metas.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.lang.reflect.Field;
-
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheStats;
+import de.metas.util.exceptions.ServicesException;
 import org.adempiere.util.testservice.IMockedMultitonService;
 import org.adempiere.util.testservice.IMockedSingletonService;
 import org.adempiere.util.testservice.ITestMissingService;
@@ -32,24 +32,17 @@ import org.adempiere.util.testservice.ITestServiceWithFailingConstructor;
 import org.adempiere.util.testservice.ITestServiceWithPrivateImplementation;
 import org.adempiere.util.testservice.impl.MockedMultitonService;
 import org.adempiere.util.testservice.impl.MockedSingletonService;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheStats;
-
-import de.metas.util.IMultitonService;
-import de.metas.util.IService;
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
-import de.metas.util.exceptions.ServicesException;
+import java.lang.reflect.Field;
 
 public class ServicesTest
 {
-	@Before
-	@After
+	@BeforeEach
+	@AfterEach
 	public void resetServices()
 	{
 		Services.clear();
@@ -59,23 +52,23 @@ public class ServicesTest
 	@Test
 	public void test_reset()
 	{
-		Assert.assertEquals("LoadedServicesCount", 0, Services.getLoadedServicesCount());
+		Assertions.assertEquals(0, Services.getLoadedServicesCount(), "LoadedServicesCount");
 
 		Services.get(IMockedSingletonService.class);
-		Assert.assertEquals("LoadedServicesCount", 1, Services.getLoadedServicesCount());
+		Assertions.assertEquals(1, Services.getLoadedServicesCount(), "LoadedServicesCount");
 
 		Services.clear();
 
-		Assert.assertEquals("LoadedServicesCount", 0, Services.getLoadedServicesCount());
+		Assertions.assertEquals(0, Services.getLoadedServicesCount(), "LoadedServicesCount");
 
 		//
 		// Check implementation specifics
 		final Cache<Class<? extends IService>, Object> servicesMap = getServicesInternalMap();
 		final CacheStats cacheStats = servicesMap.stats();
-		Assert.assertEquals("ServicesMap - size", 0, servicesMap.size());
-		Assert.assertEquals("ServicesMap - Stats - loadCount", 0, cacheStats.loadCount());
-		Assert.assertEquals("ServicesMap - Stats - hitCount", 0, cacheStats.hitCount());
-		Assert.assertEquals("ServicesMap - Stats - missCount", 0, cacheStats.missCount());
+		Assertions.assertEquals(0, servicesMap.size(), "ServicesMap - size");
+		Assertions.assertEquals(0, cacheStats.loadCount(), "ServicesMap - Stats - loadCount");
+		Assertions.assertEquals(0, cacheStats.hitCount(), "ServicesMap - Stats - hitCount");
+		Assertions.assertEquals(0, cacheStats.missCount(), "ServicesMap - Stats - missCount");
 	}
 
 	/**
@@ -87,14 +80,14 @@ public class ServicesTest
 		MockedSingletonService.resetNextInstanceNumber();
 
 		final int expectedInstanceNo = 1;
-		Assert.assertEquals("Invalid NEXT_INSTANCE_NUMBER", expectedInstanceNo, MockedSingletonService.NEXT_INSTANCE_NUMBER);
+		Assertions.assertEquals(expectedInstanceNo, MockedSingletonService.NEXT_INSTANCE_NUMBER, "Invalid NEXT_INSTANCE_NUMBER");
 
 		final IMockedSingletonService instance1 = Services.get(IMockedSingletonService.class);
-		Assert.assertEquals("Invalid instanceNo", expectedInstanceNo, instance1.getInstanceNo());
+		Assertions.assertEquals(expectedInstanceNo, instance1.getInstanceNo(), "Invalid instanceNo");
 
 		final IMockedSingletonService instance2 = Services.get(IMockedSingletonService.class);
-		Assert.assertEquals("Invalid instanceNo", expectedInstanceNo, instance2.getInstanceNo());
-		Assert.assertSame("instance2 shall be the same as instance1", instance1, instance2);
+		Assertions.assertEquals(expectedInstanceNo, instance2.getInstanceNo(), "Invalid instanceNo");
+		Assertions.assertSame(instance1, instance2, "instance2 shall be the same as instance1");
 
 		//
 		// Clear and test it again
@@ -102,29 +95,29 @@ public class ServicesTest
 
 		// Make sure a new instance is created
 		final IMockedSingletonService instance3 = Services.get(IMockedSingletonService.class);
-		Assert.assertEquals("Invalid instanceNo", 2, instance3.getInstanceNo());
+		Assertions.assertEquals(2, instance3.getInstanceNo(), "Invalid instanceNo");
 		// Check again, this time shall be the same
 		final IMockedSingletonService instance4 = Services.get(IMockedSingletonService.class);
-		Assert.assertEquals("Invalid instanceNo", 2, instance4.getInstanceNo());
+		Assertions.assertEquals(2, instance4.getInstanceNo(), "Invalid instanceNo");
 	}
 
-	@Test(expected = ServicesException.class)
+	@Test
 	public void test_getSingleton_MissingService()
 	{
-		Services.get(ITestMissingService.class);
+		Assertions.assertThrows(ServicesException.class, () -> Services.get(ITestMissingService.class));
 	}
 
 	@Test
 	public void test_getSingleton_ServiceWithPrivateImplementation()
 	{
 		final ITestServiceWithPrivateImplementation service = Services.get(ITestServiceWithPrivateImplementation.class);
-		Assert.assertNotNull(service);
+		Assertions.assertNotNull(service);
 	}
 
-	@Test(expected = ServicesException.class)
+	@Test
 	public void test_getSingleton_ServiceWithFailingConstructor()
 	{
-		Services.get(ITestServiceWithFailingConstructor.class);
+		Assertions.assertThrows(ServicesException.class, () -> Services.get(ITestServiceWithFailingConstructor.class));
 	}
 
 	/**
@@ -136,7 +129,7 @@ public class ServicesTest
 		MockedMultitonService.resetNextInstanceNumber();
 
 		int expectedInstanceNo = 1;
-		Assert.assertEquals("Invalid NEXT_INSTANCE_NUMBER", expectedInstanceNo, MockedMultitonService.NEXT_INSTANCE_NUMBER);
+		Assertions.assertEquals(expectedInstanceNo, MockedMultitonService.NEXT_INSTANCE_NUMBER, "Invalid NEXT_INSTANCE_NUMBER");
 
 		// NOTE:
 		// * increasing because when creating a new multiton, one instance is lost in the internal fucked-up implementation of Services
@@ -144,16 +137,17 @@ public class ServicesTest
 		// expectedInstanceNo++;
 
 		final IMockedMultitonService instance1 = Services.get(IMockedMultitonService.class);
-		Assert.assertEquals("Invalid instanceNo", expectedInstanceNo, instance1.getInstanceNo());
+		Assertions.assertEquals(expectedInstanceNo, instance1.getInstanceNo(), "Invalid instanceNo");
 
 		expectedInstanceNo++;
 		final IMockedMultitonService instance2 = Services.get(IMockedMultitonService.class);
-		Assert.assertEquals("Invalid instanceNo", expectedInstanceNo, instance2.getInstanceNo());
-		Assert.assertNotSame("instance2 shall be unique", instance1, instance2);
+		Assertions.assertEquals(expectedInstanceNo, instance2.getInstanceNo(), "Invalid instanceNo");
+		Assertions.assertNotSame(instance1, instance2, "instance2 shall be unique");
 
-		Assert.assertEquals("No services shall be actually cached because we worked only with multitons",
+		Assertions.assertEquals(
 				0, // expected
-				Services.getLoadedServicesCount());
+				Services.getLoadedServicesCount(),
+				"No services shall be actually cached because we worked only with multitons");
 	}
 
 	private final Cache<Class<? extends IService>, Object> getServicesInternalMap()
@@ -164,8 +158,7 @@ public class ServicesTest
 			servicesField.setAccessible(true);
 
 			final Object servicesMapObj = servicesField.get(null);
-			@SuppressWarnings("unchecked")
-			final Cache<Class<? extends IService>, Object> servicesMap = (Cache<Class<? extends IService>, Object>)servicesMapObj;
+			@SuppressWarnings("unchecked") final Cache<Class<? extends IService>, Object> servicesMap = (Cache<Class<? extends IService>, Object>)servicesMapObj;
 			return servicesMap;
 		}
 		catch (Exception e)

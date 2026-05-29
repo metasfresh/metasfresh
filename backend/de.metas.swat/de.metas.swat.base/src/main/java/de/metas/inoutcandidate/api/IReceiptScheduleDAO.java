@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -79,6 +80,8 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 */
 	List<I_M_ReceiptSchedule> retrieveRsForInOutLine(I_M_InOutLine iol);
 
+	boolean hasCompletedReceipts(I_M_ReceiptSchedule receiptSchedule);
+
 	/**
 	 * Retrieve all the receipt schedules that are linked with the given invoice candidate
 	 */
@@ -91,4 +94,12 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds);
 
 	I_M_ReceiptSchedule getById(ReceiptScheduleId receiptScheduleId);
+
+	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
+
+	@NonNull
+	List<ReceiptScheduleId> listIdsByQuery(@NonNull ReceiptScheduleQuery query);
+
+	@NonNull
+	Optional<ReceiptScheduleId> getIdByQuery(@NonNull ReceiptScheduleQuery query);
 }

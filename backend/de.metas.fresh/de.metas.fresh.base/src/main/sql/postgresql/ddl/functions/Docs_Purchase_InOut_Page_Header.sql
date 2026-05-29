@@ -2,7 +2,7 @@
 
 -- DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(IN record_id numeric, IN ad_language character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(IN p_record_id numeric, IN ad_language character varying)
   RETURNS TABLE(
 				documentno text, 
 				dateinvoiced timestamp without time zone, 

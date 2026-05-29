@@ -9,7 +9,6 @@ import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.WeakList;
@@ -23,6 +22,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_SysConfig;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
@@ -109,9 +109,8 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	}
 
 	@Override
-	public void addListener(final IDeviceConfigPoolListener listener)
+	public void addListener(@NonNull final IDeviceConfigPoolListener listener)
 	{
-		Check.assumeNotNull(listener, "Parameter listener is not null");
 		listeners.addIfAbsent(listener); // NOTE: we assume weakDefault=true
 	}
 
@@ -161,6 +160,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.collect(GuavaCollectors.toImmutableListMultimap());
 	}
 
+	@Nullable
 	private DeviceConfig createDeviceConfigOrNull(final String deviceName)
 	{
 		if (!isDeviceAvailableHost(deviceName))
@@ -277,7 +277,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 					{
 						return WarehouseId.ofRepoId(Integer.parseInt(warehouseIdStr));
 					}
-					catch (Exception ex)
+					catch (final Exception ex)
 					{
 						logger.warn("Failed parsing {} for {}*", warehouseIdStr, sysconfigPrefix, ex);
 						return null;
@@ -315,7 +315,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	 * @return device implementation classname; never returns null
 	 * @throws DeviceConfigException if no classname was found
 	 */
-	private String getDeviceClassname(final String deviceName)
+	private String getDeviceClassname(@NonNull final String deviceName)
 	{
 		// note: assume not null because in that case, the method above would fail
 		return getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, DEVICE_PARAM_DeviceClass, null);
@@ -331,7 +331,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	 * @return value; never returns null
 	 * @throws DeviceConfigException if configuration parameter was not found and given <code>defaultStr</code> is <code>null</code>.
 	 */
-	private String getSysconfigValueWithHostNameFallback(final String prefix, final String suffix, final String defaultValue)
+	private String getSysconfigValueWithHostNameFallback(final String prefix, final String suffix, final @Nullable String defaultValue)
 	{
 		//
 		// Try by hostname

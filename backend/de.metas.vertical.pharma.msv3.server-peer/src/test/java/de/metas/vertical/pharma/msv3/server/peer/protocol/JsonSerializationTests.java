@@ -1,15 +1,14 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
-import java.io.IOException;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItemId;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 /*
  * #%L
@@ -37,7 +36,7 @@ public class JsonSerializationTests
 {
 	private JSONTestHelper jsonTestHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonTestHelper = new JSONTestHelper();

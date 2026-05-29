@@ -6,7 +6,7 @@ const ErrorScreen = ({ /*error,*/ resetErrorBoundary }) => {
   const userFriendlyError = trl('error.PleaseTryAgain');
 
   return (
-    <div className="error-screen">
+    <div className="error-screen" data-testid="error-screen">
       <div className="message">{userFriendlyError}</div>
       <button className="button" onClick={() => resetErrorBoundary()}>
         {trl('errorScreen.retryButton')}

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_Product_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 855489659L;
+	private static final long serialVersionUID = 313010137L;
 
     /** Standard Constructor */
     public X_PP_Product_BOMLine (final Properties ctx, final int PP_Product_BOMLine_ID, @Nullable final String trxName)
@@ -439,6 +439,18 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_oldScrap);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPickingInstruction (final @Nullable java.lang.String PickingInstruction)
+	{
+		set_Value (COLUMNNAME_PickingInstruction, PickingInstruction);
+	}
+
+	@Override
+	public java.lang.String getPickingInstruction() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickingInstruction);
 	}
 
 	@Override

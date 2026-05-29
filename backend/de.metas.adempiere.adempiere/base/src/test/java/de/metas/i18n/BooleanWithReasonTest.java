@@ -42,4 +42,11 @@ class BooleanWithReasonTest
 			assertThat(result).isEqualTo(BooleanWithReason.trueBecause("2"));
 		}
 	}
+
+	@Test
+	void falseIf()
+	{
+		assertThat(BooleanWithReason.falseIf(false, "ignored")).isSameAs(BooleanWithReason.TRUE);
+		assertThat(BooleanWithReason.falseIf(true, "my reason")).isEqualTo(BooleanWithReason.falseBecause("my reason"));
+	}
 }

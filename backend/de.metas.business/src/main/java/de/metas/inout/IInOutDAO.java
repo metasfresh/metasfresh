@@ -14,6 +14,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -55,14 +56,28 @@ public interface IInOutDAO extends ISingletonService
 {
 	I_M_InOut getById(InOutId inoutId);
 
+	<T extends I_M_InOut> List<T> getByIds(@NonNull Set<InOutId> inOutIds, @NonNull Class<T> type);
+
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
-	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
+	<T extends I_M_InOut> T getByIdOutOfTrx(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 
 	List<I_M_InOutLine> retrieveLines(I_M_InOut inOut);
+
+	/**
+	 * Retrieve all distinct source {@link I_C_Order} records for the given shipment,
+	 * resolved via {@code M_InOutLine.C_OrderLine_ID → C_OrderLine.C_Order_ID}.
+	 * Lines without a {@code C_OrderLine_ID} (e.g. manual lines) are skipped.
+	 *
+	 * @return distinct, non-null source orders (empty list if no lines reference an order)
+	 */
+	@NonNull
+	List<I_C_Order> retrieveSourceOrders(@NonNull I_M_InOut inOut);
 
 	List<I_M_InOutLine> retrieveAllLines(I_M_InOut inOut);
 
@@ -78,6 +93,8 @@ public interface IInOutDAO extends ISingletonService
 	List<I_M_InOutLine> retrieveLinesForInOuts(Collection<? extends I_M_InOut> inouts);
 
 	Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+	Stream<I_M_InOutLine> streamLinesByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
@@ -115,7 +132,9 @@ public interface IInOutDAO extends ISingletonService
 
 	Stream<InOutId> streamInOutIdsByBPartnerId(BPartnerId bpartnerId);
 
-	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
+	List<I_M_InOutLine> retrieveLinesByInOutId(InOutId inOutId);
+
+	Set<InOutAndLineId> retrieveLineIdsByInOutId(InOutId inOutId);
 
 	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
 
@@ -145,4 +164,8 @@ public interface IInOutDAO extends ISingletonService
 	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
 
 	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
+
+	List<I_M_InOutLine> retrieveProcessedLinesForOrderLineId(@NonNull OrderLineId orderLineId);
+
+	List<I_M_InOutLine> retrieveProcessedLinesForOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
 }

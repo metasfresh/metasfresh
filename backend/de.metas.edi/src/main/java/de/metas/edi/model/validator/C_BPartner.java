@@ -24,33 +24,35 @@ package de.metas.edi.model.validator;
 
 import java.util.List;
 
+import de.metas.edi.api.impl.EDIDocumentBL;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.api.IEDIDocumentBL;
-import de.metas.edi.api.IEDIInvoiceCandDAO;
 import de.metas.edi.model.I_C_BPartner;
-import de.metas.util.Services;
 
-@Validator(I_C_BPartner.class)
+@Interceptor(I_C_BPartner.class)
 @Component
+@RequiredArgsConstructor
 public class C_BPartner
 {
+	private final EDIDocumentBL ediDocumentBL;
+
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
 	public void validate(final I_C_BPartner bpartner)
 	{
-		boolean ediRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
+		final boolean ediRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
 		if (!ediRecipient)
 		{
 			return;
 		}
 
-		final List<Exception> feedback = Services.get(IEDIDocumentBL.class).isValidPartner(bpartner);
+		final List<Exception> feedback = ediDocumentBL.isValidPartner(bpartner);
 		if (feedback == null || feedback.isEmpty())
 		{
 			return;
@@ -63,27 +65,5 @@ public class C_BPartner
 		}
 
 		throw new AdempiereException("Invalid EDI partner " + causes.toString().trim());
-	}
-
-	/**
-	 * Make sure the IsEDIRecipient flag from the invoice candidates of a partner is always up to date
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
-	public void updateIsEDIInvoicRecipient_InvoiceCandidates(final I_C_BPartner partner)
-	{
-		if (partner == null)
-		{
-			// nothing to do
-			return;
-		}
-		// Services
-		final IEDIInvoiceCandDAO invoiceCandidateDAO = Services.get(IEDIInvoiceCandDAO.class);
-
-		final boolean isEDIRecipient = partner.isEdiInvoicRecipient();
-
-		// update the unprocessed invoice candidates of this bpartner with the ediRecipient flag,
-		// only if the flag is not yet correctly set
-
-		invoiceCandidateDAO.updateEdiRecipientInvoiceCandidates(partner, isEDIRecipient);
 	}
 }

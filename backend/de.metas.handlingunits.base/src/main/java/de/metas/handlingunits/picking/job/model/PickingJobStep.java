@@ -28,10 +28,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,6 +42,7 @@ import org.compiere.model.I_C_UOM;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Value
@@ -53,12 +54,12 @@ public class PickingJobStep
 	boolean isGeneratedOnFly;
 
 	@NonNull OrderAndLineId salesOrderAndLineId;
-	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 
 	//
 	// What?
 	@NonNull ProductId productId;
-	@NonNull ITranslatableString productName;
+	@NonNull ProductValueAndName productValueAndName;
 	@NonNull Quantity qtyToPick;
 
 	//
@@ -77,11 +78,11 @@ public class PickingJobStep
 			@NonNull final PickingJobStepId id,
 			final boolean isGeneratedOnFly,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			//
 			// What?
 			@NonNull final ProductId productId,
-			@NonNull final ITranslatableString productName,
+			@NonNull final ProductValueAndName productValueAndName,
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
@@ -93,9 +94,9 @@ public class PickingJobStep
 		this.id = id;
 		this.isGeneratedOnFly = isGeneratedOnFly;
 		this.salesOrderAndLineId = salesOrderAndLineId;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.scheduleId = scheduleId;
 		this.productId = productId;
-		this.productName = productName;
+		this.productValueAndName = productValueAndName;
 		this.qtyToPick = qtyToPick;
 		this.pickFroms = pickFroms;
 		this.packToSpec = packToSpec;
@@ -158,5 +159,11 @@ public class PickingJobStep
 	public List<HuId> getPickedHUIds()
 	{
 		return pickFroms.getPickedHUIds();
+	}
+
+	@NonNull
+	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
+	{
+		return pickFroms.getLastPickedHU();
 	}
 }

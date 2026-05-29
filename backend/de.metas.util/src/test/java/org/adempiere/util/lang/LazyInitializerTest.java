@@ -1,5 +1,9 @@
 package org.adempiere.util.lang;
 
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.util
@@ -21,11 +25,6 @@ package org.adempiere.util.lang;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import org.junit.Assert;
-import org.junit.Test;
-
 public class LazyInitializerTest
 {
 	private static class MockedLazyInitializer<T> extends LazyInitializer<T>
@@ -62,8 +61,8 @@ public class LazyInitializerTest
 
 		ref.toString();
 
-		Assert.assertEquals("ref.toString() shall not initalize the lazy reference", false, ref.isInitialized());
-		Assert.assertEquals("ref.toString() shall not call getValue()", 0, ref.getInitializeCallsCount());
+		assertThat(ref.isInitialized()).as("ref.toString() shall not initalize the lazy reference").isFalse();
+		assertThat(ref.getInitializeCallsCount()).as("ref.toString() shall not call getValue()").isZero();
 	}
 
 	/**
@@ -78,8 +77,8 @@ public class LazyInitializerTest
 
 		ref.hashCode();
 
-		Assert.assertEquals("ref hashCode() not initalize the lazy reference", false, ref.isInitialized());
-		Assert.assertEquals("ref.hashCode() shall not call getValue()", 0, ref.getInitializeCallsCount());
+		assertThat(ref.isInitialized()).as("ref hashCode() not initalize the lazy reference").isFalse();
+		assertThat(ref.getInitializeCallsCount()).as("ref.hashCode() shall not call getValue()").isZero();
 	}
 
 	/**
@@ -94,12 +93,12 @@ public class LazyInitializerTest
 		final MockedLazyInitializer<String> ref2 = new MockedLazyInitializer<String>("initValue1");
 
 		final boolean equals = ref1.equals(ref2);
-		Assert.assertEquals("ref1 shall not be equal with ref2 (comparation shall be made by reference only)", false, equals);
+		assertThat(equals).as("ref1 shall not be equal with ref2 (comparation shall be made by reference only)").isFalse();
 
-		Assert.assertEquals("ref.equals() shall not initalize the lazy reference", false, ref1.isInitialized());
-		Assert.assertEquals("ref.equals() shall not call getValue()", 0, ref1.getInitializeCallsCount());
-		Assert.assertEquals("ref.equals() shall not initalize the lazy reference", false, ref2.isInitialized());
-		Assert.assertEquals("ref.equals() shall not call getValue()", 0, ref2.getInitializeCallsCount());
+		assertThat(ref1.isInitialized()).as("ref.equals() shall not initalize the lazy reference").isFalse();
+		assertThat(ref1.getInitializeCallsCount()).as("ref.equals() shall not call getValue()").isZero();
+		assertThat(ref2.isInitialized()).as("ref.equals() shall not initalize the lazy reference").isFalse();
+		assertThat(ref2.getInitializeCallsCount()).as("ref.equals() shall not call getValue()").isZero();
 	}
 
 	@Test
@@ -110,16 +109,16 @@ public class LazyInitializerTest
 
 		//
 		// Check initial state
-		Assert.assertEquals("Reference shall not be initalized: " + ref, false, ref.isInitialized());
-		Assert.assertEquals("Invalid initializer calls count", 0, ref.getInitializeCallsCount());
+		assertThat(ref.isInitialized()).as("Reference shall not be initalized: " + ref).isFalse();
+		assertThat(ref.getInitializeCallsCount()).as("Invalid initializer calls count").isZero();
 
 		//
 		// Get the value (first time)
 		{
 			final String valueActual = ref.getValue();
-			Assert.assertEquals("Invalid reference value (compared by equals)", valueExpected, valueActual);
-			Assert.assertSame("Invalid reference value (compared by ==)", valueExpected, valueActual);
-			Assert.assertEquals("Invalid initializer calls count", 1, ref.getInitializeCallsCount());
+			assertThat(valueActual).as("Invalid reference value (compared by equals)").isEqualTo(valueExpected);
+			assertThat(valueActual).as("Invalid reference value (compared by ==)").isSameAs(valueExpected);
+			assertThat(ref.getInitializeCallsCount()).as("Invalid initializer calls count").isEqualTo(1);
 		}
 
 		//
@@ -128,9 +127,9 @@ public class LazyInitializerTest
 		for (int i = 1; i <= 10; i++)
 		{
 			final String valueActual = ref.getValue();
-			Assert.assertEquals("Invalid reference value (compared by equals)", valueExpected, valueActual);
-			Assert.assertSame("Invalid reference value (compared by ==)", valueExpected, valueActual);
-			Assert.assertEquals("Invalid initializer calls count", 1, ref.getInitializeCallsCount());
+			assertThat(valueActual).as("Invalid reference value (compared by equals)").isEqualTo(valueExpected);
+			assertThat(valueActual).as("Invalid reference value (compared by ==)").isSameAs(valueExpected);
+			assertThat(ref.getInitializeCallsCount()).as("Invalid initializer calls count").isEqualTo(1);
 		}
 	}
 }

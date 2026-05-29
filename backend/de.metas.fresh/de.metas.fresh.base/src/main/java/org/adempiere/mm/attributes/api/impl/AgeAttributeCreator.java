@@ -31,8 +31,8 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.Adempiere;
@@ -44,7 +44,7 @@ public class AgeAttributeCreator
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final transient IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final transient AgeAttributesService ageAttributesService = Adempiere.getBean(AgeAttributesService.class);
 
 	private final Object sourceModel;
@@ -76,8 +76,7 @@ public class AgeAttributeCreator
 			return;
 		}
 
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId ageAttributeId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
+		final AttributeId ageAttributeId = attributesRepo.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
 
 		if (ageAttributeId == null)
 		{
@@ -93,7 +92,7 @@ public class AgeAttributeCreator
 
 		attributeSetInstanceBL.getCreateASI(asiAware);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, ageAttributeId);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, ageAttributeId);
 
 		if (ai != null)
 		{

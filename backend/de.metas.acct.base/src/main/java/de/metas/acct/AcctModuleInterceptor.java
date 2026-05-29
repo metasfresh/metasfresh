@@ -17,7 +17,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.open_items.updater.FactAcctOpenItemsToUpdateDBTableWatcher;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
-import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccoutingDocsToRepostDBTableWatcher;
+import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccountingDocsToRepostDBTableWatcher;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.GLJournalDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;
@@ -226,7 +226,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 	private void setupAccountingService()
 	{
-		runInThread(AccoutingDocsToRepostDBTableWatcher.builder()
+		runInThread(AccountingDocsToRepostDBTableWatcher.builder()
 				.sysConfigBL(sysConfigBL)
 				.postingService(postingService)
 				.build());

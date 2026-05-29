@@ -3,12 +3,14 @@ package de.metas.ui.web.menu;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.ad.element.api.AdWindowId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -61,21 +63,25 @@ public final class MenuNode
 		MenuNodeFilterResolution check(MenuNode node);
 	}
 
-	private final String id;
+	@Getter private final String id;
 	private final int adMenuId;
-	private final String caption;
-	private final String captionBreadcrumb;
-	private final MenuNodeType type;
-	private final DocumentId elementId;
-	private final String mainTableName;
+	@Getter private final String caption;
+	@Getter private final String captionBreadcrumb;
+	@Getter private final MenuNodeType type;
+	@Getter private final DocumentId elementId;
+
+	/**
+	 * window's main table name or null
+	 */
+	@Nullable @Getter private final String mainTableName;
 
 	private final ImmutableList<MenuNode> children;
 
-	private MenuNode parent;
+	@Getter private MenuNode parent;
 
 	//
 	// Characteristics
-	private final boolean matchedByFilter;
+	@Getter private final boolean matchedByFilter;
 
 	private Integer _hashcode;
 
@@ -172,29 +178,9 @@ public final class MenuNode
 		return id.equals(other.id);
 	}
 
-	public String getId()
-	{
-		return id;
-	}
-
 	public int getAD_Menu_ID()
 	{
 		return adMenuId;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getCaptionBreadcrumb()
-	{
-		return captionBreadcrumb;
-	}
-
-	public MenuNode getParent()
-	{
-		return parent;
 	}
 
 	@Nullable
@@ -206,24 +192,6 @@ public final class MenuNode
 	public List<MenuNode> getChildren()
 	{
 		return children;
-	}
-
-	public MenuNodeType getType()
-	{
-		return type;
-	}
-
-	public DocumentId getElementId()
-	{
-		return elementId;
-	}
-
-	/**
-	 * @return window's main table name or null
-	 */
-	public String getMainTableName()
-	{
-		return mainTableName;
 	}
 
 	public void iterate(final Consumer<MenuNode> consumer)
@@ -318,10 +286,24 @@ public final class MenuNode
 		return children.isEmpty();
 	}
 
-	public boolean isMatchedByFilter()
+	@Nullable
+	public AdWindowId getAdWindowIdOrNull()
 	{
-		return matchedByFilter;
+		if (type == MenuNodeType.Window)
+		{
+			return elementId.toId(AdWindowId::ofRepoId);
+		}
+		else
+		{
+			return null;
+		}
 	}
+
+	//
+	//
+	// -------------------------------------------------------------------------
+	//
+	//
 
 	public static final class Builder
 	{
@@ -393,6 +375,11 @@ public final class MenuNode
 			this.type = type;
 			this.elementId = elementId;
 			return this;
+		}
+
+		public Builder setTypeNewRecord(@NonNull final AdWindowId adWindowId)
+		{
+			return setType(MenuNodeType.NewRecord, DocumentId.of(adWindowId));
 		}
 
 		public void setTypeGroup()

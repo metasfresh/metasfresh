@@ -44,6 +44,7 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
@@ -60,6 +61,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -67,12 +69,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final PickingBOMService pickingBOMService;
-
-	public ShipmentScheduleInvalidateBL(final PickingBOMService pickingBOMService)
-	{
-		this.pickingBOMService = pickingBOMService;
-	}
+	@NonNull private final PickingBOMService pickingBOMService;
 
 	private boolean isShipmentScheduleUpdaterRunning()
 	{

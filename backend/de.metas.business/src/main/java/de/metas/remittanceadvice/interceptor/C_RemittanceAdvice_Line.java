@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,7 @@ package de.metas.remittanceadvice.interceptor;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.remittanceadvice.RemittanceAdvice;
@@ -171,7 +172,7 @@ public class C_RemittanceAdvice_Line
 			final I_C_Invoice lineResolvedInvoice = invoiceDAO.getByIdInTrx(remittanceAdviceLine.getInvoiceId());
 			final I_C_DocType invoiceDocType = docTypeDAO.getById(lineResolvedInvoice.getC_DocTypeTarget_ID());
 
-			remittanceAdviceLine.validateInvoiceDocBaseType(invoiceDocType.getDocBaseType());
+			remittanceAdviceLine.validateInvoiceDocBaseType(InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType()));
 
 			remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
 		}

@@ -82,7 +82,7 @@ import java.util.Properties;
 		this.modelKeyColumnName = null; // lazy
 
 		this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
-		this.filters = new CompositeQueryFilter<>(this.modelTableName);
+		this.filters = CompositeQueryFilter.newInstance(this.modelTableName);
 	}
 
 	private QueryBuilder(final QueryBuilder<T> from)

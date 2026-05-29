@@ -22,9 +22,11 @@ package de.metas.adempiere.docline.sort.api.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.testsupport.AbstractTestSupport;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,13 +38,9 @@ import org.compiere.model.I_C_DocLine_Sort_Item;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
-import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.testsupport.AbstractTestSupport;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 /**
  *
@@ -81,7 +79,7 @@ public abstract class AbstractDocLineSortItemFinderTest extends AbstractTestSupp
 		ctx = Env.getCtx();
 	}
 
-	@Before
+	@BeforeEach
 	public final void init()
 	{
 		AdempiereTestHelper.get().init();

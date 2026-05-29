@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -179,6 +178,26 @@ public interface I_C_OrderLine
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
 
 	/**
 	 * Set Business Partner.
@@ -964,6 +983,33 @@ public interface I_C_OrderLine
 	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
+	 * Set Frame agreement with open quantity exists.
+	 * This indicator shows the shipping status of quantities related to a frame agreement. It is displayed in both frame agreements and their related call-off orders within the sales order window. The status is represented using the following color codes:  Red – No quantity from the frame agreement has been shipped.  Yellow – A partial quantity from the frame agreement has been shipped.  Green – The full frame agreement quantity has been shipped.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setFA_OpenQty_Exists_Color_ID (int FA_OpenQty_Exists_Color_ID);
+
+	/**
+	 * Get Frame agreement with open quantity exists.
+	 * This indicator shows the shipping status of quantities related to a frame agreement. It is displayed in both frame agreements and their related call-off orders within the sales order window. The status is represented using the following color codes:  Red – No quantity from the frame agreement has been shipped.  Yellow – A partial quantity from the frame agreement has been shipped.  Green – The full frame agreement quantity has been shipped.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getFA_OpenQty_Exists_Color_ID();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_FA_OpenQty_Exists_Color_ID = new ModelColumn<>(I_C_OrderLine.class, "FA_OpenQty_Exists_Color_ID", null);
+	String COLUMNNAME_FA_OpenQty_Exists_Color_ID = "FA_OpenQty_Exists_Color_ID";
+
+	/**
 	 * Set Freight Amount.
 	 * Freight Amount
 	 *
@@ -1010,29 +1056,25 @@ public interface I_C_OrderLine
 	String COLUMNNAME_FrequencyType = "FrequencyType";
 
 	/**
-	 * Set Total Weight.
+	 * Set Gross Weight (Kg).
 	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setgk196_TotalWeight (@Nullable BigDecimal gk196_TotalWeight);
+	void setGrossWeightKg (BigDecimal GrossWeightKg);
 
 	/**
-	 * Get Total Weight.
+	 * Get Gross Weight (Kg).
 	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	BigDecimal getgk196_TotalWeight();
+	BigDecimal getGrossWeightKg();
 
-	ModelColumn<I_C_OrderLine, Object> COLUMN_gk196_TotalWeight = new ModelColumn<>(I_C_OrderLine.class, "gk196_TotalWeight", null);
-	String COLUMNNAME_gk196_TotalWeight = "gk196_TotalWeight";
+	ModelColumn<I_C_OrderLine, Object> COLUMN_GrossWeightKg = new ModelColumn<>(I_C_OrderLine.class, "GrossWeightKg", null);
+	String COLUMNNAME_GrossWeightKg = "GrossWeightKg";
 
 	/**
 	 * Set Compensation Amount Type.
@@ -1165,25 +1207,25 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Delivery Closed.
+	 * Set Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
 
 	/**
-	 * Get Delivery Closed.
+	 * Get Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isDeliveryClosed();
+	boolean isAllowSeparateInvoicing();
 
-	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
-	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsAllowSeparateInvoicing = new ModelColumn<>(I_C_OrderLine.class, "IsAllowSeparateInvoicing", null);
+	String COLUMNNAME_IsAllowSeparateInvoicing = "IsAllowSeparateInvoicing";
 
 	/**
 	 * Set CP.
@@ -1207,6 +1249,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsCampaignPrice = new ModelColumn<>(I_C_OrderLine.class, "IsCampaignPrice", null);
 	String COLUMNNAME_IsCampaignPrice = "IsCampaignPrice";
+
+	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
 	 * Set Description Only.
@@ -1511,6 +1574,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_OrderLine.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -1637,7 +1721,7 @@ public interface I_C_OrderLine
 	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1647,7 +1731,7 @@ public interface I_C_OrderLine
 	 * Get Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1660,7 +1744,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	void setM_Product_DocumentNote (@Nullable java.lang.String M_Product_DocumentNote);
 
@@ -1669,7 +1753,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getM_Product_DocumentNote();
 
@@ -1860,6 +1944,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
 	String COLUMNNAME_Order_Min = "Order_Min";
+
+	/**
+	 * Set Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackInfo (@Nullable java.lang.String PackInfo);
+
+	/**
+	 * Get Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackInfo();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PackInfo = new ModelColumn<>(I_C_OrderLine.class, "PackInfo", null);
+	String COLUMNNAME_PackInfo = "PackInfo";
 
 	/**
 	 * Set Payment Discount %.
@@ -2452,6 +2557,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_QtyReserved = new ModelColumn<>(I_C_OrderLine.class, "QtyReserved", null);
 	String COLUMNNAME_QtyReserved = "QtyReserved";
+
+	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Reason = new ModelColumn<>(I_C_OrderLine.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
 
 	/**
 	 * Set Referenced Order Line.

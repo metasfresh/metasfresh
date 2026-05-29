@@ -10,31 +10,30 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.product.ProductId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.product.ProductId;
+import java.math.BigDecimal;
 
 public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -82,7 +81,7 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 				+ "\n"
 				+ "\nInvalid ";
 
-		Assert.assertNotNull(message + "HU Transaction not null", transaction);
+		Assertions.assertNotNull(transaction, message + "HU Transaction not null");
 
 		if (_hu != null)
 		{
@@ -90,7 +89,7 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 		}
 		if (_productId != null)
 		{
-			Assert.assertEquals(prefix + "Product", _productId, transaction.getProductId());
+			Assertions.assertEquals(_productId, transaction.getProductId(), prefix + "Product");
 		}
 		if (_qty != null)
 		{

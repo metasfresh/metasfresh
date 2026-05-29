@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1751852213L;
+	private static final long serialVersionUID = 1604460451L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -105,6 +105,17 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isAllowConsolidateInOut() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_AllowConsolidateInOut);
+	}
+
+	@Override
+	public void setBestBeforeDate (final @Nullable java.sql.Timestamp BestBeforeDate)
+	{
+		throw new IllegalArgumentException ("BestBeforeDate is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getBestBeforeDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_BestBeforeDate);
 	}
 
 	@Override
@@ -213,6 +224,101 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.sql.Timestamp getCanBeExportedFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	@Override
+	public void setCarrierAdviceErrorMsg (final @Nullable java.lang.String CarrierAdviceErrorMsg)
+	{
+		set_Value (COLUMNNAME_CarrierAdviceErrorMsg, CarrierAdviceErrorMsg);
+	}
+
+	@Override
+	public java.lang.String getCarrierAdviceErrorMsg() 
+	{
+		return get_ValueAsString(COLUMNNAME_CarrierAdviceErrorMsg);
+	}
+
+	/** 
+	 * Carrier_Advising_Status AD_Reference_ID=541996
+	 * Reference name: Carrier_Advising_Status
+	 */
+	public static final int CARRIER_ADVISING_STATUS_AD_Reference_ID=541996;
+	/** In Progress = IP */
+	public static final String CARRIER_ADVISING_STATUS_InProgress = "IP";
+	/** Not Requested = NR */
+	public static final String CARRIER_ADVISING_STATUS_NotRequested = "NR";
+	/** Completed = CO */
+	public static final String CARRIER_ADVISING_STATUS_Completed = "CO";
+	/** Failed = FA */
+	public static final String CARRIER_ADVISING_STATUS_Failed = "FA";
+	/** Manual = MAN */
+	public static final String CARRIER_ADVISING_STATUS_Manual = "MAN";
+	/** Requested = R */
+	public static final String CARRIER_ADVISING_STATUS_Requested = "R";
+	@Override
+	public void setCarrier_Advising_Status (final java.lang.String Carrier_Advising_Status)
+	{
+		set_Value (COLUMNNAME_Carrier_Advising_Status, Carrier_Advising_Status);
+	}
+
+	@Override
+	public java.lang.String getCarrier_Advising_Status() 
+	{
+		return get_ValueAsString(COLUMNNAME_Carrier_Advising_Status);
+	}
+
+	@Override
+	public org.compiere.model.I_Carrier_Goods_Type getCarrier_Goods_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_Carrier_Goods_Type_ID, org.compiere.model.I_Carrier_Goods_Type.class);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type(final org.compiere.model.I_Carrier_Goods_Type Carrier_Goods_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_Carrier_Goods_Type_ID, org.compiere.model.I_Carrier_Goods_Type.class, Carrier_Goods_Type);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type_ID (final int Carrier_Goods_Type_ID)
+	{
+		if (Carrier_Goods_Type_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public int getCarrier_Goods_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_Carrier_Product getCarrier_Product()
+	{
+		return get_ValueAsPO(COLUMNNAME_Carrier_Product_ID, org.compiere.model.I_Carrier_Product.class);
+	}
+
+	@Override
+	public void setCarrier_Product(final org.compiere.model.I_Carrier_Product Carrier_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_Carrier_Product_ID, org.compiere.model.I_Carrier_Product.class, Carrier_Product);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override
@@ -467,6 +573,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
@@ -746,6 +867,8 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	/** Order on Commission = OOC */
+	public static final String DOCSUBTYPE_OrderOnCommission = "OOC";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -785,6 +908,45 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getExportStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExportStatus);
+	}
+
+	@Override
+	public void setExternalHeaderId (final @Nullable java.lang.String ExternalHeaderId)
+	{
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
+	}
+
+	@Override
+	public java.lang.String getExternalHeaderId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
+	}
+
+	@Override
+	public void setExternalLineId (final @Nullable java.lang.String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	@Override
+	public java.lang.String getExternalLineId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalLineId);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override
@@ -880,6 +1042,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isEdiDesadvRecipient() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
+	}
+
+	@Override
+	public void setIsScheduledForPicking (final boolean IsScheduledForPicking)
+	{
+		set_Value (COLUMNNAME_IsScheduledForPicking, IsScheduledForPicking);
+	}
+
+	@Override
+	public boolean isScheduledForPicking() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsScheduledForPicking);
 	}
 
 	@Override
@@ -1478,6 +1652,32 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyReserved() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyScheduledForPicking (final @Nullable BigDecimal QtyScheduledForPicking)
+	{
+		set_Value (COLUMNNAME_QtyScheduledForPicking, QtyScheduledForPicking);
+	}
+
+	@Override
+	public BigDecimal getQtyScheduledForPicking() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPicking);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyScheduledForPickingOfProcessed (final @Nullable BigDecimal QtyScheduledForPickingOfProcessed)
+	{
+		set_Value (COLUMNNAME_QtyScheduledForPickingOfProcessed, QtyScheduledForPickingOfProcessed);
+	}
+
+	@Override
+	public BigDecimal getQtyScheduledForPickingOfProcessed() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPickingOfProcessed);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

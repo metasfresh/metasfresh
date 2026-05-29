@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,15 +25,15 @@ package de.metas.rest_api.v2.invoice;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
 import de.metas.rest_api.invoicecandidates.impl.CloseInvoiceCandidatesService;
-import de.metas.rest_api.invoicecandidates.impl.CreateInvoiceCandidatesService;
 import de.metas.rest_api.invoicecandidates.impl.EnqueueForInvoicingService;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
@@ -41,14 +41,23 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
+import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
+import de.metas.rest_api.v2.invoicecandidates.impl.CreateInvoiceCandidatesService;
+import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -67,29 +76,22 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/invoices")
 @Profile(Profiles.PROFILE_App)
+@RequiredArgsConstructor
 public class InvoicesRestController
 {
 	private static final Logger logger = LogManager.getLogger(InvoicesRestController.class);
 
-	private final JsonInvoiceService jsonInvoiceService;
-	private final CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
-	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
-	private final EnqueueForInvoicingService enqueueForInvoicingService;
-	private final CloseInvoiceCandidatesService closeInvoiceCandidatesService;
-
-	public InvoicesRestController(
-			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
-			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
-			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
-			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService,
-			@NonNull final JsonInvoiceService jsonInvoiceService)
-	{
-		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
-		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
-		this.enqueueForInvoicingService = enqueueForInvoicingService;
-		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
-		this.jsonInvoiceService = jsonInvoiceService;
-	}
+	private final @NonNull JsonInvoiceService jsonInvoiceService;
+	private final @NonNull CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
+	private final @NonNull CreateInvoiceCandidatesService createInvoiceCandidatesService;
+	private final @NonNull EnqueueForInvoicingService enqueueForInvoicingService;
+	private final @NonNull CloseInvoiceCandidatesService closeInvoiceCandidatesService;
+	private final @NonNull PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+	private final @NonNull BpartnerRestController bpartnerRestController;
+	private final @NonNull ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final @NonNull JsonServiceFactory jsonServiceFactory;
+	private final @NonNull ExternalSystemRepository externalSystemRepository;
+	private final @NonNull BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {
@@ -102,9 +104,17 @@ public class InvoicesRestController
 	public ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(
 			@RequestBody @NonNull final JsonCreateInvoiceCandidatesRequest request)
 	{
+		final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
+				.permissionService(permissionServiceFactory.createPermissionService())
+				.bpartnerRestController(bpartnerRestController)
+				.externalReferenceRestControllerService(externalReferenceRestControllerService)
+				.jsonRetrieverService(jsonServiceFactory.createRetriever())
+				.externalSystemRepository(externalSystemRepository)
+				.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
+				.build();
 		// TODO make individual IC accessible via URL, then return "created" instead
-		final JsonCreateInvoiceCandidatesResponse resonse = createInvoiceCandidatesService.createInvoiceCandidates(request);
-		return ResponseEntity.ok(resonse);
+		final JsonCreateInvoiceCandidatesResponse response = createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping(path = "/status", consumes = "application/json", produces = "application/json")
@@ -149,20 +159,10 @@ public class InvoicesRestController
 			@ApiParam(required = true, value = "metasfreshId of the invoice to get the PDF of") //
 			@PathVariable("invoiceId") final int invoiceRecordId)
 	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
-		if (invoiceId == null)
-		{
-			return ResponseEntity.notFound().build();
-		}
-
-		final Optional<byte[]> invoicePDF = jsonInvoiceService.getInvoicePDF(invoiceId);
-
-		if (invoicePDF.isPresent())
-		{
-			return ResponseEntity.ok(invoicePDF.get());
-		}
-
-		return ResponseEntity.notFound().build();
+		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRecordId))
+				.flatMap(jsonInvoiceService::getInvoicePDF)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	@ApiResponses(value = {

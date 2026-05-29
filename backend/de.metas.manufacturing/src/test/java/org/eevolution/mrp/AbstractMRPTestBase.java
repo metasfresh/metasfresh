@@ -25,19 +25,19 @@ package org.eevolution.mrp;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.eevolution.LiberoConfiguration;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith({SpringExtension.class, AbstractMRPTestBase.MRPTestWatcher.class})
 @SpringBootTest(classes = {
 		LiberoConfiguration.class,
 		MaterialPlanningConfiguration.class
@@ -52,38 +52,38 @@ public abstract class AbstractMRPTestBase
 
 	protected boolean dumpDatabaseOnFail = true;
 
-	@Rule
-	public TestWatcher testWatchman = new TestWatcher()
+	public static class MRPTestWatcher implements TestWatcher
 	{
 		@Override
-		protected void succeeded(final Description description)
+		public void testSuccessful(final ExtensionContext context)
 		{
 			// nothing
 		}
 
 		@Override
-		protected void failed(final Throwable e, final Description description)
+		public void testFailed(@NonNull final ExtensionContext context, final Throwable cause)
 		{
-			System.out.println("After test failed: " + description.getDisplayName());
-			if (helper != null)
+			System.out.println("After test failed: " + context.getDisplayName());
+			
+			// Get the test instance to access helper
+			final Object testInstance = context.getTestInstance().orElse(null);
+			if (testInstance instanceof AbstractMRPTestBase)
 			{
-				helper.dumpMRPRecords("MRP records after test failed");
-			}
+				final AbstractMRPTestBase testBase = (AbstractMRPTestBase) testInstance;
+				if (testBase.helper != null)
+				{
+					testBase.helper.dumpMRPRecords("MRP records after test failed");
+				}
 
-			if (dumpDatabaseOnFail)
-			{
-				POJOLookupMap.get().dumpStatus();
+				if (testBase.dumpDatabaseOnFail)
+				{
+					POJOLookupMap.get().dumpStatus();
+				}
 			}
 		}
+	}
 
-		@Override
-		protected void finished(final Description description)
-		{
-			// nothing
-		}
-	};
-
-	@Before
+	@BeforeEach
 	public final void init()
 	{
 		this.helper = new MRPTestHelper();

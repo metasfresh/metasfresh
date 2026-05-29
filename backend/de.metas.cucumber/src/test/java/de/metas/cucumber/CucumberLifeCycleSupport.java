@@ -24,13 +24,17 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.acct.housekeeping.AddMissingAcctRecords;
 import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_EXP_Processor;
 import org.compiere.model.I_IMP_Processor;
+import org.compiere.model.I_S_PostgREST_Config;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
 
@@ -52,7 +56,7 @@ public class CucumberLifeCycleSupport
 	private static boolean beforeAllMethodDone;
 
 	public static void beforeAll()
-	{
+			{
 		synchronized (CucumberLifeCycleSupport.class)
 		{
 			if (beforeAllMethodDone)
@@ -93,8 +97,10 @@ public class CucumberLifeCycleSupport
 			Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 			update_ReplicationProcessors();
+			upsert_PostgRESTConfig(infrastructureSupport);
 
 			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
+			SpringContextHolder.instance.getBean(AddMissingAcctRecords.class).executeTask();
 
 			beforeAllMethodDone = true;
 		}
@@ -159,6 +165,31 @@ public class CucumberLifeCycleSupport
 				.create()
 				.updateDirectly().addSetColumnValue(I_EXP_Processor.COLUMNNAME_PasswordInfo, rabbitPassword)
 				.execute();
+	}
+
+	/**
+	 * Upsert S_PostgREST_Config such that it points to the currently running postgrest-instance
+	 */
+	private static void upsert_PostgRESTConfig(@NonNull final InfrastructureSupport infrastructureSupport)
+	{
+		final String baseURL = "http://" + infrastructureSupport.getPostgRESTHost() + ":" + infrastructureSupport.getPostgRESTPort();
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final int updatedRecords = queryBL.createQueryBuilder(I_S_PostgREST_Config.class)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_S_PostgREST_Config.COLUMNNAME_Base_url, baseURL)
+				.execute();
+
+		if (updatedRecords > 0)
+		{
+			return;
+		}
+
+		final I_S_PostgREST_Config newConfig = InterfaceWrapperHelper.newInstance(I_S_PostgREST_Config.class);
+		newConfig.setBase_url(baseURL);
+		InterfaceWrapperHelper.saveRecord(newConfig);
 	}
 
 	public void afterAll()

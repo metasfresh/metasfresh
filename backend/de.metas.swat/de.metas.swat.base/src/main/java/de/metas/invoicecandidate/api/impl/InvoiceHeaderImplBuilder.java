@@ -1,18 +1,22 @@
 package de.metas.invoicecandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-import de.metas.impex.InputDataSourceId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -53,12 +57,18 @@ public class InvoiceHeaderImplBuilder
 
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
+	private LocalDate _overrideDueDate;
 
 	@Getter
 	private int AD_Org_ID;
 
 	@Nullable
 	private InputDataSourceId inputDataSourceId;
+
+	@Nullable
+	@Getter
+	@Setter
+	private ExternalSystemId externalSystemId;
 
 	private boolean inputDataSourceIdset;
 
@@ -90,7 +100,7 @@ public class InvoiceHeaderImplBuilder
 	// 06630
 	private final Set<Integer> M_InOut_IDs = new LinkedHashSet<>();
 
-	private String externalId;
+	private ExternalId externalId = null;
 
 	private Boolean taxIncluded = null;
 
@@ -99,6 +109,14 @@ public class InvoiceHeaderImplBuilder
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
+
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCodeId;
+
+	@Getter
+	@Nullable
+	private PromotionCodeId promotionCode2Id;
 
 	/* package */ InvoiceHeaderImplBuilder()
 	{
@@ -127,6 +145,7 @@ public class InvoiceHeaderImplBuilder
 		// Dates
 		invoiceHeader.setDateInvoiced(getDateInvoiced());
 		invoiceHeader.setDateAcct(getDateAcct());
+		invoiceHeader.setOverrideDueDate(getOverrideDueDate());
 
 		// BPartner/Location/Contact
 		invoiceHeader.setBillTo(getBillTo());
@@ -148,17 +167,23 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
+		invoiceHeader.setExternalSystemId(getExternalSystemId());
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
+		// promotion codes
+		invoiceHeader.setPromotionCodeId(getPromotionCodeId());
+		invoiceHeader.setPromotionCode2Id(getPromotionCode2Id());
+
 		return invoiceHeader;
 	}
 
-	private String getExternalId()
+	@VisibleForTesting
+	String getExternalId()
 	{
-		return externalId;
+		return ExternalId.isInvalid(externalId) ? null : ExternalId.toValue(externalId);
 	}
 
 	private int getC_Async_Batch_ID()
@@ -179,6 +204,16 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Incoterms_ID(final int incoterms_id)
 	{
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	public void setPromotionCodeId(@Nullable final PromotionCodeId promotionCodeId)
+	{
+		this.promotionCodeId = checkOverride("PromotionCodeId", this.promotionCodeId, promotionCodeId);
+	}
+
+	public void setPromotionCode2Id(@Nullable final PromotionCodeId promotionCode2Id)
+	{
+		this.promotionCode2Id = checkOverride("PromotionCode2Id", this.promotionCode2Id, promotionCode2Id);
 	}
 
 	public String getIncotermLocation()
@@ -283,6 +318,11 @@ public class InvoiceHeaderImplBuilder
 		return _dateAcct;
 	}
 
+	public LocalDate getOverrideDueDate()
+	{
+		return _overrideDueDate;
+	}
+
 	public void setPaymentRule(@Nullable final String paymentRule)
 	{
 		this.paymentRule = paymentRule;
@@ -291,6 +331,11 @@ public class InvoiceHeaderImplBuilder
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
+	}
+
+	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
+	{
+		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
 	}
 
 	public void setAD_Org_ID(final int adOrgId)
@@ -569,9 +614,23 @@ public class InvoiceHeaderImplBuilder
 											 + "\n New value: " + valueNew);
 	}
 
-	public void setExternalId(final String externalId)
+	public void setExternalId(@Nullable final String externalIdStr)
 	{
-		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
+		final ExternalId externalId = ExternalId.ofOrNull(externalIdStr);
+		Check.errorIf(ExternalId.isInvalid(externalId), "Given externalId may not be invalid"); // might happen later, when we modernize the method signature
+
+		if (ExternalId.isInvalid(this.externalId))
+		{
+			return;
+		}
+
+		if (this.externalId != null && !Objects.equals(this.externalId, externalId))
+		{
+			this.externalId = ExternalId.INVALID;
+			return;
+		}
+
+		this.externalId = externalId;
 	}
 
 }

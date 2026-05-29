@@ -28,10 +28,11 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.ExternalReferenceQuery;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -94,6 +95,7 @@ public class GithubImporterService implements IssueImporter
 	private final IssueRepository issueRepository;
 	private final ExternalProjectRepository externalProjectRepository;
 	private final LabelService labelService;
+	private final ExternalSystemRepository externalSystemRepository;
 
 	public GithubImporterService(
 			final ImportQueue<ImportIssueInfo> importIssuesQueue,
@@ -101,7 +103,8 @@ public class GithubImporterService implements IssueImporter
 			final ExternalReferenceRepository externalReferenceRepository,
 			final IssueRepository issueRepository,
 			final ExternalProjectRepository externalProjectRepository,
-			final LabelService labelService)
+			final LabelService labelService,
+			final ExternalSystemRepository externalSystemRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.githubClient = githubClient;
@@ -109,6 +112,7 @@ public class GithubImporterService implements IssueImporter
 		this.issueRepository = issueRepository;
 		this.externalProjectRepository = externalProjectRepository;
 		this.labelService = labelService;
+		this.externalSystemRepository = externalSystemRepository;
 	}
 
 	public void start(@NonNull final ImmutableList<ImportIssuesRequest> requestList)
@@ -229,7 +233,7 @@ public class GithubImporterService implements IssueImporter
 				.builder()
 				.externalProjectReferenceId(importIssuesRequest.getExternalProjectReferenceId())
 				.externalProjectType(importIssuesRequest.getExternalProjectType())
-				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, issue.getId()))
+				.externalIssueId(ExternalId.of(externalSystemRepository.getByType(ExternalSystemType.Github), issue.getId()))
 				.externalIssueURL(issue.getHtmlUrl())
 				.externalIssueNo(issue.getNumber())
 				.name(issue.getTitle())
@@ -270,7 +274,7 @@ public class GithubImporterService implements IssueImporter
 				.name(githubMilestone.getTitle())
 				.description(githubMilestone.getDescription())
 				.externalURL(githubMilestone.getHtmlUrl())
-				.externalId(ExternalId.of(ExternalSystem.GITHUB, githubMilestone.getId()))
+				.externalId(ExternalId.of(externalSystemRepository.getByType(ExternalSystemType.Github), githubMilestone.getId()))
 				.processed(ResourceState.CLOSED.getValue().equals(githubMilestone.getState()))
 				.dueDate(githubMilestone.getDueDate() != null ? Instant.parse(githubMilestone.getDueDate()) : null)
 				.orgId(orgId)
@@ -302,7 +306,7 @@ public class GithubImporterService implements IssueImporter
 		final Integer userId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
 				ExternalReferenceQuery.builder()
 						.orgId(orgId)
-						.externalSystem(ExternalSystem.GITHUB)
+						.externalSystem(externalSystemRepository.getByType(ExternalSystemType.Github))
 						.externalReference(externalUserId)
 						.externalReferenceType(ExternalUserReferenceType.USER_ID)
 						.build());
@@ -368,7 +372,7 @@ public class GithubImporterService implements IssueImporter
 					.addLog(" {} Parent issue found in the current importing queue for searchKey: {}, parentIssueExternalId: {}"
 							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
 
-			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
+			return Optional.of(ExternalId.of(externalSystemRepository.getByType(ExternalSystemType.Github), parentExternalId));
 		}
 		//if it isn't try to import the parent
 		else
@@ -385,7 +389,7 @@ public class GithubImporterService implements IssueImporter
 				.builder()
 				.externalProjectOwner(parentIdSearchKey.getRepositoryOwner())
 				.externalReference(parentIdSearchKey.getRepository())
-				.externalSystem(ExternalSystem.GITHUB)
+				.externalSystem(externalSystemRepository.getByType(ExternalSystemType.Github))
 				.build();
 
 		final Optional<ExternalProjectReference> externalProjectReference = externalProjectRepository.getByRequestOptional(getExternalProjectRequest);
@@ -419,7 +423,7 @@ public class GithubImporterService implements IssueImporter
 					.addLog(" {} Parent issue retrieved and added in the importing queue for searchKey: {}, parentIssueExternalId: {}"
 							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
 
-			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
+			return Optional.of(ExternalId.of(externalSystemRepository.getByType(ExternalSystemType.Github), parentExternalId));
 		}
 
 		return Optional.empty();

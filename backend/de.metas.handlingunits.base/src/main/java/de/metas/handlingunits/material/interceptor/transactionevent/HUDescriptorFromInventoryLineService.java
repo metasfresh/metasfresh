@@ -27,29 +27,23 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
 
 @Component // not calling it service, because right now it's intended to be used only from the M_Transaction model interceptor
+@RequiredArgsConstructor
 public class HUDescriptorFromInventoryLineService
 {
-	private final InventoryRepository inventoryRepository;
-	private final HUDescriptorService huDescriptorService;
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-	public HUDescriptorFromInventoryLineService(
-			@NonNull final InventoryRepository inventoryRepository,
-			@NonNull final HUDescriptorService huDescriptorService)
-	{
-		this.inventoryRepository = inventoryRepository;
-		this.huDescriptorService = huDescriptorService;
-	}
+	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUDescriptorService huDescriptorService;
 
 	@NonNull
 	public ImmutableList<HUDescriptor> createHuDescriptorsForInventoryLine(
@@ -61,7 +55,7 @@ public class HUDescriptorFromInventoryLineService
 			return ImmutableList.of();
 		}
 
-		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(
+		final InventoryLine inventoryLine = inventoryService.toInventoryLine(
 				InterfaceWrapperHelper.create(inventoryLineRecord, de.metas.handlingunits.model.I_M_InventoryLine.class));
 
 		final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();

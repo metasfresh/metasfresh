@@ -1,6 +1,7 @@
 package de.metas.dao.selection;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -63,7 +64,7 @@ public class QuerySelectionHelper
 		final List<Object> params = query.getParametersEffective();
 		final String trxName = query.getTrxName();
 
-		final Instant now = retrieveDatabaseCurrentTime();
+		final Instant now = SystemTime.asInstant(); // replaced retrieveDatabaseCurrentTime();
 		final int rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				params.toArray(),

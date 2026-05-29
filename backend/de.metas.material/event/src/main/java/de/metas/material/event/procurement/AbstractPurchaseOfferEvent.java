@@ -1,8 +1,5 @@
 package de.metas.material.event.procurement;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -10,6 +7,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+
+import static de.metas.material.event.MaterialEventConstants.PMM_PURCHASECANDIDATE_TABLE_NAME;
 
 /*
  * #%L
@@ -67,4 +71,11 @@ public abstract class AbstractPurchaseOfferEvent implements MaterialEvent
 	}
 
 	public abstract BigDecimal getQtyDelta();
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(PMM_PURCHASECANDIDATE_TABLE_NAME, procurementCandidateId);
+	}
 }

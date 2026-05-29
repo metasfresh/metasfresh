@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 408795132L;
+	private static final long serialVersionUID = 323037538L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -118,6 +118,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BPartner2_ID (final int C_BPartner2_ID)
+	{
+		if (C_BPartner2_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
+	}
+
+	@Override
+	public int getC_BPartner2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
 
 	@Override
@@ -417,14 +432,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_OrderSO_ID < 1)
+		if (C_OrderSO_ID < 1) 
 			set_Value (COLUMNNAME_C_OrderSO_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_OrderSO_ID()
+	public int getC_OrderSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
@@ -710,6 +725,17 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setFA_OpenQty_Exists_Color_ID (final int FA_OpenQty_Exists_Color_ID)
+	{
+		throw new IllegalArgumentException ("FA_OpenQty_Exists_Color_ID is virtual column");	}
+
+	@Override
+	public int getFA_OpenQty_Exists_Color_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FA_OpenQty_Exists_Color_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -748,14 +774,15 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setgk196_TotalWeight (final @Nullable BigDecimal gk196_TotalWeight)
+	public void setGrossWeightKg (final BigDecimal GrossWeightKg)
 	{
-		throw new IllegalArgumentException ("gk196_TotalWeight is virtual column");	}
+		set_Value (COLUMNNAME_GrossWeightKg, GrossWeightKg);
+	}
 
 	@Override
-	public BigDecimal getgk196_TotalWeight() 
+	public BigDecimal getGrossWeightKg() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_gk196_TotalWeight);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossWeightKg);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -849,15 +876,15 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	public void setIsAllowSeparateInvoicing (final boolean IsAllowSeparateInvoicing)
 	{
-		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+		set_Value (COLUMNNAME_IsAllowSeparateInvoicing, IsAllowSeparateInvoicing);
 	}
 
 	@Override
-	public boolean isDeliveryClosed()
+	public boolean isAllowSeparateInvoicing() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowSeparateInvoicing);
 	}
 
 	@Override
@@ -870,6 +897,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isCampaignPrice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCampaignPrice);
+	}
+
+	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
 
 	@Override
@@ -1038,6 +1077,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isUseBPartnerAddress() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUseBPartnerAddress);
+	}
+
+	@Override
+	public void setIsWithoutCharge (final boolean IsWithoutCharge)
+	{
+		set_Value (COLUMNNAME_IsWithoutCharge, IsWithoutCharge);
+	}
+
+	@Override
+	public boolean isWithoutCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWithoutCharge);
 	}
 
 	@Override
@@ -1311,6 +1362,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPackInfo (final @Nullable java.lang.String PackInfo)
+	{
+		set_Value (COLUMNNAME_PackInfo, PackInfo);
+	}
+
+	@Override
+	public java.lang.String getPackInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackInfo);
 	}
 
 	@Override
@@ -1672,6 +1735,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * Reason AD_Reference_ID=541968
+	 * Reference name: Reason for without charge
+	 */
+	public static final int REASON_AD_Reference_ID=541968;
+	/** Warranty = W */
+	public static final String REASON_Warranty = "W";
+	/** Goodwill = G */
+	public static final String REASON_Goodwill = "G";
+	/** FullService = F */
+	public static final String REASON_FullService = "F";
+	/** PromotionalCampaign = P */
+	public static final String REASON_PromotionalCampaign = "P";
+	/** InternalUse = I */
+	public static final String REASON_InternalUse = "I";
+	@Override
+	public void setReason (final @Nullable java.lang.String Reason)
+	{
+		set_Value (COLUMNNAME_Reason, Reason);
+	}
+
+	@Override
+	public java.lang.String getReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_Reason);
 	}
 
 	@Override

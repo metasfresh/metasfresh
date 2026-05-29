@@ -90,8 +90,11 @@ public class FactAcctBalanceMacher
 			final Money actual = matchingRecords.getSourceBalance().toNoneOrSingleValue().orElseGet(sourceBalance::toZero);
 			softly.assertThat(actual).as(description.newWithMessage("SourceBalance")).isEqualTo(sourceBalance);
 		}
-		// qty assertion disabled — MixedQuantity not available on soft_panda_hotfix
-		// (getQty() returns null, so this block would never execute anyway)
+		if (qty != null)
+		{
+			final Quantity actual = matchingRecords.getQty().toNoneOrSingleValue().orElseGet(qty::toZero);
+			softly.assertThat(actual).as(description.newWithMessage("Qty")).isEqualTo(qty);
+		}
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")

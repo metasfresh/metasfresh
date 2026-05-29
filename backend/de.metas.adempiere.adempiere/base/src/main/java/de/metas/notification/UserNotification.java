@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -65,6 +66,8 @@ public class UserNotification
 	private final int recipientUserId;
 	@JsonProperty("detailPlain")
 	private final String detailPlain;
+	@JsonProperty("severity")
+	@NonNull private final NotificationSeverity severity;
 	@JsonProperty("detailADMessage")
 	private final String detailADMessage;
 	@JsonProperty("detailADMessageParams")
@@ -99,6 +102,7 @@ public class UserNotification
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
 			//
 			@JsonProperty("detailPlain") final String detailPlain,
+			@JsonProperty("severity") @NonNull final NotificationSeverity severity,
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
@@ -117,6 +121,7 @@ public class UserNotification
 		this.recipientUserId = recipientUserId;
 
 		this.detailPlain = detailPlain;
+		this.severity = severity;
 		this.detailADMessage = detailADMessage;
 		this.detailADMessageParams = detailADMessageParams != null ? Collections.unmodifiableList(new ArrayList<>(detailADMessageParams)) : ImmutableList.of();
 
@@ -159,6 +164,12 @@ public class UserNotification
 		//
 		// Build detail message
 		final StringBuilder detailBuf = new StringBuilder();
+
+		if(!severity.isNotice())
+		{
+			final String notificationSeverity = getSeverity().getNameTrl().translate(adLanguage);
+			detailBuf.append(notificationSeverity).append(":");
+		}
 
 		// Add plain detail if any
 		if (!Check.isEmpty(detailPlain, true))
@@ -215,6 +226,7 @@ public class UserNotification
 		return targetWindowId != null ? String.valueOf(targetWindowId.getRepoId()) : null;
 	}
 
+	@Nullable
 	public String getTargetDocumentId()
 	{
 		return targetRecord != null ? String.valueOf(targetRecord.getRecord_ID()) : null;

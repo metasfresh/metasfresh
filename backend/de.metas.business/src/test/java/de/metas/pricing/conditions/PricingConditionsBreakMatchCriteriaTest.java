@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

@@ -1,11 +1,11 @@
 package de.metas.bpartner;
 
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.springframework.stereotype.Repository;
 
@@ -59,10 +59,10 @@ public class BPGroupRepository
 		return ofRecord(groupRecord);
 	}
 
-	public Optional<BPGroup> getDefaultGroup()
+	public Optional<BPGroup> getDefaultGroup(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final I_C_BP_Group groupRecord = Services.get(IBPGroupDAO.class)
-				.getDefaultByClientId(ClientId.METASFRESH);
+				.getDefaultByClientOrgId(clientAndOrgId);
 
 		return ofRecord(groupRecord);
 	}
@@ -74,10 +74,12 @@ public class BPGroupRepository
 			return Optional.empty();
 		}
 
-		return Optional.of(BPGroup.of(
-				OrgId.ofRepoIdOrAny(groupRecord.getAD_Org_ID()),
-				BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID()),
-				groupRecord.getName()));
+		return Optional.of(BPGroup.builder()
+				.id(BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(groupRecord.getAD_Org_ID()))
+				.value(groupRecord.getValue())
+				.name(groupRecord.getName())
+				.build());
 
 	}
 
@@ -87,6 +89,7 @@ public class BPGroupRepository
 
 		groupRecord.setAD_Org_ID(bpGroup.getOrgId().getRepoId());
 		groupRecord.setName(bpGroup.getName());
+		groupRecord.setValue(bpGroup.getValue());
 
 		saveRecord(groupRecord);
 		return BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID());

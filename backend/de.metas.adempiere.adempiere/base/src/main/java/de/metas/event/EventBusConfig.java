@@ -99,7 +99,7 @@ public final class EventBusConfig
 	/**
 	 * World wide unique Sender ID of this JVM instance
 	 */
-	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
+	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID();
 
 	/**
 	 * @return world wide unique Sender ID of this JVM instance
@@ -118,7 +118,7 @@ public final class EventBusConfig
 		{
 			return true;
 		}
-		
+
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
 		if (Adempiere.isUnitTestMode())
@@ -127,29 +127,24 @@ public final class EventBusConfig
 		}
 
 		final String nameForAllTopics = "de.metas.event.asyncEventBus";
-		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final Map<String, String> valuesForPrefix = sysConfigBL.getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
 
 		final String keyForTopic = nameForAllTopics + ".topic_" + topic.getName();
 		final String valueForTopic = valuesForPrefix.get(keyForTopic);
 		if (Check.isNotBlank(valueForTopic))
 		{
 			getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", valueForTopic, keyForTopic);
-			return StringUtils.toBoolean(valueForTopic, false);
+			return StringUtils.toBoolean(valueForTopic);
 		}
 
 		final String standardValue = valuesForPrefix.get(nameForAllTopics);
 		getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", standardValue, keyForTopic);
-		return StringUtils.toBoolean(standardValue, false);
+		return StringUtils.toBoolean(standardValue);
 	}
 
 	public static void alwaysConsiderAsync(@NonNull final Topic topic)
 	{
 		alwaysConsiderAsyncTopics.add(topic);
 	}
-
-	public static boolean isMonitorIncomingEvents()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
-	}
-
 }

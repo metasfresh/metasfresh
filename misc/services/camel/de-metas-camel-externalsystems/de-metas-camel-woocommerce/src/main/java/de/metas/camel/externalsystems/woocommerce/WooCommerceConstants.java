@@ -24,5 +24,5 @@ package de.metas.camel.externalsystems.woocommerce;
 
 public interface WooCommerceConstants
 {
-	String WOO_EXTERNAL_SYSTEM_NAME = "WOO";
+	String WOO_EXTERNAL_SYSTEM_NAME = "WooCommerce";
 }

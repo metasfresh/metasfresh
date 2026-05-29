@@ -54,10 +54,10 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public IC_Order_CreatePOFromSOsListener getCompositeListener()
 	{
-		return (purchaseOrderLine, salesOrderLine) -> {
+		return (purchaseOrderLine, salesOrderLine, purchaseOrder) -> {
 			for (final IC_Order_CreatePOFromSOsListener actualListener : listeners)
 			{
-				actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine);
+				actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine, purchaseOrder);
 			}
 		};
 	}

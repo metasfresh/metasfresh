@@ -21,6 +21,8 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.X_PP_Order;
@@ -286,5 +288,26 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
 				.create()
 				.listImmutable(I_PP_Order.class);
+	}
+
+	@NonNull
+	public Stream<I_PP_Order> streamDraftedPPOrdersFor(@NonNull final ProductBOMVersionsId bomVersionsId)
+	{
+		final ManufacturingOrderQuery query = ManufacturingOrderQuery.builder()
+				.bomVersionsId(bomVersionsId)
+				.onlyDrafted(true)
+				.build();
+
+		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = toSqlQueryBuilder(query);
+
+		//dev-note: make sure there are no material transactions already created
+		final IQuery<I_PP_Cost_Collector> withMaterialTransactionsQuery = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addInSubQueryFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderQueryBuilder.create())
+				.create();
+
+		return ppOrderQueryBuilder
+				.addNotInSubQueryFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, withMaterialTransactionsQuery)
+				.create()
+				.iterateAndStream();
 	}
 }

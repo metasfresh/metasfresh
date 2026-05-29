@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-alberta-camelroutes
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -13,54 +35,6 @@
 
     <artifactId>de-metas-camel-alberta-camelroutes</artifactId>
     <version>10.0.0</version>
-    <properties>
-        <java.version>14</java.version>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-        <camel.version>3.7.3</camel.version>
-        <smooks.version>1.7.1</smooks.version>
-        <jackson.version>2.12.1</jackson.version>
-        <!--
-            3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
-            see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
-        -->
-        <assertj.version>3.19.0</assertj.version>
-
-        <metasfresh-common.version>10.0.0</metasfresh-common.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-bom</artifactId>
-                <version>${camel.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <scope>test</scope>
-                <version>${assertj.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
 
@@ -134,11 +108,6 @@
 
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-javaconfig</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
             <artifactId>camel-endpointdsl</artifactId>
         </dependency>
       
@@ -151,32 +120,6 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-test-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.7.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.7.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- thx to https://stackoverflow.com/a/64384746/1012103 -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-commons</artifactId>
-            <version>1.7.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -1,14 +1,20 @@
 package de.metas.vertical.pharma.securpharm.actions;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
+import de.metas.logging.LogManager;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 import lombok.ToString;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -40,13 +46,24 @@ public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispat
 {
 	private static final Topic TOPIC = Topic.distributed("de.metas.vertical.pharma.securpharm.actions");
 
+	private static final Logger logger = LogManager.getLogger(AsyncSecurPharmActionsDispatcher.class);
 	private final IEventBus eventBus;
 	private final Executor executor;
+	private final ImmutableList<SecurPharmActionsHandler> handlers;
 
-	public AsyncSecurPharmActionsDispatcher(@NonNull final IEventBusFactory eventBusFactory)
+	public AsyncSecurPharmActionsDispatcher(
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull Optional<List<SecurPharmActionsHandler>> handlers)
 	{
-		eventBus = eventBusFactory.getEventBus(TOPIC);
-		executor = createAsyncExecutor();
+		this.eventBus = eventBusFactory.getEventBus(TOPIC);
+		this.executor = createAsyncExecutor();
+
+		this.handlers = handlers.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
+		this.handlers.forEach(handler -> {
+			final AsyncSecurPharmActionsHandler asyncHandler = new AsyncSecurPharmActionsHandler(handler, executor);
+			eventBus.subscribeOn(SecurPharmaActionRequest.class, asyncHandler::handleActionRequest);
+			logger.info("Registered: {}", asyncHandler);
+		});
 	}
 
 	private static Executor createAsyncExecutor()
@@ -58,10 +75,9 @@ public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispat
 	}
 
 	@Override
-	public void subscribe(@NonNull final SecurPharmActionsHandler handler)
+	public void setSecurPharmService(@NonNull final SecurPharmService securPharmService)
 	{
-		final AsyncSecurPharmActionsHandler asyncHandler = new AsyncSecurPharmActionsHandler(handler, executor);
-		eventBus.subscribeOn(SecurPharmaActionRequest.class, asyncHandler::handleActionRequest);
+		this.handlers.forEach(handler -> handler.setSecurPharmService(securPharmService));
 	}
 
 	@Override
@@ -70,8 +86,8 @@ public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispat
 		eventBus.enqueueObject(request);
 	}
 
-	@ToString
-	private static class AsyncSecurPharmActionsHandler implements SecurPharmActionsHandler
+	@ToString(of = "delegate")
+	private static class AsyncSecurPharmActionsHandler
 	{
 		private final SecurPharmActionsHandler delegate;
 		private final Executor executor;
@@ -84,11 +100,9 @@ public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispat
 			this.executor = executor;
 		}
 
-		@Override
 		public void handleActionRequest(@NonNull final SecurPharmaActionRequest request)
 		{
 			executor.execute(() -> delegate.handleActionRequest(request));
 		}
-
 	}
 }

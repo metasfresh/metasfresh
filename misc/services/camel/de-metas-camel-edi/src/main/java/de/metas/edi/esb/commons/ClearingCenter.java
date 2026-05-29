@@ -22,9 +22,27 @@
 
 package de.metas.edi.esb.commons;
 
+import de.metas.common.util.Check;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 public enum ClearingCenter
 {
 	CompuData,
-	ecosio,
+	MetasfreshInHouseV1,
+	MetasfreshInHouseV2,
 	STEPcom
+	;
+
+	@NonNull
+	public static ClearingCenter ofValue(@Nullable final String value)
+	{
+		if (Check.isBlank(value) || "ecosio".equals(value))
+		{
+			return MetasfreshInHouseV2;
+		}
+		
+		return valueOf(value);
+	}
 }

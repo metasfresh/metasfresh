@@ -10,6 +10,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
@@ -142,9 +143,9 @@ public class PickingCandidateRepository
 				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
 				//
 				.pickFrom(PickFrom.builder()
-								  .huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
-								  .pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
-								  .build())
+						.huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
+						.pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
+						.build())
 				//
 				.qtyPicked(qtyPicked)
 				.qtyReview(qtyReview)
@@ -335,11 +336,11 @@ public class PickingCandidateRepository
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
-	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+	public List<PickingCandidate> getByScheduleIdAndStatus(
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
-		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(shipmentScheduleId), status);
+		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(scheduleId.getShipmentScheduleId()), status);
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
@@ -437,8 +438,8 @@ public class PickingCandidateRepository
 		// Not Closed + Not Rack System Picking slots
 		if (pickingCandidatesQuery.isOnlyNotClosedOrNotRackSystem())
 		{
-			final IHUPickingSlotDAO huPickingSlotsRepo = Services.get(IHUPickingSlotDAO.class);
-			final Set<PickingSlotId> rackSystemPickingSlotIds = huPickingSlotsRepo.retrieveAllPickingSlotIdsWhichAreRackSystems();
+			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
+			final Set<PickingSlotId> rackSystemPickingSlotIds = pickingSlotDAO.getAllPickingSlotIdsWhichAreRackSystems();
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
 					.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
@@ -459,8 +460,8 @@ public class PickingCandidateRepository
 		{
 			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-																									.qrCode(pickingSlotQRCode)
-																									.build());
+					.qrCode(pickingSlotQRCode)
+					.build());
 			if (pickingSlotIds.isEmpty())
 			{
 				return ImmutableList.of();

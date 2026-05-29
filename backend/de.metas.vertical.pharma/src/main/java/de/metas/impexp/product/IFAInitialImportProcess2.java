@@ -49,13 +49,13 @@ public class IFAInitialImportProcess2 extends SimpleImportProcessTemplate<I_I_Ph
 	}
 
 	@Override
-	protected I_I_Pharma_Product retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_Pharma_Product retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Pharma_Product(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 

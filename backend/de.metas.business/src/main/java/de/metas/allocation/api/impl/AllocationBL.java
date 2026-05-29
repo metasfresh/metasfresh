@@ -17,7 +17,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -34,6 +33,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -43,7 +43,9 @@ import java.util.Optional;
 
 public class AllocationBL implements IAllocationBL
 {
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	@Override
 	public C_AllocationHdr_Builder newBuilder()
@@ -52,17 +54,15 @@ public class AllocationBL implements IAllocationBL
 	}
 
 	@Override
+	@Nullable
 	public I_C_AllocationHdr autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
-		if (invoice.isPaid())
+		if (!invoice.isFinancial())
 		{
 			return null;
 		}
-		if (!invoice.isSOTrx())
-		{
-			return null;
-		}
-		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
+
+		if (invoice.isPaid() || invoiceBL.isCreditMemo(invoice))
 		{
 			return null;
 		}
@@ -74,16 +74,14 @@ public class AllocationBL implements IAllocationBL
 			return null;
 		}
 
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final List<I_C_Payment> availablePayments = getAvailablePaymentsToAutoAllocate(invoice);
 		if (availablePayments.isEmpty())
 		{
 			return null; // nothing to do
 		}
 
-		final BigDecimal invoiceOpenAmt = invoiceDAO.retrieveOpenAmt(invoice);
+		final BigDecimal invoiceOpenAmt = invoiceBL.retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.getAsBigDecimal();
 
 		Timestamp dateAcct = invoice.getDateAcct();
 		Timestamp dateTrx = invoice.getDateInvoiced();
@@ -178,26 +176,17 @@ public class AllocationBL implements IAllocationBL
 		});
 	}
 
-	public void autoAllocateSpecificPayment(
-			org.compiere.model.I_C_Invoice invoice,
-			I_C_Payment payment,
-			boolean ignoreIsAutoAllocateAvailableAmt)
+	public void autoAllocateSpecificPayment(@NonNull final org.compiere.model.I_C_Invoice invoice,
+											@NonNull final I_C_Payment payment,
+											final boolean ignoreIsAutoAllocateAvailableAmt)
 	{
-		if (invoice.isPaid())
-		{
-			return;
-		}
-		if (!invoice.isSOTrx())
-		{
-			return;
-		}
-		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
+		if (!invoice.isFinancial())
 		{
 			return;
 		}
 
-		// payment and invoice must have same partner
-		if (payment.getC_BPartner_ID() != invoice.getC_BPartner_ID())
+		if (invoice.isPaid() || invoiceBL.isCreditMemo(invoice)
+				|| payment.getC_BPartner_ID() != invoice.getC_BPartner_ID())
 		{
 			return;
 		}
@@ -236,10 +225,8 @@ public class AllocationBL implements IAllocationBL
 			return;
 		}
 
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-		final BigDecimal invoiceOpenAmt = invoiceDAO.retrieveOpenAmt(invoice);
+		final BigDecimal invoiceOpenAmt = invoiceBL.retrieveOpenAmt(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.getAsBigDecimal();
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), payment.getDateAcct());
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), payment.getDateTrx());
 
@@ -299,9 +286,9 @@ public class AllocationBL implements IAllocationBL
 	{
 		final org.compiere.model.I_C_Invoice invoice = request.getInvoice();
 
-		Timestamp dateTrx;
-		Timestamp dateAcct;
-		if(request.isUseInvoiceDate())
+		final Timestamp dateTrx;
+		final Timestamp dateAcct;
+		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();

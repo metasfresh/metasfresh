@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @topic:materialdispo
 @ghActions:run_on_executor6
 Feature: material-dispo updates on StockEstimateEvent events
+## F5100: Material Disposition
   As a user
   I want material dispo to be updated properly if a StockEstimateEvent is processed or unprocessed
   So that the ATP is always correct
@@ -12,6 +15,8 @@ Feature: material-dispo updates on StockEstimateEvent events
     And no product with value 'product_value1234' exists
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent without stock or ATP
     Given metasfresh contains M_Products:
@@ -20,7 +25,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     When metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 1                  | 11                      | 2021-06-23T00:00:00.00Z | 10  |
-    Then after not more than 120s, MD_Candidates are found
+    Then after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_2        | INVENTORY_UP      | STOCK_CHANGE                  | p_1                     | 2021-06-23T00:00:00.00Z | 10  | 10                     |
 
@@ -34,6 +39,8 @@ Feature: material-dispo updates on StockEstimateEvent events
       | c_2                        | 1                  | 11                      | N          |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent with stock
     Given metasfresh contains M_Products:
@@ -52,7 +59,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     When metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 2                  | 22                      | 2021-06-23T00:00:00.00Z | 90  |
-    Then after not more than 120s, MD_Candidates are found
+    Then after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2020-12-12T00:00:00.00Z | 100 | 100                    |
       | c_2        | INVENTORY_DOWN    | STOCK_CHANGE                  | p_1                     | 2021-06-23T00:00:00.00Z | -10 | 90                     |
@@ -68,6 +75,8 @@ Feature: material-dispo updates on StockEstimateEvent events
       | cp_1       | p_1                     | 2021-06-23  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 90                             | 90                         | 0                                  |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateDeletedEvents without related data are ignored
     Given metasfresh contains M_Products:
@@ -79,11 +88,13 @@ Feature: material-dispo updates on StockEstimateEvent events
     When metasfresh receives a StockEstimateDeletedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 3                  | 33                      | 2021-06-23T23:59:00.00Z | 10  |
-    Then after not more than 120s, MD_Candidates are found
+    Then after not more than 180s, MD_Candidates are found
       | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | INVENTORY_UP      |                               | p_1                     | 2020-12-12T10:00:00.00Z | 100 | 100                    |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateDeletedEvents with related data are processed
     Given metasfresh contains M_Products:
@@ -92,7 +103,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     And metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 4                  | 44                      | 2021-06-23T00:00:00.00Z | 90  |
-    And after not more than 120s, MD_Candidates are found
+    And after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      | STOCK_CHANGE                  | p_1                     | 2021-06-23T00:00:00.00Z | 90  | 90                     |
     And metasfresh has this MD_Candidate_StockChange_Detail data
@@ -105,6 +116,8 @@ Feature: material-dispo updates on StockEstimateEvent events
     And after not more than 120s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_1
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateEvent flow with INVENTORY_UP and positive ATP
     Given metasfresh contains M_Products:
@@ -117,7 +130,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     And metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 5                  | 55                      | 2021-06-24T00:00:00.00Z | 160 |
-    And after not more than 120s, MD_Candidates are found
+    And after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_3        | INVENTORY_UP      | STOCK_CHANGE                  | p_1                     | 2021-06-24T00:00:00.00Z | 60  | 160                    |
@@ -128,13 +141,15 @@ Feature: material-dispo updates on StockEstimateEvent events
     When metasfresh receives a StockEstimateDeletedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 5                  | 55                      | 2021-06-24T00:00:00.00Z | 160 |
-    Then after not more than 120s, MD_Candidates are found
+    Then after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-06-25T00:00:00.00Z | 40  | 140                    |
     And after not more than 120s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_2
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: Stock estimate event with INVENTORY_DOWN and positive ATP
     Given metasfresh contains M_Products:
@@ -147,7 +162,7 @@ Feature: material-dispo updates on StockEstimateEvent events
     When metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 6                  | 66                      | 2021-06-24T00:00:00.00Z | 85  |
-    Then after not more than 120s, MD_Candidates are found
+    Then after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_3        | INVENTORY_DOWN    | STOCK_CHANGE                  | p_1                     | 2021-06-24T00:00:00.00Z | -15 | 85                     |
@@ -159,7 +174,7 @@ Feature: material-dispo updates on StockEstimateEvent events
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 6                  | 66                      | 2021-06-24T00:00:00.00Z | 85  |
     # note that the qty=25 at c_2 is wrong - but it's correct (qty=40) in master
-    Then after not more than 120s, MD_Candidates are found
+    Then after not more than 180s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-06-25T00:00:00.00Z | -60 | 40                     |

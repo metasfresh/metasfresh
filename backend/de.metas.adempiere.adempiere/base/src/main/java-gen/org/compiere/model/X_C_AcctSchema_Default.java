@@ -1892,9 +1892,28 @@ public class X_C_AcctSchema_Default extends org.compiere.model.PO implements I_C
 		@return Konto für erhaltene Skonti
 	  */
 	@Override
-	public int getPayDiscount_Rev_Acct () 
+	public int getPayDiscount_Rev_Acct ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PayDiscount_Rev_Acct);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bank Fee Account.
+		@param PayBankFee_Acct Bank Fee Account	  */
+	@Override
+	public void setPayBankFee_Acct (int PayBankFee_Acct)
+	{
+		set_Value (COLUMNNAME_PayBankFee_Acct, Integer.valueOf(PayBankFee_Acct));
+	}
+
+	/** Get Bank Fee Account.
+		@return Bank Fee Account	  */
+	@Override
+	public int getPayBankFee_Acct ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PayBankFee_Acct);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

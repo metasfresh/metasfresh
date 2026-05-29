@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,8 +24,9 @@ package de.metas.cucumber.stepdefs.invoice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
@@ -39,7 +40,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Invoice_Candidate_StefDef
 {
@@ -59,29 +60,33 @@ public class C_Invoice_Candidate_StefDef
 
 		final List<JsonCheckInvoiceCandidatesStatusResponseItem> responseItemList = statusResponse.getInvoiceCandidates();
 		assertThat(responseItemList).isNotNull();
-		assertThat(responseItemList.size()).isEqualTo(1);
 
-		final JsonCheckInvoiceCandidatesStatusResponseItem responseItem = responseItemList.get(0);
+		final Map<String, JsonCheckInvoiceCandidatesStatusResponseItem> responseItemMap = Maps.uniqueIndex(responseItemList,
+				(item) -> item.getExternalLineId().getValue()
+		);
 
 		final SoftAssertions softly = new SoftAssertions();
 
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			final String externalHeaderId = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId);
-			final String externalLineId = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ExternalLineId);
-			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyEntered);
-			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
-			final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced);
-			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_Processed);
+		DataTableRows.of(table)
+				.forEach(row -> {
+							final String externalHeaderId = row.getAsString(I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId);
+							final String externalLineId = row.getAsString(I_C_Invoice_Candidate.COLUMNNAME_ExternalLineId);
+							final BigDecimal qtyEntered = row.getAsBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyEntered);
+							final BigDecimal qtyToInvoice = row.getAsBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+							final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced);
+							final boolean processed = row.getAsBoolean(I_C_Invoice_Candidate.COLUMNNAME_Processed);
 
-			softly.assertThat(responseItem.getExternalHeaderId().getValue()).as("externalHeaderId").isEqualTo(externalHeaderId);
-			softly.assertThat(responseItem.getExternalLineId().getValue()).as("externalLineId").isEqualTo(externalLineId);
-			softly.assertThat(responseItem.getQtyToInvoice()).as("qtyToInvoice").isEqualTo(qtyToInvoice);
-			softly.assertThat(responseItem.getQtyInvoiced()).as("qtyInvoiced").isEqualTo(qtyInvoiced);
-			softly.assertThat(responseItem.getQtyEntered()).as("qtyEntered").isEqualTo(qtyEntered);
-			softly.assertThat(responseItem.isProcessed()).as("processed").isEqualTo(processed);
-		}
+							final JsonCheckInvoiceCandidatesStatusResponseItem responseItem = responseItemMap.get(externalLineId);
+							assertThat(responseItem).as("responseItem for externalLineId=%s", externalLineId).isNotNull();
+
+							softly.assertThat(responseItem.getExternalHeaderId().getValue()).as("externalHeaderId").isEqualTo(externalHeaderId);
+							softly.assertThat(responseItem.getExternalLineId().getValue()).as("externalLineId").isEqualTo(externalLineId);
+							softly.assertThat(responseItem.getQtyToInvoice()).as("qtyToInvoice").isEqualTo(qtyToInvoice);
+							softly.assertThat(responseItem.getQtyInvoiced()).as("qtyInvoiced").isEqualTo(qtyInvoiced);
+							softly.assertThat(responseItem.getQtyEntered()).as("qtyEntered").isEqualTo(qtyEntered);
+							softly.assertThat(responseItem.isProcessed()).as("processed").isEqualTo(processed);
+						}
+				);
 
 		softly.assertAll();
 	}

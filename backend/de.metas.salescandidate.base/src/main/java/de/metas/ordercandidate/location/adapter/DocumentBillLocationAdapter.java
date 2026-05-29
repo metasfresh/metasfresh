@@ -103,6 +103,12 @@ public class DocumentBillLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
 	{
 		return documentLocationBL.toPlainDocumentLocation(this);

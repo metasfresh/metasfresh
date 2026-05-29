@@ -1,0 +1,27 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestWarehouseUpsert": {
+    "requestItems": [
+      {
+        "warehouseIdentifier": "ext-ProCareManagement-warehouseIdentifier_2",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "requestWarehouse": {
+          "code": "warehouseValue_2",
+          "codeSet": true,
+          "name": "warehouseName_2",
+          "nameSet": true,
+          "bpartnerLocationIdentifier": "ext-ProCareManagement-warehouseIdentifier_2",
+          "bpartnerLocationIdentifierSet": true,
+          "active": true,
+          "activeSet": true,
+          "syncAdvise": null
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

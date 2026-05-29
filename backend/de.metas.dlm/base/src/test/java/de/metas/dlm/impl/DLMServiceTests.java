@@ -1,15 +1,5 @@
 package de.metas.dlm.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Column;
-import org.junit.Before;
-import org.junit.Test;
-
 import ch.qos.logback.classic.Level;
 import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
@@ -17,6 +7,14 @@ import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Record_V;
 import de.metas.logging.LogManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Column;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ public class DLMServiceTests
 {
 	private final DLMService dlmService = new DLMService(); // this is the class under test
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -60,7 +58,7 @@ public class DLMServiceTests
 		final Partition partition = dlmService.loadPartition(partitionDB);
 		assertNotNull(partition);
 
-		assertThat(partition.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+		assertThat(partition.getDLM_Partition_ID()).isEqualTo(partitionDB.getDLM_Partition_ID());
 	}
 
 	/**
@@ -98,10 +96,10 @@ public class DLMServiceTests
 		final Partition partition = dlmService.loadPartition(partitionDB);
 
 		assertNotNull(partition);
-		assertThat(partition.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+		assertThat(partition.getDLM_Partition_ID()).isEqualTo(partitionDB.getDLM_Partition_ID());
 
 		// we do not attempt to load partitioned records anymore, because there might be too many
-		assertThat(partition.getRecords().isEmpty(), is(true));
+		assertThat(partition.getRecords()).isEmpty();
 		// assertThat(partition.getRecordsFlat().size(), is(2));
 
 		// verify that it's not the I_DLM_Partition_Records we got back, but the AD_table record and the AD_column record.

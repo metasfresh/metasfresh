@@ -244,6 +244,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
+	@Contract("null, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final String assumptionMessage, final Object... params)
 	{
@@ -253,6 +254,7 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("null, _, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{

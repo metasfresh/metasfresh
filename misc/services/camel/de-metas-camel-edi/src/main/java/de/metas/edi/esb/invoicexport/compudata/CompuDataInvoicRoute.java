@@ -28,8 +28,8 @@ import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcesso
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIInvoiceFeedbackType;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;

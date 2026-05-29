@@ -1,9 +1,8 @@
 package de.metas.esb.edi.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for EDI_Desadv
  *  @author metasfresh (generated) 
@@ -341,19 +340,19 @@ public interface I_EDI_Desadv
 	 * Set EDI export status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setEDI_ExportStatus (@Nullable java.lang.String EDI_ExportStatus);
+	void setEDI_ExportStatus (java.lang.String EDI_ExportStatus);
 
 	/**
 	 * Get EDI export status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getEDI_ExportStatus();
+	java.lang.String getEDI_ExportStatus();
 
 	ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_ExportStatus = new ModelColumn<>(I_EDI_Desadv.class, "EDI_ExportStatus", null);
 	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
@@ -625,6 +624,31 @@ public interface I_EDI_Desadv
 
 	ModelColumn<I_EDI_Desadv, Object> COLUMN_Shipment_DocumentNo = new ModelColumn<>(I_EDI_Desadv.class, "Shipment_DocumentNo", null);
 	String COLUMNNAME_Shipment_DocumentNo = "Shipment_DocumentNo";
+
+	/**
+	 * Set Shipment Document No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipmentDocumentNo (@Nullable java.lang.String ShipmentDocumentNo);
+
+	/**
+	 * Get Shipment Document No..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getShipmentDocumentNo();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_ShipmentDocumentNo = new ModelColumn<>(I_EDI_Desadv.class, "ShipmentDocumentNo", null);
+	String COLUMNNAME_ShipmentDocumentNo = "ShipmentDocumentNo";
 
 	/**
 	 * Set SumDeliveredInStockingUOM.

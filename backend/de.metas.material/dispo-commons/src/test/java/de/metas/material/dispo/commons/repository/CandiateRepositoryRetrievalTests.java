@@ -47,7 +47,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
@@ -98,14 +97,15 @@ public class CandiateRepositoryRetrievalTests
 	{
 		AdempiereTestHelper.get().init();
 
-		DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
 
-		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval));
+		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository));
 	}
 
 	@Test
@@ -131,10 +131,9 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
 
-		final Optional<Candidate> result = candidateRepositoryRetrieval.fromCandidateRecord(candidateRecord);
+		final Candidate candidate = candidateRepositoryRetrieval.fromCandidateRecordOrNull(candidateRecord);
 
-		assertThat(result).isPresent();
-		final Candidate candidate = result.get();
+		assertThat(candidate).isNotNull();
 		assertThat(candidate.getParentId().isNull()).isTrue();
 		assertThat(candidate.getDate()).isEqualTo(TimeUtil.asInstant(dateProjected));
 
@@ -170,10 +169,9 @@ public class CandiateRepositoryRetrievalTests
 		transactionDetailRecord2.setTransactionDate(TimeUtil.asTimestamp(AFTER_NOW));
 		save(transactionDetailRecord2);
 
-		final Optional<Candidate> result = candidateRepositoryRetrieval.fromCandidateRecord(candidateRecord);
+		final Candidate candidate = candidateRepositoryRetrieval.fromCandidateRecordOrNull(candidateRecord);
 
-		assertThat(result).isPresent();
-		final Candidate candidate = result.get();
+		assertThat(candidate).isNotNull();
 		assertThat(candidate.getParentId().isNull()).isTrue();
 		assertThat(candidate.getDate()).isEqualTo(TimeUtil.asInstant(dateProjected));
 		assertThat(candidate.getTransactionDetails())

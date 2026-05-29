@@ -56,7 +56,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IADPInstanceDAO;
@@ -65,7 +64,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -82,9 +80,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -111,12 +107,12 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PP_Order_StepDef
 {
 	private static final AdMessageKey MISSING_PRODUCT_PLU_CONFIG = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingPLUConfigForProduct");
-	
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
@@ -174,7 +170,7 @@ public class PP_Order_StepDef
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
-	public void validatePP_Order_Candidate(
+	public void validatePP_Order(
 			final int timeoutSec,
 			@NonNull final DataTable dataTable)
 	{
@@ -190,47 +186,18 @@ public class PP_Order_StepDef
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String ppOrderDocBaseType = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_DocBaseType);
-			final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(ppOrderDocBaseType);
-
+		DataTableRows.of(dataTable).forEach(row -> {
+			final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(row.getAsString(I_PP_Order.COLUMNNAME_DocBaseType));
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
-			final String resourceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_S_Resource testResource = resourceTable.get(resourceIdentifier);
-			assertThat(testResource).isNotNull();
-			final ResourceId resourceId = ResourceId.ofRepoId(testResource.getS_Resource_ID());
+			final ResourceId resourceId = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID).lookupNotNullIdIn(resourceTable);
+			final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+			final Quantity quantity = Quantity.of(row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered), uomDAO.getEachUOM());
 
-			final int enteredQuantity = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order.COLUMNNAME_QtyEntered);
-			final I_C_UOM uom = uomDAO.getEachUOM();
-			final Quantity quantity = Quantity.of(enteredQuantity, uom);
-
-			final Instant dateOrdered = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order.COLUMNNAME_DateOrdered);
-			final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order.COLUMNNAME_DatePromised);
-			final Instant dateStartSchedule = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order.COLUMNNAME_DateStartSchedule);
-
-			final Boolean completeDocument = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "completeDocument", false);
-
-			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final WarehouseId warehouseId;
-			if (Check.isNotBlank(warehouseIdentifier))
-			{
-				final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
-				warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
-			}
-			else
-			{
-				warehouseId = StepDefConstants.WAREHOUSE_ID;
-			}
+			final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_M_Warehouse_ID)
+					.map(warehouseTable::getId)
+					.orElse(StepDefConstants.WAREHOUSE_ID);
 
 			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
@@ -239,23 +206,20 @@ public class PP_Order_StepDef
 					.warehouseId(warehouseId)
 					.productId(productId)
 					.qtyRequired(quantity)
-					.dateOrdered(dateOrdered)
-					.datePromised(datePromised)
-					.dateStartSchedule(dateStartSchedule)
-					.completeDocument(completeDocument);
+					.dateOrdered(row.getAsInstant(I_PP_Order.COLUMNNAME_DateOrdered))
+					.datePromised(row.getAsInstant(I_PP_Order.COLUMNNAME_DatePromised))
+					.dateStartSchedule(row.getAsInstant(I_PP_Order.COLUMNNAME_DateStartSchedule))
+					.completeDocument(row.getAsOptionalBoolean("completeDocument").orElseFalse());
 
-			if (Check.isNotBlank(productPlanningIdentifier))
-			{
-				final ProductPlanning productPlanning = productPlanningTable.get(productPlanningIdentifier);
-				ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull());
-			}
+			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID)
+					.map(productPlanningTable::get)
+					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
 
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
-			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			ppOrderTable.put(ppOrderIdentifier, ppOrder);
-		}
+			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
+		});
 	}
 
 	@And("complete planning for PP_Order:")
@@ -339,12 +303,12 @@ public class PP_Order_StepDef
 		catch (final AdempiereException adempiereException)
 		{
 			final String adLanguage = Env.getAD_Language();
-			
+
 			final Map<String, String> row = dataTable.asMaps().get(0);
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 			final String productName = productBL.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID()));
-			
+
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MISSING_PRODUCT_PLU_CONFIG, productName);
 
 			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
@@ -455,9 +419,13 @@ public class PP_Order_StepDef
 		final PPOrderId ppOrderId = row.getAsOptionalIdentifier().flatMap(ppOrderTable::getIdOptional).orElse(null);
 		if (ppOrderId != null)
 		{
-			return queryBL.createQueryBuilder(I_PP_Order.class)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId)
-					.create();
+			final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId);
+
+			row.getAsOptionalEnum(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.class)
+					.ifPresent(docStatus -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus));
+
+			return queryBuilder.create();
 		}
 
 		final ProductId productId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
@@ -550,7 +518,7 @@ public class PP_Order_StepDef
 		softly.assertAll();
 	}
 
-	private void locateAndLoadPPOrders(int timeoutSec, @NonNull final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered) throws InterruptedException
+	private void locateAndLoadPPOrders(final int timeoutSec, @NonNull final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered) throws InterruptedException
 	{
 		for (final String ppOrderCandIdentifier : ppOrderCandidate2PPOrderIdsOrdered.keySet())
 		{
@@ -648,5 +616,13 @@ public class PP_Order_StepDef
 				.firstOnly(I_M_HU.class);
 		assertThat(manufacturedHu).isNotNull();
 		huTable.putOrReplace(tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID), manufacturedHu);
+	}
+
+	@And("^the PP_Order (.*) is voided$")
+	public void voidPPOrder(@NonNull final String ppOrderIdentifier)
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(ppOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 }

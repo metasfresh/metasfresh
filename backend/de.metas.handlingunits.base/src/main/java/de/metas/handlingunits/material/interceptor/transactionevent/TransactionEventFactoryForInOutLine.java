@@ -75,24 +75,26 @@ public class TransactionEventFactoryForInOutLine
 
 	public List<MaterialEvent> createEventsForInOutLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted)
+			final boolean deleted,
+			final boolean isDropShipWarehouse)
 	{
 		final boolean shipment = X_M_Transaction.MOVEMENTTYPE_CustomerReturns.equals(transaction.getMovementType())
 				|| X_M_Transaction.MOVEMENTTYPE_CustomerShipment.equals(transaction.getMovementType());
 
 		if (shipment)
 		{
-			return createEventsForShipment(transaction, deleted);
+			return createEventsForShipment(transaction, deleted, isDropShipWarehouse);
 		}
 		else
 		{
-			return createEventsForReceipt(transaction, deleted);
+			return createEventsForReceipt(transaction, deleted, isDropShipWarehouse);
 		}
 	}
 
 	private List<MaterialEvent> createEventsForShipment(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted)
+			final boolean deleted,
+			final boolean isDropShipWarehouse)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -137,13 +139,24 @@ public class TransactionEventFactoryForInOutLine
 			final AbstractTransactionEvent event;
 			if (deleted || isReversal)
 			{
+				// For reversals (isReversal && !deleted), the reversal M_Transaction already has the
+				// opposite sign (+10 to undo a -10 shipment). Since TransactionDeletedEvent.getQuantityDelta()
+				// negates the MaterialDescriptor quantity, we must negate it here first to avoid a
+				// double-negation that would decrease stock instead of restoring it.
+				// Example without fix: descriptor.qty=+10 → getQuantityDelta()=negate(+10)=-10 → stock DECREASES (wrong!)
+				// Example with fix:    descriptor.qty=-10 → getQuantityDelta()=negate(-10)=+10 → stock INCREASES (correct)
+				final MaterialDescriptor eventMaterialDescriptor = isReversal && !deleted
+						? materialDescriptor.withQuantity(materialDescriptor.getQuantity().negate())
+						: materialDescriptor;
+
 				event = TransactionDeletedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
 						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor)
+						.materialDescriptor(eventMaterialDescriptor)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
+						.isDropShipWarehouse(isDropShipWarehouse)
 						.build();
 			}
 			else
@@ -157,6 +170,7 @@ public class TransactionEventFactoryForInOutLine
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
+						.isDropShipWarehouse(isDropShipWarehouse)
 						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
@@ -167,7 +181,8 @@ public class TransactionEventFactoryForInOutLine
 
 	private List<MaterialEvent> createEventsForReceipt(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted)
+			final boolean deleted,
+			final boolean isDropShipWarehouse)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -211,6 +226,7 @@ public class TransactionEventFactoryForInOutLine
 						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
 						.receiptId(receiptLineId)
 						.directMovementWarehouse(directMovementWarehouse)
+						.isDropShipWarehouse(isDropShipWarehouse)
 						.build();
 			}
 			else
@@ -223,6 +239,7 @@ public class TransactionEventFactoryForInOutLine
 						.receiptId(receiptLineId)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.directMovementWarehouse(directMovementWarehouse)
+						.isDropShipWarehouse(isDropShipWarehouse)
 						.build();
 			}
 			events.add(event);

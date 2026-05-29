@@ -38,6 +38,7 @@ public class FactAcctLineMatcher
 	@Nullable private final Quantity qty;
 	@NonNull @Getter private final TableRecordReference documentRef;
 	@Nullable private final Optional<TaxId> taxId;
+	@Nullable private final Optional<String> vatCode;
 	@Nullable private final Optional<BPartnerId> bpartnerId;
 	@Nullable private final Optional<ProductId> productId;
 	@Nullable private final Optional<InvoiceId> invoiceId;
@@ -173,6 +174,12 @@ public class FactAcctLineMatcher
 			softly.assertThat(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 					.as(description.newWithMessage("C_Tax_ID"))
 					.isEqualTo(taxId.orElse(null));
+		}
+		if (vatCode != null)
+		{
+			softly.assertThat(record.getVATCode())
+					.as(description.newWithMessage("C_VAT_Code_ID"))
+					.isEqualTo(vatCode.orElse(null));
 		}
 		if (bpartnerId != null)
 		{

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.json.JsonParserFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;

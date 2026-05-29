@@ -85,18 +85,18 @@ public class Recipient
 				.build();
 	}
 
-	public static enum RecipientType
+	public enum RecipientType
 	{
 		AllUsers, User, Role, AllRolesContainingGroup, Group,
 	}
 
 	private static final Recipient ALL_USERS = _builder().type(RecipientType.AllUsers).build();
 
-	private RecipientType type;
-	private UserId userId;
-	private RoleId roleId;
-	private UserGroupId groupId;
-	private NotificationGroupName notificationGroupName;
+	@NonNull RecipientType type;
+	UserId userId;
+	RoleId roleId;
+	UserGroupId groupId;
+	NotificationGroupName notificationGroupName;
 
 	@Builder(builderMethodName = "_builder")
 	private Recipient(
@@ -198,6 +198,9 @@ public class Recipient
 	{
 		return roleId != null;
 	}
+	
+	@NonNull
+	public RoleId getRoleId() { return Check.assumeNotNull(roleId, "roleId is set for {}", this); }
 
 	public NotificationGroupName getNotificationGroupName()
 	{

@@ -297,4 +297,11 @@ import java.util.Properties;
 	{
 		return huIdsToNotDestroy.contains(huId);
 	}
+
+	@Override
+	public boolean isPropertyTrue(@NonNull final String propertyName)
+	{
+		final Boolean isPropertyTrue = getProperty(propertyName);
+		return isPropertyTrue != null && isPropertyTrue;
+	}
 }

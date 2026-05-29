@@ -99,6 +99,9 @@ de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Root ($P{C_Order_ID}, $P{p
 					<subreportParameter name="IsSOTrx">
 						<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
 					</subreportParameter>
+					<subreportParameter name="ad_language">
+						<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
 				</subreport>

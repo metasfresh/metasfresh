@@ -28,6 +28,8 @@ import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.BPBankAcctUse;
+import de.metas.common.util.Check;
 import de.metas.money.CurrencyId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -38,7 +40,7 @@ import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -71,6 +73,11 @@ public class BPartnerBankAccount
 	public static final String IBAN = "iban";
 	public static final String CURRENCY_ID = "currencyId";
 	public static final String ACTIVE = "active";
+	public static final String ACCOUNT_NAME = "accountName";
+	public static final String ACCOUNT_STREET = "accountStreet";
+	public static final String ACCOUNT_ZIP = "accountZip";
+	public static final String ACCOUNT_CITY = "accountCity";
+	public static final String ACCOUNT_COUNTRY = "accountCountry";
 
 	@Nullable
 	private BPartnerBankAccountId id;
@@ -80,9 +87,9 @@ public class BPartnerBankAccount
 	 */
 	@Setter(AccessLevel.NONE)
 	@JsonIgnore
-	private BPartnerId bpartnerId;
+	private @Nullable BPartnerId bpartnerId;
 
-	@NonNull
+	@Nullable
 	private String iban;
 
 	@Nullable
@@ -101,28 +108,58 @@ public class BPartnerBankAccount
 	@Nullable
 	private BankId bankId;
 
+	@Nullable
+	private BPBankAcctUse bpBankAcctUse;
+
+	@Nullable
+	private String accountName;
+
+	@Nullable
+	private String accountStreet;
+
+	@Nullable
+	private String accountZip;
+
+	@Nullable
+	private String accountCity;
+
+	@Nullable
+	private String accountCountry;
+
 
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
-			@NonNull final String iban,
+			@Nullable final String iban,
 			@Nullable final String qrIban,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final BankId bankId)
+			@Nullable final BankId bankId,
+			@Nullable final String accountName,
+			@Nullable final String accountStreet,
+			@Nullable final String accountZip,
+			@Nullable final String accountCity,
+			@Nullable final String accountCountry,
+			@Nullable final BPBankAcctUse bpBankAcctUse)
 	{
 		setId(id);
 		this.iban = iban;
 		this.qrIban = qrIban;
 		this.currencyId = currencyId;
-		this.active = coalesce(active, true);
+		this.active = coalesceNotNull(active, true);
 
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
 		this.bankId = bankId;
+		this.accountName = accountName;
+		this.accountStreet = accountStreet;
+		this.accountZip = accountZip;
+		this.accountCity = accountCity;
+		this.accountCountry = accountCountry;
+		this.bpBankAcctUse = bpBankAcctUse;
 	}
 
 	public final void setId(@Nullable final BPartnerBankAccountId id)
@@ -131,4 +168,9 @@ public class BPartnerBankAccount
 		this.bpartnerId = id != null ? id.getBpartnerId() : null;
 	}
 
+	@NonNull
+	public BPartnerBankAccountId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "Assuming the id is set at this point!");
+	}
 }

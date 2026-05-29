@@ -128,6 +128,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 	BPartnerContactId getBillContactEffectiveId(I_C_OLCand olCand);
 
+	BPartnerLocationId getDropShipLocationEffectiveId(I_C_OLCand olCand);
+
 	/**
 	 * Returns, falling back to the next if not set:
 	 * <ul>
@@ -187,6 +189,9 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	I_C_BPartner_Location getHandOver_Location_Effective(I_C_OLCand olCand);
 
+	/**
+	 * This method will not verify that the combination of effective product-id and effective hu-pi-item-product is valid! 
+	 */
 	@Nullable
 	HUPIItemProductId getEffectivePackingInstructions(I_C_OLCand olCand);
 

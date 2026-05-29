@@ -40,6 +40,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ERROR_CONTEXT;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 
 @UtilityClass
@@ -53,7 +54,8 @@ public class ErrorProcessor
 
 		final JsonErrorItem.JsonErrorItemBuilder errorBuilder = JsonErrorItem
 				.builder()
-				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class));
+				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class))
+				.errorContext(exchange.getIn().getHeader(HEADER_ERROR_CONTEXT, String.class));
 
 		final Exception exception = CoalesceUtil.coalesce(exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
 														  exchange.getIn().getHeader(Exchange.EXCEPTION_CAUGHT, Exception.class));

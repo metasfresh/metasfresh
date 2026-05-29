@@ -16,8 +16,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
@@ -54,7 +54,7 @@ public class BPartnerBL_RetrieveContactOrNullTests
 	private BPartnerLocationId bpartnerLocationId;
 	private BPartnerBL bPartnerBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

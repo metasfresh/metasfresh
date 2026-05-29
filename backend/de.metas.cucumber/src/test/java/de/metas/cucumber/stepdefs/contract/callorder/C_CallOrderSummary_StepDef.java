@@ -24,8 +24,8 @@ package de.metas.cucumber.stepdefs.contract.callorder;
 
 import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
@@ -75,7 +75,7 @@ public class C_CallOrderSummary_StepDef
 	}
 
 	@And("^validate (created|updated) C_CallOrderSummary:$")
-	public void validate_call_order_summary(@NonNull final String action_UNUSED, @NonNull final DataTable dataTable)
+	public void validate_call_order_summary(@NonNull final String ignoredAction, @NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 

@@ -30,14 +30,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
-import de.metas.copy_with_details.CopyRecordRequest;
-import de.metas.copy_with_details.CopyRecordService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
@@ -96,6 +95,7 @@ public class DocumentCollection
 	private static final int DEFAULT_CACHE_SIZE = 800;
 
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
 	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of(("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed"));
 
@@ -355,9 +355,7 @@ public class DocumentCollection
 
 	private void assertNewDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
-		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
-		if (allow.isFalse())
+		if(!DocumentPermissionsHelper.isNewDocumentAllowed(entityDescriptor, userSession))
 		{
 			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
 		}
@@ -740,7 +738,7 @@ public class DocumentCollection
 		websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 	}
 
-	public Document duplicateDocument(final DocumentPath fromDocumentPath)
+	public Document duplicateDocument(final DocumentPath fromDocumentPath, final IUserRolePermissions permissions)
 	{
 		// NOTE: assume running out of transaction
 
@@ -748,17 +746,23 @@ public class DocumentCollection
 		// One of the reasons of doing this is because for some documents there are events which are triggered on each change (but on trx commit).
 		// If we would run out of transaction, those events would be triggered 10k times.
 		// e.g. copying the AD_Role. Each time a record like AD_Window_Access is created, the UserRolePermissionsEventBus.fireCacheResetEvent() is called.
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath));
+		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath, permissions));
 
 		return getDocumentReadonly(toDocumentPath);
 	}
 
-	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath)
+	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath, final IUserRolePermissions permissions)
 	{
-		// NOTE: assume it's already running in transaction
+		trxManager.assertThreadInheritedTrxExists();
 
-		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
+		final Document fromDocument = getDocumentReadonly(fromDocumentPath);
+		if (!DocumentPermissionsHelper.canEdit(fromDocument, permissions))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final TableRecordReference fromRecordRef = fromDocument.getTableRecordReference()
+				.orElseThrow(() -> new AdempiereException("Cannot determine table/record from " + fromDocument));
 
 		final CopyRecordRequest copyRecordRequest = CopyRecordRequest.builder()
 				.customErrorIfCloneNotAllowed(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW)

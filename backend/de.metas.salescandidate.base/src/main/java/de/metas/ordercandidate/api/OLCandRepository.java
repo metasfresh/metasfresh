@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
@@ -9,8 +31,10 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
-import de.metas.impex.InputDataSourceId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.location.LocationId;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
@@ -26,6 +50,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -45,34 +70,16 @@ import java.util.Set;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Repository
+@RequiredArgsConstructor
 public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+    private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
+	private final ExternalSystemRepository externalSystemRepository;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -84,7 +91,7 @@ public class OLCandRepository
 		return trxManager.callInThreadInheritedTrx(
 				() -> {
 					final ImmutableList.Builder<OLCand> result = ImmutableList.builder();
-					for(final OLCandCreateRequest request: requests)
+					for (final OLCandCreateRequest request : requests)
 					{ // using for-loop because if one request fails, it's very hard to debug
 						final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
 						final OLCand olCand = olCandFactory.toOLCand(olCandRecord);
@@ -96,8 +103,6 @@ public class OLCandRepository
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
-		Check.assumeNotNull(request, "request is not null");
-
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -250,12 +255,13 @@ public class OLCandRepository
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId());
 
-		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
+		olCandPO.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(request.getDataSourceId()));
 
 		olCandPO.setAD_DataDestination_ID(request.getDataDestId().getRepoId());
 
 		olCandPO.setExternalLineId(request.getExternalLineId());
 		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
+		olCandPO.setExternalSystem_ID(request.getExternalSystemId().getRepoId());
 
 		final ShipperId shipperId = request.getShipperId();
 		if (shipperId != null)
@@ -274,6 +280,8 @@ public class OLCandRepository
 		{
 			olCandPO.setInvoiceRule(invoiceRule.getCode());
 		}
+
+		olCandPO.setIsAutoInvoice(request.isAutoInvoice());
 
 		final PaymentRule paymentRule = request.getPaymentRule();
 		if (paymentRule != null)
@@ -300,6 +308,12 @@ public class OLCandRepository
 		olCandPO.setDescription(request.getDescription());
 		olCandPO.setDeliveryRule(request.getDeliveryRule());
 		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		if (request.getIncotermsId() != null)
+		{
+            olCandPO.setC_Incoterms_ID(request.getIncotermsId().getRepoId());
+			olCandPO.setIncotermLocation(request.getIncotermsLocation());
+		}
+
 		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
 		if (request.getPrice() == null)
 		{
@@ -317,11 +331,6 @@ public class OLCandRepository
 		}
 
 		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
-		if (request.getIsImportedWithIssues() != null)
-		{
-			olCandWithIssuesInterface.setIsImportedWithIssues(request.getIsImportedWithIssues());
-		}
-
 		if (request.getQtyShipped() != null)
 		{
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
@@ -366,9 +375,14 @@ public class OLCandRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_ExternalHeaderId, olCandQuery.getExternalHeaderId());
 		}
-		if (olCandQuery.getInputDataSourceName() != null)
+		if (olCandQuery.getExternalSystemType() != null)
 		{
-			final InputDataSourceId inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(olCandQuery.getExternalSystemType());
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+		if (Check.isNotBlank(olCandQuery.getInputDataSourceName()))
+		{
+			final InputDataSourceId inputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
 		}
 		if (olCandQuery.getExternalLineId() != null)

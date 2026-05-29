@@ -22,8 +22,10 @@
 
 package de.metas.process;
 
+import de.metas.error.AdIssueId;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -34,16 +36,21 @@ import java.util.List;
 @Builder
 public class ProcessInfoLogRequest
 {
-	int logId;
+	int log_ID;
+	@Nullable
+	BigDecimal p_Number;
+	@Nullable
+	String p_Msg;
 
 	@Nullable
 	Timestamp pDate;
 
 	@Nullable
-	BigDecimal pNumber;
-
+	ITableRecordReference tableRecordReference;
 	@Nullable
-	String pMsg;
+	AdIssueId ad_Issue_ID;
+	@Nullable
+	String trxName;
 
 	@Nullable
 	List<String> warningMessages;

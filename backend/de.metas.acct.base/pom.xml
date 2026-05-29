@@ -15,7 +15,6 @@
 	<version>10.0.0</version>
 
 	<properties>
-		<migration-sql-basedir />
 	</properties>
 
 	<dependencies>

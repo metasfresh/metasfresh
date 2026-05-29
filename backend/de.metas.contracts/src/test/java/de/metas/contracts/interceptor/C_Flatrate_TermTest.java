@@ -1,13 +1,11 @@
 package de.metas.contracts.interceptor;
 
 import de.metas.acct.GLCategoryRepository;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.organization.OrgId;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -71,7 +69,7 @@ public class C_Flatrate_TermTest
 		try
 		{
 
-			final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(new ContractOrderService(), new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())), new GLCategoryRepository());
+			final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(new ContractOrderService(), DummyDocumentLocationBL.newInstanceForUnitTesting(), new GLCategoryRepository());
 			flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term);
 			fail("Expected an AdempiereExeception");
 		}
@@ -90,7 +88,7 @@ public class C_Flatrate_TermTest
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement);
 		save(term);
 
-		final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(new ContractOrderService(), new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())), new GLCategoryRepository());
+		final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(new ContractOrderService(), DummyDocumentLocationBL.newInstanceForUnitTesting(), new GLCategoryRepository());
 		flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term); // shall return with no exception
 	}
 

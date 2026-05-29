@@ -10,12 +10,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static de.metas.material.event.MaterialEventConstants.M_RECEIPTSCHEDULE_TABLE_NAME;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
@@ -51,7 +53,7 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	private final MaterialDescriptor materialDescriptor;
 
 	private final OldReceiptScheduleData oldReceiptScheduleData;
-	
+
 	private final BigDecimal reservedQuantity;
 
 	@JsonInclude(NON_NULL)
@@ -59,13 +61,16 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	private final int receiptScheduleId;
 
+	private final boolean isDropShipWarehouse;
+
 	public AbstractReceiptScheduleEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@Nullable final OldReceiptScheduleData oldReceiptScheduleData,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
-			final int receiptScheduleId)
+			final int receiptScheduleId,
+			final boolean isDropShipWarehouse)
 	{
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.receiptScheduleId = receiptScheduleId;
@@ -73,6 +78,7 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 		this.materialDescriptor = materialDescriptor;
 		this.oldReceiptScheduleData = oldReceiptScheduleData;
 		this.reservedQuantity = reservedQuantity;
+		this.isDropShipWarehouse = isDropShipWarehouse;
 	}
 
 	public abstract BigDecimal getOrderedQuantityDelta();
@@ -87,6 +93,12 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
 
 		return this;
+	}
+
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(M_RECEIPTSCHEDULE_TABLE_NAME, receiptScheduleId);
 	}
 
 }

@@ -60,8 +60,8 @@ $BODY$
 					then (select bom.PP_Product_BOM_ID from PP_Product_BOM bom
 						where bom.M_Product_ID=bomLineProduct.M_Product_ID
 						and bom.IsActive='Y'
-						and bom.Value=bomLineProduct.Value
-						order by bom.PP_Product_BOM_ID
+                        AND (bom.validto >= NOW() OR bom.validto IS NULL)
+                        ORDER BY bom.validfrom DESC, bom.PP_Product_BOM_ID DESC
 						limit 1)
 					else null
 					end)::numeric(10,0) as PP_Product_BOM_ID,

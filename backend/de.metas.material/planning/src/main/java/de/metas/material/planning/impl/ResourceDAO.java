@@ -18,6 +18,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
@@ -133,7 +134,12 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public I_S_Resource getById(@NonNull final ResourceId resourceId)
 	{
-		return loadOutOfTrx(resourceId, I_S_Resource.class);
+		final I_S_Resource record = loadOutOfTrx(resourceId, I_S_Resource.class);
+		if(record == null)
+		{
+			throw AdempiereException.notFound().setParameter("resourceId", resourceId);
+		}
+		return record;
 	}
 
 	@Override
@@ -236,7 +242,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeRecord.getS_ResourceType_ID())
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 		if (resourceIds.isEmpty())
 		{
 			return;
@@ -262,7 +268,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_User_ID, userId)
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 	}
 
 	@Override
@@ -278,7 +284,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeIds)
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 	}
 
 
@@ -289,7 +295,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 
 	}
 }

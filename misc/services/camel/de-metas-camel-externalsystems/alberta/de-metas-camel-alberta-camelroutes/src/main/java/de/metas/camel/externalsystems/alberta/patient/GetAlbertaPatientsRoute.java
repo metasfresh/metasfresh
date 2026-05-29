@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -73,7 +73,7 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 		// this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command
 		from(direct(GET_PATIENTS_ROUTE_ID))
 				.routeId(GET_PATIENTS_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(new PrepareApiClientsProcessor()).id(PREPARE_PATIENTS_API_PROCESSOR_ID)
 				.process(new RetrievePatientsProcessor()).id(RETRIEVE_PATIENTS_PROCESSOR_ID)
 				.split(body())

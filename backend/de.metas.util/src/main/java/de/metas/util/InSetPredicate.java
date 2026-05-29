@@ -26,6 +26,7 @@ public final class InSetPredicate<T> implements Predicate<T>
 
 	private static final InSetPredicate<Object> ANY = new InSetPredicate<>(Mode.ANY, ImmutableSet.of());
 	private static final InSetPredicate<Object> NONE = new InSetPredicate<>(Mode.NONE, ImmutableSet.of());
+	private static final InSetPredicate<Object> ONLY_NULL = new InSetPredicate<>(Mode.ONLY, Collections.singleton(null));
 
 	private InSetPredicate(
 			@NonNull final Mode mode,
@@ -50,6 +51,12 @@ public final class InSetPredicate<T> implements Predicate<T>
 	{
 		//noinspection unchecked
 		return (InSetPredicate<T>)NONE;
+	}
+
+	public static <T> InSetPredicate<T> onlyNull()
+	{
+		//noinspection unchecked
+		return (InSetPredicate<T>)ONLY_NULL;
 	}
 
 	public static <T> InSetPredicate<T> only(@NonNull final Set<T> onlyValues)
@@ -163,5 +170,32 @@ public final class InSetPredicate<T> implements Predicate<T>
 		}
 
 		return only(Sets.intersection(this.toSet(), other.toSet()));
+	}
+
+	public interface CaseConsumer<T>
+	{
+		void anyValue();
+
+		void noValue();
+
+		void onlyValues(Set<T> onlyValues);
+	}
+
+	public void apply(@NonNull final CaseConsumer<T> caseConsumer)
+	{
+		switch (mode)
+		{
+			case ANY:
+				caseConsumer.anyValue();
+				break;
+			case NONE:
+				caseConsumer.noValue();
+				break;
+			case ONLY:
+				caseConsumer.onlyValues(onlyValues);
+				break;
+			default:
+				throw new IllegalStateException("Unknown mode: " + mode); // shall not happen
+		}
 	}
 }

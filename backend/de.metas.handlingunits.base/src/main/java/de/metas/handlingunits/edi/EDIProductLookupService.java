@@ -25,20 +25,19 @@ package de.metas.handlingunits.edi;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_EDI_M_Product_Lookup_UPC_v;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class EDIProductLookupService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ImmutableList<EDIProductLookup> lookupByUPC(
+	public ImmutableList<ResolvedScannedProductCode> lookupByUPC(
 			@NonNull final String upc,
 			final boolean usedForCustomer)
 	{
@@ -52,12 +51,11 @@ public class EDIProductLookupService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static EDIProductLookup fromRecord(@NonNull final I_EDI_M_Product_Lookup_UPC_v record)
+	private static ResolvedScannedProductCode fromRecord(@NonNull final I_EDI_M_Product_Lookup_UPC_v record)
 	{
-		return EDIProductLookup.builder()
+		return ResolvedScannedProductCode.builder()
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-				.upc(record.getUPC())
 				.usedForCustomer(record.isUsedForCustomer())
 				.build();
 	}

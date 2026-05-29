@@ -25,10 +25,12 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
@@ -52,6 +54,8 @@ import java.util.ArrayList;
 @Deprecated
 public class ProjectGenPO extends JavaProcess
 {
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 	/** Project Parameter			*/
 	private int 		m_C_Project_ID = 0;
 	/** Opt Project Line Parameter	*/
@@ -224,7 +228,7 @@ public class ProjectGenPO extends JavaProcess
 			}
 		}
 		
-		orderLine.setTax();
+		orderLineBL.setTax(orderLine);
 		orderLine.save();
 
 		//	update ProjectLine

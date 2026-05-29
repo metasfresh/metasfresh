@@ -50,6 +50,7 @@ public class TaxUtils
 				.isFiscalRepresentation(StringUtils.toBoolean(from.getIsFiscalRepresentation(), null))
 				.isSalesTax(from.isSalesTax())
 				.isWholeTax(from.isWholeTax())
+				.isReverseCharge(from.isReverseCharge())
 				.isDocumentLevel(from.isDocumentLevel())
 				.isTaxExempt(from.isTaxExempt())
 				.rate(from.getRate())

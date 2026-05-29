@@ -40,6 +40,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -57,6 +58,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -65,6 +67,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -80,6 +83,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -87,6 +91,8 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -100,6 +106,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -121,6 +128,8 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -132,9 +141,27 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public List<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ids)
+	{
+		return ppOrdersRepo.getByIds(ids);
+	}
+
+	@Override
 	public String getDocumentNoById(@NonNull final PPOrderId ppOrderId)
 	{
 		return getById(ppOrderId).getDocumentNo();
+	}
+
+	@Override
+	public I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId)
+	{
+		return orderBOMService.getOrderBOMLineById(orderBOMLineId);
+	}
+
+	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
+	{
+		return orderBOMService.getOrderBOMLines(orderId);
 	}
 
 	@Override
@@ -351,6 +378,18 @@ public class PPOrderBL implements IPPOrderBL
 		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
+	public void closeOrdersByIds(@NonNull final Set<PPOrderId> ppOrderIds)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_PP_Order> ppOrders = ppOrdersRepo.getByIds(ppOrderIds);
+		ppOrders.forEach(this::closeOrder);
 	}
 
 	@Override
@@ -651,4 +690,29 @@ public class PPOrderBL implements IPPOrderBL
 		return orderBOMService.getProductIdsToIssue(ppOrderId);
 	}
 
+	@NonNull
+	public String getResourceName(@NonNull final ResourceId resourceId)
+	{
+		return resourceDAO.getById(resourceId).getName();
+	}
+
+	@Override
+	public void updateDraftedOrdersMatchingBOM(@NonNull final ProductBOMVersionsId bomVersionsId, @NonNull final ProductBOMId newVersionId)
+	{
+		ppOrdersRepo.streamDraftedPPOrdersFor(bomVersionsId)
+				.filter(draftedOrder -> !isSomethingProcessed(draftedOrder))
+				.forEach(draftedOrder -> {
+					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
+					try
+					{
+						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));
+					}
+					catch (final Exception e)
+					{
+						Loggables.withLogger(logger, Level.ERROR)
+								.addLog("Failed updating PP_Order (PP_Order_ID = {}) with the latest PP_Product_BOM version (PP_Product_BOM = {})",
+										draftedOrder.getPP_Order_ID(), newVersionId, e);
+					}
+				});
+	}
 }

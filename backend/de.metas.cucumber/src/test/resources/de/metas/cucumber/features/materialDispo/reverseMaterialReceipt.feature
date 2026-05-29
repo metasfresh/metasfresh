@@ -1,67 +1,120 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
-Feature: Reversal of material receipt is correctly considered in Material Dispo
+Feature: Reversal of material receipt
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
-    And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
-
-  @from:cucumber
-  Scenario:
-    Given load M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value        |
-      | warehouseStd              | StdWarehouse |
+    And metasfresh has date and time 2021-04-14T11:30:13Z
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
     And metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_16052022_1 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                          | Value                          | OPT.Description                      | OPT.IsActive |
-      | ps_1       | pricing_system_name16052022_1 | pricing_system_value16052022_1 | pricing_system_description16052022_1 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                      | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name16052022_1 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_1       | ps_1               | CH           | CHF           | false |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                        | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV16052022_1 | 2021-04-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | pp_1       | plv_1                  | product      | 10.0     | PCE      |
     And metasfresh contains C_BPartners without locations:
-      | Identifier  | Name                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endvendor_1 | Endvendor16052022_1 | Y            | N              | ps_1                          |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | vendor     | Y        | N          | ps_1               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | l_1        | 0123456789111 | endvendor_1              | Y                   | Y                   |
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              | 2021-04-15T21:00:00Z |
+      | Identifier     | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | vendorLocation | vendor        | CH           | Y               | Y               |
+ 
+    
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  Scenario: Check Material Dispo
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_PaymentTerm_ID | DocBaseType | M_PricingSystem_ID | DatePromised        |
+      | po1        | N       | vendor        | 2021-04-16  | 1000012          | POO         | ps_1               | 2021-04-15T15:00:00 |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | p_1                     | 10         |
-    And the order identified by o_1 is completed
-    And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 10  | 10                     |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po1_l1     | po1        | product      | 10         |
+    And the order identified by po1 is completed
+    Then after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected       | Qty | ATP |
+      | c_1        | SUPPLY            | PURCHASE                  | product      | 2021-04-15T15:00:00 | 10  | 10  |
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_16052022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
+      | rs1                             | po1                   | po1_l1                    | vendor                   | vendorLocation                    | product                 | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_16052022_1      | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
+      | huLuTuConfig                          | hu1                | rs1                             | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | processedTopHU     | receiptSchedule_16052022_1      | inOut_16052022_1      |
+      | hu1                | rs1                             | receipt1              |
+    # Validate HU state after receipt — HU should be Active in warehouse
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | A        | Y        |
+    # the receipt with qty=10 came before it was expected; c_1 now has Qty=0; c_2 has the value that was set in the timesource
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 10                     |                                 |
-      | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     |                      | 10  | 10                     | 2021-04-14T00:00:00             |
-    When the material receipt identified by inOut_16052022_1 is reversed
-    Then after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 0                      |                                 |
-      | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     |                      | 10  | 10                     | 2021-04-14T00:00:00             |
-      | c_3        | UNEXPECTED_DECREASE | PURCHASE                      | p_1                     |                      | 10  | -10                    | 2021-04-14T00:00:00             |
+      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
+      | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00  | 0   | 10  |
+      | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 10  |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 10        |
+    And the material receipt identified by receipt1 is reversed
+    # Validate HU state after reversal — HU should be Destroyed
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | D        | N        |
+    # i'm not sure it's right that c_1 did not get its Qty=10 back. So if you think i's wrong => maybe it is.
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
+      | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00  | 0   | 0   |
+      | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 10  |
+      | c_3        | UNEXPECTED_DECREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 0   |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 0         |
+# cleanup
+    And metasfresh has current date and time
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

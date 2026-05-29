@@ -6,7 +6,6 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,7 +46,7 @@ public class ExtendContractOrder
 	{
 		if (I_C_Order.CONTRACTSTATUS_Extended.equals(existentOrder.getContractStatus()))
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_EXTEND_CONTRACT_ALREADY_PROLONGED));
+			throw new AdempiereException(MSG_EXTEND_CONTRACT_ALREADY_PROLONGED);
 		}
 		else
 		{

@@ -22,49 +22,88 @@
 
  package de.metas.cucumber.stepdefs.attribute;
 
- import de.metas.cucumber.stepdefs.DataTableUtil;
- import de.metas.cucumber.stepdefs.StepDefConstants;
+ import de.metas.common.util.CoalesceUtil;
+ import de.metas.cucumber.stepdefs.DataTableRows;
+ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+ import de.metas.cucumber.stepdefs.ValueAndName;
  import de.metas.util.Services;
  import io.cucumber.datatable.DataTable;
  import io.cucumber.java.en.And;
  import lombok.NonNull;
+ import lombok.RequiredArgsConstructor;
  import org.adempiere.ad.dao.IQueryBL;
+ import org.adempiere.mm.attributes.AttributeValueType;
+ import org.adempiere.mm.attributes.api.Attribute;
+ import org.adempiere.mm.attributes.api.impl.AttributeDAO;
+ import org.adempiere.model.InterfaceWrapperHelper;
  import org.compiere.model.I_M_Attribute;
 
- import java.util.List;
- import java.util.Map;
+ import static org.assertj.core.api.Assertions.assertThat;
 
- import static org.assertj.core.api.Assertions.*;
-
+ @RequiredArgsConstructor
  public class M_Attribute_StepDef
  {
 	 private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	 private final M_Attribute_StepDefData attributeTable;
-
-	 public M_Attribute_StepDef(@NonNull final M_Attribute_StepDefData attributeTable)
-	 {
-		 this.attributeTable = attributeTable;
-	 }
+	 @NonNull private final M_Attribute_StepDefData attributeTable;
 
 	 @And("load M_Attribute:")
 	 public void load_M_Attribute(@NonNull final DataTable dataTable)
 	 {
-		 final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		 for (final Map<String, String> row : tableRows)
-		 {
-			 final String value = DataTableUtil.extractStringForColumnName(row, I_M_Attribute.COLUMNNAME_Value);
+		 DataTableRows.of(dataTable)
+				 .setAdditionalRowIdentifierColumnName(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+				 .forEach(row -> {
+					 final String value = row.getAsString(I_M_Attribute.COLUMNNAME_Value);
 
-			 final I_M_Attribute attributeRecord = queryBL.createQueryBuilder(I_M_Attribute.class)
-					 .addOnlyActiveRecordsFilter()
-					 .addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
-					 .create()
-					 .firstOnly(I_M_Attribute.class);
+					 final I_M_Attribute attributeRecord = queryBL.createQueryBuilder(I_M_Attribute.class)
+							 .addOnlyActiveRecordsFilter()
+							 .addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
+							 .create()
+							 .firstOnly(I_M_Attribute.class);
+					 assertThat(attributeRecord).isNotNull();
+					 final Attribute attribute = AttributeDAO.fromRecord(attributeRecord);
 
-			 assertThat(attributeRecord).isNotNull();
+					 final StepDefDataIdentifier attributeIdentifier = row.getAsIdentifier();
+					 attributeTable.putOrReplace(attributeIdentifier, attribute);
+				 });
+	 }
 
-			 final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			 attributeTable.putOrReplace(attributeIdentifier, attributeRecord);
-		 }
+	 @And("metasfresh contains M_Attributes:")
+	 public void metasfresh_contains_M_Attributes(@NonNull final DataTable dataTable)
+	 {
+		 DataTableRows.of(dataTable)
+				 .setAdditionalRowIdentifierColumnName(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+				 .forEach(row -> {
+					 final ValueAndName valueAndName = row.suggestValueAndName();
+					 final String value = valueAndName.getValue();
+
+					 final I_M_Attribute attributeRecord = CoalesceUtil.coalesceSuppliersNotNull(
+							 () -> queryBL.createQueryBuilder(I_M_Attribute.class)
+									 .addOnlyActiveRecordsFilter()
+									 .addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
+									 .create()
+									 .firstOnly(I_M_Attribute.class),
+							 () -> InterfaceWrapperHelper.newInstance(I_M_Attribute.class));
+
+					 if(InterfaceWrapperHelper.isNew(attributeRecord))
+					 {
+						 attributeRecord.setValue(value);
+						 attributeRecord.setName(valueAndName.getName());
+					 }
+
+					 row.getAsOptionalEnum(I_M_Attribute.COLUMNNAME_AttributeValueType, AttributeValueType.class)
+							 .ifPresent(type -> attributeRecord.setAttributeValueType(type.getCode()));
+
+					 row.getAsOptionalBoolean(I_M_Attribute.COLUMNNAME_IsStorageRelevant)
+							 .ifPresent(attributeRecord::setIsStorageRelevant);
+
+					 row.getAsOptionalString(I_M_Attribute.COLUMNNAME_DefaultValueSQL)
+							 .ifPresent(attributeRecord::setDefaultValueSQL);
+
+					 InterfaceWrapperHelper.saveRecord(attributeRecord);
+					 final Attribute attribute = AttributeDAO.fromRecord(attributeRecord);
+
+					 row.getAsOptionalIdentifier().ifPresent(identifier -> attributeTable.putOrReplace(identifier, attribute));
+				 });
 	 }
  }

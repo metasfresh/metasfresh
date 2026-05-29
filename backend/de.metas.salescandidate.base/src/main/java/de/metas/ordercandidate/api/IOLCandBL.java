@@ -1,10 +1,8 @@
-package de.metas.ordercandidate.api;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +20,14 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
+package de.metas.ordercandidate.api;
+
 import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.incoterms.IncotermsId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -41,7 +42,9 @@ import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -55,10 +58,20 @@ public interface IOLCandBL extends ISingletonService
 {
 	String MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P = "OLCandProcessor.ProcessingError";
 
+	@Value
+	@Builder
+	class OLCandProcessRequest
+	{
+		@NonNull OLCandProcessorDescriptor processor;
+		@NonNull PInstanceId selectionId;
+		@Nullable AsyncBatchId asyncBatchId;
+		boolean propagateAsyncBatchIdToOrderRecord;
+	}
+	
 	/**
-	 * Creates and updates orders.
+	 * Creates orders from OLCands.
 	 */
-	void process(OLCandProcessorDescriptor processor, @NonNull PInstanceId selectionId, @Nullable AsyncBatchId asyncBatchId);
+	void process(@NonNull OLCandProcessRequest request);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 

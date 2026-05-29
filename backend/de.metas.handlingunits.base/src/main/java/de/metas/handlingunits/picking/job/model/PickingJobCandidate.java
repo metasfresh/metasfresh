@@ -23,25 +23,68 @@
 package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
+import de.metas.quantity.Quantity;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.warehouse.WarehouseTypeId;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
 @Builder
 public class PickingJobCandidate
 {
-	@NonNull InstantAndOrgId preparationDate;
-	@NonNull String salesOrderDocumentNo;
-	@NonNull OrderId salesOrderId;
-	@NonNull String customerName;
-	@NonNull BPartnerLocationId deliveryBPLocationId;
+	@NonNull PickingJobAggregationType aggregationType;
+	@Nullable InstantAndOrgId preparationDate;
+	@Nullable String salesOrderDocumentNo;
+	@Nullable OrderId salesOrderId;
+	@Nullable String customerName;
+	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	boolean partiallyPickedBefore;
 	@Nullable BPartnerLocationId handoverLocationId;
+	@NonNull @With PickingJobCandidateProducts products;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
+
+	public Set<ProductId> getProductIds() {return products.getProductIds();}
+
+	public OptionalBoolean hasQtyAvailableToPick()
+	{
+		return products.hasQtyAvailableToPick();
+	}
+
+	@Nullable
+	public ProductId getProductId()
+	{
+		return products.getSingleProductIdOrNull();
+	}
+
+	@Nullable
+	public ProductValueAndName getProductValueAndName()
+	{
+		return products.getSingleProductValueAndNameOrNull();
+	}
+
+	@Nullable
+	public Quantity getQtyToDeliver()
+	{
+		return products.getSingleQtyToDeliverOrNull();
+	}
+
+	@Nullable
+	public Quantity getQtyAvailableToPick()
+	{
+		return products.getSingleQtyAvailableToPickOrNull();
+	}
 }

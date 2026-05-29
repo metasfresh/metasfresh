@@ -32,8 +32,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.uom.UomId;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+
+import java.time.LocalDate;
 
 public class StepDefConstants
 {
@@ -46,9 +49,10 @@ public class StepDefConstants
 	public static final PPRoutingId WORKFLOW_ID = PPRoutingId.ofRepoId(540075);
 	public static final LocatorId LOCATOR_ID = LocatorId.ofRepoId(WAREHOUSE_ID, 540007);
 	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
+	public static final ClientId CLIENT_ID = ClientId.METASFRESH;
 	public static final OrgId ORG_ID = OrgId.MAIN;
 	public static final OrgId ORG_ID_SYSTEM = OrgId.ANY;
-	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
+	public static final CountryId COUNTRY_ID = CountryId.GERMANY;
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);
 	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);
@@ -57,4 +61,10 @@ public class StepDefConstants
 
 	public static final BPartnerId METASFRESH_AG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_AG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_AG_BPARTNER_ID, 2202690);
+
+	public static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
+	public static final String DEFAULT_TaxCategory_InternalName = "Normal";
+
+	public static int DEFAULT_timeOutSec = 30;
+
 }

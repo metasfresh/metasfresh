@@ -61,6 +61,8 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PaySchedule;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
@@ -148,8 +150,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
 		engine.addModelValidator(new C_BPartner_Location(), client); // 02618
-
-		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Payment(), client); // 04193
 
 		engine.addModelValidator(new M_AttributeInstance(), client); // 05839
 
@@ -269,6 +269,9 @@ public class SwatValidator implements ModelValidator
 				.register();
 
 		cachingService.addTableCacheConfigIfAbsent(I_C_BP_Group.class);
+
+		cachingService.addTableCacheConfigIfAbsent(I_C_PaymentTerm.class);
+		cachingService.addTableCacheConfigIfAbsent(I_C_PaySchedule.class);
 	}
 
 	@Override

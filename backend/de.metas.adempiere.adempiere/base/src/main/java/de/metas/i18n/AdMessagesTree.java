@@ -1,5 +1,6 @@
 package de.metas.i18n;
 
+import de.metas.common.rest_api.v2.i18n.JsonMessages;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -93,5 +94,13 @@ public class AdMessagesTree
 		{
 			return source;
 		}
+	}
+	
+	public JsonMessages toJson()
+	{
+		return JsonMessages.builder()
+				.language(adLanguage)
+				.messages(map)
+				.build();
 	}
 }

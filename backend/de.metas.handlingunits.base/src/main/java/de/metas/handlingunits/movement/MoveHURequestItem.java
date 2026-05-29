@@ -1,0 +1,56 @@
+/*
+ * #%L
+ * de.metas.manufacturing.rest-api
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.movement;
+
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class MoveHURequestItem
+{
+	@NonNull @Getter(AccessLevel.NONE) HUIdAndQRCode huIdAndQRCode;
+	@Nullable QtyTU numberOfTUs;
+
+	@NonNull
+	public static MoveHURequestItem ofHUIdAndQRCode(@NonNull final HUIdAndQRCode huIdAndQRCode)
+	{
+		return MoveHURequestItem.builder()
+				.huIdAndQRCode(huIdAndQRCode)
+				.build();
+	}
+
+	@NonNull
+	public HuId getHuId() {return huIdAndQRCode.getHuId();}
+
+	@Nullable
+	public HUQRCode getHuQRCode() {return huIdAndQRCode.getHuQRCode();}
+}

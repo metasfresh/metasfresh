@@ -27,10 +27,9 @@ package de.metas.util;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.util.WeakList;
+import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author tsa
@@ -71,7 +70,7 @@ public class WeakListTest
 			System.gc();
 		}
 
-		Assert.assertTrue("List should be empty after " + maxAttempts + " attempts: " + list, list.isEmpty());
+		assertThat(list.isEmpty()).as("List should be empty after " + maxAttempts + " attempts: " + list).isTrue();
 		System.out.println("List expired after " + attempt + " attempts");
 	}
 
@@ -86,21 +85,18 @@ public class WeakListTest
 		list.add(value1);
 		list.add(value2);
 		list.add(value3);
-		Assert.assertEquals("Weak list shall contain exactly the same elements as our hard list",
-				Arrays.asList(value1, value2, value3),
-				list);
+		assertThat(list).as("Weak list shall contain exactly the same elements as our hard list")
+				.isEqualTo(Arrays.asList(value1, value2, value3));
 
 		// Remove by using the exact object reference
 		list.remove(value2);
-		Assert.assertEquals("Invalid weak list content",
-				Arrays.asList(value1, value3),
-				list);
+		assertThat(list).as("Invalid weak list content")
+				.isEqualTo(Arrays.asList(value1, value3));
 
 		// Remove by using the an object which equals with an object from our list
 		list.remove(new DummyTestObject("value3"));
-		Assert.assertEquals("Invalid weak list content",
-				Arrays.asList(value1),
-				list);
+		assertThat(list).as("Invalid weak list content")
+				.isEqualTo(Arrays.asList(value1));
 	}
 
 	@Test
@@ -110,11 +106,10 @@ public class WeakListTest
 		DummyTestObject value2 = new DummyTestObject("value");
 
 		final WeakList<DummyTestObject> list = new WeakList<>(true);
-		Assert.assertEquals(true, list.addIfAbsent(value1));
-		Assert.assertEquals(false, list.addIfAbsent(value2));
-		Assert.assertEquals("Invalid weak list content",
-				Arrays.asList(value1),
-				list);
+		assertThat(list.addIfAbsent(value1)).isTrue();
+		assertThat(list.addIfAbsent(value2)).isFalse();
+		assertThat(list).as("Invalid weak list content")
+				.isEqualTo(Arrays.asList(value1));
 
 		value1 = null;
 		value2 = null;

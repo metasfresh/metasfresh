@@ -1,9 +1,14 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: scale prices
+## F32000: Pricing
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
 
@@ -21,6 +26,9 @@ Feature: scale prices
       | bpartner_1 | BPartnerTest | Y              | defaultPricingSystem          |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_130
   Scenario: scale price with 'Use scale price' set on product price
     Given metasfresh contains M_Products:
@@ -64,6 +72,9 @@ Feature: scale prices
       | ol_3                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 150        | 0            | 0           | 4     | 0        | EUR          | false     | huPIItemProduct_180520225_1            |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: scale price with 'Don't use scale price' set on product price
     Given metasfresh contains M_Products:
       | Identifier               | Name                     |
@@ -93,6 +104,9 @@ Feature: scale prices
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: scale price with 'Use scale price, fallback product price' set on product price
     Given metasfresh contains M_Products:
       | Identifier               | Name                     |

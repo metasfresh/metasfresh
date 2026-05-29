@@ -13,8 +13,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommand;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
@@ -89,13 +89,14 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
 
 	private final Timestamp now = SystemTime.asDayTimestamp();
@@ -127,7 +128,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -193,7 +194,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.docTypeId(docTypeId)
 				.warehouseOrgId(warehouseOrgId)
 				.warehouseId(warehouseId)
-				.inventoryDate(CoalesceUtil.coalesce(importRecord.getInventoryDate(), now))
+				.inventoryDate(CoalesceUtil.coalesceNotNull(importRecord.getInventoryDate(), now))
 				.build();
 	}
 
@@ -207,11 +208,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		final int clientId = importRecord.getAD_Client_ID();
 
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											   .docBaseType(docBaseAndSubType.getDocBaseType())
-											   .docSubType(docBaseAndSubType.getDocSubType())
-											   .adClientId(clientId)
-											   .adOrgId(orgId.getRepoId())
-											   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(clientId)
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 
 	private static DocBaseAndSubType getDocBaseAndSubType(@Nullable final HUAggregationType huAggregationType)
@@ -228,7 +229,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	}
 
 	@Override
-	protected I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Inventory(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -318,23 +319,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 
 		if (explicitCostPrice.isAuto())
 		{
-			if (costPrice != null && costPrice.signum() > 0)
-			{
-				inventoryLineRecord.setIsExplicitCostPrice(true);
-			}
-			else
-			{
-				inventoryLineRecord.setIsExplicitCostPrice(false);
-			}
-		}
-		else if (explicitCostPrice.isTrue())
-		{
-			inventoryLineRecord.setIsExplicitCostPrice(true);
+			inventoryLineRecord.setIsExplicitCostPrice(costPrice != null && costPrice.signum() > 0);
 		}
 		else
-		{
-			inventoryLineRecord.setIsExplicitCostPrice(false);
-		}
+			inventoryLineRecord.setIsExplicitCostPrice(explicitCostPrice.isTrue());
 
 		InterfaceWrapperHelper.saveRecord(inventoryLineRecord);
 		logger.trace("Insert inventory line - {}", inventoryLineRecord);
@@ -348,18 +336,18 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		else
 		{
 			inventoryLineHUs = ImmutableList.of(InventoryLineHU.builder()
-														.huId(null) // will be created later, on inventory complete. this is just a placeholder
-														.qtyCount(qtyCount)
-														.qtyBook(qtyBooked)
-														.build());
+					.huId(null) // will be created later, on inventory complete. this is just a placeholder
+					.qtyCount(qtyCount)
+					.qtyBook(qtyBooked)
+					.build());
 		}
 
 		//
-		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord)
+		final InventoryLine inventoryLine = inventoryService.toInventoryLine(inventoryLineRecord)
 				.withInventoryLineHUs(inventoryLineHUs)
 				.distributeQtyCountToHUs(qtyCount, uomConversionBL);
 
-		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
+		inventoryService.saveInventoryLineHURecords(inventoryLine, inventoryId);
 
 		//
 		importRecord.setM_Inventory_ID(inventoryId.getRepoId());
@@ -373,7 +361,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	{
 		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 		return hus.stream()
-				.map(DraftInventoryLinesCreator::toInventoryLineHU)
+				.map(DraftInventoryLinesCreateCommand::toInventoryLineHU)
 				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -388,7 +376,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				//
 				// .warehouseId(null)
 				.locatorId(locatorId)
-				.productId(productId)
+				.onlyProductId(productId)
 				.asiId(asiId)
 				//
 				.build();
@@ -427,50 +415,50 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		if (!Check.isBlank(importRecord.getAttributeCode1()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode1().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString1());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString1());
 		}
 		if (!Check.isBlank(importRecord.getAttributeCode2()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode2().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString2());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString2());
 		}
 		if (!Check.isBlank(importRecord.getAttributeCode3()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode3().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString3());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString3());
 		}
 		if (!Check.isBlank(importRecord.getAttributeCode4()))
 		{
 			final AttributeCode attributeCode = AttributeCode.ofString(importRecord.getAttributeCode4().trim());
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, attributeCode, importRecord.getAttributeValueString4());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, attributeCode, importRecord.getAttributeValueString4());
 		}
 
 		//
 		// Lot
 		if (!Check.isBlank(importRecord.getLot()))
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_LotNumber, importRecord.getLot());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_LotNumber, importRecord.getLot());
 		}
 
 		//
 		// BestBeforeDate
 		if (importRecord.getHU_BestBeforeDate() != null)
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, importRecord.getHU_BestBeforeDate());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_BestBeforeDate, importRecord.getHU_BestBeforeDate());
 		}
 
 		//
 		// TE
 		if (!Check.isBlank(importRecord.getTE()))
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
 		}
 
 		//
 		// DateReceived
 		if (importRecord.getDateReceived() != null)
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_DateReceived, importRecord.getDateReceived());
+			attributeSetInstanceBL.setAttributeInstanceValueToCurrentASI(asiId, AttributeConstants.ATTR_DateReceived, importRecord.getDateReceived());
 		}
 
 		//
@@ -515,10 +503,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		else
 		{
 			return attributeDAO.createAttributeValue(AttributeListValueCreateRequest.builder()
-															 .attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
-															 .value(subproducerBPartnerIdString)
-															 .name(subproducerBPartnerValue)
-															 .build());
+					.attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
+					.value(subproducerBPartnerIdString)
+					.name(subproducerBPartnerValue)
+					.build());
 		}
 	}
 
@@ -532,9 +520,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		//
 		// Get/Create/Update Attribute Instance
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
-		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		I_M_AttributeInstance attributeInstance = asiBL.getAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
+			// FIXME use asiBL API
 			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
 		}
 		attributeInstance.setM_AttributeSetInstance(asi);

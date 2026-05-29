@@ -1,5 +1,11 @@
 package de.metas.aggregation.api.impl;
 
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationItem;
+import de.metas.aggregation.api.AggregationItem.Type;
+import de.metas.aggregation.api.AggregationItemId;
+import de.metas.aggregation.api.AggregationKey;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -7,16 +13,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.aggregation.api.Aggregation;
-import de.metas.aggregation.api.AggregationId;
-import de.metas.aggregation.api.AggregationItem;
-import de.metas.aggregation.api.AggregationItem.Type;
-import de.metas.aggregation.api.AggregationItemId;
-import de.metas.aggregation.api.AggregationKey;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that {@link GenericAggregationKeyBuilder} is correclty handling boolean columns and overrides.
@@ -42,7 +41,7 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 	private Aggregation aggregation;
 	private GenericAggregationKeyBuilder<I_ModelWithBooleanOverride> aggregationKeyBuilder;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -162,7 +161,7 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 		model.setIsTaxIncluded_Override(valueOverride);
 
 		final AggregationKey aggregationKeyActual = aggregationKeyBuilder.buildAggregationKey(model);
-		Assert.assertEquals(aggregationKeyExpected, aggregationKeyActual);
+		Assertions.assertEquals(aggregationKeyExpected, aggregationKeyActual);
 	}
 
 	public interface I_ModelWithBooleanOverride

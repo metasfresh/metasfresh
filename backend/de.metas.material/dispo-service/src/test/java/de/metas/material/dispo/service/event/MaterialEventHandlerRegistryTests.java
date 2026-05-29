@@ -9,6 +9,7 @@ import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
@@ -17,11 +18,11 @@ import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailR
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
-import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.foreacast.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
@@ -39,6 +40,8 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
@@ -118,8 +121,8 @@ public class MaterialEventHandlerRegistryTests
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
-
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval,candidateQtyDetailsRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -129,13 +132,15 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(
+				new DemandCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
 						availableToPromiseRepository,
 						stockCandidateService,
-						supplyCandidateHandler),
+						supplyCandidateHandler,
+						Mockito.mock(MaterialPlanningContextHelper.class),
+						new PPOrderCandidateDemandMatcher()),
 				supplyCandidateHandler));
 
 		final DDOrderCandidateAdvisedHandler distributionAdvisedEventHandler = new DDOrderCandidateAdvisedHandler(

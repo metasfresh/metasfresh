@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
@@ -19,7 +18,6 @@ import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -30,6 +28,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -95,15 +94,25 @@ import java.util.Set;
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
 		final OrgId orgId = orderAggregationKey.getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		this.orderFactory = OrderFactory.newPurchaseOrder()
 				.orgId(orgId)
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised())
+				.dateOrdered(TimeUtil.asLocalDate(orderAggregationKey.getDateOrdered(), timeZone))
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
 				.externalHeaderId(orderAggregationKey.getExternalId())
-				.dateOrdered(SystemTime.asLocalDate(orgDAO.getTimeZone(orgId)));
+				.externalSystemId(orderAggregationKey.getExternalSystemId());
+
+		if (orderAggregationKey.isDropShip())
+		{
+			orderFactory.dropShip(
+					orderAggregationKey.getDropShipBPartnerId(),
+					orderAggregationKey.getDropShipLocationId(),
+					orderAggregationKey.getDropShipUserId());
+		}
 
 		if (docType != null)
 		{
@@ -113,50 +122,71 @@ import java.util.Set;
 		this.userNotifications = userNotifications;
 	}
 
+	/**
+	 * Adds {@code purchaseOrderItem} as a new, independent order line.
+	 * Each call creates a fresh {@link OrderLineBuilder} — candidates are never merged,
+	 * preserving the invariant required by
+	 * {@code UC_C_PurchaseCandidate_Alloc_C_OrderLinePO_ID}: one purchase candidate per PO line.
+	 */
 	public void addCandidate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
-				.orderLineByProductAndUom(
-						purchaseOrderItem.getProductId(),
-						UomId.ofRepoId(purchaseOrderItem.getUomId()))
-				.orElseGet(orderFactory::newOrderLine)
+				.newOrderLine()
 				.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
+		orderLineBuilder.piItemProductId(purchaseOrderItem.getHuPIItemProductId());
+		orderLineBuilder.asiId(purchaseOrderItem.getAttributeSetInstanceId());
+		orderLineBuilder.qtyEnteredTU(purchaseOrderItem.getQtyEnteredTU());
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)
 		{
 			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
-		orderLineBuilder.manualPriceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.externalId(purchaseOrderItem.getExternalLineId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
 
 	public I_C_Order createAndComplete()
 	{
-		final I_C_Order order = orderFactory.createAndComplete();
+		return create(true);
+	}
 
-		purchaseItem2OrderLine
-				.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+	/**
+	 * Creates a purchase order from the accumulated candidates.
+	 *
+	 * @param complete if {@code true}, the C_Order is created and immediately completed (DocStatus=CO);
+	 *                 if {@code false}, only a draft order is created (DocStatus=DR).
+	 *                 Corresponds to {@code PP_Product_Planning.IsDocComplete}.
+	 */
+	public I_C_Order create(final boolean complete)
+	{
+		final I_C_Order order = complete
+				? orderFactory.createAndComplete()
+				: orderFactory.createDraft();
 
-		final Set<UserId> userIdsToNotify = getUserIdsToNotify();
-		if (userIdsToNotify.isEmpty())
+		purchaseItem2OrderLine.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+
+		if (complete)
 		{
-			return order;
+			final Set<UserId> userIdsToNotify = getUserIdsToNotify();
+			if (!userIdsToNotify.isEmpty())
+			{
+				final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
+
+				final NotificationRequest request = NotificationRequest.builder()
+						.order(order)
+						.recipientUserIds(userIdsToNotify)
+						.adMessageAndParams(adMessageAndParams)
+						.build();
+
+				userNotifications.notifyOrderCompleted(request);
+			}
 		}
-
-		final ADMessageAndParams adMessageAndParams = createMessageAndParamsOrNull(order);
-
-		final NotificationRequest request = NotificationRequest.builder()
-				.order(order)
-				.recipientUserIds(userIdsToNotify)
-				.adMessageAndParams(adMessageAndParams)
-				.build();
-
-		userNotifications.notifyOrderCompleted(request);
 
 		return order;
 	}

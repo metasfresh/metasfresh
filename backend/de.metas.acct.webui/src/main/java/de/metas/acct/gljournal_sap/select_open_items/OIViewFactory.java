@@ -31,7 +31,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -121,10 +120,6 @@ public class OIViewFactory implements IViewFactory
 	private RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
-		if (processId == null)
-		{
-			throw new AdempiereException("No processId found for " + processClass);
-		}
 
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)

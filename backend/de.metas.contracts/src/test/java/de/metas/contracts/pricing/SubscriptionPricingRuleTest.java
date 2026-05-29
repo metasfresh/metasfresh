@@ -3,7 +3,10 @@ package de.metas.contracts.pricing;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -24,6 +27,7 @@ public class SubscriptionPricingRuleTest
 	{
 		AdempiereTestHelper.get().init();
 		helper = new SubscriptionPricingTestHelper();
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

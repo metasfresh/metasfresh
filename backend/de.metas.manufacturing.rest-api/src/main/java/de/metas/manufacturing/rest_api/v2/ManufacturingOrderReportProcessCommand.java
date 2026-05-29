@@ -242,10 +242,10 @@ class ManufacturingOrderReportProcessCommand
 	private JsonResponseIssueToManufacturingOrder processIssue(@NonNull final JsonRequestIssueToManufacturingOrder issue)
 	{
 		final PPOrderId orderId = extractPPOrderId(issue);
-		
+
 		final OrgId orgId = OrgId.ofRepoId(getOrderById(orderId).getAD_Org_ID());
 		final String productNo = issue.getProductNo();
-		
+
 		final ProductId productId = productBL.getProductIdByValue(orgId, productNo);
 		if (productId == null)
 		{
@@ -276,7 +276,8 @@ class ManufacturingOrderReportProcessCommand
 							.productId(productId)
 							.qtyCU(fixedQtyToIssue)
 							.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-							.build());
+							.build())
+					.getNewCUs();
 		}
 		else
 		{
@@ -445,8 +446,8 @@ class ManufacturingOrderReportProcessCommand
 	private Set<PPOrderId> getOrderIds()
 	{
 		return Stream.concat(
-				request.getReceipts().stream().map(receipt -> extractPPOrderId(receipt)),
-				request.getIssues().stream().map(issue -> extractPPOrderId(issue)))
+						request.getReceipts().stream().map(receipt -> extractPPOrderId(receipt)),
+						request.getIssues().stream().map(issue -> extractPPOrderId(issue)))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -529,8 +530,10 @@ class ManufacturingOrderReportProcessCommand
 
 		return JsonErrorItem.builder()
 				.message(ex.getLocalizedMessage())
+				.errorCode(AdempiereException.extractErrorCodeOrNull(ex))
 				.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
 				.adIssueId(JsonMetasfreshId.of(adIssueId.getRepoId()))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(ex))
 				.throwable(ex)
 				.build();
 	}

@@ -1,9 +1,13 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor7
 Feature: create distribution to balance demand
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
     And metasfresh contains M_Products:
@@ -59,6 +63,8 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0171.300
   Scenario: One distribution candidate is created to balance the full demand of the sales order
     When update existing PP_Product_Plannings
@@ -89,6 +95,8 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order
     When update existing PP_Product_Plannings
       | Identifier      | IsCreatePlan |
@@ -114,7 +122,7 @@ Feature: create distribution to balance demand
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
-    And after not more than 60s, DD_OrderLine found for orderLine ol_1
+    And after not more than 120s, DD_OrderLine found for orderLine ol_1
       | Identifier   |
       | ddOrderLine1 |
     
@@ -130,6 +138,8 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0171.300
   Scenario: One distribution candidate is created to partially balance the demand of the sales order. The other part is covered by inventory
     Given metasfresh initially has this MD_Candidate data
@@ -166,6 +176,8 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: targetWH <- sourceWH <- sourceWH2 <- sourceWH3 (with partial stock)
     Given metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
@@ -231,6 +243,8 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: detect infinite loop: targetWH <- sourceWH <- targetWH
     Given metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
@@ -263,6 +277,8 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: detect infinite loop: targetWH <- sourceWH <- sourceWH2 <- sourceWH3 <- targetWH
     Given metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
@@ -301,3 +317,134 @@ Feature: create distribution to balance demand
       | p_1          | sourceWH            | targetWH         | 14 PCE | N         |
       | p_1          | sourceWH2           | sourceWH         | 14 PCE | N         |
       | p_1          | sourceWH3           | sourceWH2        | 14 PCE | N         |
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  @Id:S0171.300
+  Scenario: One distribution candidate is created to balance the full demand of the sales order. Order is reactivated and qty is decreased. Distribution candidate is adjusted.
+    When update existing PP_Product_Plannings
+      | Identifier      | IsCreatePlan |
+      | productPlanning | N            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | SO         | true    | bpartner_1    | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | SO         | p_1          | 14         |
+    And the order identified by SO is completed
+
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 14  | -14                    | targetWH       |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | N         |
+
+    And the order identified by SO is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_1                      | 8              |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And the order identified by SO is completed
+
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 0 PCE | N         |
+      | c2         | p_1          | sourceWH            | targetWH         | 8 PCE | N         |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | targetWH       |                       |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | targetWH       | c1                    |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |
+      | c_4        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | 0                      | targetWH       | c2                    |
+      | c_5        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | sourceWH       | c2                    |
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order. Sales order is reactivated and qty is decreased. The qty on the PP_Order_Candidate is not changed.
+    When update existing PP_Product_Plannings
+      | Identifier      | IsCreatePlan |
+      | productPlanning | Y            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | SO         | true    | bpartner_1    | 2022-07-04  | 2022-07-04T00:00:00Z | targetWH       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | SO         | p_1          | 14         |
+    And the order identified by SO is completed
+
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
+    And after not more than 120s, DD_OrderLine found for orderLine ol_1
+      | Identifier   | QtyEntered |
+      | ddOrderLine1 | 14         |
+
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |                       |                 |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -14                    | targetWH       | c1                    |                 |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |                       | ddOrderLine1    |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
+
+    And the order identified by SO is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_1                      | 8              |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |                       |                 |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       | c1                    |                 |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 14                     | targetWH       |                       | ddOrderLine1    |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And the order identified by SO is completed
+
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                    | targetWH       |                       |                 |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | targetWH       | c1                    |                 |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 6                      | targetWH       |                       | ddOrderLine1    |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |

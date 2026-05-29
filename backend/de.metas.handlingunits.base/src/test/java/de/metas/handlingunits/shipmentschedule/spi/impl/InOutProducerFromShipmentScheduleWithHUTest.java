@@ -14,7 +14,6 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -66,6 +65,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
@@ -104,8 +104,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
@@ -412,7 +410,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			return BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 		}
 
-		private WarehouseId warehouse(String name)
+		private WarehouseId warehouse(final String name)
 		{
 			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 			warehouse.setName(name);
@@ -516,7 +514,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 					.orderId(order())
 					.productId(product("product", uom("uom")));
 
-			final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
+			final List<ShipmentScheduleWithHU> candidates = Collections.singletonList(
 					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build() //
 			);
 

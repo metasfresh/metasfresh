@@ -1,0 +1,5 @@
+-- Column: AD_Workflow.Name
+-- 2023-08-25T11:54:10.694538500Z
+UPDATE AD_Column SET CloningStrategy='UQ',Updated=TO_TIMESTAMP('2023-08-25 14:54:10.693','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=236
+;
+

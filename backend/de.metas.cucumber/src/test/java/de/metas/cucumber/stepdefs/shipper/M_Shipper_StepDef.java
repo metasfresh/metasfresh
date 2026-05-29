@@ -38,10 +38,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalTime;
 
 @RequiredArgsConstructor
 public class M_Shipper_StepDef
 {
+	private final static LocalTime DEFAULT_PICKUP_TIME_FROM = LocalTime.of(8, 0);
+	private final static LocalTime DEFAULT_PICKUP_TIME_TO = LocalTime.of(17, 0);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@NonNull private final M_Shipper_StepDefData shipperTable;
@@ -85,6 +90,13 @@ public class M_Shipper_StepDef
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setValue(valueAndName.getValue());
 		record.setName(valueAndName.getName());
+		final LocalTime pickupTimeFrom = row.getAsOptionalLocalTime(I_M_Shipper.COLUMNNAME_PickupTimeFrom)
+				.orElse(DEFAULT_PICKUP_TIME_FROM);
+		record.setPickupTimeFrom(TimeUtil.asTimestamp(pickupTimeFrom));
+
+		final LocalTime pickupTimeTo = row.getAsOptionalLocalTime(I_M_Shipper.COLUMNNAME_PickupTimeTo)
+				.orElse(DEFAULT_PICKUP_TIME_TO);
+		record.setPickupTimeTo(TimeUtil.asTimestamp(pickupTimeTo));
 
 		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_InternalName)
 				.map(StringUtils::trimBlankToNull)

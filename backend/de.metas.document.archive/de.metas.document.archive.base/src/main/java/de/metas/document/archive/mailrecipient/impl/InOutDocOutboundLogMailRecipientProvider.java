@@ -27,7 +27,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.inout.IInOutBL;
@@ -47,13 +48,13 @@ import java.util.Optional;
 public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogMailRecipientProvider
 {
 
-	private final DocOutBoundRecipientRepository recipientRepository;
+	private final DocOutBoundRecipientService recipientRepository;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	public InOutDocOutboundLogMailRecipientProvider(
-			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final DocOutBoundRecipientService recipientRepository,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository,
 			@NonNull final IBPartnerBL bpartnerBL)
 	{
@@ -75,7 +76,7 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipients> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		final I_M_InOut inOutRecord = request.getRecordRef()
 				.getModel(I_M_InOut.class);
@@ -83,7 +84,7 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
 				ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
 
-		final String inoutEmail = propagateToDocOutboundLog ? inOutRecord.getEMail(): null;
+		final String inoutEmail = propagateToDocOutboundLog ? inOutRecord.getEMail() : null;
 		final String locationEmail = inoutBL.getLocationEmail(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
 
 		if (inOutRecord.getAD_User_ID() > 0)
@@ -92,17 +93,17 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 			if (Check.isNotBlank(inoutEmail))
 			{
-				return Optional.of(inOutUser.withEmailAddress(inoutEmail));
+				return DocOutBoundRecipients.optionalOfTo(inOutUser.withEmailAddress(inoutEmail));
 			}
 
 			if (Check.isNotBlank(inOutUser.getEmailAddress()))
 			{
-				return Optional.of(inOutUser);
+				return DocOutBoundRecipients.optionalOfTo(inOutUser);
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
-				return Optional.of(inOutUser.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(inOutUser.withEmailAddress(locationEmail));
 			}
 
 		}
@@ -117,24 +118,24 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
 						.build());
 
-		if (billContact != null)
+		if (billContact != null && billContact.getId() != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
 			if (Check.isNotBlank(inoutEmail))
 			{
-				return Optional.of(docOutBoundRecipient.withEmailAddress(inoutEmail));
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(inoutEmail));
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
-				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
 			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
 			{
-				return Optional.of(docOutBoundRecipient);
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient);
 			}
 		}
 

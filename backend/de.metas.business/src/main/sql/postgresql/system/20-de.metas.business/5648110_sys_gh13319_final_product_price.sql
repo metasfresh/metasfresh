@@ -1,8 +1,8 @@
 -- 2022-07-22T09:07:48.930Z
 -- URL zum Konzept
-INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCopyDescriptionToDocument, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsExcludeFromCommision, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm,
+INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsExcludeFromCommision, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm,
                        IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy)
-VALUES (1000000, 1000000, 541047, TO_TIMESTAMP('2022-07-22 09:07:48', 'YYYY-MM-DD HH24:MI:SS'), 100, 'CRD', 1, 'de.metas.document', 1000000, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Cost Revaluation', 'Cost Revaluation', TO_TIMESTAMP('2022-07-22 09:07:48', 'YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (1000000, 1000000, 541047, TO_TIMESTAMP('2022-07-22 09:07:48', 'YYYY-MM-DD HH24:MI:SS'), 100, 'CRD', 1, 'de.metas.document', 1000000, 'N', 'N', 'Y',  'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Cost Revaluation', 'Cost Revaluation', TO_TIMESTAMP('2022-07-22 09:07:48', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 -- 2022-07-22T09:07:48.946Z

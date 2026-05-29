@@ -30,11 +30,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.shipping.v1.shipment.JsonPackage;
 import de.metas.common.shipping.v1.shipment.mpackage.JsonCreateShippingPackageInfo;
 import de.metas.common.shipping.v1.shipment.mpackage.JsonCreateShippingPackagesRequest;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
+import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.product.PackageDimensions;
 import de.metas.rest_api.v1.shipping.ShipmentService;
 import de.metas.rest_api.v1.shipping.ShippedCandidateKey;
 import de.metas.shipping.IShipperDAO;
@@ -183,6 +184,7 @@ public class ShippingPackageService
 					.trackingUrl(trackingURLWithTrackingNumber)
 					.trackingNumber(jsonPackage.getTrackingCode())
 					.weight(jsonPackage.getWeight())
+					.packageDimensions(PackageDimensions.UNSPECIFIED)//not supported in this version
 					.build());
 		}
 		return result;

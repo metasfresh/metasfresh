@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,27 +32,29 @@ import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
-import de.metas.externalsystem.externalservice.ExternalServices;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
-import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.logging.LogManager;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
+import de.metas.pricing.productprice.ProductPriceRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
-import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
+import de.metas.rest_api.v2.pricing.PriceListRestService;
+import de.metas.rest_api.v2.pricing.ProductPriceRestService;
+import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.Services;
-import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
@@ -94,26 +96,50 @@ public class ProductsRestControllerTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
-		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
-																					  new ExternalSystemExportAuditRepo(),
-																					  new RuntimeParametersRepository(),
-																					  externalServices,
-																					  new JsonExternalSystemRetriever());
+		final ExternalSystemService externalSystemService = ExternalSystemService.newInstanceForUnitTesting();
+
 		final ProductRepository productRepository = new ProductRepository();
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), externalReferenceTypes);
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
-		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
+				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
+		final AlbertaProductService albertaProductService = AlbertaProductService.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
+				new MockLogEntriesRepository(),
+				Mockito.mock(AlbertaBPartnerCompositeService.class)
+		);
 
-		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
+		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
+
+		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
+
+		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
+		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
+		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
+
+		 final PriceListVersionRepository priceListVersionRepository = new PriceListVersionRepository();
+		final PriceListRestService priceListService = new PriceListRestService(externalReferenceRestControllerService, priceListVersionRepository);
+
+		final ProductPriceRestService productPriceRestService= new ProductPriceRestService(externalReferenceRestControllerService,
+																						   productPriceRepository,
+																						   priceListService,
+																						   externalIdentifierResolver,
+																						   new BpartnerPriceListServicesFacade(productPriceRepository),
+																						   jsonServiceFactory);
+
+		final UomConversionRestService uomConversionRestService = new UomConversionRestService();
+
+		final ProductRestService productRestService = new ProductRestService(productLookupService,
+																			 productRepository,
+																			 externalReferenceRestControllerService,
+																			 productPriceRestService,
+																			 productTaxCategoryService,
+																			 uomConversionRestService);
+
+		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, productLookupService);
 	}
 
 	private void createMasterData()

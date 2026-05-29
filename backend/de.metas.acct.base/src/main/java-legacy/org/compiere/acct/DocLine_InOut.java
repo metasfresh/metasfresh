@@ -27,6 +27,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.Doc_InOut.InOutDocBaseType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPCostCollectorId;
@@ -164,7 +165,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.productId(getProductId())
 					.attributeSetInstanceId(getAttributeSetInstanceId())
 					.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-					.qty(getQty())
+					.qty(getQty().negateIf(isMaterialReturn()))
 					//.amt(null)
 					.currencyConversionContext(getCurrencyConversionContext(as))
 					.date(getDateAcctAsInstant());
@@ -217,7 +218,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.productId(getProductId())
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-							.qty(getQty())
+							.qty(getQty().negateIf(isMaterialReturn()))
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.currencyConversionContext(getCurrencyConversionContext(as))
 							.date(getDateAcctAsInstant())
@@ -278,5 +279,10 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			return null;
 		}
 	}
+
+	private boolean isMaterialReturn() {return getInOutDocBaseType().isReturn();}
+
+	@NonNull
+	private InOutDocBaseType getInOutDocBaseType() {return getDoc().getInOutDocBaseType();}
 
 }

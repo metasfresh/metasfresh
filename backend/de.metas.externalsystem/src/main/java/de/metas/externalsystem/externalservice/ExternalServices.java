@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.externalservice;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -43,6 +44,8 @@ import de.metas.externalsystem.externalservice.status.ExternalSystemStatusReposi
 import de.metas.externalsystem.externalservice.status.StoreExternalSystemStatusRequest;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -66,6 +69,18 @@ public class ExternalServices
 		this.serviceInstanceRepo = serviceInstanceRepo;
 		this.statusRepo = statusRepo;
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
+	}
+
+	@VisibleForTesting
+	public static ExternalServices newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalServices.class, () -> new ExternalServices(
+				ExternalSystemServiceRepository.newInstanceForUnitTesting(),
+				ExternalSystemServiceInstanceRepository.newInstanceForUnitTesting(),
+				new ExternalSystemStatusRepository(),
+				ExternalSystemConfigRepo.newInstanceForUnitTesting()));
 	}
 
 	public void handleStatusUpdateIfRequired(@NonNull final ExternalSystemParentConfigId configId, @NonNull final String command)
@@ -112,7 +127,7 @@ public class ExternalServices
 					final ExternalSystemServiceModel service = serviceInstance.getService();
 
 					return JsonExternalStatusResponseItem.builder()
-							.externalSystemConfigType(service.getExternalSystemType().getCode())
+							.externalSystemConfigType(service.getExternalSystemType().getValue())
 							.serviceValue(service.getServiceValue())
 							.externalSystemChildValue(configId2ChildValue.get(serviceInstance.getConfigId()))
 							.expectedStatus(JsonExternalStatus.valueOf(serviceInstance.getExpectedStatus().getCode()))
@@ -135,7 +150,7 @@ public class ExternalServices
 
 	public void initializeServiceInstancesIfRequired(@NonNull final ExternalSystemParentConfigId configId)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(configId));
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(externalSystemConfigRepo.getParentTypeById(configId));
 
 		serviceRepo.getAllByType(externalSystemType)
 				.stream()
@@ -175,7 +190,7 @@ public class ExternalServices
 	{
 		final String parentConfigType = externalSystemConfigRepo.getParentTypeById(configId);
 
-		getServiceByTypeAndCommand(ExternalSystemType.ofCode(parentConfigType), command)
+		getServiceByTypeAndCommand(ExternalSystemType.ofValue(parentConfigType), command)
 				.map(service -> CreateServiceInstanceRequest.builder()
 						.configId(configId)
 						.serviceId(service.getId())

@@ -50,7 +50,7 @@ public class QueueWorkPackageId implements RepoIdAware
 
 	private QueueWorkPackageId(final int repoId)
 	{
-		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = assumeGreaterThanZero(repoId, "C_Queue_WorkPackage_ID");
 	}
 
 	@Override

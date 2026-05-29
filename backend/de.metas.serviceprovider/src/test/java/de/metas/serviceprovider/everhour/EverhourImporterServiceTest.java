@@ -25,29 +25,30 @@ package de.metas.serviceprovider.everhour;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.Task;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.externalreference.ExternalId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingsRequest;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBooking;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRepository;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
@@ -69,43 +70,50 @@ import static de.metas.serviceprovider.TestConstants.MOCK_RECORD_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
 import static de.metas.serviceprovider.timebooking.importer.ImportConstants.IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX;
 import static de.metas.serviceprovider.timebooking.importer.ImportConstants.TIME_BOOKING_QUEUE_CAPACITY;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EverhourImporterServiceTest
 {
 	private ExternalReferenceRepository externalReferenceRepository;
 
-	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue =
-			new ImportQueue<>(TIME_BOOKING_QUEUE_CAPACITY, IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
-
-	private final FailedTimeBookingRepository failedTimeBookingRepository =
-			new FailedTimeBookingRepository(Services.get(IQueryBL.class));
+	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue = new ImportQueue<>(TIME_BOOKING_QUEUE_CAPACITY, IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
+	private FailedTimeBookingRepository failedTimeBookingRepository;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private EverhourClient mockEverhourClient;
 
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
+
 	private EverhourImporterService everhourImporterService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Everhour);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalUserReferenceType.USER_ID);
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-		externalSystems.registerExternalSystem(ExternalSystem.EVERHOUR);
-		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
-
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+		failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 
 		mockEverhourClient = Mockito.mock(EverhourClient.class);
 
-		everhourImporterService = new EverhourImporterService(mockEverhourClient, externalReferenceRepository,
-				timeBookingImportQueue, failedTimeBookingRepository, objectMapper, trxManager);
+		everhourImporterService = new EverhourImporterService(
+				mockEverhourClient,
+				ExternalSystemRepository.newInstanceForUnitTesting(),
+				externalReferenceRepository,
+				timeBookingImportQueue,
+				failedTimeBookingRepository,
+				objectMapper,
+				trxManager
+		);
 	}
 
 	/**
@@ -148,7 +156,7 @@ public class EverhourImporterServiceTest
 		assertEqual(importTimeBookingInfoImmutableList.get(1), ghValidTimeRecord_01_07);
 		assertEqual(importTimeBookingInfoImmutableList.get(2), ghValidTimeRecord_08_12);
 
-		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(ExternalSystem.EVERHOUR);
+		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(MOCK_EXTERNAL_SYSTEM_EVERHOUR);
 
 		assertEquals(failedTimeBookings.size(), 2);
 
@@ -170,7 +178,7 @@ public class EverhourImporterServiceTest
 		assertEquals(timeBookingInfo.getBookedDate(), LocalDate.parse(timeRecord.getDate()).atStartOfDay(ZoneOffset.UTC).toInstant());
 		assertEquals(timeBookingInfo.getIssueId(), MOCK_ISSUE_ID);
 		assertEquals(timeBookingInfo.getPerformingUserId(), MOCK_USER_ID);
-		assertEquals(timeBookingInfo.getExternalTimeBookingId(), ExternalId.of(ExternalSystem.EVERHOUR, timeRecord.getId()));
+		assertEquals(timeBookingInfo.getExternalTimeBookingId(), ExternalId.of(MOCK_EXTERNAL_SYSTEM_EVERHOUR, timeRecord.getId()));
 	}
 
 	private ImportTimeBookingsRequest getMockImportTBookingReq()
@@ -213,7 +221,7 @@ public class EverhourImporterServiceTest
 				.orgId(MOCK_ORG_ID)
 				.recordId(MOCK_RECORD_ID)
 				.externalReference(String.valueOf(MOCK_USER_ID.getRepoId()))
-				.externalSystem(ExternalSystem.EVERHOUR)
+				.externalSystem(MOCK_EXTERNAL_SYSTEM_EVERHOUR)
 				.externalReferenceType(ExternalUserReferenceType.USER_ID)
 				.build();
 
@@ -225,7 +233,7 @@ public class EverhourImporterServiceTest
 				.orgId(MOCK_ORG_ID)
 				.recordId(MOCK_RECORD_ID)
 				.externalReference(String.valueOf(MOCK_ISSUE_ID.getRepoId()))
-				.externalSystem(ExternalSystem.GITHUB)
+				.externalSystem(MOCK_EXTERNAL_SYSTEM_GITHUB)
 				.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 				.build();
 
@@ -237,7 +245,7 @@ public class EverhourImporterServiceTest
 				.orgId(MOCK_ORG_ID)
 				.errorMsg(MOCK_ERROR_MESSAGE)
 				.externalId(previouslyFailedTimeRecord.getId())
-				.externalSystem(ExternalSystem.EVERHOUR)
+				.externalSystem(MOCK_EXTERNAL_SYSTEM_EVERHOUR)
 				.jsonValue(objectMapper.writeValueAsString(previouslyFailedTimeRecord))
 				.build();
 

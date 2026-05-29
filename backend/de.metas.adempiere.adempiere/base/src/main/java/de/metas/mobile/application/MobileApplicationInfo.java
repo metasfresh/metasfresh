@@ -1,25 +1,85 @@
 package de.metas.mobile.application;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 @Value
-@Builder(toBuilder = true)
 public class MobileApplicationInfo
 {
 	@NonNull MobileApplicationRepoId repoId;
 	@NonNull MobileApplicationId id;
 	@NonNull ITranslatableString caption;
+	@NonNull ImmutableList<MobileApplicationAction> actions;
+	@NonNull QueryLimit maxStartedLaunchers;
+	boolean isAllowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
-	boolean requiresLaunchersQRCodeFilter;
+	boolean requiresTrolley;
+	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
-	@Builder.Default boolean showInMainMenu = true;
-	@Builder.Default int sortNo = 100;
+	boolean showFilterByQtyAvailableAtPickFromLocator;
+	boolean showInMainMenu;
+	int sortNo;
 	@NonNull @Singular ImmutableMap<String, Object> applicationParameters;
+
+	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<String, MobileApplicationAction> actionsByInternalName;
+
+	@Builder(toBuilder = true)
+	private MobileApplicationInfo(
+			@NonNull final MobileApplicationRepoId repoId,
+			@NonNull final MobileApplicationId id,
+			@NonNull final ITranslatableString caption,
+			@Nullable final List<MobileApplicationAction> actions,
+			@Nullable final QueryLimit maxStartedLaunchers,
+			final boolean isAllowStartNextJobOnly,
+			final boolean requiresWorkstation,
+			final boolean requiresWorkplace,
+			final boolean requiresTrolley,
+			final boolean showFilterByQRCode,
+			final boolean showFilters,
+			final boolean showFilterByDocumentNo,
+			final boolean showFilterByQtyAvailableAtPickFromLocator,
+			@Nullable final Boolean showInMainMenu,
+			@Nullable final Integer sortNo,
+			@NonNull @Singular final ImmutableMap<String, Object> applicationParameters)
+	{
+		this.repoId = repoId;
+		this.id = id;
+		this.caption = caption;
+		this.actions = actions != null && !actions.isEmpty() ? ImmutableList.copyOf(actions) : ImmutableList.of();
+		this.maxStartedLaunchers = maxStartedLaunchers != null ? maxStartedLaunchers : QueryLimit.NO_LIMIT;
+		this.isAllowStartNextJobOnly = isAllowStartNextJobOnly;
+		this.requiresWorkstation = requiresWorkstation;
+		this.requiresWorkplace = requiresWorkplace;
+		this.requiresTrolley = requiresTrolley;
+		this.showFilterByQRCode = showFilterByQRCode;
+		this.showFilters = showFilters;
+		this.showFilterByDocumentNo = showFilterByDocumentNo;
+		this.showFilterByQtyAvailableAtPickFromLocator = showFilterByQtyAvailableAtPickFromLocator;
+		this.showInMainMenu = showInMainMenu != null ? showInMainMenu : true;
+		this.sortNo = sortNo != null ? sortNo : 100;
+		this.applicationParameters = applicationParameters;
+
+		this.actionsByInternalName = Maps.uniqueIndex(this.actions, MobileApplicationAction::getInternalName);
+	}
+
+	public Optional<MobileApplicationActionId> getActionIdByInternalName(final @NonNull String actionInternalName)
+	{
+		final MobileApplicationAction action = actionsByInternalName.get(actionInternalName);
+		return action != null ? Optional.of(action.getId()) : Optional.empty();
+	}
 }

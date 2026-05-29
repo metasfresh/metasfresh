@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inventory;
 
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -48,4 +49,15 @@ public class CreateVirtualInventoryWithQtyReq
 	@NonNull ZonedDateTime movementDate;
 	@Nullable AttributeSetInstanceId attributeSetInstanceId;
 	@Nullable PickingJobId pickingJobId;
+
+	@SuppressWarnings("unused")
+	public static class CreateVirtualInventoryWithQtyReqBuilder
+	{
+		public CreateVirtualInventoryWithQtyReqBuilder clientAndOrgId(@NonNull ClientAndOrgId clientAndOrgId)
+		{
+			clientId(clientAndOrgId.getClientId());
+			orgId(clientAndOrgId.getOrgId());
+			return this;
+		}
+	}
 }

@@ -15,10 +15,6 @@
 
 	<description>PayPal Payments</description>
 
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>

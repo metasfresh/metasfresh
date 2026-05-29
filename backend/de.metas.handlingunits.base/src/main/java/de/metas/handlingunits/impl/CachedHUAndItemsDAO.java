@@ -22,14 +22,8 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -37,20 +31,25 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * This service wraps a {@link HUAndItemsDAO} and caches its results.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
+@SuppressWarnings("CommentedOutCode")
 public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 {
-	private final Map<Object, ArrayList<I_M_HU_Item>> huKey2huItems = new HashMap<>();
-	private final Map<Object, ArrayList<I_M_HU>> huItemKey2includedHUs = new HashMap<>();
+	private final HashMap<HuId, ArrayList<I_M_HU_Item>> huKey2huItems = new HashMap<>();
+	private final HashMap<HuItemId, ArrayList<I_M_HU>> huItemKey2includedHUs = new HashMap<>();
 
 	private final IHUAndItemsDAO db = HUAndItemsDAO.instance;
 
@@ -58,67 +57,58 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 	}
 
-	private final Object mkHUKey(final I_M_HU hu)
-	{
-		final int huId = hu.getM_HU_ID();
-		return mkHUKey(huId);
-	}
+	private HuId mkHUKey(final I_M_HU hu) {return HuId.ofRepoId(hu.getM_HU_ID());}
 
-	private final Object mkHUKey(final int huId)
-	{
-		return huId;
-	}
+	private HuId mkHUKey(final I_M_HU_Item huItem) {return HuId.ofRepoId(huItem.getM_HU_ID());}
 
-	private final Object mkHUItemKey(final I_M_HU_Item huItem)
-	{
-		final int huItemId = huItem.getM_HU_Item_ID();
-		return mkHUItemKey(huItemId);
-	}
-
-	private final Object mkHUItemKey(final int huItemId)
-	{
-		return huItemId;
-	}
+	private HuItemId mkHUItemKey(final I_M_HU_Item huItem) {return HuItemId.ofRepoId(huItem.getM_HU_Item_ID());}
 
 	@Override
-	public void saveHU(final I_M_HU hu)
+	public void saveHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
 		final boolean isNew = hu.getM_HU_ID() <= 0;
 
 		db.saveHU(hu);
 
-		final Object huKey = mkHUKey(hu);
+		final HuId huKey = mkHUKey(hu);
 
 		if (isNew)
 		{
-			huKey2huItems.put(huKey, new ArrayList<I_M_HU_Item>());
+			huKey2huItems.put(huKey, new ArrayList<>());
 		}
 
-		if (!hu.isActive())
-		{
-			final int parentHUItemId = hu.getM_HU_Item_Parent_ID();
-			if (parentHUItemId > 0)
-			{
-				// NOTE: don't check this because it's not always valid
-				// e.g. destroying an LU on Receipt Schedule, because that planning LU is not usable anymore
-				// throw new HUException("Inactivating an included HU not allowed"
-				// + "\n HU: " + hu
-				// + "\n Parent Item: " + db.retrieveParent(hu));
-
-				// NOTE: this is also not ok when we mark as destroyed a planning LU/TU, but we can live with that for now
-				// setParentItem(hu, null); // we are just updating the cache
-			}
-		}
+		// if (!hu.isActive())
+		// {
+		// 	final int parentHUItemId = hu.getM_HU_Item_Parent_ID();
+		// 	if (parentHUItemId > 0)
+		// 	{
+		// 		// NOTE: don't check this because it's not always valid
+		// 		// e.g. destroying an LU on Receipt Schedule, because that planning LU is not usable anymore
+		// 		// throw new HUException("Inactivating an included HU not allowed"
+		// 		// + "\n HU: " + hu
+		// 		// + "\n Parent Item: " + db.retrieveParent(hu));
+		//
+		// 		// NOTE: this is also not ok when we mark as destroyed a planning LU/TU, but we can live with that for now
+		// 		// setParentItem(hu, null); // we are just updating the cache
+		// 	}
+		// }
 	}
 
 	@Override
-	public void delete(final I_M_HU hu)
+	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		db.saveHUItem(huItem);
 
-		final Object huKey = mkHUKey(hu);
+		//
+		// Cache reset:
+		huKey2huItems.remove(mkHUKey(huItem));
+		huItemKey2includedHUs.remove(mkHUItemKey(huItem));
+	}
+
+	@Override
+	public void delete(@NonNull final I_M_HU hu)
+	{
+		final HuId huKey = mkHUKey(hu);
 
 		db.delete(hu);
 
@@ -152,20 +142,20 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 		//
 		// Add Item to HU Items list
-		final Object huKey = mkHUKey(hu);
+		final HuId huKey = mkHUKey(hu);
 		final ArrayList<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
 		if (huItems != null)
 		{
 			huItems.add(huItem);
 
 			// sort to make sure that the order we expect is still preserved
-			Collections.sort(huItems, IHandlingUnitsDAO.HU_ITEMS_COMPARATOR);
+			huItems.sort(IHandlingUnitsDAO.HU_ITEMS_COMPARATOR);
 		}
 
 		//
 		// Init Included HUs list
-		final Object huItemKey = mkHUItemKey(huItem);
-		huItemKey2includedHUs.put(huItemKey, new ArrayList<I_M_HU>());
+		final HuItemId huItemKey = mkHUItemKey(huItem);
+		huItemKey2includedHUs.put(huItemKey, new ArrayList<>());
 
 		return huItem;
 	}
@@ -173,7 +163,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	@Override
 	public List<I_M_HU_Item> retrieveItems(@NonNull final I_M_HU hu)
 	{
-		final Object huKey = mkHUKey(hu);
+		final HuId huKey = mkHUKey(hu);
 		ArrayList<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
 		if (huItems == null)
 		{
@@ -197,7 +187,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		return db.retrieveParentId(hu);
 	}
@@ -205,15 +195,13 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	@Override
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
 	{
-		final I_M_HU_Item parentHUItem = db.retrieveParentItem(hu);
-
-		return parentHUItem;
+		return db.retrieveParentItem(hu);
 	}
 
 	@Override
 	public ArrayList<I_M_HU> retrieveIncludedHUs(@NonNull final I_M_HU_Item huItem)
 	{
-		final Object huItemKey = mkHUItemKey(huItem);
+		final HuItemId huItemKey = mkHUItemKey(huItem);
 		ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(huItemKey);
 		if (includedHUs == null)
 		{
@@ -235,8 +223,8 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 		// TODO: Skip if no actual change; shall not happen because the caller it's already checking this
 
-		final int huId = hu.getM_HU_ID();
-		final int parentHUItemIdOld = hu.getM_HU_Item_Parent_ID();
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		final HuItemId parentHUItemIdOld = HuItemId.ofRepoIdOrNull(hu.getM_HU_Item_Parent_ID());
 
 		//
 		// Perform database change
@@ -244,17 +232,17 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 		//
 		// Remove HU from included HUs list of old parent (if any)
-		if (parentHUItemIdOld > 0)
+		if (parentHUItemIdOld != null)
 		{
-			final Object parentHUItemKeyOld = mkHUItemKey(parentHUItemIdOld);
-			final ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemKeyOld);
+			final ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemIdOld);
 			if (includedHUs != null)
 			{
 				boolean removed = false;
-				for (final Iterator<I_M_HU> it = includedHUs.iterator(); it.hasNext();)
+				for (final Iterator<I_M_HU> it = includedHUs.iterator(); it.hasNext(); )
 				{
 					final I_M_HU includedHU = it.next();
-					if (includedHU.getM_HU_ID() == huId)
+					final HuId includedHUId = HuId.ofRepoId(includedHU.getM_HU_ID());
+					if (HuId.equals(includedHUId, huId))
 					{
 						it.remove();
 						removed = true;
@@ -271,19 +259,19 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 
 		//
-		// Add HU to included HUs list of new parent (if any)
-		final int parentHUItemIdNew = hu.getM_HU_Item_Parent_ID();
-		if (parentHUItemIdNew > 0)
+		// Add HU to include HUs list of new parent (if any)
+		final HuItemId parentHUItemIdNew = HuItemId.ofRepoIdOrNull(hu.getM_HU_Item_Parent_ID());
+		if (parentHUItemIdNew != null)
 		{
-			final Object parentHUItemKeyNew = mkHUItemKey(parentHUItemIdNew);
-			final ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemKeyNew);
+			final ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemIdNew);
 			if (includedHUs != null)
 			{
 				boolean added = false;
-				for (final ListIterator<I_M_HU> it = includedHUs.listIterator(); it.hasNext();)
+				for (final ListIterator<I_M_HU> it = includedHUs.listIterator(); it.hasNext(); )
 				{
 					final I_M_HU includedHU = it.next();
-					if (includedHU.getM_HU_ID() == huId)
+					final HuId includedHUId = HuId.ofRepoId(includedHU.getM_HU_ID());
+					if (HuId.equals(includedHUId, huId))
 					{
 						it.set(hu);
 						added = true;

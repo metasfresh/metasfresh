@@ -675,7 +675,7 @@ DELETE FROM AD_Element_Trl WHERE AD_Element_ID=540751 AND AD_Language='en_GB'
 
 -- 2021-06-24T09:12:51.831Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541018,TO_TIMESTAMP('2021-06-24 12:12:51','YYYY-MM-DD HH24:MI:SS'),100,'ARI',1,'de.metas.contracts.commission',1000003,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Brokerage commission','Brokerage commission',TO_TIMESTAMP('2021-06-24 12:12:51','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541018,TO_TIMESTAMP('2021-06-24 12:12:51','YYYY-MM-DD HH24:MI:SS'),100,'ARI',1,'de.metas.contracts.commission',1000003,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Brokerage commission','Brokerage commission',TO_TIMESTAMP('2021-06-24 12:12:51','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-06-24T09:12:51.891Z

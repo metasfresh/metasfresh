@@ -95,7 +95,7 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final Money amountToAllocate,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate dateTrx,
-			@NonNull final LocalDate dateAcct,
+			@Nullable final LocalDate dateAcct,
 			@NonNull final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		final OrgId orgId = clientAndOrgId.getOrgId();
@@ -116,7 +116,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.amountToAllocate = amountToAllocate;
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
-		this.dateAcct = dateAcct;
+		this.dateAcct = dateAcct != null ? dateAcct : dateTrx;
 		this.clientAndOrgId = clientAndOrgId;
 		this.paymentCurrencyContext = paymentCurrencyContext;
 	}
@@ -157,6 +157,13 @@ public class PaymentDocument implements IPaymentDocument
 	}
 
 	@Override
+	public void addAllocatedAmt(final AllocationAmounts amount)
+	{
+		final Money totalAmt = amount.getTotalAmt();
+		addAllocatedAmt(totalAmt);
+	}
+
+	@Override
 	public LocalDate getDate()
 	{
 		return dateTrx;
@@ -184,5 +191,11 @@ public class PaymentDocument implements IPaymentDocument
 	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		return true;
+	}
+
+	@Override
+	public Money getPaymentDiscountAmt()
+	{
+		return amountToAllocate.toZero();
 	}
 }

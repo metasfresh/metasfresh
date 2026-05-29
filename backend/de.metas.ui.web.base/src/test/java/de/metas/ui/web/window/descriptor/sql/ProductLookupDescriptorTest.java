@@ -11,6 +11,7 @@ import de.metas.util.Services;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -50,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductLookupDescriptorTest
 {
+	private IAttributeDAO attributeDAO;
 	private final String adLanguage = "en_US";
 	private I_C_UOM uom;
 
@@ -57,31 +59,34 @@ public class ProductLookupDescriptorTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		attributeDAO = Services.get(IAttributeDAO.class);
 
-		uom = createUOM("uom1");
+		uom = createUOM();
 	}
 
-	private I_C_UOM createUOM(final String uomSymbol)
+	private I_C_UOM createUOM()
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
-		uom.setName(uomSymbol);
-		uom.setUOMSymbol(uomSymbol);
+		uom.setName("uom1");
+		uom.setUOMSymbol("uom1");
 		saveRecord(uom);
 		return uom;
 	}
 
-	private AttributeId createAttribute(final String attributeKey)
+	private AttributeId createListAttribute()
 	{
 		final I_M_Attribute attribute = newInstanceOutOfTrx(I_M_Attribute.class);
-		attribute.setValue(attributeKey);
-		attribute.setName(attributeKey + "-name");
+		attribute.setValue("attribute");
+		attribute.setName("attribute-name");
+		attribute.setAttributeValueType(AttributeValueType.LIST.getCode());
+		attribute.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(attribute);
 		return AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 	}
 
 	private AttributeListValue createAttributeValue(final AttributeId attributeId, final String attributeValue)
 	{
-		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+		return attributeDAO.createAttributeValue(AttributeListValueCreateRequest.builder()
 				.attributeId(attributeId)
 				.value(attributeValue)
 				.name(attributeValue)
@@ -106,7 +111,7 @@ public class ProductLookupDescriptorTest
 	@Test
 	public void explodeLookupValuesByAvailableStockGroups_standardScenario()
 	{
-		final AttributeId attributeId = createAttribute("attribute");
+		final AttributeId attributeId = createListAttribute();
 		final AttributeListValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
 
 		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
@@ -179,7 +184,7 @@ public class ProductLookupDescriptorTest
 	@Test
 	public void explodeLookupValuesByAvailableStockGroups_multipleNegativeATPsForSameProduct()
 	{
-		final AttributeId attributeId = createAttribute("attribute");
+		final AttributeId attributeId = createListAttribute();
 		final AttributeListValue attributeValue1 = createAttributeValue(attributeId, "attributeValue1");
 		final AttributeListValue attributeValue2 = createAttributeValue(attributeId, "attributeValue2");
 		final AttributeListValue attributeValue3 = createAttributeValue(attributeId, "attributeValue3");
@@ -235,6 +240,25 @@ public class ProductLookupDescriptorTest
 							IdAndDisplayName.of(1, "Product1: -2 uom1 (attributeValue2)"),
 							IdAndDisplayName.of(1, "Product1: -3 uom1 (attributeValue3)"));
 		}
+	}
+
+	@Test
+	public void explodeLookupValuesByAvailableStockGroups_emptyGroups_returnsOriginalProducts()
+	{
+		final LookupValuesList initialLookupValues = LookupValuesList.fromCollection(ImmutableList.of(
+				IntegerLookupValue.of(1, "Product1"),
+				IntegerLookupValue.of(2, "Product2")));
+
+		final LookupValuesList result = ProductLookupDescriptor.explodeLookupValuesByAvailableStockGroups(
+				initialLookupValues,
+				ImmutableList.of(),
+				/* displayATPOnlyIfPositive */false,
+				adLanguage);
+
+		assertThat(toIdAndDisplayNamesList(result))
+				.containsExactly(
+						IdAndDisplayName.of(1, "Product1"),
+						IdAndDisplayName.of(2, "Product2"));
 	}
 
 	@Value(staticConstructor = "of")

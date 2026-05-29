@@ -55,7 +55,7 @@ import java.util.function.Supplier;
 public class C_AllocationHdr_Builder
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(C_AllocationHdr_Builder.class);
+	private static final Logger logger = LogManager.getLogger(C_AllocationHdr_Builder.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
@@ -118,6 +118,8 @@ public class C_AllocationHdr_Builder
 			InterfaceWrapperHelper.delete(allocHdr);
 		}
 
+		detectAndCrossLinkCounterAllocationLines();
+
 		//
 		// Process the allocation if asked
 		if (complete)
@@ -127,6 +129,27 @@ public class C_AllocationHdr_Builder
 
 		return allocHdr;
 	}
+
+	private void detectAndCrossLinkCounterAllocationLines()
+	{
+		if (allocationLines.size() != 2)
+		{
+			return;
+		}
+
+		final I_C_AllocationLine line1 = allocationLines.get(0);
+		final I_C_AllocationLine line2 = allocationLines.get(1);
+		if ((line1.getC_Invoice_ID() > 0 && line1.getC_Payment_ID() <= 0)
+				&& (line2.getC_Invoice_ID() > 0 && line2.getC_Payment_ID() <= 0)
+				&& line1.getAmount().compareTo(line2.getAmount().negate()) == 0)
+		{
+			line1.setCounter_AllocationLine_ID(line2.getC_AllocationLine_ID());
+			allocationDAO.save(line1);
+			line2.setCounter_AllocationLine_ID(line1.getC_AllocationLine_ID());
+			allocationDAO.save(line2);
+		}
+	}
+
 
 	public final I_C_AllocationHdr createAndComplete()
 	{

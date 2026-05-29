@@ -90,7 +90,7 @@ public class DDOrderMovePlanCreateCommand
 	{
 		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 		final ImmutableListMultimap<DDOrderLineId, DDOrderMoveSchedule> alreadyCreatedSchedules = ddOrderMoveScheduleRepository
-				.getSchedules(ddOrderId)
+				.getByDDOrderId(ddOrderId)
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(DDOrderMoveSchedule::getDdOrderLineId, Function.identity()));
 

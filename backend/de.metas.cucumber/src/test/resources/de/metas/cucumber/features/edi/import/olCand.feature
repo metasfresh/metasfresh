@@ -1,9 +1,13 @@
 @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 Feature: import order candidate to metasfresh
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
-	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-10-10T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -57,6 +61,9 @@ Feature: import order candidate to metasfresh
 
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains two different BPartners that share their main location but have different store locations; UPC is set on C_BPartner_Product
   _Given one main C_BPartner and one Subsidiary_BPartner that share their main location but their store locations are different
   _And 2 x M_HU_PI_Item_Product for each C_BPartner and for the same product
@@ -70,10 +77,10 @@ Feature: import order candidate to metasfresh
       | bpartner1_1 | MainBPartner_1       | N            | Y              | ps_1                          |
       | bpartner2_1 | SubsidiaryBPartner_1 | N            | Y              | ps_1                          |
       | bpartner3_1 | OrgBPartner_1        | N            | Y              | ps_1                          |
-    And metasfresh contains C_BPartner_Products:
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.UPC       | OPT.IsCurrentVendor |
-      | bpartner1_1              | product                 | 1111111111111 | false               |
-      | bpartner2_1              | product                 | 1111111111111 | false               |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner1_1              | product                 | 0575095404663 | false               |
+      | bpartner2_1              | product                 | 0575095404663 | false               |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name             | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
       | huItemProduct_1_1                  | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_Test_1 x 10 PCE | PCE                   | bpartner1_1                  |
@@ -90,10 +97,10 @@ Feature: import order candidate to metasfresh
     When send message to RabbitMQ queue defined by:impProcessor
   """
 <?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
       <AD_DataDestination_ID>
         <InternalName>DEST.de.metas.ordercandidate</InternalName>
       </AD_DataDestination_ID>
-      <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
       <AD_Org_ID>
       <GLN>2222222222220</GLN>
       </AD_Org_ID>
@@ -120,11 +127,11 @@ Feature: import order candidate to metasfresh
       <DeliveryViaRule>S</DeliveryViaRule>
       <IsManualPrice>Y</IsManualPrice>
       <M_Product_ID>
-        <UPC>1111111111111</UPC>
+        <UPC>0575095404663</UPC>
         <GLN>1234567890000</GLN>
       </M_Product_ID>
       <M_HU_PI_Item_Product_ID>
-        <UPC>1111111111111</UPC>
+        <UPC>0575095404663</UPC>
         <GLN>1234567890000</GLN>
         <StoreGLN>1234567890001</StoreGLN>
       </M_HU_PI_Item_Product_ID>
@@ -136,14 +143,17 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 120s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
-      | olCand_1               | product                 | 101                                    | bpartner1_1                  | 10         | impProcessor                    |
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | M_HU_PI_Item_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_1               | Shopware6            | product      | 101                                    | bpartner1_1                  | 10         | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | olCand_1               | bpartner1_1              | bpLocation_main1_1                | product                 | 10         | F            | S               | PORefTest       | Y       | N             | 101                                    |
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains three different BPartners:first partner shares the same main location with the second one and same store location with the third one.
   _Given three BPartners, each of them having two locations: main and store
   _And MainBPartner shares its main location with BPartner2
@@ -180,10 +190,10 @@ Feature: import order candidate to metasfresh
     When send message to RabbitMQ queue defined by:impProcessor
   """
 <?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+    <ExternalSystem_ID>540007</ExternalSystem_ID>
     <AD_DataDestination_ID>
         <InternalName>DEST.de.metas.ordercandidate</InternalName>
     </AD_DataDestination_ID>
-    <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
         <GLN>2222222222221</GLN>
     </AD_Org_ID>
@@ -248,8 +258,8 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 120s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
-      | olCand_2               | product                 | huItemProduct_1_2                      | bpartner1_2                  | 2          | impProcessor                    |
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_2               | Shopware6            | product      | huItemProduct_1_2                      | bpartner1_2                  | 2          | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
@@ -258,10 +268,10 @@ Feature: import order candidate to metasfresh
     When send message to RabbitMQ queue defined by:impProcessor
   """
 <?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+    <ExternalSystem_ID>540007</ExternalSystem_ID>
     <AD_DataDestination_ID>
         <InternalName>DEST.de.metas.ordercandidate</InternalName>
     </AD_DataDestination_ID>
-    <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
         <GLN>2222222222221</GLN>
     </AD_Org_ID>
@@ -325,8 +335,8 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 120s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
-      | olCand_3               | product                 | huItemProduct_2_2                      | bpartner1_2                  | 2          | impProcessor                    |
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_3               | Shopware6            | product      | huItemProduct_2_2                      | bpartner1_2                  | 2          | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |

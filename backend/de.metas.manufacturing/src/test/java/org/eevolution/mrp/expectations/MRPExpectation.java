@@ -50,11 +50,12 @@ import org.eevolution.mrp.api.MRPFirmType;
 import org.eevolution.mrp.api.impl.MRPBL;
 import org.eevolution.mrp.api.impl.MRPTracer;
 import org.eevolution.mrp.api.impl.PlainMRPDAO;
-import org.junit.Assert;
+
 
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
 
 public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
@@ -324,7 +325,7 @@ public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<P
 			}
 			else
 			{
-				Assert.fail("Invalid TypeMRP: " + mrp);
+				Assertions.fail("Invalid TypeMRP: " + mrp);
 			}
 		}
 

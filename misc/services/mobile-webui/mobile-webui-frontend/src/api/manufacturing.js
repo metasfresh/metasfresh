@@ -2,12 +2,13 @@ import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
 
-export function postManufacturingReceiveEvent({ wfProcessId, activityId, receiveFrom }) {
+export function postManufacturingReceiveEvent({ wfProcessId, activityId, receiveFrom, pickTo }) {
   return axios
     .post(`${apiBasePath}/manufacturing/event`, {
       wfProcessId,
       wfActivityId: activityId,
       receiveFrom,
+      pickTo,
     })
     .then((response) => unboxAxiosResponse(response));
 }
@@ -18,6 +19,15 @@ export function postManufacturingIssueEvent({ wfProcessId, activityId, issueTo }
       wfProcessId,
       wfActivityId: activityId,
       issueTo,
+    })
+    .then((response) => unboxAxiosResponse(response));
+}
+
+export function createIssueScheduleOnTheFly({ wfProcessId, huQRCode }) {
+  return axios
+    .post(`${apiBasePath}/manufacturing/issueSchedule/createOnTheFly`, {
+      wfProcessId,
+      huQRCode,
     })
     .then((response) => unboxAxiosResponse(response));
 }

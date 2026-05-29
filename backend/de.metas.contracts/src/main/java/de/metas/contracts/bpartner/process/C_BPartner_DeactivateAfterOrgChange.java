@@ -24,7 +24,6 @@ package de.metas.contracts.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.organization.IOrgDAO;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,7 +35,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.Env;
 
 import java.time.Instant;
 import java.util.List;
@@ -67,7 +65,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.addCompareFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, CompareQueryFilter.Operator.LESS_OR_EQUAL, now)
 				.andCollect(I_AD_OrgChange_History.COLUMNNAME_C_BPartner_From_ID, I_C_BPartner.class)
 				.create()
-				.listIds(BPartnerId::ofRepoId)
+				.idsAsSet(BPartnerId::ofRepoId)
 				.asList();
 
 		partnerIdsToDeactivate.stream()

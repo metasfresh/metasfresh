@@ -22,11 +22,17 @@ package de.metas.aggregation.api.impl;
  * #L%
  */
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.IAggregationDAO;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.aggregation.model.I_C_AggregationItem;
+import de.metas.aggregation.model.X_C_AggregationItem;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -37,16 +43,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.aggregation.api.Aggregation;
-import de.metas.aggregation.api.IAggregationDAO;
-import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.aggregation.model.I_C_AggregationItem;
-import de.metas.aggregation.model.X_C_AggregationItem;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class AggregationDAO implements IAggregationDAO
 {
@@ -63,6 +64,7 @@ public class AggregationDAO implements IAggregationDAO
 
 	@Cached(cacheName = I_C_Aggregation.Table_Name + "#AD_Table_ID#IsDefault=true", expireMinutes = 0)
 	// public to make sure it's cached
+	@Nullable
 	public <ModelType> Aggregation retrieveDefaultAggregationOrNull(
 			@CacheCtx final Properties ctx,
 			final int tableId,
@@ -71,18 +73,17 @@ public class AggregationDAO implements IAggregationDAO
 	{
 		//
 		// Get first matching C_Aggregation_ID
-		final int aggregationId = retrieveDefaultAggregationQuery(ctx, tableId, isSOTrx, aggregationUsageLevel)
+		final AggregationId aggregationId = retrieveDefaultAggregationQuery(ctx, tableId, isSOTrx, aggregationUsageLevel)
 				.create()
-				.firstIdOnly();
-		if (aggregationId < 0)
+				.firstIdOnly(AggregationId::ofRepoIdOrNull);
+		if (aggregationId == null)
 		{
 			return null;
 		}
 
 		//
 		// Load and return the aggregation
-		final Aggregation aggregation = retrieveAggregation(ctx, aggregationId);
-		return aggregation;
+		return retrieveAggregation(ctx, aggregationId);
 	}
 
 	@VisibleForTesting
@@ -161,12 +162,11 @@ public class AggregationDAO implements IAggregationDAO
 
 	@Override
 	@Cached(cacheName = I_C_Aggregation.Table_Name + "#IAggregation", expireMinutes = 0)
-	public Aggregation retrieveAggregation(@CacheCtx final Properties ctx, final int aggregationId)
+	public Aggregation retrieveAggregation(@CacheCtx final Properties ctx, @NonNull final AggregationId aggregationId)
 	{
 		//
 		// Load aggregation definition
-		Check.assume(aggregationId > 0, "aggregationId > 0");
-		final I_C_Aggregation aggregationDef = InterfaceWrapperHelper.create(ctx, aggregationId, I_C_Aggregation.class, ITrx.TRXNAME_None);
+		final I_C_Aggregation aggregationDef = InterfaceWrapperHelper.create(ctx, AggregationId.toRepoId(aggregationId), I_C_Aggregation.class, ITrx.TRXNAME_None);
 		if (aggregationDef == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Aggregation_ID@ (ID=" + aggregationId + ")");

@@ -1,7 +1,6 @@
 package de.metas.inbound.mail;
 
-import org.junit.Assert;
-import org.junit.Test;
+
 
 /*
  * #%L
@@ -25,6 +24,9 @@ import org.junit.Test;
  * #L%
  */
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 public class MailContentCollectorTest
 {
 	@Test
@@ -39,6 +41,6 @@ public class MailContentCollectorTest
 				.collectObject(expected)
 				.toMailContent();
 
-		Assert.assertEquals(expected, actual);
+		Assertions.assertEquals(expected, actual);
 	}
 }

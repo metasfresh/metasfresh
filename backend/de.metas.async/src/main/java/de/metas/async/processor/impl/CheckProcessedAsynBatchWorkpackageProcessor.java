@@ -1,10 +1,8 @@
-package de.metas.async.processor.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.async.processor.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.processor.impl;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.AsyncBatchType;
@@ -85,7 +85,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 		if (delayUntilCheckingProcessedState.toMillis() > 0)
 		{
 			// a delay that didn't fit into Integer occured when during testing we got the async-batch's first/last processed from the actual time, but "now" from SystemTime with a fixed testing-value. 
-			Check.assume(delayUntilCheckingProcessedState.toMillis() <= Integer.MAX_VALUE, "The delay until re-checking processed state of C_Async_Batch_ID={} can't be too big", asyncBatch.getC_Async_Batch_ID());
+			Check.assume(delayUntilCheckingProcessedState.toMillis() <= Integer.MAX_VALUE, "The delay until re-checking processed state of C_Async_Batch_ID={} has to be <={}", asyncBatch.getC_Async_Batch_ID(), Integer.MAX_VALUE);
 			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", Math.toIntExact(delayUntilCheckingProcessedState.toMillis()));
 		}
 

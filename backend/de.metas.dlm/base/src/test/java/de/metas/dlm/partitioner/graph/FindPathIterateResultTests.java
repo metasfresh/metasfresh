@@ -1,23 +1,20 @@
 package de.metas.dlm.partitioner.graph;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
+import ch.qos.logback.classic.Level;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.logging.LogManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.logging.LogManager;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -43,7 +40,7 @@ import de.metas.logging.LogManager;
 
 public class FindPathIterateResultTests
 {
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -82,11 +79,11 @@ public class FindPathIterateResultTests
 		// so we can now go on with 'initialResult' and spare ourselves one cast ;-)
 		final List<ITableRecordReference> path = result.getPath();
 
-		assertThat(path, notNullValue());
-		assertThat(path.size(), is(3));
-		assertThat(path.get(0), is(paymentRef));
-		assertThat(path.get(1), is(invoiceRef));
-		assertThat(path.get(2), is(orderRef));
+		assertThat(path).isNotNull();
+		assertThat(path).hasSize(3);
+		assertThat(path.get(0)).isEqualTo(paymentRef);
+		assertThat(path.get(1)).isEqualTo(invoiceRef);
+		assertThat(path.get(2)).isEqualTo(orderRef);
 	}
 
 	/**
@@ -119,10 +116,10 @@ public class FindPathIterateResultTests
 		// so we can now go on with 'initialResult' and spare ourselves one cast ;-)
 		final List<ITableRecordReference> path = result.getPath();
 
-		assertThat(path, notNullValue());
-		assertThat(path.size(), is(3));
-		assertThat(path.get(0), is(paymentRef));
-		assertThat(path.get(1), is(orderRef));
-		assertThat(path.get(2), is(invoiceRef));
+		assertThat(path).isNotNull();
+		assertThat(path).hasSize(3);
+		assertThat(path.get(0)).isEqualTo(paymentRef);
+		assertThat(path.get(1)).isEqualTo(orderRef);
+		assertThat(path.get(2)).isEqualTo(invoiceRef);
 	}
 }

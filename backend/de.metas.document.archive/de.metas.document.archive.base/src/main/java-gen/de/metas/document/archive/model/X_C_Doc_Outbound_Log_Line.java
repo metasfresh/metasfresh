@@ -1,48 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.document.archive.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Doc_Outbound_Log_Line
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements I_C_Doc_Outbound_Log_Line, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1349749021L;
+	private static final long serialVersionUID = 1108825301L;
 
     /** Standard Constructor */
-    public X_C_Doc_Outbound_Log_Line (Properties ctx, int C_Doc_Outbound_Log_Line_ID, String trxName)
+    public X_C_Doc_Outbound_Log_Line (final Properties ctx, final int C_Doc_Outbound_Log_Line_ID, @Nullable final String trxName)
     {
       super (ctx, C_Doc_Outbound_Log_Line_ID, trxName);
-      /** if (C_Doc_Outbound_Log_Line_ID == 0)
-        {
-			setAD_Table_ID (0);
-			setC_Doc_Outbound_Log_ID (0);
-			setC_Doc_Outbound_Log_Line_ID (0);
-			setRecord_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Doc_Outbound_Log_Line (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Doc_Outbound_Log_Line (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	/** 
 	 * Action AD_Reference_ID=505210
@@ -57,21 +47,16 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	public static final String ACTION_PdfExport = "pdf";
 	/** AttachmentStored = attachmentStored */
 	public static final String ACTION_AttachmentStored = "attachmentStored";
-	/** Set Aktion.
-		@param Action Aktion	  */
 	@Override
-	public void setAction (java.lang.String Action)
+	public void setAction (final @Nullable java.lang.String Action)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_Action, Action);
 	}
 
-	/** Get Aktion.
-		@return Aktion	  */
 	@Override
-	public java.lang.String getAction () 
+	public java.lang.String getAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Action);
+		return get_ValueAsString(COLUMNNAME_Action);
 	}
 
 	@Override
@@ -81,109 +66,69 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setAD_Archive(org.compiere.model.I_AD_Archive AD_Archive)
+	public void setAD_Archive(final org.compiere.model.I_AD_Archive AD_Archive)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Archive_ID, org.compiere.model.I_AD_Archive.class, AD_Archive);
 	}
 
-	/** Set Archiv.
-		@param AD_Archive_ID 
-		Archiv für Belege und Berichte
-	  */
 	@Override
-	public void setAD_Archive_ID (int AD_Archive_ID)
+	public void setAD_Archive_ID (final int AD_Archive_ID)
 	{
 		if (AD_Archive_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, Integer.valueOf(AD_Archive_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, AD_Archive_ID);
 	}
 
-	/** Get Archiv.
-		@return Archiv für Belege und Berichte
-	  */
 	@Override
-	public int getAD_Archive_ID () 
+	public int getAD_Archive_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Archive_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Archive_ID);
 	}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setAD_User_ID (final int AD_User_ID)
 	{
 		if (AD_User_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -193,100 +138,66 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Doc_Outbound_Log(de.metas.document.archive.model.I_C_Doc_Outbound_Log C_Doc_Outbound_Log)
+	public void setC_Doc_Outbound_Log(final de.metas.document.archive.model.I_C_Doc_Outbound_Log C_Doc_Outbound_Log)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Doc_Outbound_Log_ID, de.metas.document.archive.model.I_C_Doc_Outbound_Log.class, C_Doc_Outbound_Log);
 	}
 
-	/** Set C_Doc_Outbound_Log.
-		@param C_Doc_Outbound_Log_ID C_Doc_Outbound_Log	  */
 	@Override
-	public void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID)
+	public void setC_Doc_Outbound_Log_ID (final int C_Doc_Outbound_Log_ID)
 	{
 		if (C_Doc_Outbound_Log_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, Integer.valueOf(C_Doc_Outbound_Log_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, C_Doc_Outbound_Log_ID);
 	}
 
-	/** Get C_Doc_Outbound_Log.
-		@return C_Doc_Outbound_Log	  */
 	@Override
-	public int getC_Doc_Outbound_Log_ID () 
+	public int getC_Doc_Outbound_Log_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Doc_Outbound_Log_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Doc_Outbound_Log_ID);
 	}
 
-	/** Set C_Doc_Outbound_Log_Line.
-		@param C_Doc_Outbound_Log_Line_ID C_Doc_Outbound_Log_Line	  */
 	@Override
-	public void setC_Doc_Outbound_Log_Line_ID (int C_Doc_Outbound_Log_Line_ID)
+	public void setC_Doc_Outbound_Log_Line_ID (final int C_Doc_Outbound_Log_Line_ID)
 	{
 		if (C_Doc_Outbound_Log_Line_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_Line_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_Line_ID, Integer.valueOf(C_Doc_Outbound_Log_Line_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_Line_ID, C_Doc_Outbound_Log_Line_ID);
 	}
 
-	/** Get C_Doc_Outbound_Log_Line.
-		@return C_Doc_Outbound_Log_Line	  */
 	@Override
-	public int getC_Doc_Outbound_Log_Line_ID () 
+	public int getC_Doc_Outbound_Log_Line_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Doc_Outbound_Log_Line_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Doc_Outbound_Log_Line_ID);
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
-	/** Get Belegart.
-		@return Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
-	/** Set Kopien.
-		@param Copies 
-		Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
 	@Override
-	public void setCopies (int Copies)
+	public void setCopies (final int Copies)
 	{
-		set_ValueNoCheck (COLUMNNAME_Copies, Integer.valueOf(Copies));
+		set_ValueNoCheck (COLUMNNAME_Copies, Copies);
 	}
 
-	/** Get Kopien.
-		@return Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
 	@Override
-	public int getCopies () 
+	public int getCopies() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Copies);
 	}
 
 	/** 
@@ -318,191 +229,139 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
-
-		set_ValueNoCheck (COLUMNNAME_DocStatus, DocStatus);
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set EMail Bcc.
-		@param EMail_Bcc EMail Bcc	  */
 	@Override
-	public void setEMail_Bcc (java.lang.String EMail_Bcc)
+	public void setEMail_Bcc (final @Nullable java.lang.String EMail_Bcc)
 	{
 		set_ValueNoCheck (COLUMNNAME_EMail_Bcc, EMail_Bcc);
 	}
 
-	/** Get EMail Bcc.
-		@return EMail Bcc	  */
 	@Override
-	public java.lang.String getEMail_Bcc () 
+	public java.lang.String getEMail_Bcc() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail_Bcc);
+		return get_ValueAsString(COLUMNNAME_EMail_Bcc);
 	}
 
-	/** Set EMail Cc.
-		@param EMail_Cc EMail Cc	  */
 	@Override
-	public void setEMail_Cc (java.lang.String EMail_Cc)
+	public void setEMail_Cc (final @Nullable java.lang.String EMail_Cc)
 	{
 		set_ValueNoCheck (COLUMNNAME_EMail_Cc, EMail_Cc);
 	}
 
-	/** Get EMail Cc.
-		@return EMail Cc	  */
 	@Override
-	public java.lang.String getEMail_Cc () 
+	public java.lang.String getEMail_Cc() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail_Cc);
+		return get_ValueAsString(COLUMNNAME_EMail_Cc);
 	}
 
-	/** Set EMail Absender.
-		@param EMail_From 
-		Full EMail address used to send requests - e.g. edi@organization.com
-	  */
 	@Override
-	public void setEMail_From (java.lang.String EMail_From)
+	public void setEMail_From (final @Nullable java.lang.String EMail_From)
 	{
 		set_ValueNoCheck (COLUMNNAME_EMail_From, EMail_From);
 	}
 
-	/** Get EMail Absender.
-		@return Full EMail address used to send requests - e.g. edi@organization.com
-	  */
 	@Override
-	public java.lang.String getEMail_From () 
+	public java.lang.String getEMail_From() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail_From);
+		return get_ValueAsString(COLUMNNAME_EMail_From);
 	}
 
-	/** Set EMail Empfänger.
-		@param EMail_To 
-		EMail address to send requests to - e.g. edi@manufacturer.com 
-	  */
 	@Override
-	public void setEMail_To (java.lang.String EMail_To)
+	public void setEMail_To (final @Nullable java.lang.String EMail_To)
 	{
 		set_ValueNoCheck (COLUMNNAME_EMail_To, EMail_To);
 	}
 
-	/** Get EMail Empfänger.
-		@return EMail address to send requests to - e.g. edi@manufacturer.com 
-	  */
 	@Override
-	public java.lang.String getEMail_To () 
+	public java.lang.String getEMail_To() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail_To);
+		return get_ValueAsString(COLUMNNAME_EMail_To);
 	}
 
-	/** Set Drucker.
-		@param PrinterName 
-		Name of the Printer
-	  */
 	@Override
-	public void setPrinterName (java.lang.String PrinterName)
+	public void setPrinterName (final @Nullable java.lang.String PrinterName)
 	{
 		set_ValueNoCheck (COLUMNNAME_PrinterName, PrinterName);
 	}
 
-	/** Get Drucker.
-		@return Name of the Printer
-	  */
 	@Override
-	public java.lang.String getPrinterName () 
+	public java.lang.String getPrinterName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PrinterName);
+		return get_ValueAsString(COLUMNNAME_PrinterName);
 	}
 
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
 	@Override
-	public void setRecord_ID (int Record_ID)
+	public void setRecord_ID (final int Record_ID)
 	{
 		if (Record_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+			set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
 	}
 
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
 
-	/** Set Status.
-		@param Status 
-		Status of the currently running check
-	  */
+	/** 
+	 * Status AD_Reference_ID=542015
+	 * Reference name: OutboundLogLineStatus
+	 */
+	public static final int STATUS_AD_Reference_ID=542015;
+	/** Print_Success = Print_Success */
+	public static final String STATUS_Print_Success = "Print_Success";
+	/** Print_Failure = Print_Failure */
+	public static final String STATUS_Print_Failure = "Print_Failure";
+	/** Email_Success = Email_Success */
+	public static final String STATUS_Email_Success = "Email_Success";
+	/** Email_Failure = Email_Failure */
+	public static final String STATUS_Email_Failure = "Email_Failure";
 	@Override
-	public void setStatus (java.lang.String Status)
+	public void setStatus (final @Nullable java.lang.String Status)
 	{
 		set_ValueNoCheck (COLUMNNAME_Status, Status);
 	}
 
-	/** Get Status.
-		@return Status of the currently running check
-	  */
 	@Override
-	public java.lang.String getStatus () 
+	public java.lang.String getStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Status);
+		return get_ValueAsString(COLUMNNAME_Status);
 	}
 
-	/** Set Speicherort.
-		@param StoreURI Speicherort	  */
 	@Override
-	public void setStoreURI (java.lang.String StoreURI)
+	public void setStoreURI (final @Nullable java.lang.String StoreURI)
 	{
 		set_Value (COLUMNNAME_StoreURI, StoreURI);
 	}
 
-	/** Get Speicherort.
-		@return Speicherort	  */
 	@Override
-	public java.lang.String getStoreURI () 
+	public java.lang.String getStoreURI() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_StoreURI);
+		return get_ValueAsString(COLUMNNAME_StoreURI);
 	}
 }

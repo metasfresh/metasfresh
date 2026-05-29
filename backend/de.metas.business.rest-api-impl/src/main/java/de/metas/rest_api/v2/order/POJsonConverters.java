@@ -22,44 +22,61 @@
 
 package de.metas.rest_api.v2.order;
 
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-import org.compiere.util.Env;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-@UtilityClass
-final class POJsonConverters
+@Service
+@RequiredArgsConstructor
+public final class POJsonConverters
 {
-	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+
+	@NonNull
+	public ExternalSystemId getExternalSystemIdByExternalSystemCode(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
-		return JsonEnqueueForInvoicingResponse.builder()
-				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
-				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
-				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
-				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
-				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
-				.build();
+		return externalSystemRepository.getIdByType(ExternalSystemType.ofValue(request.getExternalSystemCode()));
 	}
 
-	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonPurchaseCandidateReference> candidates)
+	@Nullable
+	public String getExternalSystemTypeById(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = new ArrayList<>();
+		return Optional.ofNullable(purchaseCandidate.getExternalSystemId())
+				.map(externalSystemId -> externalSystemRepository.getById(externalSystemId).getType().toJson())
+				.orElse(null);
+	}
+
+	@NonNull
+	public List<ExternalSystemIdWithExternalIds> fromJson(@NonNull final List<JsonPurchaseCandidateReference> candidates)
+	{
+		final List<ExternalSystemIdWithExternalIds> externalSystemIdWithExternalIds = new ArrayList<>();
 		for (final JsonPurchaseCandidateReference cand : candidates)
 		{
 			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
 					.externalHeaderId(JsonExternalIds.toExternalId(cand.getExternalHeaderId()))
 					.externalLineIds(JsonExternalIds.toExternalIds(cand.getExternalLineIds()))
 					.build();
-			headerAndLineIds.add(headerAndLineId);
+
+			externalSystemIdWithExternalIds.add(ExternalSystemIdWithExternalIds.builder()
+					.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(cand.getExternalSystemCode())))
+					.externalHeaderIdWithExternalLineIds(headerAndLineId)
+					.build());
 		}
-		return headerAndLineIds;
+		return externalSystemIdWithExternalIds;
 	}
 
 }

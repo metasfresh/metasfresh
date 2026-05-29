@@ -88,6 +88,11 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 			return ImmutableList.of();
 		}
 
+		if (!fromDocument.isSingleKeyRecord())
+		{
+			return ImmutableList.of();
+		}
+
 		//
 		// Get the Fact_Acct AD_Window_ID
 		final AdWindowId factAcctWindowId = CoalesceUtil.coalesceSuppliers(

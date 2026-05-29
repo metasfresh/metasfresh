@@ -130,7 +130,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 				bomVersionsDAO));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ddOrderCandidateRepository, ddOrderLowLevelService));
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ddOrderCandidateRepository));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Cost_Collector());
 

@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 @ghActions:run_on_executor7
+@ignore
 Feature: Picking workflow - validate picked HU
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -62,6 +66,8 @@ Feature: Picking workflow - validate picked HU
 
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_70
   Scenario: Pick an already picked HU => error
     Given set mobile UI picking profile
@@ -126,6 +132,8 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_80
   Scenario: Pick an already shipped HU => error
     Given set mobile UI picking profile
@@ -160,7 +168,7 @@ Feature: Picking workflow - validate picked HU
     And validate M_ShipmentSchedule_QtyPicked:
       | M_ShipmentSchedule_ID.Identifier | OPT.VHU_ID.Identifier  | IsAnonymousHuPickedOnTheFly |
       | pickingShipmentSchedule          | pickingProductHU_17663 | N                           |
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -201,6 +209,8 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_90
   Scenario: Pick a destroyed HU => success
     Given set mobile UI picking profile
@@ -290,6 +300,8 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_100
   Scenario: Pick more than specified on shipment schedule in 2 sessions => success
     Given set mobile UI picking profile

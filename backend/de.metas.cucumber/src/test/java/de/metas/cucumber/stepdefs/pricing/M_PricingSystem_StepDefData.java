@@ -23,15 +23,23 @@
 package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.pricing.PricingSystemId;
 import org.compiere.model.I_M_PricingSystem;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class M_PricingSystem_StepDefData extends StepDefData<I_M_PricingSystem>
+public class M_PricingSystem_StepDefData extends StepDefData<I_M_PricingSystem> implements StepDefDataGetIdAware<PricingSystemId, I_M_PricingSystem>
 {
 	public M_PricingSystem_StepDefData()
 	{
 		super(I_M_PricingSystem.class);
+	}
+
+	@Override
+	public PricingSystemId extractIdFromRecord(final I_M_PricingSystem record)
+	{
+		return PricingSystemId.ofRepoId(record.getM_PricingSystem_ID());
 	}
 }

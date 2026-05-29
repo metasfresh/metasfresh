@@ -28,7 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
@@ -49,8 +48,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderCheckupTestHelper
 {
@@ -69,7 +67,7 @@ public class OrderCheckupTestHelper
 		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 
 		printOutputFacade = new PrintOutputFacade(
-				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
+				new PrintingDataFactory(new HardwarePrinterRepository(), ArchiveFileNameService.newInstanceForUnitTesting()),
 				new PrintingDataToPDFFileStorer());
 	}
 
@@ -199,12 +197,12 @@ public class OrderCheckupTestHelper
 		for (final I_C_Order_MFGWarehouse_ReportLine reportLine : reportLines)
 		{
 			final I_C_OrderLine expectedOrderLine = expectedOrderLinesMap.remove(reportLine.getC_OrderLine_ID());
-			Assertions.assertThat(expectedOrderLine).as("Unexpected report line: " + reportLine).isNotNull();
+			assertThat(expectedOrderLine).as("Unexpected report line: " + reportLine).isNotNull();
 
-			Assertions.assertThat(reportLine.getM_Product_ID()).as("Product for " + reportLine).isEqualTo(expectedOrderLine.getM_Product_ID());
+			assertThat(reportLine.getM_Product_ID()).as("Product for " + reportLine).isEqualTo(expectedOrderLine.getM_Product_ID());
 		}
 
-		Assertions.assertThat(expectedOrderLinesMap).as("All expected order lines were found in report lines: " + expectedOrderLinesMap).isEmpty();
+		assertThat(expectedOrderLinesMap).as("All expected order lines were found in report lines: " + expectedOrderLinesMap).isEmpty();
 	}
 
 	public void generateReportsAndEnqueueToPrinting(final I_C_Order order)
@@ -248,11 +246,12 @@ public class OrderCheckupTestHelper
 				.list(I_C_Printing_Queue_Recipient.class);
 
 		// Validate the printing queue item
-		Assertions.assertThat(printingItem.isPrintoutForOtherUser()).as("Printing queue item - PrintoutForOtherUser").isTrue();
-		Assertions.assertThat(printingItem.isActive()).as("Printing queue item - IsActive").isTrue();
+		assertThat(printingItem.isPrintoutForOtherUser()).as("Printing queue item - PrintoutForOtherUser").isTrue();
+		assertThat(printingItem.isActive()).as("Printing queue item - IsActive").isTrue();
 
-		assertThat("Printout recipients - wrong number", printoutRecipients.size(), is(1));
-		assertThat("Printout recipient - wrong AD_User_ToPrint_ID", printoutRecipients.get(0).getAD_User_ToPrint_ID(), is(report.getAD_User_Responsible_ID()));
+		assertThat(printoutRecipients).as("Printout recipients - wrong number").hasSize(1);
+
+		assertThat(printoutRecipients.get(0).getAD_User_ToPrint_ID()).as("Printout recipient - wrong AD_User_ToPrint_ID").isEqualTo(report.getAD_User_Responsible_ID());
 	}
 
 }

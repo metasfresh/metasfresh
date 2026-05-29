@@ -1,13 +1,21 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor7
 Feature: Create or update using prices API
+## F32000: Pricing
   Using default ad_orgId 1000000
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: Create price list version from external ref
     Given metasfresh contains M_PricingSystems
       | Identifier | Name                  | Value                  | OPT.Description              | IsActive |
@@ -23,6 +31,9 @@ Feature: Create or update using prices API
     Then price list version is persisted correctly
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: Update price list version
     Given metasfresh contains M_PricingSystems
       | Identifier | Name                 | Value                 | OPT.Description            | IsActive |
@@ -38,6 +49,9 @@ Feature: Create or update using prices API
     Then price list version is persisted correctly
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: Create product prices by price list version identifier
     Given metasfresh contains M_Products:
       | Identifier | Name             |
@@ -50,6 +64,9 @@ Feature: Create or update using prices API
     Then product price is persisted correctly
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario: Update product prices by price list version identifier
     Given metasfresh contains M_Products:
       | Identifier | Name             |

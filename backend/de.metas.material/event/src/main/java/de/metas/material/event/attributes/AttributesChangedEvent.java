@@ -1,21 +1,19 @@
 package de.metas.material.event.attributes;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import org.adempiere.warehouse.WarehouseId;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+import static de.metas.material.event.MaterialEventConstants.M_HU_TABLE_NAME;
 
 /*
  * #%L
@@ -27,12 +25,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -86,4 +84,13 @@ public class AttributesChangedEvent implements MaterialEvent
 		this.newStorageAttributes = newStorageAttributes;
 		this.huId = huId;
 	}
+
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(M_HU_TABLE_NAME, huId);
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

@@ -44,14 +44,13 @@ public class JsonAttachment
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
-					+ "To be used in conjunktion with <code>dataSourceName</code>")
+					+ "To be used in conjunction with <code>externalSystemCode</code>")
 	String externalReference;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this attachment came from.\n"
-					+ "To be used in conjunktion with <code>externalReference</code>")
-	String dataSourceName;
+			value = "Identifier of the external system this attachment came from.\n"
+					+ "To be used in conjunction with <code>externalReference</code>")
+	String externalSystemCode;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
@@ -68,13 +67,13 @@ public class JsonAttachment
 	String mimeType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String url;
+	String url;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonAttachment(
 			@JsonProperty("externalReference") @NonNull final String externalReference,
-			@JsonProperty("dataSourceName") @NonNull final String dataSourceName,
+			@JsonProperty("externalSystemCode") @NonNull final String externalSystemCode,
 			@JsonProperty("attachmentId") @NonNull final String attachmentId,
 			@JsonProperty("type") final @NonNull JsonAttachmentType type,
 			@JsonProperty("filename") @NonNull final String filename,
@@ -82,19 +81,11 @@ public class JsonAttachment
 			@JsonProperty("url") final String url)
 	{
 		this.externalReference = externalReference;
-		this.dataSourceName = dataSourceName;
+		this.externalSystemCode = externalSystemCode;
 		this.attachmentId = attachmentId;
 		this.type = type;
 		this.filename = filename;
 		this.mimeType = mimeType;
 		this.url = url;
-	}
-
-	/** Used by adapters where the data source name is a constant and would only be a distraction for the adapter's invoker. */
-	public JsonAttachment withoutDataSource()
-	{
-		return toBuilder()
-				.dataSourceName(null)
-				.build();
 	}
 }

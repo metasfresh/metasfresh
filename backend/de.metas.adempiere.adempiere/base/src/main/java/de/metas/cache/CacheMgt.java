@@ -22,6 +22,7 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -67,8 +68,6 @@ public final class CacheMgt
 
 	private static final CacheMgt instance = new CacheMgt();
 
-	public static final String JMX_BASE_NAME = "de.metas.cache";
-
 	@Getter @NonNull private final CCacheConfigDefaults configDefaults = CCacheConfigDefaults.computeFrom(SpringContextHolder.instance);
 
 	private final ConcurrentHashMap<CacheLabel, CachesGroup> cachesByLabel = new ConcurrentHashMap<>();
@@ -83,6 +82,11 @@ public final class CacheMgt
 
 	private CacheMgt()
 	{
+	}
+
+	public void setEventBusFactory(@NonNull final IEventBusFactory eventBusFactory)
+	{
+		CacheInvalidationRemoteHandler.instance.setEventBusFactory(eventBusFactory);
 	}
 
 	/**

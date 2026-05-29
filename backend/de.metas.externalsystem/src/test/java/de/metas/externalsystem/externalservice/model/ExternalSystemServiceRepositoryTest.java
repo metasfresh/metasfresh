@@ -46,7 +46,7 @@ public class ExternalSystemServiceRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemServiceRepo = new ExternalSystemServiceRepository();
+		externalSystemServiceRepo = ExternalSystemServiceRepository.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -56,13 +56,13 @@ public class ExternalSystemServiceRepositoryTest
 		final ExternalSystemType externalSystemType = ExternalSystemType.GRSSignum;
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(externalSystemType.getCode())
+				.type(externalSystemType.getValue())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.WOO.getCode())
+				.type(ExternalSystemType.WOO.getValue())
 				.name("woo_name")
 				.value("woo_service_value")
 				.build();
@@ -81,13 +81,13 @@ public class ExternalSystemServiceRepositoryTest
 	{
 		//given
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.GRSSignum.getCode())
+				.type(ExternalSystemType.GRSSignum.getValue())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.WOO.getCode())
+				.type(ExternalSystemType.WOO.getValue())
 				.name("woo_name")
 				.value("woo_service_value")
 				.build();
@@ -105,7 +105,7 @@ public class ExternalSystemServiceRepositoryTest
 	{
 		//given
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.GRSSignum.getCode())
+				.type(ExternalSystemType.GRSSignum.getValue())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();

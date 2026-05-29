@@ -276,7 +276,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName);
 
 				queryWhereClause
-
 						.append(fromDocument.getAD_Table_ID())
 						.append(" = ")
 						.append(originTableName)
@@ -402,14 +401,14 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 				return true;
 			}
 
-			if (!zoomSource.isGenericZoomOrigin())
+			if (!zoomSource.isGenericZoomOrigin() && zoomSource.isSingleKeyRecord())
 			{
 				logger.warn("matchesAsSource - return false because zoomSource.isGenericZoomOrigin()==false; this={}; zoomSource={}", this, zoomSource);
 				return false;
 			}
 
 			final String keyColumnName = zoomSource.getKeyColumnNameOrNull();
-			if (Check.isBlank(keyColumnName))
+			if (Check.isBlank(keyColumnName) && zoomSource.isSingleKeyRecord())
 			{
 				logger.warn("matchesAsSource - return false because zoomSource.getKeyColumnNameOrNull()==null; this={}; zoomSource={}", this, zoomSource);
 				return false;

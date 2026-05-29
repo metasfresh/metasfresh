@@ -16,8 +16,9 @@ import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.impex.InputDataSourceId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -310,10 +311,11 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 				.build();
 	}
 
-	@PostMapping("/{dataSourceName}/{externalHeaderId}/attachments")
+	@PostMapping("/{externalSystemCode}/{externalHeaderId}/attachments")
 	@Override
 	public ResponseEntity<JsonAttachment> attachFile(
-			@PathVariable("dataSourceName") final String dataSourceName,
+			@ApiParam(required = true, value = "Identifier of the `ExternalSystem` record that tells where this OLCand came from") //
+			@PathVariable("externalSystemCode") final String externalSystemCode,
 
 			@ApiParam(required = true, value = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
 			@PathVariable("externalHeaderId") final String externalHeaderId,
@@ -331,7 +333,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 
 		final OLCandQuery query = OLCandQuery
 				.builder()
-				.inputDataSourceName(dataSourceName)
+				.externalSystemType(ExternalSystemType.ofValue(externalSystemCode))
 				.externalHeaderId(externalHeaderId)
 				.build();
 
@@ -348,7 +350,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 
 		final JsonAttachment jsonAttachment = toJsonAttachment(
 				externalHeaderId,
-				dataSourceName,
+				externalSystemCode,
 				attachmentEntry);
 		return new ResponseEntity<>(jsonAttachment, HttpStatus.CREATED);
 	}
@@ -375,7 +377,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 	@VisibleForTesting
 	static JsonAttachment toJsonAttachment(
 			@NonNull final String externalReference,
-			@NonNull final String dataSourceName,
+			@NonNull final String externalSystemCode,
 			@NonNull final AttachmentEntry entry)
 	{
 		final AttachmentEntryId entryId = Check.assumeNotNull(entry.getId(), "Param 'entry' needs to have a non-null id; entry={}", entry);
@@ -383,7 +385,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 
 		return JsonAttachment.builder()
 				.externalReference(externalReference)
-				.dataSourceName(dataSourceName)
+				.externalSystemCode(externalSystemCode)
 				.attachmentId(attachmentId)
 				.type(de.metas.rest_api.utils.JsonConverters.toJsonAttachmentType(entry.getType()))
 				.filename(entry.getFilename())

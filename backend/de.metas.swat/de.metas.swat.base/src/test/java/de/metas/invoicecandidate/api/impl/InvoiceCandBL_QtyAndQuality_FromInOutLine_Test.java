@@ -22,9 +22,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
@@ -45,13 +45,13 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test // extends AbstractI
 
 	private UomId icUomId;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass()
 	{
 		AdempiereTestHelper.get().forceStaticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

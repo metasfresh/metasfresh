@@ -22,6 +22,9 @@
 package de.metas.project.process.legacy;
 
 
+import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_C_ProjectTask;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -45,6 +48,7 @@ public class ProjectPhaseGenOrder  extends JavaProcess
 {
 	private int		m_C_ProjectPhase_ID = 0;
 
+	private final @NonNull IOrderLineBL orderLineBL =Services.get(IOrderLineBL.class);
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
@@ -94,7 +98,7 @@ public class ProjectPhaseGenOrder  extends JavaProcess
 			ol.setPrice();
 			if (fromPhase.getPriceActual() != null && fromPhase.getPriceActual().compareTo(Env.ZERO) != 0)
 				ol.setPrice(fromPhase.getPriceActual());
-			ol.setTax();
+			orderLineBL.setTax(ol);
 			if (!ol.save())
 				log.error("doIt - Lines not generated");
 			return "@C_Order_ID@ " + order.getDocumentNo() + " (1)";
@@ -115,7 +119,7 @@ public class ProjectPhaseGenOrder  extends JavaProcess
 			ol.setM_Product_ID(tasks.get(i).getM_Product_ID(), true);
 			ol.setQty(tasks.get(i).getQty());
 			ol.setPrice();
-			ol.setTax();
+			orderLineBL.setTax(ol);
 			if (ol.save())
 				count++;
 		}	//	for all lines

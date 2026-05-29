@@ -24,6 +24,7 @@ package org.adempiere.warehouse.api;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.organization.ClientAndOrgId;
@@ -33,16 +34,23 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public interface IWarehouseBL extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
+
+	I_M_Locator getLocatorById(@NonNull LocatorId locatorId);
+
+	<T extends I_M_Locator> T getLocatorById(@NonNull LocatorId locatorId, @NonNull Class<T> modelClass);
 
 	/**
 	 * @deprecated please use {@link #getOrCreateDefaultLocatorId(WarehouseId)} instead.
@@ -62,6 +70,8 @@ public interface IWarehouseBL extends ISingletonService
 	 * @return default locator's Id; never return null
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
+
+	LocatorId createOrUpdateLocator(@NonNull CreateOrUpdateLocatorRequest request);
 
 	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
@@ -83,6 +93,8 @@ public interface IWarehouseBL extends ISingletonService
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
 
+	ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull WarehouseId warehouseId);
+
 	I_M_Locator getLocatorByRepoId(int locatorRepoId);
 
 	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
@@ -99,8 +111,26 @@ public interface IWarehouseBL extends ISingletonService
 	OrgId getOrgIdByLocatorRepoId(int locatorId);
 
 	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Warehouse getByIdNotNull(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
+	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorIds);
+
+	LocatorQRCode getLocatorQRCode(@NonNull LocatorId locatorId);
+
+	@NonNull
+	ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue);
+
+	List<I_M_Locator> getActiveLocatorsByValue(@NotNull String locatorValue);
 }

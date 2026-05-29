@@ -22,19 +22,6 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
@@ -47,6 +34,16 @@ import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordSer
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.money.MoneyService;
+import lombok.NonNull;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Checks the {@link FreshQuantityDiscountAggregator} when using {@link I_C_Invoice_Candidate#setQualityDiscountPercent_Override(BigDecimal)}.
@@ -54,7 +51,7 @@ import de.metas.money.MoneyService;
  * Note that there is also no in-dispute iol in this case.
  *
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class,/* ShutdownListener.class,*/ InvoiceCandidateRecordService.class, MoneyService.class, CurrencyRepository.class })
 public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQualityDiscountPercentOverrideNoDiscountIol
 {
@@ -67,37 +64,41 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> ignored)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> ignored)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 
 		// Make sure it's using our aggregator
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
-		assertThat(ic.getC_Invoice_Candidate_Agg(), is(freshAgg));
+		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> inOutLines, final @NonNull List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.remove(0);
 
-		assertThat(invoice.getPOReference(), is(IC_PO_REFERENCE));
-		assertThat(invoice.getDateAcct(), is(IC_DATE_ACCT));
+		assertThat(invoice.getPOReference()).isEqualTo(IC_PO_REFERENCE);
+		assertThat(invoice.getDateAcct()).isEqualTo(IC_DATE_ACCT);
 
-		assertThat(invoice.isSOTrx(), is(false));
+		assertThat(invoice.isSOTrx()).isFalse();
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
-		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
+		assertThat(invoiceLines).as("We are expecting two invoice lines: " + invoiceLines).hasSize(2);
 
 		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
-		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
+		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal()).as("Invalid invoice line 1 - QtyToInvoice").isEqualByComparingTo(new BigDecimal("100"));
 
 		final InvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-		assertThat(icIolToUpdate11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(new BigDecimal("900")));
+
+		assertThat(icIolToUpdate11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo(new BigDecimal("900"));
 
 		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
-		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("-10")));
+
+		assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal())
+				.as("Invalid invoice line 2 - QtyToInvoice")
+				.isEqualByComparingTo(new BigDecimal("-10"));
 	}
 }

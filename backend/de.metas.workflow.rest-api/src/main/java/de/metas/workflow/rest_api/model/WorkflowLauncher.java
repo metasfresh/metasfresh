@@ -22,6 +22,7 @@
 
 package de.metas.workflow.rest_api.model;
 
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.mobile.application.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,13 +36,10 @@ import javax.annotation.Nullable;
 public class WorkflowLauncher
 {
 	@NonNull MobileApplicationId applicationId;
-
 	@NonNull WorkflowLauncherCaption caption;
-
 	@Nullable WFProcessId startedWFProcessId;
-
-	@Builder.Default
-	@NonNull Params wfParameters = Params.EMPTY;
-
+	@Nullable JsonTestId testId;
+	@NonNull @Builder.Default Params wfParameters = Params.EMPTY;
+	@Nullable WorkflowLauncherIndicator indicator;
 	boolean partiallyHandledBefore;
 }

@@ -2,6 +2,7 @@ package de.metas.i18n;
 
 import com.google.common.base.MoreObjects;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -38,7 +39,17 @@ public final class ExplainedOptional<T>
 {
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final String explanation)
 	{
-		return emptyBecause(TranslatableStrings.anyLanguage(explanation));
+		return new ExplainedOptional<>(null, TranslatableStrings.anyLanguage(explanation));
+	}
+
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey adMessageKey)
+	{
+		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey));
+	}
+
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey adMessageKey, @Nullable final Object... params)
+	{
+		return new ExplainedOptional<>(null, TranslatableStrings.adMessage(adMessageKey, params));
 	}
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
@@ -51,8 +62,8 @@ public final class ExplainedOptional<T>
 		return new ExplainedOptional<>(value, null);
 	}
 
-	private final T value;
-	private final ITranslatableString explanation;
+	@Nullable private final T value;
+	@Getter @NonNull private final ITranslatableString explanation;
 
 	private ExplainedOptional(@Nullable final T value, @Nullable final ITranslatableString explanation)
 	{
@@ -74,9 +85,10 @@ public final class ExplainedOptional<T>
 				.toString();
 	}
 
-	public ITranslatableString getExplanation()
+	@Nullable
+	public String getExplanationAsString()
 	{
-		return explanation != null ? explanation : TranslatableStrings.empty();
+		return explanation.getDefaultValue();
 	}
 
 	@Nullable
@@ -90,9 +102,24 @@ public final class ExplainedOptional<T>
 		return value != null ? value : other.get();
 	}
 
+	@Nullable
+	public AdMessageKey getAdMessageKey()
+	{
+		return explanation.getAdMessageKey().orElse(null);
+	}
+
 	public T orElseThrow()
 	{
-		return orElseThrow(AdempiereException::new);
+		if (value != null)
+		{
+			return value;
+		}
+		throw new AdempiereException(explanation);
+	}
+
+	public T orElseThrow(@NonNull final AdMessageKey adMessageKey)
+	{
+		return orElseThrow(message -> new AdempiereException(adMessageKey).setParameter("detail", message));
 	}
 
 	public T orElseThrow(@NonNull final Function<ITranslatableString, RuntimeException> exceptionFactory)

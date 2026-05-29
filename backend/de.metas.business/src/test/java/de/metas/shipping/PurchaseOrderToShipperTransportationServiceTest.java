@@ -1,26 +1,6 @@
 package de.metas.shipping;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
@@ -40,8 +20,34 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -67,6 +73,9 @@ import de.metas.util.Services;
 
 public class PurchaseOrderToShipperTransportationServiceTest
 {
+	public static final int M_SHIPPER_ID = 1000000;
+
+	final SSCC18 constantSSCC18 = new SSCC18(0, "0718908 ", "562723189", 6);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private CurrencyId chf;
 
@@ -82,6 +91,14 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(ISSCC18CodeBL.class, new SSCC18CodeBL()
+		{
+			@Override
+			public SSCC18 generate(final @NonNull OrgId orgId)
+			{
+				return constantSSCC18;
+			}
+		});
 
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
@@ -91,8 +108,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		product2 = createProduct("Product2", uom1);
 
-		final PurchaseOrderToShipperTransportationRepository repo = new PurchaseOrderToShipperTransportationRepository();
-		service = new PurchaseOrderToShipperTransportationService(repo);
+		service = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -109,11 +125,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -125,7 +137,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackage.isToBeFetched());
 
 		// try to add it again
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		// => it was not added again
 		assertThat(1).isEqualTo(shippingPackages.size());
@@ -152,15 +164,11 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
-		assertThat(1).isEqualTo(shippingPackages.size());
+		assertThat(shippingPackages.size()).isEqualTo(2);
 
 		final I_M_ShippingPackage shippingPackage = shippingPackages.get(0);
 
@@ -168,10 +176,10 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackage.isToBeFetched());
 
 		// try to add it again
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		// => it was not added again
-		assertThat(1).isEqualTo(shippingPackages.size());
+		assertThat(shippingPackages.size()).isEqualTo(2);
 	}
 
 	@Test
@@ -204,11 +212,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -221,16 +225,242 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		// add a new order
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter2 = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2, order3);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter2);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2,order3));
 
 		final List<I_M_ShippingPackage> shippingPackages2 = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
 		assertThat(3).isEqualTo(shippingPackages2.size());
 
+	}
+
+	/**
+	 * Verify that {@link PurchaseOrderToShipperTransportationService#hasProcessedShipperTransportation}
+	 * returns false when the transport order is not processed, and true when it is.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void hasProcessedShipperTransportation_returnsCorrectly()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner3", "address3");
+		final OrderId order = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of(10, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(
+				ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
+				Collections.singletonList(order));
+
+		// Verify shipping packages exist
+		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+		assertThat(shippingPackages).hasSize(1);
+
+		// Not processed yet
+		assertThat(service.hasProcessedShipperTransportation(order)).isFalse();
+
+		// Mark transport order as processed
+		shipperTransportation.setProcessed(true);
+		save(shipperTransportation);
+
+		// Now it's processed
+		assertThat(service.hasProcessedShipperTransportation(order)).isTrue();
+	}
+
+	/**
+	 * Verify that shipping packages are NOT deleted when using hasProcessedShipperTransportation
+	 * (the check-only method used during PO reactivation), regardless of processed state.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void shippingPackages_survivePOReactivationCheck()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner4", "address4");
+		final OrderId order = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, uom1),
+				Money.of(20, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order));
+
+		// Verify packages exist
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
+
+		// Simulate what happens on PO reactivation (the new code only checks, doesn't delete)
+		final boolean hasProcessed = service.hasProcessedShipperTransportation(order);
+		assertThat(hasProcessed).isFalse();
+
+		// Shipping packages must still exist after the check
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
+				.as("Shipping packages must survive PO reactivation (not be deleted)")
+				.hasSize(1);
+	}
+
+	/**
+	 * Verify that after re-completion, meaningful order changes (DatePromised, BPartner Location)
+	 * are synced to existing shipping packages.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void syncShippingPackagesFromOrder_syncsDatePromisedAndLocation()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner5", "address5");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(3), product1, uom1),
+				Money.of(15, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		// Verify package exists with original ShipDate
+		final List<I_M_ShippingPackage> packagesBefore = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesBefore).hasSize(1);
+
+		// Now simulate order re-completion with changed DatePromised and BPartner Location
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final java.time.LocalDate newDate = LocalDate.of(2025, 3, 15);
+		order.setDatePromised(TimeUtil.asTimestamp(newDate, orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
+
+		// Create a new location
+		final BPartnerLocationId newLocation = createBPartnerAndLocation("Partner5b", "address5-new");
+		order.setC_BPartner_ID(newLocation.getBpartnerId().getRepoId());
+		order.setC_BPartner_Location_ID(newLocation.getRepoId());
+		save(order);
+
+		// Sync shipping packages from order
+		service.syncShippingPackagesFromOrder(order);
+
+		// Verify synced
+		final List<I_M_ShippingPackage> packagesAfter = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesAfter).hasSize(1);
+
+		final I_M_ShippingPackage sp = packagesAfter.get(0);
+		assertThat(sp.getC_BPartner_Location_ID())
+				.as("BPartner Location should be synced from order")
+				.isEqualTo(newLocation.getRepoId());
+		assertThat(sp.getC_BPartner_ID())
+				.as("BPartner should be synced from order")
+				.isEqualTo(newLocation.getBpartnerId().getRepoId());
+
+		// Check M_Package.ShipDate
+		final I_M_Package mPackage = load(sp.getM_Package_ID(), I_M_Package.class);
+		assertThat(mPackage.getShipDate())
+				.as("M_Package.ShipDate should be synced from order.DatePromised")
+				.isNotNull();
+	}
+
+	/**
+	 * Verify that shipping packages for deleted order lines are removed during sync,
+	 * while packages for surviving lines are kept.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void syncShippingPackagesFromOrder_removesPackagesForDeletedLines()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner6", "address6");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		// Create two order lines
+		final I_C_OrderLine line1 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(3), product1, uom1),
+				Money.of(15, chf)
+		);
+		final I_C_OrderLine line2 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product2, uom1),
+				Money.of(25, chf)
+		);
+
+		// Add order to transportation — should create 2 packages (one per line)
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> packagesBefore = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesBefore).hasSize(2);
+
+		// Simulate: delete line2 during reactivation
+		delete(line2);
+
+		// Sync
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		service.syncShippingPackagesFromOrder(order);
+
+		// Only 1 package should remain (for line1)
+		final List<I_M_ShippingPackage> packagesAfter = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+		assertThat(packagesAfter)
+				.as("Package for deleted line should be removed, surviving line's package should remain")
+				.hasSize(1);
+		assertThat(packagesAfter.get(0).getC_OrderLine_ID())
+				.as("Remaining package should belong to the surviving order line")
+				.isEqualTo(line1.getC_OrderLine_ID());
+	}
+
+	/**
+	 * Verify that when ALL order lines are removed, ALL shipping packages are cleaned up.
+	 * <p>
+	 * Regression test for https://github.com/metasfresh/me03/issues/28677
+	 */
+	@Test
+	public void syncShippingPackagesFromOrder_removesAllPackagesWhenAllLinesDeleted()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner7", "address7");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		final I_C_OrderLine line1 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of(10, chf)
+		);
+
+		// Add order to transportation
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
+
+		// Delete the only line
+		delete(line1);
+
+		// Sync
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		service.syncShippingPackagesFromOrder(order);
+
+		// All packages should be gone
+		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
+				.as("All packages should be removed when all order lines are deleted")
+				.isEmpty();
 	}
 
 	private I_M_ShipperTransportation createShipperTransportation()
@@ -295,6 +525,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		order.setM_Shipper_ID(M_SHIPPER_ID);
 
 		order.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(warehouse.getAD_Org_ID()))));
 

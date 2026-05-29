@@ -30,7 +30,7 @@ import java.util.List;
 import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
-import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.shipping.model.I_M_ShippingPackage;

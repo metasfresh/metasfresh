@@ -35,7 +35,7 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonRequestExternalReferenceUpsert.JsonRequestExternalReferenceUpsertBuilder.class)
 public class JsonRequestExternalReferenceUpsert
 {
-	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	@ApiModelProperty(required = true, value = "Value of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	@NonNull
 	JsonExternalSystemName systemName;
 

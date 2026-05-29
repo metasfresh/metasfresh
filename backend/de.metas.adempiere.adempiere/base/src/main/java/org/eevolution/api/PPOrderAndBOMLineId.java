@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +32,11 @@ public class PPOrderAndBOMLineId
 	public static PPOrderAndBOMLineId ofRepoIds(final int ppOrderId, final int lineId)
 	{
 		return new PPOrderAndBOMLineId(PPOrderId.ofRepoId(ppOrderId), PPOrderBOMLineId.ofRepoId(lineId));
+	}
+
+	public static PPOrderAndBOMLineId ofRepoIds(final RepoIdAware ppOrderId, final int lineId)
+	{
+		return ofRepoIds(ppOrderId.getRepoId(), lineId);
 	}
 
 	public boolean isSameOrderAs(@Nullable final PPOrderAndBOMLineId other) {return other != null && PPOrderId.equals(this.ppOrderId, other.ppOrderId);}

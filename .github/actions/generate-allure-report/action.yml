@@ -1,0 +1,144 @@
+name: 'Generate Allure Report'
+description: 'Validate allure results, generate HTML report with history support, and upload as artifact'
+
+inputs:
+  results-dir:
+    description: 'Path to allure-results directory (relative to repository root)'
+    required: true
+  output-dir:
+    description: 'Path to output the generated report (relative to repository root)'
+    required: true
+  artifact-name:
+    description: 'Name for the uploaded artifact'
+    required: true
+  retention-days:
+    description: 'Number of days to retain the artifact'
+    required: false
+    default: '1'
+  history-artifact-name:
+    description: 'Name of artifact containing previous history for trends (optional). If provided, enables trend charts.'
+    required: false
+    default: ''
+  report-title:
+    description: 'Title for the report (shown in Allure environment section)'
+    required: false
+    default: 'Test Report'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Allure CLI
+      uses: ./.github/actions/setup-allure
+
+    # Fix permissions on results dir (Docker may have created it as root)
+    - name: Fix results directory permissions
+      if: inputs.history-artifact-name != ''
+      shell: bash
+      run: |
+        if [ -d "${{ inputs.results-dir }}" ]; then
+          sudo chown -R $(id -u):$(id -g) "${{ inputs.results-dir }}"
+          echo "Fixed permissions on ${{ inputs.results-dir }}"
+        fi
+
+    # Download previous history from last successful run on same branch
+    - name: Download previous Allure history
+      if: inputs.history-artifact-name != ''
+      uses: dawidd6/action-download-artifact@v6
+      with:
+        name: ${{ inputs.history-artifact-name }}
+        path: ${{ inputs.results-dir }}/history
+        workflow_conclusion: ''
+        branch: ${{ github.ref_name }}
+        if_no_artifact_found: ignore
+        search_artifacts: true
+
+    - name: Validate and Generate Allure Report
+      shell: bash
+      env:
+        RESULTS_DIR: ${{ inputs.results-dir }}
+        OUTPUT_DIR: ${{ inputs.output-dir }}
+        REPORT_TITLE: ${{ inputs.report-title }}
+        GH_SERVER_URL: ${{ github.server_url }}
+        GH_REPOSITORY: ${{ github.repository }}
+        GH_RUN_ID: ${{ github.run_id }}
+        GH_RUN_NUMBER: ${{ github.run_number }}
+      run: |
+        echo "=== Checking $RESULTS_DIR directory ==="
+        if [ -d "$RESULTS_DIR" ]; then
+          echo "Directory exists. Contents:"
+          ls -la "$RESULTS_DIR/" || true
+          echo "JSON files count: $(find "$RESULTS_DIR" -name "*.json" -type f | wc -l)"
+        else
+          echo "ERROR: $RESULTS_DIR directory does not exist!"
+          echo "Contents of current directory:"
+          ls -la
+          exit 1
+        fi
+
+        RESULT_COUNT=$(find "$RESULTS_DIR" -name "*.json" -type f 2>/dev/null | wc -l)
+        if [ "$RESULT_COUNT" -eq 0 ]; then
+          echo "FATAL ERROR: $RESULTS_DIR contains no JSON files!"
+          echo "Directory contents:"
+          ls -la "$RESULTS_DIR/"
+          exit 1
+        fi
+
+        echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
+
+        # Check for history (enables trend charts)
+        if [ -d "$RESULTS_DIR/history" ]; then
+          HISTORY_COUNT=$(ls "$RESULTS_DIR/history" 2>/dev/null | wc -l)
+          echo "Found history directory with $HISTORY_COUNT files - trends will be available"
+        else
+          echo "No history directory found - trends will not be available (first run)"
+        fi
+
+        # Create/update environment.properties for Allure report metadata
+        # Use sudo in case directory was created by Docker with root permissions
+        if [ -f "$RESULTS_DIR/environment.properties" ]; then
+          # Append to existing file with newline (tests may have created it)
+          printf "\nReport.Name=%s\n" "$REPORT_TITLE" | sudo tee -a "$RESULTS_DIR/environment.properties" > /dev/null
+          echo "Appended Report.Name to existing environment.properties"
+        else
+          printf "Report.Name=%s\n" "$REPORT_TITLE" | sudo tee "$RESULTS_DIR/environment.properties" > /dev/null
+          echo "Created environment.properties with Report.Name=$REPORT_TITLE"
+        fi
+
+        # Create executor.json for CI build info in Allure report
+        BUILD_URL="${GH_SERVER_URL}/${GH_REPOSITORY}/actions/runs/${GH_RUN_ID}"
+        cat << EOF | sudo tee "$RESULTS_DIR/executor.json" > /dev/null
+        {
+          "name": "GitHub Actions",
+          "type": "github",
+          "buildName": "#${GH_RUN_NUMBER}",
+          "buildUrl": "${BUILD_URL}",
+          "reportName": "${REPORT_TITLE}"
+        }
+        EOF
+        sudo sed -i 's/^[[:space:]]*//' "$RESULTS_DIR/executor.json"
+        echo "Created executor.json with build #${GH_RUN_NUMBER}"
+
+        # Ensure output directory parent exists
+        mkdir -p "$(dirname "$OUTPUT_DIR")"
+
+        # Generate HTML report (Allure automatically uses history/ if present)
+        allure generate "$RESULTS_DIR" -o "$OUTPUT_DIR" --clean
+        echo "Allure report generated at: $OUTPUT_DIR"
+
+    - name: Upload Allure report artifact
+      uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.output-dir }}
+        retention-days: ${{ inputs.retention-days }}
+
+    # Upload history for next build (enables trends over time)
+    - name: Upload Allure history for trends
+      if: inputs.history-artifact-name != '' && (success() || failure())
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.history-artifact-name }}
+        path: ${{ inputs.output-dir }}/history
+        retention-days: 30
+        overwrite: true

@@ -34,8 +34,8 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -54,7 +54,7 @@ public class PPOrderBOMLineProductStorageTest
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		POJOWrapper.setDefaultStrictValues(false);

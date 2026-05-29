@@ -69,6 +69,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_S
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_VIA_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_ORDER_LINE_DISCOUNT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_SYSTEM_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ORDER_LINE_SEQUENCE_INCREMENT;
@@ -120,9 +121,9 @@ public class OLCandRequestProcessor implements Processor
 				.dateOrdered(getDateOrdered(jsonOrder))
 				.dateRequired(context.getDateRequired())
 				.dateCandidate(getDateCandidate(jsonOrder))
+				.externalSystemCode(EXTERNAL_SYSTEM_SHOPWARE)
 				.dataSource(DATA_SOURCE_INT_SHOPWARE)
 				.isManualPrice(true)
-				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)

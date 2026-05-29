@@ -115,7 +115,7 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 					.addElement(shipment)
 					.buildAndEnqueue();
 
-			shipment.setEDI_ExportStatus(I_M_InOut.EDI_EXPORTSTATUS_Enqueued);
+			shipment.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
 			InterfaceWrapperHelper.save(shipment);
 
 			addLog("Enqueued M_InOut_ID={} for EDI_Desadv_ID={}", shipment.getM_InOut_ID(), desadv.getEDI_Desadv_ID());
@@ -127,7 +127,7 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 		}
 		else
 		{
-			desadv.setEDI_ExportStatus(I_M_InOut.EDI_EXPORTSTATUS_Enqueued);
+			desadv.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
 			InterfaceWrapperHelper.save(desadv);
 		}
 	}

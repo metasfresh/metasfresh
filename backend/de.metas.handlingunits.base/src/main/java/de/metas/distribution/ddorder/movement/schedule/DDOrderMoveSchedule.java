@@ -1,9 +1,12 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.Check;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -17,7 +20,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 @Getter
 @EqualsAndHashCode
@@ -59,9 +61,27 @@ public class DDOrderMoveSchedule
 		if (isPickedFrom()) {throw new AdempiereException("Already Picked From");}
 	}
 
+	public void assertNotStarted()
+	{
+		Check.assume(status == DDOrderMoveScheduleStatus.NOT_STARTED, "Expected status NOT_STARTED but was {}", status);
+	}
+
 	public void assertPickedFrom()
 	{
 		if (!isPickedFrom()) {throw new AdempiereException("Pick from required first");}
+	}
+
+	public void assertInTransit()
+	{
+		assertNotDroppedTo();
+		assertPickedFrom();
+	}
+
+	public void removePickedHUs()
+	{
+		this.pickedHUs = null;
+		this.qtyNotPickedReason = null;
+		updateStatus();
 	}
 
 	public void markAsPickedFrom(
@@ -108,12 +128,12 @@ public class DDOrderMoveSchedule
 		}
 	}
 
-	public void markAsDroppedTo(@NonNull final MovementId dropToMovementId)
+	public void markAsDroppedTo(@NonNull LocatorId dropToLocatorId, @NonNull final MovementId dropToMovementId)
 	{
-		assertPickedFrom();
-		assertNotDroppedTo();
+		assertInTransit();
 
-		Objects.requireNonNull(pickedHUs).setDropToMovementId(dropToMovementId);
+		final DDOrderMoveSchedulePickedHUs pickedHUs = Check.assumeNotNull(this.pickedHUs, "Expected to be already picked: {}", this);
+		pickedHUs.setDroppedTo(dropToLocatorId, dropToMovementId);
 
 		updateStatus();
 	}
@@ -138,4 +158,23 @@ public class DDOrderMoveSchedule
 			return DDOrderMoveScheduleStatus.NOT_STARTED;
 		}
 	}
+
+	@NonNull
+	public ExplainedOptional<LocatorId> getInTransitLocatorId()
+	{
+		if (pickedHUs == null)
+		{
+			return ExplainedOptional.emptyBecause("Schedule is not picked yet");
+		}
+
+		return pickedHUs.getInTransitLocatorId();
+	}
+
+	@NonNull
+	public ImmutableSet<HuId> getPickedHUIds()
+	{
+		final DDOrderMoveSchedulePickedHUs pickedHUs = Check.assumeNotNull(this.pickedHUs, "Expected to be already picked: {}", this);
+		return pickedHUs.getActualHUIdsPicked();
+	}
+
 }

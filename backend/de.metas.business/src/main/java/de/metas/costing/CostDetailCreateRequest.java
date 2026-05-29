@@ -102,6 +102,20 @@ public class CostDetailCreateRequest
 		this.explicitCostPrice = explicitCostPrice;
 	}
 
+	public static class CostDetailCreateRequestBuilder
+	{
+		public CostDetailCreateRequestBuilder costSegment(final CostSegment costSegment)
+		{
+			return this
+					.acctSchemaId(costSegment.getAcctSchemaId())
+					.clientId(costSegment.getClientId())
+					.orgId(costSegment.getOrgId())
+					.productId(costSegment.getProductId())
+					.attributeSetInstanceId(costSegment.getAttributeSetInstanceId())
+					;
+		}
+	}
+
 	public AcctSchemaId getAcctSchemaId()
 	{
 		Check.assumeNotNull(acctSchemaId, "acctSchemaId shall be set for {}", this);

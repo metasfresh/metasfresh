@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
@@ -23,7 +45,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.IQuery;
@@ -87,6 +108,14 @@ public class M_ShipmentSchedule
 	public void beforeSave_updateRenderedAddressesAndCapturedLocations(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID)
+	public void updateASIFromProjectId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		shipmentScheduleBL.updateASIFromProjectId(shipmentSchedule);
 	}
 
 	/**
@@ -275,13 +304,17 @@ public class M_ShipmentSchedule
 	{
 		shipmentScheduleBL.updateQtyOrdered(shipmentSchedule);
 
-		final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
-		final BigDecimal qtyOrdered = shipmentSchedule.getQtyOrdered();
-
-		if (qtyDelivered.compareTo(qtyOrdered) > 0)
-		{
-			throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, qtyDelivered);
-		}
+		// Do not check&throw an error. 
+		// For example, if an order is closed while the sched is updated by the ShipmentSchedule-Updater, it might be in this state temporarily.
+		
+		// final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
+		// final BigDecimal qtyOrdered = shipmentSchedule.getQtyOrdered();
+		//
+		// But will be fixed by the ShipmentSchedule-Updater's next round
+		// if (qtyDelivered.compareTo(qtyOrdered) > 0)
+		// {
+		// 	throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, qtyDelivered).setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID());
+		// }
 
 		updateQtyOrderedOfOrderLineAndReserveStock(shipmentSchedule);
 	}

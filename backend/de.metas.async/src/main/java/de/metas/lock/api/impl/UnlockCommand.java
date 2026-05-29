@@ -22,16 +22,6 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.Future;
-
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.concurrent.FutureValue;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.UnlockFailedException;
@@ -39,6 +29,16 @@ import de.metas.lock.spi.ILockDatabase;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.concurrent.FutureValue;
+import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.Future;
 
 public class UnlockCommand implements IUnlockCommand
 {
@@ -144,7 +144,7 @@ public class UnlockCommand implements IUnlockCommand
 	}
 
 	@Override
-	public final int getSelectionToUnlock_AD_Table_ID()
+	public final AdTableId getSelectionToUnlock_AD_Table_ID()
 	{
 		return _recordsToUnlock.getSelection_AD_Table_ID();
 	}

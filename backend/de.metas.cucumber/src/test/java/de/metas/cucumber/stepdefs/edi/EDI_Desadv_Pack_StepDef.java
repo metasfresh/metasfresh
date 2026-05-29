@@ -25,13 +25,14 @@ package de.metas.cucumber.stepdefs.edi;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.handlingunits.HuId;
 import de.metas.logging.LogManager;
@@ -54,6 +55,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_GTIN_PackingMaterial;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
@@ -70,15 +72,18 @@ public class EDI_Desadv_Pack_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final EDI_Desadv_Pack_StepDefData ediDesadvPackTable;
+	private final EDI_Desadv_StepDefData ediDesadvTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
 
 	public EDI_Desadv_Pack_StepDef(
 			@NonNull final EDI_Desadv_Pack_StepDefData ediDesadvPackTable,
+			@NonNull final EDI_Desadv_StepDefData ediDesadvTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
 	{
 		this.ediDesadvPackTable = ediDesadvPackTable;
+		this.ediDesadvTable = ediDesadvTable;
 		this.huTable = huTable;
 		this.huPackagingCodeTable = huPackagingCodeTable;
 	}
@@ -150,6 +155,9 @@ public class EDI_Desadv_Pack_StepDef
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_IsManual_IPA_SSCC18, isManualSSCC18);
 
+		row.getAsOptionalIdentifier(COLUMNNAME_EDI_Desadv_ID)
+				.ifPresent(desadvIdentifier -> queryBuilder.addEqualsFilter(COLUMNNAME_EDI_Desadv_ID, ediDesadvTable.get(desadvIdentifier).getEDI_Desadv_ID()));
+
 		row.getAsOptionalIdentifier(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID)
 				.ifPresent(huIdentifier -> queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_M_HU_ID, getHuId(huIdentifier)));
 
@@ -178,7 +186,7 @@ public class EDI_Desadv_Pack_StepDef
 				.orderBy(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.create()
 				.list();
-		return "EDI_Desadv_Pack records:"
+		return "Actually existing EDI_Desadv_Pack records:"
 				+ "\n" + toTabular(list).toPrint().ident(1);
 	}
 

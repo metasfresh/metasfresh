@@ -1,234 +1,209 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Process_Para
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_Process_Para 
 {
 
-    /** TableName=AD_Process_Para */
-    public static final String Table_Name = "AD_Process_Para";
+	String Table_Name = "AD_Process_Para";
 
-    /** AD_Table_ID=285 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=285 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 4 - System
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Client>(I_AD_Process_Para.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set System-Element.
+	 * Set System Element.
 	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Element_ID (int AD_Element_ID);
+	void setAD_Element_ID (int AD_Element_ID);
 
 	/**
-	 * Get System-Element.
+	 * Get System Element.
 	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Element_ID();
+	int getAD_Element_ID();
 
-	public org.compiere.model.I_AD_Element getAD_Element();
+	@Nullable org.compiere.model.I_AD_Element getAD_Element();
 
-	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
+	void setAD_Element(@Nullable org.compiere.model.I_AD_Element AD_Element);
 
-    /** Column definition for AD_Element_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Element>(I_AD_Process_Para.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
-    /** Column name AD_Element_ID */
-    public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
+	ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new ModelColumn<>(I_AD_Process_Para.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
+	String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Org>(I_AD_Process_Para.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess.
+	 * Set Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Process_ID (int AD_Process_ID);
+	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
+	 * Get Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Process_ID();
+	int getAD_Process_ID();
 
-	public org.compiere.model.I_AD_Process getAD_Process();
+	org.compiere.model.I_AD_Process getAD_Process();
 
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
+	void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
 
-    /** Column definition for AD_Process_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Process>(I_AD_Process_Para.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
-    /** Column name AD_Process_ID */
-    public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
+	ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new ModelColumn<>(I_AD_Process_Para.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
+	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Prozess-Parameter.
+	 * Set Process Parameter.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Process_Para_ID (int AD_Process_Para_ID);
+	void setAD_Process_Para_ID (int AD_Process_Para_ID);
 
 	/**
-	 * Get Prozess-Parameter.
+	 * Get Process Parameter.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Process_Para_ID();
+	int getAD_Process_Para_ID();
 
-    /** Column definition for AD_Process_Para_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_AD_Process_Para_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "AD_Process_Para_ID", null);
-    /** Column name AD_Process_Para_ID */
-    public static final String COLUMNNAME_AD_Process_Para_ID = "AD_Process_Para_ID";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_AD_Process_Para_ID = new ModelColumn<>(I_AD_Process_Para.class, "AD_Process_Para_ID", null);
+	String COLUMNNAME_AD_Process_Para_ID = "AD_Process_Para_ID";
 
 	/**
-	 * Set Referenz.
-	 * System Reference and Validation
+	 * Set Reference Overwrite.
+	 * System Reference - optional Overwrite
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_ID (int AD_Reference_ID);
+	void setAD_Reference_ID (int AD_Reference_ID);
 
 	/**
-	 * Get Referenz.
-	 * System Reference and Validation
+	 * Get Reference Overwrite.
+	 * System Reference - optional Overwrite
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_ID();
+	int getAD_Reference_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference();
+	org.compiere.model.I_AD_Reference getAD_Reference();
 
-	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference);
+	void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference);
 
-    /** Column definition for AD_Reference_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Reference>(I_AD_Process_Para.class, "AD_Reference_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_ID */
-    public static final String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
+	ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_ID = new ModelColumn<>(I_AD_Process_Para.class, "AD_Reference_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
-	 * Set Referenzschlüssel.
+	 * Set Reference Key.
 	 * Required to specify, if data type is Table or List
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_Value_ID (int AD_Reference_Value_ID);
+	void setAD_Reference_Value_ID (int AD_Reference_Value_ID);
 
 	/**
-	 * Get Referenzschlüssel.
+	 * Get Reference Key.
 	 * Required to specify, if data type is Table or List
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_Value_ID();
+	int getAD_Reference_Value_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value();
+	@Nullable org.compiere.model.I_AD_Reference getAD_Reference_Value();
 
-	public void setAD_Reference_Value(org.compiere.model.I_AD_Reference AD_Reference_Value);
+	void setAD_Reference_Value(@Nullable org.compiere.model.I_AD_Reference AD_Reference_Value);
 
-    /** Column definition for AD_Reference_Value_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Reference>(I_AD_Process_Para.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_Value_ID */
-    public static final String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
+	ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new ModelColumn<>(I_AD_Process_Para.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
 
 	/**
-	 * Set Dynamische Validierung.
-	 * Dynamic Validation Rule
+	 * Set Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
+	void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
 
 	/**
-	 * Get Dynamische Validierung.
-	 * Dynamic Validation Rule
+	 * Get Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Val_Rule_ID();
+	int getAD_Val_Rule_ID();
 
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule();
+	@Nullable org.compiere.model.I_AD_Val_Rule getAD_Val_Rule();
 
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule);
+	void setAD_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule AD_Val_Rule);
 
-    /** Column definition for AD_Val_Rule_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Val_Rule> COLUMN_AD_Val_Rule_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Val_Rule>(I_AD_Process_Para.class, "AD_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
-    /** Column name AD_Val_Rule_ID */
-    public static final String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
+	ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_Val_Rule> COLUMN_AD_Val_Rule_ID = new ModelColumn<>(I_AD_Process_Para.class, "AD_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
+	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
 	 * Set Barcode Scanner Type.
@@ -237,7 +212,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBarcodeScannerType (java.lang.String BarcodeScannerType);
+	void setBarcodeScannerType (@Nullable java.lang.String BarcodeScannerType);
 
 	/**
 	 * Get Barcode Scanner Type.
@@ -246,70 +221,61 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBarcodeScannerType();
+	@Nullable java.lang.String getBarcodeScannerType();
 
-    /** Column definition for BarcodeScannerType */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_BarcodeScannerType = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "BarcodeScannerType", null);
-    /** Column name BarcodeScannerType */
-    public static final String COLUMNNAME_BarcodeScannerType = "BarcodeScannerType";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_BarcodeScannerType = new ModelColumn<>(I_AD_Process_Para.class, "BarcodeScannerType", null);
+	String COLUMNNAME_BarcodeScannerType = "BarcodeScannerType";
 
 	/**
-	 * Set Spaltenname.
+	 * Set DB Column Name.
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setColumnName (java.lang.String ColumnName);
+	void setColumnName (java.lang.String ColumnName);
 
 	/**
-	 * Get Spaltenname.
+	 * Get DB Column Name.
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getColumnName();
+	java.lang.String getColumnName();
 
-    /** Column definition for ColumnName */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_ColumnName = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "ColumnName", null);
-    /** Column name ColumnName */
-    public static final String COLUMNNAME_ColumnName = "ColumnName";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_ColumnName = new ModelColumn<>(I_AD_Process_Para.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_Created = new ModelColumn<>(I_AD_Process_Para.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_User>(I_AD_Process_Para.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Standardwert-Logik.
+	 * Set Default Logic.
 	 * Default value hierarchy, separated by ;
 
 	 *
@@ -317,10 +283,10 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDefaultValue (java.lang.String DefaultValue);
+	void setDefaultValue (@Nullable java.lang.String DefaultValue);
 
 	/**
-	 * Get Standardwert-Logik.
+	 * Get Default Logic.
 	 * Default value hierarchy, separated by ;
 
 	 *
@@ -328,12 +294,10 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDefaultValue();
+	@Nullable java.lang.String getDefaultValue();
 
-    /** Column definition for DefaultValue */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_DefaultValue = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "DefaultValue", null);
-    /** Column name DefaultValue */
-    public static final String COLUMNNAME_DefaultValue = "DefaultValue";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_DefaultValue = new ModelColumn<>(I_AD_Process_Para.class, "DefaultValue", null);
+	String COLUMNNAME_DefaultValue = "DefaultValue";
 
 	/**
 	 * Set Default Logic 2.
@@ -344,7 +308,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDefaultValue2 (java.lang.String DefaultValue2);
+	void setDefaultValue2 (@Nullable java.lang.String DefaultValue2);
 
 	/**
 	 * Get Default Logic 2.
@@ -355,162 +319,146 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDefaultValue2();
+	@Nullable java.lang.String getDefaultValue2();
 
-    /** Column definition for DefaultValue2 */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_DefaultValue2 = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "DefaultValue2", null);
-    /** Column name DefaultValue2 */
-    public static final String COLUMNNAME_DefaultValue2 = "DefaultValue2";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_DefaultValue2 = new ModelColumn<>(I_AD_Process_Para.class, "DefaultValue2", null);
+	String COLUMNNAME_DefaultValue2 = "DefaultValue2";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_Description = new ModelColumn<>(I_AD_Process_Para.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Anzeigelogik.
+	 * Set Display Logic.
 	 * If the Field is displayed, the result determines if the field is actually displayed
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDisplayLogic (java.lang.String DisplayLogic);
+	void setDisplayLogic (@Nullable java.lang.String DisplayLogic);
 
 	/**
-	 * Get Anzeigelogik.
+	 * Get Display Logic.
 	 * If the Field is displayed, the result determines if the field is actually displayed
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDisplayLogic();
+	@Nullable java.lang.String getDisplayLogic();
 
-    /** Column definition for DisplayLogic */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_DisplayLogic = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "DisplayLogic", null);
-    /** Column name DisplayLogic */
-    public static final String COLUMNNAME_DisplayLogic = "DisplayLogic";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_DisplayLogic = new ModelColumn<>(I_AD_Process_Para.class, "DisplayLogic", null);
+	String COLUMNNAME_DisplayLogic = "DisplayLogic";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEntityType (java.lang.String EntityType);
+	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEntityType();
+	java.lang.String getEntityType();
 
-    /** Column definition for EntityType */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "EntityType", null);
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_Process_Para.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Länge.
+	 * Set Length.
 	 * Length of the column in the database
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFieldLength (int FieldLength);
+	void setFieldLength (int FieldLength);
 
 	/**
-	 * Get Länge.
+	 * Get Length.
 	 * Length of the column in the database
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getFieldLength();
+	int getFieldLength();
 
-    /** Column definition for FieldLength */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_FieldLength = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "FieldLength", null);
-    /** Column name FieldLength */
-    public static final String COLUMNNAME_FieldLength = "FieldLength";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_FieldLength = new ModelColumn<>(I_AD_Process_Para.class, "FieldLength", null);
+	String COLUMNNAME_FieldLength = "FieldLength";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_Help = new ModelColumn<>(I_AD_Process_Para.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Process_Para.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Autocomplete.
@@ -520,7 +468,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAutocomplete (boolean IsAutocomplete);
+	void setIsAutocomplete (boolean IsAutocomplete);
 
 	/**
 	 * Get Autocomplete.
@@ -530,87 +478,79 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAutocomplete();
+	boolean isAutocomplete();
 
-    /** Column definition for IsAutocomplete */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_IsAutocomplete = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "IsAutocomplete", null);
-    /** Column name IsAutocomplete */
-    public static final String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_IsAutocomplete = new ModelColumn<>(I_AD_Process_Para.class, "IsAutocomplete", null);
+	String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
 
 	/**
-	 * Set Zentral verwaltet.
+	 * Set Centrally maintained.
 	 * Information maintained in System Element table
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
+	void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
 
 	/**
-	 * Get Zentral verwaltet.
+	 * Get Centrally maintained.
 	 * Information maintained in System Element table
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCentrallyMaintained();
+	boolean isCentrallyMaintained();
 
-    /** Column definition for IsCentrallyMaintained */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_IsCentrallyMaintained = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "IsCentrallyMaintained", null);
-    /** Column name IsCentrallyMaintained */
-    public static final String COLUMNNAME_IsCentrallyMaintained = "IsCentrallyMaintained";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_IsCentrallyMaintained = new ModelColumn<>(I_AD_Process_Para.class, "IsCentrallyMaintained", null);
+	String COLUMNNAME_IsCentrallyMaintained = "IsCentrallyMaintained";
 
 	/**
-	 * Set Encrypted.
-	 * Display or Storage is encrypted
+	 * Set Column Encryption.
+	 * Test and enable Column Encryption
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsEncrypted (boolean IsEncrypted);
+	void setIsEncrypted (boolean IsEncrypted);
 
 	/**
-	 * Get Encrypted.
-	 * Display or Storage is encrypted
+	 * Get Column Encryption.
+	 * Test and enable Column Encryption
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isEncrypted();
+	boolean isEncrypted();
 
-    /** Column definition for IsEncrypted */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_IsEncrypted = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "IsEncrypted", null);
-    /** Column name IsEncrypted */
-    public static final String COLUMNNAME_IsEncrypted = "IsEncrypted";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_IsEncrypted = new ModelColumn<>(I_AD_Process_Para.class, "IsEncrypted", null);
+	String COLUMNNAME_IsEncrypted = "IsEncrypted";
 
 	/**
-	 * Set Pflichtangabe.
+	 * Set mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMandatory (boolean IsMandatory);
+	void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get Pflichtangabe.
+	 * Get mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMandatory();
+	boolean isMandatory();
 
-    /** Column definition for IsMandatory */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_IsMandatory = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "IsMandatory", null);
-    /** Column name IsMandatory */
-    public static final String COLUMNNAME_IsMandatory = "IsMandatory";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_IsMandatory = new ModelColumn<>(I_AD_Process_Para.class, "IsMandatory", null);
+	String COLUMNNAME_IsMandatory = "IsMandatory";
 
 	/**
 	 * Set Range.
@@ -620,7 +560,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsRange (boolean IsRange);
+	void setIsRange (boolean IsRange);
 
 	/**
 	 * Get Range.
@@ -630,12 +570,10 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isRange();
+	boolean isRange();
 
-    /** Column definition for IsRange */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_IsRange = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "IsRange", null);
-    /** Column name IsRange */
-    public static final String COLUMNNAME_IsRange = "IsRange";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_IsRange = new ModelColumn<>(I_AD_Process_Para.class, "IsRange", null);
+	String COLUMNNAME_IsRange = "IsRange";
 
 	/**
 	 * Set Name.
@@ -644,7 +582,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -653,12 +591,10 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_Name = new ModelColumn<>(I_AD_Process_Para.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Read Only Logic.
@@ -668,7 +604,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setReadOnlyLogic (java.lang.String ReadOnlyLogic);
+	void setReadOnlyLogic (@Nullable java.lang.String ReadOnlyLogic);
 
 	/**
 	 * Get Read Only Logic.
@@ -678,15 +614,13 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getReadOnlyLogic();
+	@Nullable java.lang.String getReadOnlyLogic();
 
-    /** Column definition for ReadOnlyLogic */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_ReadOnlyLogic = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "ReadOnlyLogic", null);
-    /** Column name ReadOnlyLogic */
-    public static final String COLUMNNAME_ReadOnlyLogic = "ReadOnlyLogic";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_ReadOnlyLogic = new ModelColumn<>(I_AD_Process_Para.class, "ReadOnlyLogic", null);
+	String COLUMNNAME_ReadOnlyLogic = "ReadOnlyLogic";
 
 	/**
-	 * Set Reihenfolge.
+	 * Set SeqNo.
 	 * Method of ordering records;
  lowest number comes first
 	 *
@@ -694,10 +628,10 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
+	 * Get SeqNo.
 	 * Method of ordering records;
  lowest number comes first
 	 *
@@ -705,92 +639,104 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_Process_Para.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Get Aktualisiert.
+	 * Set Show Inactive Values.
+	 * Also show inactive referenced records
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setShowInactiveValues (boolean ShowInactiveValues);
+
+	/**
+	 * Get Show Inactive Values.
+	 * Also show inactive referenced records
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowInactiveValues();
+
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_ShowInactiveValues = new ModelColumn<>(I_AD_Process_Para.class, "ShowInactiveValues", null);
+	String COLUMNNAME_ShowInactiveValues = "ShowInactiveValues";
+
+	/**
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Process_Para.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Process_Para, org.compiere.model.I_AD_User>(I_AD_Process_Para.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Max. Wert.
+	 * Set Max. Value.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueMax (java.lang.String ValueMax);
+	void setValueMax (@Nullable java.lang.String ValueMax);
 
 	/**
-	 * Get Max. Wert.
+	 * Get Max. Value.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValueMax();
+	@Nullable java.lang.String getValueMax();
 
-    /** Column definition for ValueMax */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_ValueMax = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "ValueMax", null);
-    /** Column name ValueMax */
-    public static final String COLUMNNAME_ValueMax = "ValueMax";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_ValueMax = new ModelColumn<>(I_AD_Process_Para.class, "ValueMax", null);
+	String COLUMNNAME_ValueMax = "ValueMax";
 
 	/**
-	 * Set Min. Wert.
+	 * Set Min. Value.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueMin (java.lang.String ValueMin);
+	void setValueMin (@Nullable java.lang.String ValueMin);
 
 	/**
-	 * Get Min. Wert.
+	 * Get Min. Value.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValueMin();
+	@Nullable java.lang.String getValueMin();
 
-    /** Column definition for ValueMin */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_ValueMin = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "ValueMin", null);
-    /** Column name ValueMin */
-    public static final String COLUMNNAME_ValueMin = "ValueMin";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_ValueMin = new ModelColumn<>(I_AD_Process_Para.class, "ValueMin", null);
+	String COLUMNNAME_ValueMin = "ValueMin";
 
 	/**
 	 * Set Value Format.
@@ -801,7 +747,7 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setVFormat (java.lang.String VFormat);
+	void setVFormat (@Nullable java.lang.String VFormat);
 
 	/**
 	 * Get Value Format.
@@ -812,10 +758,8 @@ public interface I_AD_Process_Para
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getVFormat();
+	@Nullable java.lang.String getVFormat();
 
-    /** Column definition for VFormat */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process_Para, Object> COLUMN_VFormat = new org.adempiere.model.ModelColumn<I_AD_Process_Para, Object>(I_AD_Process_Para.class, "VFormat", null);
-    /** Column name VFormat */
-    public static final String COLUMNNAME_VFormat = "VFormat";
+	ModelColumn<I_AD_Process_Para, Object> COLUMN_VFormat = new ModelColumn<>(I_AD_Process_Para.class, "VFormat", null);
+	String COLUMNNAME_VFormat = "VFormat";
 }

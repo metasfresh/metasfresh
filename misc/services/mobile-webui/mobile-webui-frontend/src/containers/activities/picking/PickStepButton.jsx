@@ -6,10 +6,14 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses/picking';
 import PickAlternatives from './PickAlternatives';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import {
+  computeCatchWeightForStep,
+  formatCatchWeightToHumanReadableStr,
+} from '../../../reducers/wfProcesses/picking/catch_weight';
 
 const PickStepButton = ({
+  id,
   applicationId,
   wfProcessId,
   activityId,
@@ -30,16 +34,15 @@ const PickStepButton = ({
 
   const isAlternative = !!altStepId;
   const completeStatus = computePickFromStatus(pickFrom);
-  const catchWeight =
-    catchWeightUOM != null && catchWeightUOM === pickFrom.pickedCatchWeight?.uomSymbol
-      ? pickFrom.pickedCatchWeight.qty
-      : undefined;
-  const catchWeightCaption = catchWeight && formatQtyToHumanReadableStr({ qty: catchWeight, uom: catchWeightUOM });
+
+  const catchWeight = catchWeightUOM != null ? computeCatchWeightForStep({ pickFrom }) : undefined;
+  const catchWeightCaption = catchWeight && formatCatchWeightToHumanReadableStr(catchWeight);
   const captionToUse = catchWeightCaption || pickFrom.locatorName;
 
   return (
     <>
       <ButtonWithIndicator
+        id={id}
         caption={(isAlternative ? 'ALT:' : '') + captionToUse}
         completeStatus={completeStatus}
         onClick={handleClick}
@@ -69,6 +72,7 @@ const PickStepButton = ({
 };
 
 PickStepButton.propTypes = {
+  id: PropTypes.string,
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,

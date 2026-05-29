@@ -8,6 +8,7 @@ import lombok.NonNull;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -40,6 +41,8 @@ public interface ICostDetailService
 
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
+	AggregatedCostAmount toAggregatedCostAmount(List<CostDetail> costDetails);
+
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
 	List<CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);
@@ -69,4 +72,6 @@ public interface ICostDetailService
 	void delete(CostDetail costDetail);
 
 	Stream<CostDetail> stream(@NonNull CostDetailQuery query);
+
+	Optional<CostDetail> firstOnly(@NonNull CostDetailQuery query);
 }

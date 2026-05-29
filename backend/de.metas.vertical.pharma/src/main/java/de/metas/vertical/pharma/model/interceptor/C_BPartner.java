@@ -1,12 +1,6 @@
 package de.metas.vertical.pharma.model.interceptor;
 
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -18,6 +12,11 @@ import de.metas.vertical.pharma.PharmaModulo11Validator;
 import de.metas.vertical.pharma.PharmaVendorPermission;
 import de.metas.vertical.pharma.PharmaVendorPermissions;
 import de.metas.vertical.pharma.model.I_C_BPartner;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -130,9 +129,7 @@ public class C_BPartner
 			if (hasNarcoticPermission)
 			{
 
-				final ITranslatableString validBTMRequiredMessage = msgBL.getTranslatableMsgText(ERR_NarcoticPermissions_Valid_BTM, partner);
-
-				throw new AdempiereException(validBTMRequiredMessage)
+				throw new AdempiereException(ERR_NarcoticPermissions_Valid_BTM, partner)
 						.markAsUserValidationError();
 			}
 

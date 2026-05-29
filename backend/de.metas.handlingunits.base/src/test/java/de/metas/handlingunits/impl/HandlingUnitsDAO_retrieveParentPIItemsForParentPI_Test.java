@@ -1,35 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.junit.Assert;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -37,13 +7,19 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
 
 /**
  * Unit test for {@link HandlingUnitsDAO#retrieveParentPIItemsForParentPI(I_M_HU_PI, String, I_C_BPartner)} method.
  *
  * @author tsa
- *
  */
 public class HandlingUnitsDAO_retrieveParentPIItemsForParentPI_Test extends AbstractHUTest
 {
@@ -162,6 +138,6 @@ public class HandlingUnitsDAO_retrieveParentPIItemsForParentPI_Test extends Abst
 				+ "\n expected LU PI item=" + expectedLUItem
 				+ "\n actual LU PI item=" + actualLUItem
 				+ "\n\n";
-		Assert.assertEquals(message, expectedLUItem, actualLUItem);
+		Assertions.assertEquals(expectedLUItem, actualLUItem, message);
 	}
 }

@@ -1,23 +1,21 @@
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_InOutLine;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_InOutLine;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -46,7 +44,7 @@ public class HUAssignmentDAOTest
 	private HUAssignmentDAO huAssignmentDAO;
 	private I_M_InOutLine inoutLine;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

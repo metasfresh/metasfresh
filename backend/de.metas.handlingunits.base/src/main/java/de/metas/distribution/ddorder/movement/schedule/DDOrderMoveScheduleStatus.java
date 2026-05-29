@@ -3,30 +3,34 @@ package de.metas.distribution.ddorder.movement.schedule;
 import de.metas.handlingunits.model.X_DD_OrderLine_HU_Candidate;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum DDOrderMoveScheduleStatus implements ReferenceListAwareEnum
 {
+	/**
+	 * Move not started at all
+	 */
 	NOT_STARTED(X_DD_OrderLine_HU_Candidate.STATUS_NotStarted),
+
+	/**
+	 * HU was picked from the source locator but not yet dropped to the target locator
+	 */
 	IN_PROGRESS(X_DD_OrderLine_HU_Candidate.STATUS_InProgress),
+
+	/**
+	 * Move completed, HU was dropped to the target locator
+	 */
 	COMPLETED(X_DD_OrderLine_HU_Candidate.STATUS_Completed),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<DDOrderMoveScheduleStatus> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
-	private final String code;
+	@Getter private final String code;
 
-	public static DDOrderMoveScheduleStatus ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
+	public static DDOrderMoveScheduleStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	public static DDOrderMoveScheduleStatus ofNullableCode(final String code)
-	{
-		return index.ofNullableCode(code);
-	}
+	public static DDOrderMoveScheduleStatus ofNullableCode(final String code) {return index.ofNullableCode(code);}
 }

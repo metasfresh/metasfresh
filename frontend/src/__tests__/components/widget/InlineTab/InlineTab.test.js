@@ -1,34 +1,42 @@
 import React from 'react';
 import nock from 'nock';
-import { shallow, mount } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 
 import viewHandler from '../../../../reducers/viewHandler';
-import
-  InlineTab,
-  { InlineTab as DisconnectedInlineTab }
-from '../../../../components/widget/InlineTab';
-import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../../test_setup/fixtures/keymap.json';
-import { ShortcutProvider } from '../../../../components/keyshortcuts/ShortcutProvider';
-import { initialState as appHandlerState } from '../../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../../reducers/windowHandler';
+import InlineTab, {
+  InlineTab as DisconnectedInlineTab
+} from '../../../../components/widget/InlineTab';
+import {
+  ShortcutProvider
+} from '../../../../components/keyshortcuts/ShortcutProvider';
+import {
+  initialState as appHandlerState
+} from '../../../../reducers/appHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../../reducers/windowHandler';
 import tablesHandler from '../../../../reducers/tables';
 
-import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
-import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
-import fieldsByName from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_fieldsByName.json';
-import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
-import inlineTabItemRow from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_item_row.json';
+import props
+  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
+import tabData
+  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
+import fieldsByName
+  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_fieldsByName.json';
+import inlineTabStore
+  from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
+import inlineTabItemRow
+  from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_item_row.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createStore = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -40,8 +48,6 @@ const createStore = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 describe('InlineTab component', () => {
@@ -81,7 +87,7 @@ describe('InlineTab component', () => {
       const store = mockStore(initialState);
 
       const wrapper = shallow(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <InlineTab
               id={`2155894`}
@@ -115,7 +121,7 @@ describe('InlineTab component', () => {
     const store = mockStore(initialState);
 
     const wrapper = shallow(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTab
             id={`2155894`}
@@ -154,7 +160,7 @@ describe('InlineTab component', () => {
     const store = mockStore(initialState);
 
     const wrapper = shallow(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTab
             id={`2155894`}
@@ -192,7 +198,7 @@ describe('InlineTab component', () => {
     const store = mockStore(initialState);
 
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTab
             id={`2155894`}

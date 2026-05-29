@@ -52,4 +52,9 @@ public interface I_C_BP_BankAccount extends org.compiere.model.I_C_BP_BankAccoun
 	void setIsDefaultSEPA(boolean isDefaultSEPA);
 	// @formatter:on
 
+	// @formatter:off
+	String COLUMNNAME_A_Country_ID = "A_Country_ID";
+	int getA_Country_ID();
+	void setA_Country_ID(int A_Country_ID);
+	// @formatter:on
 }

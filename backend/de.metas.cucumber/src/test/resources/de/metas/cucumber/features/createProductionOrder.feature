@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
 @ghActions:run_on_executor4
 Feature: create production order
+## F8030: Manufacturing Order
   As a user
   I want to create a Production order record
 
@@ -51,7 +55,12 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate (S0129.1_100) (S0129.2_100)
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
+  @Id:S0129.1_100
+  @Id:S0129.2_100
+  Scenario:  The manufacturing order is created from a manufacturing order candidate, then voided. Then we void the candidate.
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | p_1        | standard_category     |
@@ -149,7 +158,7 @@ Feature: create production order
       | PP_Order_Candidate_ID |
       | oc_1                  |
     # this is the PP_Order_Candidates from above, but now with processed=Y
-    Then after not more than 60s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_AttributeSetInstance_ID |
       | oc_1       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                    |
     And after not more than 60s, PP_Orders are found
@@ -172,11 +181,43 @@ Feature: create production order
       | 5          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | bomASI                    |
       | 6          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |
 
+    # Voiding the PP_Order, its entire quantity is returned to the candidate, so that a new PP_Order can be created from it
+    Then the PP_Order ppo_1 is voided
 
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
+      | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
+      | oc_1                  | ppo_1       | 10 PCE     |
+      | oc_1                  | ppo_1       | -10 PCE    |
+    And after not more than 60s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_AttributeSetInstance_ID |
+      | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                    |
 
+    # This avoids a potential race condition in which the PP_Order MD_Candidates are deleted, but not their associated STOCK records.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP  | M_AttributeSetInstance_ID |
+      # Sales Order / Shipment Schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10  | -10  | olASI                     |
+      # PP_Order_Candidate:
+      | 2          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | productPlanningASI        |
+      | 3          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |
 
+    And the following PP_Order_Candidates are closed
+      | PP_Order_Candidate_ID.Identifier |
+      | oc_1                             |
 
+    And after not more than 60s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_AttributeSetInstance_ID |
+      | oc_1       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 0 PCE      | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | true     | bomASI                    |
+
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_AttributeSetInstance_ID |
+      # Sales Order / Shipment Schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10 | -10 | olASI                     |
+      # PP_Order_Candidate:
+      | 2          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -10 | productPlanningASI        |
+      | 3          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0   | bomLineASI                |
 
 
 
@@ -187,6 +228,9 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
   @Id:S0129.2_130
   @Id:S0129.2_150
   @Id:S0129.2_170
@@ -355,6 +399,9 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
   Scenario:  The manufacturing order is created from a manufacturing order candidate and other md_candidates already exist
     Given metasfresh contains M_Products:
       | Identifier |
@@ -441,6 +488,9 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
   @Id:S0129.2_200
   @Id:S0196_700
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (S0129.2_200)
@@ -581,6 +631,9 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
   Scenario:  The manufacturing order is created from a manufacturing order candidate, other md_candidates already exist and the date is changed in the future
     Given metasfresh contains M_Products:
       | Identifier |
@@ -680,6 +733,9 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
   Scenario: BOM bom_1 is created with two components. Manufacturing order candidate is generated,
   then another BOM (newer than the previous one in terms of validFrom) is created from the API,
   Manufacturing order candidate and Material schedules are updated accordingly,

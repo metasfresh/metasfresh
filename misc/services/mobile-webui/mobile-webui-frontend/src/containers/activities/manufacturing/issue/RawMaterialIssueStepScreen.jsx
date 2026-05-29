@@ -7,7 +7,7 @@ import {
   manufacturingStepScanScreenLocation,
 } from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
-import { getStepById } from '../../../../reducers/wfProcesses';
+import { getLineById, getStepByIdFromLine } from '../../../../reducers/wfProcesses';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
@@ -19,12 +19,18 @@ import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 
 const RawMaterialIssueStepScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    screenId: 'RawMaterialIssueStepScreen',
     back: manufacturingLineScreenLocation,
   });
 
-  const { locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected } = useSelector((state) =>
-    getStepById(state, wfProcessId, activityId, lineId, stepId)
-  );
+  const { readOnly, locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected } = useSelector((state) => {
+    const line = getLineById(state, wfProcessId, activityId, lineId);
+    let step = getStepByIdFromLine(line, stepId);
+    return {
+      ...step,
+      readOnly: line.readOnly,
+    };
+  });
 
   useLineHeaderEntriesRefresh({ applicationId, wfProcessId, activityId, lineId });
 
@@ -46,6 +52,7 @@ const RawMaterialIssueStepScreen = () => {
   }, []);
 
   const onScanButtonClick = () => {
+    if (readOnly) return;
     history.push(manufacturingStepScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
@@ -56,12 +63,14 @@ const RawMaterialIssueStepScreen = () => {
 
   return (
     <div className="section pt-3">
-      <ButtonWithIndicator
-        caption={scanButtonCaption}
-        completeStatus={scanButtonStatus}
-        disabled={isIssued}
-        onClick={onScanButtonClick}
-      />
+      {!readOnly && (
+        <ButtonWithIndicator
+          caption={scanButtonCaption}
+          completeStatus={scanButtonStatus}
+          disabled={isIssued}
+          onClick={onScanButtonClick}
+        />
+      )}
       {/* Unpick button */}
     </div>
   );

@@ -24,11 +24,12 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -36,13 +37,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_C_UOM_Dimension_ID;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Height;
+import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_IsInvoiceable;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Length;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID;
@@ -60,12 +61,31 @@ public class M_HU_PackingMaterial_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_UOM_StepDefData uomTable;
 
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference (also accepted: <code>M_HU_PackingMaterial_ID</code> or <code>Name</code>)<br>
+	 *   <b>Name</b> — (required) packing-material display name; also used to look up an existing record before creating one<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) the product representing this packing material (e.g. a Karton or Pallet product)<br>
+	 *   <b>Length</b>, <b>Width</b>, <b>Height</b> — (optional) physical dimensions; if any is set, <code>C_UOM_Dimension_ID</code> becomes required<br>
+	 *   <b>C_UOM_Dimension_ID</b> — (optional, identifier-ref) UOM for length/width/height (e.g. <code>cm</code>)<br>
+	 *   <b>IsInvoiceable</b> — (optional) when <code>N</code>, the packing material does NOT generate an invoice candidate
+	 *   (<code>HuInOutInvoiceCandidateVetoer</code> blocks it); defaults to <code>Y</code> matching the column DB default
+	 * @cucumber.depends StepDefData: M_HU_PackingMaterial_StepDefData, M_Product_StepDefData, C_UOM_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_HU_PackingMaterial:
+	 *   | M_HU_PackingMaterial_ID | M_Product_ID      | Name   | Length | Width | Height | C_UOM_Dimension_ID | IsInvoiceable |
+	 *   | dhl_pm                  | packing_product_1 | Karton | 30     | 20    | 10     | cm                 | N             |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_HU_PackingMaterial:")
 	public void add_M_HU_PackingMaterial(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_HU_PackingMaterial_ID)
 				.forEach(row -> {
+					
 					final ProductId productId = row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
 							.map(productTable::getId)
 							.orElse(null);
@@ -94,39 +114,33 @@ public class M_HU_PackingMaterial_StepDef
 								}
 
 								saveRecord(packingMaterial);
-
 								return packingMaterial;
 							});
 
-					final BigDecimal length = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_Length);
-					if (length != null)
+					final Optional<BigDecimal> length = row.getAsOptionalBigDecimal(COLUMNNAME_Length);
+					length.ifPresent(huPackingMaterial::setLength);
+					final Optional<BigDecimal> width = row.getAsOptionalBigDecimal(COLUMNNAME_Width);
+					width.ifPresent(huPackingMaterial::setWidth);
+
+					final Optional<BigDecimal> height = row.getAsOptionalBigDecimal(COLUMNNAME_Height);
+					height.ifPresent(huPackingMaterial::setHeight);
+
+					final Optional<StepDefDataIdentifier> uomDimensionIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_UOM_Dimension_ID);
+					if (length.isPresent() || width.isPresent() || height.isPresent())
 					{
-						huPackingMaterial.setLength(length);
+						assertThat(uomDimensionIdentifier).as("uomDimensionIdentifier").isPresent();
 					}
-					final BigDecimal width = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_Width);
-					if (width != null)
+					if (uomDimensionIdentifier.isPresent())
 					{
-						huPackingMaterial.setWidth(width);
+						final UomId uomId = uomDimensionIdentifier.get().lookupIdIn(uomTable);
+						huPackingMaterial.setC_UOM_Dimension_ID(uomId.getRepoId());
 					}
-					final BigDecimal height = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_Height);
-					if (height != null)
-					{
-						huPackingMaterial.setHeight(height);
-					}
-					final String uomDimensionIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_UOM_Dimension_ID + "." + TABLECOLUMN_IDENTIFIER);
-					if (length != null || width != null || height != null)
-					{
-						assertThat(uomDimensionIdentifier).isNotNull();
-					}
-					if (uomDimensionIdentifier != null)
-					{
-						final I_C_UOM uom = uomTable.get(uomDimensionIdentifier);
-						assertThat(uom).isNotNull();
-						huPackingMaterial.setC_UOM_Dimension_ID(uom.getC_UOM_ID());
-					}
+
+					huPackingMaterial.setIsInvoiceable(row.getAsOptionalBoolean(COLUMNNAME_IsInvoiceable).orElseTrue());
+
 					saveRecord(huPackingMaterial);
-					final String huPackingMaterialIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
-					huPackingMaterialTable.put(huPackingMaterialIdentifier, huPackingMaterial);
+
+					row.getAsOptionalIdentifier().ifPresent(identifier -> huPackingMaterialTable.put(identifier, huPackingMaterial));
 				});
 	}
 }

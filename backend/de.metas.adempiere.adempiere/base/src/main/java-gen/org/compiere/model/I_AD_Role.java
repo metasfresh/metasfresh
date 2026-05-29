@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Role
  *  @author Adempiere (generated) 
@@ -1382,4 +1383,27 @@ public interface I_AD_Role
     public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_WEBUI_Role = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "WEBUI_Role", null);
     /** Column name WEBUI_Role */
     public static final String COLUMNNAME_WEBUI_Role = "WEBUI_Role";
+
+	/**
+	 * Set Allow Password Change For Others.
+	 * Allows the role to change the password of any user without requiring the current password. This overrides standard password change behavior and should be used with care.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowPasswordChangeForOthers (boolean IsAllowPasswordChangeForOthers);
+
+	/**
+	 * Get Allow Password Change For Others.
+	 * Allows the role to change the password of any user without requiring the current password. This overrides standard password change behavior and should be used with care.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPasswordChangeForOthers();
+
+	ModelColumn<I_AD_Role, Object> COLUMN_IsAllowPasswordChangeForOthers = new ModelColumn<>(I_AD_Role.class, "IsAllowPasswordChangeForOthers", null);
+	String COLUMNNAME_IsAllowPasswordChangeForOthers = "IsAllowPasswordChangeForOthers";
 }

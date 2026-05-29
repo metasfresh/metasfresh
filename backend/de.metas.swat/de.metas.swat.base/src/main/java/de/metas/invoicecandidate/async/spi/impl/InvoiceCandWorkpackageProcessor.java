@@ -59,7 +59,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
 	private InvoicingParams _invoicingParams = null; // lazy loaded
@@ -101,6 +101,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 					.setCollector(createInvoiceResults)
 					.setInvoicingParams(getInvoicingParams())
 					.setIgnoreInvoiceSchedule(true) // we don't need to check for the invoice schedules because ICs that would be skipped here would already have been skipped on enqueue time.
+					.setInvoiceManualRule(true) // same rationale — Manual ICs that reached the workpackage already passed the enqueue-time skip filter.
 					.generateInvoices(candidatesOfPackage.iterator());
 
 			// Log invoices generation result

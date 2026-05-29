@@ -23,7 +23,7 @@
 package de.metas.serviceprovider.timebooking.importer.failed;
 
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

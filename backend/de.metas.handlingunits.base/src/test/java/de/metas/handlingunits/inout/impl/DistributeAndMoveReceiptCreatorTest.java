@@ -15,6 +15,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRep
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
@@ -28,13 +29,13 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -64,7 +65,7 @@ public class DistributeAndMoveReceiptCreatorTest
 
 	private final ProductId productId = ProductId.ofRepoId(1);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -85,10 +86,14 @@ public class DistributeAndMoveReceiptCreatorTest
 								ADReferenceService.newMocked(),
 								huReservationService,
 								new PPOrderSourceHUService(new PPOrderSourceHURepository(),
-														   new PPOrderIssueScheduleService(
-																   new PPOrderIssueScheduleRepository(),
-																   new HUQtyService(InventoryService.newInstanceForUnitTesting())
-														   )))));
+										new PPOrderIssueScheduleService(
+												new PPOrderIssueScheduleRepository(),
+												new HUQtyService(InventoryService.newInstanceForUnitTesting())
+										)),
+								HUQRCodesService.newInstanceForUnitTesting()
+						)
+				)
+		);
 	}
 
 	@Test

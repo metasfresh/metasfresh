@@ -1,6 +1,7 @@
 package de.metas.acct.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.costing.CostingDocumentRef;
@@ -55,13 +56,14 @@ public class AcctMatchInvListener implements MatchInvListener
 
 	private void postIt(final MatchInv matchInv)
 	{
-		postingService.newPostingRequest()
-				.setClientId(matchInv.getClientId())
-				.setDocumentRef(toTableRecordReference(matchInv))
-				.setFailOnError(false)
-				.onErrorNotifyUser(matchInv.getUpdatedByUserId())
-				.postIt();
-
+		postingService.schedule(
+				DocumentPostRequest.builder()
+						.record(toTableRecordReference(matchInv))
+						.clientId(matchInv.getClientId())
+						.onErrorNotifyUserId(matchInv.getUpdatedByUserId())
+						.build()
+				
+		);
 	}
 
 	@NonNull

@@ -34,8 +34,9 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UserRolePermissionsDAOTest
 {
@@ -43,7 +44,7 @@ public class UserRolePermissionsDAOTest
 
 	private SecurityMainInterceptor securityMainInterceptor;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -56,13 +57,13 @@ public class UserRolePermissionsDAOTest
 		dao = (UserRolePermissionsDAO)Services.get(IUserRolePermissionsDAO.class);
 	}
 
-	@Test(expected = RolePermissionsNotFoundException.class)
+	@Test
 	public void test_retrieveUserRolePermissions_NotExistingRole()
 	{
-		dao.getUserRolePermissions(
+		Assertions.assertThrows(RolePermissionsNotFoundException.class, () -> dao.getUserRolePermissions(
 				RoleId.ofRepoId(1),
 				UserId.ofRepoId(2),
 				ClientId.ofRepoId(3),
-				SystemTime.asLocalDate());
+				SystemTime.asLocalDate()));
 	}
 }

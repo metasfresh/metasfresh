@@ -28,6 +28,7 @@ import de.metas.document.sequence.impl.DocumentNoParts;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -123,6 +124,7 @@ class MacAddressGeneratorTest
 			final I_M_Attribute po = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 			po.setName(attributeCode.getCode());
 			po.setValue(attributeCode.getCode());
+			po.setAttributeValueType(AttributeValueType.STRING.getCode());
 			InterfaceWrapperHelper.save(po);
 		}
 

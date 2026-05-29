@@ -1,17 +1,16 @@
 package de.metas.acct.posting.server;
 
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import de.metas.Profiles;
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.DocumentPostMultiRequest;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.doc.AcctDocRegistry;
-import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostRequestHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -40,27 +39,12 @@ import de.metas.util.Services;
 public class AccountingService implements DocumentPostRequestHandler
 {
 	private static final Logger logger = LogManager.getLogger(AccountingService.class);
-
-	public AccountingService(final AcctDocRegistry acctDocFactory)
-	{
-	}
+	private final IPostingService postingService = Services.get(IPostingService.class);
 
 	@Override
-	public void handleRequest(final DocumentPostRequest request)
+	public void handleRequest(@NonNull final DocumentPostRequest request)
 	{
 		logger.debug("Posting: {}", request);
-
-		final IPostingService postingService = Services.get(IPostingService.class);
-		postingService.newPostingRequest()
-				.setClientId(request.getClientId())
-				.setDocumentRef(request.getRecord())
-				.setForce(request.isForce())
-				.setFailOnError(true)
-				.onErrorNotifyUser(request.getOnErrorNotifyUserId())
-				.setPostWithoutServer() // we are on server side now, so don't try to contact the server again
-				.setPostImmediate(PostImmediate.Yes) // make sure we are posting it immediate
-				//
-				// Execute the posting
-				.postIt();
+		postingService.postAfterCommit(DocumentPostMultiRequest.of(request));
 	}
 }

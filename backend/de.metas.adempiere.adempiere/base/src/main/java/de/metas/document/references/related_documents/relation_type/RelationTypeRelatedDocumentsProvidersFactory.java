@@ -49,6 +49,7 @@ import org.compiere.model.X_AD_RelationType;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -67,7 +69,7 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
 @Component
-public final class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
+public class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
 	private final ADReferenceService adReferenceService;
@@ -181,22 +183,24 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		Check.assumeNotEmpty(zoomOriginTableName, "tableName is not empty");
 
 		final POInfo zoomOriginPOInfo = POInfo.getPOInfo(zoomOriginTableName);
-		final String keyColumnName = zoomOriginPOInfo.getKeyColumnName();
+		final List<String> keyColumnNames = zoomOriginPOInfo.getKeyColumnNames();
 
-		if (keyColumnName == null)
+		if (CollectionUtils.isEmpty(keyColumnNames))
 		{
-			logger.error("{} does not have a single key column", zoomOriginTableName);
+			logger.error("{} does not have a single key column nor a composed key", zoomOriginTableName);
 			throw PORelationException.throwWrongKeyColumnCount(zoomOriginTableName, zoomOriginPOInfo.getKeyColumnNames());
 		}
 
-		final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
-		final AdColumnId keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
-
-		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
-
 		final ArrayList<SpecificRelationTypeRelatedDocumentsProvider> providers = new ArrayList<>();
-		providers.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
-		providers.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
+		keyColumnNames.forEach(keyColumnName -> {
+			final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
+			final AdColumnId keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
+
+			final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
+
+			providers.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
+			providers.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
+		});
 
 		logger.debug("There are {} matching types for {}", providers.size(), zoomOriginTableName);
 
@@ -257,6 +261,11 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		}
 
 		return result;
+	}
+
+	public Optional<SpecificRelationTypeRelatedDocumentsProvider> findRelatedDocumentsProvider(@NonNull final RelationTypeId relationTypeId)
+	{
+		return Optional.ofNullable(findRelatedDocumentsProvider(loadOutOfTrx(relationTypeId.getRepoId(), I_AD_RelationType.class)));
 	}
 
 	@VisibleForTesting

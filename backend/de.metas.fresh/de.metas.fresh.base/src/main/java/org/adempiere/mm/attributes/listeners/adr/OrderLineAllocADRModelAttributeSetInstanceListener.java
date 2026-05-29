@@ -25,22 +25,23 @@ package org.adempiere.mm.attributes.listeners.adr;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.OrderLineBPartnerAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderLineAllocADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_Order_Line_Alloc.Table_Name;
 	}
@@ -55,7 +56,7 @@ public class OrderLineAllocADRModelAttributeSetInstanceListener implements IMode
 	 * Updates the ASI of the <code>C_Order_Line_Alloc</code>'s <code>C_OrderLine</code> with the BPartner's ADR attribute, <b>if</b> that order line is a purchase order line.
 	 */
 	@Override
-	public void modelChanged(Object model)
+	public void modelChanged(final Object model)
 	{
 		final I_C_Order_Line_Alloc alloc = InterfaceWrapperHelper.create(model, I_C_Order_Line_Alloc.class);
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(alloc.getC_OrderLine(), I_C_OrderLine.class);
@@ -69,16 +70,5 @@ public class OrderLineAllocADRModelAttributeSetInstanceListener implements IMode
 				.setSourceModel(orderLine)
 				.setForceApplyForSOTrx(forceApply)
 				.updateASI();
-	}
-
-	@SuppressWarnings("unused")
-	private final boolean isEDIInput(final I_C_Order_Line_Alloc alloc)
-	{
-		// Services
-		final IEDIOLCandBL ediOLCandBL = Services.get(IEDIOLCandBL.class);
-
-		final I_C_OLCand olCand = alloc.getC_OLCand();
-		final boolean ediInput = ediOLCandBL.isEDIInput(olCand);
-		return ediInput;
 	}
 }

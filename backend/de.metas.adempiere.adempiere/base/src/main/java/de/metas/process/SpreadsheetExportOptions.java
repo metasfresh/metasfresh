@@ -42,4 +42,11 @@ public class SpreadsheetExportOptions
 	@Nullable
 	@Builder.Default
 	String csvFieldDelimiter = null;
+
+	@Nullable
+	@Builder.Default
+	String csvFieldQualifier = null;
+
+	@Builder.Default
+	boolean includeCSVHeaderRow = true;
 }

@@ -1,0 +1,297 @@
+de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
+  {
+    "data": {
+      "ActorCSID": 123,
+      "Addresses": [
+        {
+          "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
+          "City": "Bonn",
+          "CountryCode": "DE",
+          "Email": "noreply@metasfresh.com",
+          "Kind": 2,
+          "Name1": "metas GmbH",
+          "Name2": "senderCompanyName2",
+          "Phone": "12345678",
+          "PostCode": "53179",
+          "Street1": "Am Noßbacher Weg 2",
+          "Street2": ""
+        },
+        {
+          "Attention": "metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
+          "City": "Timisoara",
+          "CountryCode": "RO",
+          "Email": "noreply@metasfresh.com",
+          "Kind": 1,
+          "Name1": "metas.ro SRL",
+          "Name2": "receiverCompanyName2",
+          "Phone": "12341234",
+          "PostCode": "300078",
+          "Street1": "Alecsandri 3",
+          "Street2": ""
+        }
+      ],
+      "DangerousGoods": [ ],
+      "DetailGroups": [
+        {
+          "GroupID": "2",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 182,
+                  "Value": "Shipper EORI RO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "GroupID": "1",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "1"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "1"
+                }
+              ],
+              "LineNo": 1
+            }
+          ]
+        },
+        {
+          "GroupID": "1",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "2"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product 2"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "2"
+                }
+              ],
+              "LineNo": 2
+            },
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "3"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product 3"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "2"
+                }
+              ],
+              "LineNo": 2
+            }
+          ]
+        }
+      ],
+      "Lines": [
+        {
+          "GoodsType": 5,
+          "GoodsTypeName": "Packet",
+          "Height": 150,
+          "Length": 1000,
+          "LineWeight": 10000,
+          "Number": 1,
+          "PkgWeight": 10000,
+          "Pkgs": [ ],
+          "References": [
+            {
+              "Kind": 129,
+              "Value": "1 RO"
+            },
+            {
+              "Kind": 23,
+              "Value": "Test Product"
+            },
+            {
+              "Kind": 130,
+              "Value": "10"
+            },
+            {
+              "Kind": 131,
+              "Value": "EUR"
+            },
+            {
+              "Kind": 132,
+              "Value": "Test Product"
+            }
+          ],
+          "Width": 200
+        },
+        {
+          "GoodsType": 5,
+          "GoodsTypeName": "Packet",
+          "Height": 150,
+          "Length": 1000,
+          "LineWeight": 20000,
+          "Number": 1,
+          "PkgWeight": 20000,
+          "Pkgs": [ ],
+          "References": [
+            {
+              "Kind": 129,
+              "Value": "2 RO"
+            },
+            {
+              "Kind": 23,
+              "Value": "Test Product 2,Test Product 3"
+            },
+            {
+              "Kind": 130,
+              "Value": "20"
+            },
+            {
+              "Kind": 131,
+              "Value": "EUR"
+            },
+            {
+              "Kind": 132,
+              "Value": "Test Product 2,Test Product 3"
+            },
+            {
+              "Kind": 133,
+              "Value": "Test Customs Tariff 2,Test Customs Tariff 3"
+            }
+          ],
+          "Width": 200
+        }
+      ],
+      "OrderNo": "1",
+      "PickupDt": "2025-10-02",
+      "ProdConceptID": 10305,
+      "References": [
+        {
+          "Kind": 108,
+          "Value": "2025-10-02T10:00:00"
+        },
+        {
+          "Kind": 109,
+          "Value": "2025-10-02T13:00:00"
+        },
+        {
+          "Kind": 9,
+          "Value": "2025-10-02"
+        },
+        {
+          "Kind": 7,
+          "Value": "Customer reference"
+        }
+      ],
+      "Services": [
+        972053
+      ]
+    },
+    "options": {
+      "Labels": "PDF",
+      "TrackingURL": 1,
+      "ValidatePostCode": 1
+    }
+  }
+]

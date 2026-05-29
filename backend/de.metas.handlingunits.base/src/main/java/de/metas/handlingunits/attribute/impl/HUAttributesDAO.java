@@ -19,10 +19,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
 	public static final HUAttributesDAO instance = new HUAttributesDAO();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private HUAttributesDAO()
 	{
@@ -50,12 +52,11 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public List<I_M_HU_Attribute> retrieveAllAttributesNoCache(final Collection<HuId> huIds)
 	{
-		if(huIds.isEmpty())
+		if (huIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				//.addOnlyActiveRecordsFilter() // all, including not active
 				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
@@ -65,12 +66,33 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
+	public Optional<String> extractCommonStringAttributeValue(final Collection<HuId> huIds, final AttributeId attributeId)
+	{
+		if (huIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableList<String> distinctValues = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
+				.create()
+				.listDistinct(I_M_HU_Attribute.COLUMNNAME_Value, String.class);
+		if (distinctValues.size() == 1)
+		{
+			return Optional.of(distinctValues.get(0));
+		}
+		return Optional.empty();
+	}
+
+	@Override
 	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
+		final List<I_M_HU_Attribute> huAttributes = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
@@ -99,7 +121,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 
 	private List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
 	{
-		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
+		final List<I_M_HU_Attribute> huAttributes = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)

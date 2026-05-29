@@ -22,16 +22,14 @@ package de.metas.esb.printing.api;
  * #L%
  */
 
-
-import static org.junit.Assert.assertNotNull;
-
-import java.io.InputStream;
-
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.printing.esb.api.PrinterHWList;
+import org.junit.jupiter.api.Test;
+
+import java.io.InputStream;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class PrinterHWTest
 {
@@ -39,8 +37,6 @@ public class PrinterHWTest
 
 	/**
 	 * Test that JSON is correctly loaded
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	public void testJSON() throws Exception // NOPMD by User on 5/10/13 2:55 PM

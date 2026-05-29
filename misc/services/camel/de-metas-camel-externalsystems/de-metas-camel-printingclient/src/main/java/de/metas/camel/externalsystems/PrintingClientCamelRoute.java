@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-printingclient
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -59,7 +59,7 @@ public class PrintingClientCamelRoute extends RouteBuilder
 
 		from(direct(PRINTING_CLIENT_ROUTE_ID))
 				.routeId(PRINTING_CLIENT_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::prepareContext)
 				.process(this::getPrintingData)
 				.to(direct(MF_GET_PRINTING_DATA_ROUTE_ID))

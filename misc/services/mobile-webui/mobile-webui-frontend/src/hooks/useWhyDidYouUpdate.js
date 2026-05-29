@@ -5,7 +5,9 @@ import { useEffect, useRef } from 'react';
  * @module useWhyDidYouUpdate
  * React hook for checking render reasons in functional components
  */
-export const useWhyDidYouUpdate = (name, props) => {
+export const useWhyDidYouUpdate = (name, propsObj) => {
+  const props = { ...propsObj };
+
   // Get a mutable ref object where we can store props ...
   // ... for comparison next time this hook runs.
   const previousProps = useRef();
@@ -26,12 +28,13 @@ export const useWhyDidYouUpdate = (name, props) => {
           };
         }
       });
-      // If changesObj not empty then output to console
+      // If changesObj not empty, then output to console
       if (Object.keys(changesObj).length) {
-        console.log('[why-did-you-update]', name, changesObj);
+        console.log(`[why-did-you-update] ${name}`, { changesObj, props, previousProps: previousProps.current });
       }
     }
-    // Finally update previousProps with current props for next hook call
+
+    // Finally, update previousProps with current props for the next hook call
     previousProps.current = props;
   });
 };

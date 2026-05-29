@@ -22,25 +22,24 @@ package de.metas.handlingunits.attribute.weightable;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.compiere.model.I_C_UOM;
-import org.slf4j.Logger;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UOMType;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.compiere.model.I_C_UOM;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
 
 /**
  * Wraps and {@link IAttributeStorage} and expose all weightable methods.
  *
  * @author tsa
- *
  */
 @ToString
 final class AttributeStorageWeightableWrapper implements IWeightable
@@ -86,12 +85,7 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 		}
 
 		final BigDecimal weight = attributeStorage.getValueAsBigDecimal(weightNetAttribute);
-		if (weight == null || weight.signum() == 0)
-		{
-			return false;
-		}
-
-		return true;
+		return weight != null && weight.signum() != 0;
 	}
 
 	@Override
@@ -148,6 +142,14 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 		final AttributeCode attr_WeightGross = getWeightGrossAttribute();
 		return getWeight(attr_WeightGross);
 	}
+
+	@Override
+	public Quantity getWeightGrossAsQuantity()
+	{
+		return Quantity.of(getWeightGross(), getWeightGrossUOM());
+	}
+
+	public I_C_UOM getWeightGrossUOM() {return getWeightUOM(getWeightGrossAttribute());}
 
 	@Override
 	public void setWeightGross(final BigDecimal weightGross)
@@ -246,12 +248,10 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();
 		final Object weightObj = attributeStorage.getValue(weightAttribute);
-		final BigDecimal weight = ConversionHelper.toBigDecimal(weightObj);
-		return weight;
+		return ConversionHelper.toBigDecimal(weightObj);
 	}
 
 	/**
-	 *
 	 * @return weight or null if weight is not available
 	 */
 	private BigDecimal getWeightOrNull(final AttributeCode weightAttribute)
@@ -285,9 +285,6 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 
 	/**
 	 * Set the given weight directly, avoiding attribute propagation.
-	 *
-	 * @param weightAttribute
-	 * @param weight
 	 */
 	private void setWeightNoPropagate(final AttributeCode weightAttribute, final BigDecimal weight)
 	{
@@ -307,8 +304,7 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 			return null;
 		}
 
-		final I_C_UOM uom = attributeValue.getC_UOM();
-		return uom;
+		return attributeValue.getC_UOM();
 	}
 
 	/**

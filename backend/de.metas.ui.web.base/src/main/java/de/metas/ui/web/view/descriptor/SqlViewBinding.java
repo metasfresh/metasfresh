@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +32,7 @@ import de.metas.ui.web.bpartner.filter.BPartnerExportFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter;
+import de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
@@ -337,6 +338,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private Builder()
 		{
 			filterConverters.converter(FTSDocumentFilterConverter.instance);
+			filterConverters.converter(PostgresFTSDocumentFilterConverter.instance);
 			filterConverters.converter(GeoLocationFilterConverter.instance);
 			filterConverters.converter(FactAcctFilterConverter.instance);
 			// filterConverters2.whenFilterIdStartsWith(FacetsDocumentFilterDescriptorsProviderFactory.FILTER_ID_PREFIX, converter);

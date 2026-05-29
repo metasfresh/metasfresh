@@ -1,4 +1,3 @@
-import { useRouteMatch } from 'react-router-dom';
 import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
@@ -12,6 +11,8 @@ import { isApplicationFullScreen } from '../../apps';
 import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
 import * as uiTrace from '../../utils/ui_trace';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
+import { computeId } from '../../utils/testing_support';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useMobileNavigation();
@@ -26,7 +27,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   }, [redirectToHome]);
 
   const applicationInfo = useApplicationInfo({ applicationId });
-  const { caption, homeLocation } = useNavigationInfoFromHeaders();
+  const { screenId, caption, homeLocation } = useNavigationInfoFromHeaders();
   const captionEffective = caption ? caption : applicationInfo.caption;
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   }
 
   return (
-    <div className="app-container">
+    <div id={screenId} className="app-container">
       <div className="app-header">
         <div className="columns is-mobile">
           <div className="column is-2 app-icon">
@@ -91,11 +92,12 @@ ApplicationLayout.propTypes = {
 };
 
 const BottomButton = ({ captionKey, icon, onClick: onClickParam }) => {
+  const id = computeId({ captionKey });
   const caption = trl(captionKey);
   const onClick = uiTrace.traceFunction(onClickParam, { eventName: 'buttonClick', captionKey, caption, icon });
 
   return (
-    <button className="button is-fullwidth" onClick={onClick}>
+    <button id={id} className="button is-fullwidth" onClick={onClick}>
       <span className="icon">
         <i className={icon} />
       </span>
@@ -110,8 +112,7 @@ BottomButton.propTypes = {
 };
 
 const isWFProcessRequiredButNotLoaded = () => {
-  const { params } = useRouteMatch();
-  const wfProcessId = params.wfProcessId || params.workflowId;
+  const { wfProcessId } = useMobileLocation();
   if (!wfProcessId) {
     return false;
   }

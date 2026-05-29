@@ -18,13 +18,14 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Product;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -204,7 +205,7 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 	{
 		//
 		// Get generated shipment
-		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
+		Assertions.assertEquals( 1,  generatedShipments.size(), "Invalid generated shipments count");
 		final I_M_InOut shipment = generatedShipments.get(0);
 
 		//
@@ -226,7 +227,7 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 	{
 		//
 		// Get LUs Package
-		Assert.assertEquals("Invalid generated LU packages count", 1, mpackagesForAggregatedHUs.size());
+		Assertions.assertEquals( 1,  mpackagesForAggregatedHUs.size(), "Invalid generated LU packages count");
 		final I_M_Package mpackage_TU = mpackagesForAggregatedHUs.get(0);
 
 		//
@@ -237,8 +238,8 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 		// Shipper Transportation: Make sure TU's M_Package is updated
 		{
 			InterfaceWrapperHelper.refresh(mpackage_TU);
-			Assert.assertEquals("Aggregated HU's M_Package does not have the right M_InOut_ID",
-					shipment.getM_InOut_ID(), mpackage_TU.getM_InOut_ID());
+			Assertions.assertEquals(
+					shipment.getM_InOut_ID(),  mpackage_TU.getM_InOut_ID(), "Aggregated HU's M_Package does not have the right M_InOut_ID");
 		}
 	}
 

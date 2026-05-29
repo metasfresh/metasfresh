@@ -24,27 +24,35 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+
+import java.util.Properties;
 
 /* package */class ReceiptScheduleDocumentLUTUConfigurationHandler extends AbstractDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule>
 {
-	public static final transient ReceiptScheduleDocumentLUTUConfigurationHandler instance = new ReceiptScheduleDocumentLUTUConfigurationHandler();
+	public static final ReceiptScheduleDocumentLUTUConfigurationHandler instance = new ReceiptScheduleDocumentLUTUConfigurationHandler();
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final ILUTUConfigurationFactory lutuFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private ReceiptScheduleDocumentLUTUConfigurationHandler()
 	{
@@ -74,20 +82,20 @@ import de.metas.util.Services;
 	@Override
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(final I_M_ReceiptSchedule documentLine)
 	{
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-		final ILUTUConfigurationFactory lutuFactory = Services.get(ILUTUConfigurationFactory.class);
-
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoId(documentLine.getM_Product_ID());
 		final UomId cuUOMId = UomId.ofRepoId(documentLine.getC_UOM_ID());
 		final BPartnerId bpartnerId = receiptScheduleBL.getBPartnerEffectiveId(documentLine);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(documentLine.getC_OrderLine_ID()), I_C_OrderLine.class);
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
 				cuUOMId,
 				bpartnerId,
-				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
+				false, // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
+				HuPackingInstructionsId.ofRepoIdOrNull(orderLine.getM_LU_HU_PI_ID()),
+				orderLine.getQtyLU());
 
 		// Update LU/TU configuration
 		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, documentLine);
@@ -102,9 +110,6 @@ import de.metas.util.Services;
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 		Check.assumeNotNull(documentLine, "documentLine not null");
-
-		// Services
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		//
 		// Set BPartner / Location to be used
@@ -135,6 +140,6 @@ import de.metas.util.Services;
 		//
 		// Fallback: return Virtual PI item
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
-		return Services.get(IHUPIItemProductDAO.class).retrieveVirtualPIMaterialItemProduct(ctx);
+		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 	}
 }

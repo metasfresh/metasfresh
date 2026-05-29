@@ -527,4 +527,27 @@ public interface I_C_AllocationLine
     public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_WriteOffAmt = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "WriteOffAmt", null);
     /** Column name WriteOffAmt */
     public static final String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
+
+	/**
+	 * Set Write-Off Type.
+	 * Discriminates standard write-off (WO) from bank fee (BF)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setWriteOffType (String WriteOffType);
+
+	/**
+	 * Get Write-Off Type.
+	 * Discriminates standard write-off (WO) from bank fee (BF)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public String getWriteOffType();
+
+    /** Column name WriteOffType */
+    public static final String COLUMNNAME_WriteOffType = "WriteOffType";
 }

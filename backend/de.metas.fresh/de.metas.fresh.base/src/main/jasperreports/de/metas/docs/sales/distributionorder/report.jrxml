@@ -126,6 +126,9 @@
 				<subreportParameter name="email">
 					<subreportParameterExpression><![CDATA[$F{email} != null ? $F{email} : $R{mail}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
 			</subreport>

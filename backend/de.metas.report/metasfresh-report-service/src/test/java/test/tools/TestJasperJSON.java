@@ -14,7 +14,7 @@ import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.tools.AdempiereToolsHelper;
 import org.compiere.util.DB;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -42,7 +42,7 @@ import java.util.Map;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Ignore
+@Disabled
 public class TestJasperJSON
 {
 

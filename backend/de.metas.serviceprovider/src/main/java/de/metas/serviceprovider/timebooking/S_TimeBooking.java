@@ -24,7 +24,6 @@ package de.metas.serviceprovider.timebooking;
 
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
@@ -53,16 +52,14 @@ import java.math.BigDecimal;
 @Component
 public class S_TimeBooking
 {
-	private final String INCORRECT_FORMAT_MSG_KEY = "de.metas.serviceprovider.incorrectHmmFormat";
+	private final AdMessageKey INCORRECT_FORMAT_MSG_KEY = AdMessageKey.of("de.metas.serviceprovider.incorrectHmmFormat");
 
 	private final ExternalReferenceRepository externalReferenceRepository;
-	private final IMsgBL msgBL;
 	private final IssueService issueService;
 
-	public S_TimeBooking(final ExternalReferenceRepository externalReferenceRepository, final IMsgBL msgBL, final IssueService issueService)
+	public S_TimeBooking(final ExternalReferenceRepository externalReferenceRepository, final IssueService issueService)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
-		this.msgBL = msgBL;
 		this.issueService = issueService;
 	}
 
@@ -160,7 +157,7 @@ public class S_TimeBooking
 		if (!HmmUtils.matches(hoursAndMinutes))
 		{
 
-			throw new AdempiereException(msgBL.getTranslatableMsgText(AdMessageKey.of(INCORRECT_FORMAT_MSG_KEY)))
+			throw new AdempiereException(INCORRECT_FORMAT_MSG_KEY)
 					.markAsUserValidationError();
 		}
 	}

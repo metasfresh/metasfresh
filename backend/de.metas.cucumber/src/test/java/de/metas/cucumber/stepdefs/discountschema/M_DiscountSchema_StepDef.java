@@ -22,11 +22,11 @@
 
 package de.metas.cucumber.stepdefs.discountschema;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -75,25 +75,19 @@ public class M_DiscountSchema_StepDef
 	@Given("metasfresh contains M_DiscountSchemaBreaks:")
 	public void created_discount_schema_break(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createDiscountSchemaBreak(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(this::createDiscountSchemaBreak);
 	}
 
-	private void createDiscountSchemaBreak(@NonNull final Map<String, String> tableRow)
+	private void createDiscountSchemaBreak(@NonNull final DataTableRow tableRow)
 	{
-		final boolean isBPartnerFlatDiscount = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_DiscountSchemaBreak.COLUMNNAME_IsBPartnerFlatDiscount, false);
+		final boolean isBPartnerFlatDiscount = tableRow.getAsOptionalBoolean(I_M_DiscountSchemaBreak.COLUMNNAME_IsBPartnerFlatDiscount).orElse(false);
 
-		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchemaBreak.COLUMNNAME_Base_PricingSystem_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String discountSchemaIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo);
+		final int seqNo = tableRow.getAsInt(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo);
 
-		final I_M_Product productRecord = productTable.get(productIdentifier);
-		final I_M_PricingSystem pricingSystemRecord = pricingSystemTable.get(pricingSystemIdentifier);
-		final I_M_DiscountSchema discountSchemaRecord = discountSchemaTable.get(discountSchemaIdentifier);
+		final I_M_Product productRecord = tableRow.getAsIdentifier(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final I_M_PricingSystem pricingSystemRecord = tableRow.getAsIdentifier(I_M_DiscountSchemaBreak.COLUMNNAME_Base_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
+		final I_M_DiscountSchema discountSchemaRecord = tableRow.getAsIdentifier(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID).lookupNotNullIn(discountSchemaTable);
 
 		final I_M_DiscountSchemaBreak discountSchemaBreakRecord = InterfaceWrapperHelper.newInstance(I_M_DiscountSchemaBreak.class);
 		discountSchemaBreakRecord.setIsBPartnerFlatDiscount(isBPartnerFlatDiscount);
@@ -103,34 +97,20 @@ public class M_DiscountSchema_StepDef
 		discountSchemaBreakRecord.setM_DiscountSchema_ID(discountSchemaRecord.getM_DiscountSchema_ID());
 		discountSchemaBreakRecord.setIsValid(true);
 
-		final String priceBase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_DiscountSchemaBreak.COLUMNNAME_PriceBase);
+		tableRow.getAsOptionalString(I_M_DiscountSchemaBreak.COLUMNNAME_PriceBase)
+				.ifPresent(discountSchemaBreakRecord::setPriceBase);
 
-		if (Check.isNotBlank(priceBase))
-		{
-			discountSchemaBreakRecord.setPriceBase(priceBase);
-		}
+		tableRow.getAsOptionalBigDecimal( I_M_DiscountSchemaBreak.COLUMNNAME_BreakValue)
+				.ifPresent(discountSchemaBreakRecord::setBreakValue);
 
-		final BigDecimal breakValue = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_DiscountSchemaBreak.COLUMNNAME_BreakValue);
+		final BigDecimal breakDiscount = tableRow.getAsOptionalBigDecimal(I_M_DiscountSchemaBreak.COLUMNNAME_BreakDiscount)
+				.orElse(BigDecimal.ZERO);
 
-		if (breakValue != null)
-		{
-			discountSchemaBreakRecord.setBreakValue(breakValue);
-		}
-
-		final BigDecimal breakDiscount = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_DiscountSchemaBreak.COLUMNNAME_BreakDiscount);
-
-		if (breakDiscount != null)
-		{
-			discountSchemaBreakRecord.setBreakDiscount(breakDiscount);
-		}
-		else
-		{
-			discountSchemaBreakRecord.setBreakDiscount(BigDecimal.ZERO);
-		}
+		discountSchemaBreakRecord.setBreakDiscount(breakDiscount);
 
 		saveRecord(discountSchemaBreakRecord);
 
-		discountSchemaBreakTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_M_DiscountSchemaBreak.Table_Name), discountSchemaBreakRecord);
+		discountSchemaBreakTable.putOrReplace(tableRow.getAsIdentifier(), discountSchemaBreakRecord);
 	}
 
 	private void createDiscountSchema(@NonNull final Map<String, String> tableRow)

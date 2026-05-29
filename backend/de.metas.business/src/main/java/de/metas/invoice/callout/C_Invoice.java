@@ -8,7 +8,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -21,6 +20,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
@@ -125,10 +125,13 @@ public class C_Invoice
 	{
 		final I_C_DocType docTypeRecord = loadOutOfTrx(invoice.getC_DocTypeTarget_ID(), I_C_DocType.class);
 
+		final I_C_Invoice oldInvoice = InterfaceWrapperHelper.createOld(invoice, I_C_Invoice.class);
+
 		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docTypeRecord)
 				.setOldDocumentNo(invoice.getDocumentNo())
+				.setOldDocType_ID(oldInvoice.getC_DocTypeTarget_ID())
 				.setDocumentModel(invoice)
 				.buildOrNull();
 		if (documentNoInfo == null)
@@ -166,22 +169,16 @@ public class C_Invoice
 
 	@CalloutMethod(columnNames = {
 			I_C_Invoice.COLUMNNAME_C_BPartner_ID,
-			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID,
-			I_C_Invoice.COLUMNNAME_AD_User_ID },
+			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID },
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_Invoice invoice)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_Invoice.COLUMNNAME_C_BPartner_ID,
-			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID },
-			skipIfCopying = true)
-	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Invoice invoice)
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_AD_User_ID, skipIfCopying = true)
+	public void updateRenderedAddress(final I_C_Invoice invoice)
 	{
-		documentLocationBL.updateCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
-
+		documentLocationBL.updateRenderedAddress(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 	}
-
 }

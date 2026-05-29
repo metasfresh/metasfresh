@@ -1,10 +1,12 @@
 package de.metas.ui.web.pickingV2.packageable;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.view.template.IRowsData;
@@ -13,6 +15,8 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -54,14 +58,15 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	private PackageableRowsData(
 			@NonNull final PackageableRowsRepository repo,
 			@NonNull final DocumentFilterList stickyFilters,
-			@NonNull final DocumentFilterList filters)
+			@NonNull final DocumentFilterList filters,
+			@Nullable final Set<ShipmentScheduleId> onlyShipmentScheduleIds)
 	{
 		this.filters = filters;
 		this.stickyFilters = stickyFilters;
 
 		final DocumentFilterList allFilters = filters.mergeWith(stickyFilters);
 
-		rowsIndexSupplier = ExtendedMemorizingSupplier.of(() -> PackageableRowsIndex.of(repo.retrieveRows(allFilters)));
+		rowsIndexSupplier = ExtendedMemorizingSupplier.of(() -> PackageableRowsIndex.of(repo.retrieveRows(allFilters, onlyShipmentScheduleIds)));
 	}
 
 	@Override

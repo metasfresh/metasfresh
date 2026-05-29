@@ -26,13 +26,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -52,7 +52,7 @@ public class PP_Order
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
@@ -148,9 +148,9 @@ public class PP_Order
 				&& ppOrder.getC_OrderLine_ID() > 0
 				&& ppOrder.getC_OrderLine().getM_AttributeSetInstance_ID() > 0)
 		{
-			final I_M_AttributeSetInstance asi = ppOrder.getC_OrderLine().getM_AttributeSetInstance();
-			final I_M_AttributeSetInstance asiCopy = attributeDAO.copy(asi);
-			ppOrder.setM_AttributeSetInstance(asiCopy);
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getC_OrderLine().getM_AttributeSetInstance_ID());
+			final AttributeSetInstanceId asiIdCopy = asiBL.copy(asiId);
+			ppOrder.setM_AttributeSetInstance_ID(asiIdCopy.getRepoId());
 		}
 
 		//
@@ -214,7 +214,12 @@ public class PP_Order
 		createWorkflowAndBOM(ppOrderRecord);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
+			ifColumnsChanged = {
+					I_PP_Order.COLUMNNAME_QtyEntered,
+					I_PP_Order.COLUMNNAME_DateStartSchedule,
+					I_PP_Order.COLUMNNAME_AD_Workflow_ID,
+					I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))

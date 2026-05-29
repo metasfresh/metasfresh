@@ -1,29 +1,8 @@
-package org.adempiere.util.proxy.impl;
-
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.Matchers.typeCompatibleWith;
-import static org.junit.Assert.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.adempiere.util.proxy.AroundInvoke;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.proxy.IInvocationContext;
-import org.junit.Test;
-
-import de.metas.util.ISingletonService;
-import javassist.util.proxy.Proxy;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -41,14 +20,26 @@ import javassist.util.proxy.Proxy;
  * #L%
  */
 
+package org.adempiere.util.proxy.impl;
+
+import de.metas.util.ISingletonService;
+import javassist.util.proxy.Proxy;
+import org.adempiere.util.proxy.AroundInvoke;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.proxy.IInvocationContext;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class JavaAssistInterceptorTests
 {
 
 	/**
 	 * Tests {@link JavaAssistInterceptor#createInterceptedClass(Class)} with a class whose abstract super class declares a {@link Cached} method.<br>
 	 * Verifies that the method under test returns a proxy class.
-	 * 
-	 * @throws Exception
 	 */
 	@Test
 	public void testInterceptInheritedMethod() throws Exception
@@ -59,27 +50,25 @@ public class JavaAssistInterceptorTests
 		javaAssistInterceptor.registerInterceptor(Cached.class, interceptordummy);
 		final Class<TestService> interceptedClass = javaAssistInterceptor.createInterceptedClass(TestService.class);
 
-		assertThat(interceptedClass, notNullValue());
-		assertThat(interceptedClass, typeCompatibleWith(TestService.class));
-		assertThat(interceptedClass, not(sameInstance(TestService.class))); // we expect a proxy class, not TestService.class itself
+		assertThat(interceptedClass).isNotNull();
+		assertThat(interceptedClass).isAssignableTo(TestService.class);
+		assertThat(interceptedClass).isNotSameAs(TestService.class); // we expect a proxy class, not TestService.class itself
 
 		final TestService interceptedInstance = interceptedClass.newInstance();
-		assertThat(interceptedInstance, instanceOf(Proxy.class));
+		assertThat(interceptedInstance).isInstanceOf(Proxy.class);
 
 		interceptedInstance.testMethod1();
 		interceptedInstance.testMethod2();
-		assertThat(interceptordummy.interceptedInvocations.contains("testMethod1"), is(true));
-		assertThat(interceptordummy.interceptedInvocations.contains("testMethod2"), is(false));
+		assertThat(interceptordummy.interceptedInvocations).contains("testMethod1");
+		assertThat(interceptordummy.interceptedInvocations).doesNotContain("testMethod2");
 	}
 
 	/**
 	 * Tests {@link JavaAssistInterceptor#createInterceptedClass(Class)} with a class that does not any {@link Cached} method. Its abstract parent class does, but that method is overridden.<bre>
 	 * Verifies that the method under test does not return a proxy class, but the class it was called with.
-	 * 
-	 * @throws Exception
 	 */
 	@Test
-	public void testDontInterceptOverriddenMethod() throws Exception
+	public void testDontInterceptOverriddenMethod()
 	{
 		final JavaAssistInterceptor javaAssistInterceptor = new JavaAssistInterceptor();
 		final CacheInterceptorDummy interceptordummy = new CacheInterceptorDummy();
@@ -87,9 +76,9 @@ public class JavaAssistInterceptorTests
 		javaAssistInterceptor.registerInterceptor(Cached.class, interceptordummy);
 		final Class<TestService2> interceptedClass = javaAssistInterceptor.createInterceptedClass(TestService2.class);
 
-		assertThat(interceptedClass, notNullValue());
-		assertThat(interceptedClass, typeCompatibleWith(TestService2.class));
-		assertThat(interceptedClass, sameInstance(TestService2.class));
+		assertThat(interceptedClass).isNotNull();
+		assertThat(interceptedClass).isAssignableFrom(TestService2.class);
+		assertThat(interceptedClass).isSameAs(TestService2.class);
 	}
 
 	static interface ITestService extends ISingletonService
@@ -100,9 +89,7 @@ public class JavaAssistInterceptorTests
 	}
 
 	/**
-	 * 
 	 * Implements testMethod1 and annotates the implementation with cached.
-	 *
 	 */
 	static abstract class AbstractTestService implements ITestService
 	{
@@ -116,7 +103,6 @@ public class JavaAssistInterceptorTests
 
 	/**
 	 * Implements testMethod2 and leaves the implementation of {@link #testMethod1()} alone.
-	 *
 	 */
 	static abstract class TestService extends AbstractTestService
 	{
@@ -129,7 +115,6 @@ public class JavaAssistInterceptorTests
 
 	/**
 	 * Implements both testMethod1() and testMethod2(). The overriding implementation of testMethod1() is <b>not</b> annotated with {@link Cached}.
-	 *
 	 */
 	static abstract class TestService2 extends AbstractTestService
 	{
@@ -147,9 +132,7 @@ public class JavaAssistInterceptorTests
 	}
 
 	/**
-	 * 
 	 * Trivial interceptor mockup that only stores the names of the methods it intercepted.
-	 *
 	 */
 	@Cached
 	static class CacheInterceptorDummy

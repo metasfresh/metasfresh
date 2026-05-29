@@ -69,6 +69,10 @@ public class MetasfreshEventListener
 
 				Env.setClientId(temporaryCtx, lightWeightEvent.getClientId());
 				Env.setOrgId(temporaryCtx, lightWeightEvent.getOrgId());
+				if (lightWeightEvent.getUserId().isRegularUser())
+				{
+					Env.setLoggedUserId(temporaryCtx, lightWeightEvent.getUserId());
+				}
 
 				try (final IAutoCloseable ignored1 = Env.switchContext(temporaryCtx))
 				{
@@ -79,9 +83,7 @@ public class MetasfreshEventListener
 
 		private void invokeListenerInTrx(@NonNull final MaterialEvent materialEvent)
 		{
-			Services.get(ITrxManager.class).runInNewTrx(() -> {
-				materialEventHandlerRegistry.onEvent(materialEvent);
-			});
+			Services.get(ITrxManager.class).runInNewTrx(() -> materialEventHandlerRegistry.onEvent(materialEvent));
 		}
 
 		@Override

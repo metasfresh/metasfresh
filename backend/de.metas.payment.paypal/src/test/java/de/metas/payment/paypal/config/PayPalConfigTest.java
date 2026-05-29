@@ -3,9 +3,9 @@ package de.metas.payment.paypal.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.Test;
 
 import de.metas.email.templates.MailTemplateId;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

@@ -22,6 +22,7 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.inout.InOutId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,20 +35,11 @@ import java.math.BigDecimal;
 @Builder
 public class CreatePackagesRequest
 {
-	@NonNull
-	InOutId inOutId;
-
-	@NonNull
-	ShipperId shipperId;
-
+	@NonNull InOutId inOutId;
+	@NonNull ShipperId shipperId;
 	boolean processed;
-
-	@Nullable
-	String trackingCode;
-
-	@Nullable
-	BigDecimal weight;
-
-	@Nullable
-	String trackingURL;
+	@Nullable String trackingCode;
+	@Nullable String trackingURL;
+	@Nullable BigDecimal weightInKg;
+	@NonNull PackageDimensions packageDimensions;
 }

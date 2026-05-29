@@ -23,6 +23,7 @@
 package de.metas.report;
 
 import de.metas.process.AdProcessId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_DunningRunEntry;
@@ -47,7 +48,8 @@ public enum StandardDocumentReportType
 	//CHECK(null, null),
 	DUNNING(I_C_DunningRunEntry.Table_Name, I_C_DunningRunEntry.COLUMNNAME_C_DunningRunEntry_ID),
 	MANUFACTURING_ORDER(I_PP_Order.Table_Name, I_PP_Order.COLUMNNAME_PP_Order_ID),
-	DISTRIBUTION_ORDER(I_DD_Order.Table_Name, I_DD_Order.COLUMNNAME_DD_Order_ID);
+	DISTRIBUTION_ORDER(I_DD_Order.Table_Name, I_DD_Order.COLUMNNAME_DD_Order_ID),
+	SHIPPER_TRANSPORTATION(I_M_ShipperTransportation.Table_Name, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID);
 
 	@Getter
 	@NonNull

@@ -1,7 +1,8 @@
 package de.metas.purchasecandidate.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BP_PurchaseSchedule
  *  @author metasfresh (generated) 
@@ -165,8 +166,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Häufigkeit.
-	 * Häufigkeit von Ereignissen
+	 * Set Frequency.
+	 * Frequency of events
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -175,8 +176,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setFrequency (int Frequency);
 
 	/**
-	 * Get Häufigkeit.
-	 * Häufigkeit von Ereignissen
+	 * Get Frequency.
+	 * Frequency of events
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -188,8 +189,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_Frequency = "Frequency";
 
 	/**
-	 * Set Häufigkeitsart.
-	 * Häufigkeitsart für Ereignisse
+	 * Set Frequency Type.
+	 * Frequency of event
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -198,8 +199,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setFrequencyType (java.lang.String FrequencyType);
 
 	/**
-	 * Get Häufigkeitsart.
-	 * Häufigkeitsart für Ereignisse
+	 * Get Frequency Type.
+	 * Frequency of event
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -234,31 +235,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lead Time Offset.
-	 * Optional Lead Time offest before starting production
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLeadTimeOffset (int LeadTimeOffset);
-
-	/**
-	 * Get Lead Time Offset.
-	 * Optional Lead Time offest before starting production
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getLeadTimeOffset();
-
-	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_LeadTimeOffset = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "LeadTimeOffset", null);
-	String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
-
-	/**
 	 * Set Day of the Month.
-	 * Tag des Monats 1 to 28/29/30/31
+	 * Day of the month 1 to 28/29/30/31
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -268,7 +246,7 @@ public interface I_C_BP_PurchaseSchedule
 
 	/**
 	 * Get Day of the Month.
-	 * Tag des Monats 1 to 28/29/30/31
+	 * Day of the month 1 to 28/29/30/31
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -280,8 +258,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_MonthDay = "MonthDay";
 
 	/**
-	 * Set Freitag.
-	 * Freitags verfügbar
+	 * Set Friday.
+	 * Friday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -290,8 +268,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnFriday (boolean OnFriday);
 
 	/**
-	 * Get Freitag.
-	 * Freitags verfügbar
+	 * Get Friday.
+	 * Friday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -303,8 +281,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnFriday = "OnFriday";
 
 	/**
-	 * Set Montag.
-	 * Montags verfügbar
+	 * Set Monday.
+	 * Monday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -313,8 +291,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnMonday (boolean OnMonday);
 
 	/**
-	 * Get Montag.
-	 * Montags verfügbar
+	 * Get Monday.
+	 * Monday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -326,8 +304,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnMonday = "OnMonday";
 
 	/**
-	 * Set Samstag.
-	 * Samstags verfügbar
+	 * Set Saturday.
+	 * Available on Saturday
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -336,8 +314,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnSaturday (boolean OnSaturday);
 
 	/**
-	 * Get Samstag.
-	 * Samstags verfügbar
+	 * Get Saturday.
+	 * Available on Saturday
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -349,8 +327,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnSaturday = "OnSaturday";
 
 	/**
-	 * Set Sonntag.
-	 * Sonntags verfügbar
+	 * Set Sunday.
+	 * Available on Sundays
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -359,8 +337,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnSunday (boolean OnSunday);
 
 	/**
-	 * Get Sonntag.
-	 * Sonntags verfügbar
+	 * Get Sunday.
+	 * Available on Sundays
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -372,8 +350,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnSunday = "OnSunday";
 
 	/**
-	 * Set Donnerstag.
-	 * Donnerstags verfügbar
+	 * Set Thursday.
+	 * Thursday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -382,8 +360,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnThursday (boolean OnThursday);
 
 	/**
-	 * Get Donnerstag.
-	 * Donnerstags verfügbar
+	 * Get Thursday.
+	 * Thursday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -395,8 +373,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnThursday = "OnThursday";
 
 	/**
-	 * Set Dienstag.
-	 * Dienstags verfügbar
+	 * Set Tuesday.
+	 * Tuesday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -405,8 +383,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnTuesday (boolean OnTuesday);
 
 	/**
-	 * Get Dienstag.
-	 * Dienstags verfügbar
+	 * Get Tuesday.
+	 * Tuesday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -418,8 +396,8 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnTuesday = "OnTuesday";
 
 	/**
-	 * Set Mittwoch.
-	 * Mittwochs verfügbar
+	 * Set Wednesday.
+	 * Wednesday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -428,8 +406,8 @@ public interface I_C_BP_PurchaseSchedule
 	void setOnWednesday (boolean OnWednesday);
 
 	/**
-	 * Get Mittwoch.
-	 * Mittwochs verfügbar
+	 * Get Wednesday.
+	 * Wednesday's available
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -441,7 +419,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_OnWednesday = "OnWednesday";
 
 	/**
-	 * Set Bereitstellungszeit Mo.
+	 * Set Monday Preparation Time.
 	 * Preparation time for monday
 	 *
 	 * <br>Type: Time
@@ -451,7 +429,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_1 (@Nullable java.sql.Timestamp PreparationTime_1);
 
 	/**
-	 * Get Bereitstellungszeit Mo.
+	 * Get Monday Preparation Time.
 	 * Preparation time for monday
 	 *
 	 * <br>Type: Time
@@ -464,7 +442,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_1 = "PreparationTime_1";
 
 	/**
-	 * Set Bereitstellungszeit Di.
+	 * Set Tuesday Preparation Time.
 	 * Preparation time for tuesday
 	 *
 	 * <br>Type: Time
@@ -474,7 +452,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_2 (@Nullable java.sql.Timestamp PreparationTime_2);
 
 	/**
-	 * Get Bereitstellungszeit Di.
+	 * Get Tuesday Preparation Time.
 	 * Preparation time for tuesday
 	 *
 	 * <br>Type: Time
@@ -487,7 +465,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_2 = "PreparationTime_2";
 
 	/**
-	 * Set Bereitstellungszeit Mi.
+	 * Set Wednesday Preparation Time.
 	 * Preparation time for wednesday
 	 *
 	 * <br>Type: Time
@@ -497,7 +475,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_3 (@Nullable java.sql.Timestamp PreparationTime_3);
 
 	/**
-	 * Get Bereitstellungszeit Mi.
+	 * Get Wednesday Preparation Time.
 	 * Preparation time for wednesday
 	 *
 	 * <br>Type: Time
@@ -510,7 +488,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_3 = "PreparationTime_3";
 
 	/**
-	 * Set Bereitstellungszeit Do.
+	 * Set Thursday Preparation Time.
 	 * Preparation time for thursday
 	 *
 	 * <br>Type: Time
@@ -520,7 +498,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_4 (@Nullable java.sql.Timestamp PreparationTime_4);
 
 	/**
-	 * Get Bereitstellungszeit Do.
+	 * Get Thursday Preparation Time.
 	 * Preparation time for thursday
 	 *
 	 * <br>Type: Time
@@ -533,7 +511,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_4 = "PreparationTime_4";
 
 	/**
-	 * Set Bereitstellungszeit Fr.
+	 * Set Friday Preparation Time.
 	 * Preparation time for Friday
 	 *
 	 * <br>Type: Time
@@ -543,7 +521,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_5 (@Nullable java.sql.Timestamp PreparationTime_5);
 
 	/**
-	 * Get Bereitstellungszeit Fr.
+	 * Get Friday Preparation Time.
 	 * Preparation time for Friday
 	 *
 	 * <br>Type: Time
@@ -556,7 +534,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_5 = "PreparationTime_5";
 
 	/**
-	 * Set Bereitstellungszeit Sa.
+	 * Set Saturday Preparation Time.
 	 * Preparation time for Saturday
 	 *
 	 * <br>Type: Time
@@ -566,7 +544,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_6 (@Nullable java.sql.Timestamp PreparationTime_6);
 
 	/**
-	 * Get Bereitstellungszeit Sa.
+	 * Get Saturday Preparation Time.
 	 * Preparation time for Saturday
 	 *
 	 * <br>Type: Time
@@ -579,7 +557,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_6 = "PreparationTime_6";
 
 	/**
-	 * Set Bereitstellungszeit So.
+	 * Set Sunday Preparation Time.
 	 * Preparation time for Sunday
 	 *
 	 * <br>Type: Time
@@ -589,7 +567,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setPreparationTime_7 (@Nullable java.sql.Timestamp PreparationTime_7);
 
 	/**
-	 * Get Bereitstellungszeit So.
+	 * Get Sunday Preparation Time.
 	 * Preparation time for Sunday
 	 *
 	 * <br>Type: Time
@@ -602,7 +580,7 @@ public interface I_C_BP_PurchaseSchedule
 	String COLUMNNAME_PreparationTime_7 = "PreparationTime_7";
 
 	/**
-	 * Set Wiedervorlage.
+	 * Set Reminder Time (min).
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -611,7 +589,7 @@ public interface I_C_BP_PurchaseSchedule
 	void setReminderTimeInMin (int ReminderTimeInMin);
 
 	/**
-	 * Get Wiedervorlage.
+	 * Get Reminder Time (min).
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

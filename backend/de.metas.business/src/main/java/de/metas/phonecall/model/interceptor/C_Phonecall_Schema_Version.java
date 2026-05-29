@@ -63,8 +63,6 @@ public class C_Phonecall_Schema_Version
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Phonecall_Schema_Version.COLUMNNAME_ValidFrom })
 	public void forbidNewVersionWithSameValidFromDate(final I_C_Phonecall_Schema_Version phonecallSchemaVersion)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		final PhonecallSchemaId schemaId = PhonecallSchemaId.ofRepoId(phonecallSchemaVersion.getC_Phonecall_Schema_ID());
 		final PhonecallSchemaVersionId versionId = PhonecallSchemaVersionId.ofRepoIdOrNull(schemaId, phonecallSchemaVersion.getC_Phonecall_Schema_Version_ID());
 		final LocalDate validFrom = TimeUtil.asLocalDate(phonecallSchemaVersion.getValidFrom());
@@ -75,11 +73,9 @@ public class C_Phonecall_Schema_Version
 		if (existingVersion != null
 				&& (versionId == null || !versionId.equals(existingVersion.getId())))
 		{
-			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom,
+			throw new AdempiereException(MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom,
 					phonecallSchemaVersion.getName(),
 					validFrom);
-
-			throw new AdempiereException(noPermissionMessage);
 		}
 	}
 

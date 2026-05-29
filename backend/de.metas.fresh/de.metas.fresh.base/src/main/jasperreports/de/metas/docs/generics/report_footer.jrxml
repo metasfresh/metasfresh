@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_footer" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="031a7c7f-2ab0-4b59-bb5d-0429c875b53e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
 	<property name="ireport.x" value="258"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -23,9 +23,13 @@
 	<parameter name="org_id" class="java.math.BigDecimal" isForPrompting="false">
 		<defaultValueExpression><![CDATA[new BigDecimal(1000000)]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IsFactoringPartner" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT * 
-FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id},$P{IsFactoringPartner})
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String">
@@ -64,13 +68,17 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 		<property name="com.jaspersoft.studio.field.name" value="org_bank_swift"/>
 		<property name="com.jaspersoft.studio.field.label" value="org_bank_swift"/>
 	</field>
+	<field name="org_bank_currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_bank_currency"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_bank_currency"/>
+	</field>
 	<field name="org_addressline" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="org_addressline"/>
 		<property name="com.jaspersoft.studio.field.label" value="org_addressline"/>
 	</field>
-	<field name="description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="description"/>
-		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	<field name="orgpartnerdescription" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="orgpartnerdescription"/>
+		<property name="com.jaspersoft.studio.field.label" value="orgpartnerdescription"/>
 	</field>
 	<field name="manager" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="manager"/>
@@ -84,6 +92,10 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 		<property name="com.jaspersoft.studio.field.name" value="phone"/>
 		<property name="com.jaspersoft.studio.field.label" value="phone"/>
 	</field>
+	<field name="phone2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="phone2"/>
+		<property name="com.jaspersoft.studio.field.label" value="phone2"/>
+	</field>
 	<field name="fax" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="fax"/>
 		<property name="com.jaspersoft.studio.field.label" value="fax"/>
@@ -91,6 +103,10 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 	<field name="email" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="email"/>
 		<property name="com.jaspersoft.studio.field.label" value="email"/>
+	</field>
+	<field name="url" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="url"/>
+		<property name="com.jaspersoft.studio.field.label" value="url"/>
 	</field>
 	<variable name="conditions" class="java.lang.String">
 		<variableExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></variableExpression>
@@ -141,9 +157,9 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : $R{iban} + " " + $F{org_bank_iban}) : $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) )+ " | " +$R{vataxid} + " " + $F{vataxid}) 
+				<textFieldExpression><![CDATA[$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : $R{iban} + " " + $F{org_bank_iban}) : $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) )+ " | " + ($F{vataxid}==null || $F{vataxid}.equals("") ? "" : " | " + $R{vataxid} + " " + $F{vataxid})) 
 
-: ($F{org_bank_name} + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) : " | " + $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}))+ " | " +$R{vataxid} + " " + $F{vataxid})]]></textFieldExpression>
+: ($F{org_bank_name} + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) : " | " + $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}))+ ($F{vataxid}==null || $F{vataxid}.equals("") ? "" : " | " + $R{vataxid} + " " + $F{vataxid}))]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="125" y="1" width="344" height="12" uuid="2acced95-3851-4712-9669-aa6cefe5ee40"/>
@@ -169,7 +185,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " + $F{email}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " +  $R{orgEmail} + " " +$F{email}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

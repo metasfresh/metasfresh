@@ -1,16 +1,16 @@
 package de.metas.user;
 
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -37,7 +37,9 @@ import lombok.Value;
 @Value
 public class User
 {
-	/** can be null for not-yet-saved users */
+	/**
+	 * can be null for not-yet-saved users
+	 */
 	UserId id;
 
 	BPartnerId bpartnerId;
@@ -47,6 +49,8 @@ public class User
 	String firstName;
 
 	String lastName;
+
+	@Nullable String department;
 
 	String emailAddress;
 
@@ -72,6 +76,8 @@ public class User
 
 	ExternalId externalId;
 
+	@NonNull OptionalBoolean isInvoiceEmailEnabled;
+
 	@Builder(toBuilder = true)
 	private User(
 			@Nullable final UserId id,
@@ -79,19 +85,22 @@ public class User
 			@NonNull final String name,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
+			@Nullable final String department,
 			@Nullable final String emailAddress,
 			@Nullable final LocalDate birthday,
 			@Nullable final String phone,
 			@Nullable final Language userLanguage,
 			@Nullable final Language bPartnerLanguage,
 			@NonNull final Language language,
-			@Nullable final ExternalId externalId)
+			@Nullable final ExternalId externalId,
+			@Nullable final OptionalBoolean isInvoiceEmailEnabled)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.department = department;
 		this.emailAddress = emailAddress;
 		this.birthday = birthday;
 		this.phone = phone;
@@ -99,11 +108,17 @@ public class User
 		this.bPartnerLanguage = bPartnerLanguage;
 		this.language = language;
 		this.externalId = externalId;
+		this.isInvoiceEmailEnabled = isInvoiceEmailEnabled != null ? isInvoiceEmailEnabled : OptionalBoolean.UNKNOWN;
 
 		Check.assume(
 				userLanguage == null || userLanguage.equals(language),
 				"If a userLanguage parameter is specified, it needs to be equal to the language paramter; this={}",
 				language);
+	}
+
+	public UserId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "User shall be saved: {}", this);
 	}
 
 }

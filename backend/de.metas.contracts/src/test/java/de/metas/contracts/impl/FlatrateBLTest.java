@@ -6,7 +6,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
+import de.metas.contracts.flatrate.dataEntry.invoice.FlatrateDataEntryHandler;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;

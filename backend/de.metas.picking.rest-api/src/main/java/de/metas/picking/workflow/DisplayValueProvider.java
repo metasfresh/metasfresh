@@ -27,20 +27,23 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
-import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
 import de.metas.organization.IOrgDAO;
+import de.metas.product.ProductValueAndName;
+import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
@@ -53,12 +56,13 @@ import org.compiere.model.I_C_BPartner_Location;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DisplayValueProvider
 {
-	@NonNull private final IBPartnerDAO partnerDAO;
 	@NonNull private final IOrgDAO orgDAO;
+	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final RenderedAddressProvider renderedAddressProvider;
 
 	@NonNull private final MobileUIPickingUserProfile profile;
@@ -67,16 +71,14 @@ public class DisplayValueProvider
 
 	@Builder
 	private DisplayValueProvider(
-			@NonNull final IBPartnerDAO partnerDAO,
 			@NonNull final IOrgDAO orgDAO,
-			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final PickingJobBPartnerService bpartnerService,
 			//
 			@NonNull final MobileUIPickingUserProfile profile)
 	{
-		this.partnerDAO = partnerDAO;
 		this.orgDAO = orgDAO;
-		this.renderedAddressProvider = RenderedAddressProvider.newInstance(documentLocationBL);
-
+		this.bpartnerService = bpartnerService;
+		this.renderedAddressProvider = bpartnerService.newRenderedAddressProvider();
 		this.profile = profile;
 	}
 
@@ -91,7 +93,7 @@ public class DisplayValueProvider
 		cacheWarmUpForContexts(contexts);
 	}
 
-	public void cacheWarmUpForPickingJobCandidates(final ImmutableList<PickingJobCandidate> pickingJobCandidates)
+	public void cacheWarmUpForPickingJobCandidates(final PickingJobCandidateList pickingJobCandidates)
 	{
 		if (pickingJobCandidates.isEmpty())
 		{
@@ -120,7 +122,7 @@ public class DisplayValueProvider
 		final ImmutableSet<BPartnerLocationId> deliveryLocationIds = extractDeliveryLocationIds(contexts);
 
 		final ImmutableMap<BPartnerLocationId, I_C_BPartner_Location> locationsById = Maps.uniqueIndex(
-				partnerDAO.retrieveBPartnerLocationsByIds(deliveryLocationIds),
+				bpartnerService.getBPartnerLocationsByIds(deliveryLocationIds),
 				location -> BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID())
 		);
 
@@ -129,13 +131,7 @@ public class DisplayValueProvider
 
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
-		return contexts.stream().map(Context::getDeliveryLocationId).collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJob pickingJob)
-	{
-		return computeLauncherCaption(toContext(pickingJob));
+		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
@@ -185,8 +181,10 @@ public class DisplayValueProvider
 				.deliveryLocationId(pickingJobCandidate.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 				.customerName(pickingJobCandidate.getCustomerName())
-				.preparationDate(pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
+				.preparationDate(pickingJobCandidate.getPreparationDate() != null ? pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone) : null)
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
+				.productValueAndName(pickingJobCandidate.getProductValueAndName())
+				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
 				.build();
 	}
 
@@ -194,11 +192,13 @@ public class DisplayValueProvider
 	private static Context toContext(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return Context.builder()
-				.deliveryLocationId(pickingJobReference.getDeliveryLocationId())
+				.deliveryLocationId(pickingJobReference.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
+				.productValueAndName(pickingJobReference.getProductValueAndName())
+				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
 				.build();
 	}
 
@@ -211,6 +211,22 @@ public class DisplayValueProvider
 				.customerName(pickingJob.getCustomerName())
 				.preparationDate(pickingJob.getPreparationDate())
 				.handoverLocationId(pickingJob.getHandoverLocationId())
+				.productValueAndName(pickingJob.getSingleProductValueAndName())
+				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
+				.build();
+	}
+
+	@NonNull
+	private static Context toContext(@NonNull final PickingJobLine pickingJobLine)
+	{
+		return Context.builder()
+				.deliveryLocationId(pickingJobLine.getDeliveryBPLocationId())
+				.salesOrderDocumentNo(pickingJobLine.getSalesOrderDocumentNo())
+				// .customerName(pickingJobLine.getCustomerName())
+				// .preparationDate(pickingJobLine.getPreparationDate())
+				// .handoverLocationId(pickingJobLine.getHandoverLocationId())
+				.productValueAndName(pickingJobLine.getProductValueAndName())
+				.qtyToDeliver(pickingJobLine.getQtyToPick())
 				.build();
 	}
 
@@ -221,35 +237,60 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	private ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final Context pickingJob)
+	public ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final PickingJobLine pickingJobLine)
+	{
+		return getDisplayValue(field, toContext(pickingJobLine));
+	}
+
+	@NonNull
+	private ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final Context context)
 	{
 		switch (field.getField())
 		{
 			case CUSTOMER:
 			{
-				return TranslatableStrings.anyLanguage(pickingJob.getCustomerName());
+				return TranslatableStrings.anyLanguage(context.getCustomerName());
 			}
 			case DATE_READY:
 			{
-				return TranslatableStrings.dateAndTime(pickingJob.getPreparationDate());
+				return context.getPreparationDate() != null
+						? TranslatableStrings.dateAndTime(context.getPreparationDate())
+						: TranslatableStrings.empty();
 			}
 			case DOCUMENT_NO:
 			{
-				return TranslatableStrings.anyLanguage(pickingJob.getSalesOrderDocumentNo());
+				return TranslatableStrings.anyLanguage(context.getSalesOrderDocumentNo());
 			}
 			case RUESTPLATZ_NR:
 			{
-				return TranslatableStrings.anyLanguage(getRuestplatz(pickingJob).orElse(null));
+				return TranslatableStrings.anyLanguage(getRuestplatz(context).orElse(null));
 			}
 			case DELIVERY_ADDRESS:
 			{
 				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
-				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob, displaySequence));
+				return TranslatableStrings.anyLanguage(getDeliveryAddress(context, displaySequence));
 			}
 			case HANDOVER_LOCATION:
 			{
 				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
-				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob, displaySequence));
+				return TranslatableStrings.anyLanguage(getHandoverAddress(context, displaySequence));
+			}
+			case PRODUCT_NO:
+			{
+				final ProductValueAndName productValueAndName = context.getProductValueAndName();
+				return TranslatableStrings.anyLanguage(productValueAndName != null ? productValueAndName.getValue() : null);
+			}
+			case PRODUCT_NAME:
+			{
+				final ProductValueAndName productValueAndName = context.getProductValueAndName();
+				return productValueAndName != null ? productValueAndName.getName() : TranslatableStrings.empty();
+			}
+			case QTY_TO_DELIVER:
+			{
+				final Quantity qtyToDeliver = context.getQtyToDeliver();
+				return qtyToDeliver != null
+						? TranslatableStrings.quantity(qtyToDeliver.toBigDecimal(), qtyToDeliver.getUOMSymbol())
+						: TranslatableStrings.empty();
 			}
 			default:
 			{
@@ -268,7 +309,7 @@ public class DisplayValueProvider
 			{
 				return getRuestplatz(pickingJob)
 						.map(value -> NumberUtils.asInteger(value, null)) // we assume Ruestplantz is number so we want to sort it as numbers
-						.orElse(null);
+						.orElse(Integer.MAX_VALUE); // i.e. nulls last
 			}
 			default:
 			{
@@ -292,12 +333,17 @@ public class DisplayValueProvider
 	private Optional<String> getRuestplatz(@NonNull final Context pickingJob)
 	{
 		final BPartnerLocationId deliveryLocationId = pickingJob.getDeliveryLocationId();
+		if (deliveryLocationId == null)
+		{
+			return Optional.empty();
+		}
+
 		return ruestplatzCache.computeIfAbsent(deliveryLocationId, this::retrieveRuestplatz);
 	}
 
 	private Optional<String> retrieveRuestplatz(final BPartnerLocationId deliveryLocationId)
 	{
-		return extractRuestplatz(partnerDAO.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
+		return extractRuestplatz(bpartnerService.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
 	}
 
 	private static Optional<String> extractRuestplatz(@Nullable final I_C_BPartner_Location location)
@@ -307,29 +353,37 @@ public class DisplayValueProvider
 				.map(StringUtils::trimBlankToNull);
 	}
 
-	@NonNull
+	@Nullable
 	private String getHandoverAddress(@NonNull final Context pickingJob, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return renderedAddressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback(), displaySequence);
+		final BPartnerLocationId bpLocationId = pickingJob.getHandoverLocationIdWithFallback();
+		return bpLocationId != null
+				? renderedAddressProvider.getAddress(bpLocationId, displaySequence)
+				: null;
 	}
 
-	@NonNull
+	@Nullable
 	private String getDeliveryAddress(@NonNull final Context context, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return renderedAddressProvider.getAddress(context.getDeliveryLocationId(), displaySequence);
+		final BPartnerLocationId bpLocationId = context.getDeliveryLocationId();
+		return bpLocationId != null
+				? renderedAddressProvider.getAddress(bpLocationId, displaySequence)
+				: null;
 	}
 
 	@Value
 	@Builder
 	private static class Context
 	{
-		@NonNull String salesOrderDocumentNo;
-		@NonNull String customerName;
-		@NonNull ZonedDateTime preparationDate;
-		@NonNull BPartnerLocationId deliveryLocationId;
+		@Nullable String salesOrderDocumentNo;
+		@Nullable String customerName;
+		@Nullable ZonedDateTime preparationDate;
+		@Nullable BPartnerLocationId deliveryLocationId;
 		@Nullable BPartnerLocationId handoverLocationId;
+		@Nullable ProductValueAndName productValueAndName;
+		@Nullable Quantity qtyToDeliver;
 
-		@NonNull
+		@Nullable
 		public BPartnerLocationId getHandoverLocationIdWithFallback()
 		{
 			return handoverLocationId != null ? handoverLocationId : deliveryLocationId;

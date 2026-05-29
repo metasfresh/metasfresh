@@ -21,13 +21,13 @@ package de.metas.handlingunits.attributes.impl.split;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
@@ -103,7 +103,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		assertEquals("Invalid amount of TUs were split", 2, splitTUs.size());
+		Assertions.assertEquals( 2,  splitTUs.size(), "Invalid amount of TUs were split");
 
 		// commitAndDump(paletToSplit);
 
@@ -147,7 +147,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(2), // TUs Per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals( 1,  splitLUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Assert data integrity on SOURCE LU:
@@ -165,7 +165,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// Assert data integrity on TARGET LU
 		//
 		final I_M_HU splitLU = splitLUs.get(0);
-		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		// commitAndDump(splitLU);
 
@@ -197,7 +197,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(3), // TUs Per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals( 1,  splitLUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Assert data integrity on SOURCE LU
@@ -207,7 +207,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on destination LU
 		final I_M_HU splitLU = splitLUs.get(0);
-		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 3,
 				newHUWeightsExpectation("51.295", "23.295", "28", "0"),
@@ -238,7 +238,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(1), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		assertEquals("Invalid amount of TUs were split", 1, splitTUs.size());
+		Assertions.assertEquals( 1,  splitTUs.size(), "Invalid amount of TUs were split");
 		// commitAndDump(paletToSplit);
 		//
 		// Assert data integrity on SOURCE LU
@@ -253,7 +253,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// Assert data integrity on TARGET TU
 		//
 		final I_M_HU splitTU = splitTUs.get(0);
-		assertTrue("The target TU we just split to shall be a top-level handling unit", splitTU.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitTU.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(splitTU);
 		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("6.436", "5.436", "1", "0"));
@@ -283,7 +283,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(1), // TUs per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals( 1,  splitLUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Assert data integrity on SOURCE LU
@@ -299,7 +299,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// Assert data integrity on TARGET LU
 		//
 		final I_M_HU splitLU = splitLUs.get(0);
-		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
 				newHUWeightsExpectation("31.435", "5.435", "26", "0"),
@@ -337,7 +337,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.ONE, // TUs per LU
 				BigDecimal.valueOf(2)); // split on TWO additional LUs
 
-		assertEquals("Invalid amount of LUs were split", 2, splitLUs.size());
+		Assertions.assertEquals( 2,  splitLUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Assert data integrity on SOURCE LU
@@ -346,14 +346,14 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on TARGET LUs
 		final I_M_HU splitLU1 = splitLUs.get(0);
-		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU1.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitLU1.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU1, huItemIFCO_10, 1,
 				newHUWeightsExpectation("33.765", "7.765", "26", "0"),
 				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
 
 		final I_M_HU splitLU2 = splitLUs.get(0);
-		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU2.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitLU2.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU2, huItemIFCO_10, 1,
 				newHUWeightsExpectation("33.765", "7.765", "26", "0"),
@@ -389,7 +389,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(3), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		assertEquals("Invalid amount of LUs were split", 3, splitTUs.size());
+		Assertions.assertEquals( 3,  splitTUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Assert data integrity on SOURCE LU
@@ -402,19 +402,19 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// Assert data integrity on TARGET TUs
 		//
 		final I_M_HU splitTU1 = splitTUs.get(0);
-		assertTrue("The target TU we just split to shall be a top-level handling unit", splitTU1.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitTU1.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
 		assertSingleHandlingUnitWeights(attributeStorageTU1, newHUWeightsExpectation("4.883", "3.883", "1", "0"));
 
 		final I_M_HU splitTU2 = splitTUs.get(1);
-		assertTrue("The target TU we just split to shall be a top-level handling unit", splitTU2.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitTU2.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU2 = attributeStorageFactory.getAttributeStorage(splitTU2);
 		assertSingleHandlingUnitWeights(attributeStorageTU2, newHUWeightsExpectation("4.883", "3.883", "1", "0"));
 
 		final I_M_HU splitTU3 = splitTUs.get(2);
-		assertTrue("The target TU we just split to shall be a top-level handling unit", splitTU3.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitTU3.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU3 = attributeStorageFactory.getAttributeStorage(splitTU3);
 		assertSingleHandlingUnitWeights(attributeStorageTU3, newHUWeightsExpectation("4.883", "3.883", "1", "0"));
@@ -443,7 +443,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(7), // TUs per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals( 1,  splitLUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Assert data integrity on SOURCE LU
@@ -457,7 +457,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// 35
 
 		final I_M_HU splitLU = splitLUs.get(0);
-		assertTrue("The target TU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_5, 7,
 				newHUWeightsExpectation("71.565", "39.565", "32", "0"),

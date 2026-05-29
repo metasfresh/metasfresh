@@ -4,8 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.distribution.workflows_api.DistributionJobLineId;
-import de.metas.distribution.workflows_api.DistributionJobStepId;
+import de.metas.distribution.mobileui.job.model.DistributionJobLineId;
+import de.metas.distribution.mobileui.job.model.DistributionJobStepId;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJobLine;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJobStep;
+import de.metas.distribution.mobileui.rest_api.json.JsonHUInfo;
+import de.metas.distribution.mobileui.rest_api.json.JsonLocatorInfo;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import org.junit.jupiter.api.Test;
 

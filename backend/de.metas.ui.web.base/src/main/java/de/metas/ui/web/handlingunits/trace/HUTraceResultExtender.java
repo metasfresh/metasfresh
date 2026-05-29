@@ -4,6 +4,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.process.PInstanceId;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -66,7 +67,7 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		if (!filter.hasParameters())
+		if (!filter.hasParameters() || isSQLOnly(filter))
 		{
 			return converter.getSql(filter, sqlOpts, context); // do whatever the system usually does
 		}
@@ -77,5 +78,10 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 
 			return FilterSql.ofWhereClause(WHERE_IN_T_SELECTION, selectionId);
 		}
+	}
+
+	private static boolean isSQLOnly(final @NonNull DocumentFilter filter)
+	{
+		return filter.getParameters().stream().allMatch(DocumentFilterParam::isSqlFilter);
 	}
 }

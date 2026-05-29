@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.product.ResourceId;
@@ -65,6 +66,7 @@ public class M_Warehouse_StepDef
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final TestContext restTestContext;
 
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
@@ -107,6 +109,9 @@ public class M_Warehouse_StepDef
 						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
 					}
 
+					final boolean isDropShipWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsDropShipWarehouse).orElse(false);
+					warehouseRecord.setIsDropShipWarehouse(isDropShipWarehouse);
+
 					final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
 							.map(bpartnerTable::getId)
 							.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID);
@@ -145,6 +150,9 @@ public class M_Warehouse_StepDef
 							.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locator));
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
+
+					row.getAsOptionalIdentifier("REST.Context.Value")
+							.ifPresent(id -> restTestContext.setVariable(id.getAsString(), warehouseRecord.getValue()));
 				});
 	}
 }

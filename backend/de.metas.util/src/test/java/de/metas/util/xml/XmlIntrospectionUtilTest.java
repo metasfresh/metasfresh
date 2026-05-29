@@ -1,13 +1,13 @@
 package de.metas.util.xml;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import javax.xml.stream.XMLStreamException;
-
-import org.junit.Test;
 
 /*
  * #%L

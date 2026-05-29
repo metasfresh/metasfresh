@@ -41,6 +41,8 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 	LIST(X_M_Attribute.ATTRIBUTEVALUETYPE_List),
 	;
 
+	private static final ValuesIndex<AttributeValueType> index = ReferenceListAwareEnums.index(values());
+
 	@NonNull private final String code;
 
 	public static AttributeValueType ofCode(@NonNull final String code)
@@ -48,7 +50,7 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
-	private static final ValuesIndex<AttributeValueType> index = ReferenceListAwareEnums.index(values());
+	public boolean isList() {return LIST.equals(this);}
 
 	public interface CaseMapper<T>
 	{
@@ -88,5 +90,45 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 		}
 	}
 
-	public boolean isList() {return LIST.equals(this);}
+	public interface CaseConsumer
+	{
+		void string();
+
+		void number();
+
+		void date();
+
+		void list();
+	}
+
+	public void apply(@NonNull final CaseConsumer consumer)
+	{
+		switch (this)
+		{
+			case STRING:
+			{
+				consumer.string();
+				break;
+			}
+			case NUMBER:
+			{
+				consumer.number();
+				break;
+			}
+			case DATE:
+			{
+				consumer.date();
+				break;
+			}
+			case LIST:
+			{
+				consumer.list();
+				break;
+			}
+			default:
+			{
+				throw new AdempiereException("Unsupported value type: " + this);
+			}
+		}
+	}
 }

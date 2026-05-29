@@ -22,10 +22,13 @@
 
 package de.metas.externalsystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
@@ -38,7 +41,11 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_LocalFile;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_TaxCategory;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -46,8 +53,18 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
+import de.metas.externalsystem.pcm.ExternalSystemPCMConfig;
+import de.metas.externalsystem.pcm.ExternalSystemPCMConfigId;
+import de.metas.externalsystem.pcm.PCMConfigMapper;
+import de.metas.externalsystem.pcm.TaxCategoryPCMMapping;
+import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
+import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfig;
+import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -57,31 +74,50 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
 
-	public ExternalSystemConfigRepo(@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	@NonNull private final TaxCategoryDAO taxCategoryDAO;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
+	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
+
+	@VisibleForTesting
+	public static ExternalSystemConfigRepo newInstanceForUnitTesting()
 	{
-		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
+		Adempiere.assertUnitTestMode();
+		return new ExternalSystemConfigRepo(
+				new TaxCategoryDAO(),
+				ExternalSystemRepository.newInstanceForUnitTesting(),
+				new ExternalSystemOtherConfigRepository(),
+				ExternalSystemScriptedExportConversionRepository.newInstanceForUnitTesting()
+				);
 	}
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
@@ -94,59 +130,101 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
 	{
-		switch (id.getType())
+		// change the private methods' names to getByCastedId to avoid a StackoverflowError in case on of them gets lost -which was the case for the one with ExternalSystemPCMConfigId
+		final ExternalSystemType type = id.getType();
+		if (type.isAlberta())
 		{
-			case Alberta:
-				return getById(ExternalSystemAlbertaConfigId.cast(id));
-			case Shopware6:
-				return getById(ExternalSystemShopware6ConfigId.cast(id));
-			case Other:
-				return getById(ExternalSystemOtherConfigId.cast(id));
-			case RabbitMQ:
-				return getById(ExternalSystemRabbitMQConfigId.cast(id));
-			case WOO:
-				return getById(ExternalSystemWooCommerceConfigId.cast(id));
-			case GRSSignum:
-				return getById(ExternalSystemGRSSignumConfigId.cast(id));
-			case LeichUndMehl:
-				return getById(ExternalSystemLeichMehlConfigId.cast(id));
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
+			return getByCastedId(ExternalSystemAlbertaConfigId.cast(id));
 		}
+		else if (type.isShopware6())
+		{
+			return getByCastedId(ExternalSystemShopware6ConfigId.cast(id));
+		}
+		else if (type.isOther())
+		{
+			return getByCastedId(ExternalSystemOtherConfigId.cast(id));
+		}
+		else if (type.isRabbitMQ())
+		{
+			return getByCastedId(ExternalSystemRabbitMQConfigId.cast(id));
+		}
+		else if (type.isWOO())
+		{
+			return getByCastedId(ExternalSystemWooCommerceConfigId.cast(id));
+		}
+		else if (type.isGRSSignum())
+		{
+			return getByCastedId(ExternalSystemGRSSignumConfigId.cast(id));
+		}
+		else if (type.isLeichUndMehl())
+		{
+			return getByCastedId(ExternalSystemLeichMehlConfigId.cast(id));
+		}
+		else if (type.isProCareManagement())
+		{
+			return getByCastedId(ExternalSystemPCMConfigId.cast(id));
+		}
+		else if (type.isScriptedExportConversion())
+		{
+			return getByCastedId(ExternalSystemScriptedExportConversionConfigId.cast(id));
+		}
+		else if (type.isScriptedImportConversion())
+		{
+			return getByCastedId(ExternalSystemScriptedImportConversionConfigId.cast(id));
+		}
+		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 	}
 
 	@NonNull
 	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String value)
 	{
-		switch (type)
+		if (type.isAlberta())
 		{
-			case Alberta:
-				return getAlbertaConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
-			case Shopware6:
-				return getShopware6ConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
-			case WOO:
-				return getWooCommerceConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
-			case GRSSignum:
-				return getGRSSignumConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
-			case RabbitMQ:
-				return getRabbitMQConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
-			case LeichUndMehl:
-				return getLeichMehlConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
+			return getAlbertaConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
 		}
+		else if (type.isShopware6())
+		{
+			return getShopware6ConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		else if (type.isWOO())
+		{
+			return getWooCommerceConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		else if (type.isGRSSignum())
+		{
+			return getGRSSignumConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		else if (type.isRabbitMQ())
+		{
+			return getRabbitMQConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		else if (type.isLeichUndMehl())
+		{
+			return getLeichMehlConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		else if (type.isProCareManagement())
+		{
+			return getPCMConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		else if (type.isScriptedImportConversion())
+		{
+			return getScriptedImportConversionConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
+		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 	}
 
 	@NonNull
 	public Optional<IExternalSystemChildConfig> getChildByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
-		final ExternalSystemType type = ExternalSystemType.ofCode(getParentTypeById(id));
+		final ExternalSystemType type = ExternalSystemType.ofValue(getParentTypeById(id));
 		return getChildByParentIdAndType(id, type);
 	}
 
@@ -154,34 +232,51 @@ public class ExternalSystemConfigRepo
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType externalSystemType)
 	{
-		switch (externalSystemType)
+		if (externalSystemType.isAlberta())
 		{
-			case Alberta:
-				return getAlbertaConfigByParentId(id);
-			case Shopware6:
-				return getShopware6ConfigByParentId(id);
-			case Other:
-				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
-				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
-			case RabbitMQ:
-				return getRabbitMQConfigByParentId(id);
-			case WOO:
-				return getWooCommerceConfigByParentId(id);
-			case GRSSignum:
-				return getGRSSignumConfigByParentId(id);
-			case LeichUndMehl:
-				return getLeichMehlConfigByParentId(id);
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+			return getAlbertaConfigByParentId(id);
 		}
+		else if (externalSystemType.isShopware6())
+		{
+			return getShopware6ConfigByParentId(id);
+		}
+		else if (externalSystemType.isOther())
+		{
+			final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
+			return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
+		}
+		else if (externalSystemType.isRabbitMQ())
+		{
+			return getRabbitMQConfigByParentId(id);
+		}
+		else if (externalSystemType.isWOO())
+		{
+			return getWooCommerceConfigByParentId(id);
+		}
+		else if (externalSystemType.isGRSSignum())
+		{
+			return getGRSSignumConfigByParentId(id);
+		}
+		else if (externalSystemType.isLeichUndMehl())
+		{
+			return getLeichMehlConfigByParentId(id);
+		}
+		else if (externalSystemType.isProCareManagement())
+		{
+			return getPCMConfigByParentId(id);
+		}
+		else if (externalSystemType.isScriptedImportConversion())
+		{
+			return getScriptedImportConversionConfigByParentId(id);
+		}
+		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 	}
 
 	@NonNull
 	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
 	{
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
-
-		return externalSystemConfigRecord.getType();
+		return externalSystemRepository.getById(ExternalSystemId.ofRepoId(externalSystemConfigRecord.getExternalSystem_ID())).getType().getValue();
 	}
 
 	/**
@@ -192,30 +287,43 @@ public class ExternalSystemConfigRepo
 	{
 		final ImmutableList<ExternalSystemParentConfig> result;
 
-		switch (externalSystemType)
+		if (externalSystemType.isAlberta())
 		{
-			case Alberta:
-				result = getAllByTypeAlberta();
-				break;
-			case RabbitMQ:
-				result = getAllByTypeRabbitMQ();
-				break;
-			case WOO:
-				result = getAllByTypeWOO();
-				break;
-			case GRSSignum:
-				result = getAllByTypeGRS();
-				break;
-			case LeichUndMehl:
-				result = getAllByTypeLeichMehl();
-				break;
-			case Shopware6:
-			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+			result = getAllByTypeAlberta();
+		}
+		else if (externalSystemType.isRabbitMQ())
+		{
+			result = getAllByTypeRabbitMQ();
+		}
+		else if (externalSystemType.isWOO())
+		{
+			result = getAllByTypeWOO();
+		}
+		else if (externalSystemType.isGRSSignum())
+		{
+			result = getAllByTypeGRS();
+		}
+		else if (externalSystemType.isLeichUndMehl())
+		{
+			result = getAllByTypeLeichMehl();
+		}
+		else if (externalSystemType.isProCareManagement())
+		{
+			result = getAllByTypePCM();
+		}
+		else if (externalSystemType.isScriptedImportConversion())
+		{
+			result = getAllByScriptedImportConversion();
+		}
+		else if (externalSystemType.isShopware6() || externalSystemType.isOther())
+		{
+			throw new AdempiereException("Method not supported")
+					.appendParametersToMessage()
+					.setParameter("externalSystemType", externalSystemType);
+		}
+		else
+		{
+			throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
 
 		return result
@@ -223,16 +331,16 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
-		switch (config.getType())
+		if (config.getType().isShopware6())
 		{
-			case Shopware6:
-				storeShopware6Config(config);
-				break;
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", config.getType());
+			storeShopware6Config(config);
+		}
+		else
+		{
+			throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", config.getType());
 		}
 	}
 
@@ -241,15 +349,15 @@ public class ExternalSystemConfigRepo
 			@NonNull final ExternalSystemType externalSystemType,
 			@NonNull final ExternalSystemConfigQuery query)
 	{
-		switch (externalSystemType)
+		if (externalSystemType.isAlberta())
 		{
-			case Alberta:
-					return getAlbertaConfigByQuery(query);
-			case Shopware6:
-				return getShopware6ConfigByQuery(query);
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+			return getAlbertaConfigByQuery(query);
 		}
+		else if (externalSystemType.isShopware6())
+		{
+			return getShopware6ConfigByQuery(query);
+		}
+		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 	}
 
 	@NonNull
@@ -315,7 +423,7 @@ public class ExternalSystemConfigRepo
 				.map(this::buildExternalSystemRabbitMQConfig);
 	}
 
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemAlbertaConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemAlbertaConfigId id)
 	{
 		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Alberta.class);
 
@@ -346,8 +454,8 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemAlbertaConfig buildExternalSystemAlbertaConfig(final @NonNull I_ExternalSystem_Config_Alberta config,
-			@NonNull final ExternalSystemParentConfigId parentConfigId)
+	private ExternalSystemAlbertaConfig buildExternalSystemAlbertaConfig(@NonNull final I_ExternalSystem_Config_Alberta config,
+																		 @NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
 		return ExternalSystemAlbertaConfig.builder()
 				.id(ExternalSystemAlbertaConfigId.ofRepoId(config.getExternalSystem_Config_Alberta_ID()))
@@ -379,14 +487,14 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemRabbitMQConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemRabbitMQConfigId id)
 	{
 		final I_ExternalSystem_Config_RabbitMQ_HTTP config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 
 		return getExternalSystemParentConfig(config);
 	}
 
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemShopware6ConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemShopware6ConfigId id)
 	{
 		final I_ExternalSystem_Config_Shopware6 config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Shopware6.class);
 
@@ -492,7 +600,7 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return ExternalSystemParentConfig.builder()
-				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
+				.type(externalSystemRepository.getById(ExternalSystemId.ofRepoId(externalSystemConfigRecord.getExternalSystem_ID())).getType())
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
 				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))
@@ -501,7 +609,7 @@ public class ExternalSystemConfigRepo
 				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
 	}
 
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemOtherConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemOtherConfigId id)
 	{
 		final ExternalSystemOtherConfig childConfig = externalSystemOtherConfigRepository.getById(id);
 
@@ -522,7 +630,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemWooCommerceConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemWooCommerceConfigId id)
 	{
 		final I_ExternalSystem_Config_WooCommerce config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_WooCommerce.class);
 
@@ -581,7 +689,6 @@ public class ExternalSystemConfigRepo
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
-
 
 	@NonNull
 	private Optional<ExternalSystemParentConfig> getAlbertaConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
@@ -687,7 +794,7 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config record = InterfaceWrapperHelper.loadOrNew(config.getId(), I_ExternalSystem_Config.class);
 
 		record.setName(config.getName());
-		record.setType(config.getType().getCode());
+		record.setExternalSystem_ID(externalSystemRepository.getByType(config.getType()).getId().getRepoId());
 		record.setIsActive(config.isActive());
 
 		return record;
@@ -705,7 +812,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemGRSSignumConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemGRSSignumConfigId id)
 	{
 		final I_ExternalSystem_Config_GRSSignum config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_GRSSignum.class);
 
@@ -791,6 +898,32 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private List<TaxCategoryPCMMapping> getTaxCategoryPCMMappingList(@NonNull final ExternalSystemPCMConfigId externalSystemPCMConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement_TaxCategory.COLUMN_ExternalSystem_Config_ProCareManagement_ID, externalSystemPCMConfigId.getRepoId())
+				.create()
+				.stream()
+				.map(this::toTaxCategoryPCMMapping)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private TaxCategoryPCMMapping toTaxCategoryPCMMapping(@NonNull final I_ExternalSystem_Config_ProCareManagement_TaxCategory record)
+	{
+		final ImmutableSet<BigDecimal> taxRates = Arrays.stream(record.getTaxRates().split(","))
+				.map(StringUtils::toBigDecimalOrZero)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return TaxCategoryPCMMapping.builder()
+				.externalSystemPCMConfigId(ExternalSystemPCMConfigId.ofRepoId(record.getExternalSystem_Config_ProCareManagement_ID()))
+				.taxCategory(taxCategoryDAO.getTaxCategory(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID())))
+				.taxRates(taxRates)
+				.build();
+	}
+
+	@NonNull
 	private UOMShopwareMapping toUOMShopwareMapping(@NonNull final I_ExternalSystem_Config_Shopware6_UOM record)
 	{
 		return UOMShopwareMapping.builder()
@@ -801,7 +934,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemLeichMehlConfigId id)
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemLeichMehlConfigId id)
 	{
 		final I_ExternalSystem_Config_LeichMehl config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_LeichMehl.class);
 
@@ -867,5 +1000,175 @@ public class ExternalSystemConfigRepo
 				.pluType(PLUType.ofCode(configRecord.getCU_TU_PLU()))
 				.pluFileExportAuditEnabled(configRecord.isPluFileExportAuditEnabled())
 				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemPCMConfigId id)
+	{
+		final I_ExternalSystem_Config_ProCareManagement config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ProCareManagement.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemScriptedExportConversionConfigId id)
+	{
+		return getExternalSystemParentConfig(id);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemScriptedImportConversionConfigId id)
+	{
+		final I_ExternalSystem_Config_ScriptedImportConversion config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ScriptedImportConversion.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final ExternalSystemScriptedExportConversionConfigId id)
+	{
+		final ExternalSystemScriptedExportConversionConfig child = externalSystemScriptedExportConversionRepository.getById(id);
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ScriptedImportConversion config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemScriptedImportConversionConfig child = buildExternalSystemScriptedImportConversionConfig(config);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ProCareManagement config)
+	{
+		final ExternalSystemPCMConfig child = buildExternalSystemPCMConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemPCMConfig buildExternalSystemPCMConfig(@NonNull final I_ExternalSystem_Config_ProCareManagement config)
+	{
+		final ExternalSystemPCMConfigId pcmConfigId = ExternalSystemPCMConfigId.ofRepoId(config.getExternalSystem_Config_ProCareManagement_ID());
+
+		final PCMContentSourceLocalFile contentSourceLocalFile = getContentSourceLocalFileByConfigId(pcmConfigId).orElse(null);
+
+		final OrgId orgId = OrgId.ofRepoId(config.getAD_Org_ID());
+
+		// we need this to find the org for the orders, warehouses etc
+		Check.errorUnless(orgId.isRegular(), "AD_Org_ID of ExternalSystem_Config_ProCareManagement_ID={0} (ExternalSystem_Config_ID={1}) may not be 0!", config.getExternalSystem_Config_ProCareManagement_ID(), config.getExternalSystem_Config_ID());
+
+		return ExternalSystemPCMConfig.builder()
+				.id(pcmConfigId)
+				.orgId(orgId)
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.contentSourceLocalFile(contentSourceLocalFile)
+				.taxCategoryPCMMappingList(getTaxCategoryPCMMappingList(pcmConfigId))
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemScriptedImportConversionConfig buildExternalSystemScriptedImportConversionConfig(@NonNull final I_ExternalSystem_Config_ScriptedImportConversion config)
+	{
+		final ExternalSystemScriptedImportConversionConfigId scriptedImportConfigId = ExternalSystemScriptedImportConversionConfigId.ofRepoId(config.getExternalSystem_Config_ScriptedImportConversion_ID());
+
+		return ExternalSystemScriptedImportConversionConfig.builder()
+				.id(scriptedImportConfigId)
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.endpointName(config.getEndpointName())
+				.scriptIdentifier(config.getScriptIdentifier())
+				.userImportId(UserId.ofRepoId(config.getAD_User_Import_ID()))
+				.description(config.getDescription())
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoIdOrNull(config.getExternalSystem_Endpoint_ID() > 0 ? config.getExternalSystem_Endpoint_ID() : null))
+				.sftpPollingIntervalMs(config.getSftpPollingIntervalMs() > 0 ? config.getSftpPollingIntervalMs() : null)
+				.sftpProcessedDirectory(config.getSftpProcessedDirectory())
+				.sftpErrorDirectory(config.getSftpErrorDirectory())
+				.build();
+	}
+
+	@NonNull
+	private Optional<PCMContentSourceLocalFile> getContentSourceLocalFileByConfigId(@NonNull final ExternalSystemPCMConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement_LocalFile.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement_LocalFile.COLUMNNAME_ExternalSystem_Config_ProCareManagement_ID, configId.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement_LocalFile.class)
+				.map(PCMConfigMapper::buildContentSourceLocalFile);
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getPCMConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement.class)
+				.map(this::buildExternalSystemPCMConfig);
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getScriptedImportConversionConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ScriptedImportConversion.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.map(this::buildExternalSystemScriptedImportConversionConfig);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_ProCareManagement> getPCMConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement.class);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_ScriptedImportConversion> getScriptedImportConversionConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ScriptedImportConversion.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ScriptedImportConversion.class);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypePCM()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByScriptedImportConversion()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

@@ -25,8 +25,6 @@ package de.metas.bpartner;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.IOrgDAO;
@@ -57,7 +55,6 @@ public class BPartnerSupplierApprovalService
 	private final IOrgDAO orgDAO;
 	private final INotificationBL notificationBL;
 	private final IBPartnerDAO bpartnerDAO;
-	private final IMsgBL msgBL;
 
 	private static final AdMessageKey MSG_Partner_Lacks_SupplierApproval = AdMessageKey.of("C_BPartner_Lacks_Supplier_Approval");
 	private static final AdMessageKey MSG_Partner_SupplierApproval_ExpirationDate = AdMessageKey.of("C_BPartner_Supplier_Approval_WillExpire");
@@ -71,12 +68,11 @@ public class BPartnerSupplierApprovalService
 		this.orgDAO = Services.get(IOrgDAO.class);
 		this.notificationBL = Services.get(INotificationBL.class);
 		this.bpartnerDAO = Services.get(IBPartnerDAO.class);
-		this.msgBL = Services.get(IMsgBL.class);
 	}
 
 	public void validateSupplierApproval(@NonNull final BPartnerId partnerId,
-			@NonNull final LocalDate datePromised,
-			@NonNull final ImmutableList<String> supplierApprovalNorms)
+										 @NonNull final LocalDate datePromised,
+										 @NonNull final ImmutableList<String> supplierApprovalNorms)
 	{
 		if (Check.isEmpty(supplierApprovalNorms))
 		{
@@ -109,7 +105,7 @@ public class BPartnerSupplierApprovalService
 				partnerLacksSupplierApproval(partnerName, norm);
 			}
 			final LocalDate supplierApprovalDateToUse = TimeUtil.asLocalDate(supplierApprovalDate,
-																			 orgDAO.getTimeZone(OrgId.ofRepoId(bPartnerSupplierApproval.getAD_Org_ID())));
+					orgDAO.getTimeZone(OrgId.ofRepoId(bPartnerSupplierApproval.getAD_Org_ID())));
 
 			final int numberOfYearsForApproval = getNumberOfYearsForApproval(bPartnerSupplierApproval);
 
@@ -134,10 +130,7 @@ public class BPartnerSupplierApprovalService
 
 	private void partnerLacksSupplierApproval(final String partnerName, final String norm)
 	{
-		final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_Partner_Lacks_SupplierApproval,
-																	 partnerName,
-																	 norm);
-		throw new AdempiereException(msg).markAsUserValidationError();
+		throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerName, norm).markAsUserValidationError();
 	}
 
 	private int getNumberOfYearsForApproval(final I_C_BP_SupplierApproval bPartnerSupplierApproval)

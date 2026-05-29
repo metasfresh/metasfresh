@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -80,7 +80,7 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 		from(direct(GET_CUSTOMERS_ROUTE_ID))
 				.routeId(GET_CUSTOMERS_ROUTE_ID)
 				.log("Route invoked")
-				.streamCaching()
+				.streamCache("true")
 				.process(this::prepareContext).id(PREPARE_CONTEXT_PROCESSOR_ID)
 				.to(direct(PROCESS_CUSTOMER_PAGE_ROUTE_ID))
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))

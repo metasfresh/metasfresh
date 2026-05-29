@@ -142,6 +142,27 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Create Warning On Target.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateWarningOnTarget (boolean IsCreateWarningOnTarget);
+
+	/**
+	 * Get Create Warning On Target.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateWarningOnTarget();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_IsCreateWarningOnTarget = new ModelColumn<>(I_AD_BusinessRule.class, "IsCreateWarningOnTarget", null);
+	String COLUMNNAME_IsCreateWarningOnTarget = "IsCreateWarningOnTarget";
+
+	/**
 	 * Set Debug.
 	 *
 	 * <br>Type: YesNo
@@ -182,6 +203,27 @@ public interface I_AD_BusinessRule
 
 	ModelColumn<I_AD_BusinessRule, Object> COLUMN_Name = new ModelColumn<>(I_AD_BusinessRule.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeverity (java.lang.String Severity);
+
+	/**
+	 * Get Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSeverity();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_Severity = new ModelColumn<>(I_AD_BusinessRule.class, "Severity", null);
+	String COLUMNNAME_Severity = "Severity";
 
 	/**
 	 * Get Updated.
@@ -234,23 +276,22 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_Validation_Rule_ID = "Validation_Rule_ID";
 
 	/**
-	 * Set Warning Message.
+	 * Set Warning Message ID.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setWarningMessage (@Nullable java.lang.String WarningMessage);
+	void setWarning_Message_ID (int Warning_Message_ID);
 
 	/**
-	 * Get Warning Message.
+	 * Get Warning Message ID.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getWarningMessage();
+	int getWarning_Message_ID();
 
-	ModelColumn<I_AD_BusinessRule, Object> COLUMN_WarningMessage = new ModelColumn<>(I_AD_BusinessRule.class, "WarningMessage", null);
-	String COLUMNNAME_WarningMessage = "WarningMessage";
+	String COLUMNNAME_Warning_Message_ID = "Warning_Message_ID";
 }

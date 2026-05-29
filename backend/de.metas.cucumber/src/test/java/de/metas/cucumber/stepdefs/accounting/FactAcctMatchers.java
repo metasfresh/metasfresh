@@ -61,12 +61,7 @@ public class FactAcctMatchers
 	private Table toTabular()
 	{
 		final Table table = new Table();
-		// Table.addRows(Table) not available on soft_panda_hotfix
-		documentMatchers.forEach(docMatcher -> {
-			final de.metas.util.text.tabular.Row row = new de.metas.util.text.tabular.Row();
-			row.put("matcher", docMatcher.toString());
-			table.addRow(row);
-		});
+		documentMatchers.forEach(docMatcher -> table.addRows(docMatcher.toTabular()));
 		table.updateHeaderFromRows();
 		return table;
 

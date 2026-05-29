@@ -98,6 +98,27 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow issuing any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowIssuingAnyHU (boolean IsAllowIssuingAnyHU);
+
+	/**
+	 * Get Allow issuing any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowIssuingAnyHU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowIssuingAnyHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowIssuingAnyHU", null);
+	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
+
+	/**
 	 * Set Scan Resource QR Code.
 	 * User needs to scan the resource QR code first
 	 *
@@ -140,6 +161,27 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_MobileUI_MFG_Config_ID = new ModelColumn<>(I_MobileUI_MFG_Config.class, "MobileUI_MFG_Config_ID", null);
 	String COLUMNNAME_MobileUI_MFG_Config_ID = "MobileUI_MFG_Config_ID";
+
+	/**
+	 * Set Receive Unit Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReceiveUnitType (java.lang.String ReceiveUnitType);
+
+	/**
+	 * Get Receive Unit Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getReceiveUnitType();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_ReceiveUnitType = new ModelColumn<>(I_MobileUI_MFG_Config.class, "ReceiveUnitType", null);
+	String COLUMNNAME_ReceiveUnitType = "ReceiveUnitType";
 
 	/**
 	 * Get Updated.

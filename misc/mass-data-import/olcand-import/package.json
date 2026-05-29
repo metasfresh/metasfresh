@@ -1,0 +1,12 @@
+{
+  "name": "olcand-import",
+  "version": "1.0.0",
+  "description": "A Node.js project to read order line candidates data from a file and send it to an API.",
+  "main": "importOlCands.js",
+  "scripts": {
+    "start": "node importOlCands.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

@@ -1,23 +1,21 @@
 package de.metas.event.jms;
 
+import de.metas.event.Event;
+import de.metas.event.EventBusConfig;
+import de.metas.event.remote.JacksonJsonEventSerializer;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import de.metas.event.Event;
-import de.metas.event.EventBusConfig;
-import de.metas.event.remote.JacksonJsonEventSerializer;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -43,19 +41,16 @@ import de.metas.event.remote.JacksonJsonEventSerializer;
 
 public class JacksonJsonEventSerializerTest
 {
-	private JacksonJsonEventSerializer jsonSerializer = JacksonJsonEventSerializer.instance;
+	private final JacksonJsonEventSerializer jsonSerializer = JacksonJsonEventSerializer.instance;
 
-	@Rule
-	public TestName testName = new TestName();
-
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init(); // needed for ITableRecordReference
 	}
 
 	@Test
-	public void test1()
+	public void testSerializeUnserialize()
 	{
 		final Event event = Event.builder()
 				.shallBeLogged()
@@ -81,9 +76,8 @@ public class JacksonJsonEventSerializerTest
 		testSerializeUnserialize(event);
 	}
 
-	private final void testSerializeUnserialize(final Event event)
+	private void testSerializeUnserialize(final Event event)
 	{
-		System.out.println("================ TEST: " + testName.getMethodName() + " ===============================================");
 		System.out.println("event=" + event);
 
 		final String jsonEvent = jsonSerializer.toString(event);
@@ -95,8 +89,9 @@ public class JacksonJsonEventSerializerTest
 		final String jsonEventRestored = jsonSerializer.toString(eventRestored);
 		System.out.println("json event restored=" + jsonEventRestored);
 
-		Assert.assertEquals(event, eventRestored);
-		Assert.assertEquals("Invalid SenderId", EventBusConfig.getSenderId(), eventRestored.getSenderId());
+		// assertThat(eventRestored).as("eventRestored").usingRecursiveComparison().isEqualTo(event); // because of TableRecordReference
+		assertThat(eventRestored).as("eventRestored").isEqualTo(event);
+		assertThat(eventRestored.getSenderId()).as("senderId").isEqualTo(EventBusConfig.getSenderId());
 	}
 
 }

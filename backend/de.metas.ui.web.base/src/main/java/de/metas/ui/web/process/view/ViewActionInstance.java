@@ -1,7 +1,6 @@
 package de.metas.ui.web.process.view;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.process.ProcessExecutionContext;
@@ -21,6 +20,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

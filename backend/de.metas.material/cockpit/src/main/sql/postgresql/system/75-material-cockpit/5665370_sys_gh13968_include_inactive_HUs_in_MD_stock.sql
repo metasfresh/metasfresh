@@ -1,5 +1,5 @@
-DROP VIEW IF EXISTS MD_Stock_From_HUs_V
-;
+--DROP VIEW IF EXISTS MD_Stock_From_HUs_V
+--;
 
 CREATE OR REPLACE VIEW MD_Stock_From_HUs_V AS
 SELECT COALESCE(wh.AD_Client_ID, hu_agg.AD_Client_ID) AS AD_Client_ID,

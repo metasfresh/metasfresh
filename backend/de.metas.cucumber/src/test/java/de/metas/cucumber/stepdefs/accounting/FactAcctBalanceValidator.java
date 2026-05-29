@@ -62,7 +62,7 @@ public class FactAcctBalanceValidator
 	private static List<FactAcctQuery> toFactAcctQueryList(final Set<TableRecordReference> documentRefs)
 	{
 		return documentRefs.stream()
-				.map(recordRef -> FactAcctQuery.builder().tableName(recordRef.getTableName()).recordId(recordRef.getRecord_ID()).build())
+				.map(recordRef -> FactAcctQuery.builder().recordRef(recordRef).build())
 				.collect(ImmutableList.toImmutableList());
 	}
 

@@ -5,17 +5,18 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
@@ -23,16 +24,16 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingJobStepUnpickInfo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.PlainContextAware;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -44,15 +45,15 @@ import java.util.stream.Stream;
 public class PickingJobUnPickCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
-	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final PickingJobHUService huService;
 
 	//
 	// Params
 	@NonNull private final PickingJob initialPickingJob;
+	@NonNull private final PickingJobLineId lineId;
 	@NonNull private final ImmutableListMultimap<PickingJobStepId, StepUnpickInstructions> unpickInstructionsMap;
 	@Nullable private final HUQRCode unpickToHU;
 
@@ -62,20 +63,24 @@ public class PickingJobUnPickCommand
 
 	@Builder
 	private PickingJobUnPickCommand(
+			final @NonNull PickingJobShipmentScheduleService shipmentScheduleService,
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
-			final @NonNull HUQRCodesService huQRCodesService,
+			final @NonNull PickingJobHUService huService,
 			//
 			final @NonNull PickingJob pickingJob,
+			final @NonNull PickingJobLineId lineId,
 			final @Nullable PickingJobStepId onlyPickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey onlyPickFromKey,
 			final @Nullable HUQRCode unpickToHU)
 	{
+		this.shipmentScheduleService = shipmentScheduleService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
-		this.huQRCodesService = huQRCodesService;
+		this.huService = huService;
 
 		this.initialPickingJob = pickingJob;
+		this.lineId = lineId;
 
 		this.unpickToHU = unpickToHU;
 
@@ -169,7 +174,7 @@ public class PickingJobUnPickCommand
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getShipmentScheduleId());
+		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
 		changeHUStatusFromPickedToActive(topLevelHUs);
 
 		moveToTargetHUIfNeeded(huIdAndQRCodeList);
@@ -188,9 +193,9 @@ public class PickingJobUnPickCommand
 		}
 
 		MoveHUCommand.builder()
-				.huQRCodesService(huQRCodesService)
-				.husToMove(huIdAndQRCodeList)
-				.targetQRCode(unpickToHU.toGlobalQRCode())
+				.huQRCodesService(huService.getHuQRCodesService())
+				.requestItems(huIdAndQRCodeList.stream().map(MoveHURequestItem::ofHUIdAndQRCode).collect(ImmutableSet.toImmutableSet()))
+				.targetQRCode(unpickToHU.toScannedCode())
 				.build()
 				.execute();
 	}
@@ -198,7 +203,7 @@ public class PickingJobUnPickCommand
 	private List<I_M_HU> extractToTopLevelHUs(@NonNull final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)
 	{
 		final Set<HuId> topLevelHUIds = newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
-		return handlingUnitsBL.getByIds(topLevelHUIds);
+		return huService.getByIds(topLevelHUIds);
 	}
 
 	private static ImmutableSet<HUIdAndQRCode> extractHuIdAndQRCodes(final @NonNull List<PickingJobStepPickedToHU> pickedToHUs)
@@ -218,45 +223,73 @@ public class PickingJobUnPickCommand
 	{
 		if (X_M_HU.HUSTATUS_Picked.equals(topLevelHU.getHUStatus()))
 		{
-			handlingUnitsBL.setHUStatus(topLevelHU, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Active);
+			huService.setHUStatusActive(topLevelHU);
 		}
 	}
 
 	private HUTransformService newHUTransformService()
 	{
 		return HUTransformService.builder()
-				.huQRCodesService(huQRCodesService)
+				.huQRCodesService(huService.getHuQRCodesService())
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
 				.build();
+	}
+
+	/**
+	 * Collects all reserved VHU IDs from all steps being un-picked into a single set.
+	 * This intentionally gives the {@link de.metas.handlingunits.allocation.transfer.HUTransformService}
+	 * wider permission than strictly necessary (i.e. all steps rather than just the current one),
+	 * because the same service instance is reused for the entire un-pick batch and all steps
+	 * are being reversed in the same transaction.
+	 * <p>
+	 * The resulting {@link HUTransformService} instance is single-use: it is created by
+	 * {@link #newHUTransformService()} for this un-pick batch only and must not be reused
+	 * for unrelated operations, as it would carry over the wider VHU exemption.
+	 */
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return unpickInstructionsMap.keySet().stream()
+				.map(HUReservationDocRef::ofPickingJobStepId)
+				.flatMap(docRef -> huService.getVHUIdsByDocumentRef(docRef).stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
 	private PickingJob reinitializePickingTargetIfDestroyed(final PickingJob pickingJob)
 	{
-		final LUPickingTarget updatedLUPickingTarget = pickingJob
-				.getLuPickTarget()
-				.map(this::reinitializeLUPickingTarget)
-				.orElse(null);
-
-		return pickingJob
-				.withLuPickTarget(updatedLUPickingTarget);
+		if (isLineLevelPickTarget(pickingJob))
+		{
+			return pickingJob.withLuPickingTarget(lineId, this::reinitializeLUPickingTarget);
+		}
+		else
+		{
+			return pickingJob.withLuPickingTarget(null, this::reinitializeLUPickingTarget);
+		}
 	}
 
-	@NonNull
-	private LUPickingTarget reinitializeLUPickingTarget(@NonNull final LUPickingTarget pickingTarget)
+	private boolean isLineLevelPickTarget(final PickingJob pickingJob) {return pickingJob.isLineLevelPickTarget();}
+
+	@Nullable
+	private LUPickingTarget reinitializeLUPickingTarget(@Nullable final LUPickingTarget luPickingTarget)
 	{
-		final HuId luId = pickingTarget.getLuId();
+		if (luPickingTarget == null)
+		{
+			return null;
+		}
+
+		final HuId luId = luPickingTarget.getLuId();
 		if (luId == null)
 		{
-			return pickingTarget;
+			return luPickingTarget;
 		}
 
-		final I_M_HU lu = handlingUnitsBL.getById(luId);
-		if (!handlingUnitsBL.isDestroyedOrEmptyStorage(lu))
+		final I_M_HU lu = huService.getById(luId);
+		if (!huService.isDestroyedOrEmptyStorage(lu))
 		{
-			return pickingTarget;
+			return luPickingTarget;
 		}
 
-		final HuPackingInstructionsIdAndCaption luPI = handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(lu);
+		final HuPackingInstructionsIdAndCaption luPI = huService.getEffectivePackingInstructionsIdAndCaption(lu);
 		return LUPickingTarget.ofPackingInstructions(luPI);
 	}
 

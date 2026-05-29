@@ -27,6 +27,7 @@ package de.metas.util;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -48,39 +49,24 @@ import java.util.zip.ZipOutputStream;
 @UtilityClass
 public final class FileUtil
 {
-	public static void copy(final File from, final OutputStream out) throws IOException
+	@Deprecated
+	public static void copy(@NonNull final File from, @NonNull final OutputStream out) throws IOException
 	{
-		try (final InputStream in = new FileInputStream(from))
-		{
-			copy(in, out);
-		}
+		de.metas.common.util.FileUtil.copy(from, out);
 	}
 
-	public static void copy(final InputStream in, final File to) throws IOException
+	@Deprecated
+	public static void copy(@NonNull final InputStream in, @NonNull final OutputStream out) throws IOException
 	{
-		try (final FileOutputStream out = new FileOutputStream(to))
-		{
-			copy(in, out);
-		}
+		de.metas.common.util.FileUtil.copy(in, out);
 	}
 
-	public static void copy(final InputStream in, final OutputStream out) throws IOException
-	{
-		final byte[] buf = new byte[4096];
-		int len;
-		while ((len = in.read(buf)) > 0)
-		{
-			out.write(buf, 0, len);
-		}
-		out.flush();
-	}
-	
 	public static String getTempDir()
 	{
 		return System.getProperty("java.io.tmpdir");
 	}
 
-	public static File createTempFile(final String fileExtension, final String title)
+	public static File createTempFile(@NonNull final String fileExtension, @NonNull final String title)
 	{
 		final String path = getTempDir();
 		final String prefix = makeFilePrefix(title);
@@ -97,9 +83,9 @@ public final class FileUtil
 		return file;
 	}
 
-	private static String makeFilePrefix(final String name)
+	private static String makeFilePrefix(@Nullable final String name)
 	{
-		if (name == null || name.trim().length() == 0)
+		if (Check.isBlank(name))
 		{
 			return "Report_";
 		}
@@ -129,10 +115,11 @@ public final class FileUtil
 	/**
 	 * @return file extension (without the dot) or null if the file does not have an extension.
 	 */
+	@Contract("null -> null")
 	@Nullable
-	public static String getFileExtension(final String filename)
+	public static String getFileExtension(@Nullable final String filename)
 	{
-		if (filename == null)
+		if (Check.isBlank(filename))
 		{
 			return null;
 		}
@@ -146,9 +133,11 @@ public final class FileUtil
 		return null;
 	}
 
-	public static String getFileBaseName(final String filename)
+	@Contract("null -> null")
+	@Nullable
+	public static String getFileBaseName(@Nullable final String filename)
 	{
-		if (filename == null)
+		if (Check.isBlank(filename))
 		{
 			return null;
 		}
@@ -235,40 +224,16 @@ public final class FileUtil
 
 	private static final String FILENAME_ILLEGAL_CHARACTERS = new String(new char[] { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' });
 
-	public static String stripIllegalCharacters(String filename)
+	@NonNull
+	public static String stripIllegalCharacters(@Nullable final String filename)
 	{
-		if (filename == null)
-		{
-			return "";
-		}
-
-		if (filename.length() == 0)
-		{
-			return filename;
-		}
-
-		// Strip white spaces from filename
-		filename = filename.trim();
-		if (filename.length() == 0)
-		{
-			return filename;
-		}
-
-		final StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < filename.length(); i++)
-		{
-			final char ch = filename.charAt(i);
-			if (FILENAME_ILLEGAL_CHARACTERS.indexOf(ch) >= 0)
-			{
-				continue;
-			}
-			sb.append(ch);
-		}
-
-		return sb.toString();
+		return de.metas.common.util.FileUtil.stripIllegalCharacters(filename);
 	}
 
-	public static Optional<Path> findNotExistingFile(@NonNull Path directory, @NonNull final String desiredFilename, final int tries)
+	public static Optional<Path> findNotExistingFile(
+			@NonNull final Path directory,
+			@NonNull final String desiredFilename,
+			final int tries)
 	{
 		final String fileBaseNameInitial = getFileBaseName(desiredFilename);
 		final String ext = StringUtils.trimBlankToNull(getFileExtension(desiredFilename));

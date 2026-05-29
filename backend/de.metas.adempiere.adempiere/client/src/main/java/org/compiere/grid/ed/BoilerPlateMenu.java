@@ -51,13 +51,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
-import de.metas.letters.model.I_AD_Column;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;

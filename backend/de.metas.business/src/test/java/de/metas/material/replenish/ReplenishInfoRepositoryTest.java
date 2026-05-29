@@ -62,12 +62,62 @@ class ReplenishInfoRepositoryTest
 
 		// when
 		final ReplenishInfo replenishInfo = new ReplenishInfoRepository()
-				.getBy(
+				.getBy(ReplenishInfo.Identifier.of(
 						WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()),
-						ProductId.ofRepoId(productRecord.getM_Product_ID()));
+						ProductId.ofRepoId(productRecord.getM_Product_ID())));
 
 		// then
 		assertThat(replenishInfo.getMin().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
 		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isEqualByComparingTo("20");
+	}
+
+	@Test
+	void getBy_NullMax()
+	{
+		// given
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", BusinessTestHelper.createUomKg());
+		final I_M_Warehouse warehouseRecord = BusinessTestHelper.createWarehouse("warehouse");
+
+		final I_M_Replenish replenishRecord = newInstance(I_M_Replenish.class);
+		replenishRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		replenishRecord.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
+		replenishRecord.setLevel_Min(new BigDecimal("10"));
+		replenishRecord.setLevel_Max(null);
+		saveRecord(replenishRecord);
+
+		// when
+		final ReplenishInfo replenishInfo = new ReplenishInfoRepository()
+				.getBy(ReplenishInfo.Identifier.of(
+						WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()),
+						ProductId.ofRepoId(productRecord.getM_Product_ID())));
+
+		// then
+		assertThat(replenishInfo.getMin().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
+		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
+	}
+
+	@Test
+	void getBy_MinEqualsMax()
+	{
+		// given
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", BusinessTestHelper.createUomKg());
+		final I_M_Warehouse warehouseRecord = BusinessTestHelper.createWarehouse("warehouse");
+
+		final I_M_Replenish replenishRecord = newInstance(I_M_Replenish.class);
+		replenishRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		replenishRecord.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
+		replenishRecord.setLevel_Min(new BigDecimal("10"));
+		replenishRecord.setLevel_Max(new BigDecimal("10"));
+		saveRecord(replenishRecord);
+
+		// when
+		final ReplenishInfo replenishInfo = new ReplenishInfoRepository()
+				.getBy(ReplenishInfo.Identifier.of(
+						WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()),
+						ProductId.ofRepoId(productRecord.getM_Product_ID())));
+
+		// then
+		assertThat(replenishInfo.getMin().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
+		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
 	}
 }

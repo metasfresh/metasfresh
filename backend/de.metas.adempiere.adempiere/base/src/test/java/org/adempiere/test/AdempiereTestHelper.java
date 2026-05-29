@@ -1,9 +1,6 @@
 package org.adempiere.test;
 
 import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
@@ -57,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -191,7 +187,7 @@ public class AdempiereTestHelper
 		CacheMgt.get().reset();
 
 		// Logging
-		LogManager.setLevel(Level.WARN);
+		LogManager.setLevel(Level.INFO); // INFO is a decent level to not flood the test console but to understand what was initialized
 		//noinspection resource
 		Loggables.temporarySetLoggable(Loggables.console(">>> "));
 
@@ -248,7 +244,19 @@ public class AdempiereTestHelper
 
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
 		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
+		allOrgs.setValue("0");
+		allOrgs.setName("*");
 		save(allOrgs);
+
+		// Mirror production: AD_Org_ID=0 has an AD_OrgInfo row. TimeZone left unset — callers fall back to SystemTime.zoneId().
+		// Use an explicit positive seed ID (same trick as AD_System_ID=1234 above) so the POJO save path skips nextId()
+		// — otherwise every test's auto-allocated IDs shift by 1 and ~80 snapshot files break en masse. A positive seed
+		// also stays valid once a typed OrgInfoId.ofRepoId wrapper is introduced (typed IDs usually reject 0).
+		final I_AD_OrgInfo allOrgsInfo = newInstance(I_AD_OrgInfo.class);
+		allOrgsInfo.setAD_OrgInfo_ID(1234);
+		allOrgsInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
+		allOrgsInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		save(allOrgsInfo);
 
 		final org.compiere.model.I_AD_User systemUser = newInstance(I_AD_User.class);
 		systemUser.setAD_User_ID(UserId.SYSTEM.getRepoId());
@@ -311,7 +319,7 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
-	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
+	public void onCleanup(@NonNull final String name, @NonNull final Runnable runnable)
 	{
 		final CleanupTask task = new CleanupTask(name, runnable);
 		cleanupTasks.add(task);

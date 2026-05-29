@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
 import lombok.NonNull;

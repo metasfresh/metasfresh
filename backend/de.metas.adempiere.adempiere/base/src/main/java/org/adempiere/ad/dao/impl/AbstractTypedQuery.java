@@ -85,8 +85,9 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		final ET model = firstOnly(clazz, throwExIfMoreThenOneFound);
 		if (model == null)
 		{
-			throw new DBException("@NotFound@ @" + getTableName() + "@"
-					+ "\n\n@Query@: " + this);
+			throw new DBException("No records found for query")
+					.setParameter("query", this)
+					.appendParametersToMessage();
 		}
 		return model;
 	}
@@ -165,6 +166,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		final List<ET> list = list(modelClass);
 		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
+
 	@Override
 	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
 	{

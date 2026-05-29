@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonPickingJobTest
 {
@@ -50,12 +51,16 @@ class JsonPickingJobTest
 
 	void testSerializeDeserialize(final JsonPickingJob obj) throws JsonProcessingException
 	{
+		System.out.println("-----------------------------------------------");
 		System.out.println("Object: " + obj);
+		System.out.println("-----------------------------------------------");
 
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 		final String jsonString = jsonObjectMapper.writeValueAsString(obj);
-		System.out.println("JSON: " + obj);
+		System.out.println("-----------------------------------------------");
+		System.out.println("JSON: " + jsonString);
+		System.out.println("-----------------------------------------------");
 
 		final JsonPickingJob objDeserialized = jsonObjectMapper.readValue(jsonString, obj.getClass());
 		assertThat(objDeserialized).isEqualTo(obj);
@@ -66,6 +71,7 @@ class JsonPickingJobTest
 	void testSerializeDeserialize() throws JsonProcessingException
 	{
 		testSerializeDeserialize(JsonPickingJob.builder()
+				.aggregationType(PickingJobAggregationType.SALES_ORDER)
 				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.lines(ImmutableList.of(
 						randomJsonPickingJobLine(),
@@ -77,6 +83,15 @@ class JsonPickingJobTest
 						randomJsonPickFromAlternative(),
 						randomJsonPickFromAlternative()
 				))
+				.qtyRejectedReasons(JsonRejectReasonsList.builder()
+						.reasons(ImmutableList.of(
+								JsonRejectReason.builder().key("key1").caption("reason1").build(),
+								JsonRejectReason.builder().key("key2").caption("reason2").build()
+						))
+						.build())
+				.allowSkippingRejectedReason(true)
+				.showPromptWhenOverPicking(true)
+				.completeJobAutomatically(true)
 				.build());
 	}
 
@@ -131,6 +146,7 @@ class JsonPickingJobTest
 				.pickingStepId("pickingStepId_" + UUID.randomUUID())
 				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.productId("productId")
+				.productNo("productNo")
 				.productName("productName")
 				.uom("uom")
 				.qtyToPick(new BigDecimal("666.777"))

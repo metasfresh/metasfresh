@@ -2,9 +2,6 @@ package de.metas.vertical.pharma.msv3.protocol.order;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -12,6 +9,9 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ public class OrderCreateRequestTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = new ObjectMapper();
@@ -73,7 +73,7 @@ public class OrderCreateRequestTest
 	{
 		final String json = jsonObjectMapper.writeValueAsString(request);
 		final OrderCreateRequest request2 = jsonObjectMapper.readValue(json, OrderCreateRequest.class);
-		Assert.assertEquals(request, request2);
+		Assertions.assertEquals(request, request2);
 	}
 
 }

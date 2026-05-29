@@ -1,6 +1,14 @@
 import { getLinesArrayFromActivity } from '../reducers/wfProcesses';
 import * as CompleteStatus from '../constants/CompleteStatus';
 
+export const isUserEditable = ({ activity }) => activity?.dataStored?.isUserEditable ?? false;
+
+export const isLineLevelPickTarget = ({ activity }) => {
+  return activity?.dataStored?.isLineLevelPickTarget;
+};
+
+export const getCurrentPickFromHUQRCode = ({ activity }) => activity.dataStored?.pickFromHU?.code;
+
 export const getPickFromForStep = ({ stepProps, altStepId }) => {
   return altStepId ? stepProps.pickFromAlternatives[altStepId] : stepProps.mainPickFrom;
 };
@@ -21,18 +29,13 @@ export const getQtyToPickRemainingForLine = ({ line }) => {
   return line?.qtyRemainingToPick ?? 0;
 };
 
-export const getNextEligibleLineToPick = ({ activity, productId, excludeLineId }) => {
-  console.group('getNextEligibleLineToPick', { activity, productId, excludeLineId });
+export const getNextEligibleLineToPick = ({ activity, excludeLineId }) => {
+  console.group('getNextEligibleLineToPick', { activity, excludeLineId });
   let lines = getLinesArrayFromActivity(activity);
   console.log('all activity lines', { lines });
 
   lines = lines.filter((line) => isLineNotCompleted({ line }) && isAllowPickingAnyHUForLine({ line }));
   console.log('lines not completed', { lines });
-
-  if (lines.length > 0 && productId) {
-    lines = lines.filter((line) => String(line.productId) === String(productId));
-    console.log('lines matching product', { lines, productId });
-  }
 
   if (lines.length > 0 && excludeLineId) {
     lines = lines.filter((line) => String(line.pickingLineId) !== String(excludeLineId));
@@ -44,7 +47,12 @@ export const getNextEligibleLineToPick = ({ activity, productId, excludeLineId }
   return lines.length > 0 ? lines[0] : null;
 };
 
-export const isAllowPickingAnyHUForActivity = ({ activity }) => {
+export const isAllowPickingAnyHUOnHeaderLevel = ({ activity }) => {
+  if (isLineLevelPickTarget({ activity })) {
+    // i.e. don't show the Scan HU button above the lines because it is supposed to be scanned by a previous activity
+    return false;
+  }
+
   return getLinesArrayFromActivity(activity).some((line) => isAllowPickingAnyHUForLine({ line }));
 };
 
@@ -53,3 +61,7 @@ export const isAllowPickingAnyHUForLine = ({ line }) => {
 };
 
 export const isLineNotCompleted = ({ line }) => line.completeStatus !== CompleteStatus.COMPLETED;
+
+export const isCatchWeight = ({ line }) => {
+  return !!line.catchWeightUOM;
+};

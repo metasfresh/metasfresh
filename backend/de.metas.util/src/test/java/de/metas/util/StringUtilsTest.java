@@ -1,8 +1,8 @@
 package de.metas.util;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.util.StringUtils.TruncateAt;
 import de.metas.common.util.pair.IPair;
+import de.metas.util.StringUtils.TruncateAt;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -142,7 +142,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull_2()
 	{
-		final IPair<String, String> result =  de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
+		final IPair<String, String> result = de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
@@ -152,7 +152,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull_3()
 	{
-		final IPair<String, String> result =  de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
+		final IPair<String, String> result = de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
@@ -236,5 +236,44 @@ public class StringUtilsTest
 
 		@Test
 		void nonBlank() {assertThat(StringUtils.trimBlankToNullAndMap("   \taaa\r\n   ", this::append2)).contains("aaa2");}
+	}
+
+	@Nested
+	class ucFirst
+	{
+		void assertNoChange(final String str) {assertThat(StringUtils.ucFirst(str)).isSameAs(str);}
+
+		@Test
+		void nullValue() {assertThat(StringUtils.ucFirst(null)).isNull();}
+
+		@Test
+		void empty() {assertThat(StringUtils.ucFirst("")).isEmpty();}
+
+		@Test
+		void blank()
+		{
+			assertNoChange("   ");
+		}
+
+		@Test
+		void lowerCaseFirstLetter()
+		{
+			assertThat(StringUtils.ucFirst("abc")).isEqualTo("Abc");
+			assertThat(StringUtils.ucFirst("ăbc")).isEqualTo("Ăbc");
+		}
+
+		@Test
+		void upperCaseFirstLetter()
+		{
+			assertNoChange("Abc");
+			assertNoChange("Ăbc");
+		}
+
+		@Test
+		void startingWithNonLetter()
+		{
+			assertNoChange("1abc");
+			assertNoChange("1Ăbc");
+		}
 	}
 }

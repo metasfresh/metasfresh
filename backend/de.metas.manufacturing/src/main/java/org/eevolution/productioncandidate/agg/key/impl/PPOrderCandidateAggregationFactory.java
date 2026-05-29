@@ -22,8 +22,10 @@
 
 package org.eevolution.productioncandidate.agg.key.impl;
 
+import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
+import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -33,7 +35,10 @@ import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
+
+import static de.metas.aggregation.model.X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header;
 
 @Component
 public class PPOrderCandidateAggregationFactory
@@ -45,11 +50,23 @@ public class PPOrderCandidateAggregationFactory
 	{
 		return Optional.ofNullable(ProductPlanningId.ofRepoIdOrNull(candidate.getPP_Product_Planning_ID()))
 				.map(productPlanningsRepo::getById)
-				.map(ProductPlanning::getManufacturingAggregationId)
-				.filter(aggregationId -> aggregationId > 0)
-				.map(aggregationId -> aggregationFactory.getAggregationKeyBuilder(Env.getCtx(), I_PP_Order_Candidate.class, aggregationId))
+				.map(this::getAggregationKeyBuilderOrDefault)
 				.map(keyBuilder -> keyBuilder.buildAggregationKey(candidate))
 				.map(AggregationKey::getAggregationKeyString)
 				.orElseGet(() -> PPOrderCandidateHeaderAggregationKeyHelper.generateHeaderAggregationKey(candidate));
+	}
+
+	@Nullable
+	private IAggregationKeyBuilder<I_PP_Order_Candidate> getAggregationKeyBuilderOrDefault(@NonNull final ProductPlanning productPlanning)
+	{
+		final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(productPlanning.getManufacturingAggregationId());
+		if (aggregationId != null)
+		{
+			return aggregationFactory.getAggregationKeyBuilder(Env.getCtx(), I_PP_Order_Candidate.class, aggregationId);
+		}
+		else
+		{
+			return aggregationFactory.getDefaultAggregationKeyBuilderOrNull(Env.getCtx(), I_PP_Order_Candidate.class, true, AGGREGATIONUSAGELEVEL_Header);
+		}
 	}
 }

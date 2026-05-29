@@ -15,7 +15,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -246,7 +245,7 @@ public class Invoice440To450RequestConversionServiceTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		Assert.assertTrue(r.isValid());
+		Assertions.assertTrue(r.isValid());
 	}
 
 	private void assertXmlIsValid450(@NonNull final InputStream inputStream)
@@ -260,6 +259,6 @@ public class Invoice440To450RequestConversionServiceTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		Assert.assertTrue(r.isValid());
+		Assertions.assertTrue(r.isValid());
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.ui.web.pattribute;
 
-import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.pattribute.json.JSONASIDocument;
@@ -20,9 +19,12 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,26 +60,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
  * #L%
  */
 
+@ToString(of = { "data", "completed" })
 public class ASIDocument
 {
-	private static final transient Logger logger = LogManager.getLogger(ASIDocument.class);
+	private static final Logger logger = LogManager.getLogger(ASIDocument.class);
+	static final String DYNATTR_ASIDescriptor = "ASIDescriptor";
+	static final String DYNATTR_ASIEventType = "ASIDescriptor.ASIEventType";
 
-	private final ASIDescriptor descriptor;
-	private final Document data;
+	@NonNull private final ASIDescriptor descriptor;
+	@NonNull private final Document data;
 
 	// State
-	private final ReentrantReadWriteLock _lock;
-	private boolean completed;
+	@NonNull private final ReentrantReadWriteLock lock;
+	@Getter private boolean completed;
 
-	/* package */ ASIDocument(final ASIDescriptor descriptor, final Document data)
+	/* package */ ASIDocument(@NonNull final ASIDescriptor descriptor, @NonNull final Document data)
 	{
-		Check.assumeNotNull(descriptor, "Parameter descriptor is not null");
-		Check.assumeNotNull(data, "Parameter data is not null");
 		this.descriptor = descriptor;
 		this.data = data;
-
-		_lock = new ReentrantReadWriteLock();
-		completed = false;
+		this.lock = new ReentrantReadWriteLock();
+		this.completed = false;
 	}
 
 	/**
@@ -85,20 +87,33 @@ public class ASIDocument
 	 */
 	private ASIDocument(final ASIDocument asiDocument, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		descriptor = asiDocument.descriptor;
-		data = asiDocument.data.copy(copyMode, changesCollector);
-
-		_lock = asiDocument._lock; // always share
-		completed = asiDocument.completed;
+		this.descriptor = asiDocument.descriptor;
+		this.data = asiDocument.data.copy(copyMode, changesCollector);
+		this.lock = asiDocument.lock; // always share
+		this.completed = asiDocument.completed;
 	}
 
-	@Override
-	public String toString()
+	@NonNull
+	public static ASIDescriptor extractASIDescriptor(final ICalloutField calloutField)
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("data", data)
-				.add("completed", completed)
-				.toString();
+		final Document document = calloutField.getModel(Document.class);
+		final ASIDescriptor asiDescriptor = document.getDynAttribute(DYNATTR_ASIDescriptor);
+		if (asiDescriptor == null)
+		{
+			throw new AdempiereException("Cannot extract " + ASIDescriptor.class + " from " + document + "/" + calloutField);
+		}
+		return asiDescriptor;
+	}
+
+	public static ASIEventType extractASIEventType(final ICalloutField calloutField)
+	{
+		final Document document = calloutField.getModel(Document.class);
+		final ASIEventType eventType = document.getDynAttribute(DYNATTR_ASIEventType);
+		if (eventType == null)
+		{
+			throw new AdempiereException("Cannot extract " + ASIEventType.class + " from " + document + "/" + calloutField);
+		}
+		return eventType;
 	}
 
 	private void assertNotCompleted()
@@ -112,7 +127,7 @@ public class ASIDocument
 	IAutoCloseable lockForReading()
 	{
 		// assume _lock is not null
-		final ReadLock readLock = _lock.readLock();
+		final ReadLock readLock = lock.readLock();
 		logger.debug("Acquiring read lock for {}: {}", this, readLock);
 		readLock.lock();
 		logger.debug("Acquired read lock for {}: {}", this, readLock);
@@ -126,7 +141,7 @@ public class ASIDocument
 	IAutoCloseable lockForWriting()
 	{
 		// assume _lock is not null
-		final WriteLock writeLock = _lock.writeLock();
+		final WriteLock writeLock = lock.writeLock();
 		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
 		writeLock.lock();
 		logger.debug("Acquired write lock for {}: {}", this, writeLock);
@@ -178,7 +193,18 @@ public class ASIDocument
 	void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
 		assertNotCompleted();
-		data.processValueChanges(events, reason);
+
+		final Document data = this.data;
+		try
+		{
+			data.setDynAttribute(DYNATTR_ASIDescriptor, descriptor);
+			data.setDynAttribute(DYNATTR_ASIEventType, ASIEventType.VALUE_CHANGED);
+			data.processValueChanges(events, reason);
+		}
+		finally
+		{
+			data.setDynAttribute(DYNATTR_ASIEventType, null);
+		}
 	}
 
 	public Collection<IDocumentFieldView> getFieldViews()
@@ -205,11 +231,6 @@ public class ASIDocument
 	public LookupValuesList getFieldLookupValues(final String attributeName)
 	{
 		return data.getFieldLookupValues(attributeName);
-	}
-
-	public boolean isCompleted()
-	{
-		return completed;
 	}
 
 	IntegerLookupValue complete()
@@ -247,5 +268,4 @@ public class ASIDocument
 
 		return asiRecord;
 	}
-
 }

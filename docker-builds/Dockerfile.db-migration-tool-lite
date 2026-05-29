@@ -1,0 +1,33 @@
+# Lightweight database migration tool image
+# Does NOT depend on metas-mvn-backend - uses pre-aggregated SQL from source
+# This enables preloaded-db job to start before backend job completes
+#
+# Build context requires:
+#   - migration-sql/       : SQL files aggregated from source (not from Maven artifacts)
+#   - migration-cli.jar    : Pre-built migration CLI JAR from .m2-local
+#   - docker-builds/db/init-preloaded/migrate.properties
+
+FROM eclipse-temurin:17.0.7_7-jdk AS runtime
+
+RUN apt-get -y update && apt-get -y install locales netcat postgresql-client && rm -rf /var/lib/apt/lists/*
+
+RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
+
+WORKDIR /migrations
+
+# Copy pre-aggregated SQL files from source code (not Maven artifacts)
+COPY migration-sql/ sql/
+
+# Copy pre-built migration CLI JAR (extracted from .m2-local in CI)
+COPY migration-cli.jar de.metas.migration.cli.jar
+
+# Copy migration properties template
+COPY docker-builds/db/init-preloaded/migrate.properties .
+
+# Optionally copy build metadata if available
+COPY docker-builds/metadata/build-info.properties* ./
+
+# This image expects database settings mounted to /migrations/settings.properties to properly run
+CMD ["java", "-jar", "de.metas.migration.cli.jar", "-d", ".", "-s", "migrate.properties"]

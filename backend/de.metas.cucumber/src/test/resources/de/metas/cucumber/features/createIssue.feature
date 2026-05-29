@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0270_CRM
+@allure.label.feature:F00271_Karottenabrechnung_mit_Lager
+@F00271
 @ghActions:run_on_executor5
 Feature: issue creation using metasfresh api
+## F00271: Request
   As a REST-API invoker
   I want want to be able to create issues
 
@@ -17,6 +21,9 @@ Feature: issue creation using metasfresh api
 
 
   @from:cucumber
+@allure.label.epic:E0270_CRM
+@allure.label.feature:F00271_Karottenabrechnung_mit_Lager
+@F00271
   Scenario: The request is good and the issue is created
 
     When the metasfresh REST-API endpoint path 'api/v2/externalsystem/externalstatus/123123/error' receives a 'POST' request with the payload

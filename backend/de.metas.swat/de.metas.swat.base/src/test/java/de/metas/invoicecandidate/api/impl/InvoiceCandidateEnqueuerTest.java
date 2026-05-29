@@ -23,24 +23,24 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 {
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass()
 	{
 		AdempiereTestHelper.get().forceStaticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());

@@ -3,6 +3,7 @@ package de.metas.product;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -110,9 +111,11 @@ public interface IProductDAO extends ISingletonService
 	
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
-	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+
+	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
@@ -133,6 +136,8 @@ public interface IProductDAO extends ISingletonService
 	void save(I_M_Product record);
 
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
+
+	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
 
 	@Value
 	class ProductQuery

@@ -5,12 +5,12 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ADProcessService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
@@ -43,6 +43,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -307,6 +308,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 		final ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
 				.setAdWindowId(adWindowId)
@@ -376,6 +378,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// Load process info
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(adPInstanceDocumentId.toInt());
 		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setPInstanceId(pinstanceId)

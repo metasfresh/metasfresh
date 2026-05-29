@@ -4,7 +4,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.TULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -12,10 +11,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,6 +25,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -45,16 +45,12 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	void closeShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	/**
-	 * Add QtyPicked to current QtyPicked of given shipment schedule.
+	 * Add QtyPicked to the current QtyPicked of given shipment schedule.
 	 * <p>
 	 * Also update the given <code>hu</code>'s (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to the given <code>sched</code>'s effective values.<br>
 	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
-	 *
-	 * @param tuOrVHU                   TU or VirtualHU to link on
-	 * @param anonymousHuPickedOnTheFly true if the HU was picked on the fly for the shipment process
-	 * @return qtyPicked record for this addition
 	 */
-	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext, final boolean anonymousHuPickedOnTheFly);
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(AddQtyPickedRequest request);
 
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
@@ -103,8 +99,6 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 */
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(I_M_ShipmentSchedule shipmentSchedule);
 
-	I_M_ShipmentSchedule getShipmentScheduleOrNull(I_M_HU hu);
-
 	Optional<TULoader> createTULoader(de.metas.handlingunits.model.I_M_ShipmentSchedule schedule);
 
 	I_M_HU_LUTU_Configuration deriveM_HU_LUTU_Configuration(I_M_ShipmentSchedule schedule);
@@ -128,6 +122,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 */
 	void updateHURelatedValuesFromOrderLine(I_M_ShipmentSchedule shipmentSchedule);
 
+	void updateExternalLineIdFromOrderLine(I_M_ShipmentSchedule shipmentSchedule);
+
 	void deleteByTopLevelHUAndShipmentScheduleId(
 			@NonNull HuId topLevelHUId,
 			@NonNull ShipmentScheduleId shipmentScheduleId);
@@ -137,4 +133,23 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	WarehouseId getWarehouseId(@NonNull I_M_ShipmentSchedule schedule);
 
 	BPartnerId getBPartnerId(@NonNull I_M_ShipmentSchedule schedule);
+
+	Quantity getQtyToDeliver(I_M_ShipmentSchedule schedule);
+
+	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	Quantity getQtyRemainingToScheduleForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
+
+	/**
+	 * Extracts a common projectId from the given shipment schedules. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	@Nullable
+	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
 }

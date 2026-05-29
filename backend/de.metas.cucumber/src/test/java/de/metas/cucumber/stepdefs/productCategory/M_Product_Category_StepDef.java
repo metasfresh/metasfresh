@@ -22,31 +22,32 @@
 
 package de.metas.cucumber.stepdefs.productCategory;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product_Category;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_AttributeSet_ID;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
 
 @RequiredArgsConstructor
 public class M_Product_Category_StepDef
 {
-	@NonNull
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull
-	private final M_Product_Category_StepDefData productCategoryTable;
-	@NonNull
-	private final M_AttributeSet_StepDefData attributeSetTable;
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
 
 	@And("load M_Product_Category:")
 	public void load_M_Product_Category(@NonNull final DataTable dataTable)
@@ -84,6 +85,38 @@ public class M_Product_Category_StepDef
 
 					saveRecord(productCategory);
 					productCategoryTable.putOrReplace(identifier, productCategory);
+				});
+	}
+
+	@Given("metasfresh contains M_Product_Categories:")
+	public void create_M_Product_Categories(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.forEach(row -> {
+					final ValueAndName valueAndName = row.suggestValueAndName();
+					final String value = valueAndName.getValue();
+
+					final I_M_Product_Category productCategoryRecord =
+							CoalesceUtil.coalesceSuppliersNotNull(
+									() -> queryBL.createQueryBuilder(I_M_Product_Category.class)
+											.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, value)
+											.create()
+											.firstOnly(I_M_Product_Category.class),
+									() -> InterfaceWrapperHelper.newInstance(I_M_Product_Category.class)
+							);
+
+					productCategoryRecord.setIsActive(true);
+					productCategoryRecord.setValue(value);
+					productCategoryRecord.setName(valueAndName.getName());
+
+					row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSet_ID)
+							.map(attributeSetTable::getId)
+							.ifPresent(attributeSetId -> productCategoryRecord.setM_AttributeSet_ID(attributeSetId.getRepoId()));
+
+					InterfaceWrapperHelper.saveRecord(productCategoryRecord);
+
+					row.getAsOptionalIdentifier().ifPresent(identifier -> productCategoryTable.putOrReplace(identifier, productCategoryRecord));
 				});
 	}
 }

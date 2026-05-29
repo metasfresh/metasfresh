@@ -102,7 +102,7 @@ public class C_ReferenceNo_StepDef
 
 		final Integer typeId = DataTableUtil.extractIntegerOrNullForColumnName(row, I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		if (recordId != null && typeId!=null)
+		if (typeId!=null)
 		{
 
 			final IQuery<I_C_ReferenceNo_Doc> referenceNo_docQueryBuilderQuery = queryBL
@@ -119,8 +119,7 @@ public class C_ReferenceNo_StepDef
 					.addInArrayFilter(I_C_ReferenceNo_Type.COLUMNNAME_AD_Org_ID, OrgId.MAIN, OrgId.ANY)
 					.addInSubQueryFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_ID, I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, referenceNo_docQueryBuilderQuery)
 					.create()
-					.firstOnly(I_C_ReferenceNo.class);
-					;
+					.firstOnlyNotNull(I_C_ReferenceNo.class);
 			referenceNoTable.putOrReplace(identifier, referenceNoRecord);
 		}
 	}

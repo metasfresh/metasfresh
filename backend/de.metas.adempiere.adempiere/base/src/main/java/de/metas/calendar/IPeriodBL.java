@@ -35,11 +35,6 @@ import java.util.Properties;
 public interface IPeriodBL extends ISingletonService
 {
 	/**
-	 * 
-	 * @param ctx
-	 * @param dateAcct
-	 * @param docBaseType
-	 * @param AD_Org_ID
 	 * @throws PeriodClosedException if the given period is closed
 	 */
 	void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType, int AD_Org_ID) throws PeriodClosedException;
@@ -48,25 +43,21 @@ public interface IPeriodBL extends ISingletonService
 
 	/**
 	 * Suggests which shall be the PeriodStatus for given period action
-	 * 
-	 * @param periodAction
+	 *
 	 * @return period status; never returns null
 	 */
 	String getPeriodStatusForAction(String periodAction);
 
 	/**
 	 * Create all {@link I_C_PeriodControl}s for given period.
-	 * 
+	 * <p>
 	 * NOTE: this method assumes there are no {@link I_C_PeriodControl}s already created for given period.
-	 * 
-	 * @param period
 	 */
 	void createPeriodControls(I_C_Period period);
 
 	/**
 	 * Checks if given date is in period.
-	 * 
-	 * @param period
+	 *
 	 * @param date date
 	 * @return true if in period
 	 */

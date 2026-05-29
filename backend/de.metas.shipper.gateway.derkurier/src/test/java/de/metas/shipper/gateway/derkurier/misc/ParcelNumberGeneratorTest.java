@@ -8,14 +8,14 @@ import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Sequence;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import de.metas.util.Services;
 public class ParcelNumberGeneratorTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -60,7 +60,7 @@ public class ParcelNumberGeneratorTest
 		final ParcelNumberGenerator parcelNumberGenerator = new ParcelNumberGenerator();
 		String parcelNumberWithCheckDigit = parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber);
 
-		Assert.assertTrue(expectedParcelNumberWithCheckDigit.equals(parcelNumberWithCheckDigit));
+		Assertions.assertTrue(expectedParcelNumberWithCheckDigit.equals(parcelNumberWithCheckDigit));
 	}
 
 	@Test
@@ -75,44 +75,44 @@ public class ParcelNumberGeneratorTest
 		assertThat(parcelNumberWithCheckDigit).isEqualTo(expectedParcelNumberWithCheckDigit);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void computeAndAppendCheckDigit_WhiteSpaces()
 	{
 		final String parcelNumber = "1005 255 687 6";
 
 		final ParcelNumberGenerator parcelNumberGenerator = new ParcelNumberGenerator();
-		parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber);
+		Assertions.assertThrows(RuntimeException.class, () -> parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber));
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void computeAndAppendCheckDigit_AlphaChars()
 	{
 		final String parcelNumber = "1005A255B687-6";
 
 		final ParcelNumberGenerator parcelNumberGenerator = new ParcelNumberGenerator();
-		parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber);
+		Assertions.assertThrows(RuntimeException.class, () -> parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber));
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void computeAndAppendCheckDigit_Null()
 	{
 		final String parcelNumber = null;
 
 		final ParcelNumberGenerator parcelNumberGenerator = new ParcelNumberGenerator();
-		parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber);
+		Assertions.assertThrows(RuntimeException.class, () -> parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber));
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void computeAndAppendCheckDigit_Empty()
 	{
 		final String parcelNumber = "";
 
 		final ParcelNumberGenerator parcelNumberGenerator = new ParcelNumberGenerator();
-		parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber);
+		Assertions.assertThrows(RuntimeException.class, () -> parcelNumberGenerator.computeAndAppendCheckDigit(parcelNumber));
 	}
 
 	@Test
-	@Ignore // needs DB access; see DocumentNoBuilder.retrieveAndIncrementSequenceCurrentNext()
+	@Disabled // needs DB access; see DocumentNoBuilder.retrieveAndIncrementSequenceCurrentNext()
 	public void retrieveConfigForShipperId()
 	{
 		final I_AD_Sequence sequenceRecord = newInstance(I_AD_Sequence.class);

@@ -21,6 +21,7 @@ const GenerateHUQRCodesActivity = ({
         caption={caption}
         disabled={!isUserEditable}
         onClick={() => history.push(selectOptionsLocation({ applicationId, wfProcessId, activityId }))}
+        testId="generateHUQRCodes-button"
       />
     </div>
   );

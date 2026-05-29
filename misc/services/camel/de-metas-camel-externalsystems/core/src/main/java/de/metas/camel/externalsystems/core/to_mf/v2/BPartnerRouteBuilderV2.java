@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,7 +31,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
@@ -60,7 +60,7 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 				.routeId(ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof BPUpsertCamelRequest))
@@ -77,7 +77,7 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPartnerUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-bpartner-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
@@ -85,7 +85,7 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 
 		from("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
 				.routeId(RETRIEVE_BPARTNER_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
@@ -107,7 +107,7 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 				}).id(RETRIEVE_BPARTNER_PROCESSOR_ID)
 
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.toD("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

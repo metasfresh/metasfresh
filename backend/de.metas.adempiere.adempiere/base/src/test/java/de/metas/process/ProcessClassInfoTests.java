@@ -1,13 +1,11 @@
 package de.metas.process;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -33,8 +31,8 @@ import org.junit.Test;
 
 public class ProcessClassInfoTests
 {
-	@Before
-	@After
+	@BeforeEach
+	@AfterEach
 	public void resetCache()
 	{
 		ProcessClassInfo.resetCache();
@@ -53,9 +51,15 @@ public class ProcessClassInfoTests
 	public void test_ProcessImpl()
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessImpl.class);
-		Assert.assertNotSame("A new instance shall be created, and not the default one", ProcessClassInfo.NULL, processClassInfo);
-		Assert.assertEquals("RunPrepareOutOfTransaction: " + processClassInfo, false, processClassInfo.isRunPrepareOutOfTransaction());
-		Assert.assertEquals("RunDoItOutOfTransaction: " + processClassInfo, false, processClassInfo.isRunDoItOutOfTransaction());
+		assertThat(processClassInfo)
+			.as("A new instance shall be created, and not the default one")
+			.isNotSameAs(ProcessClassInfo.NULL);
+		assertThat(processClassInfo.isRunPrepareOutOfTransaction())
+			.as("RunPrepareOutOfTransaction: " + processClassInfo)
+			.isFalse();
+		assertThat(processClassInfo.isRunDoItOutOfTransaction())
+			.as("RunDoItOutOfTransaction: " + processClassInfo)
+			.isFalse();
 	}
 
 	public static class ProcessImpl2 extends JavaProcess
@@ -81,8 +85,8 @@ public class ProcessClassInfoTests
 	public void test_RunOutOfTrx_ProcessImpl2()
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessImpl2.class);
-		assertThat(processClassInfo.isRunDoItOutOfTransaction(), is(true));
-		assertThat(processClassInfo.isRunPrepareOutOfTransaction(), is(true));
+		assertThat(processClassInfo.isRunDoItOutOfTransaction()).isTrue();
+		assertThat(processClassInfo.isRunPrepareOutOfTransaction()).isTrue();
 	}
 
 	public static class ProcessImpl3 extends JavaProcess
@@ -115,8 +119,8 @@ public class ProcessClassInfoTests
 	public void test_RunOutOfTrx_ProcessImpl3()
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessImpl3.class);
-		assertThat(processClassInfo.isRunDoItOutOfTransaction(), is(true));
-		assertThat(processClassInfo.isRunPrepareOutOfTransaction(), is(true));
+		assertThat(processClassInfo.isRunDoItOutOfTransaction()).isTrue();
+		assertThat(processClassInfo.isRunPrepareOutOfTransaction()).isTrue();
 	}
 
 	public static class ProcessImpl4 extends JavaProcess
@@ -151,8 +155,8 @@ public class ProcessClassInfoTests
 	public void test_RunOutOfTrx_ProcessImpl4()
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessImpl4.class);
-		assertThat(processClassInfo.isRunDoItOutOfTransaction(), is(true));
-		assertThat(processClassInfo.isRunPrepareOutOfTransaction(), is(true));
+		assertThat(processClassInfo.isRunDoItOutOfTransaction()).isTrue();
+		assertThat(processClassInfo.isRunPrepareOutOfTransaction()).isTrue();
 	}
 
 	public static class ProcessImpl5 extends JavaProcess
@@ -185,15 +189,16 @@ public class ProcessClassInfoTests
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessImpl5.class);
 
-		assertThat(processClassInfo.isRunDoItOutOfTransaction(), is(false));
-		assertThat(processClassInfo.isRunPrepareOutOfTransaction(), is(true));
+		assertThat(processClassInfo.isRunDoItOutOfTransaction()).isFalse();
+		assertThat(processClassInfo.isRunPrepareOutOfTransaction()).isTrue();
 	}
 
 	@Test
 	public void test_JavaProcess()
 	{
 		// just to notify that we are not going to test the JavaProcess here...
-		Assume.assumeTrue("Other JavaProcess tests are already tested by " + JavaProcessTests.class, false);
+		assumeThat(false)
+			.as("Other JavaProcess tests are already tested by " + JavaProcessTests.class)
+			.isTrue();
 	}
-
 }

@@ -6,6 +6,7 @@ import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
@@ -24,6 +25,7 @@ import org.compiere.model.I_C_Payment;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -35,12 +37,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,27 +55,28 @@ final class AllocationLineCandidateSaver
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
+	public ImmutableMap<PaymentAllocationId, AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> saveInTrx(candidates));
 	}
 
-	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId, AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
 	{
-		final ImmutableMap.Builder<PaymentAllocationId,AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
+		final ImmutableMap.Builder<PaymentAllocationId, AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
 
 		for (final AllocationLineCandidate candidate : candidates)
 		{
 			final PaymentAllocationId paymentAllocationId = saveCandidate(candidate);
 			if (paymentAllocationId != null)
 			{
-				candidatesByPaymentId.put(paymentAllocationId,candidate);
+				candidatesByPaymentId.put(paymentAllocationId, candidate);
 			}
 		}
 
 		return candidatesByPaymentId.build();
 	}
 
+	@Nullable
 	private PaymentAllocationId saveCandidate(final AllocationLineCandidate candidate)
 	{
 		final AllocationLineCandidateType type = candidate.getType();
@@ -84,6 +87,10 @@ final class AllocationLineCandidateSaver
 		else if (AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(type))
 		{
 			return saveCandidate_InvoiceToInvoice(candidate);
+		}
+		else if (AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice.equals(type))
+		{
+			return saveCandidate_SalesCreditMemoToPurchaseInvoice(candidate);
 		}
 		else if (AllocationLineCandidateType.InvoiceToCreditMemo.equals(type))
 		{
@@ -135,6 +142,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()))
 				.paymentId(extractPaymentId(candidate.getPaymentDocumentRef()));
@@ -169,6 +177,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 
@@ -182,6 +191,56 @@ final class AllocationLineCandidateSaver
 				//
 				// Amounts
 				.amount(payAmt.negate().toBigDecimal())
+				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
+				.discountAmt(Optional.ofNullable(candidate.getPayAmtDiscountInInvoiceCurrency())
+									 .map(Money::toBigDecimal)
+									 .orElse(BigDecimal.ZERO))
+				//
+				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
+
+		return createAndComplete(allocationBuilder);
+	}
+
+	@Nullable
+	private PaymentAllocationId saveCandidate_SalesCreditMemoToPurchaseInvoice(@NonNull final AllocationLineCandidate candidate)
+	{
+		final Money payAmt = candidate.getAmounts().getPayAmt();
+		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
+		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
+
+		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.build());
+
+		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
+
+		// Sales credit memo (ARC)
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.negate().toBigDecimal())
+				.discountAmt(discountAmt.negate().toBigDecimal())
+				.writeOffAmt(writeOffAmt.negate().toBigDecimal())
+				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
+
+		// Purchase invoice (API)
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
@@ -212,6 +271,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 

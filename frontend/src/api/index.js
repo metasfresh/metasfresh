@@ -34,8 +34,6 @@ import { getResetPasswordInfo, resetPasswordComplete } from './login';
 import {
   breadcrumbRequest,
   elementPathRequest,
-  getNotificationsEndpointRequest,
-  getNotificationsRequest,
   nodePathsRequest,
   pathRequest,
   queryPathsRequest,
@@ -56,8 +54,6 @@ export {
   formatParentUrl,
   getData,
   getLayout,
-  getNotificationsRequest,
-  getNotificationsEndpointRequest,
   getResetPasswordInfo,
   getRowsData,
   getTabLayoutRequest,

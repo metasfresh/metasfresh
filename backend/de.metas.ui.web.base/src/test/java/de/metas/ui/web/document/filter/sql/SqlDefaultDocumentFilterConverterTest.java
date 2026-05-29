@@ -1,15 +1,28 @@
 package de.metas.ui.web.document.filter.sql;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.PlainSqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
+import org.assertj.core.api.RecursiveComparisonAssert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.assertj.core.api.Assertions.*;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -35,6 +48,72 @@ import static org.assertj.core.api.Assertions.*;
 
 public class SqlDefaultDocumentFilterConverterTest
 {
+	private SqlDefaultDocumentFilterConverter converter;
+
+	@Builder(builderMethodName = "newConverter", builderClassName = "$ConverterBuilder")
+	SqlDefaultDocumentFilterConverter createSqlDefaultDocumentFilterConverter(
+			@NonNull final String columnName,
+			@NonNull final DocumentFieldWidgetType widgetType)
+	{
+		final SqlEntityBinding entityBinding = Mockito.mock(SqlEntityBinding.class);
+
+		Mockito.doReturn(PlainSqlEntityFieldBinding.builder()
+						.columnName(columnName)
+						.widgetType(widgetType)
+						.sqlSelectValue(SqlSelectValue.builder()
+								.columnName(columnName)
+								.columnNameAlias(columnName)
+								.build())
+						.build())
+				.when(entityBinding)
+				.getFieldByFieldName(columnName);
+
+		return SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	static DocumentFilter filter(@NonNull String fieldName, @NonNull Operator operator, @Nullable Object value)
+	{
+		return DocumentFilter.builder()
+				.filterId("filterId")
+				.parameter(DocumentFilterParam.builder()
+						.setFieldName(fieldName)
+						.setOperator(operator)
+						.setValue(value)
+						.build())
+				.build();
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	static DocumentFilter betweenFilter(@NonNull String fieldName, @Nullable Object valueFrom, @Nullable Object valueTo)
+	{
+		return DocumentFilter.builder()
+				.filterId("filterId")
+				.parameter(DocumentFilterParam.builder()
+						.setFieldName(fieldName)
+						.setOperator(Operator.BETWEEN)
+						.setValue(valueFrom)
+						.setValueTo(valueTo)
+						.build())
+				.build();
+	}
+
+	RecursiveComparisonAssert<?> assertSqlWhereClause(@NonNull DocumentFilter filter)
+	{
+		final SqlOptions sqlOpts = SqlOptions.usingTableName("MyTable");
+		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.builder().build();
+		final FilterSql sql = converter.getSql(filter, sqlOpts, context);
+		final SqlAndParams sqlWhereClause = sql != null ? sql.getWhereClause() : null;
+		return assertThat(sqlWhereClause)
+				.usingRecursiveComparison();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	@Nested
 	public class replaceTableNameWithTableAliasIfNeeded
 	{
@@ -93,78 +172,172 @@ public class SqlDefaultDocumentFilterConverterTest
 		}
 	}
 
+	//
+	//
+	//
+	//
+	//
+
 	@Nested
-	public class buildSqlWhereClause_IsNull
+	public class buildSqlWhereClause
 	{
-		@Test
-		public void any()
+		@Nested
+		public class buildSqlWhereClause_IsNull
 		{
-			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.ANY))
-					.isEqualTo(SqlAndParams.EMPTY);
+			@Test
+			public void any()
+			{
+				assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.ANY))
+						.isEqualTo(SqlAndParams.EMPTY);
+			}
+
+			@Test
+			public void isNull()
+			{
+				assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NULL))
+						.isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
+			}
+
+			@Test
+			public void isNotNull()
+			{
+				assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NOT_NULL))
+						.isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
+			}
 		}
 
-		@Test
-		public void isNull()
+		@Nested
+		public class buildSqlWhereClause_Equals
 		{
-			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NULL))
-					.isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
+			@Test
+			public void nullValue()
+			{
+				final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
+						"MyColumn",
+						null,
+						false);
+				assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
+			}
+
+			@Test
+			public void nullValue_negate()
+			{
+				final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
+						"MyColumn",
+						null,
+						true);
+				assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
+			}
 		}
 
-		@Test
-		public void isNotNull()
+		@Nested
+		public class buildSqlWhereClause_Like
 		{
-			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NOT_NULL))
-					.isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
+			@Test
+			public void nullValue()
+			{
+				final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
+						"MyColumn",
+						false,
+						false,
+						null);
+				assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
+			}
+
+			@Test
+			public void nullValue_negate()
+			{
+				final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
+						"MyColumn",
+						true,
+						false,
+						null);
+				assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
+			}
 		}
 	}
 
+	//
+	//
+	//
+	//
+	//
+
 	@Nested
-	public class buildSqlWhereClause_Equals
+	public class getSql
 	{
-		@Test
-		public void nullValue()
+		@Nested
+		public class Equals
 		{
-			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
-					"MyColumn",
-					null,
-					false);
-			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
+			@BeforeEach
+			void beforeEach()
+			{
+				converter = newConverter().columnName("MyColumn").widgetType(DocumentFieldWidgetType.Text).build();
+			}
+
+			@Test
+			public void equals_to_123()
+			{
+				assertSqlWhereClause(filter("MyColumn", Operator.EQUAL, "123"))
+						.isEqualTo(SqlAndParams.of("(MyColumn = ?)", Arrays.asList("123")));
+			}
 		}
 
-		@Test
-		public void nullValue_negate()
+		@Nested
+		public class NotEquals
 		{
-			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
-					"MyColumn",
-					null,
-					true);
-			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
+			@BeforeEach
+			void beforeEach()
+			{
+				converter = newConverter().columnName("MyColumn").widgetType(DocumentFieldWidgetType.Text).build();
+			}
+
+			@Test
+			public void equals_to_123()
+			{
+				assertSqlWhereClause(filter("MyColumn", Operator.NOT_EQUAL, "123"))
+						.isEqualTo(SqlAndParams.of("(MyColumn <> ?)", Arrays.asList("123")));
+			}
+		}
+
+		@Nested
+		public class Between
+		{
+			@BeforeEach
+			void beforeEach()
+			{
+				converter = newConverter().columnName("Balance").widgetType(DocumentFieldWidgetType.Number).build();
+			}
+
+			@Test
+			public void between_null_values()
+			{
+				assertSqlWhereClause(betweenFilter("Balance", null, null))
+						.isNull();
+			}
+
+			@Test
+			public void between_100_and_null()
+			{
+				assertSqlWhereClause(betweenFilter("Balance", "100", null))
+						.isEqualTo(SqlAndParams.of("(Balance>=?)", Arrays.asList(new BigDecimal("100"))));
+			}
+
+			@Test
+			public void between_null_and_200()
+			{
+				assertSqlWhereClause(betweenFilter("Balance", null, "200"))
+						.isEqualTo(SqlAndParams.of("(Balance<=?)", Arrays.asList(new BigDecimal("200"))));
+
+			}
+
+			@Test
+			public void between_100_and_200()
+			{
+				assertSqlWhereClause(betweenFilter("Balance", "100", "200"))
+						.isEqualTo(SqlAndParams.of("(Balance BETWEEN ? AND ?)", Arrays.asList(new BigDecimal("100"), new BigDecimal("200"))));
+			}
 		}
 	}
 
-	@Nested
-	public class buildSqlWhereClause_Like
-	{
-		@Test
-		public void nullValue()
-		{
-			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
-					"MyColumn",
-					false,
-					false,
-					null);
-			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
-		}
-
-		@Test
-		public void nullValue_negate()
-		{
-			final SqlAndParams result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
-					"MyColumn",
-					true,
-					false,
-					null);
-			assertThat(result).isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
-		}
-	}
 }

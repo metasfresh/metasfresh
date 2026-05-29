@@ -22,6 +22,7 @@ package de.metas.util.collections;
  * #L%
  */
 
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +30,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.util.collections.ListUtils;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ListUtilsTest
 {
@@ -42,7 +40,7 @@ public class ListUtilsTest
 		final List<Object> resultActual = ListUtils.copyAndReverse(null);
 		final List<Object> resultExpected = null;
 
-		Assert.assertEquals("Invalid result", resultExpected, resultActual);
+		assertThat(resultActual).as("Invalid result").isEqualTo(resultExpected);
 	}
 
 	@Test
@@ -77,14 +75,14 @@ public class ListUtilsTest
 		final List<T> listCopy = new ArrayList<>(list);
 		final List<T> resultActual = ListUtils.copyAndReverse(list);
 
-		Assert.assertEquals("Original list shall not be changed", listCopy, list);
-		Assert.assertEquals("Invalid result for " + list, resultExpected, resultActual);
+		assertThat(list).as("Original list shall not be changed").isEqualTo(listCopy);
+		assertThat(resultActual).as("Invalid result for " + list).isEqualTo(resultExpected);
 	}
 
 	@Test
 	public void test_copyAsList_null()
 	{
-		Assert.assertNull(ListUtils.copyAsList(null));
+		assertThat(ListUtils.copyAsList(null)).isNull();
 	}
 
 	@Test
@@ -92,8 +90,8 @@ public class ListUtilsTest
 	{
 		final List<String> list = Arrays.asList("a", "b", "c");
 		final List<String> listCopy = ListUtils.copyAsList(list);
-		Assert.assertEquals(list, listCopy);
-		Assert.assertNotSame(list, listCopy);
+		assertThat(listCopy).isEqualTo(list);
+		assertThat(listCopy).isNotSameAs(list);
 	}
 
 	@Test
@@ -110,8 +108,8 @@ public class ListUtilsTest
 		};
 
 		final List<String> listCopy = ListUtils.copyAsList(iterable);
-		Assert.assertEquals(list, listCopy);
-		Assert.assertNotSame(list, listCopy);
-		Assert.assertNotSame(iterable, listCopy);
+		assertThat(listCopy).isEqualTo(list);
+		assertThat(listCopy).isNotSameAs(list);
+		assertThat(listCopy).isNotSameAs(iterable);
 	}
 }

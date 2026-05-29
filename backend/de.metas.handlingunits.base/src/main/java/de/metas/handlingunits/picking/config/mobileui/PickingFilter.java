@@ -22,7 +22,7 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import lombok.NonNull;
 import lombok.Value;
 

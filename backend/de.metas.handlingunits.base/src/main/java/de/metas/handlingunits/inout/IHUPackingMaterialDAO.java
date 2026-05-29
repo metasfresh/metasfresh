@@ -25,14 +25,17 @@ package de.metas.handlingunits.inout;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.mpackage.PackageId;
 import de.metas.product.IProductDAO;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -41,6 +44,7 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 public interface IHUPackingMaterialDAO extends ISingletonService
 {
@@ -87,10 +91,13 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final PackageId packageId);
 
 	@Nullable
+	I_M_HU_PackingMaterial getById(@NonNull HuPackingMaterialId packingMaterialId);
+
+	@Nullable
 	I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull I_M_HU_Item huItem);
 
 	/**
-	 * Return the dimensions of the packing material, or a default with all dimensions set to 1
+	 * Return the dimensionsInCM of the packing material, or a default with all dimensionsInCM set to 1
 	 * <p>
 	 * This method should not be here, it should belong to de.metas.shipper.gateway.commons.DeliveryOrderUtil.
 	 * However it is here, as adding it there will create a circular dependency between de.metas.handlingunits.base and de.metas.shipper.gateway.commons, because I_M_HU_PackingMaterial must be imported.
@@ -100,4 +107,5 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 
 	List<HuPackingMaterial> retrieveBy(@NonNull final HuPackingMaterialQuery query);
 
+	Optional<HuPackingMaterial> getLUPIItemForHUPI(BPartnerId bpartnerId, @NonNull HuPackingInstructionsId luPIId);
 }

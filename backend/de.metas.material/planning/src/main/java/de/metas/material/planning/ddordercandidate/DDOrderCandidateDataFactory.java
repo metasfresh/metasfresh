@@ -13,6 +13,7 @@ import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.replenish.ReplenishInfo;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -42,7 +43,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-class DDOrderCandidateDataFactory
+public class DDOrderCandidateDataFactory
 {
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull final IProductBL productBL = Services.get(IProductBL.class);
@@ -155,7 +156,7 @@ class DDOrderCandidateDataFactory
 					.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
 					.forwardPPOrderRef(supplyRequiredDescriptor.getPpOrderRef())
 					.productDescriptor(createProductDescriptor(context))
-					.fromWarehouseMinMaxDescriptor(replenishInfoRepository.getBy(sourceWarehouseId, context.getProductId()).toMinMaxDescriptor())
+					.fromWarehouseMinMaxDescriptor(replenishInfoRepository.getBy(ReplenishInfo.Identifier.of(sourceWarehouseId, context.getProductId())).toMinMaxDescriptor())
 					.qty(qtyToMoveInProductUOM.toBigDecimal())
 					.uomId(qtyToMoveInProductUOM.getUomId().getRepoId())
 					.simulated(supplyRequiredDescriptor.isSimulated())

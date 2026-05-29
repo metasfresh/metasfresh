@@ -1,8 +1,9 @@
+import React, { createContext, useContext, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Component } from 'react';
-import { connect } from 'react-redux';
-
-import { disabledWithFocus } from '../../shortcuts/keymap';
+import defaultKeymap, { disabledWithFocus } from '../../shortcuts/keymap';
+import blacklist from '../../shortcuts/blacklist';
+import { useDocumentEventListener } from '../../hooks/useDocumentEventListener';
+import { useWindowEventListener } from '../../hooks/useWindowEventListener';
 
 const codeToKey = {
   8: 'Backspace',
@@ -62,117 +63,62 @@ const codeToKey = {
   189: '-',
 };
 
-// export default class ShortcutProvider extends Component {
-class ShortcutProvider extends Component {
-  static propTypes = {
-    children: PropTypes.node,
-    hotkeys: PropTypes.object.isRequired,
-    keymap: PropTypes.object.isRequired,
-  };
+const ShortcutContext = createContext(null);
 
-  static childContextTypes = {
-    shortcuts: PropTypes.shape({
-      subscribe: PropTypes.func.isRequired,
-      unsubscribe: PropTypes.func.isRequired,
-    }),
-  };
+const useShortcutProvider = () => {
+  const context = useContext(ShortcutContext);
+  if (!context) {
+    throw new Error('useShortcuts must be used within a ShortcutProvider');
+  }
+  return context;
+};
 
-  keySequence = [];
-  fired = {};
+export const useShortcut = ({
+  name,
+  shortcut,
+  handler,
+  enabled = true,
+  dependencies = [],
+}) => {
+  const { subscribe } = useShortcutProvider();
 
-  // Stable references for hotkeys and keymap.
-  // Initialized in UNSAFE_componentWillMount from Redux props,
-  // then kept as the single source of truth for subscribe/unsubscribe/handleKeyDown.
-  // This prevents the bug where Redux UPDATE_HOTKEYS creates a new object
-  // via spread operator, causing subscribed handlers to be silently lost.
-  _hotkeys = null;
-  _keymap = null;
+  useEffect(() => {
+    if (!enabled) return;
 
-  _getHotkeys() {
-    return this._hotkeys || this.props.hotkeys;
+    // noinspection UnnecessaryLocalVariableJS
+    const unsubscribe = subscribe({ name, shortcut, handler });
+    return unsubscribe;
+  }, [subscribe, name, shortcut, handler, enabled, ...(dependencies ?? [])]);
+};
+
+export const ShortcutProvider = ({ children }) => {
+  const keymapRef = useRef(null);
+  const hotkeysRef = useRef({});
+  const keySequenceRef = useRef([]);
+  const firedRef = useRef({});
+
+  // Initialize keymap
+  if (keymapRef.current == null) {
+    keymapRef.current = { ...defaultKeymap };
   }
 
-  _getKeymap() {
-    return this._keymap || this.props.keymap;
-  }
+  useWindowEventListener('blur', () => {
+    keySequenceRef.current = [];
+    firedRef.current = {};
+  });
 
-  getChildContext() {
-    return {
-      shortcuts: {
-        subscribe: this.subscribe,
-        unsubscribe: this.unsubscribe,
-      },
-    };
-  }
-
-  UNSAFE_componentWillMount() {
-    // Capture stable references from Redux props.
-    // These objects will be mutated by subscribe/unsubscribe
-    // and read by handleKeyDown — always the same reference.
-    if (this.props) {
-      this._hotkeys = this.props.hotkeys;
-      this._keymap = this.props.keymap;
-    }
-
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
-    window.addEventListener('blur', this.handleBlur);
-  }
-
-  componentDidUpdate(prevProps) {
-    // When Redux creates new hotkeys/keymap objects (e.g., via UPDATE_HOTKEYS),
-    // merge new entries into our stable references instead of adopting the new objects.
-    if (prevProps.hotkeys !== this.props.hotkeys && this._hotkeys) {
-      const reduxHotkeys = this.props.hotkeys;
-      Object.keys(reduxHotkeys).forEach((key) => {
-        if (!(key in this._hotkeys)) {
-          this._hotkeys[key] = reduxHotkeys[key];
-        }
-      });
-    }
-
-    if (prevProps.keymap !== this.props.keymap && this._keymap) {
-      const reduxKeymap = this.props.keymap;
-      Object.keys(reduxKeymap).forEach((key) => {
-        this._keymap[key] = reduxKeymap[key];
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
-    window.removeEventListener('blur', this.handleBlur);
-  }
-
-  // In case of different handlers using the same shortcut we can control which
-  // one will be fired by returning true/false from their execution. Handlers are
-  // added in reverse order, so this way we can only call the latest in the queue.
-  // Summarizing - if you want a handler to just pass through, return false before
-  // any other code in the function.
-  fireHandlers = (event, handlers) => {
-    for (let i = 0; i < handlers.length; i += 1) {
-      const handler = handlers[i];
-      const stopPropagation = handler(event);
-
-      if (stopPropagation) {
-        break;
-      }
-    }
-  };
-
-  handleKeyDown = (event) => {
-    const _key = codeToKey[event.keyCode];
-    const key = _key && _key.toUpperCase();
-    const activeNode = document ? document.activeElement : null;
-
+  useDocumentEventListener('keydown', (event) => {
+    const key = codeToKey[event.keyCode]?.toUpperCase();
     if (!key) {
+      // console.log(`Unknown key for code ${event.keyCode}`, { event });
       return;
     }
 
-    const { fired } = this;
-    const hotkeys = this._getHotkeys();
-    let { keySequence } = this;
+    const activeNode = document ? document.activeElement : null;
+
+    const fired = firedRef.current;
+    const hotkeys = hotkeysRef.current;
+    let keySequence = keySequenceRef.current;
 
     if (event.altKey === true) {
       keySequence = ['Alt'];
@@ -188,140 +134,149 @@ class ShortcutProvider extends Component {
 
     fired[key] = true;
 
-    this.keySequence = [...keySequence, key];
+    keySequenceRef.current = [...keySequence, key];
 
-    const serializedSequence = this.keySequence
+    const serializedSequence = keySequenceRef.current
       .join('+')
       .replace(/\s/, 'Spacebar')
       .toUpperCase();
 
-    if (
-      !(serializedSequence in hotkeys) ||
-      // some shortcuts should be disabled
-      // when input field is focused (for typing)
-      (activeNode &&
-        activeNode.nodeName === 'INPUT' &&
-        disabledWithFocus.indexOf(serializedSequence) > -1)
-    ) {
+    const handles = hotkeys[serializedSequence];
+    if (!handles || handles.length === 0) {
+      // NOTE: commenting it out because this is a very common case, any key press which is not a shortcut (like typing) will get here.
+      // console.debug(`[Shortcut ${serializedSequence}] no handlers found`);
       return;
     }
 
-    const bucket = hotkeys[serializedSequence];
-    const validHandlers = bucket.filter((handler) => {
-      if (typeof handler === 'function') {
-        return true;
-      }
-
-      // eslint-disable-next-line no-console
-      console.warn(
-        `Handler defined for key sequence "${serializedSequence}" is not a function.`
+    // some shortcuts should be disabled
+    // when the input field is focused (for typing)
+    if (
+      activeNode &&
+      activeNode.nodeName === 'INPUT' &&
+      disabledWithFocus.indexOf(serializedSequence) > -1
+    ) {
+      console.debug(
+        `[Shortcut ${key}] skip firing because disabled for input field`
       );
-      return false;
-    });
-
-    if (validHandlers.length) {
-      return this.fireHandlers(event, validHandlers);
+      return;
     }
-  };
 
-  handleKeyUp = (event) => {
+    fireHandlers(event, handles);
+  });
+
+  useDocumentEventListener('keyup', (event) => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
-
     if (!key) {
       return;
     }
 
     const modifierKeys = ['Alt', 'Ctrl', 'Shift'];
 
-    this.keySequence = this.keySequence.filter(
+    keySequenceRef.current = keySequenceRef.current.filter(
       (_key) => _key !== key && modifierKeys.indexOf(_key) === -1
     );
 
-    delete this.fired[key];
-  };
+    delete firedRef.current[key];
+  });
 
-  handleBlur = () => {
-    this.keySequence = [];
-    this.fired = {};
-  };
-
-  subscribe = (name, handler) => {
-    const hotkeys = this._getHotkeys();
-    const keymap = this._getKeymap();
-
-    if (!(name in keymap)) {
-      // eslint-disable-next-line no-console
-      console.warn(`There are no hotkeys defined for "${name}".`);
-
-      return;
-    }
-
+  const subscribe = ({ name, shortcut, handler }) => {
     if (!handler) {
+      console.warn(`subscribe: no handler provided for "${name}".`);
       return;
     }
-
-    const key = keymap[name].toUpperCase();
-    if (!hotkeys[key]) {
-      hotkeys[key] = [];
-    }
-    const bucket = hotkeys[key];
-
-    hotkeys[key] = [handler, ...bucket];
-  };
-
-  unsubscribe = (name, handler) => {
-    const hotkeys = this._getHotkeys();
-    const keymap = this._getKeymap();
-
-    if (!(name in keymap)) {
-      // eslint-disable-next-line no-console
-      console.warn(`There are no hotkeys defined for "${name}".`);
-
-      return;
-    }
-
-    if (!handler) {
-      return;
-    }
-
-    const key = keymap[name].toUpperCase();
-    const bucket = hotkeys[key];
-    if (!bucket) {
-      return;
-    }
-    let found = false;
-
-    hotkeys[key] = bucket.filter((_handler) => {
-      if (_handler === handler) {
-        found = true;
-
-        return false;
-      }
-
-      return true;
-    });
-
-    if (!found) {
-      // eslint-disable-next-line no-console
+    if (typeof handler !== 'function') {
       console.warn(
-        `The handler you are trying to unsubscribe from "${name}" has not been subscribed yet.`,
-        handler
+        `subscribe: handler for "${name}" is not a function. Got ${typeof handler}.`
       );
+      return;
     }
+
+    const keymap = keymapRef.current;
+    const previousKey = keymap[name];
+    const key = (shortcut ? shortcut : keymap[name])?.toUpperCase();
+    if (!key) {
+      console.warn(`There are no hotkeys defined for "${name}".`, {
+        shortcut,
+        keymap,
+      });
+      return;
+    }
+
+    if (key in blacklist) {
+      const reason = blacklist[key];
+      const reasonFormatted = reason ? ` (${reason})` : '';
+
+      console.warn(
+        `Key "${key}" used by "${name}" is blacklisted since it overrides browser behaviour${reasonFormatted}.`
+      );
+      return;
+    }
+
+    const hotkeys = hotkeysRef.current;
+    keymap[name] = key;
+    hotkeys[key] = [handler, ...(hotkeys[key] ?? [])];
+
+    // console.debug(`Added handler for "${name}" with shortcut "${key}".`, {
+    //   shortcut,
+    //   previousKey,
+    //   hotkeys,
+    //   keymap,
+    // });
+
+    return () => {
+      // Restore previous key binding
+      keymapRef.current[name] = previousKey;
+
+      // Remove handler
+      const hotkeys = hotkeysRef.current;
+      hotkeys[key] = (hotkeys[key] || []).filter((h) => h !== handler);
+
+      // console.debug(`Removed handler for "${name}" with shortcut "${key}".`, {
+      //   shortcut,
+      //   previousKey,
+      // });
+    };
   };
 
-  render() {
-    return this.props.children;
+  const contextValue = {
+    subscribe,
+  };
+
+  return (
+    <ShortcutContext.Provider value={contextValue}>
+      {children}
+    </ShortcutContext.Provider>
+  );
+};
+
+ShortcutProvider.propTypes = {
+  children: PropTypes.node,
+};
+
+//
+//
+//
+//
+//
+
+// In the case of different handlers using the same shortcut, we can control which
+// one will be fired by returning true/false from their execution. Handlers are
+// added in reverse order, so this way we can only call the latest in the queue.
+// Summarizing - if you want a handler to just pass through, return false before
+// any other code in the function.
+const fireHandlers = (event, handlers) => {
+  for (let i = 0; i < handlers.length; i++) {
+    const handler = handlers[i];
+    const stopPropagation = handler(event);
+    // console.debug(`[Event ${event}] Invoked handler`, {
+    //   handler,
+    //   stopPropagation,
+    //   event,
+    // });
+
+    if (stopPropagation) {
+      break;
+    }
   }
-}
-
-function mapStateToProps({ appHandler }) {
-  return {
-    keymap: appHandler.keymap,
-    hotkeys: appHandler.hotkeys,
-  };
-}
-
-export default connect(mapStateToProps)(ShortcutProvider);
-export { ShortcutProvider };
+};

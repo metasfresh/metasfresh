@@ -10,28 +10,27 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PrintClientsBLTest extends AbstractPrintingTest
 {
@@ -46,9 +45,9 @@ public class PrintClientsBLTest extends AbstractPrintingTest
 
 		final I_AD_Print_Clients entry1 = Services.get(IPrintClientsBL.class).createPrintClientsEntry(ctx, hostKey);
 
-		Assert.assertNotNull("Printing clients entry shall be created", entry1);
-		Assert.assertEquals("Invalid AD_Session_ID", adSessionId, entry1.getAD_Session_ID());
-		Assert.assertEquals("Invalid HostKey", hostKey, entry1.getHostKey());
+		Assertions.assertNotNull(entry1, "Printing clients entry shall be created");
+		Assertions.assertEquals(adSessionId, entry1.getAD_Session_ID(), "Invalid AD_Session_ID");
+		Assertions.assertEquals(hostKey, entry1.getHostKey(), "Invalid HostKey");
 	}
 
 	@Test
@@ -62,8 +61,8 @@ public class PrintClientsBLTest extends AbstractPrintingTest
 		final I_AD_Print_Clients entry1 = Services.get(IPrintClientsBL.class).createPrintClientsEntry(ctx, hostKey1);
 
 		final I_AD_Print_Clients entry2 = Services.get(IPrintClientsBL.class).createPrintClientsEntry(ctx, hostKey1);
-		Assert.assertEquals("No duplicate records shall be created for same hostkey",
-				entry1.getAD_Print_Clients_ID(), entry2.getAD_Print_Clients_ID());
+		Assertions.assertEquals(
+				entry1.getAD_Print_Clients_ID(), entry2.getAD_Print_Clients_ID(), "No duplicate records shall be created for same hostkey");
 	}
 
 }

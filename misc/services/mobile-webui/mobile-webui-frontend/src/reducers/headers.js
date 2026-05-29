@@ -8,6 +8,7 @@ export const initialState = {
   entries: [
     {
       location: '/',
+      //screenId: ..., // will be set to something like ApplicationsListScreen, a bit later
       hidden: true,
       values: [],
       userInstructions: null,
@@ -28,6 +29,7 @@ const getEntryItemsFromState = (state) => {
 
   let nextUniqueId = 1;
   const itemsByKey = {};
+  const hiddenFields = [];
 
   headersEntries
     .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
@@ -35,14 +37,23 @@ const getEntryItemsFromState = (state) => {
     .filter((entryItem) => !entryItem.hidden)
     .forEach((entryItem) => {
       const caption = entryItem.caption;
-      let key;
-      if (!caption) {
-        key = 'unique-' + nextUniqueId++;
+      const key = caption ? caption : 'unique-' + nextUniqueId++;
+
+      let isFieldRemoved;
+      if (entryItem.hideField) {
+        if (!hiddenFields.includes(key)) {
+          hiddenFields.push(key);
+        }
+        isFieldRemoved = true;
       } else {
-        key = caption;
+        isFieldRemoved = hiddenFields.includes(key);
       }
 
-      itemsByKey[key] = entryItem;
+      if (isFieldRemoved) {
+        delete itemsByKey[key];
+      } else {
+        itemsByKey[key] = entryItem;
+      }
     });
 
   return Object.values(itemsByKey);
@@ -112,11 +123,17 @@ export const useBackLocationFromHeaders = () => {
   return useSelector((state) => getBackLocation({ state }), shallowEqual);
 };
 
+const getScreenIdFromHeaders = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries.length > 0 ? headersEntries[headersEntries.length - 1]?.screenId : null;
+};
+
 export const useNavigationInfoFromHeaders = () => {
   const { url: currentLocation } = useRouteMatch();
 
   return useSelector(
     (state) => ({
+      screenId: getScreenIdFromHeaders(state),
       caption: getCaptionFromHeaders(state),
       homeLocation: getHomeLocation({ state, currentLocation }),
     }),

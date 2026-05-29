@@ -11,12 +11,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static de.metas.material.event.MaterialEventConstants.M_SHIPMENTSCHEDULE_TABLE_NAME;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
@@ -59,13 +61,16 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final DocumentLineDescriptor documentLineDescriptor;
 
+	private final boolean isDropShipWarehouse;
+
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			@NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
 			final int shipmentScheduleId,
-			@Nullable final DocumentLineDescriptor documentLineDescriptor)
+			@Nullable final DocumentLineDescriptor documentLineDescriptor,
+			final boolean isDropShipWarehouse)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
@@ -73,6 +78,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.shipmentScheduleDetail = shipmentScheduleDetail;
 		this.documentLineDescriptor = documentLineDescriptor;
+		this.isDropShipWarehouse = isDropShipWarehouse;
 	}
 
 	@NonNull
@@ -106,5 +112,12 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
+	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(M_SHIPMENTSCHEDULE_TABLE_NAME, shipmentScheduleId);
 	}
 }

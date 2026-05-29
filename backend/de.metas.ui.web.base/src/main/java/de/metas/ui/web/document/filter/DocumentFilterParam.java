@@ -127,6 +127,13 @@ public final class DocumentFilterParam
 		return builder().setFieldName(fieldName).setOperator(operator).setValue(value).build();
 	}
 
+	public static DocumentFilterParam equals(
+			@NonNull final String fieldName,
+			@Nullable final Object value)
+	{
+		return builder().setFieldName(fieldName).setOperator(Operator.EQUAL).setValue(value).build();
+	}
+
 	private DocumentFilterParam(final Builder builder)
 	{
 		joinAnd = builder.joinAnd;
@@ -274,6 +281,10 @@ public final class DocumentFilterParam
 		{
 			return ((LookupValue)itemObj).getIdAsInt();
 		}
+		else if (itemObj instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)itemObj).getRepoId();
+		}
 		else
 		{
 			final String itemStr = itemObj.toString();
@@ -301,6 +312,15 @@ public final class DocumentFilterParam
 		}
 		return mapper.apply(value);
 	}
+
+	public boolean isNullValues()
+	{
+		return value == null
+				&& (!isRangeOperator() || valueTo == null)
+				&& sqlWhereClause == null;
+	}
+
+	private boolean isRangeOperator() {return operator != null && operator.isRangeOperator();}
 
 	//
 	//

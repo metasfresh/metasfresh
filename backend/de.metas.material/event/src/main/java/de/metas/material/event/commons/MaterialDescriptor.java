@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -47,6 +48,9 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Getter
 	WarehouseId warehouseId;
 
+	@Getter
+	LocatorId locatorId;
+
 	/**
 	 * Optional, if set and {@code isreservedForCustomer()==true}, then the respective candidate allocated to the respective *customer*
 	 * and is not available to other customers. This means that a possible ATP raise does not affect the ATP for other customers
@@ -75,6 +79,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Builder
 	private MaterialDescriptor(
 			final WarehouseId warehouseId,
+			final LocatorId locatorId,
 			final BPartnerId customerId,
 			final boolean reservedForCustomer,
 			final BPartnerId vendorId,
@@ -84,6 +89,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	{
 		this(
 				warehouseId,
+				locatorId,
 				customerId,
 				reservedForCustomer,
 				vendorId,
@@ -97,6 +103,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final WarehouseId warehouseId,
+			@JsonProperty("locatorId") final LocatorId locatorId,
 			@JsonProperty("customerId") @Nullable final BPartnerId customerId,
 			@JsonProperty("reservedForCustomer") final boolean reservedForCustomer,
 			@JsonProperty("vendorId") final BPartnerId vendorId,
@@ -109,6 +116,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
+		this.locatorId = locatorId;
 
 		this.customerId = customerId;
 		this.reservedForCustomer = reservedForCustomer;
@@ -142,6 +150,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(this.date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
+				.locatorId(this.locatorId)
 				.customerId(this.customerId)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -153,6 +162,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
+				.locatorId(this.locatorId)
 				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
@@ -165,18 +175,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.productDescriptor(productDescriptor)
 				.date(this.date)
 				.warehouseId(this.warehouseId)
-				.customerId(this.customerId)
-				.quantity(this.quantity)
-				.build();
-		return result.asssertMaterialDescriptorComplete();
-	}
-
-	public MaterialDescriptor withWarehouseId(final WarehouseId warehouseId)
-	{
-		final MaterialDescriptor result = MaterialDescriptor.builder()
-				.warehouseId(warehouseId)
-				.date(this.date)
-				.productDescriptor(this)
+				.locatorId(this.locatorId)
 				.customerId(this.customerId)
 				.quantity(this.quantity)
 				.build();
@@ -187,6 +186,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.warehouseId(this.warehouseId)
+				.locatorId(this.locatorId)
 				.date(this.date)
 				.productDescriptor(this)
 				.customerId(customerId)

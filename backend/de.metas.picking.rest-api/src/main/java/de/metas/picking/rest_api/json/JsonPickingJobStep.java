@@ -23,6 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.i18n.ITranslatableString;
@@ -46,6 +47,7 @@ public class JsonPickingJobStep
 	@NonNull JsonCompleteStatus completeStatus;
 
 	@NonNull String productId;
+	@NonNull String productNo;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -54,28 +56,47 @@ public class JsonPickingJobStep
 	@NonNull List<JsonPickingJobStepPickFrom> pickFromAlternatives;
 
 	public static JsonPickingJobStep of(
-			final PickingJobStep step,
-			final JsonOpts jsonOpts,
+			@NonNull final PickingJobStep step,
+			@NonNull final PickingJobLine line,
+			@NonNull final JsonOpts jsonOpts,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
+		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN), line, jsonOpts, getUOMSymbolById);
 
 		final List<JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
 				.stream()
 				.filter(PickingJobStepPickFromKey::isAlternative)
 				.map(step::getPickFrom)
-				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, jsonOpts, getUOMSymbolById))
+				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, line, jsonOpts, getUOMSymbolById))
 				.collect(ImmutableList.toImmutableList());
+
+		// When pickingUnit=TU, convert the step's CU qty to TU count for display.
+		// The step stores qtyToPick in CU (base UOM), but the frontend/user should see TU count.
+		final String uom;
+		final BigDecimal qtyToPick;
+		if (line.getPickingUnit().isTU())
+		{
+			uom = "TU";
+			qtyToPick = line.getPackingInfo()
+					.computeQtyTUsOfTotalCUs(step.getQtyToPick(), step.getProductId())
+					.toBigDecimal();
+		}
+		else
+		{
+			uom = step.getQtyToPick().getUOMSymbol();
+			qtyToPick = step.getQtyToPick().toBigDecimal();
+		}
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
 				.completeStatus(JsonCompleteStatus.of(step.getProgress()))
 				.productId(step.getProductId().getAsString())
-				.productName(step.getProductName().translate(adLanguage))
-				.uom(step.getQtyToPick().getUOMSymbol())
-				.qtyToPick(step.getQtyToPick().toBigDecimal())
+				.productNo(step.getProductValueAndName().getValue())
+				.productName(step.getProductValueAndName().getNameTrl(adLanguage))
+				.uom(uom)
+				.qtyToPick(qtyToPick)
 				.mainPickFrom(mainPickFrom)
 				.pickFromAlternatives(pickFromAlternatives)
 				.build();

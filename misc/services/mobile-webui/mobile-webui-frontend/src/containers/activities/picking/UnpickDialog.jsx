@@ -15,7 +15,7 @@ const UnpickDialog = ({ onSubmit, onCloseDialog }) => {
   );
 
   return (
-    <Dialog className="screen">
+    <Dialog className="screen unpick-dialog">
       <table className="table">
         <tbody>
           <tr>

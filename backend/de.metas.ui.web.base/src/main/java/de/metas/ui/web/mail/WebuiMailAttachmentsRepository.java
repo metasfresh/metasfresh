@@ -1,10 +1,11 @@
 package de.metas.ui.web.mail;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.UUID;
-
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -16,12 +17,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import lombok.NonNull;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.UUID;
 
 /*
  * #%L
@@ -48,7 +47,7 @@ import lombok.NonNull;
 @Component
 public class WebuiMailAttachmentsRepository implements InitializingBean
 {
-	private static final transient Logger logger = LogManager.getLogger(WebuiMailAttachmentsRepository.class);
+	private static final Logger logger = LogManager.getLogger(WebuiMailAttachmentsRepository.class);
 
 	private static final String PROPERTY_AttachmentsDir = "metasfresh.webui.email.attachmentsDir";
 	@Value("${metasfresh.webui.email.attachmentsDir:}")
@@ -57,7 +56,7 @@ public class WebuiMailAttachmentsRepository implements InitializingBean
 	private File attachmentsDir; // lazy
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		attachmentsDir = checkCreateAttachmentsDir(attachmentsFilePath);
 		logger.info("Attachments directory: {}", attachmentsDir);

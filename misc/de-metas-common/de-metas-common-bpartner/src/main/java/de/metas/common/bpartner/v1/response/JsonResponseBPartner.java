@@ -27,8 +27,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -38,7 +38,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
+@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
@@ -73,41 +73,39 @@ public class JsonResponseBPartner
 	JsonMetasfreshId metasfreshId;
 
 	@ApiModelProperty( //
-			required = false, //
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner.ExternalId`.")
 	@JsonProperty(EXTERNAL_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
 	String code;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.GlobalId`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.GlobalId`.")
 	@JsonProperty(GLOBAL_ID)
 	String globalId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsActive`.")
 	@JsonProperty(ACTIVE)
 	boolean active;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name2`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name2`.")
 	@JsonProperty(NAME_2)
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name3`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name3`.")
 	@JsonProperty(NAME_3)
 	@JsonInclude(Include.NON_NULL)
 	String name3;
-
+	
 	@ApiModelProperty( //
-			required = false, //
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonProperty(COMPANY_NAME)
@@ -115,7 +113,6 @@ public class JsonResponseBPartner
 	String companyName;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
 	@JsonProperty(PARENT_ID)
@@ -123,7 +120,6 @@ public class JsonResponseBPartner
 	JsonMetasfreshId parentId;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	@JsonProperty(PHONE)
 	@JsonInclude(Include.NON_NULL)
@@ -133,41 +129,40 @@ public class JsonResponseBPartner
 	@JsonProperty(LANGUAGE)
 	String language;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL`.")
 	@JsonProperty(URL)
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL2`.")
 	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
-	private String url2;
+	String url2;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL3`.")
 	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
-	private String url3;
+	String url3;
 
 	@ApiModelProperty( //
-			required = false, //
 			value = "Name of the business partner's group")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsVendor`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
 	boolean vendor;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCustomer`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsCustomer`.")
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCompany`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsCompany`.")
 	@JsonProperty(COMPANY)
 	boolean company;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.VATaxID`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.VATaxID`.")
 	@JsonProperty(VAT_ID)
 	String vatId;
 
@@ -186,7 +181,7 @@ public class JsonResponseBPartner
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(NAME) @NonNull final String name,
 			@JsonProperty(NAME_2) @Nullable final String name2,
-			@JsonProperty(NAME_3) @Nullable final String name3,
+			@JsonProperty(NAME_3) @Nullable final String name3, 
 			@JsonProperty(COMPANY_NAME) @Nullable final String companyName,
 			@JsonProperty(PARENT_ID) @Nullable final JsonMetasfreshId parentId,
 			@JsonProperty(PHONE) @Nullable final String phone,
@@ -200,7 +195,7 @@ public class JsonResponseBPartner
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
 			//
-			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
+			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;

@@ -61,12 +61,12 @@ public class JsonConverter
 	public JsonProduct toJsonProduct(@NonNull final Product product, @NonNull final String adLanguage)
 	{
 		return JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.name(product.getName().translate(adLanguage))
 				.description(product.getDescription().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked())
 				.build();
 	}

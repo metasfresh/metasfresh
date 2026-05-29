@@ -1,6 +1,6 @@
 package de.metas.ui.web.view.util;
 
-import de.metas.printing.esb.base.util.Check;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

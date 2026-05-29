@@ -1,34 +1,34 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.quantity.Quantity;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseItemRepositoryTest
 {
@@ -63,7 +63,7 @@ public class PurchaseItemRepositoryTest
 
 	private I_M_Product product;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -108,6 +108,30 @@ public class PurchaseItemRepositoryTest
 		assertThat(record.getC_OrderLinePO_ID()).isEqualTo(purchaseOrderLine.getC_OrderLine_ID());
 		assertThat(record.getC_OrderPO_ID()).isEqualTo(50);
 		assertThat(record.getRecord_ID()).isEqualTo(30);
+	}
+
+	@Test
+	public void load_purchaseErrorItem_withoutTransactionReference()
+	{
+		// guard: PurchaseErrorItem may be persisted without a transactionReference
+		// (write path in PurchaseItemRepository.savePurchaseErrorItem skips AD_Table_ID/Record_ID when null).
+		// On reload the transactionReference must come back as null, not as TableRecordReference(0, 0).
+		final int purchaseCandidateId = 10;
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(purchaseCandidateId, ONE);
+
+		final I_C_PurchaseCandidate_Alloc allocRecord = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		allocRecord.setC_PurchaseCandidate_ID(purchaseCandidateId);
+		allocRecord.setAD_Issue_ID(123); // > 0 so the load path treats it as an error item
+		// AD_Table_ID and Record_ID are deliberately left at their default 0
+		save(allocRecord);
+
+		// invoke the method under test
+		new PurchaseItemRepository().loadPurchaseItems(purchaseCandidate);
+
+		assertThat(purchaseCandidate.getPurchaseErrorItems()).hasSize(1);
+		final PurchaseErrorItem retrievedErrorItem = purchaseCandidate.getPurchaseErrorItems().get(0);
+		assertThat(retrievedErrorItem.getTransactionReference()).isNull();
+		assertThat(retrievedErrorItem.getAdIssueId()).isEqualTo(AdIssueId.ofRepoId(123));
 	}
 
 	@Test

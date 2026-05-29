@@ -46,6 +46,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -113,8 +114,12 @@ public class WebRestApiApplication
 					.run(args);
 		}
 
+		final WebRestApiApplicationHealthIndicator healthIndicator = SpringContextHolder.instance.getBean(WebRestApiApplicationHealthIndicator.class);
+
 		// now init the model validation engine
 		ModelValidationEngine.get();
+
+		healthIndicator.setStatusUp();
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()

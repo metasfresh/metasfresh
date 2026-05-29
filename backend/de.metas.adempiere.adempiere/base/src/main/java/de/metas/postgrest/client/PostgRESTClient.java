@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -44,7 +45,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class PostgRESTClient
@@ -58,7 +60,7 @@ public class PostgRESTClient
 		this.configRepository = configRepository;
 	}
 
-	public String performGet(@NonNull final GetRequest getRequest)
+	public Resource performGet(@NonNull final GetRequest getRequest)
 	{
 		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getRequest.getBaseURL());
 		Loggables.withLogger(log, Level.DEBUG).addLog("*** performGet(): for request {}", getRequest);
@@ -73,11 +75,11 @@ public class PostgRESTClient
 			builder.queryParams(getRequest.getQueryParameters());
 		}
 
-		final HttpEntity<String> request = new HttpEntity<>(buildHttpHeaders(getRequest.getResponseFormat()));
+		final HttpEntity<String> request = new HttpEntity<>(buildHttpHeaders(getRequest));
 
 		final URI uri = builder.build().encode().toUri();
 
-		final ResponseEntity<String> responseEntity = restTemplate().exchange(uri, HttpMethod.GET, request, String.class);
+		final ResponseEntity<Resource> responseEntity = restTemplate().exchange(uri, HttpMethod.GET, request, Resource.class);
 
 		final boolean responseWithErrors = !responseEntity.getStatusCode().is2xxSuccessful();
 
@@ -91,10 +93,16 @@ public class PostgRESTClient
 		return responseEntity.getBody();
 	}
 
-	private HttpHeaders buildHttpHeaders(@NonNull final PostgRESTResponseFormat responseFormat)
+	private HttpHeaders buildHttpHeaders(@NonNull final GetRequest request)
 	{
+		final PostgRESTResponseFormat responseFormat = request.getResponseFormat();
+		
+		final List<MediaType> acceptableMediaTypes = new ArrayList<>();
+		request.getAdditionalAccepts().forEach(a -> acceptableMediaTypes.add(MediaType.valueOf(a)));
+		acceptableMediaTypes.add(MediaType.valueOf(responseFormat.getContentType()));
+
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Collections.singletonList(MediaType.valueOf(responseFormat.getContentType())));
+		headers.setAccept(acceptableMediaTypes);
 
 		return headers;
 	}

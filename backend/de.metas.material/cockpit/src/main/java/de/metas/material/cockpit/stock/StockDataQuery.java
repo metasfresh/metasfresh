@@ -1,9 +1,6 @@
 package de.metas.material.cockpit.stock;
 
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -11,6 +8,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 /*
  * #%L
@@ -38,14 +36,10 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class StockDataQuery
 {
-	/** Empty list means "all warehouses" */
-	@Singular
-	ImmutableSet<WarehouseId> warehouseIds;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	@Default
-	AttributesKey storageAttributesKey = AttributesKey.ALL;
+	/**
+	 * Empty list means "all warehouses"
+	 */
+	@NonNull @Singular ImmutableSet<WarehouseId> warehouseIds;
+	@NonNull ProductId productId;
+	@NonNull @Default AttributesKey storageAttributesKey = AttributesKey.ALL;
 }

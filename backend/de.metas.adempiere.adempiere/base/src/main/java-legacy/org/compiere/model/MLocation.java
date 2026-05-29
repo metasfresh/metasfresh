@@ -16,11 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
@@ -28,10 +27,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  *	Location (Address)
@@ -316,36 +315,6 @@ public class MLocation extends X_C_Location
 		return m_r;
 	}	//	getRegion
 
-	/**
-	 * 	Get (local) Region Name
-	 *	@return	region Name or ""
-	 */
-	@Override
-	public String getRegionName()
-	{
-		return getRegionName(false);
-	}	//	getRegionName
-
-	/**
-	 * 	Get Region Name
-	 * 	@param getFromRegion get from region (not locally)
-	 *	@return	region Name or ""
-	 */
-	String getRegionName (boolean getFromRegion)
-	{
-		if (getFromRegion && getCountry().isHasRegion()
-			&& getRegion() != null)
-		{
-			super.setRegionName("");	//	avoid duplicates
-			return getRegion().getName();
-		}
-		//
-		String regionName = super.getRegionName();
-		if (regionName == null)
-			regionName = "";
-		return regionName;
-	}	//	getRegionName
-
 	public static boolean equals (
 			I_C_Location locationRecord,
 			int C_Country_ID,
@@ -466,7 +435,7 @@ public class MLocation extends X_C_Location
 			{
 				if (getRegion() != null)					//	we have a region
 					outStr.append(getRegion().getName());
-				else if (super.getRegionName() != null && super.getRegionName().length() > 0)
+				else if (super.getRegionName() != null && !super.getRegionName().isEmpty())
 					outStr.append(super.getRegionName());	//	local region name
 			}
 			else if (token.equals("P"))
@@ -502,7 +471,7 @@ public class MLocation extends X_C_Location
 
 		//	Print Region Name if entered and not part of pattern
 		if (c.getDisplaySequence().indexOf("@R@") == -1
-			&& super.getRegionName() != null && super.getRegionName().length() > 0)
+			&& super.getRegionName() != null && !super.getRegionName().isEmpty())
 			outStr.append(" ").append(super.getRegionName());
 
 		String retValue = StringUtils.replace(outStr.toString(), "\\n", "\n");

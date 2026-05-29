@@ -1,5 +1,9 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
 Feature: Validate external reference is sent to RabbitMQ
+## F00802: External System
+## F00802: External System
 
   Background:
     Given infrastructure and metasfresh are running

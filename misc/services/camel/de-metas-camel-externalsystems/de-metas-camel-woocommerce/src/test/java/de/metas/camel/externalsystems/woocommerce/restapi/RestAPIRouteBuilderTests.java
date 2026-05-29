@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-woocommerce
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +35,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -70,24 +71,21 @@ public class RestAPIRouteBuilderTests extends CamelTestSupport
 	}
 
 	@Override
-	public boolean isUseAdviceWith()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		return true;
-	}
+		super.configureContext(camelContextConfiguration);
 
-	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
-	{
+		testConfiguration().withUseAdviceWith(true);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(RestAPIRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Test
@@ -122,7 +120,7 @@ public class RestAPIRouteBuilderTests extends CamelTestSupport
 		template.sendBody("direct:" + ENABLE_RESOURCE_ROUTE_ID, invokeExternalSystemRequest);
 
 		// then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockEnableTokenEP.called).isEqualTo(1);
 		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
@@ -164,7 +162,7 @@ public class RestAPIRouteBuilderTests extends CamelTestSupport
 		template.sendBody("direct:" + DISABLE_RESOURCE_ROUTE_ID, invokeExternalSystemRequest);
 
 		// then
-		assertMockEndpointsSatisfied();
+MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockExpireTokenEP.called).isEqualTo(1);
 		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 

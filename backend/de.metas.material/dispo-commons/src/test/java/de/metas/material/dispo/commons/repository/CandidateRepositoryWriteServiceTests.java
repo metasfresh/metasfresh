@@ -109,7 +109,8 @@ public class CandidateRepositoryWriteServiceTests
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
 	}
 

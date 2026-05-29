@@ -51,14 +51,9 @@ public interface IProductBOMBL extends ISingletonService
 	void updateIsBOMFlag(ProductId productId);
 
 	/**
-	 * Calculates low level code (LLC) for given product.
-	 * It also checks for BOM cycles.
-	 *
-	 * @return low level code (LLC)
+	 * checking BOM cycles.
 	 */
-	int calculateProductLowestLevel(ProductId productId);
-
-	IProductLowLevelUpdater updateProductLowLevels();
+	void checkCycles(final ProductId productId);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>

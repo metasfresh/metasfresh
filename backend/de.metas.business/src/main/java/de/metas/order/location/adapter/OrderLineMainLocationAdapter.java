@@ -98,7 +98,7 @@ public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 	}
 
 	@Override
-	public void setBPartnerAddress(String address)
+	public void setBPartnerAddress(final String address)
 	{
 		delegate.setBPartnerAddress(address);
 	}

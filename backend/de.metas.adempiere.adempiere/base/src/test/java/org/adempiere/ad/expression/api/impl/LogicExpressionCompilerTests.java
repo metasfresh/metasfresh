@@ -28,17 +28,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class LogicExpressionCompilerTests
@@ -61,8 +59,6 @@ public class LogicExpressionCompilerTests
 
 	/**
 	 * Set's <code>adClientId</code> in global context and checks if it was configured correctly
-	 *
-	 * @param adClientId
 	 */
 	private void setClientIdAndCheck(final int adClientId)
 	{
@@ -80,8 +76,8 @@ public class LogicExpressionCompilerTests
 		}
 
 		final int actualClientId = Env.getAD_Client_ID(ctx);
-		Assert.assertEquals("AD_Client_ID=" + adClientId + " was not set correctly in the context",
-				expectedClientId, actualClientId);
+		Assertions.assertEquals(
+				expectedClientId, actualClientId, "AD_Client_ID=" + adClientId + " was not set correctly in the context");
 	}
 
 	private void assertSetGetOperatorPrecedence(final int adClientId, final boolean useOperatorPrecedenceTarget)
@@ -93,8 +89,8 @@ public class LogicExpressionCompilerTests
 		compiler.setUseOperatorPrecedence(useOperatorPrecedenceTarget);
 		final boolean useOperatorPrecedenceActual = compiler.isUseOperatorPrecedence();
 
-		Assert.assertEquals("UseOperatorPrecedence was not correctly set to '" + useOperatorPrecedenceTarget + "' (default: " + useOperatorPrecedenceDefault + ")",
-				useOperatorPrecedenceTarget, useOperatorPrecedenceActual);
+		Assertions.assertEquals(useOperatorPrecedenceTarget, useOperatorPrecedenceActual,
+				"UseOperatorPrecedence was not correctly set to '" + useOperatorPrecedenceTarget + "' (default: " + useOperatorPrecedenceDefault + ")");
 	}
 
 	private ILogicExpression compile(final String expressionStr, final boolean useOperatorPrecendence)
@@ -110,14 +106,14 @@ public class LogicExpressionCompilerTests
 		return compiler.compile(expressionStr);
 	}
 
-	private void assertCompileException(final String expressionStr)
+	private void assertCompileException(@Nullable final String expressionStr)
 	{
 		compiler.setUseOperatorPrecedence(false);
 
 		try
 		{
 			compiler.compile(expressionStr);
-			Assert.fail("Expression should throw parse exception: " + expressionStr);
+			Assertions.fail("Expression should throw parse exception: " + expressionStr);
 		}
 		catch (final ExpressionCompileException e)
 		{
@@ -171,7 +167,7 @@ public class LogicExpressionCompilerTests
 		final ILogicExpression expression = compile("(@a@='5'|@b@!@c@)&@d@>3   |   @x@<'10'&@y@!@z@", true);
 		final ILogicExpression expressionRecompiled = recompile(expression, true);
 
-		Assert.assertEquals(expression, expressionRecompiled);
+		Assertions.assertEquals(expression, expressionRecompiled);
 	}
 
 	@Test
@@ -179,7 +175,7 @@ public class LogicExpressionCompilerTests
 	{
 		final ILogicExpression expression = compile("(@a@='5'|@b@!@c@)&@d@>3|@x@<'10'&@y@!@z@", true);
 		final ILogicExpression expression2 = compile("(@a@='5'|@b@!@c@)&@d@>3|(@x@<'10'&@y@!@z@)", true);
-		Assert.assertEquals("Expressions shall be equivalent", expression, expression2);
+		Assertions.assertEquals(expression, expression2, "Expressions shall be equivalent");
 	}
 
 	@Test
@@ -187,13 +183,13 @@ public class LogicExpressionCompilerTests
 	{
 		final ILogicExpression expression = compile("(@a@='5'|@b@!@c@)&@d@>3|@x@<'10'&@y@!@z@", true);
 		final ILogicExpression expressionWrong = compile("((@a@='5'|@b@!@c@)&@d@>3|@x@<'10')&@y@!@z@", true);
-		Assert.assertThat("Expressions shall NOT be equivalent", expression, not(equalTo(expressionWrong)));
+		Assertions.assertNotEquals(expression, expressionWrong, "Expressions shall NOT be equivalent");
 
 		final ILogicExpression expressionGood = compile("(@a@='5'|@b@!@c@)&@d@>3|(@x@<'10'&@y@!@z@)", true);
-		Assert.assertThat("Expressions shall NOT be equivalent", expression, equalTo(expressionGood));
+		Assertions.assertEquals(expression, expressionGood, "Expressions shall be equivalent");
 
 		// Just to be sure
-		Assert.assertThat("Good and wrong expressions cannot be equal", expressionGood, not(equalTo(expressionWrong)));
+		Assertions.assertNotEquals(expressionGood, expressionWrong, "Good and wrong expressions cannot be equal");
 	}
 
 	private void test_compile_ConstantExpressions(final boolean expectedResult, final String expressionStr)
@@ -201,9 +197,9 @@ public class LogicExpressionCompilerTests
 		final boolean useOperatorPrecendence = true;
 		final ILogicExpression expression = compile(expressionStr, useOperatorPrecendence);
 
-		Assert.assertNotNull("Not null for " + expressionStr, expression);
-		Assert.assertEquals("Constant expression: " + expression, true, expression.isConstant());
-		Assert.assertEquals("Constant value", expectedResult, expression.constantValue());
+		Assertions.assertNotNull(expression, "Not null for " + expressionStr);
+		Assertions.assertTrue(expression.isConstant(), "Constant expression: " + expression);
+		Assertions.assertEquals(expectedResult, expression.constantValue(),"Constant value");
 
 		// NOTE: cannot validate the string representations because in some cases they differ with some spaces or some parenthesis.
 		// Assert.assertEquals("ExpressionString", expressionStr, expression.getExpressionString());
@@ -230,9 +226,9 @@ public class LogicExpressionCompilerTests
 	public void test_compile_xor()
 	{
 		final LogicExpression expr = (LogicExpression)compile("@A@=1 ^ @B@=2", true);
-		Assert.assertEquals("Left", "@A@=1", expr.getLeft().getExpressionString());
-		Assert.assertEquals("Right", "@B@=2", expr.getRight().getExpressionString());
-		Assert.assertEquals("Operator", ILogicExpression.LOGIC_OPERATOR_XOR, expr.getOperator());
+		Assertions.assertEquals( "@A@=1", expr.getLeft().getExpressionString(), "Left");
+		Assertions.assertEquals( "@B@=2", expr.getRight().getExpressionString(), "Right");
+		Assertions.assertEquals( ILogicExpression.LOGIC_OPERATOR_XOR, expr.getOperator(), "Operator");
 	}
 
 	@Test

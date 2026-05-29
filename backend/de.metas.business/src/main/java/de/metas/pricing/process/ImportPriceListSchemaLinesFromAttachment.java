@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.apache.commons.io.IOUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -41,6 +42,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyConversionTypeId;
@@ -186,7 +188,18 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 		{
 			return null;
 		}
-		return partnerDAO.getBPartnerIdByValue(value).orElse(null);
+		try
+		{
+			return partnerDAO.getBPartnerIdByValue(value).orElse(null);
+		}
+		catch (final DBMoreThanOneRecordsFoundException e)
+		{
+			final AdempiereException ex = new AdempiereException(
+					BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+					value, e.getMessage());
+			ex.initCause(e);
+			throw ex.markAsUserValidationError();
+		}
 	}
 
 	@Nullable

@@ -1,7 +1,24 @@
 package de.metas.procurement.base.process;
 
-import java.sql.Timestamp;
-
+import de.metas.contracts.flatrate.process.ProcessUtil;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.money.CurrencyId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.Process;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.procurement.base.IPMMContractsBL;
+import de.metas.procurement.base.PMMContractBuilder;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.TrxCallable;
@@ -11,20 +28,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.money.CurrencyId;
-import de.metas.process.IProcessDefaultParameter;
-import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.Process;
-import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
-import de.metas.process.RunOutOfTrx;
-import de.metas.procurement.base.IPMMContractsBL;
-import de.metas.procurement.base.PMMContractBuilder;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /*
  * #%L
@@ -56,7 +61,8 @@ import de.metas.util.Services;
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class C_Flatrate_Term_Create_ProcurementContract
 		extends JavaProcess
-		implements IProcessDefaultParametersProvider
+		implements IProcessDefaultParametersProvider,
+		IProcessPrecondition
 {
 	// services
 	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
@@ -89,6 +95,24 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	@Param(mandatory = true, parameterName = "IsComplete")
 	private boolean p_isComplete;
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		if (context.isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		if(ProcessUtil.isFlatFeeContract(context))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not supported for FlatFee contracts");
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
+	
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -137,7 +161,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 
 	/**
 	 * If the given <code>parameterName</code> is {@value #PARAM_NAME_AD_USER_IN_CHARGE_ID},<br>
-	 * then the method returns the user set in <code>AD_SysConfig</code> {@value #SYSCONFIG_AD_USER_IN_CHARGE}.
+	 * then the method returns the user from {@link IPMMContractsBL#getDefaultContractUserInCharge_ID(Properties)}.
 	 */
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)

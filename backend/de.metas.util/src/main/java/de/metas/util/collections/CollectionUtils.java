@@ -6,8 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Contract;
@@ -26,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -433,6 +436,7 @@ public final class CollectionUtils
 		return result.build();
 	}
 
+	@SuppressWarnings("unused")
 	public static <T> ImmutableSet<T> removeElement(
 			@NonNull final ImmutableSet<T> set,
 			@Nullable final T elementToRemove)
@@ -450,9 +454,32 @@ public final class CollectionUtils
 			@NonNull final K key,
 			@NonNull final UnaryOperator<V> mappingFunction)
 	{
-		return mapValues(
-				map,
-				(currentKey, currentValue) -> currentKey.equals(key) ? mappingFunction.apply(currentValue) : currentValue);
+		if (!map.containsKey(key))
+		{
+			throw Check.mkEx("key '" + key + "' does not exist in map. Available keys are: " + map.keySet());
+		}
+
+		final V value = map.get(key);
+		final V valueChanged = mappingFunction.apply(value);
+		if (Objects.equals(value, valueChanged))
+		{
+			return map;
+		}
+
+		final ImmutableMap.Builder<K, V> resultBuilder = ImmutableMap.builder();
+
+		map.forEach((k, v) -> {
+			if (Objects.equals(k, key))
+			{
+				resultBuilder.put(k, valueChanged);
+			}
+			else
+			{
+				resultBuilder.put(k, v);
+			}
+		});
+
+		return resultBuilder.build();
 	}
 
 	public static <K, V, W> ImmutableMap<K, W> mapValues(
@@ -528,6 +555,7 @@ public final class CollectionUtils
 	 *
 	 * @return the removed first element
 	 */
+	@SuppressWarnings("unused")
 	public static <T> T removeFirst(@NonNull final Set<T> set)
 	{
 		final Iterator<T> it = set.iterator();
@@ -547,7 +575,7 @@ public final class CollectionUtils
 		}
 
 		//
-		// Fetch from cache what's available
+		// Fetch from the cache what's available
 		final List<V> values = new ArrayList<>(keys.size());
 		final Set<K> keysToLoad = new HashSet<>();
 		for (final K key : ImmutableSet.copyOf(keys))
@@ -574,6 +602,21 @@ public final class CollectionUtils
 
 		//
 		return values;
+	}
+
+	@NonNull
+	public static <K, V> V getOrLoad(
+			@NonNull final Map<K, V> map,
+			@NonNull final K key,
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
+	{
+		final V value = getAllOrLoadReturningMap(map, ImmutableSet.of(key), valuesLoader)
+				.get(key);
+		if (value == null)
+		{
+			throw Check.mkEx("No value found for key: " + key + " in " + map);
+		}
+		return value;
 	}
 
 	public static <K, V> Map<K, V> getAllOrLoadReturningMap(
@@ -735,6 +778,7 @@ public final class CollectionUtils
 		return ImmutableMap.copyOf(newMap);
 	}
 
+	@SuppressWarnings("unused")
 	public static <K, V> ImmutableMap<K, V> mergeMaps(
 			@NonNull final ImmutableMap<K, V> map1,
 			@NonNull final ImmutableMap<K, V> map2)
@@ -755,30 +799,10 @@ public final class CollectionUtils
 		}
 	}
 
-	@NonNull
-	public <K, V> Map<K, List<V>> groupMultiValueByKey(
-			@NonNull final Collection<V> values,
-			@NonNull final Function<V, K> mappingFunction)
-	{
-
-		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
-
-		values.forEach(value -> {
-			final K currentKey = mappingFunction.apply(value);
-
-			final ArrayList<V> currentValues = new ArrayList<>();
-			currentValues.add(value);
-
-			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);
-		});
-
-		return ImmutableMap.copyOf(key2Values);
-	}
-
 	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)
 	{
 		return collection.stream()
-				.filter(elem -> value.equals(elem))
+				.filter(value::equals)
 				.count() > 1;
 	}
 
@@ -792,7 +816,6 @@ public final class CollectionUtils
 	{
 		return Optional.ofNullable(first(collection));
 	}
-
 
 	public static <K, V> ImmutableMap<K, ImmutableList<V>> toImmutableMap(final ListMultimap<K, V> multimap)
 	{
@@ -809,7 +832,6 @@ public final class CollectionUtils
 		return result.build();
 	}
 
-
 	@Nullable
 	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
 	{
@@ -820,6 +842,110 @@ public final class CollectionUtils
 	public static <T> ImmutableSet<T> toImmutableSetOrEmpty(@Nullable final Collection<T> collection)
 	{
 		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : ImmutableSet.of();
+	}
+
+	@Builder(builderMethodName = "syncLists", builderClassName = "SyncListsBuilder", buildMethodName = "execute")
+	private static <T, S, K> ImmutableList<T> syncLists0(
+			@NonNull final Iterable<T> target,
+			@NonNull final Iterable<S> source,
+			@NonNull final Function<T, K> targetKeyExtractor,
+			@NonNull final Function<S, K> sourceKeyExtractor,
+			@NonNull final BiFunction<T, S, T> mergeFunction
+	)
+	{
+		final ImmutableMap<K, T> targetByKey = Maps.uniqueIndex(target, targetKeyExtractor::apply);
+		final ImmutableList.Builder<T> result = ImmutableList.builder();
+
+		for (final S sourceItem : source)
+		{
+			final K key = sourceKeyExtractor.apply(sourceItem);
+			T targetItem = targetByKey.get(key);
+
+			final T resultItem = mergeFunction.apply(targetItem, sourceItem);
+			result.add(resultItem);
+		}
+
+		return result.build();
+	}
+
+	public static <K, V> Map<K, V> fillMissingKeys(@NonNull final Map<K, V> map, @NonNull final Collection<K> keys, @NonNull final V defaultValue)
+	{
+		if (keys.isEmpty())
+		{
+			return map;
+		}
+
+		LinkedHashMap<K, V> result = null;
+
+		for (K key : keys)
+		{
+			if (!map.containsKey(key))
+			{
+				if (result == null)
+				{
+					result = new LinkedHashMap<>(map.size() + keys.size());
+					result.putAll(map);
+				}
+				result.put(key, defaultValue);
+			}
+		}
+
+		return result == null ? map : result;
+	}
+
+	public <K, V> ImmutableMap<K, V> merge(@NonNull final ImmutableMap<K, V> map, K key, V value, BinaryOperator<V> remappingFunction)
+	{
+		if (map.isEmpty())
+		{
+			return ImmutableMap.of(key, value);
+		}
+
+		final ImmutableMap.Builder<K, V> mapBuilder = ImmutableMap.builder();
+		boolean added = false;
+		boolean changed = false;
+		for (Map.Entry<K, V> entry : map.entrySet())
+		{
+			if (!added && Objects.equals(key, entry.getKey()))
+			{
+				final V valueOld = entry.getValue();
+				final V valueNew = remappingFunction.apply(valueOld, value);
+				mapBuilder.put(key, valueNew);
+				added = true;
+
+				if (!Objects.equals(valueOld, valueNew))
+				{
+					changed = true;
+				}
+			}
+			else
+			{
+				mapBuilder.put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		if (!added)
+		{
+			mapBuilder.put(key, value);
+			changed = true;
+		}
+
+		if (!changed)
+		{
+			return map;
+		}
+
+		return mapBuilder.build();
+	}
+
+	public static <T> ImmutableList<T> removeIf(@NonNull ImmutableList<T> list, @NonNull Predicate<T> predicate)
+	{
+		if (list.isEmpty()) {return list;}
+
+		final ImmutableList<T> result = list.stream()
+				.filter(item -> !predicate.test(item))
+				.collect(ImmutableList.toImmutableList());
+
+		return list.size() == result.size() ? list : result;
 	}
 
 }

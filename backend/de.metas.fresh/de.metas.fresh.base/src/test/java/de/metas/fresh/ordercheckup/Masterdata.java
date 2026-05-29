@@ -22,16 +22,14 @@ package de.metas.fresh.ordercheckup;
  * #L%
  */
 
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.junit.Assert;
-
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
-import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
+import org.junit.jupiter.api.Assertions;
 
 public class Masterdata
 {
@@ -73,12 +71,12 @@ public class Masterdata
 		public void assertPlantReportOrderLines(final I_C_OrderLine... expectedOrderLines)
 		{
 			final I_C_Order_MFGWarehouse_Report report = retrievePlantReport();
-			Assert.assertNotNull("Plant report exists for " + plant.getName(), report);
-			Assert.assertEquals("Plant", plant.getS_Resource_ID(), report.getPP_Plant_ID());
-			Assert.assertNull("Warehouse", report.getM_Warehouse());
-			Assert.assertEquals("Responsible", responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID());
-			Assert.assertTrue("Processed", report.isProcessed());
-			Assert.assertTrue("Active", report.isActive());
+			Assertions.assertNotNull(report, "Plant report exists for " + plant.getName());
+			Assertions.assertEquals(plant.getS_Resource_ID(), report.getPP_Plant_ID(), "Plant");
+			Assertions.assertNull(report.getM_Warehouse(), "Warehouse");
+			Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
+			Assertions.assertTrue(report.isProcessed(), "Processed");
+			Assertions.assertTrue(report.isActive(), "Active");
 
 			helper.assertReportHasOrderLines(report, expectedOrderLines);
 		}
@@ -111,12 +109,12 @@ public class Masterdata
 			public void assertWarehouseReportOrderLines(final I_C_OrderLine... expectedOrderLines)
 			{
 				final I_C_Order_MFGWarehouse_Report report = retrieveWarehouseReport();
-				Assert.assertNotNull("Warehouse report exists for " + warehouse.getName(), report);
-				Assert.assertEquals("Plant", warehouse.getPP_Plant_ID(), report.getPP_Plant_ID());
-				Assert.assertEquals("Warehouse", warehouse.getM_Warehouse_ID(), report.getM_Warehouse_ID());
-				Assert.assertEquals("Responsible", responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID());
-				Assert.assertTrue("Processed", report.isProcessed());
-				Assert.assertTrue("Active", report.isActive());
+				Assertions.assertNotNull(report, "Warehouse report exists for " + warehouse.getName());
+				Assertions.assertEquals(warehouse.getPP_Plant_ID(), report.getPP_Plant_ID(), "Plant");
+				Assertions.assertEquals(warehouse.getM_Warehouse_ID(), report.getM_Warehouse_ID(), "Warehouse");
+				Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
+				Assertions.assertTrue(report.isProcessed(), "Processed");
+				Assertions.assertTrue(report.isActive(), "Active");
 				helper.assertReportHasOrderLines(report, expectedOrderLines);
 			}
 		}

@@ -22,24 +22,22 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.junit.Ignore;
-
 import com.google.common.base.MoreObjects.ToStringHelper;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.uom.UOMType;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Disabled
 public class ListAttributeStorage extends AbstractAttributeStorage
 {
 	private final String id;

@@ -27,7 +27,7 @@ import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
@@ -47,14 +47,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class RestApiUtilsV1Test
 {
-
-	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	IAttributeSetInstanceBL asiBL;
 	private OrgId orgId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		asiBL = Services.get(IAttributeSetInstanceBL.class);
 		orgId = BusinessTestHelper.createOrgWithTimeZone();
 	}
 
@@ -64,7 +64,7 @@ class RestApiUtilsV1Test
 		final I_M_AttributeSetInstance asiRecord = newInstance(I_M_AttributeSetInstance.class);
 		saveRecord(asiRecord);
 
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(asiRecord.getM_AttributeSetInstance_ID()));
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(asiRecord.getM_AttributeSetInstance_ID()));
 
 		assertThat(attributeSet.isEmpty()).isTrue();
 	}
@@ -112,7 +112,7 @@ class RestApiUtilsV1Test
 		aiRecord3.setValueNumber(BigDecimal.TEN);
 		saveRecord(aiRecord3);
 
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(asiRecord.getM_AttributeSetInstance_ID()));
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(asiRecord.getM_AttributeSetInstance_ID()));
 
 		// when
 		final JsonAttributeSetInstance result = RestApiUtilsV1.extractJsonAttributeSetInstance(attributeSet, orgId);

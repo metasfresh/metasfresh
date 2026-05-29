@@ -2,6 +2,8 @@ package de.metas.purchasecandidate.material.event;
 
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -14,6 +16,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -26,6 +29,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_DiscountSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -103,7 +107,10 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 
 		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
 				new PurchaseOrderDemandMatcher(),
-				new VendorProductInfoService(new BPartnerBL(new UserRepository())));
+				new VendorProductInfoService(new BPartnerBL(new UserRepository())),
+				Mockito.mock(CandidateRepositoryRetrieval.class),
+				Mockito.mock(CandidateRepositoryWriteService.class),
+				Mockito.mock(PurchaseCandidateRepository.class));
 
 		// invoke the method under test
 		final List<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvents = purchaseCandidateAdvisedEventCreator

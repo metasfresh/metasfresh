@@ -22,18 +22,17 @@ package manual;
  * #L%
  */
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.junit.Ignore;
-
 import de.metas.printing.client.Context;
 import de.metas.printing.client.encoder.JsonBeanEncoder;
 import de.metas.printing.client.endpoint.DirectoryPrintConnectionEndpoint;
 import de.metas.printing.client.engine.PrintingClientDaemon;
 import de.metas.printing.client.engine.PrintingEngine;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+@Disabled
 public class PrintingClientDaemonTestManual
 {
 	public static String xpsPrintingServiceName = "Microsoft XPS Document Writer";

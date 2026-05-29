@@ -1,16 +1,14 @@
 package de.metas.vertical.pharma.securpharm.client.schema;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.Month;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -38,7 +36,7 @@ public class JsonExpirationDateTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();

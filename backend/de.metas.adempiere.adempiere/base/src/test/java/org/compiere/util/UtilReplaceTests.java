@@ -22,9 +22,8 @@ package org.compiere.util;
  * #L%
  */
 
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class UtilReplaceTests
 {
@@ -37,7 +36,7 @@ public class UtilReplaceTests
 		
 		final String modifiedString = Util.replaceNonDigitCharsWithZero(stringToModify);
 		
-		Assert.assertEquals("Strings do not fit", expected, modifiedString);
+		Assertions.assertEquals( expected,  modifiedString, "Strings do not fit");
 	}
 	
 	@Test
@@ -49,7 +48,7 @@ public class UtilReplaceTests
 		
 		final String modifiedString = Util.replaceNonDigitCharsWithZero(stringToModify);
 		
-		Assert.assertEquals("Strings do not fit", expected, modifiedString);
+		Assertions.assertEquals( expected,  modifiedString, "Strings do not fit");
 	}
 	
 	
@@ -62,7 +61,7 @@ public class UtilReplaceTests
 		
 		final String modifiedString = Util.replaceNonDigitCharsWithZero(stringToModify);
 		
-		Assert.assertEquals("Strings do not fit", expected, modifiedString);
+		Assertions.assertEquals( expected,  modifiedString, "Strings do not fit");
 	}
 	
 	@Test
@@ -74,7 +73,7 @@ public class UtilReplaceTests
 		
 		final String modifiedString = Util.replaceNonDigitCharsWithZero(stringToModify);
 		
-		Assert.assertEquals("Strings do not fit", expected, modifiedString);
+		Assertions.assertEquals( expected,  modifiedString, "Strings do not fit");
 	}
 	
 	
@@ -87,7 +86,7 @@ public class UtilReplaceTests
 		
 		final String modifiedString = Util.replaceNonDigitCharsWithZero(stringToModify);
 		
-		Assert.assertEquals("Strings do not fit", expected, modifiedString);
+		Assertions.assertEquals( expected,  modifiedString, "Strings do not fit");
 	}
 	
 }

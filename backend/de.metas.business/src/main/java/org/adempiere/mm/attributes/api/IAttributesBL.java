@@ -33,6 +33,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 
+import javax.annotation.Nullable;
 import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
@@ -41,16 +42,24 @@ public interface IAttributesBL extends ISingletonService
 {
 	I_M_Attribute getAttributeById(AttributeId attributeId);
 
+	@NonNull
 	AttributeAction getAttributeAction(Properties ctx);
 
+	@NonNull
 	IAttributeValueGenerator getAttributeValueGenerator(org.compiere.model.I_M_Attribute attributeParam);
+
+	IAttributeValuesProvider createAttributeValuesProvider(Attribute attribute);
 
 	/**
 	 * Returns a new attribute value generator instance for the given <code>attributeParam</code>
 	 * or <code>null</code> if the given parameter has no <code>AD_JavaClass_ID</code> set or that class is not an IAttributeValueGenerator.
 	 */
+	@Nullable
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
+	@NonNull IAttributeValueGenerator getAttributeValueGenerator(Attribute attribute);
+
+	@Nullable
 	IAttributeValuesProvider createAttributeValuesProvider(AttributeId attributeId);
 
 	/**
@@ -58,7 +67,10 @@ public interface IAttributesBL extends ISingletonService
 	 *
 	 * @return {@link IAttributeValuesProvider} or null
 	 */
+	@Nullable
 	IAttributeValuesProvider createAttributeValuesProvider(org.compiere.model.I_M_Attribute attribute);
+
+	IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull Attribute attribute);
 
 	/**
 	 * Gets product attribute by ID.
@@ -68,6 +80,7 @@ public interface IAttributesBL extends ISingletonService
 	 *
 	 * @return {@link I_M_Attribute} or null
 	 */
+	@Nullable
 	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
 
 	boolean hasAttributeAssigned(ProductId productId, AttributeId attributeId);
@@ -76,9 +89,9 @@ public interface IAttributesBL extends ISingletonService
 
 	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
-	ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(ProductId productId);
+	ImmutableList<Attribute> getAttributesMandatoryOnPicking(ProductId productId);
 
-	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
+	ImmutableList<Attribute> getAttributesMandatoryOnShipment(ProductId productId);
 
 	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
@@ -97,6 +110,7 @@ public interface IAttributesBL extends ISingletonService
 	int getNumberDisplayType(I_M_Attribute attribute);
 
 	boolean isStorageRelevant(final AttributeId attributeId);
-	
+
+	@Nullable
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }

@@ -1,11 +1,10 @@
 package de.metas.printing.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
 import de.metas.process.PInstanceId;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

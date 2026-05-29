@@ -9,9 +9,7 @@ import java.util.Optional;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_PriceList;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+
 
 import com.google.common.collect.ImmutableList;
 
@@ -19,6 +17,9 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /*
  * #%L
@@ -41,17 +42,14 @@ import de.metas.pricing.PricingSystemId;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class PriceListsCollectionTest
 {
-	@Rule
-	public AdempiereTestWatcher watcher = new AdempiereTestWatcher();
-
 	private static final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(1);
 	private static final CountryId countryId1 = CountryId.ofRepoId(1);
 	private static final CountryId countryId2 = CountryId.ofRepoId(2);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 353596514L;
+	private static final long serialVersionUID = -2129572549L;
 
     /** Standard Constructor */
     public X_M_Attribute (final Properties ctx, final int M_Attribute_ID, @Nullable final String trxName)
@@ -78,6 +78,27 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	}
 
 	/** 
+	 * AttributeValuesOrderBy AD_Reference_ID=541970
+	 * Reference name: AttributeValuesOrderBy
+	 */
+	public static final int ATTRIBUTEVALUESORDERBY_AD_Reference_ID=541970;
+	/** Suchschlüssel = V */
+	public static final String ATTRIBUTEVALUESORDERBY_Suchschluessel = "V";
+	/** Name = N */
+	public static final String ATTRIBUTEVALUESORDERBY_Name = "N";
+	@Override
+	public void setAttributeValuesOrderBy (final java.lang.String AttributeValuesOrderBy)
+	{
+		set_Value (COLUMNNAME_AttributeValuesOrderBy, AttributeValuesOrderBy);
+	}
+
+	@Override
+	public java.lang.String getAttributeValuesOrderBy() 
+	{
+		return get_ValueAsString(COLUMNNAME_AttributeValuesOrderBy);
+	}
+
+	/** 
 	 * AttributeValueType AD_Reference_ID=326
 	 * Reference name: M_Attribute Value Type
 	 */
@@ -115,6 +136,18 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setDefaultValueSQL (final @Nullable java.lang.String DefaultValueSQL)
+	{
+		set_Value (COLUMNNAME_DefaultValueSQL, DefaultValueSQL);
+	}
+
+	@Override
+	public java.lang.String getDefaultValueSQL() 
+	{
+		return get_ValueAsString(COLUMNNAME_DefaultValueSQL);
 	}
 
 	@Override

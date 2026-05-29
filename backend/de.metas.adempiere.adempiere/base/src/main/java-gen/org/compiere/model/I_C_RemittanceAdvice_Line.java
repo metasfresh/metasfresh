@@ -1,14 +1,13 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for C_RemittanceAdvice_Line
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_RemittanceAdvice_Line 
 {
 
@@ -31,6 +30,27 @@ public interface I_C_RemittanceAdvice_Line
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Additional notes.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditionalNotes (@Nullable java.lang.String AdditionalNotes);
+
+	/**
+	 * Get Additional notes.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdditionalNotes();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_AdditionalNotes = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "AdditionalNotes", null);
+	String COLUMNNAME_AdditionalNotes = "AdditionalNotes";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -51,27 +71,6 @@ public interface I_C_RemittanceAdvice_Line
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Additional notes.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAdditionalNotes (@Nullable java.lang.String AdditionalNotes);
-
-	/**
-	 * Get Additional notes.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAdditionalNotes();
-
-	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_AdditionalNotes = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "AdditionalNotes", null);
-	String COLUMNNAME_AdditionalNotes = "AdditionalNotes";
 
 	/**
 	 * Set Bill Business Partner.
@@ -137,7 +136,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -147,7 +146,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Invoice.
 	 * Invoice Identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -161,7 +160,32 @@ public interface I_C_RemittanceAdvice_Line
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Remittance Advice.
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_Created = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Remittance Advice (REMADV).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -170,7 +194,7 @@ public interface I_C_RemittanceAdvice_Line
 	void setC_RemittanceAdvice_ID (int C_RemittanceAdvice_ID);
 
 	/**
-	 * Get Remittance Advice.
+	 * Get Remittance Advice (REMADV).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -205,31 +229,6 @@ public interface I_C_RemittanceAdvice_Line
 
 	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_C_RemittanceAdvice_Line_ID = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "C_RemittanceAdvice_Line_ID", null);
 	String COLUMNNAME_C_RemittanceAdvice_Line_ID = "C_RemittanceAdvice_Line_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_Created = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set External invoice doc base type.
@@ -549,6 +548,27 @@ public interface I_C_RemittanceAdvice_Line
 	String COLUMNNAME_IsServiceFeeVatRateValid = "IsServiceFeeVatRateValid";
 
 	/**
+	 * Set Zeile.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLineIdentifier (java.lang.String LineIdentifier);
+
+	/**
+	 * Get Zeile.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getLineIdentifier();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_LineIdentifier = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "LineIdentifier", null);
+	String COLUMNNAME_LineIdentifier = "LineIdentifier";
+
+	/**
 	 * Set Over/Under Payment Amount.
 	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
 	 *
@@ -655,6 +675,27 @@ public interface I_C_RemittanceAdvice_Line
 	String COLUMNNAME_Service_BPartner_ID = "Service_BPartner_ID";
 
 	/**
+	 * Set Service fee amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setServiceFeeAmount (@Nullable BigDecimal ServiceFeeAmount);
+
+	/**
+	 * Get Service fee amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getServiceFeeAmount();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_ServiceFeeAmount = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "ServiceFeeAmount", null);
+	String COLUMNNAME_ServiceFeeAmount = "ServiceFeeAmount";
+
+	/**
 	 * Set Service fee invoice.
 	 *
 	 * <br>Type: Search
@@ -678,6 +719,27 @@ public interface I_C_RemittanceAdvice_Line
 
 	ModelColumn<I_C_RemittanceAdvice_Line, org.compiere.model.I_C_Invoice> COLUMN_Service_Fee_Invoice_ID = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "Service_Fee_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_Service_Fee_Invoice_ID = "Service_Fee_Invoice_ID";
+
+	/**
+	 * Set Service fee vat rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setServiceFeeVatRate (@Nullable BigDecimal ServiceFeeVatRate);
+
+	/**
+	 * Get Service fee vat rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getServiceFeeVatRate();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_ServiceFeeVatRate = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "ServiceFeeVatRate", null);
+	String COLUMNNAME_ServiceFeeVatRate = "ServiceFeeVatRate";
 
 	/**
 	 * Set Service product.
@@ -718,48 +780,6 @@ public interface I_C_RemittanceAdvice_Line
 	int getService_Tax_ID();
 
 	String COLUMNNAME_Service_Tax_ID = "Service_Tax_ID";
-
-	/**
-	 * Set Service fee amount.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setServiceFeeAmount (@Nullable BigDecimal ServiceFeeAmount);
-
-	/**
-	 * Get Service fee amount.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getServiceFeeAmount();
-
-	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_ServiceFeeAmount = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "ServiceFeeAmount", null);
-	String COLUMNNAME_ServiceFeeAmount = "ServiceFeeAmount";
-
-	/**
-	 * Set Service fee vat rate.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setServiceFeeVatRate (@Nullable BigDecimal ServiceFeeVatRate);
-
-	/**
-	 * Get Service fee vat rate.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getServiceFeeVatRate();
-
-	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_ServiceFeeVatRate = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "ServiceFeeVatRate", null);
-	String COLUMNNAME_ServiceFeeVatRate = "ServiceFeeVatRate";
 
 	/**
 	 * Get Updated.

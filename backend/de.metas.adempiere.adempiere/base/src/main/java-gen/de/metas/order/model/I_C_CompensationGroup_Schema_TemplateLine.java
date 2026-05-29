@@ -1,7 +1,8 @@
 package de.metas.order.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for C_CompensationGroup_Schema_TemplateLine
  *  @author metasfresh (generated) 
@@ -76,7 +77,8 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
 
 	/**
-	 * Set Compensation Group Template Line.
+	 * Set Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -85,7 +87,8 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	void setC_CompensationGroup_Schema_TemplateLine_ID (int C_CompensationGroup_Schema_TemplateLine_ID);
 
 	/**
-	 * Get Compensation Group Template Line.
+	 * Get Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -118,28 +121,6 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -165,6 +146,28 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -186,6 +189,48 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 
 	ModelColumn<I_C_CompensationGroup_Schema_TemplateLine, Object> COLUMN_IsActive = new ModelColumn<>(I_C_CompensationGroup_Schema_TemplateLine.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
+
+	/**
+	 * Get Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowSeparateInvoicing();
+
+	ModelColumn<I_C_CompensationGroup_Schema_TemplateLine, Object> COLUMN_IsAllowSeparateInvoicing = new ModelColumn<>(I_C_CompensationGroup_Schema_TemplateLine.class, "IsAllowSeparateInvoicing", null);
+	String COLUMNNAME_IsAllowSeparateInvoicing = "IsAllowSeparateInvoicing";
+
+	/**
+	 * Set Hide when printing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHideWhenPrinting (boolean IsHideWhenPrinting);
+
+	/**
+	 * Get Hide when printing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHideWhenPrinting();
+
+	ModelColumn<I_C_CompensationGroup_Schema_TemplateLine, Object> COLUMN_IsHideWhenPrinting = new ModelColumn<>(I_C_CompensationGroup_Schema_TemplateLine.class, "IsHideWhenPrinting", null);
+	String COLUMNNAME_IsHideWhenPrinting = "IsHideWhenPrinting";
 
 	/**
 	 * Set Product.

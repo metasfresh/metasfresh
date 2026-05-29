@@ -22,18 +22,23 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
-import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.api.ValidationState;
+import de.metas.edi.api.impl.DesadvBL;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inout.IInOutBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.Collections;
@@ -46,7 +51,10 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	 */
 	private static final String CST_DESADV_EXP_FORMAT = "EDI_Exp_Desadv";
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IInOutBL shipmentBL = Services.get(IInOutBL.class);
+
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
 
 	public EDI_DESADVExport(final I_EDI_Desadv desadv, final String tableIdentifier, final ClientId clientId)
 	{
@@ -56,21 +64,27 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	@Override
 	public List<Exception> doExport()
 	{
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-
 		final I_EDI_Document document = getDocument();
-
-		final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(document, I_EDI_Desadv.class);
+		final I_EDI_Desadv desadv = getDesadvRecord();
 
 		final List<Exception> feedback = ediDocumentBL.isValidDesAdv(desadv);
 
-		final String EDIStatus = document.getEDI_ExportStatus();
+		final EDIExportStatus EDIStatus = EDIExportStatus.ofCode(document.getEDI_ExportStatus());
 		final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, true); // saveLocally=true
-		if (ValidationState.ALREADY_VALID != validationState)
+		if (!validationState.isAlreadyValid())
 		{
 			// otherwise, it's either INVALID, or freshly updated (which, keeping the old logic, must be dealt with in one more step)
 			return feedback;
 		}
+
+		// Mark the document as: EDI starting
+		document.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
+		InterfaceWrapperHelper.save(document);
+
+		desadvBL.retrieveAllInOuts(desadv)
+				.stream()
+				.peek(shipment -> shipment.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode()))
+				.forEach(shipmentBL::save);
 
 		try
 		{
@@ -78,7 +92,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		}
 		catch (final Exception e)
 		{
-			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+			document.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
 
 			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
 			document.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
@@ -90,5 +104,25 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		}
 
 		return Collections.emptyList();
+	}
+
+	@Override
+	@NonNull
+	public BPartnerId getBPartnerId()
+	{
+		return desadvBL.getEffectiveDropshipPartnerId(getDesadvRecord());
+	}
+
+	@NonNull
+	private I_EDI_Desadv getDesadvRecord()
+	{
+		return InterfaceWrapperHelper.create(getDocument(), I_EDI_Desadv.class);
+	}
+
+	@Override
+	@NonNull
+	public EDIType getEDIType()
+	{
+		return EDIType.DESADV;
 	}
 }

@@ -22,28 +22,23 @@
 
 package de.metas.impexp.spreadsheet.excel;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.ImmutableList;
+import org.adempiere.test.AdempiereTestHelper;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.impexp.spreadsheet.excel.ArrayExcelExporter;
-import de.metas.impexp.spreadsheet.excel.ExcelExportConstants;
-import de.metas.impexp.spreadsheet.excel.ExcelFormat;
-import de.metas.impexp.spreadsheet.excel.ExcelFormats;
-import org.adempiere.test.AdempiereTestHelper;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArrayExcelExporterTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

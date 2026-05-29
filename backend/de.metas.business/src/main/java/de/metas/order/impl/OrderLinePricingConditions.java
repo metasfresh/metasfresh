@@ -1,13 +1,6 @@
 package de.metas.order.impl;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLinePricingConditions;
@@ -16,6 +9,10 @@ import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -53,7 +50,9 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 
 		YES,
 
-		/** The respective order line has no {@code M_DiscountSchemaBreak_ID}, but manual discount etc. */
+		/**
+		 * The respective order line has no {@code M_DiscountSchemaBreak_ID}, but manual discount etc.
+		 */
 		TEMPORARY
 	}
 
@@ -124,8 +123,7 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 
 		if (existsOrderLineWithNoPricingConditions)
 		{
-			final ITranslatableString translatableMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoPricingConditionsError);
-			throw new AdempiereException(translatableMsg)
+			throw new AdempiereException(MSG_NoPricingConditionsError)
 					.setParameter("HowToDisablePricingConditionsCheck", "To disable it, please set " + SYSCONFIG_NoPriceConditionsColorName + " to `-`");
 		}
 	}

@@ -30,22 +30,21 @@ import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-
-import java.util.List;
-import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -74,11 +73,9 @@ public class ProductRestController_StepDef
 	@Then("validate get products response")
 	public void verify_getProducts_response_v2(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			verifyGetProductsResponseV2(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::verifyGetProductsResponseV2);
 	}
 
 	@Then("validate retrieve product response")
@@ -89,19 +86,17 @@ public class ProductRestController_StepDef
 		final JsonProduct jsonProduct = mapper.readValue(testContext.getApiResponse().getContent(), JsonProduct.class);
 		assertThat(jsonProduct).isNotNull();
 
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> row : productTableList)
-		{
-			validateJsonProduct(row, jsonProduct);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(row -> validateJsonProduct(row, jsonProduct));
 	}
 
-	private void verifyGetProductsResponseV2(@NonNull final Map<String, String> row) throws JsonProcessingException
+	private void verifyGetProductsResponseV2(@NonNull final DataTableRow row) throws JsonProcessingException
 	{
 		final String value = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Value);
 		final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Name);
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_UOMSymbol);
-		final String ean = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_UPC);
+		final String gtin = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_GTIN);
 		final String description = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Description);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -119,7 +114,7 @@ public class ProductRestController_StepDef
 		assertThat(returnedProduct.getProductNo()).isEqualTo(value);
 		assertThat(returnedProduct.getName()).isEqualTo(name);
 		assertThat(returnedProduct.getUom()).isEqualTo(x12de355Code);
-		assertThat(returnedProduct.getEan()).isEqualTo(ean);
+		assertThat(returnedProduct.getEan()).isEqualTo(gtin);
 		assertThat(returnedProduct.getDescription()).isEqualTo(description);
 
 		final JsonProductBPartner bpartnerProduct = Check.singleElement(returnedProduct.getBpartners());
@@ -127,7 +122,7 @@ public class ProductRestController_StepDef
 		verifyBPartnerProduct(bpartnerProduct, row);
 	}
 
-	private void verifyBPartnerProduct(@NonNull final JsonProductBPartner returnedProductBPartner, @NonNull final Map<String, String> row)
+	private void verifyBPartnerProduct(@NonNull final JsonProductBPartner returnedProductBPartner, @NonNull final DataTableRow row)
 	{
 		final String productNo = DataTableUtil.extractStringForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ProductNo);
 		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale);
@@ -146,18 +141,17 @@ public class ProductRestController_StepDef
 		assertThat(returnedProductBPartner.isExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
 		assertThat(returnedProductBPartner.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
 
-		if(Check.isNotBlank(ean))
+		if (Check.isNotBlank(ean))
 		{
 			assertThat(returnedProductBPartner.getEan()).isEqualTo(ean);
 		}
 	}
 
-	private void validateJsonProduct(@NonNull final Map<String, String> row, @NonNull final JsonProduct jsonProduct)
+	private void validateJsonProduct(@NonNull final DataTableRow row, @NonNull final JsonProduct jsonProduct)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Name);
 		final String uomSymbol = DataTableUtil.extractStringForColumnName(row, "UomSymbol");
-		final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_Category_ID + "." +TABLECOLUMN_IDENTIFIER);
+		final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(product).isNotNull();
@@ -165,13 +159,14 @@ public class ProductRestController_StepDef
 		final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
 		assertThat(productCategory).isNotNull();
 
-		assertThat(jsonProduct.getId().getValue()).isEqualTo(product.getM_Product_ID());
-		assertThat(jsonProduct.getName()).isEqualTo(name);
-		assertThat(jsonProduct.getUom()).isEqualTo(uomSymbol);
-		assertThat(jsonProduct.getProductCategoryId().getValue()).isEqualTo(productCategory.getM_Product_Category_ID());
-
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(jsonProduct.getId().getValue()).as("M_Product_ID").isEqualTo(product.getM_Product_ID());
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_Name).ifPresent(name -> softly.assertThat(jsonProduct.getName()).as("Name").isEqualTo(name));
+		softly.assertThat(jsonProduct.getUom()).as("UomSymbol").isEqualTo(uomSymbol);
+		softly.assertThat(jsonProduct.getProductCategoryId().getValue()).as("M_Product_Category_ID").isEqualTo(productCategory.getM_Product_Category_ID());
+		softly.assertAll();
+		
 		final JsonProductBPartner bpartnerProduct = Check.singleElement(jsonProduct.getBpartners());
-
 		verifyBPartnerProduct(bpartnerProduct, row);
 	}
 }

@@ -19,16 +19,15 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.text.ExtendedReflectionToStringBuilder;
 import org.adempiere.util.text.RecursiveIndentedMultilineToStringStyle;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUQueryBuilderTest
 {
@@ -39,7 +38,7 @@ public class HUQueryBuilderTest
 
 	private HUQueryBuilder huQueryBuilder;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -103,9 +102,8 @@ public class HUQueryBuilderTest
 	public void copy_NotFails()
 	{
 		final HUQueryBuilder husQueryCopy = huQueryBuilder.copy();
-
-		Assert.assertNotNull("copy shall not be null", husQueryCopy);
-		Assert.assertNotSame("original and copy shall not be the same", husQueryCopy, huQueryBuilder);
+		assertThat(husQueryCopy).as("copy shall not be null").isNotNull();
+		assertThat(husQueryCopy).as("original and copy shall not be the same").isNotSameAs(huQueryBuilder);
 		assertSameStringRepresentation(huQueryBuilder, husQueryCopy);
 	}
 
@@ -117,7 +115,7 @@ public class HUQueryBuilderTest
 		final String message = "String representations shall be the same"
 				+ "\nExpected: " + expectedStr
 				+ "\nActual: " + actualStr;
-		Assert.assertEquals(message, expectedStr, actualStr);
+		assertThat(actualStr).as(message).isEqualTo(expectedStr);
 	}
 
 	private String toString(final Object obj)

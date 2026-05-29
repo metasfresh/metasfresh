@@ -49,7 +49,7 @@ public class DatevPaymentImportProcess extends SimpleImportProcessTemplate<I_I_D
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -63,7 +63,7 @@ public class DatevPaymentImportProcess extends SimpleImportProcessTemplate<I_I_D
 	}
 
 	@Override
-	protected I_I_Datev_Payment retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Datev_Payment retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Datev_Payment(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

@@ -24,8 +24,10 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherIndicator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +45,9 @@ public class JsonWorkflowLauncher
 	@NonNull String caption;
 	@Nullable String startedWFProcessId;
 	@NonNull Map<String, Object> wfParameters;
+	@Nullable WorkflowLauncherIndicator indicator;
 	boolean showWarningSign;
+	@Nullable JsonTestId testId;
 
 	public static JsonWorkflowLauncher of(
 			@NonNull final WorkflowLauncher workflowLauncher,
@@ -66,7 +70,9 @@ public class JsonWorkflowLauncher
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.getAsStringOrNull(startedWFProcessId))
 				.wfParameters(wfParameters.toJson(jsonOpts::convertValueToJson))
+				.indicator(workflowLauncher.getIndicator())
 				.showWarningSign(workflowLauncher.isPartiallyHandledBefore())
+				.testId(workflowLauncher.getTestId())
 				.build();
 	}
 }

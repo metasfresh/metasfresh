@@ -23,12 +23,13 @@ package de.metas.inoutcandidate.api;
  */
 
 import com.google.common.collect.ImmutableListMultimap;
-import de.metas.inout.InOutLineId;
+import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.OrderId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -37,62 +38,58 @@ import org.compiere.model.I_M_InOutLine;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
 	/**
-	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.<br>
+	 * Retrieves not-delivered QtyPicked records for given shipment schedules.<br>
 	 * Records are ordered by ID. Only active records are returned.
 	 * <br>
 	 * Important: also return records which reference destroyed HUs, since this BL doesn't know or care about HUs.
 	 *
-	 * @param shipmentSchedule
-	 * @param clazz
 	 * @return QtyPicked records
-	 * @see #retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule, String)
 	 */
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz);
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(ShipmentScheduleId shipmentScheduleId, Class<T> clazz);
 
 	/**
-	 * Return a query builder for those {@link I_M_ShipmentSchedule_QtyPicked} records that reference the given shipmentSchedule and that do also reference an
+	 * Return a query builder for those {@link I_M_ShipmentSchedule_QtyPicked} records that reference the given shipment schedule and that do also reference an
 	 * {@link I_M_InOutLine}.
 	 * <p>
 	 * Records are ordered by ID. Only active records are returned.
 	 *
-	 * @param shipmentSchedule
 	 * @return QtyPicked records
 	 */
-	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule shipmentSchedule);
+	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(ShipmentScheduleId shipmentScheduleId);
+
+	Stream<I_M_ShipmentSchedule_QtyPicked> stream(@NonNull ShipmentScheduleAllocQuery query);
+
+	<T extends I_M_ShipmentSchedule_QtyPicked> Stream<T> stream(@NonNull Class<T> type, @NonNull ShipmentScheduleAllocQuery query);
+
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> list(@NonNull Class<T> type, @NonNull ShipmentScheduleAllocQuery query);
 
 	/**
-	 * Retrieves Picked (but not delivered) Qty for given <code>shipmentSchedule</code>.
+	 * Retrieves Picked (but not delivered) Qty for a given shipment schedule.
 	 *
-	 * @param shipmentSchedule
 	 * @return QtyPicked value; never return null
 	 */
-	BigDecimal retrieveNotOnShipmentLineQty(I_M_ShipmentSchedule shipmentSchedule);
+	BigDecimal retrieveNotOnShipmentLineQty(ShipmentScheduleId shipmentScheduleId);
 
 	/**
 	 * Retrieve all Picked records (delivered or not, active or not)
 	 */
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllQtyPickedRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> modelClass);
 
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllForInOutLine(I_M_InOutLine inoutLine, Class<T> modelClass);
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllQtyPickedRecords(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull Class<T> modelClass);
 
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveByInOutLineId(InOutLineId inoutLineId, Class<T> modelClass);
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllForInOutLine(I_M_InOutLine inoutLine, Class<T> modelClass);
 
 	/**
 	 * Retrieve all the schedules of the given InOut, based on the M_ShipmentSchedule_QtyPicked entries
 	 *
-	 * @param inout
 	 * @return the schedules if found, null otherwise.
 	 */
 	List<I_M_ShipmentSchedule> retrieveSchedulesForInOut(org.compiere.model.I_M_InOut inout);
-
-	/**
-	 * Retrieve all shipments schedules that are linked with the given inout line
-	 */
-	List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(org.compiere.model.I_M_InOutLine inoutLine);
 
 	/**
 	 * Query which collects M_ShipmentSchedules form I_M_ShipmentSchedule_QtyPicked if they pair with the given inoutline
@@ -125,7 +122,20 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(Set<ShipmentScheduleId> scheduleIds);
 
+	ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(@NonNull ShipmentScheduleAndJobScheduleIdSet scheduleIds);
+
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedOnTheFlyAndNotDelivered(ShipmentScheduleId shipmentScheduleId, Class<T> modelClass);
+
+	/**
+	 * Returns the subset of the given schedule IDs that have unprocessed QtyPicked records
+	 * with M_InOutLine_ID already set — i.e., draft-shipment allocations that are part of
+	 * QtyPickList but not yet reflected in the stored QtyToDeliver.
+	 *
+	 * Used to detect stale QtyToDeliver from race conditions between GenerateInOut workpackages.
+	 *
+	 * @see #retrieveQtyPickedAndUnconfirmed — QtyPickList includes these records
+	 */
+	ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftShipmentAllocations(@NonNull Set<ShipmentScheduleId> scheduleIds);
 
 	@NonNull
 	Set<OrderId> retrieveOrderIds(@NonNull org.compiere.model.I_M_InOut inOut);

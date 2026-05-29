@@ -132,9 +132,10 @@ public class DirectMovementsFromSchedulesGenerator
 								.qtyPicked(qtyToMove)
 								.pickFromMovementId(directMovementId)
 								.inTransitLocatorId(null)
+								.dropToLocatorId(schedule.getDropToLocatorId())
 								.build())
 		);
-		schedule.markAsDroppedTo(directMovementId);
+		schedule.markAsDroppedTo(schedule.getDropToLocatorId(), directMovementId);
 		ddOrderMoveScheduleService.save(schedule);
 	}
 

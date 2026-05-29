@@ -73,7 +73,7 @@ public class ShipmentLinesForCustomsInvoiceRepo
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		List<InOutAndLineId> shipmentLines = new ArrayList<>();
 
-		final ImmutableList<InOutAndLineId> shipmentLinesToExport = inOutDAO.retrieveLinesForInOutId(shipmentId)
+		final ImmutableList<InOutAndLineId> shipmentLinesToExport = inOutDAO.retrieveLineIdsByInOutId(shipmentId)
 				.stream()
 				.filter(this::isValidLineToExport)
 				.collect(ImmutableList.toImmutableList());

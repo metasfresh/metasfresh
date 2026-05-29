@@ -67,6 +67,10 @@ public class C_Invoice_CreateRelation extends JavaProcess implements IProcessPre
 		}
 		final InvoiceId toInvoiceId = InvoiceId.ofRepoId(context.getSingleSelectedRecordId());
 		final I_C_Invoice invoice = invoiceBL.getById(toInvoiceId);
+		if (!invoice.isFinancial())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only financial invoices accepted.");
+		}
 		if (invoiceBL.isVendorInvoice(invoiceBL.getC_DocType(invoice).getDocBaseType()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only Sales Invoices accepted.");

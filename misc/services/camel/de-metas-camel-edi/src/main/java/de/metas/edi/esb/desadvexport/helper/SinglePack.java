@@ -23,9 +23,9 @@
 package de.metas.edi.esb.desadvexport.helper;
 
 import de.metas.common.util.Check;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackItemType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackType;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -1,10 +1,11 @@
 package org.adempiere.ad.persistence;
 
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.ObjectUtils;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -12,16 +13,17 @@ import java.util.Optional;
 
 /**
  * Convenient model's dynamic attribute accessor. This instance provides type-safe access to a model's dynamic attributes.
- * The it's recommended to use it rather that directly calling {@link InterfaceWrapperHelper#setDynAttribute(Object, String, Object)} etc.
+ * It's recommended to use it rather that directly calling {@link InterfaceWrapperHelper#setDynAttribute(Object, String, Object)} etc.
  * Neither the model not the attribute value is referenced by instance of this class.
  *
  * @param <ModelType>
  * @param <AttributeType>
  * @author tsa
  */
+@ToString
 public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 {
-	private final String attributeName;
+	@Getter private final String attributeName;
 	private final Class<AttributeType> attributeType;
 
 	public ModelDynAttributeAccessor(@NonNull final Class<AttributeType> attributeTypeClass)
@@ -44,17 +46,6 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 				, attributeTypeClass);
 	}
 
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	public String getAttributeName()
-	{
-		return attributeName;
-	}
-
 	public Class<AttributeType> getAttributeType()
 	{
 		Check.assumeNotNull(attributeType, "attributeType not null");
@@ -63,8 +54,7 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 
 	public AttributeType getValue(final ModelType model)
 	{
-		final AttributeType attributeValue = InterfaceWrapperHelper.getDynAttribute(model, attributeName);
-		return attributeValue;
+		return InterfaceWrapperHelper.getDynAttribute(model, attributeName);
 	}
 
 	public AttributeType getValue(final ModelType model, final AttributeType defaultValueIfNull)

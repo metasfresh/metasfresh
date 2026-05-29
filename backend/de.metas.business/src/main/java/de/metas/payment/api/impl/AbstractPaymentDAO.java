@@ -5,6 +5,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -109,7 +110,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// NOTE: we are not using C_InvoicePaySchedule_ID. It shall be a column in C_Payment
 
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, creditMemoAdjusted);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted).toBigDecimal();
 	}
 
 	@Override
@@ -163,7 +164,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
@@ -183,7 +184,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(PaymentId::ofRepoId)
+				.idsAsSet(PaymentId::ofRepoId)
 				.stream();
 	}
 
@@ -237,7 +238,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		return queryBuilder
 				.setLimit(query.getLimit())
 				.create()
-				.listIds(PaymentId::ofRepoId);
+				.idsAsSet(PaymentId::ofRepoId);
 	}
 
 	@Override
@@ -272,5 +273,17 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.iterate(I_C_Payment.class);
 
 		return paymentsForEmployees;
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_C_Payment> findCompletedOrClosedByProformaInvoiceId(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID, proformaInvoiceId)
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
+				.create()
+				.firstOnlyOptional(I_C_Payment.class);
 	}
 }

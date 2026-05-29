@@ -4,19 +4,21 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -37,6 +39,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /*
@@ -102,7 +105,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
+		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost);
 
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
@@ -114,7 +117,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			@NonNull final Quantity receiptQty,
 			@NonNull final CostElement costElement,
 			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CurrencyPrecision precision)
+			@NonNull final CurrentCost currentCost)
 	{
 		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
 
@@ -125,16 +128,35 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
 					.map(orderLineBL::getOrderLineById)
-					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+					.orElse(null);
+			if (orderLine != null)
+			{
+				return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+			}
+			else
+			{
+				final CostDetail receiptCostDetail = utils.getSingleCostDetail(CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(costElement.getId())
+						.documentRef(CostingDocumentRef.ofReceiptLineId(matchInv.getInoutLineId().getInOutLineId()))
+						.amtType(CostAmountType.MAIN)
+						.productId(matchInv.getProductId())
+						.build());
 
-			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+				final CostAmount receiptAmount = receiptCostDetail.computePartialCostAmount(receiptQty, currentCost.getPrecision());
+
+				return utils.convertToAcctSchemaCurrency(
+						receiptAmount,
+						() -> currencyConversionContext,
+						acctSchemaId);
+			}
 		}
 		else if (type.isCost())
 		{
 			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
 			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
 
-			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
+			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, currentCost.getPrecision());
 
 			return utils.convertToAcctSchemaCurrency(
 					CostAmount.ofMoney(receiptAmount),
@@ -199,7 +221,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
-		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
+		@Nullable final CostAmount explicitCostPrice = request.getExplicitCostPrice();
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -262,11 +284,20 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		// Outbound transactions (qty < 0)
 		else
 		{
-			final CostPrice price = currentCosts.getCostPrice();
+			final CostAmount price = explicitCostPrice != null
+					? explicitCostPrice
+					: currentCosts.getCostPrice().toCostAmount();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 
-			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			if (explicitCostPrice != null)
+			{
+				currentCosts.addWeightedAverage(amt, qty, utils.getQuantityUOMConverter());
+			}
+			else
+			{
+				currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			}
 		}
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
@@ -279,7 +310,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	protected MoveCostsResult createMovementCostsImpl(@NonNull MoveCostsRequest request)
 	{
 		final CostElement costElement = request.getCostElement();
 		if (costElement == null)
@@ -383,6 +414,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx)
 		{
 			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate(), utils.getQuantityUOMConverter());
+			if (currentCosts.getCurrentQty().isZero())
+			{
+				currentCosts.clearOwnCostPrice();
+			}
 		}
 		else
 		{

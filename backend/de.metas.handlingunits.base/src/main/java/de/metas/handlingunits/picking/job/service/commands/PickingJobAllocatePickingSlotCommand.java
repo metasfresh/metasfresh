@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
@@ -79,14 +80,17 @@ public class PickingJobAllocatePickingSlotCommand
 			pickingSlotService.release(oldPickingSlotId, initialPickingJob.getId());
 		}
 
-		final BooleanWithReason allocated = pickingSlotService.allocate(newPickingSlot, initialPickingJob.getDeliveryBPLocationId());
+		final BPartnerLocationId deliveryBPLocationId = initialPickingJob.getDeliveryBPLocationId();
+		final BooleanWithReason allocated = deliveryBPLocationId != null
+				? pickingSlotService.allocate(newPickingSlot, deliveryBPLocationId)
+				: BooleanWithReason.TRUE; // TODO implement a way to reserve a picking slot for a picking job
 
 		if (failIfNotAllocated && allocated.isFalse())
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
-												 .append("Failed allocating picking slot ").append(newPickingSlot.getCaption()).append(" because ")
-												 .append(allocated.getReason())
-												 .build());
+					.append("Failed allocating picking slot ").append(newPickingSlot.getCaption()).append(" because ")
+					.append(allocated.getReason())
+					.build());
 		}
 		else if (allocated.isTrue())
 		{

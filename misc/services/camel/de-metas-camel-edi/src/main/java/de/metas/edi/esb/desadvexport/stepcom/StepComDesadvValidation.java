@@ -24,8 +24,8 @@ package de.metas.edi.esb.desadvexport.stepcom;
 
 import de.metas.edi.esb.desadvexport.helper.DesadvLines;
 import de.metas.edi.esb.desadvexport.helper.DesadvParser;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 

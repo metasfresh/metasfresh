@@ -23,70 +23,54 @@
 package de.metas.cucumber.stepdefs.attribute;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeUse;
 
-import java.util.Map;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.assertj.core.api.Assertions.*;
-
+@RequiredArgsConstructor
 public class M_AttributeUse_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final M_Attribute_StepDefData attributeTable;
-	private final M_AttributeSet_StepDefData attributeSetTable;
-	private final M_AttributeUse_StepDefData attributeUseTable;
-
-	public M_AttributeUse_StepDef(
-			@NonNull final M_Attribute_StepDefData attributeTable,
-			@NonNull final M_AttributeSet_StepDefData attributeSetTable,
-			@NonNull final M_AttributeUse_StepDefData attributeUseTable)
-	{
-		this.attributeTable = attributeTable;
-		this.attributeSetTable = attributeSetTable;
-		this.attributeUseTable = attributeUseTable;
-	}
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final M_Attribute_StepDefData attributeTable;
+	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
+	@NonNull private final M_AttributeUse_StepDefData attributeUseTable;
 
 	@And("add M_AttributeUse:")
 	public void add_M_AttributeUse(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String attributeSetIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_AttributeSet attributeSet = attributeSetTable.get(attributeSetIdentifier);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_AttributeUse.COLUMNNAME_M_AttributeUse_ID)
+				.forEach(row -> {
+					final AttributeSetId attributeSetId = row.getAsIdentifier(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID).lookupNotNullIdIn(attributeSetTable);
+					final AttributeId attributeId = row.getAsIdentifier(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID).lookupNotNullIdIn(attributeTable);
 
-			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_AttributeUse.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_Attribute attribute = attributeTable.get(attributeIdentifier);
+					final I_M_AttributeUse attributeUse = CoalesceUtil.coalesceSuppliers(
+							() -> queryBL.createQueryBuilder(I_M_AttributeUse.class)
+									.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
+									.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
+									.create()
+									.firstOnly(I_M_AttributeUse.class),
+							() -> InterfaceWrapperHelper.newInstance(I_M_AttributeUse.class));
+					assertThat(attributeUse).isNotNull();
 
-			final I_M_AttributeUse attributeUse = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_M_AttributeUse.class)
-							.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSet.getM_AttributeSet_ID())
-							.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
-							.create()
-							.firstOnly(I_M_AttributeUse.class),
-					() -> InterfaceWrapperHelper.newInstance(I_M_AttributeUse.class));
-			assertThat(attributeUse).isNotNull();
+					attributeUse.setM_AttributeSet_ID(attributeSetId.getRepoId());
+					attributeUse.setM_Attribute_ID(attributeId.getRepoId());
 
-			attributeUse.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
-			attributeUse.setM_Attribute_ID(attribute.getM_Attribute_ID());
+					attributeUse.setSeqNo(row.getAsInt(I_M_AttributeUse.COLUMNNAME_SeqNo));
 
-			final int seqNo = DataTableUtil.extractIntForColumnName(row, I_M_AttributeUse.COLUMNNAME_SeqNo);
-			attributeUse.setSeqNo(seqNo);
+					InterfaceWrapperHelper.saveRecord(attributeUse);
 
-			InterfaceWrapperHelper.saveRecord(attributeUse);
-
-			final String attributeUseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_AttributeUse.COLUMNNAME_M_AttributeUse_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			attributeUseTable.putOrReplace(attributeUseIdentifier, attributeUse);
-		}
+					row.getAsOptionalIdentifier().ifPresent(identifier -> attributeUseTable.putOrReplace(identifier, attributeUse));
+				});
 	}
 }

@@ -99,7 +99,7 @@ public class BOMCreateRequest
 		Quantity qty;
 
 		@Nullable
-		BOMIssueMethod issueMethod;
+		BOMComponentIssueMethod issueMethod;
 
 		@Nullable
 		Boolean isQtyPercentage;

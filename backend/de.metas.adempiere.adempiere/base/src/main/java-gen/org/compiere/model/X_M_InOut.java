@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1093045251L;
+	private static final long serialVersionUID = 1543849737L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -1196,6 +1196,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_M_InOut getReturn_Origin_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_Return_Origin_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setReturn_Origin_InOut(final org.compiere.model.I_M_InOut Return_Origin_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_Return_Origin_InOut_ID, org.compiere.model.I_M_InOut.class, Return_Origin_InOut);
+	}
+
+	@Override
+	public void setReturn_Origin_InOut_ID (final int Return_Origin_InOut_ID)
+	{
+		if (Return_Origin_InOut_ID < 1) 
+			set_Value (COLUMNNAME_Return_Origin_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_Return_Origin_InOut_ID, Return_Origin_InOut_ID);
+	}
+
+	@Override
+	public int getReturn_Origin_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Return_Origin_InOut_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_M_InOut getReversal()
 	{
 		return get_ValueAsPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_M_InOut.class);
@@ -1327,5 +1354,20 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }

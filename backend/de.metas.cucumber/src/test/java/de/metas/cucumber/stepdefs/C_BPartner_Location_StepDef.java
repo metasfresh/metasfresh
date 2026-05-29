@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,14 +26,20 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -48,25 +54,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
+@RequiredArgsConstructor
 public class C_BPartner_Location_StepDef
 {
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
 
+	private final TestContext restTestContext;
+
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public C_BPartner_Location_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_Location_StepDefData locationTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.locationTable = locationTable;
-	}
 
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
@@ -118,16 +118,15 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setGLN(gln);
 
-		final boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, false);
-		bPartnerLocationRecord.setIsShipToDefault(isShipToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).ifPresent(bPartnerLocationRecord::setIsShipToDefault);
 
-		final boolean isShipTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipTo, isShipToDefault);
+		final boolean isShipTo = tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipTo).orElse(bPartnerLocationRecord.isShipToDefault());
 		bPartnerLocationRecord.setIsShipTo(isShipTo);
 
-		final boolean isBillToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, false);
-		bPartnerLocationRecord.setIsBillToDefault(isBillToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault).ifPresent(bPartnerLocationRecord::setIsBillToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsRemitTo).ifPresent(bPartnerLocationRecord::setIsRemitTo);
 
-		final boolean isBillTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillTo, isBillToDefault);
+		final boolean isBillTo = tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillTo).orElse(bPartnerLocationRecord.isBillToDefault());
 		bPartnerLocationRecord.setIsBillTo(isBillTo);
 
 		final String locationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -141,8 +140,20 @@ public class C_BPartner_Location_StepDef
 		}
 		else
 		{
+			final CountryId countryId = tableRow.getAsOptionalString("C_Country_ID")
+					.map(countryDAO::getCountryIdByCountryCode)
+					.orElse(StepDefConstants.COUNTRY_ID);
+
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
+			locationRecord.setC_Country_ID(countryId.getRepoId());
+
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_City).ifPresent(locationRecord::setCity);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Postal).ifPresent(locationRecord::setPostal);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address1).ifPresent(locationRecord::setAddress1);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address2).ifPresent(locationRecord::setAddress2);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address3).ifPresent(locationRecord::setAddress3);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address4).ifPresent(locationRecord::setAddress4);
+
 			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
@@ -180,13 +191,15 @@ public class C_BPartner_Location_StepDef
 
 		saveRecord(bPartnerLocationRecord);
 
-		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
-		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+		tableRow.getAsOptionalIdentifier("REST.Context.C_BPartner_Location_ID")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerLocationRecord.getC_BPartner_Location_ID()));
+
+		bPartnerLocationTable.putOrReplace(tableRow.getAsIdentifier(), bPartnerLocationRecord);
 	}
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
 	{
-		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID+"." + StepDefDataIdentifier.SUFFIX).getAsString();
+		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID + "." + StepDefDataIdentifier.SUFFIX).getAsString();
 
 		final int id = tableRow.getAsOptionalInt(COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
 		if (id > 0)
@@ -270,5 +283,35 @@ public class C_BPartner_Location_StepDef
 		}
 
 		saveRecord(locationRecord);
+	}
+
+	@And("validate C_BPartner_Location:")
+	public void validate_C_BPartner_Location(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner_Location bpLocation = bPartnerLocationTable.get(bpLocationIdentifier);
+
+			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
+			softly.assertThat(bpLocation.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+
+			final String address = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Address);
+			if (Check.isNotBlank(address))
+			{
+				softly.assertThat(bpLocation.getAddress()).as("Address").isEqualTo(address);
+			}
+
+			final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Name);
+			if (Check.isNotBlank(name))
+			{
+				softly.assertThat(bpLocation.getName()).as("Name").isEqualTo(name);
+			}
+		}
+
+		softly.assertAll();
 	}
 }

@@ -1,16 +1,15 @@
 package de.metas.payment.grossprofit;
 
-import javax.annotation.Nullable;
-
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualComponent;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.util.Services;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.lang.Percent;
-
+import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -34,21 +33,12 @@ import lombok.NonNull;
  * #L%
  */
 
+@Builder
 public class PaymentProfitPriceActualComponent implements ProfitPriceActualComponent
 {
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class); // TODO: move service/repo out
-
-	private final PaymentTermId paymentTermId;
-
-	private final MoneyService moneyService;
-
-	public PaymentProfitPriceActualComponent(
-			@Nullable final PaymentTermId paymentTermId,
-			@NonNull final MoneyService moneyService)
-	{
-		this.moneyService = moneyService;
-		this.paymentTermId = paymentTermId;
-	}
+	@NonNull private final PaymentTermService paymentTermService;
+	@NonNull private final MoneyService moneyService;
+	@Nullable private final PaymentTermId paymentTermId;
 
 	/**
 	 * Subtracts the expectable payment discount ("Skonto") from the given input.
@@ -61,7 +51,7 @@ public class PaymentProfitPriceActualComponent implements ProfitPriceActualCompo
 			return input;
 		}
 
-		final Percent discount = paymentTermRepository.getPaymentTermDiscount(paymentTermId);
+		final Percent discount = paymentTermService.getPaymentTermDiscount(paymentTermId);
 
 		final Money discountAmt = moneyService.percentage(discount, input);
 		return input.subtract(discountAmt);

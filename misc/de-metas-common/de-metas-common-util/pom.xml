@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ #%L
-  ~ mf_idea
+  ~ de-metas-common-util
   ~ %%
-  ~ Copyright (C) 2020 metas GmbH
+  ~ Copyright (C) 2025 metas GmbH
   ~ %%
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as
@@ -58,12 +58,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>17.0.0</version>
-            <scope>compile</scope>
         </dependency>
         
         <dependency>

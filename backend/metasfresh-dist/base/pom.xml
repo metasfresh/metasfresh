@@ -19,7 +19,6 @@
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>

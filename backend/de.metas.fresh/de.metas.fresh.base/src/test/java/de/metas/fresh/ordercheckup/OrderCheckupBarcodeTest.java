@@ -1,7 +1,5 @@
 package de.metas.fresh.ordercheckup;
 
-import org.junit.Assert;
-import org.junit.Test;
 
 
 /*
@@ -26,6 +24,9 @@ import org.junit.Test;
  * #L%
  */
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 public class OrderCheckupBarcodeTest
 {
 	@Test
@@ -33,6 +34,6 @@ public class OrderCheckupBarcodeTest
 	{
 		final OrderCheckupBarcode barcode = OrderCheckupBarcode.ofC_OrderLine_ID(12345);
 		final OrderCheckupBarcode barcodeDecoded = OrderCheckupBarcode.fromBarcodeString(barcode.toBarcodeString());
-		Assert.assertEquals(barcode, barcodeDecoded);
+		Assertions.assertEquals(barcode, barcodeDecoded);
 	}
 }

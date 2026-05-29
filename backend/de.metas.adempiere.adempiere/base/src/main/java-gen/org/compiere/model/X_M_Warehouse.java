@@ -131,13 +131,25 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
+	public void setIsDropShipWarehouse (final boolean IsDropShipWarehouse)
+	{
+		set_Value (COLUMNNAME_IsDropShipWarehouse, IsDropShipWarehouse);
+	}
+
+	@Override
+	public boolean isDropShipWarehouse()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShipWarehouse);
+	}
+
+	@Override
 	public void setIsInTransit (final boolean IsInTransit)
 	{
 		set_Value (COLUMNNAME_IsInTransit, IsInTransit);
 	}
 
 	@Override
-	public boolean isInTransit() 
+	public boolean isInTransit()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInTransit);
 	}

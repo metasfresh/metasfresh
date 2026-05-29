@@ -1,16 +1,16 @@
 package de.metas.workflow.rest_api.service;
 
 import de.metas.mobile.application.MobileApplication;
-import de.metas.user.UserId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 
 import java.util.function.UnaryOperator;
@@ -41,7 +41,13 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
 
-	WFProcess changeWFProcessById(WFProcessId wfProcessId, UnaryOperator<WFProcess> remappingFunction);
+	default WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UnaryOperator<WFProcess> remappingFunction)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return remappingFunction.apply(wfProcess);
+	}
 
 	WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess);
 }

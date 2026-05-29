@@ -23,7 +23,9 @@ package de.metas.inoutcandidate.async;
  */
 
 import ch.qos.logback.classic.Level;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
@@ -39,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -70,6 +73,19 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	private static void _schedule(@NonNull final ShipmentSchedulesUpdateSchedulerRequest request)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
+		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
+		final int alreadyEnqueuedWPs = queueForEnqueuing.size();
+		if (alreadyEnqueuedWPs > 1)
+		{
+			loggable.addLog("Not scheduling WP because there are {} processable workpackages, and we just need one to revalidate all flagged schedules: {}",
+					alreadyEnqueuedWPs,
+					UpdateInvalidShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
+			return;
+		}
+
 		SCHEDULER.schedule(request);
 	}
 

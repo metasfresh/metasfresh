@@ -8,23 +8,30 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommand;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateResponse;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.organization.OrgId;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
@@ -39,14 +46,17 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 /*
@@ -78,22 +88,24 @@ public class InventoryService
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull @Getter private final InventoryRepository inventoryRepository;
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull @Getter private final InventoryRepository inventoryRepository = new InventoryRepository();
+	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
 
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
 	public static InventoryService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
+
 		return new InventoryService(
-				new InventoryRepository(),
+				new HuForInventoryLineFactory(),
 				SourceHUsService.get(),
-				new HUQRCodesService(
-						new HUQRCodesRepository(),
-						new GlobalQRCodeService(DoNothingMassPrintingService.instance)
-				)
+				HUQRCodesService.newInstanceForUnitTesting(),
+				HULabelService.newInstanceForUnitTesting()
 		);
 	}
 
@@ -104,6 +116,7 @@ public class InventoryService
 
 	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) {return inventoryRepository.toInventory(inventoryRecord);}
 
+	@Nullable
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
 		return inventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
@@ -188,7 +201,7 @@ public class InventoryService
 		}
 	}
 
-	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)
+	public void updateQtyBookedFromHUStorage(@NonNull final I_M_InventoryLine inventoryLine)
 	{
 		inventoryLine.setQtyBook(BigDecimal.ZERO);
 
@@ -196,29 +209,25 @@ public class InventoryService
 		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLine.getM_Product_ID());
 		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
 		final UomId uomId = UomId.ofRepoIdOrNull(inventoryLine.getC_UOM_ID());
-
-		final boolean idsAreMissing = Stream.of(productId, huId, uomId)
-				.anyMatch(Objects::isNull);
-
-		if (idsAreMissing)
+		if (productId == null || huId == null || uomId == null)
 		{
 			return;
 		}
 
-		final Optional<Quantity> bookedQty = inventoryRepository.getFreshBookedQtyFromStorage(productId, uomId, huId);
+		final Quantity bookedQty = inventoryRepository.getFreshBookedQtyFromStorage(productId, uomId, huId).orElse(null);
 
-		if (bookedQty.isPresent())
+		if (bookedQty != null)
 		{
-			if (bookedQty.get().getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
+			if (bookedQty.getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
 			{
 				// this should never happen as InventoryRepository#getFreshBookedQtyFromStorage() returns the qty in the inventory line's uom.
 				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
 						.appendParametersToMessage()
 						.setParameter("InventoryLineUOMID", inventoryLine.getC_UOM_ID())
-						.setParameter("BookedQtyUOMID", bookedQty.get().getUomId());
+						.setParameter("BookedQtyUOMID", bookedQty.getUomId());
 			}
 
-			inventoryLine.setQtyBook(bookedQty.get().toBigDecimal());
+			inventoryLine.setQtyBook(bookedQty.toBigDecimal());
 		}
 	}
 
@@ -230,10 +239,40 @@ public class InventoryService
 				.inventoryRepository(inventoryRepository)
 				.sourceHUsService(sourceHUsService)
 				.huQRCodesService(huQRCodesService)
+				.huLabelService(huLabelService)
 				.inventory(inventory)
 				.build()
 				//
 				.execute();
+	}
+
+	/**
+	 * Stamps {@link AttributeConstants#ATTR_DateReceived} with {@code inventoryRecord.getMovementDate()} on every
+	 * assigned HU that does not yet carry a value. Skip-if-set preserves the original receipt date for HUs that
+	 * already exist in stock and are merely being re-counted; HUs newly created by the inventory get the
+	 * inventory date as their initial value. No-op for material-disposal inventories — those remove stock and
+	 * carry no receipt-date semantics.
+	 */
+	public void setReceivedDateOnInventoryHUs(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		if (isMaterialDisposal(inventoryRecord))
+		{
+			return;
+		}
+
+		final ImmutableSet<HuId> huIds = inventoryRepository.toInventory(inventoryRecord).getHuIds();
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+
+		huAttributesBL.updateHUAttributeRecursive(
+				huIds,
+				HUAttributeUpdateRequest.builder()
+						.attributeCode(AttributeConstants.ATTR_DateReceived)
+						.attributeValue(inventoryRecord.getMovementDate())
+						.onlyIfNotSet(true)
+						.build());
 	}
 
 	/**
@@ -247,8 +286,8 @@ public class InventoryService
 
 	public void completeDocument(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventory = inventoryRepository.getRecordById(inventoryId);
-		documentBL.processEx(inventory, IDocument.ACTION_Complete);
+		final I_M_Inventory inventoryRecord = inventoryRepository.getRecordById(inventoryId);
+		documentBL.processEx(inventoryRecord, IDocument.ACTION_Complete);
 	}
 
 	public Inventory createInventoryHeader(@NonNull final InventoryHeaderCreateRequest request)
@@ -318,4 +357,65 @@ public class InventoryService
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
 	}
+
+	public void distributeQuantityToHUs(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		inventoryRepository.updateInventoryLineByRecord(inventoryLineRecord, InventoryLine::distributeQtyCountToHUs);
+	}
+
+	public void deleteInventoryLineHUs(@NonNull final InventoryLineId inventoryLineId)
+	{
+		inventoryRepository.deleteInventoryLineHUs(inventoryLineId);
+	}
+
+	public InventoryLine toInventoryLine(final I_M_InventoryLine inventoryLineRecord)
+	{
+		return inventoryRepository.toInventoryLine(inventoryLineRecord);
+	}
+
+	public Collection<I_M_InventoryLine> retrieveAllLinesForHU(final HuId huId)
+	{
+		return inventoryRepository.retrieveAllLinesForHU(huId);
+	}
+
+	public void saveInventoryLineHURecords(final InventoryLine inventoryLine, final @NonNull InventoryId inventoryId)
+	{
+		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
+	}
+
+	public Stream<InventoryReference> streamReferences(@NonNull final InventoryQuery query)
+	{
+		return inventoryRepository.streamReferences(query);
+	}
+
+	public Inventory updateById(@NonNull final InventoryId inventoryId, @NonNull final UnaryOperator<Inventory> updater)
+	{
+		return inventoryRepository.updateById(inventoryId, updater);
+	}
+
+	public void updateByQuery(@NonNull final InventoryQuery query, @NonNull final UnaryOperator<Inventory> updater)
+	{
+		inventoryRepository.updateByQuery(query, updater);
+	}
+
+	public DraftInventoryLinesCreateResponse createDraftLines(@NonNull final DraftInventoryLinesCreateRequest request)
+	{
+		return DraftInventoryLinesCreateCommand.builder()
+				.inventoryRepository(inventoryRepository)
+				.huForInventoryLineFactory(huForInventoryLineFactory)
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
+	{
+		inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
+	}
+
+	public Set<HuId> getAssignedHUIds(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return inventoryRepository.getAssignedHUIds(inventoryLineId);
+	}
+
 }

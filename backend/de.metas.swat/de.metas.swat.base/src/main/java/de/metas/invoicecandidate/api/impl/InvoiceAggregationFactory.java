@@ -22,13 +22,8 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -37,6 +32,11 @@ import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 {
@@ -47,10 +47,10 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 	{
 		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 
-		final int aggregationId = getInvoice_Aggregation_ID(bpartner, isSOTrx, aggregationUsageLevel);
+		final AggregationId aggregationId = getInvoice_Aggregation_ID(bpartner, isSOTrx, aggregationUsageLevel);
 
 		final IAggregationKeyBuilder<I_C_Invoice_Candidate> aggregation;
-		if (aggregationId > 0)
+		if (aggregationId != null)
 		{
 			aggregation = aggregationFactory.getAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, aggregationId);
 		}
@@ -61,7 +61,7 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 		return aggregation;
 	}
 
-	private int getInvoice_Aggregation_ID(final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
+	private AggregationId getInvoice_Aggregation_ID(final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
 	{
 		final int aggregationId;
 		if (X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header.equals(aggregationUsageLevel))
@@ -76,17 +76,17 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 		{
 			throw new IllegalArgumentException("Unknown AggregationUsageLevel: " + aggregationUsageLevel);
 		}
-		return aggregationId <= 0 ? -1 : aggregationId;
+		return AggregationId.ofRepoIdOrNull(aggregationId);
 	}
 
 	@Override
 	public Aggregation getAggregation(final Properties ctx, final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
 	{
 		final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
-		final int aggregationId = getInvoice_Aggregation_ID(bpartner, isSOTrx, aggregationUsageLevel);
+		final AggregationId aggregationId = getInvoice_Aggregation_ID(bpartner, isSOTrx, aggregationUsageLevel);
 
 		final Aggregation aggregation;
-		if (aggregationId > 0)
+		if (aggregationId != null)
 		{
 			aggregation = aggregationDAO.retrieveAggregation(ctx, aggregationId);
 		}
@@ -110,10 +110,10 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 	{
 		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 
-		final int aggregationId = getPrepayOrder_Invoice_Aggregation_ID();
+		final AggregationId aggregationId = getPrepayOrder_Invoice_Aggregation_ID();
 
 		final IAggregationKeyBuilder<I_C_Invoice_Candidate> aggregation;
-		if (aggregationId > 0)
+		if (aggregationId != null)
 		{
 			aggregation = aggregationFactory.getAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, aggregationId);
 		}
@@ -124,9 +124,10 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 		return aggregation;
 	}
 
-	private int getPrepayOrder_Invoice_Aggregation_ID()
+	@Nullable
+	private AggregationId getPrepayOrder_Invoice_Aggregation_ID()
 	{
-		return Services.get(ISysConfigBL.class).getIntValue(INVOICE_AGGREGATION_ID_FOR_PREPAYORDER, -1);
+		return AggregationId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(INVOICE_AGGREGATION_ID_FOR_PREPAYORDER, -1));
 	}
 
 }

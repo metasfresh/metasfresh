@@ -86,18 +86,34 @@ public class PP_Product_Planning_StepDef
 
 	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
 
+	/**
+	 * Creates or updates a {@code PP_Product_Planning} record for each row via {@link IProductPlanningDAO#save(ProductPlanning)}.
+	 * Matches an existing planning by org/warehouse/plant/product; creates a new one if none is found.
+	 * Key columns: {@code M_Product_ID}, {@code IsCreatePlan} (controls auto-enqueue of C_Order generation),
+	 * {@code IsDocComplete} (controls whether the auto-generated C_Order is completed), {@code IsPurchased},
+	 * {@code IsManufactured}, {@code IsAttributeDependant}, {@code PP_Product_BOMVersions_ID},
+	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID}.
+	 */
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> createOrUpdate(row));
 	}
 
+	/**
+	 * Updates an existing {@code PP_Product_Planning} record. Throws {@link org.adempiere.exceptions.AdempiereException}
+	 * if no matching planning is found; use {@code metasfresh contains PP_Product_Plannings} if upsert behaviour is needed.
+	 */
 	@Given("update existing PP_Product_Plannings")
 	public void updateExisting(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::updateExisting);
 	}
 
+	/**
+	 * Internal implementation used by both {@link #updateExisting(DataTable)} and {@link #createOrUpdate(DataTableRow)}.
+	 * Delegates to {@link IProductPlanningDAO#save(ProductPlanning)} after applying the data table row values to the builder.
+	 */
 	public void updateExisting(@NonNull final DataTableRow row)
 	{
 		final ProductPlanning productPlanning = getExistingProductPlanning(row).orElseThrow(() -> new AdempiereException("No product planning found for " + row));
@@ -132,6 +148,7 @@ public class PP_Product_Planning_StepDef
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)

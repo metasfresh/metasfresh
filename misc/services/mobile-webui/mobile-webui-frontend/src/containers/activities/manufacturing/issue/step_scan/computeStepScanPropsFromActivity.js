@@ -28,7 +28,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   //qtyToIssueMax = Math.min(qtyToIssueMax, qtyHUCapacity); // allow exceeding the HU capacity
 
   const lineQtyToIssueRemaining = Math.max(lineQtyToIssue - lineQtyIssued, 0);
-  const qtyToIssueTarget = Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax);
+  const qtyToIssueTarget = Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax, qtyHUCapacity);
 
   const isIssueWholeHU = qtyToIssueTarget >= qtyHUCapacity;
 

@@ -118,7 +118,7 @@ public class AD_Column_AutoApplyValRuleConfig
 	{
 		final HashSet<String> tableNamesWithRegisteredColumn = new HashSet<>();
 
-		final ImmutableSet<AdColumnId> allColumnIds = query.listIds(AdColumnId::ofRepoId);
+		final ImmutableSet<AdColumnId> allColumnIds = query.idsAsSet(AdColumnId::ofRepoId);
 		final Collection<MinimalColumnInfo> allColumns = adTableDAO.getMinimalColumnInfosByIds(allColumnIds);
 
 		final ImmutableListMultimap<AdTableId, MinimalColumnInfo> tableId2columns = Multimaps.index(allColumns, MinimalColumnInfo::getAdTableId);

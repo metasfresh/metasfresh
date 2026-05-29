@@ -240,13 +240,13 @@ public class JsonRetrieverService
 
 	private JsonResponseComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-        final BPartner bpartner = bpartnerComposite.getBpartner();
-        
+		final BPartner bpartner = bpartnerComposite.getBpartner();
+
 		try (final MDCCloseable ignored = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
-             final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
+				final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
 		{
-		    final String orgCode = orgDAO.retrieveOrgValue(bpartnerComposite.getOrgId());
-		
+			final String orgCode = orgDAO.retrieveOrgValue(bpartnerComposite.getOrgId());
+
 			final JsonResponseCompositeBuilder result = JsonResponseComposite.builder()
 					.orgCode(orgCode);
 
@@ -340,7 +340,7 @@ public class JsonRetrieverService
 			return null;
 		}
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
-        return bpGroup.getName();
+		return bpGroup.getName();
 	}
 
 	private JsonResponseContact toJson(
@@ -430,7 +430,7 @@ public class JsonRetrieverService
 					.remitTo(location.isRemitTo())
 					.handoverLocation(location.isHandOverLocation())
 					.replicationLookupDefault(location.isReplicationLookupDefault())
-					.visitorsAddress(location.isVisitorsAddress())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)

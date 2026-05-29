@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.print;
 
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.engine.IDocumentBL;
@@ -112,7 +112,7 @@ public class WebuiDocumentPrintService
 		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 		final DocumentReportFlavor flavor = getDocOutBoundRecipient(recordRef)
-				.filter(DocOutBoundRecipient::isInvoiceAsEmail)
+				.filter(DocOutBoundRecipients::isInvoiceAsEmail)
 				.map(recipient -> DocumentReportFlavor.EMAIL)
 				.orElse(DocumentReportFlavor.PRINT);
 
@@ -124,7 +124,7 @@ public class WebuiDocumentPrintService
 		return toJSONDocumentPrintingOptions(printOptions, adLanguage);
 	}
 
-	private Optional<DocOutBoundRecipient> getDocOutBoundRecipient(@NonNull final TableRecordReference recordRef)
+	private Optional<DocOutBoundRecipients> getDocOutBoundRecipient(@NonNull final TableRecordReference recordRef)
 	{
 		try
 		{

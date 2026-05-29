@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.async.api.impl;
 
 import de.metas.async.AsyncBatchId;
@@ -21,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
@@ -30,28 +53,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
-
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
@@ -66,14 +67,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private AsyncBatchId asyncBatchId = null;
 	private boolean asyncBatchSet = false;
-	private UserId userInChargeId;
+	@Nullable private UserId userInChargeId;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
 	private final LinkedHashSet<TableRecordReference> elements = new LinkedHashSet<>();
-	/**
-	 * Locker used to lock enqueued elements
-	 */
+	/** Locker used to lock enqueued elements */
 	private ILockCommand _elementsLocker = null;
 
 	// Status
@@ -202,6 +201,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
+	public WorkPackageBuilder addElements(final TableRecordReferenceSet recordRefs)
+	{
+		recordRefs.forEach(this::addElement);
+		return this;
+	}
+
+	@Override
 	public WorkPackageBuilder bindToTrxName(final String trxName)
 	{
 		assertNotBuilt();
@@ -258,7 +264,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 
-		return setC_Async_Batch_ID(asyncBatchId);
+		return setAsyncBatchId(asyncBatchId);
 	}
 
 	@Override
@@ -270,7 +276,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public WorkPackageBuilder setC_Async_Batch_ID(@Nullable final AsyncBatchId asyncBatchId)
+	public WorkPackageBuilder setAsyncBatchId(@Nullable final AsyncBatchId asyncBatchId)
 	{
 		if (asyncBatchId == null)
 		{
@@ -308,33 +314,31 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 			// Otherwise, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
 			setTrxName(workPackage, _trxName);
 
+			// Set the Async batch if provided
+			if (asyncBatchSet)
+			{
+				workPackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+			}
+			if (userInChargeId != null)
+			{
+				workPackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
+			}
+			
 			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
-			final I_C_Queue_WorkPackage workpackage = workPackageQueue.enqueueWorkPackage(
+			final I_C_Queue_WorkPackage enqueuedWorkpackage = workPackageQueue.enqueueWorkPackage(
 					workPackage,
 					workPackagePriority);
 
-			try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(workpackage))
+			try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(enqueuedWorkpackage))
 			{
-				// Set the Async batch if provided
-				// TODO: optimize this and set everything in one shot and then save it.
-				if (asyncBatchSet)
-				{
-					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
-				}
-
-				if (userInChargeId != null)
-				{
-					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
-				}
-
 				// Create workpackage parameters
 				if (_parametersBuilder != null)
 				{
-					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
+					_parametersBuilder.setC_Queue_WorkPackage(enqueuedWorkpackage);
 					_parametersBuilder.build();
 				}
 
-				createWorkpackageElements(workPackageQueue, workpackage);
+				createWorkpackageElements(workPackageQueue, enqueuedWorkpackage);
 
 				//
 				// Lock enqueued workpackage elements
@@ -347,9 +351,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 				//
 				// Actually mark the workpackage as ready for processing
 				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
-				workPackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
+				workPackageQueue.markReadyForProcessingAfterTrxCommit(enqueuedWorkpackage, _trxName);
 			}
-			return workpackage;
+			return enqueuedWorkpackage;
 		}
 	}
 }

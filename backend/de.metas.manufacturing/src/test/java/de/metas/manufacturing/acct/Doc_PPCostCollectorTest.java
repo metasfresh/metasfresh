@@ -29,6 +29,7 @@ import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cost.classification.CostClassificationRepository;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -163,13 +164,14 @@ class Post_CostCollectors_Now_ManualTest
 		return new AcctDocRequiredServicesFacade(
 				ModelCacheInvalidationService.newInstanceForUnitTesting(),
 				elementValueService,
+				new CostClassificationRepository(),
 				new GLCategoryRepository(),
 				bankAccountService,
 				accountProviderFactory,
 				new InvoiceAcctRepository(),
 				matchInvoiceService,
 				orderCostService,
-				new FAOpenItemsService(Optional.empty()),
+				new FAOpenItemsService(elementValueService, Optional.empty()),
 				costingService,
 				new DimensionService(ImmutableList.of()),
 				new SalesRegionService(new SalesRegionRepository()),
@@ -200,7 +202,7 @@ class Post_CostCollectors_Now_ManualTest
 		for (final int id : ids)
 		{
 			final I_PP_Cost_Collector documentModel = recordsById.get(id);
-			
+
 			final Doc_PPCostCollector doc = new Doc_PPCostCollector(contextTemplate.documentModel(toAcctDocModel(documentModel)).build());
 			doc.post(true, true);
 			System.out.println("Posted: " + documentModel);

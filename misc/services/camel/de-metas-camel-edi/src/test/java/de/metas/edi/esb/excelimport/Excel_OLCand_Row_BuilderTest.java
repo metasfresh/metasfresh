@@ -22,8 +22,7 @@
 
 package de.metas.edi.esb.excelimport;
 
-import org.apache.camel.test.junit5.CamelTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 

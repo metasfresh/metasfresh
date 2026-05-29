@@ -30,21 +30,16 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -56,25 +51,15 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Properties;
 
 public class ProductPA implements IProductPA
 {
 
-	public static final String WHERE_PRODUCT_PRICE = I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "=?";
-
 	public static final String WHERE_PRODUCT_SCALE_PRICE = I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?";
 
 	private static final Logger logger = LogManager.getLogger(ProductPA.class);
-
-	private static final String SQL_SELECT_ASI = "SELECT asi.* "
-			+ " FROM " + I_M_AttributeSetInstance.Table_Name + " asi"
-			+ " WHERE "//
-			+ "    asi." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSet_ID + "=?"
-			+ "    AND asi." + I_M_AttributeSetInstance.COLUMNNAME_SerNo + "=? ";
 
 	private final static String SQL_SCALEPRICE_FOR_QTY = //
 			" SELECT * "//
@@ -84,8 +69,6 @@ public class ProductPA implements IProductPA
 					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "<=?" //
 					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_IsActive + "='Y'" //
 					+ " ORDER BY " + I_M_ProductScalePrice.COLUMNNAME_Qty + " DESC";
-
-	private static final String PREFIX_ERR_MSG_NONEXISTING_PROD = "Param 'productId' must be the of product that exists in the database. Was: ";
 
 	@Override
 	public I_M_Product retrieveProduct(
@@ -102,18 +85,8 @@ public class ProductPA implements IProductPA
 		return retrieveProduct(ctx, I_M_Product.COLUMNNAME_Value, value, throwEx, trxName);
 	}
 
-	@Override
-	public I_M_Product retrieveProduct(
-			final Properties ctx,
-			int productId,
-			boolean throwEx,
-			String trxName)
-	{
-		return retrieveProduct(ctx, I_M_Product.COLUMNNAME_M_Product_ID, productId, throwEx, trxName);
-	}
-
 	@Cached(cacheName = I_M_Product.Table_Name + "#By#ColumnName")
-	/* package */I_M_Product retrieveProduct(
+		/* package */I_M_Product retrieveProduct(
 			final @CacheCtx Properties ctx,
 			final String colName,
 			final @CacheAllowMutable Object param,
@@ -135,82 +108,22 @@ public class ProductPA implements IProductPA
 		return product;
 	}
 
-	/**
-	 * returns an attribute instance that has a certain text and belongs to a certain product.
-	 *
-	 * @return the retrieved attribute set instance(s) or an empty collection if no asi for the given product with the given text yet.
-	 *
-	 * @throws IllegalArgumentException if
-	 *             <li>Parameter <code>text</code> is null</li>
-	 *             <li>there is no product with the given <code>productId</code></li>
-	 */
-	@Override
-	public Collection<MAttributeSetInstance> retrieveSerno(final int productId, final String text, final String trxName)
-	{
-		if (text == null)
-		{
-			throw new IllegalArgumentException("Param 'text' may not be null");
-		}
-		if (productId <= 0)
-		{
-			throw new IllegalArgumentException(PREFIX_ERR_MSG_NONEXISTING_PROD + productId);
-		}
-
-		final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, trxName);
-		if (product == null || product.getM_Product_ID() <= 0)
-		{
-			throw new IllegalArgumentException(PREFIX_ERR_MSG_NONEXISTING_PROD + productId);
-		}
-
-		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(product);
-
-		final String sql = SQL_SELECT_ASI;
-		final Object[] sqlParams = new Object[] { attributeSetId, text };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			DB.setParameters(pstmt, sqlParams);
-
-			rs = pstmt.executeQuery();
-
-			final List<MAttributeSetInstance> result = new ArrayList<>();
-
-			while (rs.next())
-			{
-				result.add(new MAttributeSetInstance(Env.getCtx(), rs, trxName));
-			}
-
-			return result;
-
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
 	@Override
 	public BigDecimal retrievePriceStd(
 			final @NonNull OrgId orgId,
 			final int productId,
-			final int partnerId, 
-			final int priceListId, 
+			final int partnerId,
+			final int priceListId,
 			@Nullable final CountryId countryId,
 			final BigDecimal qty,
 			final boolean soTrx)
 	{
 		final MProductPricing pricing = new MProductPricing(
 				orgId,
-				productId, 
+				productId,
 				partnerId,
 				countryId,
-				qty, 
+				qty,
 				soTrx);
 		pricing.setM_PriceList_ID(priceListId);
 

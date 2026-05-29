@@ -25,19 +25,18 @@ package de.metas.serviceprovider.milestone;
 import de.metas.serviceprovider.model.I_S_Milestone;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_NAME;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_SEARCH_KEY;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MilestoneRepositoryTest
 {
@@ -53,7 +52,7 @@ public class MilestoneRepositoryTest
 			.dueDate(MOCK_INSTANT)
 			.build();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -22,20 +22,10 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOut;
-
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -56,6 +46,16 @@ import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSourc
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOut;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -70,6 +70,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -273,22 +274,30 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.releasePackingMaterialForTUHUsRecursively(tuAssignmentsQuery);
-		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
+		// Must reset packingMaterialsCollectorFromHUs internal counter so mergeBackToParentAndClear() at line 323 doesn't contaminate the parent collector's TU count
+		final int packingMaterial_countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
+
+		// Instead of relying on the packingMaterialsCollectorFromHUs.getAndResetCountTUs(), we're re-counting the number of distinct TUs assigned to this line.
+		// Why? Because a TU/LU will only be counted once for each Shipment creation run, and it will be counted on the first InOutLine encountered (the one where M_HU_Assignment.IsTransferPackingMaterials='Y')
+		// That mechanism is designed to prevent double-counting of TUs/LUs when multiple InOutLines reference the same TU/LU.
+		// But the customer's gripe is that the shipment document looks weird, as if no TU has been assigned to a shipment line. And that would happen if multiple lines are packed into the same TU.
+		final BigDecimal display_countTUs_Calculated = BigDecimal.valueOf(huAssignmentBL.retrieveTUCountForModel(shipmentLine));
 
 		//
 		// Collect TU packing materials from overrides
-		int countTUs_Override = shipmentLine.getQtyTU_Override().intValueExact();
+		BigDecimal countTUs_Override = shipmentLine.getQtyTU_Override();
 		// Case: we need to initialize the overrides, so we are using the countTUs_Calculated if it's a value set there.
-		if (initializeOverrides && countTUs_Calculated > 0)
+		if (initializeOverrides && display_countTUs_Calculated.signum() > 0)
 		{
-			countTUs_Override = countTUs_Calculated;
+			countTUs_Override = display_countTUs_Calculated;
 		}
 		final HUPackingMaterialsCollector packingMaterialsCollectorFromOverrides = packingMaterialsCollector.splitNew();
 		final I_M_HU_PI_Item_Product huPIItemProduct = shipmentLine.getM_HU_PI_Item_Product_Override();
 		if (huPIItemProduct != null)
 		{
+			final int packingMaterial_countTUs_Override = initializeOverrides && packingMaterial_countTUs_Calculated > 0 ? packingMaterial_countTUs_Calculated : shipmentLine.getQtyTU_Override().intValueExact();
 			final I_M_HU_PI huPI = huPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, countTUs_Override, shipmentLineSource);
+			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, packingMaterial_countTUs_Override, shipmentLineSource);
 		}
 		//
 		// Collect LU packing materials from overrides
@@ -319,10 +328,10 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 		//
 		// Update Qty TU of this shipment line
-		shipmentLine.setQtyTU_Calculated(BigDecimal.valueOf(countTUs_Calculated));
+		shipmentLine.setQtyTU_Calculated(display_countTUs_Calculated);
 		if (initializeOverrides)
 		{
-			shipmentLine.setQtyTU_Override(BigDecimal.valueOf(countTUs_Override));
+			shipmentLine.setQtyTU_Override(countTUs_Override);
 		}
 		InterfaceWrapperHelper.save(shipmentLine);
 

@@ -23,12 +23,12 @@
 package de.metas.edi.esb.excelimport;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
-import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.COrderDeliveryRuleEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.COrderDeliveryViaRuleEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationModeEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationTypeEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -115,7 +115,7 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		template.sendBody(MOCK_FROM, olCandInputStream);
 
 		// then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		final List<JAXBElement<XLSImpCOLCandType>> result =
 				(List<JAXBElement<XLSImpCOLCandType>>)mappedToOLCand.getExchanges().get(0).getIn().getBody(List.class);
 

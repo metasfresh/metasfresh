@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-bpartner
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.IOException;
 import java.time.Instant;
 
-import static shadow.org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith({SnapshotExtension.class})
 public class JsonAlbertaContactTest

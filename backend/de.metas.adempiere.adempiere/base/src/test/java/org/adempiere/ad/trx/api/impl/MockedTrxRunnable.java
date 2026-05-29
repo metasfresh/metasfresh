@@ -10,30 +10,29 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.ToString;
-
-@Ignore
+@Disabled
 @ToString(exclude = { "trxManager" })
 public class MockedTrxRunnable extends TrxRunnableAdapter
 {
@@ -83,7 +82,7 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 
 	public void assertExecuted()
 	{
-		Assert.assertEquals("Runnable was executed: " + this, true, this.executed);
+		Assertions.assertTrue(this.executed, "Runnable was executed: " + this);
 	}
 
 	public void assertExecutedUsingTrxName(final String expectedLastTrxName)
@@ -92,24 +91,22 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 
 		if (expectedLastTrxName == null)
 		{
-			Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, getLastTrxName());
+			Assertions.assertEquals(expectedLastTrxName, getLastTrxName(), "Runnable was executed using expected trxName: " + this);
 		}
 		else
 		{
 			// NOTE: until we get rid of "TrxCallableWithTrxName" our Runnables will get the "effective" localTrxName instead of ThreadInherited.
 			// Assert.assertEquals("Runnable was executed using expected trxName: " + this, ITrx.TRXNAME_ThreadInherited, getLastTrxName());
-			Assert.assertNotNull(TrxCallableWithTrxName.class); // non-sense, but we just want to have a reference here for future refactoring
-			Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, getLastTrxName());
+			Assertions.assertNotNull(TrxCallableWithTrxName.class); // non-sense, but we just want to have a reference here for future refactoring
+			Assertions.assertEquals(expectedLastTrxName, getLastTrxName(), "Runnable was executed using expected trxName: " + this);
 
 			final String lastTrxNameEffective = getLastTrxNameEffective();
-			Assert.assertEquals("Runnable was executed using expected EFFECTIVE trxName: " + this, expectedLastTrxName, lastTrxNameEffective);
+			Assertions.assertEquals(expectedLastTrxName, lastTrxNameEffective, "Runnable was executed using expected EFFECTIVE trxName: " + this);
 		}
 	}
 
 	/**
 	 * Sets inner runnable to be executed on {@link #run(String)}
-	 * 
-	 * @param runnable
 	 */
 	public void setInnerRunnable(final Runnable runnable)
 	{

@@ -22,16 +22,24 @@
 
 package de.metas.cucumber.stepdefs.bank;
 
+import de.metas.banking.BankId;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import org.compiere.model.I_C_Bank;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_Bank_StepDefData extends StepDefData<I_C_Bank>
+public class C_Bank_StepDefData extends StepDefData<I_C_Bank> implements StepDefDataGetIdAware<BankId, I_C_Bank>
 {
 	public C_Bank_StepDefData()
 	{
 		super(I_C_Bank.class);
+	}
+
+	@Override
+	public BankId extractIdFromRecord(final I_C_Bank record)
+	{
+		return BankId.ofRepoId(record.getC_Bank_ID());
 	}
 }

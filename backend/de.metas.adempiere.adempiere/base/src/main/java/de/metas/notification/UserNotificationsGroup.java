@@ -40,8 +40,8 @@ public class UserNotificationsGroup
 
 	private static NotificationGroupName DEFAULT_GroupInternalName = NotificationGroupName.of("default");
 
-	NotificationGroupName groupInternalName;
-	Set<NotificationType> notificationTypes;
+	@NonNull NotificationGroupName groupInternalName;
+	@NonNull ImmutableSet<NotificationType> notificationTypes;
 
 	@Builder
 	private UserNotificationsGroup(

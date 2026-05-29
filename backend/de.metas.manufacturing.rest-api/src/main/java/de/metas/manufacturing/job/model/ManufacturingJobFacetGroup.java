@@ -2,8 +2,8 @@ package de.metas.manufacturing.job.model;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroup;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

@@ -89,9 +89,11 @@ public class InvoiceCandidate
 	@Setter(AccessLevel.NONE)
 	private InvoicableQtyBasedOn invoicableQtyBasedOn;
 
+	@Nullable
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToInvoiceOverrideInStockUom;
 
+	@Nullable
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToInvoiceOverrideInUom;
 
@@ -397,6 +399,9 @@ public class InvoiceCandidate
 			case AfterDelivery:
 			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
+			case Manual:
+				// Manual reuses AfterDelivery's qty semantics — when the user triggers
+				// invoicing via IsInvoiceManualRule=Y, the candidate carries the full delivered qty.
 				if (product.isItemType())
 				{
 					qtyToInvoice = computeInvoicableQtysDelivered();

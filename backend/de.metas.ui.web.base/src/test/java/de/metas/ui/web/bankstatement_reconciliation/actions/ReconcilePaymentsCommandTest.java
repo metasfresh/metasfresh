@@ -2,6 +2,8 @@ package de.metas.ui.web.bankstatement_reconciliation.actions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -58,6 +60,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.AbstractBooleanAssert;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -165,6 +168,16 @@ public class ReconcilePaymentsCommandTest
 		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
 		customerId = createCustomer();
+
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		createClientInfo(acctSchemaId);
+	}
+
+	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		save(clientInfo);
 	}
 
 	private void executeReconcilePaymentsCommand(final ReconcilePaymentsRequest request)

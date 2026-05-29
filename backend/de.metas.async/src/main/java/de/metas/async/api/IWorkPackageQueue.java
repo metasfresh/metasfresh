@@ -1,10 +1,8 @@
-package de.metas.async.api;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.async.api;
  * #L%
  */
 
+package de.metas.async.api;
+
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
@@ -33,7 +33,6 @@ import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.lock.exceptions.UnlockFailedException;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -54,35 +53,19 @@ import java.util.concurrent.Future;
 public interface IWorkPackageQueue
 {
 	/**
-	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 * task mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
 	/**
-	 * Unlocks given package
-	 *
-	 * @throws UnlockFailedException if unlocking fails
-	 */
-	void unlock(I_C_Queue_WorkPackage workPackage) throws UnlockFailedException;
-
-	/**
-	 * Unlocks given package.
-	 *
-	 * Any unlock exceptions will be logged but not propagated.
-	 *
-	 * @return true if unlocked
-	 */
-	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
-
-	/**
-	 * Retrieve the global queue size (i.e. number of unprocessed workpackages). This includes a DB query.
+	 * Retrieve the number of processable workpackages using a DB-query.
 	 */
 	int size();
 
 	/**
 	 *
 	 * @return the number of packages enqueued to this instance
-	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 * task mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	int getLocalPackageCount();
 

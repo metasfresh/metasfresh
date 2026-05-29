@@ -30,6 +30,7 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_ORG_CODE = "orgCode";
 	public static final String HEADER_BPARTNER_IDENTIFIER = "bPartnerIdentifier";
 	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
+	public static final String HEADER_ERROR_CONTEXT = "errorContext";
 	public static final String HEADER_PRICE_LIST_VERSION_IDENTIFIER = "priceListVersionIdentifier";
 	public static final String HEADER_PRICE_LIST_IDENTIFIER = "priceListIdentifier";
 	public static final String HEADER_TARGET_ROUTE = "targetRoute";
@@ -50,6 +51,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
 
+	public static final String MF_UPSERT_WAREHOUSE_V2_CAMEL_URI = "metasfresh.upsert-warehouse-v2.camel.uri";
+
 	public static final String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
 	public static final String MF_RETRIEVE_BPARTNER_V2_CAMEL_URI = "metasfresh.retrieve-bpartner-v2.camel.uri";
@@ -64,6 +67,8 @@ public class ExternalSystemCamelConstants
 	public static final String MF_UPSERT_BOM_V2_CAMEL_URI = "metasfresh.upsert-bom-v2.camel.uri";
 
 	public static final String MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI = "metasfresh.create-purchase-candidate-v2.camel.uri";
+	
+	public static final String MF_CREATE_RECEIPTS_V2_CAMEL_URI = "metasfresh.create-receipts-v2.camel.uri";
 
 	public static final String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
 

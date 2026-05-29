@@ -1,6 +1,7 @@
 package de.metas.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
@@ -68,7 +69,7 @@ public interface IProcessPreconditionsContext
 	 */
 	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
-	
+
 	@NonNull
 	<T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass);
 
@@ -105,6 +106,11 @@ public interface IProcessPreconditionsContext
 		return getSelectionSize().isMoreThanOneSelected();
 	}
 
+	default boolean isMoreThanAllowedSelected(final int maxAllowedSelectionSize)
+	{
+		return getSelectionSize().getSize() > maxAllowedSelectionSize;
+	}
+
 	/**
 	 * @return selected included rows of current single selected document
 	 */
@@ -135,4 +141,8 @@ public interface IProcessPreconditionsContext
 			return ProcessPreconditionsResolution.accept();
 		}
 	}
+
+	default OptionalBoolean isExistingDocument() {return OptionalBoolean.UNKNOWN;}
+
+	default OptionalBoolean isProcessedDocument() { return OptionalBoolean.UNKNOWN; };
 }

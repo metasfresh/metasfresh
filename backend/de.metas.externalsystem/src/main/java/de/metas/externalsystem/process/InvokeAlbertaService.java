@@ -29,7 +29,6 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.externalreference.AlbertaExternalSystem;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
@@ -37,6 +36,8 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
@@ -49,6 +50,7 @@ import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -59,6 +61,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class InvokeAlbertaService
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER = "syncBPartnerById";
@@ -76,18 +79,7 @@ public class InvokeAlbertaService
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 	private final ExternalSystemConfigService externalSystemConfigService;
-
-	public InvokeAlbertaService(
-			@NonNull final AlbertaRoleRepository albertaRoleRepository,
-			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO,
-			@NonNull final ExternalSystemConfigService externalSystemConfigService)
-	{
-		this.albertaRoleRepository = albertaRoleRepository;
-		this.externalReferenceRepository = externalReferenceRepository;
-		this.externalSystemConfigDAO = externalSystemConfigDAO;
-		this.externalSystemConfigService = externalSystemConfigService;
-	}
+	private final ExternalSystemRepository externalSystemRepository;
 
 	@NonNull
 	public Stream<JsonExternalSystemRequest> streamSyncExternalRequestsForBPartnerIds(
@@ -123,7 +115,7 @@ public class InvokeAlbertaService
 
 		final GetExternalReferenceByRecordIdReq getExternalRefRequest = GetExternalReferenceByRecordIdReq.builder()
 				.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
-				.externalSystem(AlbertaExternalSystem.ALBERTA)
+				.externalSystem(externalSystemRepository.getByType(ExternalSystemType.Alberta))
 				.recordId(albertaRole.getBPartnerId().getRepoId())
 				.build();
 
@@ -143,7 +135,7 @@ public class InvokeAlbertaService
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
-				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.Alberta.getName()))
+				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.Alberta.getValue()))
 				.parameters(extractParameters(config, albertaBPartnerReference))
 				.orgCode(orgDAO.getById(orgId).getValue())
 				.command(EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER)

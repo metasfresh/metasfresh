@@ -1,11 +1,10 @@
 package de.metas.invoice;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

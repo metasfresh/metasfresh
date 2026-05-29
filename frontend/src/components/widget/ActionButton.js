@@ -116,7 +116,7 @@ class ActionButton extends PureComponent {
   fetchStatusList() {
     const { windowType, fields, dataId } = this.props;
     if (!dataId) {
-      return Promise.resolve(null);
+      return Promise.resolve([]);
     }
 
     return dropdownRequest({
@@ -126,9 +126,9 @@ class ActionButton extends PureComponent {
       propertyName: fields[1].field,
     })
       .then((res) => {
-        this.setState({
-          list: res.data.values,
-        });
+        const list = res.data.values;
+        this.setState({ list });
+        return list;
       })
       .catch((e) => e);
   }
@@ -216,6 +216,7 @@ class ActionButton extends PureComponent {
           }
           title={item.description ? item.description : null}
           onClick={() => this.handleChangeStatus(item)}
+          data-testid={`status-${item.key || 'unknown'}`}
         >
           {item.caption}
         </li>
@@ -275,9 +276,13 @@ class ActionButton extends PureComponent {
 
   documentCompleteStatus = () => {
     if (this.isDisabled()) return false;
-    const { list } = this.state;
 
-    this.handleChangeStatus(list.find((elem) => elem.key === 'CO'));
+    this.fetchStatusList().then((list) => {
+      const completeStatus = list.find((elem) => elem.key === 'CO');
+      if (completeStatus) {
+        this.handleChangeStatus(completeStatus);
+      }
+    });
   };
 
   setRef = (ref) => {
@@ -328,6 +333,7 @@ class ActionButton extends PureComponent {
         ref={this.setRef}
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
+        data-testid="status-button"
       >
         {showPrompt && (
           <Prompt

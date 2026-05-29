@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.picking.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_PickingSlot
  *  @author metasfresh (generated) 
@@ -89,6 +89,21 @@ public class X_M_PickingSlot extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setM_HU_ID (final int M_HU_ID)
+	{
+		if (M_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
+	}
+
+	@Override
+	public int getM_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
+	}
+
+	@Override
 	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
@@ -149,13 +164,13 @@ public class X_M_PickingSlot extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public void setPickingSlot (final String PickingSlot)
+	public void setPickingSlot (final java.lang.String PickingSlot)
 	{
 		set_Value (COLUMNNAME_PickingSlot, PickingSlot);
 	}
 
 	@Override
-	public String getPickingSlot() 
+	public java.lang.String getPickingSlot() 
 	{
 		return get_ValueAsString(COLUMNNAME_PickingSlot);
 	}

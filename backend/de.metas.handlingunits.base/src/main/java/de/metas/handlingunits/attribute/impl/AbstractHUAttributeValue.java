@@ -22,12 +22,6 @@ package de.metas.handlingunits.attribute.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
@@ -37,6 +31,11 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+
+import java.util.Properties;
 
 public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 {
@@ -52,7 +51,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 			final I_M_HU_PI_Attribute huPIAttribute,
 			final Boolean isTemplateAttribute)
 	{
-		super(attributeStorage, Services.get(IAttributeDAO.class).getAttributeById(huPIAttribute.getM_Attribute_ID()));
+		super(attributeStorage, Services.get(IAttributeDAO.class).getAttributeRecordById(huPIAttribute.getM_Attribute_ID()));
 		this.huPIAttribute = huPIAttribute;
 
 		this._definedByTemplate = isTemplateAttribute; // null is OK
@@ -61,8 +60,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	@Override
 	public final String getPropagationType()
 	{
-		final String propagationType = huPIAttribute.getPropagationType();
-		return propagationType;
+		return huPIAttribute.getPropagationType();
 	}
 
 	@Override
@@ -70,10 +68,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final int adJavaClassId = huPIAttribute.getAggregationStrategy_JavaClass_ID();
-		final IAttributeAggregationStrategy aggregationStrategy = attributeStrategyFactory
-				.retrieveStrategy(ctx, adJavaClassId, IAttributeAggregationStrategy.class);
-
-		return aggregationStrategy;
+		return attributeStrategyFactory.retrieveStrategy(ctx, adJavaClassId, IAttributeAggregationStrategy.class);
 	}
 
 	@Override
@@ -81,10 +76,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final int adJavaClassId = huPIAttribute.getSplitterStrategy_JavaClass_ID();
-		final IAttributeSplitterStrategy splitterStrategy = attributeStrategyFactory
-				.retrieveStrategy(ctx, adJavaClassId, IAttributeSplitterStrategy.class);
-
-		return splitterStrategy;
+		return attributeStrategyFactory.retrieveStrategy(ctx, adJavaClassId, IAttributeSplitterStrategy.class);
 	}
 
 	@Override
@@ -92,10 +84,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final int adJavaClassId = huPIAttribute.getHU_TansferStrategy_JavaClass_ID();
-		final IHUAttributeTransferStrategy transferStrategy = attributeStrategyFactory
-				.retrieveStrategy(ctx, adJavaClassId, IHUAttributeTransferStrategy.class);
-
-		return transferStrategy;
+		return attributeStrategyFactory.retrieveStrategy(ctx, adJavaClassId, IHUAttributeTransferStrategy.class);
 	}
 
 	@Override
@@ -129,7 +118,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	public final I_C_UOM getC_UOM()
 	{
 		final int uomId = huPIAttribute.getC_UOM_ID();
-		if(uomId > 0)
+		if (uomId > 0)
 		{
 			return Services.get(IUOMDAO.class).getById(uomId);
 		}
@@ -170,7 +159,6 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 		// Fallback: if SeqNo was not set, return max int (i.e. show them last)
 		return Integer.MAX_VALUE;
 	}
-	
 
 	@Override
 	public boolean isOnlyIfInProductAttributeSet()

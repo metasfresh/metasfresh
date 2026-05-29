@@ -158,6 +158,31 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_AllowConsolidateInOut = "AllowConsolidateInOut";
 
 	/**
+	 * Set Best before date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setBestBeforeDate (@Nullable java.sql.Timestamp BestBeforeDate);
+
+	/**
+	 * Get Best before date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.sql.Timestamp getBestBeforeDate();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BestBeforeDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "BestBeforeDate", null);
+	String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
+
+	/**
 	 * Set Bill Business Partner.
 	 *
 	 * <br>Type: Search
@@ -308,6 +333,98 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_M_ShipmentSchedule.class, "CanBeExportedFrom", null);
 	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
+	 * Set Carrier Advice Error Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrierAdviceErrorMsg (@Nullable java.lang.String CarrierAdviceErrorMsg);
+
+	/**
+	 * Get Carrier Advice Error Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCarrierAdviceErrorMsg();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CarrierAdviceErrorMsg = new ModelColumn<>(I_M_ShipmentSchedule.class, "CarrierAdviceErrorMsg", null);
+	String COLUMNNAME_CarrierAdviceErrorMsg = "CarrierAdviceErrorMsg";
+
+	/**
+	 * Set Carrier Advising Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Advising_Status (java.lang.String Carrier_Advising_Status);
+
+	/**
+	 * Get Carrier Advising Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCarrier_Advising_Status();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Carrier_Advising_Status = new ModelColumn<>(I_M_ShipmentSchedule.class, "Carrier_Advising_Status", null);
+	String COLUMNNAME_Carrier_Advising_Status = "Carrier_Advising_Status";
+
+	/**
+	 * Set Carrier Material Assignment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Goods_Type_ID (int Carrier_Goods_Type_ID);
+
+	/**
+	 * Get Carrier Material Assignment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Goods_Type_ID();
+
+	@Nullable org.compiere.model.I_Carrier_Goods_Type getCarrier_Goods_Type();
+
+	void setCarrier_Goods_Type(@Nullable org.compiere.model.I_Carrier_Goods_Type Carrier_Goods_Type);
+
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_Carrier_Goods_Type> COLUMN_Carrier_Goods_Type_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "Carrier_Goods_Type_ID", org.compiere.model.I_Carrier_Goods_Type.class);
+	String COLUMNNAME_Carrier_Goods_Type_ID = "Carrier_Goods_Type_ID";
+
+	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	@Nullable org.compiere.model.I_Carrier_Product getCarrier_Product();
+
+	void setCarrier_Product(@Nullable org.compiere.model.I_Carrier_Product Carrier_Product);
+
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
 
 	/**
 	 * Set Async Batch.
@@ -626,6 +743,28 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -654,7 +793,7 @@ public interface I_M_ShipmentSchedule
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
@@ -666,7 +805,7 @@ public interface I_M_ShipmentSchedule
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
@@ -897,6 +1036,69 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
+	 * Set External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
+
+	/**
+	 * Get External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalHeaderId();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalHeaderId", null);
+	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+
+	/**
+	 * Set External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
+
+	/**
+	 * Get External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalLineId();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalLineId", null);
+	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
 	 * Set Header  merge characteristic.
 	 *
 	 * <br>Type: String
@@ -1094,6 +1296,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsEdiDesadvRecipient", null);
 	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+
+	/**
+	 * Set Scheduled for Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsScheduledForPicking (boolean IsScheduledForPicking);
+
+	/**
+	 * Get Scheduled for Picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isScheduledForPicking();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsScheduledForPicking = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsScheduledForPicking", null);
+	String COLUMNNAME_IsScheduledForPicking = "IsScheduledForPicking";
 
 	/**
 	 * Set Recompute.
@@ -1956,6 +2179,48 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyReserved = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyReserved", null);
 	String COLUMNNAME_QtyReserved = "QtyReserved";
+
+	/**
+	 * Set Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyScheduledForPicking (@Nullable BigDecimal QtyScheduledForPicking);
+
+	/**
+	 * Get Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyScheduledForPicking();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyScheduledForPicking = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyScheduledForPicking", null);
+	String COLUMNNAME_QtyScheduledForPicking = "QtyScheduledForPicking";
+
+	/**
+	 * Set Processed Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyScheduledForPickingOfProcessed (@Nullable BigDecimal QtyScheduledForPickingOfProcessed);
+
+	/**
+	 * Get Processed Qty Scheduled for Picking.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyScheduledForPickingOfProcessed();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyScheduledForPickingOfProcessed = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyScheduledForPickingOfProcessed", null);
+	String COLUMNNAME_QtyScheduledForPickingOfProcessed = "QtyScheduledForPickingOfProcessed";
 
 	/**
 	 * Set Quantity to Deliver.

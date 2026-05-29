@@ -219,7 +219,7 @@ public class ModelClassGenerator
 			final String fieldName = ModelInterfaceGenerator.getFieldName(columnName);
 			final String referenceClassName = ModelInterfaceGenerator.getReferenceClassName(columnInfo, repository);
 			//
-			if (ModelInterfaceGenerator.isGenerateModelGetterOrSetterForReferencedClassName(referenceClassName))
+			if (ModelInterfaceGenerator.isGenerateModelGetterOrSetterForReferencedClassName(columnInfo, referenceClassName))
 			{
 				//
 				// Model Getter

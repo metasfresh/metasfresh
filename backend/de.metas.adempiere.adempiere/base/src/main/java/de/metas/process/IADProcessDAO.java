@@ -32,6 +32,12 @@ public interface IADProcessDAO extends ISingletonService
 		return getById(AdProcessId.ofRepoId(processId));
 	}
 
+	/**
+	 * @return the {@code FilenamePattern} configured on the given process, or {@link Optional#empty()} if null/blank.
+	 * Used by {@code ArchiveFileNameService} to opt into per-process filename templates.
+	 */
+	Optional<String> getFilenamePattern(@NonNull AdProcessId processId);
+
 	List<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(@Nullable AdTableId adTableId, @Nullable AdWindowId adWindowId, @Nullable AdTabId adTabId);
 
 	/**
@@ -68,6 +74,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * Similar to {@link #retrieveProcessIdByClassIfUnique(Class)}, but assumes that there is a unique ID and throws an exception if that's not the case.
 	 * This can be beneficial since the exception message contains the class for which no {@code AD_Process_ID} could be fetched.
 	 */
+	@NonNull
 	AdProcessId retrieveProcessIdByClass(Class<?> processClass);
 
 	/**
@@ -77,7 +84,8 @@ public interface IADProcessDAO extends ISingletonService
 	 */
 	AdProcessId retrieveProcessIdByClassIfUnique(Class<?> processClass);
 
-	AdProcessId retrieveProcessIdByClassIfUnique(String processClassname);
+	@Nullable
+	AdProcessId retrieveProcessIdByClassIfUnique(@NonNull String processClassname);
 
 	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
 
@@ -119,6 +127,12 @@ public interface IADProcessDAO extends ISingletonService
 	void copyProcessParameters(AdProcessId targetProcessId, AdProcessId sourceProcessId);
 
 	ITranslatableString getProcessNameById(final AdProcessId id);
+
+	/**
+	 * Same as {@link #getProcessNameById(AdProcessId)} but operates on an already-loaded record,
+	 * so callers that need both the translated name and another field (e.g. {@code Value}) avoid a second DB/cache load.
+	 */
+	ITranslatableString getProcessName(@NonNull I_AD_Process process);
 
 	ImmutableList<I_AD_Process> getProcessesByType(Set<ProcessType> processTypeSet);
 

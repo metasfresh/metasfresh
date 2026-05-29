@@ -98,7 +98,7 @@ public class MaterialEventObserver
 	{
 		final String traceId = event.getTraceId();
 
-		if (traceId == null)
+		if (Check.isBlank(traceId))
 		{
 			return;
 		}
@@ -114,7 +114,7 @@ public class MaterialEventObserver
 
 		eventProgress.markAsProcessed(event.getEventId());
 
-		fireAllEventsProcessedCheck(traceId);
+		fireAllEventsProcessedCheck(event.getEventDescriptor());
 	}
 
 	public void handleAllEventsAreProcessedForTrace(@NonNull final String traceId)
@@ -163,16 +163,20 @@ public class MaterialEventObserver
 		traceId2EventProgress.remove(traceId);
 	}
 
-	private void fireAllEventsProcessedCheck(@NonNull final String traceId)
+	private void fireAllEventsProcessedCheck(@NonNull final EventDescriptor eventDescriptor)
 	{
+		Check.assumeNotNull(eventDescriptor.getTraceId(), "eventDescriptor.getTraceId() is not null; eventDescriptor={}", eventDescriptor);
+
 		trxManager
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(innerTrx -> notifyIfAllEventsProcessed(traceId));
+				.registerHandlingMethod(innerTrx -> notifyIfAllEventsProcessed(eventDescriptor));
 	}
 
-	private void notifyIfAllEventsProcessed(@NonNull final String traceId)
+	private void notifyIfAllEventsProcessed(@NonNull final EventDescriptor eventDescriptor)
 	{
+		final String traceId = Check.assumeNotNull(eventDescriptor.getTraceId(),
+				"eventDescriptor.getTraceId() is not null; eventDescriptor={}", eventDescriptor);
 		final EventProgress eventProgress = traceId2EventProgress.get(traceId);
 
 		if (eventProgress == null)
@@ -182,14 +186,14 @@ public class MaterialEventObserver
 
 		if (eventProgress.areAllEventsProcessed())
 		{
-			notifyLocalAndRemoteObserver(traceId);
+			notifyLocalAndRemoteObserver(eventDescriptor);
 		}
 	}
 
-	private void notifyLocalAndRemoteObserver(@NonNull final String traceId)
+	private void notifyLocalAndRemoteObserver(@NonNull final EventDescriptor eventDescriptor)
 	{
 		final AllEventsProcessedEvent allEventsProcessedEvent = AllEventsProcessedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), OrgId.ANY), traceId))
+				.eventDescriptor(eventDescriptor.withClientAndOrg(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), OrgId.ANY)))
 				.build();
 
 		// make sure the message gets out *after* the processing results were committed to DB

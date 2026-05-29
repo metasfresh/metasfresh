@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -74,7 +74,7 @@ public class GetCurrenciesRoute extends RouteBuilder
 
 		from(direct(GET_CURRENCY_ROUTE_ID))
 				.id(GET_CURRENCY_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.policy(jcachePolicy)
 				.log("Route invoked. Results will be cached")
 				.process(this::getCurrencies);

@@ -15,7 +15,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <migration-sql-basedir></migration-sql-basedir>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 
@@ -65,24 +64,37 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <schemaIncludes>*.wsdl</schemaIncludes>
-                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</schemaDirectory>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <!--
+                Regenerate JAXB sources from WSDL schemas in src/main/resources/**/*.wsdl.
+                Run this profile whenever a schema file changes:
+                  mvn generate-sources -Pregenerate-jaxb-sources
+                Or regenerate all JAXB modules at once:
+                  ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+                After regeneration, commit the changed java-xjc files together with the schema change.
+            -->
+            <id>regenerate-jaxb-sources</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.jaxb2.maven2</groupId>
+                        <artifactId>maven-jaxb2-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaIncludes>*.wsdl</schemaIncludes>
+                                    <schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</schemaDirectory>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

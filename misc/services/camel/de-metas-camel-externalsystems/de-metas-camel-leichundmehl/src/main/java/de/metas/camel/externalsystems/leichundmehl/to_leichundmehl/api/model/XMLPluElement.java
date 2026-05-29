@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,13 +22,13 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlValue;
 import java.io.Serializable;
 
 @Value(staticConstructor = "of")

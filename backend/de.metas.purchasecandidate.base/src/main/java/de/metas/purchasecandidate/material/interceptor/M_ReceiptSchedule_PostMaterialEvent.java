@@ -27,10 +27,16 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
@@ -61,10 +67,14 @@ import java.util.Objects;
 @Component
 public class M_ReceiptSchedule_PostMaterialEvent
 {
+	private static final Logger logger = LoggerFactory.getLogger(M_ReceiptSchedule_PostMaterialEvent.class);
+
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final ReplenishInfoRepository replenishInfoRepository;
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	public M_ReceiptSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -93,6 +103,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
 			I_M_ReceiptSchedule.COLUMNNAME_MovementDate, // this is the actual order's datePromised
 			I_M_ReceiptSchedule.COLUMNNAME_IsActive, /* IsActive=N shall be threaded like a deletion */
+			I_M_ReceiptSchedule.COLUMNNAME_IsClosed, /* IsClosed=Y shall be treated like a deletion (lowers supply to already-received qty) */
 			I_M_ReceiptSchedule.COLUMNNAME_Processed,
 			I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder})
 	public void createAndFireEvent(
@@ -100,6 +111,24 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final ModelChangeType timing)
 	{
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
+
+		if (logger.isDebugEnabled())
+		{
+			final I_M_ReceiptSchedule oldSchedule = InterfaceWrapperHelper.createOld(schedule, I_M_ReceiptSchedule.class);
+			logger.debug("createAndFireEvent M_ReceiptSchedule_ID={}, timing={}"
+							+ " | IsClosed: {}>{}, Processed: {}>{}, IsActive: {}>{}"
+							+ " | QtyOrdered: {}>{}, QtyToMove: {}>{}"
+							+ " | event={}, orderedQtyDelta={}, reservedQtyDelta={}",
+					schedule.getM_ReceiptSchedule_ID(), timing,
+					oldSchedule.isIsClosed(), schedule.isIsClosed(),
+					oldSchedule.isProcessed(), schedule.isProcessed(),
+					oldSchedule.isActive(), schedule.isActive(),
+					oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
+					oldSchedule.getQtyToMove(), schedule.getQtyToMove(),
+					event.getClass().getSimpleName(),
+					event.getOrderedQuantityDelta(),
+					event.getReservedQuantityDelta());
+		}
 
 		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
@@ -109,19 +138,52 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean created = timing.isNew() || ModelChangeUtil.isJustActivated(receiptSchedule);
+		final boolean created = timing.isNew()
+				|| ModelChangeUtil.isJustActivated(receiptSchedule)
+				|| isJustReopened(receiptSchedule);
 		if (created)
 		{
 			return createCreatedEvent(receiptSchedule);
 		}
 
-		final boolean deleted = timing.isDelete() || ModelChangeUtil.isJustDeactivated(receiptSchedule);
+		final boolean justClosed = isJustClosed(receiptSchedule);
+		final boolean deleted = timing.isDelete()
+				|| ModelChangeUtil.isJustDeactivated(receiptSchedule)
+				|| justClosed;
 		if (deleted)
 		{
-			return createDeletedEvent(receiptSchedule);
+			// When the receipt schedule is just closed, the M_ReceiptSchedule interceptor
+			// may have already zeroed QtyToMove (because Processed=true triggers recalculation).
+			// Use the OLD values so the event deltas correctly reverse the cockpit quantities.
+			final I_M_ReceiptSchedule scheduleForEvent = justClosed
+					? InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class)
+					: receiptSchedule;
+			return createDeletedEvent(scheduleForEvent);
 		}
 
 		return createUpdatedEvent(receiptSchedule);
+	}
+
+	/** IsClosed changed from false to true — treat as deletion from material dispo perspective (lowers supply to already-received qty). */
+	private static boolean isJustClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (!receiptSchedule.isIsClosed())
+		{
+			return false;
+		}
+		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		return !old.isIsClosed();
+	}
+
+	/** IsClosed changed from true to false — treat as creation from material dispo perspective (restores supply). */
+	private static boolean isJustReopened(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (receiptSchedule.isIsClosed())
+		{
+			return false;
+		}
+		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		return old.isIsClosed();
 	}
 
 	private AbstractReceiptScheduleEvent createCreatedEvent(
@@ -142,6 +204,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.purchaseCandidateRepoId(PurchaseCandidateId.getRepoIdOr(purchaseCandidateIdOrNull, 0))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)))
 				.build();
 	}
 
@@ -165,7 +228,8 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.minMaxDescriptor(minMaxDescriptor);
+				.minMaxDescriptor(minMaxDescriptor)
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)));
 
 		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
@@ -265,13 +329,12 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor)
+				.isDropShipWarehouse(getIsDropShipWarehouse(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule)))
 				.build();
 	}
 
 	private MaterialDescriptor createOrderMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		final BigDecimal orderedQuantity = receiptScheduleQtysBL.getQtyOrdered(receiptSchedule);
 
 		final Timestamp preparationDate = receiptSchedule.getMovementDate();
@@ -285,5 +348,16 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				// .customerId() we don't have the *customer* ID
 				.quantity(orderedQuantity)
 				.build();
+	}
+
+	private boolean getIsDropShipWarehouse(@Nullable final WarehouseId warehouseId)
+	{
+		if (warehouseId == null)
+		{
+			return false;
+		}
+
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+		return warehouse != null && warehouse.isDropShipWarehouse();
 	}
 }

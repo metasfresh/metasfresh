@@ -122,7 +122,7 @@ public class PPOrderCandidatePojoConverter
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_AttributeSetInstance_ID());
 
 		return PPOrderCandidate.builder()
-				.ppOrderCandidateId(ppOrderCandidateRecord.getPP_Order_Candidate_ID())
+				.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()))
 				.simulated(ppOrderCandidateRecord.isSimulated())
 				.ppOrderData(PPOrderData.builder()
 									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))

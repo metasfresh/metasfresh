@@ -1,23 +1,19 @@
 package de.metas.contracts.commission.salesrep;
 
-import static de.metas.util.Check.isEmpty;
-
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.commission.Beneficiary;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Optional;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.commission.Beneficiary;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -109,8 +105,6 @@ public class DocumentSalesRepDescriptorService
 
 	public AdempiereException createMissingSalesRepException()
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_CUSTOMER_NEEDS_SALES_PARTNER);
-		throw new AdempiereException(message).markAsUserValidationError();
+		throw new AdempiereException(MSG_CUSTOMER_NEEDS_SALES_PARTNER).markAsUserValidationError();
 	}
 }

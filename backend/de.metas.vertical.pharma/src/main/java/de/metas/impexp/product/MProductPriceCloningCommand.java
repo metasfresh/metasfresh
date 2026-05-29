@@ -5,16 +5,14 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
 
 /**
- *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Builder
 class MProductPriceCloningCommand
@@ -22,7 +20,7 @@ class MProductPriceCloningCommand
 	private final int source_PriceList_Version_ID;
 	private final int target_PriceList_Version_ID;
 
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 	final public void cloneProductPrice()
 	{
@@ -59,7 +57,7 @@ class MProductPriceCloningCommand
 		}
 
 		final I_M_AttributeSetInstance sourceASI = productPrice.getM_AttributeSetInstance();
-		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);
+		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : asiBL.copy(sourceASI);
 		productPrice.setM_AttributeSetInstance(targetASI);
 	}
 }

@@ -22,12 +22,16 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +45,8 @@ import java.util.Properties;
  */
 public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
+	private static final Logger logger = LogManager.getLogger(ContextClientQueryFilter.class);
+
 	private static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	private static final boolean DEFAULT_IncludeSystemClient = false; // default=false for backward compatibility
@@ -94,8 +100,14 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	public List<Object> getSqlParams(final Properties ctx)
 	{
 		final Properties ctxToUse = ctx == null ? this.ctx : ctx;
-		final int adClientId = Env.getAD_Client_ID(ctxToUse);
-		return Collections.singletonList(adClientId);
+		final ClientId clientId = Env.getClientIdIfSet(ctxToUse).orElse(null);
+		if (clientId == null)
+		{
+			//noinspection ThrowableNotThrown
+			new AdempiereException("No " + Env.CTXNAME_AD_Client_ID + " found in context")
+					.throwIfDeveloperModeOrLogWarningElse(logger);
+		}
+		return Collections.singletonList(clientId);
 	}
 
 	public void setContext(final Properties ctx)

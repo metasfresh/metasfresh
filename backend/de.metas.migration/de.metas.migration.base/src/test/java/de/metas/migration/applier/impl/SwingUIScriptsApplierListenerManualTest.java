@@ -22,7 +22,7 @@ package de.metas.migration.applier.impl;
  * #L%
  */
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Manual test used to check how an {@link SwingUIScriptsApplierListener#uiAsk(String, String, Object[], Object)} window is displayed.
@@ -30,7 +30,7 @@ import org.junit.Ignore;
  * @author tsa
  *
  */
-@Ignore
+@Disabled
 public class SwingUIScriptsApplierListenerManualTest
 {
 	public static void main(final String[] args)

@@ -7,8 +7,8 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class TestQueue__Misc
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

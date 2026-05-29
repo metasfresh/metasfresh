@@ -1,17 +1,15 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.eevolution.model.I_DD_Order;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
 import lombok.Singular;
+import org.adempiere.test.AdempiereTestHelper;
+import org.eevolution.model.I_DD_Order;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -37,7 +35,7 @@ import lombok.Singular;
 
 public class DistributeAndMoveReceiptCreator_Result_Test
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

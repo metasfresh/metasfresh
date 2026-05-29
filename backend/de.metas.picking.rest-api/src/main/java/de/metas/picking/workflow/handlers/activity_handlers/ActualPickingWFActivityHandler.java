@@ -22,23 +22,16 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
-import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
-import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobProgress;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.picking.rest_api.json.JsonPickingJob;
-import de.metas.picking.rest_api.json.JsonPickingJobLine;
-import de.metas.picking.rest_api.json.JsonRejectReasonsList;
+import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import de.metas.scannable_code.format.json.JsonScannableCodeFormat;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -51,13 +44,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
@@ -68,8 +56,14 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@VisibleForTesting
+	public static final String PROP_pickingJob = "pickingJob";
+
+	@NonNull private final PickingJobProductService productService;
+	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
+	@NonNull final DisplayValueProviderService displayValueProviderService;
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -85,34 +79,12 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
 
-		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts);
-
-		final PickingJobOptions pickingJobOptions = pickingJobRestService.getPickingJobOptions(pickingJob.getCustomerId());
-		final JsonPickingJob jsonPickingJob = JsonPickingJob.of(pickingJob, (pj) -> mapLines(pj, pickingJobOptions, jsonOpts));
-
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
-						.valueObj("pickTarget", jsonPickingJob.getPickTarget())
-						.valueObj("tuPickTarget", jsonPickingJob.getTuPickTarget())
-						.valueObj("lines", jsonPickingJob.getLines())
-						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
-						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
-						.valueObj("isPickWithNewLU", pickingJobOptions.isPickWithNewLU())
-						.valueObj("isAllowSkippingRejectedReason", pickingJobOptions.isAllowSkippingRejectedReason())
-						.valueObj("isAllowNewTU", pickingJobOptions.isAllowNewTU())
-						.valueObj("isShowPromptWhenOverPicking", pickingJobOptions.isShowConfirmationPromptWhenOverPick())
+						.valueObj(PROP_pickingJob, toJsonPickingJob(pickingJob, jsonOpts))
+						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
-	}
-
-	@Nullable
-	private ITranslatableString getUOMSymbolById(@Nullable final UomId uomId)
-	{
-		if (uomId == null)
-		{
-			return TranslatableStrings.empty();
-		}
-		return uomDAO.getUOMSymbolById(uomId);
 	}
 
 	@Override
@@ -138,28 +110,17 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		}
 	}
 
-	@NonNull
-	private List<JsonPickingJobLine> mapLines(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingJobOptions pickingJobOptions,
-			@NonNull final JsonOpts jsonOpts)
+	private JsonPickingJob toJsonPickingJob(@NonNull final PickingJob pickingJob, final @NotNull JsonOpts jsonOpts)
 	{
-		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
-		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
-
-		final Map<String, List<PickingJobLine>> groupedLines = groupBy.groupLines(pickingJob.getLines());
-		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupedLines.entrySet().stream()
-				.map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), sortBy.sort(entry.getValue())))
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		final ArrayList<JsonPickingJobLine> result = new ArrayList<>();
-		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
-		{
-			group.getValue().stream()
-					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts, group.getKey()))
-					.map(builder -> builder.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU()).build())
-					.forEach(result::add);
-		}
-		return ImmutableList.copyOf(result);
+		return JsonPickingJobConverterCommand.builder()
+				.productService(productService)
+				.huService(huService)
+				.pickingJobRestService(pickingJobRestService)
+				.displayValueProviderService(displayValueProviderService)
+				//
+				.pickingJob(pickingJob)
+				.jsonOpts(jsonOpts)
+				//
+				.build().execute();
 	}
 }

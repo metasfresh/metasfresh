@@ -2,8 +2,11 @@ package de.metas.purchasecandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -19,6 +22,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -133,10 +137,22 @@ public class PurchaseCandidate
 
 	private boolean simulated;
 
+	/**
+	 * Set to {@code true} when this candidate should be auto-processed into a purchase order
+	 * by the debouncer processor ({@code C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder}).
+	 * <p>
+	 * This distinguishes candidates meant for automatic PO creation ({@code PP_Product_Planning.IsCreatePlan=Y}
+	 * with a linked sales order) from candidates that should remain available for manual PO creation.
+	 * Without this flag, the debouncer would sweep up all unprocessed candidates for a sales order,
+	 * including those whose product planning does not have {@code IsCreatePlan=Y}.
+	 */
+	private boolean readyForPOCreation;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
 
+			@Nullable final ExternalSystemId externalSystemId,
 			@Nullable final ExternalId externalHeaderId,
 			@Nullable final ExternalId externalLineId,
 			@Nullable final String poReference,
@@ -180,7 +196,14 @@ public class PurchaseCandidate
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final CurrencyId currencyId,
-			final boolean simulated)
+			final boolean simulated,
+			@Nullable final HUPIItemProductId huPIItemProductId,
+			@Nullable final BigDecimal qtyEnteredTU,
+			final boolean isDropShip,
+			@Nullable final BPartnerId dropShipBPartnerId,
+			@Nullable final BPartnerLocationId dropShipLocationId,
+			@Nullable final UserId dropShipUserId,
+			final boolean readyForPOCreation)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -202,11 +225,18 @@ public class PurchaseCandidate
 				.aggregatePOs(aggregatePOs)
 				.forecastLineId(forecastLineId)
 				.dimension(dimension)
+				.externalSystemId(externalSystemId)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
 				.poReference(poReference)
 				.source(source)
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
+				.huPIItemProductId(huPIItemProductId)
+				.qtyEnteredTU(qtyEnteredTU)
+				.isDropShip(isDropShip)
+				.dropShipBPartnerId(dropShipBPartnerId)
+				.dropShipLocationId(dropShipLocationId)
+				.dropShipUserId(dropShipUserId)
 				.build();
 
 		state = PurchaseCandidateState.builder()
@@ -232,6 +262,7 @@ public class PurchaseCandidate
 		this.simulated = simulated;
 		this.isManualDiscount = isManualDiscount;
 		this.isManualPrice = isManualPrice;
+		this.readyForPOCreation = readyForPOCreation;
 
 		this.purchaseOrderItems = purchaseItems
 				.stream()
@@ -280,6 +311,7 @@ public class PurchaseCandidate
 		discountEff = from.discountEff;
 		currencyId = from.currencyId;
 		simulated = from.simulated;
+		readyForPOCreation = from.readyForPOCreation;
 	}
 
 	public PurchaseCandidate copy()
@@ -408,6 +440,12 @@ public class PurchaseCandidate
 	}
 
 	public @Nullable
+	ExternalSystemId getExternalSystemId()
+	{
+		return getImmutableFields().getExternalSystemId();
+	}
+	
+	public @Nullable
 	String getPOReference()
 	{
 		return getImmutableFields().getPoReference();
@@ -415,9 +453,39 @@ public class PurchaseCandidate
 
 
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	
+	String getExternalPurchaseOrderUrl()
 	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
+	}
+
+	public boolean isDropShip()
+	{
+		return getImmutableFields().isDropShip();
+	}
+
+	public @Nullable BPartnerId getDropShipBPartnerId()
+	{
+		return getImmutableFields().getDropShipBPartnerId();
+	}
+
+	public @Nullable BPartnerLocationId getDropShipLocationId()
+	{
+		return getImmutableFields().getDropShipLocationId();
+	}
+
+	public @Nullable UserId getDropShipUserId()
+	{
+		return getImmutableFields().getDropShipUserId();
+	}
+
+	public @Nullable HUPIItemProductId getHuPIItemProductId()
+	{
+		return getImmutableFields().getHuPIItemProductId();
+	}
+
+	public @Nullable BigDecimal getQtyEnteredTU()
+	{
+		return getImmutableFields().getQtyEnteredTU();
 	}
 
 	public boolean hasChanges()
@@ -457,7 +525,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public ErrorItemBuilder transactionReference(final ITableRecordReference transactionReference)
+		public ErrorItemBuilder transactionReference(@Nullable final ITableRecordReference transactionReference)
 		{
 			innerBuilder.transactionReference(transactionReference);
 			return this;
@@ -502,6 +570,12 @@ public class PurchaseCandidate
 		public OrderItemBuilder datePromised(@NonNull final ZonedDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
+			return this;
+		}
+
+		public OrderItemBuilder dateOrdered(@Nullable final ZonedDateTime dateOrdered)
+		{
+			innerBuilder.dateOrdered(dateOrdered);
 			return this;
 		}
 

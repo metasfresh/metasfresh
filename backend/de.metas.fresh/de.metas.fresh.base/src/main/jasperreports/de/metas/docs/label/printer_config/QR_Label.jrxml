@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Printer Config QR Label" printOrder="Horizontal" pageWidth="300" pageHeight="272" columnWidth="290" leftMargin="5" rightMargin="5" topMargin="5" bottomMargin="5" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="295"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="701"/>
+	<parameter name="$WEBUI_ViewId" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="$WEBUI_ViewSelectedIds" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="p_view_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{$WEBUI_ViewId}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_printer_config_ids" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{$WEBUI_ViewSelectedIds}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT * 
+FROM report.Printer_Config_QRCode_Label($P{ad_printer_config_ids},$P{p_view_id},$P{RECORD_ID})
+;]]>
+	</queryString>
+	<field name="ad_printer_config_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_printer_config_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_printer_config_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ad_printer_config"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="ad_printer_config"/>
+	</field>
+	<field name="qrcode_data" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qrcode_data"/>
+		<property name="com.jaspersoft.studio.field.label" value="qrcode_data"/>
+	</field>
+	<detail>
+		<band height="262" splitType="Stretch">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="232" width="290" height="30" uuid="b2642765-1637-464a-b6b7-936576bc02e9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement positionType="Float" x="46" y="37" width="199" height="189" uuid="7a3b73d2-4e9f-49b7-9329-688d844ad3d5">
+					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
+				</reportElement>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
+					<jr:codeExpression><![CDATA[$F{qrcode_data}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>

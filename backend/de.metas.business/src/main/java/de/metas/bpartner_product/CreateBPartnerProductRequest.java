@@ -34,54 +34,22 @@ import javax.annotation.Nullable;
 @Builder
 public class CreateBPartnerProductRequest
 {
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	BPartnerId bPartnerId;
-
-	@Nullable
-	Boolean active;
-
-	@Nullable
-	Integer seqNo;
-
-	@Nullable
-	String productNo;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	String cuEAN;
-
-	@Nullable
-	String gtin;
-
-	@Nullable
-	String customerLabelName;
-
-	@Nullable
-	String ingredients;
-
-	@Nullable
-	Boolean currentVendor;
-
-	@Nullable
-	Boolean isExcludedFromSales;
-
-	@Nullable
-	String exclusionFromSalesReason;
-
-	@Nullable
-	Boolean dropShip;
-
-	@Nullable
-	Boolean usedForVendor;
-
-	@Nullable
-	Boolean isExcludedFromPurchase;
-
-	@Nullable
-	String exclusionFromPurchaseReason;
+	@NonNull ProductId productId;
+	@NonNull BPartnerId bPartnerId;
+	@Nullable Boolean active;
+	@Nullable Integer seqNo;
+	@Nullable String productNo;
+	@Nullable String description;
+	@Nullable String cuEAN;
+	@Nullable String gtin;
+	@Nullable String customerLabelName;
+	@Nullable String ingredients;
+	@Nullable Boolean currentVendor;
+	@Nullable Boolean isExcludedFromSales;
+	@Nullable String exclusionFromSalesReason;
+	@Nullable Boolean dropShip;
+	@Nullable Boolean usedForVendor;
+	@Nullable Boolean usedForCustomer;
+	@Nullable Boolean isExcludedFromPurchase;
+	@Nullable String exclusionFromPurchaseReason;
 }

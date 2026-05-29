@@ -2,19 +2,15 @@ package de.metas.handlingunits.report.labels;
 
 import de.metas.i18n.ExplainedOptional;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class HULabelConfigService
 {
-	private final HULabelConfigRepository huLabelConfigRepository;
-	private final HULabelConfigFromSysConfigProvider sysconfigLabelConfigProvider = new HULabelConfigFromSysConfigProvider();
-
-	public HULabelConfigService(
-			@NonNull final HULabelConfigRepository huLabelConfigRepository)
-	{
-		this.huLabelConfigRepository = huLabelConfigRepository;
-	}
+	@NonNull private final HULabelConfigFromSysConfigProvider sysconfigLabelConfigProvider = new HULabelConfigFromSysConfigProvider();
+	@NonNull private final HULabelConfigRepository huLabelConfigRepository;
 
 	public ExplainedOptional<HULabelConfig> getFirstMatching(final HULabelConfigQuery query)
 	{

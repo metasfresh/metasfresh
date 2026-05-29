@@ -22,8 +22,6 @@
 
 package de.metas.workflow.rest_api.controller.v2.json;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import lombok.Builder;
@@ -33,8 +31,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
+@Jacksonized
+@Builder
 public class JsonWFProcessHeaderProperties
 {
 	@NonNull List<JsonWFProcessHeaderProperty> entries;

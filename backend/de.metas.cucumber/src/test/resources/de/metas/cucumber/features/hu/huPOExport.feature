@@ -1,7 +1,11 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ignore
 @ghActions:run_on_executor5
 Feature: Handling unit export from purchase order
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -63,8 +67,8 @@ Feature: Handling unit export from purchase order
       | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | supplierLocation_PO | supplierPO01 | supplier_PO              | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
-      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
+      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | POO             | ps_PO                             |
 
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
@@ -104,7 +108,7 @@ Feature: Handling unit export from purchase order
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_PO                        | processedTopHU         |
 
-    When store HU endpointPath /api/v2/material/handlingunits/byId/:processedTopHU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/@processedTopHU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 

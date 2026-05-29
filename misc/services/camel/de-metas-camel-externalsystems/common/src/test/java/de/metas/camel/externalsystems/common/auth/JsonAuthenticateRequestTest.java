@@ -24,11 +24,11 @@ package de.metas.camel.externalsystems.common.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonAuthenticateRequestTest
 {

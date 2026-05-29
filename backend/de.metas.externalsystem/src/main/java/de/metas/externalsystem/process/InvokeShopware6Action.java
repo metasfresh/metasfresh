@@ -39,7 +39,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.order.impl.DocTypeService;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessPreconditionsContext;
@@ -160,7 +160,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	@NonNull
 	protected String getTabName()
 	{
-		return ExternalSystemType.Shopware6.getName();
+		return ExternalSystemType.Shopware6.getValue();
 	}
 
 	@Override
@@ -244,10 +244,8 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	}
 	
 	@Override
-	protected String getOrgCode()
+	protected String getOrgCode(@NonNull final ExternalSystemParentConfig config)
 	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
-
 		return orgDAO.getById(config.getOrgId()).getValue();
 	}
 }

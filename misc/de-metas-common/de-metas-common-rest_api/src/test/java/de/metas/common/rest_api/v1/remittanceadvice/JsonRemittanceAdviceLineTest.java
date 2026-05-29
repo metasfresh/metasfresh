@@ -82,6 +82,7 @@ public class JsonRemittanceAdviceLineTest
 	)
 	{
 		final JsonRemittanceAdviceLine jsonRemittanceAdviceLine = JsonRemittanceAdviceLine.builder()
+				.lineIdentifier("lineIdentifier")
 				.bpartnerIdentifier(bpartnerIdentifier)
 				.dateInvoiced(dateInvoiced)
 				.invoiceBaseDocType(invoiceBaseDocType)

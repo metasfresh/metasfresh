@@ -1,5 +1,6 @@
 package de.metas.i18n;
 
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -30,7 +31,6 @@ import java.util.Set;
  * For more helpers, check {@link TranslatableStrings}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface ITranslatableString
 {
@@ -39,6 +39,8 @@ public interface ITranslatableString
 	String getDefaultValue();
 
 	Set<String> getAD_Languages();
+
+	default Optional<AdMessageKey> getAdMessageKey() { return Optional.empty(); }
 
 	default boolean isTranslatedTo(final String adLanguage)
 	{

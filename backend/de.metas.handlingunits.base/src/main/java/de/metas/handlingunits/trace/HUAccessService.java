@@ -48,17 +48,20 @@ import java.util.Optional;
  * The job of this service is to access the {@link I_M_HU}s and hu-items, hu-storages etc, to get the data needed by {@link HUTraceEventsService}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class HUAccessService
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 	public List<I_M_HU_Assignment> retrieveHuAssignments(@NonNull final Object model)
 	{
 		final TableRecordReference modelRef = TableRecordReference.of(model);
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<I_M_HU_Assignment> huAssignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+		return queryBL.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, modelRef.getAD_Table_ID())
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, modelRef.getRecord_ID())
@@ -66,34 +69,26 @@ public class HUAccessService
 				.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID).endOrderBy()
 				.create()
 				.list();
-		return huAssignments;
 	}
 
 	public List<I_M_HU> retrieveVhus(@NonNull final HuId huId)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		return handlingUnitsBL.getVHUs(huId);
 	}
 
 	public List<I_M_HU> retrieveVhus(@NonNull final I_M_HU hu)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		return handlingUnitsBL.getVHUs(hu);
 	}
 
 	/**
-	 *
-	 * @param hu
 	 * @return the {@code M_HU_ID} of the given {@code hu}'s topmost parent (or grandparent etc),
-	 *         <b>or</b>{@code -1} if the given {@code hu} is not "physical" (see {@link IHandlingUnitsBL#isPhysicalHU(String)}).
+	 * <b>or</b>{@code -1} if the given {@code hu} is not "physical".
 	 */
 	public int retrieveTopLevelHuId(@NonNull final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 		if (huStatusBL.isPhysicalHU(hu) || huStatusBL.isStatusShipped(hu))
 		{
-			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 			return handlingUnitsBL.getTopLevelParent(hu).getM_HU_ID();
 		}
 		return -1;
@@ -101,7 +96,7 @@ public class HUAccessService
 
 	public Optional<IPair<ProductId, Quantity>> retrieveProductAndQty(@NonNull final I_M_HU vhu)
 	{
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IHUStorage vhuStorage = storageFactory.getStorage(vhu);
 		if (vhuStorage == null)
 		{
@@ -114,9 +109,17 @@ public class HUAccessService
 			return Optional.empty();
 		}
 
-		final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockUOM(vhuProductId);
+		final I_C_UOM stockingUOM = productBL.getStockUOM(vhuProductId);
 		final Quantity qty = vhuStorage.getQuantity(vhuProductId, stockingUOM);
 
 		return Optional.of(ImmutablePair.of(vhuProductId, qty));
 	}
+
+	public Optional<Quantity> retrieveProductQty(final HuId huId, final ProductId productId)
+	{
+		return retrieveProductAndQty(handlingUnitsBL.getById(huId))
+				.filter(productAndQty -> ProductId.equals(productAndQty.getLeft(), productId))
+				.map(IPair::getRight);
+	}
+
 }

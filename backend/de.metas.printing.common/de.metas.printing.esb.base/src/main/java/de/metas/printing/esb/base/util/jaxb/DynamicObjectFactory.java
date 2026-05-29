@@ -23,14 +23,13 @@ package de.metas.printing.esb.base.util.jaxb;
  */
 
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import de.metas.printing.esb.base.util.Check;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-
-import de.metas.printing.esb.base.util.Check;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Used to dynamically create elements based on given generated <code>objectFactory</code>.
@@ -42,7 +41,7 @@ public class DynamicObjectFactory
 {
 	private final Object objectFactory;
 
-	private final Map<Class<?>, Method> factoryMethods = new HashMap<Class<?>, Method>();
+	private final Map<Class<?>, Method> factoryMethods = new HashMap<>();
 
 	public DynamicObjectFactory(final Object objectFactory)
 	{

@@ -23,11 +23,15 @@
 package org.adempiere.warehouse;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import de.metas.cache.CCache;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -35,7 +39,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,11 +55,13 @@ public class WarehouseRepository
 	public static WarehouseRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new WarehouseRepository();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(WarehouseRepository.class, WarehouseRepository::new);
 	}
 
 	private final CCache<Integer, WarehouseMap> cache = CCache.<Integer, WarehouseMap>builder()
 			.tableName(I_M_Warehouse.Table_Name)
+			.additionalTableNameToResetFor(I_M_Warehouse_SourceHUConfig.Table_Name)
 			.build();
 
 	@NonNull
@@ -64,30 +72,71 @@ public class WarehouseRepository
 
 	private WarehouseMap getWarehouseMap()
 	{
-		return cache.getOrLoad(0, this::retrieveWarehouseMap);
+		return cache.getOrLoadNonNull(0, this::retrieveWarehouseMap);
 	}
 
+	@NonNull
 	private WarehouseMap retrieveWarehouseMap()
 	{
-		final ImmutableList<Warehouse> warehouses = queryBL.createQueryBuilder(I_M_Warehouse.class)
+		final ImmutableList<I_M_Warehouse> warehouseRecords = queryBL.createQueryBuilder(I_M_Warehouse.class)
 				//.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(WarehouseRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableSet<WarehouseId> warehouseIds = warehouseRecords.stream()
+				.map(record -> WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableList<Warehouse> warehouses = warehouseRecords.stream()
+				.map(record -> fromRecord(
+						record,
+						loadWarehouseSourceHUConfigs(warehouseIds)
+				))
 				.collect(ImmutableList.toImmutableList());
 
 		return new WarehouseMap(warehouses);
 	}
 
-	private static Warehouse fromRecord(@NonNull final I_M_Warehouse warehouse)
+	private Multimap<WarehouseId, WarehouseSourceHUConfig> loadWarehouseSourceHUConfigs(@NonNull final ImmutableSet<WarehouseId> warehouseIds)
 	{
+		return queryBL.createQueryBuilder(I_M_Warehouse_SourceHUConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Warehouse_SourceHUConfig.COLUMNNAME_M_Warehouse_ID, warehouseIds)
+				.create()
+				.stream()
+				.collect(Multimaps.toMultimap(
+						record -> WarehouseId.ofRepoId(record.getM_Warehouse_ID()),
+						WarehouseRepository::fromRecordWarehouseSourceHUConfig,
+						HashMultimap::create
+				));
+	}
+
+	private static WarehouseSourceHUConfig fromRecordWarehouseSourceHUConfig(@NonNull final I_M_Warehouse_SourceHUConfig config)
+	{
+		return WarehouseSourceHUConfig.builder()
+				.id(WarehouseSourceHUConfigId.ofRepoId(config.getM_Warehouse_SourceHUConfig_ID()))
+				.warehouseId(WarehouseId.ofRepoId(config.getM_Warehouse_ID()))
+				.productCategoryId(ProductCategoryId.ofRepoId(config.getM_Product_Category_ID()))
+				.build();
+	}
+
+	private static Warehouse fromRecord(
+			@NonNull final I_M_Warehouse warehouse,
+			@NonNull final Multimap<WarehouseId, WarehouseSourceHUConfig> configByWarehouseId)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+		final ImmutableList<WarehouseSourceHUConfig> configs = ImmutableList.copyOf(configByWarehouseId.get(warehouseId));
 		return Warehouse.builder()
-				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.warehouseId(warehouseId)
 				.name(warehouse.getName())
 				.resourceId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
+				.isReceiveAsSourceHU(warehouse.isReceiveAsSourceHU())
+				.warehouseSourceHUConfigs(new WarehouseSourceHUConfigList(configs))
 				.active(warehouse.isActive())
 				.build();
 	}
+
 	@NonNull
 	public ImmutableSet<WarehouseId> getAllActiveIds()
 	{

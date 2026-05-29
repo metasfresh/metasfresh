@@ -1,7 +1,7 @@
 package de.metas.edi.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.process.IProcessPrecondition;
@@ -14,6 +14,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.SpringContextHolder;
 
 import java.util.Set;
 
@@ -42,7 +43,7 @@ import java.util.Set;
 public class EDI_Desadv_Pack_PrintSSCCLabels extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)

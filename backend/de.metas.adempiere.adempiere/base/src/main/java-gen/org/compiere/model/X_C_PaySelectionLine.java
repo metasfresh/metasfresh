@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_PaySelectionLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -207168288L;
+	private static final long serialVersionUID = 119975844L;
 
     /** Standard Constructor */
     public X_C_PaySelectionLine (final Properties ctx, final int C_PaySelectionLine_ID, @Nullable final String trxName)
@@ -81,21 +81,6 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	}
 
 	@Override
-	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
-	}
-
-	@Override
-	public int getC_BP_BankAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
-	}
-
-	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -108,6 +93,21 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -146,6 +146,60 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public int getC_Invoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderPaySchedule getC_OrderPaySchedule()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderPaySchedule_ID, org.compiere.model.I_C_OrderPaySchedule.class);
+	}
+
+	@Override
+	public void setC_OrderPaySchedule(final org.compiere.model.I_C_OrderPaySchedule C_OrderPaySchedule)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderPaySchedule_ID, org.compiere.model.I_C_OrderPaySchedule.class, C_OrderPaySchedule);
+	}
+
+	@Override
+	public void setC_OrderPaySchedule_ID (final int C_OrderPaySchedule_ID)
+	{
+		if (C_OrderPaySchedule_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderPaySchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderPaySchedule_ID, C_OrderPaySchedule_ID);
+	}
+
+	@Override
+	public int getC_OrderPaySchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderPaySchedule_ID);
 	}
 
 	@Override
@@ -366,9 +420,9 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Reimbursement = "E";
+	public static final String PAYMENTRULE_Rueckerstattung = "E";
 	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Settlement = "F";
+	public static final String PAYMENTRULE_Verrechnung = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{

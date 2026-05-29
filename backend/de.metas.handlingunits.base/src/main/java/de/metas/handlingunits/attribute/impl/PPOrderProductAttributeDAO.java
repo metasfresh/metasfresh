@@ -54,7 +54,7 @@ import de.metas.util.Services;
 
 public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(PPOrderProductAttributeDAO.class);
+	private static final Logger logger = LogManager.getLogger(PPOrderProductAttributeDAO.class);
 
 	@Override
 	public List<I_PP_Order_ProductAttribute> retrieveProductAttributesForPPOrder(final int ppOrderId)
@@ -82,11 +82,9 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 				.addOnlyActiveRecordsFilter();
 
 		final ICompositeQueryFilter<I_PP_Order_ProductAttribute> huFilters = queryBuilder.addCompositeQueryFilter().setJoinOr();
-		huAttributes.forEach(huAttribute -> {
-			huFilters.addCompositeQueryFilter().setJoinAnd()
-					.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_HU_ID, huAttribute.getM_HU_ID())
-					.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_Attribute_ID, huAttribute.getM_Attribute_ID());
-		});
+		huAttributes.forEach(huAttribute -> huFilters.addCompositeQueryFilter().setJoinAnd()
+				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_HU_ID, huAttribute.getM_HU_ID())
+				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_Attribute_ID, huAttribute.getM_Attribute_ID()));
 
 		return queryBuilder
 				.create()
@@ -133,7 +131,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 		// Iterate and create/update one PP_Order_ProductAttribute for each HU_Attribute
 		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(huAttribute.getM_Attribute_ID());
 
 			//
 			// Find existing PP_Order_ProductAttribute or create a new one

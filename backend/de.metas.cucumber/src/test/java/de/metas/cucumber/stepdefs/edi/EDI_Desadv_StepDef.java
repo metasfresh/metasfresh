@@ -26,12 +26,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
@@ -43,6 +48,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -67,6 +73,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class EDI_Desadv_StepDef
 {
 	private static final String EDI_EXP_DESADV_PACK_TAGNAME = "EDI_Exp_Desadv_Pack";
@@ -77,26 +84,16 @@ public class EDI_Desadv_StepDef
 	private static final String QTY_TU_TAGNAME = "QtyTU";
 
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
 
-	private final EDI_Desadv_StepDefData desadvTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	public EDI_Desadv_StepDef(
-			@NonNull final EDI_Desadv_StepDefData desadvTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final EDI_Exp_Desadv_StepDefData ediExpDesadvTable)
-	{
-		this.desadvTable = desadvTable;
-		this.bpartnerTable = bpartnerTable;
-		this.orderTable = orderTable;
-		this.ediExpDesadvTable = ediExpDesadvTable;
-	}
+	private final @NonNull EDI_Desadv_StepDefData desadvTable;
+	private final @NonNull C_BPartner_StepDefData bpartnerTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
+	private final @NonNull M_InOut_StepDefData inoutTable;
+	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh is configured for One-DESADV-Per-ORDERS")
 	public void OneDesadvPerOrders()
@@ -106,7 +103,7 @@ public class EDI_Desadv_StepDef
 		final I_EXP_Format oneDesadvPerShipment = InterfaceWrapperHelper.load(540405, I_EXP_Format.class); // current name=EDI_Exp_Desadv
 		oneDesadvPerShipment.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerShipment);
-		
+
 		final I_EXP_Format oneDesadvPerOrder = InterfaceWrapperHelper.load(540428, I_EXP_Format.class); // current name=EXP_M_InOut_Desadv_V
 		oneDesadvPerOrder.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerOrder);
@@ -120,12 +117,12 @@ public class EDI_Desadv_StepDef
 		final I_EXP_Format oneDesadvPerOrder = InterfaceWrapperHelper.load(540428, I_EXP_Format.class); // current name=EXP_M_InOut_Desadv_V
 		oneDesadvPerOrder.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerOrder);
-		
+
 		final I_EXP_Format oneDesadvPerShipment = InterfaceWrapperHelper.load(540405, I_EXP_Format.class); // current name=EDI_Exp_Desadv
 		oneDesadvPerShipment.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerShipment);
 	}
-	
+
 	@Then("validate created edi desadv")
 	public void validate_edi_desadv(@NonNull final DataTable dataTable)
 	{
@@ -169,10 +166,54 @@ public class EDI_Desadv_StepDef
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
+		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
+	}
+
+	/**
+	 * Asserts that all given M_InOut records point to the same {@code EDI_Desadv_ID}.
+	 * This is used to verify the test precondition that multiple shipments share
+	 * a single DESADV (e.g. because they originate from orders with the same POReference + BPartner).
+	 * <p>
+	 * Each record must have a non-zero {@code EDI_Desadv_ID}, and all must match.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code M_InOut_ID} (required) — identifier of an M_InOut record from {@link M_InOut_StepDefData}</li>
+	 * </ul>
+	 * <p>
+	 * Example usage:
+	 * <pre>
+	 * Then M_InOut records share the same EDI_Desadv:
+	 *   | M_InOut_ID |
+	 *   | s_1        |
+	 *   | s_2        |
+	 * </pre>
+	 */
+	@Then("M_InOut records share the same EDI_Desadv:")
+	public void assertShipmentsShareSameDesadv(@NonNull final DataTable dataTable)
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		assertThat(rows).as("Need at least 2 M_InOut records to compare").hasSizeGreaterThanOrEqualTo(2);
+
+		int firstDesadvId = -1;
+		for (final DataTableRow row : rows)
 		{
-			validateExportStatus(timeoutSec, row);
+			final org.compiere.model.I_M_InOut inoutRecord = row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+			final I_M_InOut ediInout = InterfaceWrapperHelper.create(inoutRecord, I_M_InOut.class);
+			InterfaceWrapperHelper.refresh(ediInout);
+			final int desadvId = ediInout.getEDI_Desadv_ID();
+			assertThat(desadvId).as("M_InOut %s should have EDI_Desadv_ID set", row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID)).isGreaterThan(0);
+
+			if (firstDesadvId < 0)
+			{
+				firstDesadvId = desadvId;
+			}
+			else
+			{
+				assertThat(desadvId)
+						.as("All M_InOut records should share the same EDI_Desadv_ID")
+						.isEqualTo(firstDesadvId);
+			}
 		}
 	}
 
@@ -205,40 +246,36 @@ public class EDI_Desadv_StepDef
 		assertThat(ediExpDesadv).isNotNull();
 
 		final Element desadvPackElement = getElement(ediExpDesadv, EDI_EXP_DESADV_PACK_TAGNAME);
-
-		assertThat(desadvPackElement).isNotNull();
+		assertThat(desadvPackElement).as(EDI_EXP_DESADV_PACK_TAGNAME).isNotNull();
 
 		final Element sscc18Element = getElement(desadvPackElement, IPA_SSCC18_TAGNAME);
-		assertThat(sscc18Element).isNotNull();
+		assertThat(sscc18Element).as(IPA_SSCC18_TAGNAME).isNotNull();
 
 		final Element desadvPackItem = getElement(desadvPackElement, EDI_EXP_DESADV_PACK_ITEM_TAGNAME);
-		assertThat(desadvPackItem).isNotNull();
+		assertThat(desadvPackItem).as(EDI_EXP_DESADV_PACK_ITEM_TAGNAME).isNotNull();
 
 		final String qtyCuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU");
 		if (Check.isNotBlank(qtyCuExpected))
 		{
 			final Element qtyCu = getElement(desadvPackElement, QTY_CU_TAGNAME);
-			assertThat(qtyCu).isNotNull();
-
-			assertThat(qtyCu.getTextContent()).isEqualTo(qtyCuExpected);
+			assertThat(qtyCu).as(QTY_CU_TAGNAME).isNotNull();
+			assertThat(qtyCu.getTextContent()).as(QTY_CU_TAGNAME).isEqualTo(qtyCuExpected);
 		}
 
 		final String qtyCusPerLuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU");
 		if (Check.isNotBlank(qtyCusPerLuExpected))
 		{
 			final Element qtyCusPerLu = getElement(desadvPackElement, QTY_CUS_PER_LU_TAGNAME);
-			assertThat(qtyCusPerLu).isNotNull();
-
-			assertThat(qtyCusPerLu.getTextContent()).isEqualTo(qtyCusPerLuExpected);
+			assertThat(qtyCusPerLu).as(QTY_CUS_PER_LU_TAGNAME).isNotNull();
+			assertThat(qtyCusPerLu.getTextContent()).as(QTY_CUS_PER_LU_TAGNAME).isEqualTo(qtyCusPerLuExpected);
 		}
 
 		final String qtyTuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyTU");
 		if (Check.isNotBlank(qtyTuExpected))
 		{
 			final Element qtyTu = getElement(desadvPackElement, QTY_TU_TAGNAME);
-			assertThat(qtyTu).isNotNull();
-
-			assertThat(qtyTu.getTextContent()).isEqualTo(qtyTuExpected);
+			assertThat(qtyTu).as(QTY_TU_TAGNAME).isNotNull();
+			assertThat(qtyTu.getTextContent()).as(QTY_TU_TAGNAME).isEqualTo(qtyTuExpected);
 		}
 	}
 
@@ -261,22 +298,18 @@ public class EDI_Desadv_StepDef
 		assertThat(childNode.getNodeType()).isEqualTo(Node.ELEMENT_NODE);
 
 		return (Element)childNode;
-		}
+	}
 
 	private void validateExportStatus(
 			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+			@NonNull final DataTableRow tableRow) throws InterruptedException
 	{
-		final String desadvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_EDI_Desadv desadvRecord = tableRow.getAsIdentifier(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID).lookupNotNullIn(desadvTable);
 
-		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
-		assertThat(desadvRecord).as("Missing EDI_Desadv for identifier=%s", desadvIdentifier).isNotNull();
-
-		final String exportStatus = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
+		final String exportStatus = tableRow.getAsString(I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
+		
+		StepDefUtil.tryAndWait(timeoutSec, 1000, () -> {
 			InterfaceWrapperHelper.refresh(desadvRecord);
-
 			return exportStatus.equals(desadvRecord.getEDI_ExportStatus());
 		});
 	}
@@ -308,15 +341,18 @@ public class EDI_Desadv_StepDef
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
 		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(EDIDesadvQuery.builder()
-																						 .poReference(order.getPOReference())
-																						 .bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-																						 .ctxAware(InterfaceWrapperHelper.getContextAware(order))
-																						 .build());
+				.poReference(order.getPOReference())
+				.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.ctxAware(InterfaceWrapperHelper.getContextAware(order))
+				.build());
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 		desadvTable.putOrReplace(identifier, desadvRecord);
+		final DataTableRow dataTableRow = DataTableRow.singleRow(tableRow);
+		restTestContext.setIntVariableFromRow(dataTableRow, desadvRecord::getEDI_Desadv_ID);
+
 	}
 }

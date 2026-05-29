@@ -22,17 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.lang.IMutable;
-import org.junit.Assert;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUTestHelper;
@@ -49,7 +38,20 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.util.lang.IMutable;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class HUIteratorTest extends AbstractHUTest
 {
@@ -58,6 +60,7 @@ public class HUIteratorTest extends AbstractHUTest
 	private I_M_HU_PI huDefIFCO;
 	private I_M_HU_PI huDefPalet;
 
+	@BeforeEach
 	@Override
 	protected void initialize()
 	{
@@ -100,17 +103,17 @@ public class HUIteratorTest extends AbstractHUTest
 			public Result beforeHU(final IMutable<I_M_HU> hu)
 			{
 				final int huId = hu.getValue().getM_HU_ID();
-				Assert.assertFalse("HU " + hu + " was already visited", seenHuIds.contains(huId));
+				assertThat(seenHuIds).as("HU " + hu + " was already visited").doesNotContain(huId);
 				seenHuIds.add(huId);
 				return Result.CONTINUE;
 			}
 		});
 		iterator.iterate(palet1);
 
-		Assert.assertTrue("HU shall be visited: " + palet1, seenHuIds.contains(palet1.getM_HU_ID()));
-		Assert.assertTrue("HU shall be visited: " + palet1_ifco1, seenHuIds.contains(palet1_ifco1.getM_HU_ID()));
-		Assert.assertTrue("HU shall be visited: " + palet1_ifco2, seenHuIds.contains(palet1_ifco2.getM_HU_ID()));
-		Assert.assertEquals("Invalid seen HU ID list", seenHuIdsExpected, seenHuIds);
+		assertThat(seenHuIds).as("HU shall be visited: " + palet1).contains(palet1.getM_HU_ID());
+		assertThat(seenHuIds).as("HU shall be visited: " + palet1_ifco1).contains(palet1_ifco1.getM_HU_ID());
+		assertThat(seenHuIds).as("HU shall be visited: " + palet1_ifco2).contains(palet1_ifco2.getM_HU_ID());
+		assertThat(seenHuIds).as("Invalid seen HU ID list").isEqualTo(seenHuIdsExpected);
 	}
 
 	@Test
@@ -127,8 +130,8 @@ public class HUIteratorTest extends AbstractHUTest
 			@Override
 			public Result beforeHU(final IMutable<I_M_HU> hu)
 			{
-				Assert.assertFalse("HU " + hu + " was already visited",
-						seenHuIds.contains(hu.getValue().getM_HU_ID()));
+				assertThat(seenHuIds).as("HU " + hu + " was already visited")
+						.doesNotContain(hu.getValue().getM_HU_ID());
 				return Result.CONTINUE;
 			}
 		});
@@ -187,7 +190,7 @@ public class HUIteratorTest extends AbstractHUTest
 				final int huId = hu.getValue().getM_HU_ID();
 
 				final Boolean calledOld = huId2called.get(huId);
-				Assert.assertNull("beforeHU shall never been called for " + hu, calledOld);
+				assertThat(calledOld).as("beforeHU shall never been called for " + hu).isNull();
 
 				huId2called.put(huId, true);
 				return Result.CONTINUE;
@@ -199,8 +202,7 @@ public class HUIteratorTest extends AbstractHUTest
 				final int huId = hu.getM_HU_ID();
 
 				final Boolean calledOld = huId2called.get(huId);
-				Assert.assertEquals("beforeHU shall BE called for " + hu,
-						Boolean.TRUE, calledOld);
+				assertThat(calledOld).as("beforeHU shall BE called for " + hu).isEqualTo(Boolean.TRUE);
 
 				huId2called.remove(huId);
 
@@ -221,7 +223,7 @@ public class HUIteratorTest extends AbstractHUTest
 			@Override
 			public Result beforeHU(final IMutable<I_M_HU> hu)
 			{
-				Assert.assertSame("Invalid HUIterator", iterator, getHUIterator());
+				assertThat(getHUIterator()).as("Invalid HUIterator").isSameAs(iterator);
 				beforeHUs.add(hu.getValue());
 				return Result.CONTINUE;
 			}
@@ -229,25 +231,22 @@ public class HUIteratorTest extends AbstractHUTest
 			@Override
 			public Result afterHU(final I_M_HU hu)
 			{
-				Assert.assertSame("Invalid HUIterator", iterator, getHUIterator());
+				assertThat(getHUIterator()).as("Invalid HUIterator").isSameAs(iterator);
 				return Result.CONTINUE;
 			}
 		};
 
-		Assert.assertNull("HUIterator shall not be set before iteration", listener.getHUIterator());
+		assertThat(listener.getHUIterator()).as("HUIterator shall not be set before iteration").isNull();
 		iterator.setListener(listener);
 
-		Assert.assertNull("HUIterator shall not be set before iteration", listener.getHUIterator());
+		assertThat(listener.getHUIterator()).as("HUIterator shall not be set before iteration").isNull();
 
 		final I_M_HU palet1 = createHU("palet1", huDefPalet, null);
 		iterator.iterate(Arrays.asList(palet1));
 
-		Assert.assertSame("HUIterator shall be set after iteration", iterator, listener.getHUIterator());
+		assertThat(listener.getHUIterator()).as("HUIterator shall be set after iteration").isSameAs(iterator);
 
-		Assert.assertEquals("Invalid visited HUs on beforeHU",
-				Arrays.asList(palet1), // expected
-				beforeHUs // actual
-		);
+		assertThat(beforeHUs).as("Invalid visited HUs on beforeHU").isEqualTo(Arrays.asList(palet1));
 	}
 
 	private int calculateMaxDepthReached(final IHUIterator iterator, final I_M_HU rootHU)
@@ -292,10 +291,9 @@ public class HUIteratorTest extends AbstractHUTest
 		{
 			final HUIterator iterator = new HUIterator();
 			final int maxDepthNoRestriction = calculateMaxDepthReached(iterator, palet1);
-			Assert.assertEquals("MaxDepth without restriction shall be the depth of HU Items of first child",
-					IHUIterator.DEPTH_FIRSTHUCHILD_HU_Item, // expected
-					maxDepthNoRestriction // actual
-			);
+			assertThat(maxDepthNoRestriction)
+					.as("MaxDepth without restriction shall be the depth of HU Items of first child")
+					.isEqualTo(IHUIterator.DEPTH_FIRSTHUCHILD_HU_Item);
 		}
 
 		//
@@ -305,10 +303,9 @@ public class HUIteratorTest extends AbstractHUTest
 			final HUIterator iterator = new HUIterator();
 			iterator.setDepthMax(IHUIterator.DEPTH_FIRSTHUCHILD_HU);
 			final int maxDepth = calculateMaxDepthReached(iterator, palet1);
-			Assert.assertEquals("MaxDepth shall be the depth of direct child HUs (i.e. IFCOs)",
-					IHUIterator.DEPTH_FIRSTHUCHILD_HU, // expected
-					maxDepth // actual
-			);
+			assertThat(maxDepth)
+					.as("MaxDepth shall be the depth of direct child HUs (i.e. IFCOs)")
+					.isEqualTo(IHUIterator.DEPTH_FIRSTHUCHILD_HU);
 		}
 	}
 
@@ -348,11 +345,12 @@ public class HUIteratorTest extends AbstractHUTest
 				// Get expected HU IDs for current depth
 				final List<? extends Object> expectedItems = depth2expectedItems.get(depth);
 				final boolean found = expectedItems != null && expectedItems.contains(item);
-				Assert.assertTrue("Item shall be present in the list of expected items of this depth/level"
-						+ "\nDepth=" + depth
-						+ "\nExpected Items=" + expectedItems
-						+ "\nCurrent Item=" + item,
-						found);
+				assertThat(found)
+						.as("Item shall be present in the list of expected items of this depth/level"
+								+ "\nDepth=" + depth
+								+ "\nExpected Items=" + expectedItems
+								+ "\nCurrent Item=" + item)
+						.isTrue();
 			}
 
 			@Override
@@ -372,7 +370,7 @@ public class HUIteratorTest extends AbstractHUTest
 			@Override
 			public Result beforeHUItemStorage(final IMutable<IHUItemStorage> itemStorage)
 			{
-				Assert.fail("We shall not reach this item because our HUs shall not have this item: " + itemStorage.getValue());
+				fail("We shall not reach this item because our HUs shall not have this item: " + itemStorage.getValue());
 				assertExpectedItem(itemStorage.getValue());
 				return Result.CONTINUE;
 			}

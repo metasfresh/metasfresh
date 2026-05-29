@@ -10,14 +10,13 @@ import {
 } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
-import { postStepPicked } from '../../../api/picking';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toNumberOrZero } from '../../../utils/numbers';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { pickingLineScreenLocation, pickingStepScreenLocation } from '../../../routes/picking';
+import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
 const PickStepScanScreen = () => {
   const { history, wfProcessId, activityId, lineId, stepId, altStepId } = useScreenDefinition({
@@ -46,20 +45,20 @@ const PickStepScanScreen = () => {
   const onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
     const qtyRejected = qtyToPick - qty;
 
-    postStepPicked({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      huQRCode: scannedBarcode,
-      qtyPicked: qty,
-      qtyRejectedReasonCode: reason,
-      qtyRejected,
-    })
-      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => {
-        history.goTo(pickingLineScreenLocation); // go to picking line screen
+    dispatch(
+      postStepPickedThunk({
+        history,
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        huQRCode: scannedBarcode,
+        qtyPicked: qty,
+        qtyRejectedReasonCode: reason,
+        qtyRejected,
       })
+    )
+      .then(({ isPickingJobCompleted }) => isPickingJobCompleted && history.goTo(pickingLineScreenLocation)) // go to picking line screen
       .catch((axiosError) => toastError({ axiosError }));
   };
 

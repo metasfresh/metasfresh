@@ -7,7 +7,6 @@ import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
@@ -16,6 +15,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Data;
 import org.adempiere.ad.service.ILookupDAO;
@@ -75,7 +75,39 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			return new GenericDocumentSummaryValueProvider(fieldValuesExtractors);
 		}
 
+		fieldValuesExtractors = extractFieldNamesFromCompositeLookup(entityDescriptor);
+		if (fieldValuesExtractors != null && !fieldValuesExtractors.isEmpty())
+		{
+			return new GenericDocumentSummaryValueProvider(fieldValuesExtractors);
+		}
 		return EMPTY;
+	}
+
+	/**
+	 * Similar to {@link #extractFieldNamesFromLookup(DocumentEntityDescriptor.Builder)}, but handles only composite key lookups.
+	 */
+	private static List<FieldValueExtractor> extractFieldNamesFromCompositeLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
+	{
+		try
+		{
+			final List<DocumentFieldDescriptor.Builder> idFields = entityDescriptor.getIdFieldBuilders();
+			if (idFields.isEmpty() || idFields.size() == 1)
+			{
+				//only handle composite key lookups. The more common surrogate PK is handled in #extractFieldNamesFromLookup()
+				return ImmutableList.of();
+			}
+
+			return idFields.stream()
+					.filter(field -> !field.isVirtualField())
+					.map(DocumentFieldDescriptor.Builder::getFieldName)
+					.map(GenericFieldValueExtractor::new)
+					.collect(ImmutableList.toImmutableList());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed extracting composite field names for record's lookup for {}. Ignored.", entityDescriptor, ex);
+			return ImmutableList.of();
+		}
 	}
 
 	private static List<FieldValueExtractor> extractFieldNamesFromLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
@@ -152,7 +184,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		return fieldNames.build();
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(GenericDocumentSummaryValueProvider.class);
+	private static final Logger logger = LogManager.getLogger(GenericDocumentSummaryValueProvider.class);
 	private static final GenericDocumentSummaryValueProvider EMPTY = new GenericDocumentSummaryValueProvider(ImmutableList.of());
 
 	private final ImmutableList<FieldValueExtractor> fieldValueExtractors;
@@ -189,7 +221,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		final String summary = fieldValueExtractors.stream()
 				.map(valueExtractor -> valueExtractor.extractFieldValueToString(document))
 				.map(fieldValue -> Check.isEmpty(fieldValue, true) ? null : fieldValue.trim()) // convert empty strings to null
-				.filter(fieldValue -> fieldValue != null) // skip null strings
+				.filter(Objects::nonNull) // skip null strings
 				.collect(Collectors.joining(" ")); // join all field values
 
 		if (Check.isEmpty(summary, true))
@@ -265,7 +297,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 	{
 		private final String fieldName;
 		private final String formatPattern;
-		private int displayType;
+		private final int displayType;
 
 		private NumericFieldValueExtractor(final String fieldName, final DocumentFieldWidgetType widgetType, final String formatPattern)
 		{

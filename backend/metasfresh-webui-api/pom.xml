@@ -30,6 +30,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.manufacturing</groupId>
 			<artifactId>de.metas.manufacturing.webui</artifactId>
 			<version>${metasfresh.version}</version>
@@ -58,6 +64,12 @@
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.webui</artifactId>
 			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.commons.webui</artifactId>
+			<version>10.0.0</version>
 		</dependency>
 		
 		<!-- logging -->

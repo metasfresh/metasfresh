@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6))
 RETURNS TABLE 
 	(
 	ad_org_id numeric(10,0),

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.purchasecandidate.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BP_PurchaseSchedule
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_C_BP_PurchaseSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -147685794L;
+	private static final long serialVersionUID = -767801753L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (final Properties ctx, final int C_BP_PurchaseSchedule_ID, @Nullable final String trxName)
@@ -134,18 +134,6 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	public java.lang.String getFrequencyType() 
 	{
 		return get_ValueAsString(COLUMNNAME_FrequencyType);
-	}
-
-	@Override
-	public void setLeadTimeOffset (final int LeadTimeOffset)
-	{
-		set_Value (COLUMNNAME_LeadTimeOffset, LeadTimeOffset);
-	}
-
-	@Override
-	public int getLeadTimeOffset() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LeadTimeOffset);
 	}
 
 	@Override

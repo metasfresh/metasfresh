@@ -446,11 +446,7 @@ public class OrderGroupRepository implements GroupRepository
 		}
 		else if (groupIds.isEmpty() || groupIds.get(0) == null)
 		{
-			return createNewGroupFromOrderLines(
-					request.getOrderId(),
-					orderLines,
-					request.getNewGroupTemplate(),
-					request.getNewContractConditionsId());
+			return createNewGroupFromOrderLines(request, orderLines);
 		}
 		else
 		{
@@ -460,12 +456,12 @@ public class OrderGroupRepository implements GroupRepository
 		}
 	}
 
-	private Group createNewGroupFromOrderLines(
-			@Nullable final OrderId expectedOrderId,
-			@NonNull final List<I_C_OrderLine> existingRegularOrderLines,
-			@NonNull final GroupTemplate newGroupTemplate,
-			@Nullable final ConditionsId contractConditionsId)
+	private Group createNewGroupFromOrderLines(@NonNull final RetrieveOrCreateGroupRequest request,
+											   @NonNull final List<I_C_OrderLine> existingRegularOrderLines)
 	{
+		final OrderId expectedOrderId = request.getOrderId();
+		final GroupTemplate newGroupTemplate = request.getNewGroupTemplate();
+		final ConditionsId contractConditionsId = request.getNewContractConditionsId();
 		existingRegularOrderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
 
 		final OrderId orderId = extractOrderId(existingRegularOrderLines, expectedOrderId);
@@ -481,7 +477,7 @@ public class OrderGroupRepository implements GroupRepository
 				continue;
 			}
 
-			final I_C_OrderLine regularOrderLine = createRegularLineFromTemplate(regularLineToAdd, order, contractConditionsId);
+			final I_C_OrderLine regularOrderLine = createRegularLineFromTemplate(regularLineToAdd, order, request);
 			allRegularOrderLines.add(regularOrderLine);
 		}
 
@@ -614,9 +610,11 @@ public class OrderGroupRepository implements GroupRepository
 			@NonNull final List<I_C_OrderLine> orderLines,
 			@Nullable final GroupId groupId)
 	{
+		//dev-note: needed to make sure `de.metas.activity.model.validator.C_OrderLine.updateActivity` doesn't fail
 		final List<I_C_OrderLine> sortedOrderLines = orderLines.stream()
 				.sorted(Comparator.comparing(I_C_OrderLine::isGroupCompensationLine))
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
+
 		for (final I_C_OrderLine regularLinePO : sortedOrderLines)
 		{
 			if (groupId != null)
@@ -770,15 +768,19 @@ public class OrderGroupRepository implements GroupRepository
 	public I_C_OrderLine createRegularLineFromTemplate(
 			@NonNull final GroupTemplateRegularLine from,
 			@NonNull final I_C_Order targetOrder,
-			@Nullable final ConditionsId contractConditionsId)
+			final @NonNull RetrieveOrCreateGroupRequest request)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(targetOrder);
-		orderLine.setM_Product_ID(from.getProductId().getRepoId());
+		final ProductId productId = from.getProductId();
+		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		orderLine.setC_UOM_ID(from.getQty().getUomId().getRepoId());
-		orderLine.setQtyEntered(from.getQty().toBigDecimal());
+		orderLine.setQtyEntered(request.getQtyMultiplier().multiply(from.getQty().toBigDecimal()));
 		orderLine.setC_CompensationGroup_Schema_TemplateLine_ID(from.getId().getRepoId());
-		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(contractConditionsId));
+		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(request.getNewContractConditionsId()));
+		orderLine.setIsAllowSeparateInvoicing(from.isAllowSeparateInvoicing());
+
+		orderLine.setIsHideWhenPrinting(from.isHideWhenPrinting());
 		orderLineBL.save(orderLine);
 
 		return orderLine;

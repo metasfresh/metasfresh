@@ -23,8 +23,11 @@
 package de.metas.workflow.rest_api.activity_features.set_scanned_barcode;
 
 import de.metas.workflow.rest_api.model.WFProcess;
+import lombok.NonNull;
 
 public interface SetScannedBarcodeSupport
 {
-	WFProcess setScannedBarcode(SetScannedBarcodeRequest request);
+	WFProcess setScannedBarcode(@NonNull SetScannedBarcodeRequest request);
+
+	default JsonScannedBarcodeSuggestions getScannedBarcodeSuggestions(@NonNull GetScannedBarcodeSuggestionsRequest request) {return JsonScannedBarcodeSuggestions.EMPTY;}
 }

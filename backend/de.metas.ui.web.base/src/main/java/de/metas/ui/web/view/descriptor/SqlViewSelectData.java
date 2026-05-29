@@ -452,6 +452,30 @@ public class SqlViewSelectData
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
+	/**
+	 * Builds SQL to retrieve distinct field values for facet filters.
+	 * <p>
+	 * gh#28680: When a display value is present (e.g. AD_User name lookup for CreatedBy),
+	 * the query is structured as:
+	 * <pre>
+	 * SELECT t.CreatedBy, (SELECT Name FROM AD_User WHERE AD_User_ID=t.CreatedBy) AS CreatedBy$Display
+	 * FROM (
+	 *   SELECT DISTINCT view.CreatedBy
+	 *   FROM T_WEBUI_ViewSelection sel INNER JOIN view ON (...)
+	 *   WHERE sel.UUID=?
+	 * ) t
+	 * LIMIT ?
+	 * </pre>
+	 * The inner subquery computes DISTINCT on the raw value column only (cheap — just integers),
+	 * producing ~10 rows. The display subquery then runs only for those few distinct values.
+	 * <p>
+	 * Previously, the display subquery ran for ALL rows (e.g. 52k) before DISTINCT removed
+	 * duplicates — 52k subquery executions for ~10 results (89 seconds on a real dataset).
+	 * With this restructuring: ~10 executions, under 1 second.
+	 * <p>
+	 * When no display value is present, DISTINCT is applied directly in the outer SELECT
+	 * (no expensive subquery to defer, so no restructuring needed).
+	 */
 	public SqlAndParams selectFieldValues(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			@NonNull final String selectionId,
@@ -478,30 +502,42 @@ public class SqlViewSelectData
 			sqlDisplayValue = null;
 		}
 
-		final CompositeStringExpression.Builder sqlExpression = IStringExpression.composer()
-				.append("SELECT DISTINCT ")
-				.append(sqlValue.getColumnNameAlias());
-		if (sqlDisplayValue != null)
-		{
-			sqlExpression.append(", ").append(sqlDisplayValue.getColumnNameAlias());
-		}
+		final CompositeStringExpression.Builder sqlExpression;
 
-		sqlExpression
-				.append("\n FROM (")
-				.append("\n SELECT ")
-				.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias());
 		if (sqlDisplayValue != null)
 		{
-			sqlExpression
-					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias(sqlTableName).toStringExpressionWithColumnNameAlias());
+			// gh#28680: Performance optimization — compute DISTINCT first, then display values.
+			// Previously, the display subquery (e.g., AD_User lookup) ran for ALL rows (52k+)
+			// before DISTINCT reduced them to ~10 values. Now we first get distinct values,
+			// then compute display only for those few values.
+			sqlExpression = IStringExpression.composer()
+					.append("SELECT ")
+					.append("t.").append(sqlValue.getColumnNameAlias())
+					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias("t").toStringExpressionWithColumnNameAlias())
+					.append("\n FROM (")
+					.append("\n SELECT DISTINCT ")
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
+					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+					.append("\n) t")
+					.append("\n LIMIT ?");
 		}
-		sqlExpression.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
-				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
-				.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
-				.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
-				.append("\n) t")
-				.append("\n LIMIT ?");
+		else
+		{
+			sqlExpression = IStringExpression.composer()
+					.append("SELECT DISTINCT ")
+					.append(sqlValue.getColumnNameAlias())
+					.append("\n FROM (")
+					.append("\n SELECT ")
+					.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias())
+					.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+					.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+					.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+					.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
+					.append("\n) t")
+					.append("\n LIMIT ?");
+		}
 
 		final String sql = sqlExpression.build()
 				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);

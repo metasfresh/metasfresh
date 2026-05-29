@@ -25,7 +25,7 @@ import de.metas.document.archive.api.IDocOutboundProducerService;
  */
 
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import org.adempiere.ad.table.api.AdTableId;
 
 /**
  * Implementation of this interface is responsible for producing document outbound from given models.
@@ -35,7 +35,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 public interface IDocOutboundProducer
 {
 
-	I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+	AdTableId getTableId();
 
 	/**
 	 * Called by API when this producer is registered to an service.
@@ -46,7 +46,7 @@ public interface IDocOutboundProducer
 
 	/**
 	 * Called by API when this producer is unregistered from service.
-	 *
+	 * <p>
 	 * NOTE: never call it directly
 	 */
 	void destroy(IDocOutboundProducerService producerService);
@@ -60,14 +60,14 @@ public interface IDocOutboundProducer
 
 	/**
 	 * Creates the document outbound for given model.
-	 *
+	 * <p>
 	 * NOTE: it is assumed that the API already asked this producer if the model is accepted (see {@link #accept(Object)}).
 	 */
 	void createDocOutbound(Object model);
 
 	/**
 	 * Process the document outbound for given model - the printing queue more specific
-	 *
+	 * <p>
 	 * NOTE: it is assumed that the API already asked this producer if the model is accepted (see {@link #accept(Object)}).
 	 */
 	void voidDocOutbound(Object model);

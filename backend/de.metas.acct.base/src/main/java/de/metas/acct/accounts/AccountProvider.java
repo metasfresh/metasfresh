@@ -167,6 +167,12 @@ public class AccountProvider
 	}
 
 	@NonNull
+	public Optional<Account> getAcctSchemaDefaultPayBankFeeAccount(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return bankAccountAcctRepository.getAcctSchemaDefaultPayBankFeeAccount(acctSchemaId);
+	}
+
+	@NonNull
 	public Account getCashAccount(
 			@NonNull final AcctSchemaId ignoredAcctSchemaId,
 			final int ignoredCashBookId,

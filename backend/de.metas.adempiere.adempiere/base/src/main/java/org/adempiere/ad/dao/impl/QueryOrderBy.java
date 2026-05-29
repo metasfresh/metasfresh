@@ -22,22 +22,20 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.util.Comparator;
-import java.util.List;
-
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.collect.ImmutableList;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.util.comparator.ComparableComparatorNullsEqual;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.comparator.NullComparator;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.concurrent.Immutable;
+import java.util.Comparator;
+import java.util.List;
 
 @Immutable
-class QueryOrderBy extends AbstractQueryOrderBy
+class QueryOrderBy implements IQueryOrderBy
 {
 	private final List<QueryOrderByItem> items;
 
@@ -92,7 +90,7 @@ class QueryOrderBy extends AbstractQueryOrderBy
 	}
 
 	// NOTE: not static just because we want to build nice exceptions
-	private final void appendSql(final StringBuilder sql, final QueryOrderByItem item)
+	private void appendSql(final StringBuilder sql, final QueryOrderByItem item)
 	{
 		if (sql.length() > 0)
 		{
@@ -146,23 +144,21 @@ class QueryOrderBy extends AbstractQueryOrderBy
 
 		if (items != null && !items.isEmpty())
 		{
-			final ComparatorChain<Object> cmpChain = new ComparatorChain<Object>();
+			final ComparatorChain<Object> cmpChain = new ComparatorChain<>();
 			for (final QueryOrderByItem item : items)
 			{
 				@SuppressWarnings("rawtypes")
-				final ModelAccessor<Comparable> accessor = new ModelAccessor<Comparable>(item.getColumnName());
+				final ModelAccessor<Comparable> accessor = new ModelAccessor<>(item.getColumnName());
 
 
 				final boolean reverse = item.getDirection() == Direction.Descending;
-				@SuppressWarnings("rawtypes")
-				final Comparator<Object> cmpDirection = new AccessorComparator<Object, Comparable>(
+				final Comparator<Object> cmpDirection = new AccessorComparator<>(
 						ComparableComparatorNullsEqual.getInstance(),
 						accessor);
 				cmpChain.addComparator(cmpDirection, reverse);
 
-				final boolean nullsFirst = item.getNulls() == Nulls.First ? true : false;
-				@SuppressWarnings("rawtypes")
-				final Comparator<Object> cmpNulls = new AccessorComparator<Object, Comparable>(
+				final boolean nullsFirst = item.getNulls() == Nulls.First;
+				final Comparator<Object> cmpNulls = new AccessorComparator<>(
 						ComparableComparator.getInstance(nullsFirst),
 						accessor);
 

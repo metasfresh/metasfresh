@@ -43,7 +43,7 @@ public class ADMenuDAO implements IADMenuDAO
 				.createQueryBuilder(I_AD_Menu.class)
 				.addEqualsFilter(I_AD_Menu.COLUMN_AD_Element_ID, null)
 				.create()
-				.listIds(AdMenuId::ofRepoId);
+				.idsAsSet(AdMenuId::ofRepoId);
 	}
 
 	@Override

@@ -22,9 +22,9 @@
 
 package de.metas.calendar.impl;
 
+import de.metas.calendar.YearId;
 import de.metas.util.Check;
-import de.metas.util.TypedAccessor;
-import org.adempiere.ad.dao.IQueryFilter;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
@@ -35,7 +35,6 @@ import org.compiere.model.I_C_Year;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -51,42 +50,27 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	@Override
 	public List<I_C_Period> retrievePeriods(final Properties ctx, final I_C_Year year, final String trxName)
 	{
-		final List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
-		{
-
-			@Override
-			public boolean accept(I_C_Period pojo)
+		final List<I_C_Period> periods = db.getRecords(I_C_Period.class, pojo -> {
+			if (!pojo.getC_Year().equals(year))
 			{
-				if (!pojo.getC_Year().equals(year))
-				{
-					return false;
-				}
-
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
 
-		});
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
-				new ComparableComparator<Timestamp>(),
-				new TypedAccessor<Timestamp>()
-				{
+			if (!pojo.isActive())
+			{
+				return false;
+			}
 
-					@Override
-					public Timestamp getValue(Object o)
-					{
-						return ((I_C_Period)o).getStartDate();
-					}
-				}));
+			if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
+			{
+				return false;
+			}
+
+			return true;
+		});
+		periods.sort(new AccessorComparator<>(
+				new ComparableComparator<>(),
+				o -> ((I_C_Period)o).getPeriodNo()));
 
 		return periods;
 	}
@@ -97,64 +81,35 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 		Check.assume(begin != null, "Param 'begin' is not null");
 		Check.assume(end != null, "Param 'end' is not null");
 
-		final List<I_C_Year> years = db.getRecords(I_C_Year.class, new IQueryFilter<I_C_Year>()
-		{
+		final List<I_C_Year> years = db.getRecords(I_C_Year.class, pojo -> pojo.getC_Calendar_ID() == calendarId);
 
-			@Override
-			public boolean accept(I_C_Year pojo)
+		final List<I_C_Period> periods = db.getRecords(I_C_Period.class, pojo -> {
+			if (!years.contains(pojo.getC_Year()))
 			{
-				if (pojo.getC_Calendar_ID() != calendarId)
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
 
-		});
-
-		final List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
-		{
-
-			@Override
-			public boolean accept(I_C_Period pojo)
+			if (pojo.getEndDate().before(begin))
 			{
-				if (!years.contains(pojo.getC_Year()))
-				{
-					return false;
-				}
-
-				if (pojo.getEndDate().before(begin))
-				{
-					return false;
-				}
-
-				if (pojo.getStartDate().after(end))
-				{
-					return false;
-				}
-
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
 
+			if (pojo.getStartDate().after(end))
+			{
+				return false;
+			}
+
+			if (!pojo.isActive())
+			{
+				return false;
+			}
+
+			return true;
 		});
 
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
-				new ComparableComparator<Timestamp>(),
-				new TypedAccessor<Timestamp>()
-				{
-
-					@Override
-					public Timestamp getValue(Object o)
-					{
-						return ((I_C_Period)o).getStartDate();
-					}
-				}));
+		periods.sort(new AccessorComparator<>(
+				new ComparableComparator<>(),
+				o -> ((I_C_Period)o).getStartDate()));
 
 		return periods;
 	}
@@ -164,103 +119,75 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(calendar);
 
-		final List<I_C_Year> years = db.getRecords(I_C_Year.class, new IQueryFilter<I_C_Year>()
-		{
-
-			@Override
-			public boolean accept(I_C_Year pojo)
+		final List<I_C_Year> years = db.getRecords(I_C_Year.class, pojo -> {
+			if (!pojo.isActive())
 			{
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (pojo.getC_Calendar_ID() != calendar.getC_Calendar_ID())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
 
+			if (pojo.getC_Calendar_ID() != calendar.getC_Calendar_ID())
+			{
+				return false;
+			}
+
+			if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
+			{
+				return false;
+			}
+
+			return true;
 		});
 
-		Collections.sort(years, new AccessorComparator<I_C_Year, Integer>(
-				new ComparableComparator<Integer>(),
-				new TypedAccessor<Integer>()
-				{
-
-					@Override
-					public Integer getValue(Object o)
-					{
-						return ((I_C_Year)o).getC_Year_ID();
-					}
-				}));
+		years.sort(new AccessorComparator<>(
+				new ComparableComparator<>(),
+				o -> ((I_C_Year)o).getC_Year_ID()));
 
 		return years;
 	}
 
 	@Override
-	public I_C_Period retrieveFirstPeriodOfTheYear(I_C_Year year)
+	public I_C_Period retrieveFirstPeriodOfTheYear(@NonNull final YearId yearId)
 	{
-		final List<I_C_Period> periods = getPeriodsOfYear(year);
+		final List<I_C_Period> periods = getPeriodsOfYear(yearId);
+		Check.assumeNotEmpty(periods, "No periods found for yearId={}", yearId);
+
 		return periods.get(0);
 
 	}
 
 	@Override
-	public I_C_Period retrieveLastPeriodOfTheYear(I_C_Year year)
+	public I_C_Period retrieveLastPeriodOfTheYear(@NonNull final YearId yearId)
 	{
-		final List<I_C_Period> periods = getPeriodsOfYear(year);
+		final List<I_C_Period> periods = getPeriodsOfYear(yearId);
+		Check.assumeNotEmpty(periods, "No periods found for yearId={}", yearId);
+
 		return periods.get(periods.size() - 1);
 	}
 
-	private List<I_C_Period> getPeriodsOfYear(final I_C_Year year)
+	private List<I_C_Period> getPeriodsOfYear(@NonNull final YearId yearId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(year);
-
-		List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
-		{
-
-			@Override
-			public boolean accept(I_C_Period pojo)
+		final List<I_C_Period> periods = db.getRecords(I_C_Period.class, pojo -> {
+			if (pojo.getC_Year_ID() != yearId.getRepoId())
 			{
-				if (!pojo.getC_Year().equals(year))
-				{
-					return false;
-				}
-
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
 
+			if (!pojo.isActive())
+			{
+				return false;
+			}
+
+			if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID())
+			{
+				return false;
+			}
+
+			return true;
 		});
 
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
-				new ComparableComparator<Timestamp>(),
-				new TypedAccessor<Timestamp>()
-				{
-
-					@Override
-					public Timestamp getValue(Object o)
-					{
-						return ((I_C_Period)o).getStartDate();
-					}
-				}));
+		periods.sort(new AccessorComparator<>(
+				new ComparableComparator<>(),
+				o -> ((I_C_Period)o).getPeriodNo()));
 
 		return periods;
 	}

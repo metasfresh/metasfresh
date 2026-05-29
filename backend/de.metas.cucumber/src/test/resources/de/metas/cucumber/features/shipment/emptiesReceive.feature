@@ -1,9 +1,14 @@
 @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
 @ghActions:run_on_executor7
 Feature: Empties receives
+## F17050: Shipment
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-10T13:30:13+01:00[Europe/Berlin]
 
@@ -60,6 +65,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_100
   Scenario: Create and complete empties receive InOut: TU
   _Given TU packing material
@@ -75,7 +83,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -97,6 +105,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_110
   Scenario: Create and complete empties receive InOut: LU
   _Given LU packing material
@@ -112,7 +123,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -134,6 +145,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_120
   Scenario: Create and complete empties receive InOut: TU - then reactivate it
   _Given TU packing material
@@ -151,7 +165,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -185,6 +199,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_130
   Scenario: Create and complete empties receive InOut: LU - then reactivate it
   _Given LU packing material
@@ -202,7 +219,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -236,6 +253,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_140
   Scenario: Create and complete empties receive InOut: TU - reactivate and complete it again
   _Given TU packing material
@@ -255,7 +275,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -301,6 +321,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_141
   Scenario: Create and complete empties receive InOut: TU - reactivate, increase qty and complete it again
   _Given TU packing material
@@ -321,7 +344,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -370,6 +393,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_142
   Scenario: Create and complete empties receive InOut: TU - reactivate, decrease qty and complete it again
   _Given TU packing material
@@ -390,7 +416,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -438,6 +464,9 @@ Feature: Empties receives
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 5                |
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_150
   Scenario: Create and complete empties receive InOut: LU - reactivate and complete it again
   _Given LU packing material
@@ -457,7 +486,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -503,6 +532,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_151
   Scenario: Create and complete empties receive InOut: LU - reactivate, = qty and complete it again
   _Given LU packing material
@@ -523,7 +555,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -572,6 +604,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_152
   Scenario: Create and complete empties receive InOut: LU - reactivate, decrease qty and complete it again
   _Given LU packing material
@@ -592,7 +627,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -641,6 +676,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_160
   Scenario: Create and complete empties receive InOut: TU - then close it
   _Given TU packing material
@@ -658,7 +696,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -692,6 +730,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_170
   Scenario: Create and complete empties receive InOut: LU - then close it
   _Given LU packing material
@@ -709,7 +750,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -743,6 +784,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_180
   Scenario: Create and complete empties receive InOut: TU - then revert it
   _Given TU packing material;
@@ -774,7 +818,7 @@ Feature: Empties receives
       | inOut                 | receiptSchedule                     |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -808,6 +852,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_190
   Scenario: Create and complete empties receive InOut: LU - then revert it
   _Given LU packing material
@@ -839,7 +886,7 @@ Feature: Empties receives
       | inOut                 | receiptSchedule                     |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -873,6 +920,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_200
   Scenario: Create and complete empties receive InOut: TU - then reactivate and void it
   _Given TU packing material
@@ -892,7 +942,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -938,6 +988,9 @@ Feature: Empties receives
 
 
   @from:cucumber
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_210
   Scenario: Create and complete empties receive InOut: LU - then reactivate and void it
   _Given LU packing material
@@ -957,7 +1010,7 @@ Feature: Empties receives
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-10  | po_ref_mock | false     | DR        | MMR                       | Leergutrücknahme   |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine

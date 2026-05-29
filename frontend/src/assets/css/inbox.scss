@@ -1,8 +1,11 @@
+@import './variables.scss';
+@import './layers.scss';
+
 .inbox {
   position: fixed;
   top: 54px;
   right: 0;
-  z-index: 2;
+  z-index: $z-index-header-menu;
   width: 400px;
 }
 

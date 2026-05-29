@@ -30,6 +30,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.related_documents.relation_type.RelationTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
@@ -48,6 +49,7 @@ import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.workflow.WorkflowId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -86,6 +88,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,7 +109,7 @@ import java.util.Set;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
 public final class ProcessInfo implements Serializable
 {
-	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
+	private static final Logger logger = LogManager.getLogger(ProcessInfo.class);
 
 	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
 
@@ -120,8 +123,10 @@ public final class ProcessInfo implements Serializable
 			@NonNull final ProcessInfoBuilder builder)
 	{
 		this.ctx = ctx;
+		this.processCalledFrom = builder.getProcessCalledFrom();
 
 		adProcessId = builder.getAD_Process_ID();
+		adRelationTypeId = builder.getAD_RelationType_ID();
 		pinstanceId = builder.getPInstanceId();
 
 		clientId = builder.getAdClientId();
@@ -183,31 +188,23 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
+	@NonNull
+	@Getter
+	private final ProcessCalledFrom processCalledFrom;
+
 	private Properties ctx;
-
-	/**
-	 * Title of the Process/Report
-	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
-
-	/**
-	 * Table ID if the Process
-	 */
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
+	@Getter @Nullable private final RelationTypeId adRelationTypeId;
 	private final int adTableId;
-	/**
-	 * Record ID if the Process
-	 */
 	private final int recordId;
-	private final Set<TableRecordReference> selectedIncludedRecords;
+	@Getter private final Set<TableRecordReference> selectedIncludedRecords;
 
 	private final String whereClause;
-	private final ClientId clientId;
-	private final OrgId orgId;
-	private final UserId userId;
-	private final RoleId roleId;
+	@Getter private final ClientId clientId;
+	@Getter private final OrgId orgId;
+	@Getter private final UserId userId;
+	@Getter private final RoleId roleId;
 	@Getter
 	private final AdWindowId adWindowId;
 
@@ -270,7 +267,12 @@ public final class ProcessInfo implements Serializable
 	private final boolean reportingProcess;
 	@Getter
 	private final Optional<String> reportTemplate;
-	private final Language reportLanguage;
+	/**
+	 * -- GETTER --
+	 *
+	 * @return language used to reports; could BE <code>null</code>
+	 */
+	@Getter private final Language reportLanguage;
 	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
@@ -340,6 +342,7 @@ public final class ProcessInfo implements Serializable
 		result.setPInstanceId(pinstanceId);
 	}
 
+	@Nullable
 	public String getClassName()
 	{
 		return className.orElse(null);
@@ -349,7 +352,7 @@ public final class ProcessInfo implements Serializable
 	public JavaProcess newProcessClassInstance()
 	{
 		final String classname = getClassName();
-		if (Check.isEmpty(classname, true))
+		if (Check.isBlank(classname))
 		{
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
@@ -544,29 +547,14 @@ public final class ProcessInfo implements Serializable
 		return Optional.of(record);
 	}
 
-	public ClientId getClientId()
-	{
-		return clientId;
-	}
-
 	public int getAD_Client_ID()
 	{
 		return getClientId().getRepoId();
 	}
 
-	public UserId getUserId()
-	{
-		return userId;
-	}
-
 	public int getAD_User_ID()
 	{
 		return UserId.toRepoId(getUserId());
-	}
-
-	public RoleId getRoleId()
-	{
-		return roleId;
 	}
 
 	public int getAD_Window_ID()
@@ -579,7 +567,7 @@ public final class ProcessInfo implements Serializable
 		return invokedBySchedulerId != null;
 	}
 
-	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
+	private static ImmutableList<ProcessInfoParameter> mergeParameters(@Nullable final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
 		if (parametersOverride == null || parametersOverride.isEmpty())
 		{
@@ -588,7 +576,7 @@ public final class ProcessInfo implements Serializable
 
 		if (parameters == null || parameters.isEmpty())
 		{
-			return parametersOverride == null ? ImmutableList.of() : ImmutableList.copyOf(parametersOverride);
+			return ImmutableList.copyOf(parametersOverride);
 		}
 
 		final Map<String, ProcessInfoParameter> parametersEffective = new HashMap<>();
@@ -626,11 +614,6 @@ public final class ProcessInfo implements Serializable
 	public IRangeAwareParams getParameterAsIParams()
 	{
 		return new ProcessParams(getParameter());
-	}
-
-	public OrgId getOrgId()
-	{
-		return orgId;
 	}
 
 	public int getAD_Org_ID()
@@ -740,22 +723,6 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
-	 * @return selected included rows of current single selected document
-	 */
-	public Set<TableRecordReference> getSelectedIncludedRecords()
-	{
-		return selectedIncludedRecords;
-	}
-
-	/**
-	 * @return language used to reports; could BE <code>null</code>
-	 */
-	public Language getReportLanguage()
-	{
-		return this.reportLanguage;
-	}
-
-	/**
 	 * @return AD_Language used to reports; could BE <code>null</code>
 	 */
 	@Nullable
@@ -796,20 +763,24 @@ public final class ProcessInfo implements Serializable
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
-		private PInstanceId pInstanceId;
-		private transient I_AD_PInstance _adPInstance;
-		private AdProcessId adProcessId;
-		private transient I_AD_Process _adProcess;
-		private ClientId _adClientId;
-		private UserId _adUserId;
-		private RoleId _adRoleId;
-		private AdWindowId _adWindowId = null;
+		@NonNull
+		@Getter
+		private ProcessCalledFrom processCalledFrom = ProcessCalledFrom.Unknown;
+
+		@Nullable private PInstanceId pInstanceId;
+		@Nullable private transient I_AD_PInstance _adPInstance;
+		@Nullable private AdProcessId adProcessId;
+		@Nullable private transient I_AD_Process _adProcess;
+		@Nullable private ClientId _adClientId;
+		@Nullable private UserId _adUserId;
+		@Nullable private RoleId _adRoleId;
+		@Nullable private AdWindowId _adWindowId = null;
 		private String title = null;
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
 
-		private Integer adTableId;
-		private Integer recordId;
+		@Nullable private Integer adTableId;
+		@Nullable private Integer recordId;
 
 		private Set<TableRecordReference> selectedIncludedRecords;
 
@@ -818,7 +789,7 @@ public final class ProcessInfo implements Serializable
 		private int windowNo = Env.WINDOW_None;
 		private int tabNo = Env.TAB_None;
 
-		private Language reportLanguage;
+		@Nullable private Language reportLanguage;
 		@NonNull private OptionalBoolean printPreview = OptionalBoolean.UNKNOWN;
 		private Boolean archiveReportData;
 
@@ -832,6 +803,8 @@ public final class ProcessInfo implements Serializable
 		private Boolean notifyUserAfterExecution;
 
 		private Boolean logWarning;
+
+		@Nullable private RelationTypeId adRelationTypeId;
 
 		private ProcessInfoBuilder()
 		{
@@ -1014,7 +987,7 @@ public final class ProcessInfo implements Serializable
 			return setUserId(UserId.ofRepoIdOrNull(adUserId));
 		}
 
-		public ProcessInfoBuilder setUserId(final UserId adUserId)
+		public ProcessInfoBuilder setUserId(@Nullable final UserId adUserId)
 		{
 			this._adUserId = adUserId;
 			return this;
@@ -1025,7 +998,7 @@ public final class ProcessInfo implements Serializable
 			return setRoleId(RoleId.ofRepoIdOrNull(adRoleId));
 		}
 
-		public ProcessInfoBuilder setRoleId(final RoleId adRoleId)
+		public ProcessInfoBuilder setRoleId(@Nullable final RoleId adRoleId)
 		{
 			this._adRoleId = adRoleId;
 			return this;
@@ -1053,6 +1026,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		@Nullable
 		private AdWindowId getAdWindowId()
 		{
 			if (_adWindowId != null)
@@ -1092,6 +1066,13 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder setProcessCalledFrom(@NonNull final ProcessCalledFrom processCalledFrom)
+		{
+			this.processCalledFrom = processCalledFrom;
+			return this;
+		}
+
+		@Nullable
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
 			final PInstanceId adPInstanceId = getPInstanceId();
@@ -1123,6 +1104,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		@Nullable
 		private PInstanceId getPInstanceId()
 		{
 			return pInstanceId;
@@ -1141,13 +1123,36 @@ public final class ProcessInfo implements Serializable
 			return adProcessId;
 		}
 
+		@Nullable
+		private RelationTypeId getAD_RelationType_ID()
+		{
+			if (adRelationTypeId != null)
+			{
+				return adRelationTypeId;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return null;
+			}
+			return RelationTypeId.ofRepoIdOrNull(process.getAD_RelationType_ID());
+		}
+
 		public ProcessInfoBuilder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
 		{
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
+			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());
+			return this;
+		}
+
+		public ProcessInfoBuilder setAdRelationTypeId(@Nullable final RelationTypeId adRelationTypeId)
+		{
+			this.adRelationTypeId = adRelationTypeId;
 			return this;
 		}
 
@@ -1170,6 +1175,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		@Nullable
 		private I_AD_Process getAD_ProcessOrNull()
 		{
 			final AdProcessId processId = getAD_Process_ID();
@@ -1259,7 +1265,9 @@ public final class ProcessInfo implements Serializable
 						.format(spreadsheetFormat)
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
-						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.csvFieldDelimiter(StringUtils.trimSpacesToNull(process.getCSVFieldDelimiter()))
+						.csvFieldQualifier(process.getCSVFieldQuote())
+						.includeCSVHeaderRow(process.isIncludeCSVHeaderRow())
 						.build();
 			}
 		}
@@ -1291,6 +1299,7 @@ public final class ProcessInfo implements Serializable
 			return adProcess.isApplySecuritySettings();
 		}
 
+		@Nullable
 		private WorkflowId getWorkflowId()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
@@ -1343,6 +1352,13 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder setRecord(@Nullable final String tableName, @NonNull final RepoIdAware recordId)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			this.recordId = recordId.getRepoId();
+			return this;
+		}
+
 		public ProcessInfoBuilder setRecord(@Nullable final ITableRecordReference recordRef)
 		{
 			if (recordRef == null)
@@ -1391,6 +1407,7 @@ public final class ProcessInfo implements Serializable
 			return 0;
 		}
 
+		@Nullable
 		private TableRecordReference getRecordOrNull()
 		{
 			final int adTableId = getAD_Table_ID();
@@ -1452,7 +1469,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setJRDesiredOutputType(OutputType jrDesiredOutputType)
+		public ProcessInfoBuilder setJRDesiredOutputType(final OutputType jrDesiredOutputType)
 		{
 			this.jrDesiredOutputType = jrDesiredOutputType;
 			return this;
@@ -1463,6 +1480,7 @@ public final class ProcessInfo implements Serializable
 			return jrDesiredOutputType;
 		}
 
+		@Nullable
 		public ProcessType getType()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
@@ -1476,6 +1494,7 @@ public final class ProcessInfo implements Serializable
 			return StringUtils.trimBlankToOptional(JSONPath);
 		}
 
+		@Nullable
 		private Language getReportLanguage()
 		{
 			//
@@ -1556,7 +1575,7 @@ public final class ProcessInfo implements Serializable
 			return CoalesceUtil.coalesceNotNull(archiveReportData, Boolean.TRUE);
 		}
 
-		public ProcessInfoBuilder setWindowNo(int windowNo)
+		public ProcessInfoBuilder setWindowNo(final int windowNo)
 		{
 			this.windowNo = windowNo;
 			return this;
@@ -1567,7 +1586,7 @@ public final class ProcessInfo implements Serializable
 			return windowNo;
 		}
 
-		public ProcessInfoBuilder setTabNo(int tabNo)
+		public ProcessInfoBuilder setTabNo(final int tabNo)
 		{
 			this.tabNo = tabNo;
 			return this;
@@ -1595,6 +1614,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		@Nullable
 		public AdSchedulerId getInvokedBySchedulerId()
 		{
 			if (invokedBySchedulerId != null)
@@ -1665,22 +1685,23 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}
 
+		@Nullable
 		private String getWhereClause()
 		{
 			if (whereClause != null)
@@ -1717,7 +1738,7 @@ public final class ProcessInfo implements Serializable
 		 *                             be loaded from database but only those added here will be used.
 		 *                             </ul>
 		 */
-		public ProcessInfoBuilder setLoadParametersFromDB(boolean loadParametersFromDB)
+		public ProcessInfoBuilder setLoadParametersFromDB(final boolean loadParametersFromDB)
 		{
 			this.loadParametersFromDB = loadParametersFromDB;
 			return this;
@@ -1739,6 +1760,12 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder addParameter(final String parameterName, @Nullable final RepoIdAware parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
 		public ProcessInfoBuilder addParameter(final String parameterName, final String parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
@@ -1746,6 +1773,12 @@ public final class ProcessInfo implements Serializable
 		}
 
 		public ProcessInfoBuilder addParameter(final String parameterName, final java.util.Date parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final LocalDate parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
 			return this;
@@ -1763,7 +1796,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private void addParameter(ProcessInfoParameter param)
+		private void addParameter(final ProcessInfoParameter param)
 		{
 			if (parameters == null)
 			{
@@ -1859,6 +1892,7 @@ public final class ProcessInfo implements Serializable
 			return Env.getLanguage(ctx);
 		}
 
+		@Nullable
 		private static Language extractLanguageFromWindowContext(final Properties ctx, final int windowNo)
 		{
 			if (!Env.isRegularWindowNo(windowNo))
@@ -1883,21 +1917,16 @@ public final class ProcessInfo implements Serializable
 				final int bpartnerId = Env.getContextAsInt(ctx, windowNo, "C_BPartner_ID");
 				if (bpartnerId > 0)
 				{
-					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
-					if (lang != null)
-					{
-						return lang;
-					}
+					return Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
 				}
 			}
 
 			return null;
 		}
 
-		private static Language extractLanguageFromRecordRef(final Properties ctx, @Nullable final TableRecordReference recordRef)
+		@Nullable
+		private static Language extractLanguageFromRecordRef(@NonNull final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
-			Check.assumeNotNull(ctx, "Parameter ctx is not null");
-
 			if (recordRef == null)
 			{
 				return null;
@@ -1926,11 +1955,7 @@ public final class ProcessInfo implements Serializable
 				final Integer bpartnerId = InterfaceWrapperHelper.getValueOrNull(record, "C_BPartner_ID");
 				if (bpartnerId != null && bpartnerId > 0)
 				{
-					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
-					if (lang != null)
-					{
-						return lang;
-					}
+					return Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
 				}
 			}
 
@@ -1943,8 +1968,9 @@ public final class ProcessInfo implements Serializable
 		 * TODO: extract some sort of language-provider-SPI
 		 *
 		 * @return the login language if conditions fulfilled, null otherwise.
-		 * @implSpec task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
+		 * @implSpec task 09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 		 */
+		@Nullable
 		private static Language extractLanguageFromDraftInOut(@NonNull final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
 			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UseLoginLanguageForDraftDocuments, true);

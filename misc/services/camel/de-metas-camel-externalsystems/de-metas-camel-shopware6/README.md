@@ -229,7 +229,6 @@ Order.OrderCustomer.orderDate | `DateOrdered`            | N | JsonOLCandCreateR
 Order.OrderCustomer.updatedAt | `dateCandidate`          | N | JsonOLCandCreateRequest.dateCandidate | if Order.OrderCustomer.updatedAt is null it will be populated from Order.OrderCustomer.createdAt |
 ---- | `ad_inputdatasource_id`  | Y | JsonOLCandCreateRequest.dataSource | default value `int-Shopware`, identifier for AD_InputDataSource record|
 ---- | `isManualPrice`          | N | JsonOLCandCreateRequest.isManualPrice | default value `true` |
----- | `isImportedWithIssues`   | N | JsonOLCandCreateRequest.isImportedWithIssues | default value `true` |
 ---- | `Discount`               | N | JsonOLCandCreateRequest.discount | default value `0` |
 ---- | `DeliveryViaRule`        | N | JsonOLCandCreateRequest.deliveryViaRule | default value `S` |
 ---- | `DeliveryRule`           | N | JsonOLCandCreateRequest.deliveryRule | default value `A` |

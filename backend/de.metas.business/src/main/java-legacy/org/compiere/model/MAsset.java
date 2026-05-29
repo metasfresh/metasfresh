@@ -16,44 +16,46 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
 /**
- *  Asset Model
+ * Asset Model
  *
- *  @author Jorg Janke
- *  @version $Id: MAsset.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: MAsset.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
+@SuppressWarnings("all")
 public class MAsset extends X_A_Asset
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7537696364072606170L;
 
-
 	/**
-	 * 	Get Asset From Shipment
-	 *	@param ctx context
-	 *	@param M_InOutLine_ID shipment line
-	 *	@param trxName transaction
-	 *	@return asset or null
+	 * Get Asset From Shipment
+	 *
+	 * @param ctx            context
+	 * @param M_InOutLine_ID shipment line
+	 * @param trxName        transaction
+	 * @return asset or null
 	 */
-	public static MAsset getFromShipment (Properties ctx, int M_InOutLine_ID, String trxName)
+	public static MAsset getFromShipment(Properties ctx, int M_InOutLine_ID, String trxName)
 	{
 		MAsset retValue = null;
 		String sql = "SELECT * FROM A_Asset WHERE M_InOutLine_ID=?";
@@ -61,11 +63,11 @@ public class MAsset extends X_A_Asset
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, trxName);
-			pstmt.setInt (1, M_InOutLine_ID);
-			rs = pstmt.executeQuery ();
-			if (rs.next ())
-				retValue = new MAsset (ctx, rs, trxName);
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, M_InOutLine_ID);
+			rs = pstmt.executeQuery();
+			if (rs.next())
+				retValue = new MAsset(ctx, rs, trxName);
 		}
 		catch (Exception e)
 		{
@@ -74,71 +76,76 @@ public class MAsset extends X_A_Asset
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
+			rs = null;
+			pstmt = null;
 		}
 		return retValue;
-	}	//	getFromShipment
-	
-	/**	Logger							*/
-	private static Logger	s_log = LogManager.getLogger(MAsset.class);
+	}    //	getFromShipment
 
-	
+	/**
+	 * Logger
+	 */
+	private static Logger s_log = LogManager.getLogger(MAsset.class);
+
 	/**************************************************************************
 	 * 	Asset Constructor
-	 *	@param ctx context
-	 *	@param A_Asset_ID asset
-	 *	@param trxName transaction name 
+	 *    @param ctx context
+	 *    @param A_Asset_ID asset
+	 *    @param trxName transaction name 
 	 */
-	public MAsset (Properties ctx, int A_Asset_ID, String trxName)
+	public MAsset(Properties ctx, int A_Asset_ID, String trxName)
 	{
-		super (ctx, A_Asset_ID, trxName);
+		super(ctx, A_Asset_ID, trxName);
 		if (A_Asset_ID == 0)
 		{
-		//	setIsDepreciated (false);
-		//	setIsFullyDepreciated (false);
-		//	setValue (null);
-		//	setName (null);
-		//	setIsInPosession (false);
-		//	setIsOwned (false);
-		//	setA_Asset_Group_ID (0);
-		//	setIsDisposed (false);
-		//	setM_AttributeSetInstance_ID(0);
+			//	setIsDepreciated (false);
+			//	setIsFullyDepreciated (false);
+			//	setValue (null);
+			//	setName (null);
+			//	setIsInPosession (false);
+			//	setIsOwned (false);
+			//	setA_Asset_Group_ID (0);
+			//	setIsDisposed (false);
+			//	setM_AttributeSetInstance_ID(0);
 			setQty(Env.ONE);
 		}
-	}	//	MAsset
+	}    //	MAsset
 
 	/**
-	 * 	Discontinued Asset Constructor - DO NOT USE (but don't delete either)
-	 *	@param ctx context
-	 *	@param A_Asset_ID asset
+	 * Discontinued Asset Constructor - DO NOT USE (but don't delete either)
+	 *
+	 * @param ctx        context
+	 * @param A_Asset_ID asset
 	 */
-	public MAsset (Properties ctx, int A_Asset_ID)
+	public MAsset(Properties ctx, int A_Asset_ID)
 	{
-		this (ctx, A_Asset_ID, null);
-	}	//	MAsset
+		this(ctx, A_Asset_ID, null);
+	}    //	MAsset
 
 	/**
-	 *  Load Constructor
-	 *  @param ctx context
-	 *  @param rs result set record
-	 *	@param trxName transaction
+	 * Load Constructor
+	 *
+	 * @param ctx     context
+	 * @param rs      result set record
+	 * @param trxName transaction
 	 */
-	public MAsset (Properties ctx, ResultSet rs, String trxName)
+	public MAsset(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MAsset
+	}    //	MAsset
 
 	/**
-	 * 	Shipment Constructor
-	 * 	@param shipment shipment
-	 *	@param shipLine shipment line
-	 *	@param deliveryCount 0 or number of delivery
+	 * Shipment Constructor
+	 *
+	 * @param shipment      shipment
+	 * @param shipLine      shipment line
+	 * @param deliveryCount 0 or number of delivery
 	 */
-	public MAsset (MInOut shipment, MInOutLine shipLine, int deliveryCount)
+	public MAsset(MInOut shipment, MInOutLine shipLine, int deliveryCount)
 	{
-		this (shipment.getCtx(), 0, shipment.get_TrxName());
+		this(shipment.getCtx(), 0, shipment.get_TrxName());
 		setClientOrg(shipment);
-		
+
 		setValueNameDescription(shipment, shipLine, deliveryCount);
 		//	Header
 		setAssetServiceDate(shipment.getMovementDate());
@@ -146,7 +153,7 @@ public class MAsset extends X_A_Asset
 		setC_BPartner_ID(shipment.getC_BPartner_ID());
 		setC_BPartner_Location_ID(shipment.getC_BPartner_Location_ID());
 		setAD_User_ID(shipment.getAD_User_ID());
-		
+
 		//	Line
 		MProduct product = shipLine.getProduct();
 		setM_Product_ID(product.getM_Product_ID());
@@ -160,7 +167,9 @@ public class MAsset extends X_A_Asset
 		setVersionNo(product.getVersionNo());
 		if (shipLine.getM_AttributeSetInstance_ID() != 0)
 		{
-			MAttributeSetInstance asi = new MAttributeSetInstance (getCtx(), shipLine.getM_AttributeSetInstance_ID(), get_TrxName()); 
+			final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(shipLine.getM_AttributeSetInstance_ID());
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getById(asiId);
 			setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
 			setLot(asi.getLot());
 			setSerNo(asi.getSerNo());
@@ -169,104 +178,109 @@ public class MAsset extends X_A_Asset
 		if (deliveryCount != 0)
 			setQty(shipLine.getMovementQty());
 		setM_InOutLine_ID(shipLine.getM_InOutLine_ID());
-		
+
 		//	Activate
 		MAssetGroup ag = MAssetGroup.get(getCtx(), getA_Asset_Group_ID());
 		if (!ag.isCreateAsActive())
 			setIsActive(false);
-	}	//	MAsset
-	
-	
-	/**	Product Info					*/
-	private MProduct		m_product = null;
+	}    //	MAsset
 
 	/**
-	 * 	Set Value Name Description
-	 *	@param shipment shipment
-	 *	@param line line
-	 *	@param deliveryCount
+	 * Product Info
 	 */
-	public void setValueNameDescription(MInOut shipment, MInOutLine line, 
-		int deliveryCount)
+	private MProduct m_product = null;
+
+	/**
+	 * Set Value Name Description
+	 *
+	 * @param shipment      shipment
+	 * @param line          line
+	 * @param deliveryCount
+	 */
+	public void setValueNameDescription(MInOut shipment, MInOutLine line,
+										int deliveryCount)
 	{
-		MProduct product = line.getProduct(); 
+		MProduct product = line.getProduct();
 		I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(shipment.getC_BPartner_ID());
 		setValueNameDescription(shipment, deliveryCount, product, partner);
-	}	//	setValueNameDescription
-	
+	}    //	setValueNameDescription
+
 	/**
-	 * 	Set Value, Name, Description
-	 *	@param shipment shipment
-	 *	@param deliveryCount count
-	 *	@param product product
-	 *	@param partner partner
+	 * Set Value, Name, Description
+	 *
+	 * @param shipment      shipment
+	 * @param deliveryCount count
+	 * @param product       product
+	 * @param partner       partner
 	 */
-	public void setValueNameDescription (MInOut shipment,  
-		int deliveryCount, MProduct product, I_C_BPartner partner)
+	public void setValueNameDescription(MInOut shipment,
+										int deliveryCount, MProduct product, I_C_BPartner partner)
 	{
 		String documentNo = "_" + shipment.getDocumentNo();
 		if (deliveryCount > 1)
 			documentNo += "_" + deliveryCount;
 		//	Value
 		String value = partner.getValue() + "_" + product.getValue();
-		if (value.length() > 40-documentNo.length())
-			value = value.substring(0,40-documentNo.length()) + documentNo;
+		if (value.length() > 40 - documentNo.length())
+			value = value.substring(0, 40 - documentNo.length()) + documentNo;
 		setValue(value);
-		
+
 		//	Name		MProduct.afterSave
 		String name = partner.getName() + " - " + product.getName();
 		if (name.length() > 60)
-			name = name.substring(0,60);
+			name = name.substring(0, 60);
 		setName(name);
 		//	Description
 		String description = product.getDescription();
 		setDescription(description);
-	}	//	setValueNameDescription
-	
+	}    //	setValueNameDescription
+
 	/**
-	 * 	Add to Description
-	 *	@param description text
+	 * Add to Description
+	 *
+	 * @param description text
 	 */
-	public void addDescription (String description)
+	public void addDescription(String description)
 	{
 		String desc = getDescription();
 		if (desc == null)
 			setDescription(description);
 		else
 			setDescription(desc + " | " + description);
-	}	//	addDescription
+	}    //	addDescription
 
 	/**
-	 * 	Get Qty
-	 *	@return 1 or Qty
+	 * Get Qty
+	 *
+	 * @return 1 or Qty
 	 */
 	@Override
-	public BigDecimal getQty ()
+	public BigDecimal getQty()
 	{
 		BigDecimal qty = super.getQty();
 		if (qty == null || qty.equals(Env.ZERO))
 			setQty(Env.ONE);
 		return super.getQty();
-	}	//	getQty
-	
+	}    //	getQty
+
 	/**
-	 * 	String representation
-	 *	@return info
+	 * String representation
+	 *
+	 * @return info
 	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MAsset[")
-			.append (get_ID ())
-			.append("-").append(getValue())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+		StringBuffer sb = new StringBuffer("MAsset[")
+				.append(get_ID())
+				.append("-").append(getValue())
+				.append("]");
+		return sb.toString();
+	}    //	toString
 
-	
 	/**************************************************************************
 	 * 	Get Deliveries
-	 * 	@return deliveries
+	 *    @return deliveries
 	 */
 	public MAssetDelivery[] getDeliveries()
 	{
@@ -290,114 +304,118 @@ public class MAsset extends X_A_Asset
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
+			rs = null;
+			pstmt = null;
 		}
 		//
 		MAssetDelivery[] retValue = new MAssetDelivery[list.size()];
 		list.toArray(retValue);
 		return retValue;
-	}	//	getDeliveries
+	}    //	getDeliveries
 
 	/**
-	 * 	Get Delivery count
-	 * 	@return delivery count
+	 * Get Delivery count
+	 *
+	 * @return delivery count
 	 */
 	public int getDeliveryCount()
 	{
 		String sql = "SELECT COUNT(*) FROM A_Asset_Delivery WHERE A_Asset_ID=?";
 		return DB.getSQLValue(get_TrxName(),
-			sql, getA_Asset_ID());
-	}	//	getDeliveries
+				sql, getA_Asset_ID());
+	}    //	getDeliveries
 
 	/**
-	 * 	Get Product R_MailText_ID
-	 *	@return R_MailText_ID
+	 * Get Product R_MailText_ID
+	 *
+	 * @return R_MailText_ID
 	 */
 	public int getProductR_MailText_ID()
 	{
 		return getProduct().getR_MailText_ID();
-	}	//	getProductR_MailText_ID
+	}    //	getProductR_MailText_ID
 
 	/**
-	 * 	Get Product Info
-	 * 	@return product
+	 * Get Product Info
+	 *
+	 * @return product
 	 */
 	private MProduct getProduct()
 	{
 		if (m_product == null)
-			m_product = MProduct.get (getCtx(), getM_Product_ID()); 
+			m_product = MProduct.get(getCtx(), getM_Product_ID());
 		return m_product;
-	}	//	getProductInfo
-	
+	}    //	getProductInfo
+
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
-		getQty();		//	set to 1
-		if (getA_Parent_Asset_ID() < 1 ) 
-		{				
-			setA_Parent_Asset_ID(getA_Asset_ID());			
-		}	
+		getQty();        //	set to 1
+		if (getA_Parent_Asset_ID() < 1)
+		{
+			setA_Parent_Asset_ID(getA_Asset_ID());
+		}
 		return true;
-	}	//	beforeSave
-	
+	}    //	beforeSave
+
 	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return saved
+	 * After Save
+	 *
+	 * @param newRecord new
+	 * @param success   success
+	 * @return saved
 	 */
 	@Override
-	protected boolean afterSave (boolean newRecord,boolean success)
+	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		log.info("afterSave");
 
-		int		p_A_Asset_ID = 0;
+		int p_A_Asset_ID = 0;
 		p_A_Asset_ID = getA_Asset_ID();
 
 		String sql = "SELECT COUNT(*) FROM A_Depreciation_Workfile WHERE A_Asset_ID=?";
-		PreparedStatement pstmt = null;	
+		PreparedStatement pstmt = null;
 
-
-		if (DB.getSQLValue(get_TrxName(),sql, p_A_Asset_ID)== 0) 
-		{		    	
-			sql ="SELECT * FROM A_Asset_Group_Acct WHERE A_Asset_Group_ID = ? AND IsActive='Y'";	
+		if (DB.getSQLValue(get_TrxName(), sql, p_A_Asset_ID) == 0)
+		{
+			sql = "SELECT * FROM A_Asset_Group_Acct WHERE A_Asset_Group_ID = ? AND IsActive='Y'";
 			pstmt = null;
-			pstmt = DB.prepareStatement(sql,get_TrxName());				
-			try {
-				pstmt.setInt(1, getA_Asset_Group_ID());		
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			try
+			{
+				pstmt.setInt(1, getA_Asset_Group_ID());
 				ResultSet rs = pstmt.executeQuery();
 				int uselifemonths = 0;
-				int uselifeyears = 0;	
+				int uselifeyears = 0;
 				boolean isdepreciate = false;
 
+				MAssetChange change = new MAssetChange(getCtx(), 0, get_TrxName());
+				X_A_Asset asset = new X_A_Asset(getCtx(), p_A_Asset_ID, get_TrxName());
 
-				MAssetChange change = new MAssetChange (getCtx(), 0, get_TrxName());	
-				X_A_Asset asset = new X_A_Asset (getCtx(), p_A_Asset_ID, get_TrxName());
-
-				if (getA_Parent_Asset_ID() < 1 ) 
-				{				
+				if (getA_Parent_Asset_ID() < 1)
+				{
 					asset.setA_Parent_Asset_ID(getA_Asset_ID());
 					asset.save();
-				}	
+				}
 
-
-				while (rs.next()){
-					MAssetGroupAcct assetgrpacct = new MAssetGroupAcct (getCtx(), rs, get_TrxName());
-					MAssetAcct assetacct = new MAssetAcct (getCtx(), 0, get_TrxName());			
+				while (rs.next())
+				{
+					MAssetGroupAcct assetgrpacct = new MAssetGroupAcct(getCtx(), rs, get_TrxName());
+					MAssetAcct assetacct = new MAssetAcct(getCtx(), 0, get_TrxName());
 					isdepreciate = assetgrpacct.isProcessing();
-					if (isDepreciated()== true | isdepreciate == true)
-					{			
+					if (isDepreciated() == true | isdepreciate == true)
+					{
 						assetacct.setPostingType(assetgrpacct.getPostingType());
 						assetacct.setA_Split_Percent(assetgrpacct.getA_Split_Percent());
 						assetacct.setA_Depreciation_Conv_ID(assetgrpacct.getConventionType());
 						assetacct.setA_Salvage_Value(new BigDecimal(0.0));
-						assetacct.setA_Asset_ID(p_A_Asset_ID);								
+						assetacct.setA_Asset_ID(p_A_Asset_ID);
 						assetacct.setA_Depreciation_ID(assetgrpacct.getDepreciationType());
 						assetacct.setA_Asset_Spread_ID(assetgrpacct.getA_Asset_Spread_Type());
 						assetacct.setA_Period_Start(1);
 
-
-						if (getUseLifeMonths() == 0 & getUseLifeYears() == 0){
+						if (getUseLifeMonths() == 0 & getUseLifeYears() == 0)
+						{
 							assetacct.setA_Period_End(assetgrpacct.getUseLifeMonths());
 							asset.setUseLifeYears(assetgrpacct.getUseLifeYears());
 							asset.setUseLifeMonths(assetgrpacct.getUseLifeMonths());
@@ -408,19 +426,22 @@ public class MAsset extends X_A_Asset
 							uselifeyears = assetgrpacct.getUseLifeYears();
 
 						}
-						else if(getUseLifeMonths() == 0){
-							assetacct.setA_Period_End(getUseLifeYears()*12);
-							asset.setUseLifeMonths(getUseLifeYears()*12);
+						else if (getUseLifeMonths() == 0)
+						{
+							assetacct.setA_Period_End(getUseLifeYears() * 12);
+							asset.setUseLifeMonths(getUseLifeYears() * 12);
 							asset.setIsDepreciated(true);
 							asset.setIsOwned(true);
 							asset.save();
-							uselifemonths = getUseLifeYears()*12;
-							uselifeyears = getUseLifeYears();						
+							uselifemonths = getUseLifeYears() * 12;
+							uselifeyears = getUseLifeYears();
 						}
-						else{
+						else
+						{
 							assetacct.setA_Period_End(getUseLifeMonths());
 							uselifemonths = getUseLifeMonths();
-							uselifeyears = getUseLifeYears();}
+							uselifeyears = getUseLifeYears();
+						}
 
 						assetacct.setA_Depreciation_Method_ID(assetgrpacct.getA_Depreciation_Calc_Type());
 						assetacct.setA_Asset_Acct(assetgrpacct.getA_Asset_Acct());
@@ -434,7 +455,7 @@ public class MAsset extends X_A_Asset
 						if (assetgrpacct.getA_Reval_Cal_Method() == null)
 							assetacct.setA_Reval_Cal_Method("DFT");
 						else
-							assetacct.setA_Reval_Cal_Method(assetgrpacct.getA_Reval_Cal_Method());					
+							assetacct.setA_Reval_Cal_Method(assetgrpacct.getA_Reval_Cal_Method());
 						assetacct.setA_Reval_Cost_Offset(assetgrpacct.getA_Reval_Cost_Offset());
 						assetacct.setA_Reval_Cost_Offset_Prior(assetgrpacct.getA_Reval_Cost_Offset_Prior());
 						assetacct.setA_Reval_Depexp_Offset(assetgrpacct.getA_Reval_Depexp_Offset());
@@ -448,7 +469,7 @@ public class MAsset extends X_A_Asset
 						change.setPostingType(assetacct.getPostingType());
 						change.setA_Split_Percent(assetacct.getA_Split_Percent());
 						change.setConventionType(assetacct.getA_Depreciation_Conv_ID());
-						change.setA_Asset_ID(p_A_Asset_ID);								
+						change.setA_Asset_ID(p_A_Asset_ID);
 						change.setDepreciationType(assetacct.getA_Depreciation_ID());
 						change.setA_Asset_Spread_Type(assetacct.getA_Asset_Spread_ID());
 						change.setA_Period_Start(assetacct.getA_Period_Start());
@@ -456,7 +477,7 @@ public class MAsset extends X_A_Asset
 						change.setIsInPosession(isOwned());
 						change.setIsDisposed(isDisposed());
 						change.setIsDepreciated(isDepreciated());
-						change.setIsFullyDepreciated(isFullyDepreciated());					
+						change.setIsFullyDepreciated(isFullyDepreciated());
 						change.setA_Depreciation_Calc_Type(assetacct.getA_Depreciation_Method_ID());
 						change.setA_Asset_Acct(assetacct.getA_Asset_Acct());
 						change.setC_AcctSchema_ID(assetacct.getC_AcctSchema_ID());
@@ -481,13 +502,13 @@ public class MAsset extends X_A_Asset
 					}
 
 					String sql2 = "SELECT COUNT(*) FROM A_Depreciation_Workfile WHERE A_Asset_ID=? AND PostingType = ?";
-					if (DB.getSQLValue(get_TrxName(), sql2, asset.getA_Asset_ID(),assetgrpacct.getPostingType())== 0) 
+					if (DB.getSQLValue(get_TrxName(), sql2, asset.getA_Asset_ID(), assetgrpacct.getPostingType()) == 0)
 					{
 
-						if (isDepreciated()== true | isdepreciate == true)						
+						if (isDepreciated() == true | isdepreciate == true)
 						{
-							X_A_Depreciation_Workfile assetwk = new X_A_Depreciation_Workfile (getCtx(), 0, get_TrxName());
-							assetwk.setA_Asset_ID(p_A_Asset_ID);		
+							X_A_Depreciation_Workfile assetwk = new X_A_Depreciation_Workfile(getCtx(), 0, get_TrxName());
+							assetwk.setA_Asset_ID(p_A_Asset_ID);
 							assetwk.setA_Life_Period(uselifemonths);
 							assetwk.setA_Asset_Life_Years(uselifeyears);
 							assetwk.setIsDepreciated(isDepreciated());
@@ -504,8 +525,8 @@ public class MAsset extends X_A_Asset
 				change.setA_Asset_ID(p_A_Asset_ID);
 				change.setA_Parent_Asset_ID(asset.getA_Parent_Asset_ID());
 				change.setChangeType("CRT");
-				MRefList RefList = new MRefList (getCtx(), 0, get_TrxName());	
-				change.setTextDetails(RefList.getListDescription (getCtx(),"A_Update_Type" , "CRT"));		    
+				MRefList RefList = new MRefList(getCtx(), 0, get_TrxName());
+				change.setTextDetails(RefList.getListDescription(getCtx(), "A_Update_Type", "CRT"));
 				change.setIsInPosession(isOwned());
 				change.setIsDisposed(isDisposed());
 				change.setIsDepreciated(isDepreciated());
@@ -519,7 +540,7 @@ public class MAsset extends X_A_Asset
 				change.setAssetDisposalDate(getAssetDisposalDate());
 				change.setAssetServiceDate(getAssetServiceDate());
 				change.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
-				change.setC_BPartner_ID(getC_BPartner_ID());		    
+				change.setC_BPartner_ID(getC_BPartner_ID());
 				change.setA_QTY_Current(getA_QTY_Current());
 				change.setA_QTY_Original(getA_QTY_Original());
 				change.setA_Asset_CreateDate(getA_Asset_CreateDate());
@@ -533,51 +554,54 @@ public class MAsset extends X_A_Asset
 			}
 			catch (Exception e)
 			{
-				log.info("getAssets"+ e);
+				log.info("getAssets" + e);
 			}
 			finally
 			{
 				try
 				{
 					if (pstmt != null)
-						pstmt.close ();
+						pstmt.close();
 				}
 				catch (Exception e)
-				{}
+				{
+				}
 				pstmt = null;
 			}
 
-
 		}
-		else 
+		else
 		{
 			int uselifemonths = 0;
-			int uselifeyears = 0;		
-			sql ="SELECT * FROM A_Asset_Acct WHERE A_Asset_ID = ? AND IsActive='Y'";		
+			int uselifeyears = 0;
+			sql = "SELECT * FROM A_Asset_Acct WHERE A_Asset_ID = ? AND IsActive='Y'";
 			pstmt = null;
-			pstmt = DB.prepareStatement(sql,get_TrxName());
+			pstmt = DB.prepareStatement(sql, get_TrxName());
 
+			try
+			{
 
-			try {
-
-				pstmt.setInt(1, getA_Asset_ID());		
-				ResultSet rs = pstmt.executeQuery();	
-				while (rs.next()){			
-					MAssetAcct assetacct = new MAssetAcct (getCtx(),rs, get_TrxName());			
+				pstmt.setInt(1, getA_Asset_ID());
+				ResultSet rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					MAssetAcct assetacct = new MAssetAcct(getCtx(), rs, get_TrxName());
 					assetacct.setProcessing(false);
-					assetacct.setA_Asset_ID(p_A_Asset_ID);						
-					assetacct.setA_Period_Start(1);			
-					if(getUseLifeMonths() == 0){
-						assetacct.setA_Period_End(getUseLifeYears()*12);
-						setUseLifeMonths(getUseLifeYears()*12);
-						uselifemonths = getUseLifeYears()*12;
+					assetacct.setA_Asset_ID(p_A_Asset_ID);
+					assetacct.setA_Period_Start(1);
+					if (getUseLifeMonths() == 0)
+					{
+						assetacct.setA_Period_End(getUseLifeYears() * 12);
+						setUseLifeMonths(getUseLifeYears() * 12);
+						uselifemonths = getUseLifeYears() * 12;
 						uselifeyears = getUseLifeYears();
 					}
-					else{
+					else
+					{
 						assetacct.setA_Period_End(getUseLifeMonths());
 						uselifemonths = getUseLifeMonths();
 						uselifeyears = getUseLifeYears();
-					}			
+					}
 					assetacct.save();
 				}
 				rs.close();
@@ -586,44 +610,47 @@ public class MAsset extends X_A_Asset
 			}
 			catch (Exception e)
 			{
-				log.info("getAssets"+ e);
+				log.info("getAssets" + e);
 			}
 			finally
 			{
 				try
 				{
 					if (pstmt != null)
-						pstmt.close ();
+						pstmt.close();
 				}
 				catch (Exception e)
-				{}
+				{
+				}
 				pstmt = null;
 			}
-			sql ="SELECT * FROM A_Depreciation_Workfile WHERE A_Asset_ID=? AND IsActive='Y'";
+			sql = "SELECT * FROM A_Depreciation_Workfile WHERE A_Asset_ID=? AND IsActive='Y'";
 			pstmt = null;
 			try
 			{
-				pstmt = DB.prepareStatement(sql,get_TrxName());
+				pstmt = DB.prepareStatement(sql, get_TrxName());
 				pstmt.setInt(1, p_A_Asset_ID);
 				ResultSet rs = pstmt.executeQuery();
 
-				while (rs.next()){
+				while (rs.next())
+				{
 
-					X_A_Depreciation_Workfile assetwk = new X_A_Depreciation_Workfile (getCtx(), rs, get_TrxName());
+					X_A_Depreciation_Workfile assetwk = new X_A_Depreciation_Workfile(getCtx(), rs, get_TrxName());
 
 					assetwk.setA_Asset_ID(p_A_Asset_ID);
 					assetwk.setA_Life_Period(uselifemonths);
 					assetwk.setA_Asset_Life_Years(uselifeyears);
 					assetwk.setIsDepreciated(isDepreciated());
 					//assetwk.setA_QTY_Current(getA_QTY_Current());		   
-					assetwk.save();		
+					assetwk.save();
 
-					if (isProcessing()== true){
-						MAssetChange change = new MAssetChange (getCtx(), 0, get_TrxName());		    
+					if (isProcessing() == true)
+					{
+						MAssetChange change = new MAssetChange(getCtx(), 0, get_TrxName());
 						change.setA_Asset_ID(p_A_Asset_ID);
 						change.setChangeType("UPD");
-						MRefList RefList = new MRefList (getCtx(), 0, get_TrxName());	
-						change.setTextDetails(RefList.getListDescription (getCtx(),"A_Update_Type" , "UPD"));
+						MRefList RefList = new MRefList(getCtx(), 0, get_TrxName());
+						change.setTextDetails(RefList.getListDescription(getCtx(), "A_Update_Type", "UPD"));
 						change.setLot(getLot());
 						change.setSerNo(getSerNo());
 						change.setVersionNo(getVersionNo());
@@ -633,27 +660,27 @@ public class MAsset extends X_A_Asset
 						change.setLifeUseUnits(getLifeUseUnits());
 						change.setAssetDisposalDate(getAssetDisposalDate());
 						change.setAssetServiceDate(getAssetServiceDate());
-						change.setIsInPosession(isOwned());		    
-						change.setA_Reval_Cal_Method("DFT");			
+						change.setIsInPosession(isOwned());
+						change.setA_Reval_Cal_Method("DFT");
 						change.setIsDisposed(isDisposed());
 						change.setIsDepreciated(isDepreciated());
 						change.setIsFullyDepreciated(isFullyDepreciated());
 						change.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
-						change.setC_BPartner_ID(getC_BPartner_ID());    
+						change.setC_BPartner_ID(getC_BPartner_ID());
 						change.setPostingType("A");
 						change.setA_QTY_Current(getA_QTY_Current());
 						change.setA_QTY_Original(getA_QTY_Original());
-						change.setA_Asset_CreateDate(getA_Asset_CreateDate());		    
+						change.setA_Asset_CreateDate(getA_Asset_CreateDate());
 						change.setAD_User_ID(getAD_User_ID());
 						change.setC_Location_ID(getC_Location_ID());
-						change.save();		    
+						change.save();
 					}
 					else
 					{
-						X_A_Asset asset = new X_A_Asset (getCtx(), p_A_Asset_ID, get_TrxName());
+						X_A_Asset asset = new X_A_Asset(getCtx(), p_A_Asset_ID, get_TrxName());
 						asset.setProcessing(true);
 						asset.save();
-					}	
+					}
 				}
 				rs.close();
 				pstmt.close();
@@ -661,17 +688,18 @@ public class MAsset extends X_A_Asset
 			}
 			catch (Exception e)
 			{
-				log.info("getAssets"+ e);
+				log.info("getAssets" + e);
 			}
 			finally
 			{
 				try
 				{
 					if (pstmt != null)
-						pstmt.close ();
+						pstmt.close();
 				}
 				catch (Exception e)
-				{}
+				{
+				}
 				pstmt = null;
 			}
 
@@ -679,5 +707,5 @@ public class MAsset extends X_A_Asset
 
 		return true;
 
-	}	//	afterSave
-}	//	MAsset
+	}    //	afterSave
+}    //	MAsset

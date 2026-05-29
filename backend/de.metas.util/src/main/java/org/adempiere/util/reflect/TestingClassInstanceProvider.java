@@ -41,15 +41,12 @@ public class TestingClassInstanceProvider implements IClassInstanceProvider
 	}
 
 	/**
-	 * See {@link #throwExceptionForClassName(String, RuntimeException)}.
+	 * See {@link #throwExceptionForClassName(String, ReflectiveOperationException)}.
 	 */
 	private final Map<String, ReflectiveOperationException> className2Exception = new HashMap<String, ReflectiveOperationException>();
 
 	/**
 	 * Allows unit tests to set exceptions that shall be thrown if certain classes are loaded using {@link #getInstance(Class, String)} and {@link #getInstanceOrNull(Class, String)}.
-	 * 
-	 * @param className
-	 * @param exception
 	 */
 	public void throwExceptionForClassName(final String className, final ReflectiveOperationException exception)
 	{
@@ -65,7 +62,7 @@ public class TestingClassInstanceProvider implements IClassInstanceProvider
 	}
 
 	@Override
-	public Class<?> provideClass(String className) throws ReflectiveOperationException
+	public Class<?> provideClass(final String className) throws ReflectiveOperationException
 	{
 		// for unit testing: allow us to test with class loading failures.
 		if (className2Exception.containsKey(className))
@@ -76,7 +73,7 @@ public class TestingClassInstanceProvider implements IClassInstanceProvider
 	}
 
 	@Override
-	public <T> T provideInstance(Class<T> interfaceClazz, Class<?> instanceClazz) throws ReflectiveOperationException
+	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws ReflectiveOperationException
 	{
 		// for unit testing: allow us to test with class loading failures.
 		if (className2Exception.containsKey(instanceClazz.getName()))

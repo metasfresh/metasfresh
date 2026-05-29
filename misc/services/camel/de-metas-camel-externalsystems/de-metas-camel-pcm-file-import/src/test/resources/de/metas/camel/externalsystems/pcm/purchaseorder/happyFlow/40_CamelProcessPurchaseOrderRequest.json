@@ -1,0 +1,12 @@
+{
+  "purchaseCandidates": [
+    {
+      "externalSystemCode": "ProCareManagement",
+      "externalHeaderId": "extHeader_1"
+    },
+    {
+      "externalSystemCode": "ProCareManagement",
+      "externalHeaderId": "extHeader_2"
+    }
+  ]
+}

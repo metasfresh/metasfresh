@@ -25,13 +25,13 @@ package de.metas.rest_api.v2.order;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.common.rest_api.v2.JsonPurchaseOrder;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -42,10 +42,11 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.web.exception.InvalidEntityException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
@@ -59,18 +60,16 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PurchaseCandidatesStatusService
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
-	private final PurchaseCandidateRepository purchaseCandidateRepo;
+	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
+	@NonNull private final POJsonConverters poJsonConverters;
+	
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	public PurchaseCandidatesStatusService(@NonNull final PurchaseCandidateRepository purchaseCandidateRepo)
-	{
-		this.purchaseCandidateRepo = purchaseCandidateRepo;
-	}
 
 	public JsonPurchaseCandidateResponse getStatusForPurchaseCandidates(
 			@NonNull final JsonPurchaseCandidatesRequest request)
@@ -79,9 +78,9 @@ public class PurchaseCandidatesStatusService
 		{
 			throw new InvalidEntityException(TranslatableStrings.constant("The request's purchaseCandidates array may not be empty"));
 		}
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = POJsonConverters.fromJson(request.getPurchaseCandidates());
+		final List<ExternalSystemIdWithExternalIds> externalSystemIdWithExternalIds = poJsonConverters.fromJson(request.getPurchaseCandidates());
 
-		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.getByExternal(headerAndLineIds);
+		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.getByExternal(externalSystemIdWithExternalIds);
 
 		final List<JsonPurchaseCandidate> jsonPurchaseCandidates = retrieveStatus(purchaseCandidates);
 
@@ -147,11 +146,15 @@ public class PurchaseCandidatesStatusService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JsonPurchaseCandidate.JsonPurchaseCandidateBuilder preparePurchaseCandidateStatus(@NonNull final PurchaseCandidate candidate)
+	@NonNull
+	private JsonPurchaseCandidate.JsonPurchaseCandidateBuilder preparePurchaseCandidateStatus(@NonNull final PurchaseCandidate candidate)
 	{
 		return JsonPurchaseCandidate.builder()
-				.externalHeaderId(JsonExternalId.of(candidate.getExternalHeaderId().getValue()))
-				.externalLineId(JsonExternalId.of(candidate.getExternalLineId().getValue()))
+				.externalSystemCode(poJsonConverters.getExternalSystemTypeById(candidate))
+				.externalHeaderId(JsonExternalIds.ofOrNull(candidate.getExternalHeaderId()))
+				.externalLineId(JsonExternalIds.ofOrNull(candidate.getExternalLineId()))
+				.purchaseDateOrdered(candidate.getPurchaseDateOrdered())
+				.purchaseDatePromised(candidate.getPurchaseDatePromised())
 				.metasfreshId(JsonMetasfreshId.of(candidate.getId().getRepoId()))
 				.externalPurchaseOrderUrl(candidate.getExternalPurchaseOrderUrl())
 				.processed(candidate.isProcessed());

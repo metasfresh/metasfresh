@@ -2,6 +2,7 @@ package de.metas.notification;
 
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,5 +28,6 @@ import de.metas.util.ISingletonService;
 
 public interface IUserNotificationsConfigRepository extends ISingletonService
 {
+	@NonNull
 	UserNotificationsConfig getByUserId(UserId adUserId);
 }

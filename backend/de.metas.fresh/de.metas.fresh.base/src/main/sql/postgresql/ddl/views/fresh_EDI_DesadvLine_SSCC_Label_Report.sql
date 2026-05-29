@@ -1,3 +1,12 @@
+/*
+ * NOTE to the developer: The following views need to be kept in sync:
+ * - fresh_EDI_DesadvLine_SSCC_Label_Report
+ * - fresh_HU_SSCC_Label_Report
+ * - fresh_C_Order_SSCC_Label_Report
+ * They all must contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
+ */
+
+
 drop view if exists report.fresh_edi_desadvline_sscc_label_report;
 create view report.fresh_edi_desadvline_sscc_label_report
             (org_address, sscc, p_customervalue, priceactual, p_name, cu_per_tu, tu_per_lu, net_weight, gross_weight,

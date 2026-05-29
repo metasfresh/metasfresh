@@ -24,19 +24,13 @@ package de.metas.material.interceptor;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.forecast.ForecastCreatedEvent;
-import de.metas.mforecast.IForecastDAO;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Interceptor(I_M_Forecast.class)
 @Component
@@ -44,7 +38,6 @@ public class M_Forecast_PostMaterialEvent
 {
 	private final M_ForecastEventCreator forecastEventCreator;
 	private final PostMaterialEventService materialEventService;
-	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
 
 	public M_Forecast_PostMaterialEvent(
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
@@ -57,13 +50,14 @@ public class M_Forecast_PostMaterialEvent
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void fireForecastCreatedEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
-		final List<I_M_ForecastLine> forecastLines = forecastsRepo.retrieveLinesByForecastId(forecast.getM_Forecast_ID());
-		if (forecastLines.isEmpty())
-		{
-			return;
-		}
+		forecastEventCreator.createEventWithLinesAndTiming(forecast, timing)
+				.ifPresent(materialEventService::enqueueEventAfterNextCommit);
+	}
 
-		final ForecastCreatedEvent forecastCreatedEvent = forecastEventCreator.createEventWithLinesAndTiming(forecastLines, timing);
-		materialEventService.enqueueEventAfterNextCommit(forecastCreatedEvent);
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID })
+	public void fireForecastDeletedEventOnReactivate(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
+	{
+		forecastEventCreator.createDeletedEvent(forecast, timing)
+				.ifPresent(materialEventService::enqueueEventAfterNextCommit);
 	}
 }

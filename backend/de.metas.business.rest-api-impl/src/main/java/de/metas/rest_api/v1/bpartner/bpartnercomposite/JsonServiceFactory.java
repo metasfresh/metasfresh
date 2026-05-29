@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.rest_api.v1.bpartner.bpartnercomposite;
 
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
@@ -41,15 +42,17 @@ public class JsonServiceFactory
 	private final BPartnerQueryService bpartnerQueryService;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
+	private final BPGroupService bpGroupService;
 	private final GreetingRepository greetingRepository;
 	private final CurrencyRepository currencyRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
-
+	
 	public JsonServiceFactory(
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
 			@NonNull final BPartnerQueryService bpartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final BPGroupService bpGroupService,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
@@ -59,6 +62,7 @@ public class JsonServiceFactory
 		this.greetingRepository = greetingRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
+		this.bpGroupService = bpGroupService;
 		this.currencyRepository = currencyRepository;
 		this.externalReferenceService = externalReferenceService;
 	}
@@ -73,6 +77,7 @@ public class JsonServiceFactory
 				jsonRequestConsolidateService,
 				bpartnerCompositeRepository,
 				bpGroupRepository,
+				bpGroupService,
 				currencyRepository,
 				externalReferenceService,
 				identifier);

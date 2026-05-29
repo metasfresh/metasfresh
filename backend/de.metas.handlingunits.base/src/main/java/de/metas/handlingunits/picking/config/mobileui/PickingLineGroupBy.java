@@ -60,9 +60,13 @@ public enum PickingLineGroupBy implements ReferenceListAwareEnum
 	private final String code;
 
 	@NonNull
-	public Map<String, List<PickingJobLine>> groupLines(@NonNull final List<PickingJobLine> pickingJobLines)
+	public Map<String, List<PickingJobLine>> groupLines(@NonNull final List<PickingJobLine> pickingJobLines, @NonNull final PickingLineSortBy sortBy)
 	{
-		return pickingJobLines.stream().collect(Collectors.groupingBy(this::getGroupKey));
+		return pickingJobLines.stream()
+				.collect(Collectors.groupingBy(
+						this::getGroupKey,
+						Collectors.collectingAndThen(Collectors.toList(), sortBy::sort)
+				));
 	}
 
 	@NonNull

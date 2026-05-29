@@ -22,11 +22,12 @@ package de.metas.materialtracking.test.expectations;
  * #L%
  */
 
-
-import org.junit.Assert;
-
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.impl.PlainHandlingUnitsInfo;
+
+import javax.annotation.Nullable;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HandlingUnitsInfoExpectation<ParentExpectationType> extends AbstractExpectation
 {
@@ -61,20 +62,20 @@ public class HandlingUnitsInfoExpectation<ParentExpectationType> extends Abstrac
 		assertExpected(message, info);
 	}
 	
-	public void assertExpected(final String message, final IHandlingUnitsInfo info)
+	public void assertExpected(@Nullable final String message, final IHandlingUnitsInfo info)
 	{
-		Assert.assertNotNull("info not null", info);
+		assertThat(info).as("info not null").isNotNull();
 
 		final String prefix = (message == null ? "" : message) 
 				+ " Invalid \"" + info + "\" - ";
 
 		if (this.qtyTU != null)
 		{
-			Assert.assertEquals(prefix + "QtyTU", (int)this.qtyTU, info.getQtyTU());
+			assertThat(info.getQtyTU()).as(prefix + "QtyTU").isEqualTo(this.qtyTU);
 		}
 		if (this.tuName != null)
 		{
-			Assert.assertEquals(prefix + "TU Name", this.tuName, info.getTUName());
+			assertThat(info.getTUName()).as(prefix + "TU Name").isEqualTo(this.tuName);
 		}
 	}
 

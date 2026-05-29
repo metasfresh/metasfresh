@@ -26,6 +26,8 @@ import de.metas.material.maturing.MaturingConfigId;
 import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.mforecast.generator.ForecastCalculationMethod;
+import de.metas.mforecast.generator.ForecastPrecisionUnit;
 import de.metas.organization.OrgId;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
@@ -77,6 +79,7 @@ public class ProductPlanning
 	//
 	// Manufacturing
 	boolean isManufactured;
+	boolean isManufacturedLot4Lot;
 	boolean isMatured;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	@Nullable PPRoutingId workflowId;
@@ -97,6 +100,14 @@ public class ProductPlanning
 	// Distribution
 	@Nullable DistributionNetworkId distributionNetworkId;
 
+	//
+	// Forecast
+	@Nullable ForecastCalculationMethod forecastCalculationMethod;
+	@Nullable ForecastPrecisionUnit forecastPrecisionUnit;
+	@Nullable Integer forecastFrequency;
+	@Nullable Integer forecastBufferTime;
+	boolean isExcludeFromForecast;
+
 	public ProductPlanning(final boolean disallowSaving,
 						   @Nullable final ProductPlanningId id,
 						   @Nullable final ProductPlanningSchemaId productPlanningSchemaId,
@@ -114,6 +125,7 @@ public class ProductPlanning
 						   final int leadTimeDays,
 						   final boolean isDocComplete,
 						   final boolean isManufactured,
+						   final boolean isManufacturedLot4Lot,
 						   final boolean isMatured,
 						   @Nullable final ProductBOMVersionsId bomVersionsId,
 						   @Nullable final PPRoutingId workflowId,
@@ -121,11 +133,16 @@ public class ProductPlanning
 						   @Nullable final MaturingConfigId maturingConfigId,
 						   @Nullable final MaturingConfigLineId maturingConfigLineId,
 						   final int manufacturingAggregationId,
-           				   final boolean isPickingOrder,
+						   final boolean isPickingOrder,
 						   final boolean isPickDirectlyIfFeasible,
 						   final boolean isPurchased,
 						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
-						   @Nullable final DistributionNetworkId distributionNetworkId)
+						   @Nullable final DistributionNetworkId distributionNetworkId,
+						   @Nullable final ForecastCalculationMethod forecastCalculationMethod,
+						   @Nullable final ForecastPrecisionUnit forecastPrecisionUnit,
+						   @Nullable final Integer forecastFrequency,
+						   @Nullable final Integer forecastBufferTime,
+						   final boolean isExcludeFromForecast)
 	{
 		if (isMatured)
 		{
@@ -151,6 +168,7 @@ public class ProductPlanning
 		this.leadTimeDays = leadTimeDays;
 		this.isDocComplete = isDocComplete;
 		this.isManufactured = isManufactured;
+		this.isManufacturedLot4Lot = isManufacturedLot4Lot;
 		this.isMatured = isMatured;
 		this.bomVersionsId = bomVersionsId;
 		this.workflowId = workflowId;
@@ -163,6 +181,11 @@ public class ProductPlanning
 		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
 		this.distributionNetworkId = distributionNetworkId;
 		this.manufacturingAggregationId = manufacturingAggregationId;
+		this.forecastCalculationMethod = forecastCalculationMethod;
+		this.forecastPrecisionUnit = forecastPrecisionUnit;
+		this.forecastFrequency = forecastFrequency;
+		this.forecastBufferTime = forecastBufferTime;
+		this.isExcludeFromForecast = isExcludeFromForecast;
 	}
 
 	public ProductPlanningId getIdNotNull()
@@ -170,5 +193,5 @@ public class ProductPlanning
 		return Check.assumeNotNull(id, "product planning is saved: {}", this);
 	}
 
-	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(getWarehouseId(), "warehouse shal be set: {}", this);}
+	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(getWarehouseId(), "warehouse shall be set: {}", this);}
 }

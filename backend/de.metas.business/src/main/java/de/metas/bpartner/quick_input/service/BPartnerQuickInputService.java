@@ -73,6 +73,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
+import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
@@ -104,7 +105,6 @@ import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -260,6 +260,7 @@ public class BPartnerQuickInputService
 	 * <p>
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
+
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
 												 @NonNull final NewRecordContext newRecordContext)
 	{
@@ -390,7 +391,7 @@ public class BPartnerQuickInputService
 	{
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.confidentialType(RequestConfidentialType.PartnerConfidential)
 				.orgId(partnerOrgId)
 				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
 				.requestTypeId(requestTypeId)
@@ -506,7 +507,7 @@ public class BPartnerQuickInputService
 		if (possibleDefaultCountryId.isPresent())
 		{
 			final CountryId defaultCountryId = possibleDefaultCountryId.get();
-			final ImmutableList<I_M_PriceList> defaultPriceLists = salesPriceLists.filterAndList(defaultCountryId, soTrx);
+			final ImmutableList<I_M_PriceList> defaultPriceLists = salesPriceLists.filterAndList(defaultCountryId, soTrx, null);
 
 			if (Check.isEmpty(defaultPriceLists))
 			{
@@ -519,7 +520,7 @@ public class BPartnerQuickInputService
 			boolean onePriceWasFound = false;
 			for (final CountryId countryId : nonDefaultCountryIds)
 			{
-				final ImmutableList<I_M_PriceList> nonDefaultPriceLists = salesPriceLists.filterAndList(countryId, soTrx);
+				final ImmutableList<I_M_PriceList> nonDefaultPriceLists = salesPriceLists.filterAndList(countryId, soTrx, null);
 				if (Check.isEmpty(nonDefaultPriceLists))
 				{
 					nonDefaultCountriesWithoutPrices.add(countryId);
@@ -573,6 +574,29 @@ public class BPartnerQuickInputService
 				.fax(template.getC_BPartner_Location_Fax())
 				.email(template.getC_BPartner_Location_Email())
 				.existingLocationId(uniqueLocationIdOfBPartnerTemplate)
+				.build();
+	}
+
+	private @Nullable
+	BPartnerLocation getLocationFromBPartnerLocationTemplate(final I_C_BPartner_Location_QuickInput template)
+	{
+		final LocationId locationId = LocationId.ofRepoIdOrNull(template.getC_Location_ID());
+
+		if (locationId == null)
+		{
+			return null;
+		}
+
+		return BPartnerLocation.builder()
+				.locationType(BPartnerLocationType.builder()
+						.billTo(template.isBillTo())
+						.billToDefault(template.isBillToDefault())
+						.shipTo(template.isShipTo())
+						.shipToDefault(template.isShipToDefault())
+						.build())
+				.name(".")
+				.ephemeral(template.isOneTime())
+				.existingLocationId(locationId)
 				.build();
 	}
 
@@ -679,6 +703,7 @@ public class BPartnerQuickInputService
 							.billToDefault(bpartnerLocationTemplate.isBillToDefault())
 							.shipTo(bpartnerLocationTemplate.isShipTo())
 							.shipToDefault(bpartnerLocationTemplate.isShipToDefault())
+							.visitorsAddress(bpartnerLocationTemplate.isVisitorsAddress())
 							.build())
 					.active(bpartnerLocationTemplate.isActive())
 					.email(bpartnerLocationTemplate.getEMail())
@@ -693,7 +718,6 @@ public class BPartnerQuickInputService
 					.replicationLookupDefault(bpartnerLocationTemplate.isReplicationLookupDefault())
 					.remitTo(bpartnerLocationTemplate.isRemitTo())
 					.handOverLocation(bpartnerLocationTemplate.isHandOverLocation())
-					.visitorsAddress(bpartnerLocationTemplate.isVisitorsAddress())
 					.build());
 		}
 

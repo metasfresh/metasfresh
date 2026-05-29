@@ -1,10 +1,8 @@
-package de.metas.handlingunits.inout.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.inout.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.inout.impl;
 
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -48,7 +48,7 @@ import java.util.Properties;
 
 /**
  * Listener triggered by {@link IHUAssignmentBL} when a HU is assigned/un-assigned from an Receipt Line.
- *
+ * <p>
  * In case HUs are assigned to a receipt, their HUStatus will be set to Active
  *
  * @author tsa
@@ -56,7 +56,7 @@ import java.util.Properties;
  */
 public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentListenerAdapter
 {
-	public static final transient ReceiptInOutLineHUAssignmentListener instance = new ReceiptInOutLineHUAssignmentListener();
+	public static final ReceiptInOutLineHUAssignmentListener instance = new ReceiptInOutLineHUAssignmentListener();
 	private final SourceHUsService sourceHuService = SourceHUsService.get();
 
 	private ReceiptInOutLineHUAssignmentListener()
@@ -90,7 +90,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		sourceHuService.addSourceHUMarkerIfCarringComponents(huId, productId, warehouseId);
+		sourceHuService.addSourceHUMarkerIfCarryingComponents(huId, productId, warehouseId);
 	}
 
 	private void activateHU(final I_M_HU hu, final I_M_InOutLine inoutLine, final String trxName)
@@ -123,10 +123,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 * </ul>
 	 *
 	 * NOTE: we assume this method is executed in a {@link IHUContextProcessor}.
-	 *
-	 * @param huContext
-	 * @param hu
-	 * @param receiptLine
 	 */
 	private void activeHUAfterReceipt(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
 	{
@@ -168,12 +164,8 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 	/**
 	 * Set's HU's BPartner to <code>null</code>.
-	 *
+	 * <p>
 	 * If there is any SubProducer attribute and is not yet set, we copy the old HU's BPartner to it.
-	 *
-	 * @param huContext
-	 * @param hu
-	 * @task http://dewiki908/mediawiki/index.php/08027_Lieferdispo_Freigabe_nach_BPartner_%28100002853810%29
 	 */
 	private void resetVendor(final IHUContext huContext, final I_M_HU hu)
 	{

@@ -22,10 +22,13 @@ package de.metas.document;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -48,6 +51,12 @@ public interface IDocTypeDAO extends ISingletonService
 
 	@NonNull
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
+
+	/**
+	 * @return the translatable display name of the DocType (translations come from {@code C_DocType_Trl}).
+	 */
+	@NonNull
+	ITranslatableString getDocTypeNameTrl(@NonNull DocTypeId docTypeId);
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
@@ -107,5 +116,9 @@ public interface IDocTypeDAO extends ISingletonService
 
 	DocBaseType getDocBaseTypeById(@NonNull DocTypeId docTypeId);
 
-	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
 }
