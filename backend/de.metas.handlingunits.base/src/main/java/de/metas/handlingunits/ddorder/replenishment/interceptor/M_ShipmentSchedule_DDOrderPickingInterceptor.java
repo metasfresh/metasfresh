@@ -46,7 +46,17 @@ public class M_ShipmentSchedule_DDOrderPickingInterceptor
 		reconcileService.assertCanChange(schedule);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	// Only fire reconcile when the columns that drive classifyAction actually changed.
+	// Other saves (e.g. qty-delivered updates triggered by DD_Order void) must not re-trigger a CREATE.
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_M_ShipmentSchedule.COLUMNNAME_IsActive,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_Processed,
+					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+			})
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		reconcileService.scheduleReconcileAfterCommit(schedule);
