@@ -536,3 +536,110 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
       | invoiceA  | sales19 | T          | -190   |
       | invoiceB  | sales19 | T          | -380   |
       | invoiceC  | sales19 | T          | -570   |
+
+
+# ############################################################################################################################################
+# TC-D7 — Drift detected when a new invoice is posted after the declaration is built
+# ############################################################################################################################################
+  @Id:S0467_TD_070
+  @from:cucumber
+  Scenario: drift detected — orphan Fact_Acct rows from an invoice posted after the declaration was built
+
+    And metasfresh contains C_TaxCategory
+      | Identifier    |
+      | taxCategoryD7 |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | taxD7      | taxCategoryD7    | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | vatD7      | taxD7    | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | productD7  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | productD7    | 100.00   | PCE      | taxCategoryD7    |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceD7a | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceD7aL1 | invoiceD7a   | productD7    | 1 PCE       | taxD7    |
+    And the invoice identified by invoiceD7a is completed
+    And Wait until documents invoiceD7a is posted
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | tdD7       | acctSchema      | 2024-01-15 |
+    And the tax declaration "tdD7" is built
+
+    # No drift yet — declaration snapshot matches live Fact_Acct
+    When the drift check process is run on tax declaration "tdD7"
+    Then C_TaxDeclaration "tdD7" has IsCorrectionNeeded = "N"
+
+    # Post a second invoice in the same period → orphan Fact_Acct rows not in the snapshot
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceD7b | customer      | 2024-01-20   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier   | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceD7bL1 | invoiceD7b   | productD7    | 2 PCE       | taxD7    |
+    And the invoice identified by invoiceD7b is completed
+    And Wait until documents invoiceD7b is posted
+
+    # Drift detected — orphan rows from invoiceD7b not captured in the snapshot
+    When the drift check process is run on tax declaration "tdD7"
+    Then C_TaxDeclaration "tdD7" has IsCorrectionNeeded = "Y"
+
+
+# ############################################################################################################################################
+# TC-D7b — Drift detected independently — second scenario uses different identifiers to avoid leakage
+# ############################################################################################################################################
+  @Id:S0467_TD_071
+  @from:cucumber
+  Scenario: drift detected — second independent run verifies set-and-clear semantics work
+
+    And metasfresh contains C_TaxCategory
+      | Identifier     |
+      | taxCategoryD71 |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | taxD71     | taxCategoryD71   | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | vatD71     | taxD71   | Y       | T          |
+    And metasfresh contains M_Products:
+      | Identifier |
+      | productD71 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | productD71   | 100.00   | PCE      | taxCategoryD71   |
+
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceD71a | customer      | 2024-01-15   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceD71aL1 | invoiceD71a  | productD71   | 1 PCE       | taxD71   |
+    And the invoice identified by invoiceD71a is completed
+    And Wait until documents invoiceD71a is posted
+
+    And metasfresh contains C_TaxDeclaration:
+      | Identifier | C_AcctSchema_ID | Date       |
+      | tdD71      | acctSchema      | 2024-01-15 |
+    And the tax declaration "tdD71" is built
+
+    # Post second invoice → drift
+    And metasfresh contains C_Invoice:
+      | Identifier  | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceD71b | customer      | 2024-01-20   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceD71bL1 | invoiceD71b  | productD71   | 3 PCE       | taxD71   |
+    And the invoice identified by invoiceD71b is completed
+    And Wait until documents invoiceD71b is posted
+
+    When the drift check process is run on tax declaration "tdD71"
+    Then C_TaxDeclaration "tdD71" has IsCorrectionNeeded = "Y"
