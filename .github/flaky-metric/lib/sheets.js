@@ -85,7 +85,8 @@ async function getColumn(sheets, spreadsheetId, title, col) {
 }
 
 // failures: [{ key, runUrl, dateUtc, commit, testType, profile, scenario, bucketLabel, exceptionType, message }]
-async function upsert(spreadsheetId, { failures, metrics }) {
+// Metrics is recomputed from the Failures tab — no separate metrics input.
+async function upsert(spreadsheetId, { failures }) {
   const sheets = await getClient();
   await ensureTab(sheets, spreadsheetId, FAILURES_TAB, FAILURES_HEADER);
   await ensureTab(sheets, spreadsheetId, METRICS_TAB, METRICS_HEADER);
@@ -108,43 +109,21 @@ async function upsert(spreadsheetId, { failures, metrics }) {
     });
   }
 
-  // --- Metrics: read current rows, merge, rewrite the block ---
-  const existing = await sheets.spreadsheets.values.get({
+  // --- Metrics: recompute as a pure PROJECTION of the Failures tab ---
+  // Metrics is never accumulated independently — it is derived fresh from the
+  // (idempotent, deduped) Failures event log every run. This makes the whole
+  // pipeline idempotent: re-processing an overlapping window (e.g. the nightly
+  // backfill re-seeing runs the per-run trigger already handled) cannot inflate
+  // any count, because the Failures tab already rejected the duplicate rows.
+  const allFailures = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${METRICS_TAB}!A2:H`,
+    range: `${FAILURES_TAB}!A2:J`,
   });
-  const byScenario = new Map();
-  for (const row of existing.data.values || []) {
-    const [scenario, bucket, testType, failCount, runsFailed, firstFailed, lastFailed, lastRun] = row;
-    byScenario.set(scenario, {
-      scenario, bucket, testType,
-      failCount: Number(failCount) || 0,
-      runsFailed: Number(runsFailed) || 0,
-      firstFailed, lastFailed, lastRun,
-    });
-  }
-  // metrics here is the per-scenario delta computed for THIS extraction window.
-  for (const m of metrics) {
-    const cur = byScenario.get(m.scenario);
-    if (!cur) {
-      byScenario.set(m.scenario, { ...m });
-    } else {
-      cur.failCount += m.failCount;
-      cur.runsFailed += m.runsFailed;
-      cur.bucket = m.bucket; // latest classification wins
-      cur.testType = m.testType;
-      if (!cur.firstFailed || m.firstFailed < cur.firstFailed) cur.firstFailed = m.firstFailed;
-      if (!cur.lastFailed || m.lastFailed > cur.lastFailed) {
-        cur.lastFailed = m.lastFailed;
-        cur.lastRun = m.lastRun;
-      }
-    }
-  }
-  const merged = [...byScenario.values()].sort((a, b) => b.failCount - a.failCount);
-  const metricRows = merged.map((m) => [
-    m.scenario, m.bucket, m.testType, m.failCount, m.runsFailed,
-    m.firstFailed, m.lastFailed, m.lastRun,
-  ]);
+  const metricRows = computeMetricsFromFailures(allFailures.data.values || []);
+
+  // Clear the old Metrics data block first so a shrinking set never leaves
+  // stale trailing rows (defensive — the log only grows in practice).
+  await sheets.spreadsheets.values.clear({ spreadsheetId, range: `${METRICS_TAB}!A2:H` });
   if (metricRows.length) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
@@ -157,4 +136,37 @@ async function upsert(spreadsheetId, { failures, metrics }) {
   return { appendedFailures: newRows.length, metricRows: metricRows.length };
 }
 
-module.exports = { upsert, FAILURES_HEADER, METRICS_HEADER };
+// Failures row layout: [Key, Run, Date, Commit, TestType, Profile, Scenario,
+// Bucket, Exception, Message]. Key is `${runId}::${scenario}`.
+function computeMetricsFromFailures(rows) {
+  const byScenario = new Map();
+  for (const r of rows) {
+    const key = r[0] || '';
+    const runUrl = r[1] || '';
+    const date = r[2] || '';
+    const testType = r[4] || '';
+    const scenario = r[6] || '';
+    const bucket = r[7] || '';
+    const runId = key.split('::')[0];
+    if (!scenario) continue;
+
+    let m = byScenario.get(scenario);
+    if (!m) {
+      m = { scenario, bucket, testType, failCount: 0, runs: new Set(), firstFailed: date, lastFailed: date, lastRun: runUrl };
+      byScenario.set(scenario, m);
+    }
+    m.failCount += 1;
+    m.runs.add(runId);
+    if (date && (!m.firstFailed || date < m.firstFailed)) m.firstFailed = date;
+    if (date && (!m.lastFailed || date >= m.lastFailed)) {
+      m.lastFailed = date;
+      m.lastRun = runUrl;
+      m.bucket = bucket; // most-recent classification wins
+    }
+  }
+  return [...byScenario.values()]
+    .sort((a, b) => b.failCount - a.failCount)
+    .map((m) => [m.scenario, m.bucket, m.testType, m.failCount, m.runs.size, m.firstFailed, m.lastFailed, m.lastRun]);
+}
+
+module.exports = { upsert, computeMetricsFromFailures, FAILURES_HEADER, METRICS_HEADER };

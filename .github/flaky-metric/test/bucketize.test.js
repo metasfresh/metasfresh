@@ -82,6 +82,15 @@ test('synthetic: AssertionWithContextInfoError -> bucket assertion (not unclassi
   assert.strictEqual(bucketId, 'assertion');
 });
 
+test('synthetic: __TESTS_RUN_ZERO__ marker -> bucket A (cascade / no-parsed-failure)', () => {
+  const { bucketId } = bucketize({
+    exceptionType: '__TESTS_RUN_ZERO__',
+    message: 'Run conclusion=failure but no JUnit artifact reported a failed testcase.',
+    detail: '', fullName: '(run failed — no test-level failure parsed)', testType: 'unknown',
+  });
+  assert.strictEqual(bucketId, 'A');
+});
+
 test('synthetic: unknown failure -> unclassified (never silently dropped)', () => {
   const { bucketId } = bucketize({
     exceptionType: 'java.lang.IllegalStateException',

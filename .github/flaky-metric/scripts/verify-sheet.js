@@ -10,12 +10,12 @@ if (!id) { console.error('Set FLAKY_SHEET_ID or pass the id as arg1'); process.e
 const creds = require(os.homedir() + '/.credentials/google-sheets-service-account.json');
 
 (async () => {
-  const auth = new google.auth.GoogleAuth({ credentials: creds, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
+  const auth = new google.auth.GoogleAuth({ credentials: creds, scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] });
   const sheets = google.sheets({ version: 'v4', auth });
   const meta = await sheets.spreadsheets.get({ spreadsheetId: id });
   console.log('Tabs:', meta.data.sheets.map((s) => s.properties.title).join(', '));
 
-  const m = await sheets.spreadsheets.values.get({ spreadsheetId: id, range: 'Metrics!A1:H20' });
+  const m = await sheets.spreadsheets.values.get({ spreadsheetId: id, range: 'Metrics!A1:H' });
   console.log('\n=== METRICS ===');
   console.log('fails'.padStart(5), 'bucket'.padEnd(44), 'scenario');
   for (const r of (m.data.values || []).slice(1)) {

@@ -35,10 +35,16 @@ concurrency:
   group: flaky-metric
   cancel-in-progress: false # never drop an update; serialise instead
 
+permissions:
+  contents: read # actions/checkout
+  actions: read # gh run download / gh run list
+
 jobs:
   extract:
     runs-on: ubuntu-latest
-    # Skip the per-run trigger for runs that didn't actually finish.
+    # On the per-run trigger, only act on runs that actually failed (nothing to
+    # record for green runs). schedule + manual dispatch are unaffected.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,7 +54,7 @@ jobs:
 
       - name: Install deps
         working-directory: .github/flaky-metric
-        run: npm ci || npm install --no-audit --no-fund
+        run: npm ci
 
       - name: Extract + upsert
         working-directory: .github/flaky-metric
@@ -57,11 +63,16 @@ jobs:
           GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
           FLAKY_SHEET_ID: ${{ vars.FLAKY_SHEET_ID }}
           FLAKY_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          # User-controlled / event inputs are passed via env (never inlined into
+          # the shell) to avoid template-expansion command injection.
+          INPUT_SINCE: ${{ github.event.inputs.since }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            node scripts/extract.js --run "${{ github.event.workflow_run.id }}"
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            node scripts/extract.js --since "${{ github.event.inputs.since }}"
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            node scripts/extract.js --run "$RUN_ID"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            node scripts/extract.js --since "$INPUT_SINCE"
           else
             node scripts/extract.js --since 2d
           fi

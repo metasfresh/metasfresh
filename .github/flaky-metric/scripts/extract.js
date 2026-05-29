@@ -73,6 +73,28 @@ function processRun(run, tmpRoot) {
       }
     }
   }
+
+  // Cascade / no-parsed-failure guard: if the run is marked failed but we parsed
+  // zero test-level failures, the failure is invisible at the test level — a JVM
+  // crash mid-profile (cucumber "Tests run: 0" cascade), a compile/build failure,
+  // or an infra failure that produced no test artifacts. Emit one synthetic
+  // record so the run still shows up in the sheet instead of looking green.
+  if (records.length === 0 && run.conclusion === 'failure') {
+    records.push({
+      key: `${runId}::__no_parsed_failure__`,
+      runId,
+      runUrl: run.url,
+      dateUtc: (run.createdAt || '').slice(0, 19).replace('T', ' '),
+      commit: (run.headSha || '').slice(0, 9),
+      testType: 'unknown',
+      profile: '(run-level)',
+      scenario: '(run failed — no test-level failure parsed)',
+      bucketId: 'A',
+      bucketLabel: 'A: run failed, 0 test failures parsed (JVM cascade / build / infra)',
+      exceptionType: '__TESTS_RUN_ZERO__',
+      message: 'Run conclusion=failure but no JUnit artifact reported a failed testcase.',
+    });
+  }
   return records;
 }
 
@@ -187,7 +209,7 @@ async function main() {
     testType: r.testType, profile: r.profile, scenario: r.scenario,
     bucketLabel: r.bucketLabel, exceptionType: r.exceptionType, message: r.message,
   }));
-  const res = await upsert(sheetId, { failures: failuresForSheet, metrics });
+  const res = await upsert(sheetId, { failures: failuresForSheet });
   console.error(`Sheet updated: +${res.appendedFailures} failure rows, ${res.metricRows} metric rows total.`);
 }
 

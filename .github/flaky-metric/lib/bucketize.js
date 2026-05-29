@@ -79,9 +79,10 @@ const RULES = [
   // ---- Backend / cucumber, infra buckets ------------------------------------
   {
     id: 'A',
-    label: 'A: cucumber Tests-run-0 cascade (JVM crash mid-profile)',
-    // The cascade is detected at the run level (see extract.js); this rule only
-    // fires if a record was synthesised with that marker.
+    label: 'A: run failed, 0 test failures parsed (JVM cascade / build / infra)',
+    // Synthesised at the run level in extract.js when a failed run produced no
+    // parsed test-level failure (cucumber "Tests run: 0" cascade, or a build /
+    // infra failure with no test artifacts). Keeps the failed run visible.
     match: (f) => f.exceptionType === '__TESTS_RUN_ZERO__',
   },
   {
