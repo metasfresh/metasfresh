@@ -82,12 +82,10 @@ public class M_ShipmentSchedule
 			}
 		}
 
-		if (!shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
+		if (shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
 		{
-			return;
+			shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
 		}
-
-		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
 	}
 
 	@ModelChange(timings = {
