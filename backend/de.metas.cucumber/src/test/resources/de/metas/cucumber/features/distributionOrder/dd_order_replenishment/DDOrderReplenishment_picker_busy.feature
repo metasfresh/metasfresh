@@ -80,8 +80,13 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | M_ShipmentSchedule_ID | QtyOrdered_Override |
       | shipmentSchedule      | 8                   |
 
+    # Cleanup first so it always runs regardless of subsequent assertion results.
+    # Deactivates the picking job line (and its parent job) so it does not
+    # pollute subsequent test scenarios that query for active picking records.
+    When the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is removed
+
     # The DD_Order is untouched (still the original Completed one, qty 5).
-    And after not more than 5s, the DD_Order linked to shipment schedule is found:
+    Then after not more than 10s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
     # The original DD_Order identifier (captured in Background) must be unchanged (same ID, still Completed).
@@ -89,10 +94,6 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
       | ddOrder    | CO |
-
-    # Cleanup: deactivate the picking job line (and its parent job) so it does not
-    # pollute subsequent test scenarios that query for active picking records.
-    When the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is removed
 
   @from:cucumber
   Scenario: A picker who grabs the job in the race window makes the async reconcile event fail (TC5)

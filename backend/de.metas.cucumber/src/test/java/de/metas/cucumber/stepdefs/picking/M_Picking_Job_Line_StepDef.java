@@ -103,6 +103,9 @@ public class M_Picking_Job_Line_StepDef
 		pickingJob.setPicking_User_ID(UserId.METASFRESH.getRepoId());
 		pickingJob.setPreparationDate(TimeUtil.asTimestamp(Env.getDate(Env.getCtx())));
 		pickingJob.setDeliveryDate(TimeUtil.asTimestamp(Env.getDate(Env.getCtx())));
+		// IsActive=false: keeps the job logically deleted so picking-workflow REST tests
+		// cannot accidentally pick it up when querying for active/assignable jobs.
+		pickingJob.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(pickingJob);
 
 		final I_M_Picking_Job_Line line = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line.class);
