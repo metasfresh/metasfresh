@@ -1,0 +1,89 @@
+# Flaky-metric extractor — me03#30024.
+#
+# Runs after every cicd run on new_dawn_uat completes, extracts that run's test
+# failures, classifies them by root-cause bucket, and upserts the result into
+# the flakyness-metric Google Sheet. Also runs nightly as a backfill safety net.
+#
+# PLACEMENT: this file goes in metasfresh/metasfresh `.github/workflows/`
+# (cicd.yaml lives there too, so `workflow_run` can observe it). The supporting
+# node project (lib/, scripts/, package.json) must be checked into the same repo
+# — proposed path: `.github/flaky-metric/`. See SETUP.md for the placement
+# decision (metasfresh vs me03-gh-automation) which is still open.
+#
+# REQUIRED REPO SECRET (human-only, see SETUP.md):
+#   GOOGLE_SHEETS_CREDENTIALS_JSON — the full service-account JSON, as a secret.
+# REQUIRED REPO VARIABLE (or hardcode below):
+#   FLAKY_SHEET_ID — the target spreadsheet id.
+
+name: flaky-metric
+
+on:
+  workflow_run:
+    workflows: ["cicd"]
+    types: [completed]
+    branches: [new_dawn_uat]
+  schedule:
+    - cron: "0 3 * * *" # nightly backfill of the last 2 days, in case a run was missed
+  workflow_dispatch:
+    inputs:
+      since:
+        description: "Backfill window (e.g. 7d or 2026-05-25)"
+        required: false
+        default: "2d"
+
+concurrency:
+  group: flaky-metric
+  cancel-in-progress: false # never drop an update; serialise instead
+
+permissions:
+  contents: read # actions/checkout
+  actions: read # gh run download / gh run list
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    # Guard 1: only ever do work in the canonical repo. workflow_run / schedule /
+    # workflow_dispatch always execute from the DEFAULT branch's copy of this
+    # file, so cherry-picking it onto *_hotfix/*_release within metasfresh is
+    # inert — but if the file is propagated to a customer repo (separate repo,
+    # own default branch), this stops its nightly schedule from burning a runner.
+    # Guard 2: on the per-run trigger, only act on runs that actually failed
+    # (nothing to record for green runs). schedule + manual dispatch are unaffected.
+    if: >-
+      ${{ github.repository == 'metasfresh/metasfresh'
+          && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        working-directory: .github/flaky-metric
+        run: npm ci
+
+      - name: Extract + upsert
+        working-directory: .github/flaky-metric
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+          FLAKY_SHEET_ID: ${{ vars.FLAKY_SHEET_ID }}
+          FLAKY_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          # User-controlled / event inputs are passed via env (never inlined into
+          # the shell) to avoid template-expansion command injection.
+          INPUT_SINCE: ${{ github.event.inputs.since }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          # The attempt that triggered this event — pins the recorded URL to the
+          # attempt that actually failed (a re-run's bare URL shows the latest,
+          # possibly green, attempt).
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            node scripts/extract.js --run "$RUN_ID" --attempt "$RUN_ATTEMPT"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            node scripts/extract.js --since "$INPUT_SINCE"
+          else
+            node scripts/extract.js --since 2d
+          fi
