@@ -183,7 +183,7 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
-		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
+		tableRow.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
 				.ifPresent(bPartnerLocationRecord::setAttention);
 
 		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
