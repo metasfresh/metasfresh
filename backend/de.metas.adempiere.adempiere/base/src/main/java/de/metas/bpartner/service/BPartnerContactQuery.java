@@ -42,6 +42,12 @@ public class BPartnerContactQuery
 	/** If set, it overrides the {@code value} parameter */
 	ExternalId externalId;
 
+	/**
+	 * Search key / code of the contact ({@code AD_User.Value}).
+	 * <p>
+	 * FIXME: {@code AD_User.Value} has no unique constraint — using this field may cause a {@code QueryMoreThanOneRecordsFoundException}
+	 * if multiple contacts share the same value. Add a unique constraint on {@code AD_User.Value} before relying on this.
+	 */
 	String value;
 
 	/** If set, it is ANDed to the rest */

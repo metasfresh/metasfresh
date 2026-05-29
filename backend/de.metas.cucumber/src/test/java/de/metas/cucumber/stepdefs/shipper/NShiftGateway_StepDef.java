@@ -269,7 +269,8 @@ public class NShiftGateway_StepDef
 				|| row.getAsOptionalString(columnPrefix + "HouseNo").isPresent()
 				|| row.getAsOptionalString(columnPrefix + "Zip").isPresent()
 				|| row.getAsOptionalString(columnPrefix + "City").isPresent()
-				|| row.getAsOptionalString(columnPrefix + "CountryCode").isPresent();
+				|| row.getAsOptionalString(columnPrefix + "CountryCode").isPresent()
+				|| row.getAsOptionalString(columnPrefix + "Attention").isPresent();
 		if (!any)
 		{
 			return;
@@ -296,6 +297,8 @@ public class NShiftGateway_StepDef
 				.assertThat(actual.getCity()).as(label + ".city").isEqualTo(expected));
 		row.getAsOptionalString(columnPrefix + "CountryCode").ifPresent(expected -> softly
 				.assertThat(actual.getCountry()).as(label + ".country").isEqualTo(expected));
+		row.getAsOptionalString(columnPrefix + "Attention").ifPresent(expected -> softly
+				.assertThat(actual.getAttention()).as(label + ".attention").isEqualTo(expected));
 	}
 
 	private static void assertContact(

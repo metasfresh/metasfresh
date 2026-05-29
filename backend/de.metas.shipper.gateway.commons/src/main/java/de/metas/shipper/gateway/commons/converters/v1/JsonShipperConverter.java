@@ -176,6 +176,7 @@ public class JsonShipperConverter
 				.zipCode(address.getZipCode())
 				.city(address.getCity())
 				.bpartnerId(bpartnerId)
+				.attention(address.getAttention())
 				.build();
 	}
 

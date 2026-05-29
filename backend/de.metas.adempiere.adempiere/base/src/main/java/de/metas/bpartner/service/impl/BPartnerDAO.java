@@ -1826,6 +1826,8 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 		else if (!Check.isEmpty(contactQuery.getValue(), true))
 		{
+			// FIXME: AD_User.Value has no unique constraint — if duplicates exist this query throws QueryMoreThanOneRecordsFoundException
+			logger.warn("Querying AD_User by Value={}. AD_User.Value has no unique constraint; duplicates would cause an error here.", contactQuery.getValue());
 			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_Value, contactQuery.getValue().trim());
 		}
 

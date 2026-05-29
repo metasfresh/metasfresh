@@ -24,36 +24,25 @@ package de.metas.cucumber.stepdefs.createbpartner;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
-import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
-import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
-import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
+import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CleanWhitespaceQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 
@@ -62,174 +51,153 @@ public class CreateBPartnerV2_StepDef
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
-	private final C_BP_BankAccount_StepDefData bankAccountTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable)
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
-		this.bankAccountTable = bankAccountTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 	}
 
 	@Then("^verify that bPartner was (updated|created) for externalIdentifier$")
 	public void verify_bPartner_was_created_for_externalIdentifier_v2(@NonNull final String action, @NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(dataTableRow ->
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-
-			// persisted value
-			final String externalIdentifier = dataTableRow.getAsString("externalIdentifier");
-			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
-			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
+			final String externalIdentifier = row.getAsString("externalIdentifier");
+			final JsonResponseBPartner bpartner = bpartnerEndpointService
+					.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier))
+					.orElseThrow(() -> new AdempiereException("BPartner not found: " + externalIdentifier))
+					.getBpartner();
 
 			final SoftAssertions softly = new SoftAssertions();
 
-			final String name = dataTableRow.getAsString("Name");
-			softly.assertThat(persistedBPartner.getName()).isEqualTo(name);
-
-			dataTableRow.getAsOptionalString("CompanyName")
-					.ifPresent(companyName -> softly.assertThat(persistedBPartner.getCompanyName()).as("CompanyName").isEqualTo(companyName));
-
-			dataTableRow.getAsOptionalString("Url")
-					.ifPresent(url -> softly.assertThat(persistedBPartner.getUrl()).as("Url").isEqualTo(DataTableUtil.nullToken2Null(url)));
-
-			dataTableRow.getAsOptionalString("VatId")
-					.ifPresent(vatId -> softly.assertThat(persistedBPartner.getVatId()).as("VatId").isEqualTo(DataTableUtil.nullToken2Null(vatId)));
-
-			dataTableRow.getAsOptionalString("Language")
-					.ifPresent(language -> assertThat(persistedBPartner.getLanguage()).as("Language").contains(language));
-
-			dataTableRow.getAsOptionalString("Code")
-					.ifPresent(code -> softly.assertThat(persistedBPartner.getCode()).as("Code").isEqualTo(code));
-
-			dataTableRow.getAsOptionalString("Phone")
-					.ifPresent(phone -> softly.assertThat(persistedBPartner.getPhone()).as("Phone").isEqualTo(DataTableUtil.nullToken2Null(phone)));
-
-			dataTableRow.getAsOptionalString("Group")
-					.ifPresent(group -> softly.assertThat(persistedBPartner.getGroup()).as("Group").isEqualTo(group));
-
-			dataTableRow.getAsOptionalString("ParentId")
-					.ifPresent(parentId ->
+			row.getAsOptionalString(JsonResponseBPartner.NAME)
+					.ifPresent(v -> softly.assertThat(bpartner.getName()).as(JsonResponseBPartner.NAME).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseBPartner.CODE)
+					.ifPresent(v -> softly.assertThat(bpartner.getCode()).as(JsonResponseBPartner.CODE).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseBPartner.COMPANY_NAME)
+					.ifPresent(v -> softly.assertThat(bpartner.getCompanyName()).as(JsonResponseBPartner.COMPANY_NAME).isEqualTo(DataTableUtil.nullToken2Null(v)));
+			row.getAsOptionalString(JsonResponseBPartner.PHONE)
+					.ifPresent(v -> softly.assertThat(bpartner.getPhone()).as(JsonResponseBPartner.PHONE).isEqualTo(DataTableUtil.nullToken2Null(v)));
+			row.getAsOptionalString(JsonResponseBPartner.LANGUAGE)
+					.ifPresent(v -> softly.assertThat(bpartner.getLanguage()).as(JsonResponseBPartner.LANGUAGE).contains(v));
+			row.getAsOptionalString(JsonResponseBPartner.URL)
+					.ifPresent(v -> softly.assertThat(bpartner.getUrl()).as(JsonResponseBPartner.URL).isEqualTo(DataTableUtil.nullToken2Null(v)));
+			row.getAsOptionalString(JsonResponseBPartner.GROUP_NAME)
+					.ifPresent(v -> softly.assertThat(bpartner.getGroup()).as(JsonResponseBPartner.GROUP_NAME).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseBPartner.VAT_ID)
+					.ifPresent(v -> softly.assertThat(bpartner.getVatId()).as(JsonResponseBPartner.VAT_ID).isEqualTo(DataTableUtil.nullToken2Null(v)));
+			row.getAsOptionalString(JsonResponseBPartner.PARENT_ID)
+					.ifPresent(v ->
 					{
-						final String parentIdEff = DataTableUtil.nullToken2Null(parentId);
+						final String parentIdEff = DataTableUtil.nullToken2Null(v);
 						if (parentIdEff == null)
 						{
-							softly.assertThat(persistedBPartner.getParentId()).isNull();
+							softly.assertThat(bpartner.getParentId()).isNull();
 						}
 						else
 						{
-							softly.assertThat(persistedBPartner.getParentId().getValue()).as("ParentId").isEqualTo(Integer.parseInt(parentId));
+							softly.assertThat(bpartner.getParentId().getValue()).as(JsonResponseBPartner.PARENT_ID).isEqualTo(Integer.parseInt(v));
 						}
 					});
+			row.getAsOptionalString(JsonResponseBPartner.GLN_LOOKUP_LABEL)
+					.ifPresent(v -> softly.assertThat(bpartner.getGlnLookupLabel()).as(JsonResponseBPartner.GLN_LOOKUP_LABEL).isEqualTo(v));
 
-			dataTableRow.getAsOptionalString("GlnLookupLabel")
-					.ifPresent(label -> assertThat(persistedBPartner.getGlnLookupLabel()).as("GlnLookupLabel").isEqualTo(label));
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartner.getMetasfreshId().getValue());
 
-			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(persistedBPartner.getMetasfreshId().getValue());
+			row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CreatedBy)
+					.ifPresent(createdByIdentifier ->
+					{
+						final I_AD_User userRecord = userTable.get(createdByIdentifier);
+						assertThat(userRecord).isNotNull();
+						softly.assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
+					});
 
-			final String createdByIdentifier = dataTableRow.getAsOptionalString(I_C_BPartner.COLUMNNAME_CreatedBy).orElse(null);
-			if (Check.isNotBlank(createdByIdentifier))
-			{
-				final I_AD_User userRecord = userTable.get(createdByIdentifier);
+			row.getAsOptionalBoolean(JsonResponseBPartner.DISCOUNT_PRINTED)
+					.ifPresent(v -> softly.assertThat(bPartnerRecord.isDiscountPrinted()).as(JsonResponseBPartner.DISCOUNT_PRINTED).isEqualTo(v));
 
-				assertThat(userRecord).isNotNull();
-				softly.assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
-			}
-
-			dataTableRow.getAsOptionalBoolean("OPT." + I_C_BPartner.COLUMNNAME_IsDiscountPrinted)
-					.ifPresent(discountPrinted -> softly.assertThat(bPartnerRecord.isDiscountPrinted()).as("IsDiscountPrinted").isEqualTo(discountPrinted));
-			
 			softly.assertAll();
 
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
+			bPartnerTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_BPartner_ID), bPartnerRecord);
 		});
 	}
 
 	@And("^verify that location was (updated|created) for bpartner$")
 	public void verify_location_is_created_for_bpartner_v2(@NonNull final String action, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> locationsTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : locationsTableList)
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
-			final String locationIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "locationIdentifier");
-			final String address1 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address1");
-			final String address2 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address2");
-			final String postal = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Postal");
-			final String poBox = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.PoBox");
-			final String district = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.District");
-			final String region = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Region");
-			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
-			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
-			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
-			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
+			final SoftAssertions softly = new SoftAssertions();
 
-			// persisted value
-			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
-					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
-			final JsonResponseLocation persistedLocation = persistedResult.get();
+			final String bpartnerIdentifier = row.getAsString("bpartnerIdentifier");
+			final String locationIdentifier = row.getAsString("locationIdentifier");
 
-			assertThat(persistedLocation.getAddress1()).isEqualTo(address1);
-			assertThat(persistedLocation.getAddress2()).isEqualTo(address2);
-			assertThat(persistedLocation.getPostal()).isEqualTo(postal);
-			assertThat(persistedLocation.getPoBox()).isEqualTo(poBox);
-			assertThat(persistedLocation.getRegion()).isEqualTo(region);
-			assertThat(persistedLocation.getCountryCode()).isEqualTo(countryCode);
-			assertThat(persistedLocation.getCity()).isEqualTo(city);
-			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
-			assertThat(persistedLocation.getGln()).isEqualTo(gln);
-			assertThat(persistedLocation.getVatId()).isEqualTo(vatId);
-		}
+			final JsonResponseLocation location = bpartnerEndpointService
+					.retrieveBPartnerLocation(null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier))
+					.orElseThrow(() -> new AdempiereException("Location not found: bpartner=" + bpartnerIdentifier + " location=" + locationIdentifier));
+
+			row.getAsOptionalString(JsonResponseLocation.ADDRESS_1).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getAddress1()).as(JsonResponseLocation.ADDRESS_1).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.ADDRESS_2).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getAddress2()).as(JsonResponseLocation.ADDRESS_2).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.POSTAL).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getPostal()).as(JsonResponseLocation.POSTAL).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.PO_BOX).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getPoBox()).as(JsonResponseLocation.PO_BOX).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.DISTRICT).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getDistrict()).as(JsonResponseLocation.DISTRICT).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.REGION).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getRegion()).as(JsonResponseLocation.REGION).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.CITY).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getCity()).as(JsonResponseLocation.CITY).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.COUNTRY_CODE).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getCountryCode()).as(JsonResponseLocation.COUNTRY_CODE).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.GLN).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getGln()).as(JsonResponseLocation.GLN).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.VAT_ID).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getVatId()).as(JsonResponseLocation.VAT_ID).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseLocation.ATTENTION).map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(location.getAttention()).as(JsonResponseLocation.ATTENTION).isEqualTo(v));
+
+			softly.assertAll();
+		});
 	}
 
 	@And("^verify that contact was (updated|created|not modified) for bpartner$")
 	public void verify_contact_is_created_for_bpartner_v2(@NonNull final String action, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : contactsTableList)
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
-			final String contactIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "contactIdentifier");
-			final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
-			final String email = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Email");
-			final String fax = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Fax");
-			final Boolean isInvoiceEmailEnabled = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT.InvoiceEmailEnabled", null);
+			final String bpartnerIdentifier = row.getAsString("bpartnerIdentifier");
+			final String contactIdentifier = row.getAsString("contactIdentifier");
 
-			// persisted value
-			final Optional<JsonResponseContact> persistedResult = bpartnerEndpointService.retrieveBPartnerContact(
-					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(contactIdentifier));
-			final JsonResponseContact persistedContact = persistedResult.get();
+			final JsonResponseContact contact = bpartnerEndpointService
+					.retrieveBPartnerContact(null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(contactIdentifier))
+					.orElseThrow(() -> new AdempiereException("Contact not found: bpartner=" + bpartnerIdentifier + " contact=" + contactIdentifier));
 
-			assertThat(persistedContact.getEmail()).isEqualTo(email);
-			assertThat(persistedContact.getName()).isEqualTo(name);
-			assertThat(persistedContact.getFax()).isEqualTo(fax);
-			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
-		}
+			final SoftAssertions softly = new SoftAssertions();
+
+			row.getAsOptionalString(JsonResponseContact.NAME)
+					.ifPresent(v -> softly.assertThat(contact.getName()).as(JsonResponseContact.NAME).isEqualTo(v));
+			// FIXME: code (AD_User.Value) assertion disabled — no unique constraint on AD_User.Value yet (see BPartnerCompositeSaver)
+			// row.getAsOptionalString(JsonResponseContact.CODE)
+			// 		.ifPresent(v -> softly.assertThat(contact.getCode()).as(JsonResponseContact.CODE).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseContact.EMAIL)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(contact.getEmail()).as(JsonResponseContact.EMAIL).isEqualTo(v));
+			row.getAsOptionalString(JsonResponseContact.FAX)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(contact.getFax()).as(JsonResponseContact.FAX).isEqualTo(v));
+			row.getAsOptionalBoolean(JsonResponseContact.INVOICE_EMAIL_ENABLED)
+					.ifPresent(v -> softly.assertThat(contact.getInvoiceEmailEnabled()).as(JsonResponseContact.INVOICE_EMAIL_ENABLED).isEqualTo(v));
+
+			softly.assertAll();
+		});
 	}
 
-	@And("locate C_BP_BankAccount by IBAN:")
-	public void locateBPBankAccountByIban(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> dataTableRow : dataTable.asMaps())
-		{
-			final String bankAccountIban = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_IBAN);
-			final String bankAccountTableIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
-
-			final I_C_BP_BankAccount bankAccountRecord = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-					.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, bankAccountIban, CleanWhitespaceQueryFilterModifier.getInstance())
-					.create()
-					.firstOnlyOptional()
-					.orElseThrow(() -> new AdempiereException("No record found for IBAN = " + bankAccountIban));
-
-			bankAccountTable.put(bankAccountTableIdentifier, bankAccountRecord);
-		}
-	}
 }

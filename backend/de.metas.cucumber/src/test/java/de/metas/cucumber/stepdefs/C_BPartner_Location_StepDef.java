@@ -33,6 +33,8 @@ import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -183,6 +185,12 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
+		final String attention = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_Attention);
+		if (Check.isNotBlank(attention))
+		{
+			bPartnerLocationRecord.setAttention(attention);
+		}
+
 		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 		if (bpartnerLocationId != null && bpartnerLocationId > 0)
 		{
@@ -285,33 +293,59 @@ public class C_BPartner_Location_StepDef
 		saveRecord(locationRecord);
 	}
 
+	@And("load C_BPartner_Location by bpartner and GLN:")
+	public void load_C_BPartner_Location_by_bpartner_and_GLN(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final StepDefDataIdentifier bpIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
+			final String gln = row.getAsString(I_C_BPartner_Location.COLUMNNAME_GLN);
+
+			final I_C_BPartner_Location location = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerRecord.getC_BPartner_ID())
+					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnly(I_C_BPartner_Location.class);
+			assertThat(location).as("C_BPartner_Location for bpartner=%s GLN=%s", bpIdentifier, gln).isNotNull();
+
+			final StepDefDataIdentifier locationIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+			bPartnerLocationTable.putOrReplace(locationIdentifier, location);
+		});
+	}
+
 	@And("validate C_BPartner_Location:")
 	public void validate_C_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		final SoftAssertions softly = new SoftAssertions();
-
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final SoftAssertions softly = new SoftAssertions();
+
+			final StepDefDataIdentifier bpLocationIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 			final I_C_BPartner_Location bpLocation = bPartnerLocationTable.get(bpLocationIdentifier);
 
-			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
-			softly.assertThat(bpLocation.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			row.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
+					.ifPresent(bpId -> softly.assertThat(bpLocation.getC_BPartner_ID()).as("C_BPartner_ID")
+							.isEqualTo(bPartnerTable.get(bpId).getC_BPartner_ID()));
 
-			final String address = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Address);
-			if (Check.isNotBlank(address))
-			{
-				softly.assertThat(bpLocation.getAddress()).as("Address").isEqualTo(address);
-			}
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Name)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getName()).as("Name").isEqualTo(v));
 
-			final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Name);
-			if (Check.isNotBlank(name))
-			{
-				softly.assertThat(bpLocation.getName()).as("Name").isEqualTo(name);
-			}
-		}
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getGLN()).as("GLN").isEqualTo(v));
 
-		softly.assertAll();
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getVATaxID()).as("VATaxID").isEqualTo(v));
+
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getAttention()).as("Attention").isEqualTo(v));
+
+			softly.assertAll();
+		});
 	}
 }

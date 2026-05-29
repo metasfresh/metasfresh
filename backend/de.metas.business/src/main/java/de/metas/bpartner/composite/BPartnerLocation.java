@@ -72,6 +72,7 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String ATTENTION = "attention";
 	public static final String VISITORS_ADDRESS = "visitorsAddress";
 	public static final String HANDOVER_LOCATION = "handoverLocation";
 	public static final String REMIT_TO = "remitTo";
@@ -128,6 +129,8 @@ public class BPartnerLocation
 	private String phone;
 	@Nullable
 	private String email;
+	@Nullable
+	private String attention;
 
 	@Nullable
 	private BPartnerLocationType locationType;
@@ -186,6 +189,7 @@ public class BPartnerLocation
 			@Nullable final String countryCode,
 			@Nullable final String phone,
 			@Nullable final String email,
+			@Nullable final String attention,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
@@ -228,6 +232,8 @@ public class BPartnerLocation
 		this.ephemeral = CoalesceUtil.coalesceNotNull(ephemeral, false);
 
 		this.phone = phone;
+
+		this.attention = attention;
 
 		this.mobile = mobile;
 

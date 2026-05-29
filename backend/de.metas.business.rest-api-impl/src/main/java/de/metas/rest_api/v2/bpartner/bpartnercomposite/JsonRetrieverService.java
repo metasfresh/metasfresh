@@ -247,6 +247,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
 			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
 			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
+			.put(BPartnerLocation.ATTENTION, JsonResponseLocation.ATTENTION)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
@@ -455,6 +456,7 @@ public class JsonRetrieverService
 						.map(JSONPaymentRule::ofCode)
 						.orElse(null))
 				.internalName(bpartner.getInternalName())
+				.glnLookupLabel(bpartner.getGlnLookupLabel())
 				.vatId(bpartner.getVatId())
 				.eori(bpartner.getEori())
 				.eInvoiceBuyerReference(bpartner.getEInvoiceBuyerReference())
@@ -577,6 +579,7 @@ public class JsonRetrieverService
 
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
+					.code(contact.getValue())
 					.email(contact.getEmail())
 					.firstName(contact.getFirstName())
 					.lastName(contact.getLastName())
@@ -656,6 +659,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
+					.attention(location.getAttention())
 					.vatId(VATIdentifier.toString(location.getVatTaxId()))
 					.build();
 		}

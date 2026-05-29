@@ -114,6 +114,7 @@ public class NShiftShipmentServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
+					.attention("z. Hd. Sender Test")
 					.build())
 			.pickupContact(JsonContact.builder()
 					.name("Test Pickup Contact Name")
@@ -137,6 +138,7 @@ public class NShiftShipmentServiceTest
 					.street("Alecsandri")
 					.additionalAddressInfo("")
 					.houseNo("3")
+					.attention("z. Hd. Test")
 					.build())
 			.deliveryContact(JsonContact.builder()
 					.name("Test Delivery Contact Name")
@@ -259,6 +261,11 @@ public class NShiftShipmentServiceTest
 							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE)
 							.build(),
 					JsonMappingConfig.builder()
+							.seqNo(45)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION)
+							.build(),
+					JsonMappingConfig.builder()
 							.seqNo(50)
 							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
 							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME)
@@ -281,6 +288,11 @@ public class NShiftShipmentServiceTest
 							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2)
 							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
 							.mappingRuleValue("DE")
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(85)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION)
 							.build(),
 					JsonMappingConfig.builder()
 							.seqNo(90)

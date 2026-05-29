@@ -4,7 +4,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
       "ActorCSID": 123,
       "Addresses": [
         {
-          "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
+          "Attention": "z. Hd. Sender Test metas GmbH senderDepartmentName senderCompanyName2",
           "City": "Bonn",
           "CountryCode": "DE",
           "Email": "noreply@metasfresh.com",
@@ -17,7 +17,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Street2": ""
         },
         {
-          "Attention": "metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
+          "Attention": "z. Hd. Test metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",

@@ -52,6 +52,8 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT = "ReceiverDepartment";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME = "ReceiverContactLastnameAndFirstname";
 	public static final String ATTRIBUTE_VALUE_SHIPPER_EORI = "ShipperEORI";
+	public static final String ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION = "ReceiverBPartnerAttention";
+	public static final String ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION = "SenderBPartnerAttention";
 
 	// attributeValuesLine
 	public static final String ATTRIBUTE_VALUE_PARCEL_ID = "ParcelId";

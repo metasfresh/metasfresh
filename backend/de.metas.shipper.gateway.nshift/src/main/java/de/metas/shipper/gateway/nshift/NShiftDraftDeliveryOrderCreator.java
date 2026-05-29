@@ -151,7 +151,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 						.build())
 				//
 				// Delivery aka Receiver
-				.deliveryAddress(toDeliverToAddress(deliverToBPartner, deliverToLocation))
+				.deliveryAddress(toDeliverToAddress(deliverToBPartner, deliverToLocation, deliverToBPLocation))
 				.deliveryContact(toContact(deliverToBPartner, deliverToBPLocation, deliverToContact))
 				//
 				// Delivery content
@@ -170,9 +170,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.build();
 	}
 
-	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation)
+	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation, final I_C_BPartner_Location deliverToBPLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation , deliverToBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner, deliverToBPLocation)
 				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // used for label archive
 				.build();
 	}
