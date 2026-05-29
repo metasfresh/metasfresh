@@ -153,6 +153,20 @@ public class DDOrderPickingReplenishment_StepDef
 				.forEach(line -> {
 					line.setIsActive(false);
 					InterfaceWrapperHelper.saveRecord(line);
+
+					// If the parent job has no more active lines, deactivate it too so it
+					// doesn't appear in picking-workflow tests that query for active M_Picking_Job records.
+					final boolean jobHasActiveLines = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+							.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, line.getM_Picking_Job_ID())
+							.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_IsActive, true)
+							.create()
+							.anyMatch();
+					if (!jobHasActiveLines)
+					{
+						final I_M_Picking_Job job = InterfaceWrapperHelper.load(line.getM_Picking_Job_ID(), I_M_Picking_Job.class);
+						job.setIsActive(false);
+						InterfaceWrapperHelper.saveRecord(job);
+					}
 				});
 	}
 

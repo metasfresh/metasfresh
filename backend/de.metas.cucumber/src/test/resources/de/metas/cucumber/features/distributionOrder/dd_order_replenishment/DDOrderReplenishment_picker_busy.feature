@@ -90,6 +90,10 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | Identifier | DocStatus |
       | ddOrder    | CO |
 
+    # Cleanup: deactivate the picking job line (and its parent job) so it does not
+    # pollute subsequent test scenarios that query for active picking records.
+    When the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is removed
+
   @from:cucumber
   Scenario: A picker who grabs the job in the race window makes the async reconcile event fail (TC5)
     # Simulate the race deterministically: the picker becomes busy AFTER the schedule change was accepted
