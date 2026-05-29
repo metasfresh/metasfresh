@@ -71,6 +71,7 @@ public class NShiftShipAdvisorServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
+					.attention("z. Hd. Sender Test")
 					.build())
 			.pickupContact(JsonContact.builder()
 					.name("Test Pickup Contact Name")
@@ -94,6 +95,7 @@ public class NShiftShipAdvisorServiceTest
 					.street("Alecsandri")
 					.additionalAddressInfo("")
 					.houseNo("3")
+					.attention("z. Hd. Test")
 					.build())
 			.deliveryContact(JsonContact.builder()
 					.name("Test Delivery Contact Name")
@@ -125,6 +127,7 @@ public class NShiftShipAdvisorServiceTest
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.SERVICE_LEVEL, SHIP_RULE_SERVICE_LEVEL)
 					.build())
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
 			.build();
 
 	@Autowired

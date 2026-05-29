@@ -70,7 +70,6 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -104,12 +103,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
+	@NonNull
 	@Override
 	public ShipperGatewayId getShipperGatewayId() {return NShiftConstants.SHIPPER_GATEWAY_ID;}
 
 	@NonNull
 	@Override
-	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
@@ -142,7 +142,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.receiverEORI(deliverToBPartner.getEORI())
 				//
 				// Pickup aka Shipper
-				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
+				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation, pickupFromBPLocation))
 				.pickupContact(toContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
@@ -164,19 +164,22 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	}
 
-	private static Address toPickFromAddress(final I_C_BPartner pickupFromBPartner, final I_C_Location pickupFromLocation)
+	@NonNull
+	private static Address toPickFromAddress(@NonNull final I_C_BPartner pickupFromBPartner, @NonNull final I_C_Location pickupFromLocation, @NonNull final I_C_BPartner_Location pickupFromBPLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation , pickupFromBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner, pickupFromBPLocation)
 				.build();
 	}
 
-	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation, final I_C_BPartner_Location deliverToBPLocation)
+	@NonNull
+	private static Address toDeliverToAddress(@NonNull final I_C_BPartner deliverToBPartner, @NonNull final I_C_Location deliverToLocation, @NonNull final I_C_BPartner_Location deliverToBPLocation)
 	{
 		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner, deliverToBPLocation)
 				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // used for label archive
 				.build();
 	}
 
+	@NonNull
 	private static ContactPerson toContact(@NonNull final I_C_BPartner bPartner,
 										   @NonNull final I_C_BPartner_Location bPLocation,
 										   @Nullable final User contact)
@@ -184,7 +187,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		return DeliveryOrderUtil.getContactPerson(bPartner, bPLocation, contact);
 	}
 
-	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	@NonNull
+	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
 		return packageInfos.stream()
 				.map(packageInfo -> {
@@ -203,6 +207,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	private DeliveryOrderItem createDeliveryOrderItems(@NonNull final PackageItem packageItem)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
@@ -231,7 +236,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.build();
 	}
 
-	private Optional<BigDecimal> computeNominalGrossWeightInKg(final PackageItem packageItem)
+	@NonNull
+	private Optional<BigDecimal> computeNominalGrossWeightInKg(@NonNull final PackageItem packageItem)
 	{
 		final ProductId productId = packageItem.getProductId();
 		final Quantity quantity = packageItem.getQuantity();

@@ -24,6 +24,7 @@ package de.metas.shipper.client.nshift;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
@@ -31,8 +32,6 @@ import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.JsonReference;
@@ -50,6 +49,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +85,9 @@ public class NShiftShipAdvisorService
 	@VisibleForTesting
 	public static JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
+		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryAdvisorRequest.getMappingConfigs());
+		final Function<String, String> valueProvider = deliveryAdvisorRequest::getValue;
+
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.serviceLevel(deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
 				.build();
@@ -91,54 +95,45 @@ public class NShiftShipAdvisorService
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.orderNo(deliveryAdvisorRequest.getId().replace("-", "")); //  Order Number is limited to 35 characters. fld_RefOrderNumber
 
-		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(
-						deliveryAdvisorRequest.getPickupAddress(),
-						deliveryAdvisorRequest.getPickupContact(),
-						JsonAddressKind.SENDER)
-				.attention(deliveryAdvisorRequest.getPickupAddress().getCompanyName1())
-				.build());
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryAdvisorRequest.getPickupAddress(),
+				deliveryAdvisorRequest.getPickupContact(),
+				JsonAddressKind.SENDER,
+				mappingConfigs,
+				valueProvider));
 
-		final de.metas.common.delivery.v1.json.JsonAddress deliveryAddress = deliveryAdvisorRequest.getDeliveryAddress();
-		final de.metas.common.delivery.v1.json.JsonContact deliveryContact = deliveryAdvisorRequest.getDeliveryContact();
-		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftAddressBuilder(
-				deliveryAddress,
-				deliveryContact,
-				JsonAddressKind.RECEIVER);
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryAdvisorRequest.getDeliveryAddress(),
+				deliveryAdvisorRequest.getDeliveryContact(),
+				JsonAddressKind.RECEIVER,
+				mappingConfigs,
+				valueProvider));
 
-		if (deliveryContact != null)
-		{
-			receiverAddressBuilder.attention(deliveryContact.getName());
-		}
-		else
-		{
-			final String attention = CoalesceUtil.coalesceNotNull(
-					deliveryAddress.getAdditionalAddressInfo(),
-					deliveryAddress.getCompanyName2(),
-					deliveryAddress.getCompanyName1());
-			receiverAddressBuilder.attention(attention);
-		}
-		dataBuilder.address(receiverAddressBuilder.build());
+		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, valueProvider));
 
-		dataBuilder.line(buildNShiftLine(deliveryAdvisorRequest.getItem()));
-
-		//Add incoterms, if exists so carrier services can be provided via shipment rules based on it
+		// incoterms are sent so carrier services can be provided via shipment rules based on it
 		if (deliveryAdvisorRequest.getIncotermsValue() != null)
 		{
 			dataBuilder.reference(JsonReference.builder()
 					.kind(63) // eSrkCustomField1 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
 					.value(deliveryAdvisorRequest.getIncotermsValue())
-					.build()
-			);
+					.build());
 		}
 		if (deliveryAdvisorRequest.getExternalSystemValue() != null)
 		{
 			dataBuilder.reference(JsonReference.builder()
 					.kind(64) // eSrkCustomField2 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
 					.value(deliveryAdvisorRequest.getExternalSystemValue())
-					.build()
-			);
+					.build());
 		}
+
+		final JsonDeliveryAdvisorRequestItem item = deliveryAdvisorRequest.getItem();
+		final Function<String, Optional<String>> lineValueProvider = NShiftUtil.withFallback(
+				item::getValue,
+				attributeValue -> Optional.ofNullable(deliveryAdvisorRequest.getValue(attributeValue)));
+		final Function<String, String> finalLineValueProvider = attributeValue -> lineValueProvider.apply(attributeValue).orElse(null);
+
+		dataBuilder.line(buildNShiftLine(item, mappingConfigs, finalLineValueProvider));
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
@@ -146,16 +141,15 @@ public class NShiftShipAdvisorService
 				.build();
 	}
 
-	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryAdvisorRequestItem item)
+	private static JsonLine buildNShiftLine(
+			@NonNull final JsonDeliveryAdvisorRequestItem item,
+			@NonNull final NShiftMappingConfigs mappingConfigs,
+			@NonNull final Function<String, String> lineValueProvider)
 	{
-		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
 				.lineWeight(weightGrams)
-				.reference(JsonReference.builder()
-						.kind(23) // eSrkContents https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-						.value(item.getProductValue())
-						.build());
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
 		if (item.getPackageDimensions() != null)
 		{
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
@@ -166,7 +160,6 @@ public class NShiftShipAdvisorService
 			lineBuilder.width(widthMM);
 			lineBuilder.height(heightMM);
 		}
-
 		return lineBuilder.build();
 	}
 

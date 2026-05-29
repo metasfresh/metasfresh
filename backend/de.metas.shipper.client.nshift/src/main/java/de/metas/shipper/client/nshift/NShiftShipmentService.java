@@ -119,13 +119,11 @@ public class NShiftShipmentService
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
 		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER)
-				.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION, deliveryRequest::getValue))
-				.build());
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue));
 
-		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER)
-				.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION, deliveryRequest::getValue))
-				.build());
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
@@ -196,7 +194,7 @@ public class NShiftShipmentService
 		final JsonGoodsType goodsType = Check.assumeNotNull(deliveryRequest.getGoodsType(), "No Goods Type found for %s", deliveryRequest);
 
 		final Function<String, Optional<String>> valueProvider =
-				withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
+				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 		final Function<String, String> finalValueProvider = attributeValue -> valueProvider.apply(attributeValue).orElse(null);
 
 		return JsonLine.builder()
@@ -222,13 +220,13 @@ public class NShiftShipmentService
 
 		// This provider is for evaluating mapping rules, which might depend on parcel or request data.
 		final Function<String, Optional<String>> parcelAndRequestProvider =
-				withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
+				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 
 		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents content : deliveryLine.getContents())
 		{
 			// This full valueProviderChain is for resolving the detail values, which can come from content, parcel, or request.
 			final Function<String, Optional<String>> valueProviderChain =
-					withFallback(content::getValue, parcelAndRequestProvider);
+					NShiftUtil.withFallback(content::getValue, parcelAndRequestProvider);
 
 			final Function<String, String> finalValueProvider = attributeValue -> valueProviderChain.apply(attributeValue).orElse(null);
 
@@ -261,16 +259,6 @@ public class NShiftShipmentService
 		return groupBuilders.values().stream()
 				.map(JsonDetailGroup.JsonDetailGroupBuilder::build)
 				.collect(Collectors.toList());
-	}
-
-	private static <T, R> Function<T, Optional<R>> withFallback(
-			@NonNull final Function<T, Optional<R>> primary,
-			@NonNull final Function<T, Optional<R>> fallback)
-	{
-		return t -> {
-			final Optional<R> value = primary.apply(t);
-			return value.isPresent() ? value : fallback.apply(t);
-		};
 	}
 
 	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)

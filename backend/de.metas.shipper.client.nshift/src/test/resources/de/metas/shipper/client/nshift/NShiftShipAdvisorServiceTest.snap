@@ -3,7 +3,7 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
     "data": {
       "Addresses": [
         {
-          "Attention": "metas GmbH",
+          "Attention": "z. Hd. Sender Test metas GmbH",
           "City": "Bonn",
           "CountryCode": "DE",
           "Email": "noreply@metasfresh.com",
@@ -16,7 +16,7 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "Street2": ""
         },
         {
-          "Attention": "Test Delivery Contact Name",
+          "Attention": "z. Hd. Test metas.ro SRL Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",
@@ -40,8 +40,20 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "Pkgs": [ ],
           "References": [
             {
+              "Kind": 129,
+              "Value": "RO"
+            },
+            {
               "Kind": 23,
+              "Value": "Test Product"
+            },
+            {
+              "Kind": 132,
               "Value": "Test Product Value"
+            },
+            {
+              "Kind": 134,
+              "Value": "10"
             }
           ],
           "Width": 200
@@ -50,6 +62,22 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
       "OrderNo": "randomUUID",
       "ProdConceptID": 0,
       "References": [
+        {
+          "Kind": 108,
+          "Value": "2025-10-02T08:00:00"
+        },
+        {
+          "Kind": 109,
+          "Value": "2025-10-02T17:00"
+        },
+        {
+          "Kind": 9,
+          "Value": "2025-10-02"
+        },
+        {
+          "Kind": 7,
+          "Value": "Customer reference"
+        },
         {
           "Kind": 63,
           "Value": "incoterms"

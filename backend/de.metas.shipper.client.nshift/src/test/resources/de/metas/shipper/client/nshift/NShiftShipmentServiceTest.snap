@@ -221,6 +221,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
             {
               "Kind": 132,
               "Value": "Test Product"
+            },
+            {
+              "Kind": 134,
+              "Value": "10"
             }
           ],
           "Width": 200
@@ -258,6 +262,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
             {
               "Kind": 133,
               "Value": "Test Customs Tariff 2,Test Customs Tariff 3"
+            },
+            {
+              "Kind": 134,
+              "Value": "20"
             }
           ],
           "Width": 200
