@@ -9,14 +9,30 @@
 --   1. Only 542247 exists (new_dawn_uat path) => nothing to do
 --   2. Only 542298 exists (hotfix path) => create 542247, delete 542298
 --   3. Both exist (merge path) => delete 542298
+--
+-- FIX: AD_Menu carries a PARTIAL unique index
+--   uc_ad_menu_internalname = UNIQUE(internalname) WHERE isactive='Y'.
+-- Both 542247 and 542298 use InternalName='Import GL Journal'. The previous version of this
+-- script did "INSERT 542247 SELECT ... FROM 542298" while 542298 was still active, which violated
+-- that index and aborted the whole rollout (exactly the state-2 case it was meant to handle).
+-- The fix: deactivate 542298 FIRST (Step 0) to free the active-only index, then insert 542247 forcing
+-- IsActive='Y'. Pairs with the ON CONFLICT DO NOTHING guard added to 5768920.
 
--- Step 1: If 542247 does not exist but 542298 does, create 542247 from 542298's data
+-- Step 0: free the active-only unique index by deactivating 542298,
+-- but only when 542247 does not yet exist (state 2). No-op in states 1 and 3.
+UPDATE AD_Menu SET IsActive='N'
+WHERE AD_Menu_ID = 542298
+  AND NOT EXISTS (SELECT 1 FROM AD_Menu WHERE AD_Menu_ID = 542247)
+;
+
+-- Step 1: If 542247 does not exist but 542298 does, create 542247 from 542298's data.
+-- IsActive is forced to 'Y' (542298 was just deactivated in Step 0).
 INSERT INTO AD_Menu (Action, AD_Client_ID, AD_Element_ID, AD_Menu_ID, AD_Org_ID, AD_Window_ID,
                      Created, CreatedBy, Description, EntityType, InternalName,
                      IsActive, IsCreateNew, IsReadOnly, IsSOTrx, IsSummary, Name, Updated, UpdatedBy)
 SELECT Action, AD_Client_ID, AD_Element_ID, 542247, AD_Org_ID, AD_Window_ID,
        Created, CreatedBy, Description, EntityType, InternalName,
-       IsActive, IsCreateNew, IsReadOnly, IsSOTrx, IsSummary, Name, Updated, UpdatedBy
+       'Y', IsCreateNew, IsReadOnly, IsSOTrx, IsSummary, Name, Updated, UpdatedBy
 FROM AD_Menu
 WHERE AD_Menu_ID = 542298
   AND NOT EXISTS (SELECT 1 FROM AD_Menu WHERE AD_Menu_ID = 542247)
