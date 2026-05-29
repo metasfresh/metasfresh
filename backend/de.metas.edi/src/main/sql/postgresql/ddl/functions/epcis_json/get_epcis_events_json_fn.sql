@@ -74,36 +74,63 @@ BEGIN
     -- Cache the AD_Table_ID for M_InOutLine — used 4× below as the m_hu_assignment.ad_table_id filter
     v_m_inoutline_table_id := get_table_id('M_InOutLine');
 
-    -- One event per physical SSCC: a shipment that owns no LU (every pallet it touches is
-    -- owned by a lower-id sibling) emits nothing; the owner's export carries the SSCC.
-    PERFORM 1
-    FROM m_hu_assignment ha
-             JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-    WHERE ha.ad_table_id = v_m_inoutline_table_id
-      AND ha.m_lu_hu_id IS NOT NULL
-      AND ha.isactive = 'Y'
-      AND iol.m_inout_id = p_m_inout_id
-      AND p_m_inout_id = (
-          SELECT MIN(iol2.m_inout_id)
-          FROM m_hu_assignment ha2
-                   JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
-          WHERE ha2.ad_table_id = v_m_inoutline_table_id
-            AND ha2.m_lu_hu_id = ha.m_lu_hu_id
-            AND ha2.isactive = 'Y'
-      );
-    IF NOT FOUND THEN
-        RETURN '{}'::jsonb;
-    END IF;
-
-    WITH shared_lu_inout AS MATERIALIZED (
-        SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
+    -- One event per physical SSCC. A shipment is a "sibling" only when it shares physical LU(s)
+    -- (via m_hu_assignment) with other shipments but is NOT the lowest-id owner of ANY of them —
+    -- such siblings emit nothing (the owner's export carries the SSCC, referencing all orders).
+    -- A shipment that touches no shared LU via m_hu_assignment (sole owner, no HU picking, or LUs
+    -- discoverable only via the QtyPicked fallback) is NEVER suppressed here — it falls through to
+    -- the normal export below. The owner election ignores voided/inactive shipments (docstatus).
+    IF EXISTS (
+        -- touches at least one LU via an active m_hu_assignment
+        SELECT 1
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
         WHERE ha.ad_table_id = v_m_inoutline_table_id
           AND ha.m_lu_hu_id IS NOT NULL
           AND ha.isactive = 'Y'
+          AND iol.m_inout_id = p_m_inout_id
+    )
+    AND NOT EXISTS (
+        -- ... but owns NONE of them (is not the lowest-id active owner of any touched LU)
+        SELECT 1
+        FROM m_hu_assignment ha
+                 JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+        WHERE ha.ad_table_id = v_m_inoutline_table_id
+          AND ha.m_lu_hu_id IS NOT NULL
+          AND ha.isactive = 'Y'
+          AND iol.m_inout_id = p_m_inout_id
+          AND p_m_inout_id = (
+              SELECT MIN(iol2.m_inout_id)
+              FROM m_hu_assignment ha2
+                       JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
+                       JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id
+              WHERE ha2.ad_table_id = v_m_inoutline_table_id
+                AND ha2.m_lu_hu_id = ha.m_lu_hu_id
+                AND ha2.isactive = 'Y'
+                AND iol2.isactive = 'Y'
+                AND io2.docstatus IN ('CO', 'CL')
+          )
+    )
+    THEN
+        RETURN '{}'::jsonb;
+    END IF;
+
+    WITH shared_lu_inout AS MATERIALIZED (
+        -- (lu, m_inout) pairs: every active completed/closed shipment that has goods physically
+        -- assigned to an LU. Voided/reversed/in-progress shipments are excluded so they can never
+        -- be elected owner (which would otherwise silence the active shipment for that SSCC).
+        SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
+        FROM m_hu_assignment ha
+                 JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+                 JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
+        WHERE ha.ad_table_id = v_m_inoutline_table_id
+          AND ha.m_lu_hu_id IS NOT NULL
+          AND ha.isactive = 'Y'
+          AND iol.isactive = 'Y'
+          AND io.docstatus IN ('CO', 'CL')
     ),
     lu_owner AS MATERIALIZED (
+        -- Owner of each physical LU = the lowest M_InOut_ID sharing it. Deterministic, stable.
         SELECT lu_hu_id, MIN(m_inout_id) AS owner_inout_id
         FROM shared_lu_inout
         GROUP BY lu_hu_id
@@ -151,6 +178,10 @@ BEGIN
                      JOIN edi_desadv da ON da.edi_desadv_id = link.edi_desadv_id
                      WHERE link.isactive = 'Y'
                        AND link.m_inout_id IN (
+                           -- always this shipment's own DESADVs ...
+                           SELECT io.m_inout_id
+                           UNION
+                           -- ... plus those of sibling shipments sharing an LU this shipment owns
                            SELECT s.m_inout_id
                            FROM shared_lu_inout s
                                     JOIN lu_owner o ON o.lu_hu_id = s.lu_hu_id
@@ -175,8 +206,8 @@ BEGIN
              --   urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer left-padded><2-digit counter>
              -- Production POReferences are numeric (e.g. '1234567890'); LPAD pads shorter values
              -- with leading zeros and leaves 10-digit values unchanged.
-             SELECT lu_hu_id,
-                    LPAD(COALESCE(MIN(poreference), '0'), 10, '0') AS lu_poreference_padded
+             SELECT lwp.lu_hu_id,
+                    LPAD(COALESCE(MIN(lwp.poreference), '0'), 10, '0') AS lu_poreference_padded
              FROM (
                  -- Primary: M_HU_Assignment → InOutLine → OrderLine → Order path
                  SELECT ha.m_lu_hu_id AS lu_hu_id,
@@ -208,19 +239,22 @@ BEGIN
                          AND ha2.isactive = 'Y'
                    )
              ) lwp
-                      JOIN lu_owner o
-                           ON o.lu_hu_id = lwp.lu_hu_id
-                              AND o.owner_inout_id = (SELECT m_inout_id FROM inout_context)
+                      -- Keep LUs this shipment OWNS (shared pallets: owner emits the SSCC), plus LUs
+                      -- with no owner row at all (QtyPicked-only fallback LUs are not in lu_owner,
+                      -- which is built from m_hu_assignment) so the fallback path keeps working.
+                      LEFT JOIN lu_owner o ON o.lu_hu_id = lwp.lu_hu_id
+             WHERE o.owner_inout_id = (SELECT m_inout_id FROM inout_context)
+                OR o.owner_inout_id IS NULL
              GROUP BY lwp.lu_hu_id),
 
          individual_tu_ids AS MATERIALIZED (
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet.
              --
-             -- Restricted to TUs allocated to THIS M_InOut via m_hu_assignment. The
-             -- assignment for a non-aggregated TU normally carries m_tu_hu_id (and/or
-             -- vhu_id) referencing the TU's m_hu_id. Without this filter, when two
-             -- shipments share an LU, the export of shipment-1 would also include the
-             -- individual TUs that belong to the sibling shipment (me03#29231).
+             -- Scoped to TUs allocated to SOME shipment via m_hu_assignment (excludes unshipped
+             -- TUs on a partial pallet). Per me03#29231 (one EPCIS event per physical SSCC) the
+             -- scope gate is the OWNED LU (pallet_list, restricted to LUs this shipment owns), NOT
+             -- the M_InOut: when two shipments share a physical LU, the owner's event intentionally
+             -- merges the individual TUs of BOTH source orders onto that one SSCC.
              SELECT lu_hu.m_hu_id                 AS lu_hu_id,
                     pl.lu_poreference_padded,
                     tu_hu.m_hu_id                 AS tu_hu_id,
@@ -244,11 +278,11 @@ BEGIN
              -- CASE B: HA items with their virtual TU resolved — computed ONCE, reused for
              --         both attribute lookup and storage item joins (avoids double m_hu scan).
              --
-             -- Restricted to HA aggregates allocated to THIS M_InOut via m_hu_assignment.
-             -- Each HA aggregate is allocated to exactly one inoutline (one shipment), and
-             -- ha_item.qty carries the crate count. Without this filter, when two shipments
-             -- share an LU, the export of shipment-1 would also include the HA aggregates
-             -- that belong to the sibling shipment (LAF1010-3 scenario).
+             -- Scoped to HA aggregates allocated to SOME shipment via m_hu_assignment; ha_item.qty
+             -- carries the crate count. Per me03#29231 (one EPCIS event per physical SSCC) the scope
+             -- gate is the OWNED LU (pallet_list), NOT the M_InOut: when two shipments share a
+             -- physical LU (LAF1010-3), the owner's event intentionally merges the HA aggregates of
+             -- BOTH source orders onto that one SSCC.
              SELECT lu_hu.m_hu_id                           AS lu_hu_id,
                     pl.lu_poreference_padded,
                     ha_item.m_hu_item_id                    AS tu_hu_id,
