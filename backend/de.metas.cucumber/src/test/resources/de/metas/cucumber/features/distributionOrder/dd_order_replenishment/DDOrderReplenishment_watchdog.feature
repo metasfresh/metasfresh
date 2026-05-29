@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
-@ghActions:run_on_executor6
+@ghActions:run_on_executor7
 Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly scheduler)
   As a warehouse operator, I want a drift watchdog that recreates any distribution order that fell
   through (JVM crash between commit and publish, RabbitMQ outage, missed handler error), either when I

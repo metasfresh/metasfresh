@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
-@ghActions:run_on_executor6
+@ghActions:run_on_executor7
 Feature: DD_Order replenishment — network gap soft-fail and repost recovery
   As a warehouse operator, when the distribution network of a packing warehouse cannot resolve a source
   warehouse, I want the reconcile to fail softly — no distribution order is created, an AD_Issue is logged

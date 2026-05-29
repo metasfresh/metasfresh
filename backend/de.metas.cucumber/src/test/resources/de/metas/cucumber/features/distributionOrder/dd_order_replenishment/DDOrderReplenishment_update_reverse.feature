@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
-@ghActions:run_on_executor6
+@ghActions:run_on_executor7
 Feature: DD_Order replenishment — update (void + recreate) and reverse (void only)
   As a warehouse operator running a packing workplace ("Packtisch"),
   I want a changed sales-order / shipment-schedule quantity to void the old distribution order and

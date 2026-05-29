@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
-@ghActions:run_on_executor6
+@ghActions:run_on_executor7
 Feature: DD_Order replenishment — create a distribution order for a packing-warehouse sales order
   As a warehouse operator running a packing workplace ("Packtisch"),
   I want every sales-order line on a packing warehouse to automatically get exactly one
