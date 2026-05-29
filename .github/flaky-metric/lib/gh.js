@@ -27,7 +27,7 @@ function listRuns({ branch = 'new_dawn_uat', since, limit = 50 } = {}) {
     '--branch', branch,
     '--workflow', 'cicd.yaml',
     '--limit', String(limit),
-    '--json', 'databaseId,status,conclusion,createdAt,headSha,headBranch,displayTitle,url',
+    '--json', 'databaseId,status,conclusion,createdAt,headSha,headBranch,attempt,displayTitle,url',
   ];
   if (since) {
     const created = sinceToFilter(since);
@@ -76,4 +76,17 @@ function makeTmpRoot() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'flaky-metric-'));
 }
 
-module.exports = { listRuns, junitArtifactNames, downloadArtifact, makeTmpRoot, REPO };
+// Pin a run URL to a specific attempt: `.../runs/<id>/attempts/<n>`.
+// A re-run keeps the same run id but increments the attempt; the bare
+// `.../runs/<id>` URL always shows the LATEST attempt — so a flaky run that
+// failed on attempt 1 and passed on the re-run would link to a green page,
+// which is misleading. We pin to the attempt where the failure was observed
+// (even attempt 1, so a later re-run can't retroactively turn the link green).
+function buildRunUrl(baseUrl, attempt) {
+  const n = Number(attempt);
+  if (!baseUrl) return baseUrl;
+  if (!Number.isFinite(n) || n < 1) return baseUrl;
+  return `${baseUrl}/attempts/${n}`;
+}
+
+module.exports = { listRuns, junitArtifactNames, downloadArtifact, makeTmpRoot, buildRunUrl, REPO };

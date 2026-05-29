@@ -75,9 +75,13 @@ jobs:
           # the shell) to avoid template-expansion command injection.
           INPUT_SINCE: ${{ github.event.inputs.since }}
           RUN_ID: ${{ github.event.workflow_run.id }}
+          # The attempt that triggered this event — pins the recorded URL to the
+          # attempt that actually failed (a re-run's bare URL shows the latest,
+          # possibly green, attempt).
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |
           if [ "$EVENT_NAME" = "workflow_run" ]; then
-            node scripts/extract.js --run "$RUN_ID"
+            node scripts/extract.js --run "$RUN_ID" --attempt "$RUN_ATTEMPT"
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             node scripts/extract.js --since "$INPUT_SINCE"
           else
