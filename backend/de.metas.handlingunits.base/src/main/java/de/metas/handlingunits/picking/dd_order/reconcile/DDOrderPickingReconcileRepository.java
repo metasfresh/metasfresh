@@ -2,28 +2,18 @@ package de.metas.handlingunits.picking.dd_order.reconcile;
 
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -38,9 +28,6 @@ import java.util.stream.Stream;
 public class DDOrderPickingReconcileRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	/**
 	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
@@ -157,46 +144,23 @@ public class DDOrderPickingReconcileRepository
 	}
 
 	/**
-	 * Voids the given DD_Order via the document engine (DocStatus → Voided).
-	 */
-	public void voidDDOrder(@NonNull final DDOrderId ddOrderId)
-	{
-		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
-		documentBL.processEx(ddOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
-	}
-
-	/**
-	 * Builds exactly one {@link I_DD_Order} (with a single {@link I_DD_OrderLine}) moving the requested
-	 * product/qty from the source warehouse's default locator to the target (packing) warehouse's default
-	 * locator, links both header and line to the shipment schedule via {@code M_ShipmentSchedule_ID},
-	 * and completes the document via {@link IDocumentBL}.
+	 * Builds exactly one {@link I_DD_Order} (with a single {@link I_DD_OrderLine}) for the picking-reconcile flow,
+	 * saves both records to the database, and returns the saved (Drafted) {@link I_DD_Order}.
+	 *
+	 * <p>This method is pure data-access: it only persists the records. All non-DAO work — resolving locators,
+	 * the in-transit warehouse, the doc-type, and completing the document via {@link de.metas.document.engine.IDocumentBL}
+	 * — is performed by the caller ({@link DDOrderPickingReconcileService}).
 	 *
 	 * <p>Note on intentionally-omitted fields: {@code C_BPartner_Location_ID} and {@code PP_Plant_ID} are NOT set.
 	 * This is an internal pick-to-packing move, so neither the partner-location nor the manufacturing-plant context
 	 * applies. (If a dt204 packing warehouse ever turns out to have a PP_Plant that MRP needs, resolve it via
 	 * {@code warehouseBL.getPlantId(targetWarehouseId)} — not expected.)</p>
 	 *
-	 * @return the ID of the newly created, completed DD_Order
+	 * @return the saved (Drafted) {@link I_DD_Order} — the caller is responsible for completing it
 	 */
-	public DDOrderId createCompletedDDOrder(@NonNull final CreateDDOrderRequest request)
+	public I_DD_Order saveDraftDDOrder(@NonNull final CreateDDOrderRequest request)
 	{
 		final OrgId orgId = request.getOrgId();
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(request.getSourceWarehouseId());
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(request.getTargetWarehouseId());
-
-		// Mirror HUs2DDOrderProducer: the DD_Order header warehouse is the IN-TRANSIT warehouse;
-		// the source/target warehouses live on the line's locators (M_Warehouse_From/To on the header).
-		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(orgId);
-
-		// Mirror HUs2DDOrderProducer: resolve the Distribution Order document type — required by completeIt.
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(
-				DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-						.adClientId(Env.getAD_Client_ID())
-						.adOrgId(orgId.getRepoId())
-						.build());
-		// Fail with a clear config-time error rather than letting a -1 doc-type surface during completeIt.
-		Check.assumeNotNull(docTypeId, "Distribution Order doc-type must exist for orgId={}", orgId);
 
 		//
 		// Header
@@ -206,8 +170,8 @@ public class DDOrderPickingReconcileRepository
 		{
 			ddOrder.setC_BPartner_ID(request.getBpartnerId().getRepoId());
 		}
-		ddOrder.setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
-		ddOrder.setM_Warehouse_ID(inTransitWarehouseId.getRepoId());
+		ddOrder.setC_DocType_ID(DocTypeId.toRepoId(request.getDocTypeId()));
+		ddOrder.setM_Warehouse_ID(request.getInTransitWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_From_ID(request.getSourceWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_To_ID(request.getTargetWarehouseId().getRepoId());
 		ddOrder.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
@@ -238,16 +202,12 @@ public class DDOrderPickingReconcileRepository
 		ddOrderLine.setQtyEntered(request.getQty().toBigDecimal());
 		ddOrderLine.setQtyOrdered(request.getQty().toBigDecimal());
 		ddOrderLine.setTargetQty(request.getQty().toBigDecimal());
-		ddOrderLine.setM_Locator_ID(locatorFromId.getRepoId());
-		ddOrderLine.setM_LocatorTo_ID(locatorToId.getRepoId());
+		ddOrderLine.setM_Locator_ID(request.getLocatorFromId().getRepoId());
+		ddOrderLine.setM_LocatorTo_ID(request.getLocatorToId().getRepoId());
 		ddOrderLine.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
 		ddOrderLine.setIsInvoiced(false);
 		InterfaceWrapperHelper.save(ddOrderLine);
 
-		//
-		// Complete via the document engine (DocStatus -> Completed)
-		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
-		return DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+		return ddOrder;
 	}
 }

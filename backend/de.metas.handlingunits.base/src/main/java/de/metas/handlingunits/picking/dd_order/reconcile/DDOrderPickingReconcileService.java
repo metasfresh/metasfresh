@@ -4,6 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.picking.dd_order.reconcile.event.DDOrderReconciliationEventPublisher;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -20,15 +25,22 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -59,6 +71,9 @@ public class DDOrderPickingReconcileService
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
@@ -213,16 +228,20 @@ public class DDOrderPickingReconcileService
 	 * Builds exactly one Completed DD_Order for the given (active, packing-warehouse) shipment schedule.
 	 * Resolves the source warehouse via the packing warehouse's distribution network;
 	 * if no source can be resolved, throws the network-gap exception and creates nothing.
+	 *
+	 * <p>Warehouse resolution (locators, in-transit warehouse, doc-type) happens here in the Service;
+	 * the repository ({@link DDOrderPickingReconcileRepository}) only handles the data persistence.</p>
 	 */
 	private void createDDOrderFor(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final WarehouseId autoDistributionOrderId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse autoDistributionOrder = warehouseDAO.getById(autoDistributionOrderId);
+		final OrgId orgId = OrgId.ofRepoId(schedule.getAD_Org_ID());
+		final WarehouseId targetWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+		final I_M_Warehouse targetWarehouse = warehouseDAO.getById(targetWarehouseId);
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
-		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(autoDistributionOrder.getDD_NetworkDistribution_ID());
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(targetWarehouse.getDD_NetworkDistribution_ID());
 
-		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(autoDistributionOrderId, productId, networkId)
+		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(targetWarehouseId, productId, networkId)
 				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
 
 		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
@@ -235,18 +254,41 @@ public class DDOrderPickingReconcileService
 		final BigDecimal qtyToMoveBD = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
 		final Quantity qty = Quantitys.of(qtyToMoveBD, stockUomId);
 
+		// Resolve warehouse-level values: locators and in-transit warehouse.
+		// Mirror HUs2DDOrderProducer: the DD_Order header warehouse is the IN-TRANSIT warehouse;
+		// the source/target warehouses live on the line's locators (M_Warehouse_From/To on the header).
+		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(sourceWarehouseId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(targetWarehouseId);
+		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(orgId);
+
+		// Resolve Distribution Order document type — required by completeIt.
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(
+				DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+						.adClientId(Env.getAD_Client_ID())
+						.adOrgId(orgId.getRepoId())
+						.build());
+		// Fail with a clear config-time error rather than letting a -1 doc-type surface during completeIt.
+		Check.assumeNotNull(docTypeId, "Distribution Order doc-type must exist for orgId={}", orgId);
+
 		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
-				.targetWarehouseId(autoDistributionOrderId)
+				.targetWarehouseId(targetWarehouseId)
+				.inTransitWarehouseId(inTransitWarehouseId)
+				.locatorFromId(locatorFromId)
+				.locatorToId(locatorToId)
+				.docTypeId(docTypeId)
 				.productId(productId)
 				.qty(qty)
-				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
+				.orgId(orgId)
 				.datePromised(SystemTime.asInstant())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
 				.build();
 
-		repository.createCompletedDDOrder(request);
+		// Repository saves the header + line; Service completes the document (document engine is not DAO).
+		final I_DD_Order ddOrder = repository.saveDraftDDOrder(request);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
@@ -255,7 +297,8 @@ public class DDOrderPickingReconcileService
 		{
 			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingDDOrderId);
 		}
-		repository.voidDDOrder(existingDDOrderId);
+		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.load(existingDDOrderId.getRepoId(), I_DD_Order.class);
+		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
 	/**
@@ -280,7 +323,8 @@ public class DDOrderPickingReconcileService
 		}
 
 		// Void the existing DD_Order (picker already checked — no double check needed)
-		repository.voidDDOrder(existingDDOrderId);
+		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.load(existingDDOrderId.getRepoId(), I_DD_Order.class);
+		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
 		// Create a fresh DD_Order from the current schedule data
 		createDDOrderFor(schedule);
