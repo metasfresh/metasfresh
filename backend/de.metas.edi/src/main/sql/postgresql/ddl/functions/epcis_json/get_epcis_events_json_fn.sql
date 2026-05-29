@@ -74,7 +74,42 @@ BEGIN
     -- Cache the AD_Table_ID for M_InOutLine — used 4× below as the m_hu_assignment.ad_table_id filter
     v_m_inoutline_table_id := get_table_id('M_InOutLine');
 
-    WITH inout_context AS (
+    -- One event per physical SSCC: a shipment that owns no LU (every pallet it touches is
+    -- owned by a lower-id sibling) emits nothing; the owner's export carries the SSCC.
+    PERFORM 1
+    FROM m_hu_assignment ha
+             JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+    WHERE ha.ad_table_id = v_m_inoutline_table_id
+      AND ha.m_lu_hu_id IS NOT NULL
+      AND ha.isactive = 'Y'
+      AND iol.m_inout_id = p_m_inout_id
+      AND p_m_inout_id = (
+          SELECT MIN(iol2.m_inout_id)
+          FROM m_hu_assignment ha2
+                   JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
+          WHERE ha2.ad_table_id = v_m_inoutline_table_id
+            AND ha2.m_lu_hu_id = ha.m_lu_hu_id
+            AND ha2.isactive = 'Y'
+      );
+    IF NOT FOUND THEN
+        RETURN '{}'::jsonb;
+    END IF;
+
+    WITH shared_lu_inout AS MATERIALIZED (
+        SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
+        FROM m_hu_assignment ha
+                 JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+        WHERE ha.ad_table_id = v_m_inoutline_table_id
+          AND ha.m_lu_hu_id IS NOT NULL
+          AND ha.isactive = 'Y'
+    ),
+    lu_owner AS MATERIALIZED (
+        SELECT lu_hu_id, MIN(m_inout_id) AS owner_inout_id
+        FROM shared_lu_inout
+        GROUP BY lu_hu_id
+    ),
+
+    inout_context AS (
         -- Materialize all context data ONCE to avoid correlated subqueries
         SELECT io.m_inout_id,
                io.documentno,
@@ -107,14 +142,20 @@ BEGIN
                desadv_agg.desadv_poreferences
         FROM m_inout io
                  LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
-                 -- aggregate all DESADV references via N:M junction
+                 -- aggregate all DESADV references via N:M junction, across all shipments
+                 -- sharing owned LUs (so the owner event carries refs from sibling shipments too)
                  LEFT JOIN LATERAL (
                      SELECT jsonb_agg(da.documentno ORDER BY da.documentno)   AS desadv_documentnos,
                             jsonb_agg(da.poreference ORDER BY da.documentno)  AS desadv_poreferences
                      FROM edi_desadv_m_inout link
                      JOIN edi_desadv da ON da.edi_desadv_id = link.edi_desadv_id
-                     WHERE link.m_inout_id = io.m_inout_id
-                       AND link.isactive = 'Y'
+                     WHERE link.isactive = 'Y'
+                       AND link.m_inout_id IN (
+                           SELECT s.m_inout_id
+                           FROM shared_lu_inout s
+                                    JOIN lu_owner o ON o.lu_hu_id = s.lu_hu_id
+                           WHERE o.owner_inout_id = io.m_inout_id
+                       )
                  ) desadv_agg ON true
                  LEFT JOIN c_bpartner_location bpl_desadv_buyer
                            ON bpl_desadv_buyer.c_bpartner_location_id = d.c_bpartner_location_id
@@ -166,8 +207,11 @@ BEGIN
                          AND ha2.ad_table_id = v_m_inoutline_table_id
                          AND ha2.isactive = 'Y'
                    )
-             ) lu_with_poreference
-             GROUP BY lu_hu_id),
+             ) lwp
+                      JOIN lu_owner o
+                           ON o.lu_hu_id = lwp.lu_hu_id
+                              AND o.owner_inout_id = (SELECT m_inout_id FROM inout_context)
+             GROUP BY lwp.lu_hu_id),
 
          individual_tu_ids AS MATERIALIZED (
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet.
@@ -192,7 +236,6 @@ BEGIN
                  FROM m_hu_assignment ha
                           JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
                  WHERE ha.ad_table_id = v_m_inoutline_table_id
-                   AND iol.m_inout_id = (SELECT m_inout_id FROM inout_context)
                    AND ha.isactive = 'Y'
                    AND (ha.m_tu_hu_id = tu_hu.m_hu_id OR ha.vhu_id = tu_hu.m_hu_id)
              )),
@@ -226,8 +269,7 @@ BEGIN
                  SELECT 1
                  FROM m_hu_assignment ha
                           JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 WHERE ha.ad_table_id = v_m_inoutline_table_id 
-                   AND iol.m_inout_id = (SELECT m_inout_id FROM inout_context)
+                 WHERE ha.ad_table_id = v_m_inoutline_table_id
                    AND ha.isactive = 'Y'
                    AND ha.vhu_id = ha_vtu.m_hu_id
              )),
