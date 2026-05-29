@@ -22,7 +22,7 @@ VALUES
      TIMESTAMP '2026-05-29 00:00:00', 100, 'de.metas.acct',
      'Y', 'N', 'N', 'N',
      'N', 'N', 'Y', 'Y',
-     0, 'Abweichung prüfen', 'Y', 'N',
+     0, 'Abweichung prüfen', 'N', 'N',
      'Java', TIMESTAMP '2026-05-29 00:00:00', 100, 'C_TaxDeclaration_CheckDrift')
 ;
 
