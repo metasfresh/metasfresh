@@ -44,6 +44,9 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | stockWH        | customer      | customerLocation       |
     And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
+      | inTransitWH    | customer      | customerLocation       | true        |
+    And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID |
       | packingWH      | customer      | customerLocation       | Y           | Y                  | network                   |
 
