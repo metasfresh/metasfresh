@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefDat
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
+import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
