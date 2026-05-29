@@ -36,6 +36,9 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
       | Identifier |
       | shipper    |
     # The network exists (so the packing-warehouse config is valid) but has NO distribution line
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
+      | inTransitWH    | customer      | customerLocation       | true        |
     # resolving a source warehouse for the packing warehouse — the source-warehouse resolution will fail.
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID |

@@ -37,6 +37,9 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
       | Identifier |
       | shipper    |
     And metasfresh contains DD_NetworkDistribution
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
+      | inTransitWH    | customer      | customerLocation       | true        |
       | DD_NetworkDistribution_ID |
       | network                   |
     And metasfresh contains M_Warehouse:
