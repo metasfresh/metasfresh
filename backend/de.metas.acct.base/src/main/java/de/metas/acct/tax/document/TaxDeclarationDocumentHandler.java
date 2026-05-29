@@ -76,10 +76,9 @@ public class TaxDeclarationDocumentHandler implements DocumentHandler
 		{
 			final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_Original_ID());
 			final I_C_TaxDeclaration original = repo.getById(originalId);
-			if (original.isCorrectionNeeded() || original.getCorrectionNeededReason() != null)
+			if (original.isCorrectionNeeded())
 			{
 				original.setIsCorrectionNeeded(false);
-				original.setCorrectionNeededReason(null);
 				InterfaceWrapperHelper.save(original);
 			}
 		}

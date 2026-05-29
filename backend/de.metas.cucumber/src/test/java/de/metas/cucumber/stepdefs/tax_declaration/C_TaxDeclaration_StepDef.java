@@ -298,10 +298,25 @@ public class C_TaxDeclaration_StepDef
 		final I_C_TaxDeclaration decl = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
 		final boolean value = "Y".equalsIgnoreCase(flagValue);
 		decl.setIsCorrectionNeeded(value);
-		if (value)
-		{
-			decl.setCorrectionNeededReason("test-drift");
-		}
 		InterfaceWrapperHelper.saveRecord(decl);
+	}
+
+	/**
+	 * Run {@link TaxDeclarationService#checkDrift(TaxDeclarationId)} on the declaration registered under {@code identifier}
+	 * and refresh the cached record so that subsequent assertions see the updated {@code IsCorrectionNeeded} value.
+	 *
+	 * <p>Required columns: {@code identifier} (string — the declaration's step-def identifier)
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * When the drift check process is run on tax declaration "tdD7"
+	 * }</pre>
+	 */
+	@When("the drift check process is run on tax declaration {string}")
+	public void runDriftCheck(@NonNull final String identifier)
+	{
+		final I_C_TaxDeclaration record = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		taxDeclarationService.checkDrift(TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_ID()));
+		InterfaceWrapperHelper.refresh(record);
 	}
 }

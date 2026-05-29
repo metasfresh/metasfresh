@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_TaxDeclaration, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2073850125L;
+	private static final long serialVersionUID = -1047379587L;
 
     /** Standard Constructor */
     public X_C_TaxDeclaration (final Properties ctx, final int C_TaxDeclaration_ID, @Nullable final String trxName)
@@ -74,18 +74,6 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
-	}
-
-	@Override
-	public void setCorrectionNeededReason (final @Nullable java.lang.String CorrectionNeededReason)
-	{
-		set_Value (COLUMNNAME_CorrectionNeededReason, CorrectionNeededReason);
-	}
-
-	@Override
-	public java.lang.String getCorrectionNeededReason() 
-	{
-		return get_ValueAsString(COLUMNNAME_CorrectionNeededReason);
 	}
 
 	@Override
