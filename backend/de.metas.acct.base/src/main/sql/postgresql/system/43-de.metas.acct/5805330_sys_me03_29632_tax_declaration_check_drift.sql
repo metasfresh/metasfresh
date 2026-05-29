@@ -53,7 +53,7 @@ BEGIN
         FROM   C_TaxDeclarationAcct tda
         JOIN   Fact_Acct fa ON fa.Fact_Acct_ID = tda.Fact_Acct_ID
         WHERE  tda.C_TaxDeclaration_ID = p_c_taxdeclaration_id
-          AND  (fa.AmtAcctDr - fa.AmtAcctCr) <> tda.Amount
+          AND  (fa.AmtAcctDr - fa.AmtAcctCr) IS DISTINCT FROM tda.Amount
     ) THEN
         RETURN TRUE;
     END IF;
