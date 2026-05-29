@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const { computeMetricsFromFailures } = require('../lib/sheets');
 
 // Failures row layout: [Key, Run, Branch, Date, Commit, TestType, Profile, Scenario, Bucket, Exception, Message]
-// Metrics row layout:  [Branch, Scenario, Bucket, TestType, FailCount, RunsFailed, First, Last, LastRun]
+// Metrics row layout:  [Branch, Scenario, Bucket, TestType, FailCount, First, Last, LastRun]
 const row = (runId, date, scenario, bucket, branch = 'new_dawn_uat', testType = 'cucumber') => [
   `${runId}::${scenario}`, `https://x/runs/${runId}`, branch, date, 'abc123', testType, 'cucumber/profile1', scenario, bucket, 'Exc', 'msg',
 ];
@@ -19,10 +19,9 @@ test('metrics projection: counts rows + distinct runs per scenario', () => {
   const out = computeMetricsFromFailures(rows);
   const tc5b = out.find((r) => r[1] === 'TC5b');
   assert.strictEqual(tc5b[0], 'new_dawn_uat', 'branch column');
-  assert.strictEqual(tc5b[4], 2, 'failCount = 2 rows');
-  assert.strictEqual(tc5b[5], 2, 'runsFailed = 2 distinct runs');
-  assert.strictEqual(tc5b[6], '2026-05-25 10:00', 'firstFailed = earliest');
-  assert.strictEqual(tc5b[7], '2026-05-26 10:00', 'lastFailed = latest');
+  assert.strictEqual(tc5b[4], 2, 'failCount = 2 rows (= distinct runs, by key design)');
+  assert.strictEqual(tc5b[5], '2026-05-25 10:00', 'firstFailed = earliest');
+  assert.strictEqual(tc5b[6], '2026-05-26 10:00', 'lastFailed = latest');
 });
 
 test('metrics projection: same scenario on two branches stays as two rows', () => {

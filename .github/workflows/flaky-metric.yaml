@@ -11,7 +11,10 @@
 # decision (metasfresh vs me03-gh-automation) which is still open.
 #
 # REQUIRED REPO SECRET (human-only, see SETUP.md):
-#   GOOGLE_SHEETS_CREDENTIALS_JSON — the full service-account JSON, as a secret.
+#   QA_SHEETS_SERVICE_ACCOUNT_JSON — the full service-account JSON, as a secret
+#   (the org-standard QA Google-Sheets service account; must be available to
+#   metasfresh/metasfresh — org-level secret with this repo in its access list,
+#   or a repo-level secret here).
 # REQUIRED REPO VARIABLE (or hardcode below):
 #   FLAKY_SHEET_ID — the target spreadsheet id.
 
@@ -67,7 +70,7 @@ jobs:
         working-directory: .github/flaky-metric
         env:
           GH_TOKEN: ${{ github.token }}
-          GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+          QA_SHEETS_SERVICE_ACCOUNT_JSON: ${{ secrets.QA_SHEETS_SERVICE_ACCOUNT_JSON }}
           FLAKY_SHEET_ID: ${{ vars.FLAKY_SHEET_ID }}
           FLAKY_REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}

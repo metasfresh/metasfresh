@@ -15,9 +15,9 @@ const creds = require(os.homedir() + '/.credentials/google-sheets-service-accoun
   const meta = await sheets.spreadsheets.get({ spreadsheetId: id });
   console.log('Tabs:', meta.data.sheets.map((s) => s.properties.title).join(', '));
 
-  const m = await sheets.spreadsheets.values.get({ spreadsheetId: id, range: 'Metrics!A1:I' });
+  const m = await sheets.spreadsheets.values.get({ spreadsheetId: id, range: 'Metrics!A1:H' });
   console.log('\n=== METRICS ===');
-  // Metrics layout: [Branch, Scenario, Bucket, TestType, FailCount, RunsFailed, First, Last, LastRun]
+  // Metrics layout: [Branch, Scenario, Bucket, TestType, FailCount, First, Last, LastRun]
   console.log('fails'.padStart(5), 'branch'.padEnd(20), 'bucket'.padEnd(40), 'scenario');
   for (const r of (m.data.values || []).slice(1)) {
     console.log(

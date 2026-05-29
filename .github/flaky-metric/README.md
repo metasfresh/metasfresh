@@ -21,8 +21,9 @@ For each `cicd.yaml` run on `new_dawn_uat`:
    - **Failures** — append-only event log, one row per `(run, failed scenario)`.
      Idempotent: re-running over an overlapping window appends nothing new
      (dedup on the `runId::scenario` key).
-   - **Metrics** — one row per scenario, upserted in place: running fail count,
-     distinct runs failed, first/last failed, current bucket.
+   - **Metrics** — one row per `(branch, scenario)`, recomputed from the Failures
+     log each run: fail count (= distinct runs failed, since the Failures key is
+     `runId::scenario`), first/last failed, current bucket.
 
 ## Usage
 
@@ -51,8 +52,8 @@ Flags: `--dry-run` (no creds, write to `./out/`), `--run <id>`, `--since <Nd|dat
 |---|---|---|
 | `FLAKY_SHEET_ID` | target spreadsheet id | — (dry-run if unset) |
 | `FLAKY_REPO` | source repo | `metasfresh/metasfresh` |
-| `GOOGLE_SHEETS_CREDENTIALS` | path to service-account JSON | `~/.credentials/google-sheets-service-account.json` |
-| `GOOGLE_SHEETS_CREDENTIALS_JSON` | inline service-account JSON (used by the Action) | — |
+| `GOOGLE_SHEETS_CREDENTIALS` | path to service-account JSON (local use) | `~/.credentials/google-sheets-service-account.json` |
+| `QA_SHEETS_SERVICE_ACCOUNT_JSON` | inline service-account JSON (used by the Action; org-standard secret name) | — |
 | `GH_TOKEN` | gh-CLI token | your `gh auth login` / Action `github.token` |
 
 Tab names are the `FAILURES_TAB` / `METRICS_TAB` constants in `lib/sheets.js`.
