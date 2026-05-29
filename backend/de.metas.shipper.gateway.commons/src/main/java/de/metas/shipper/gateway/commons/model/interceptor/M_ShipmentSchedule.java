@@ -27,10 +27,10 @@ import de.metas.async.AsyncBatchId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
+import de.metas.shipping.CarrierProductId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -48,6 +48,19 @@ public class M_ShipmentSchedule
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status)
+	public void ifAdviseFailedUnsetCarrierProduct(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
+		if (carrierAdviseStatus != null && carrierAdviseStatus.isFailed())
+		{
+			shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override,
@@ -56,14 +69,14 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID })
 	public void markAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if(InterfaceWrapperHelper.isValueChanged(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID))
+		if (InterfaceWrapperHelper.isValueChanged(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID))
 		{
 			shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
 			shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
 			shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
 
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
-			if(shipmentScheduleId != null)
+			if (shipmentScheduleId != null)
 			{
 				shipmentScheduleService.removeAssignedServiceIdsByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
 			}
@@ -75,7 +88,6 @@ public class M_ShipmentSchedule
 		}
 
 		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
-		shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
 	}
 
 	@ModelChange(timings = {
