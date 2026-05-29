@@ -37,9 +37,6 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | Identifier |
       | shipper    |
 
-    And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
-      | inTransitWH    | customer      | customerLocation       | true        |
   @from:cucumber
   Scenario: One Completed DD_Order is created for a sales order on the packing warehouse
     # The stocking warehouse holds the goods; the packing warehouse is where the picker delivers them.
