@@ -57,6 +57,8 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -75,15 +77,21 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
 import javax.annotation.Nullable;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.function.Supplier;
+import org.slf4j.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class DD_Order_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(DD_Order_StepDef.class);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -410,5 +418,95 @@ public class DD_Order_StepDef
 						.isEqualTo(identifier.lookupNotNullIdIn(warehouseTable)));
 
 		softly.assertAll();
+	}
+
+	@When("^the DD_Order linked to M_ShipmentSchedule (.*) is voided directly$")
+	public void void_DD_Order_directly(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final I_DD_Order liveDDOrder = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+
+		documentBL.processEx(liveDDOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+	}
+
+	@Then("^after not more than (.*)s, the DD_Order linked to M_ShipmentSchedule (.*) is Voided$")
+	public void assert_DD_Order_voided(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		final Supplier<Boolean> isVoided = () -> {
+			final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+					.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+					.create()
+					.anyMatch();
+
+			final boolean voidedExists = queryBL.createQueryBuilder(I_DD_Order.class)
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+					.create()
+					.anyMatch();
+
+			// A voided DD_Order exists and there is no live one remaining for the schedule.
+			return voidedExists && !liveExists;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 1000, isVoided, () -> logCurrentDDOrders(scheduleId));
+	}
+
+	@Then("^there is no live DD_Order for M_ShipmentSchedule (.*)$")
+	public void assert_no_live_DD_Order(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+		final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.create()
+				.anyMatch();
+
+		assertThat(liveExists)
+				.as("No live DD_Order must exist for M_ShipmentSchedule %s", shipmentScheduleIdentifier)
+				.isFalse();
+	}
+
+	@Then("^there is no reconcile DD_Order for the C_Order (.*)$")
+	public void assert_no_reconcile_DD_Order_for_order(@NonNull final String orderIdentifier)
+	{
+		final org.compiere.model.I_C_Order order = orderTable.get(orderIdentifier);
+
+		// All schedules of the order; assert none has a reconcile DD_Order (M_ShipmentSchedule_ID linkage).
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.listIds()
+				.forEach(scheduleId -> {
+					final boolean ddOrderExists = queryBL.createQueryBuilder(I_DD_Order.class)
+							.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+							.create()
+							.anyMatch();
+					assertThat(ddOrderExists)
+							.as("No reconcile DD_Order must exist for schedule %s of order %s (non-packing warehouse)", scheduleId, orderIdentifier)
+							.isFalse();
+				});
+	}
+
+	private void logCurrentDDOrders(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final StringBuilder sb = new StringBuilder("DD_Orders linked to M_ShipmentSchedule_ID=").append(scheduleId).append(":\n");
+		queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create()
+				.stream(I_DD_Order.class)
+				.forEach(ddOrder -> sb.append(" DD_Order_ID=").append(ddOrder.getDD_Order_ID())
+						.append(" DocStatus=").append(ddOrder.getDocStatus()).append("\n"));
+		logger.error("*** Waiting for DD_Order to be Voided, current context:\n{}", sb);
 	}
 }

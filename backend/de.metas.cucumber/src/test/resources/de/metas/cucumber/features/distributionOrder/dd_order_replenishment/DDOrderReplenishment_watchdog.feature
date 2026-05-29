@@ -77,7 +77,7 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success (REQUIREMENTS §5 TC7).
-    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+    And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | IsError |
       | false   |
 
@@ -94,6 +94,6 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success (REQUIREMENTS §5 TC8).
-    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+    And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | IsError |
       | false   |

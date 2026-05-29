@@ -22,51 +22,30 @@
 
 package de.metas.cucumber.stepdefs.distributionorder;
 
-import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDef;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.event.model.I_AD_EventLog_Entry;
-import de.metas.handlingunits.model.I_M_Picking_Job;
+import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
+import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
-import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReconcileBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.X_DD_Order;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -96,32 +75,15 @@ public class DDOrderPickingReplenishment_StepDef
 	/** Value of the AD_Process row backing the {@code DD_Order_Picking_Rebuild} JavaProcess. */
 	private static final String PROCESS_VALUE_DDOrderPickingRebuild = "DD_Order_Picking_Rebuild";
 
+	/** FQN of the replenishment event handler — stored as {@code AD_EventLog_Entry.Classname} by the event framework. */
+	private static final String RECONCILE_HANDLER_CLASSNAME = DDOrderReplenishmentEventHandler.class.getName();
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
+	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
-	@NonNull private final C_Order_StepDefData orderTable;
-	@NonNull private final C_OrderLine_StepDefData orderLineTable;
-	@NonNull private final C_BPartner_StepDefData bpartnerTable;
-	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
-	@NonNull private final M_Product_StepDefData productTable;
-
-	/**
-	 * Deactivates (cancels) a shipment schedule, mirroring a sales-order line cancellation.
-	 * The save fires {@code M_ShipmentSchedule.afterSave}, which publishes a reconcile event whose consumer
-	 * voids the live DD_Order (no new one is created — see REQUIREMENTS.md TC3).
-	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule to deactivate.</p>
-	 */
-	@When("^the M_ShipmentSchedule identified by (.*) is deactivated$")
-	public void deactivate_M_ShipmentSchedule(@NonNull final String shipmentScheduleIdentifier)
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		schedule.setIsActive(false);
-		InterfaceWrapperHelper.saveRecord(schedule);
-	}
 
 	/**
 	 * Changes a shipment schedule's effective quantity by setting {@code QtyOrdered_Override} and saving.
@@ -136,12 +98,7 @@ public class DDOrderPickingReplenishment_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				.forEach(row -> {
-					final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(row.getAsIdentifier().getAsString());
-					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override);
-					schedule.setQtyOrdered_Override(newQty);
-					InterfaceWrapperHelper.saveRecord(schedule);
-				});
+				.forEach(shipmentScheduleStepDef::alterShipmentSchedule);
 	}
 
 	/**
@@ -180,61 +137,6 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Creates a minimal but valid {@code M_Picking_Job} + {@code M_Picking_Job_Line} linked to a shipment schedule,
-	 * making the picker "busy" on that schedule's DD_Order (the busy-check matches on {@code M_ShipmentSchedule_ID}).
-	 *
-	 * <p>Required columns:</p>
-	 * <ul>
-	 *   <li>{@code M_ShipmentSchedule_ID} — schedule the picking-job line references (identifier).</li>
-	 *   <li>{@code C_OrderLine_ID} — the sales-order line (identifier); provides C_Order/BPartner context.</li>
-	 *   <li>{@code M_Product_ID} — product (identifier).</li>
-	 *   <li>{@code QtyToPick} — quantity to pick.</li>
-	 *   <li>{@code C_UOM_ID} — unit of measure repo id (int).</li>
-	 * </ul>
-	 */
-	@And("metasfresh contains M_Picking_Job_Line:")
-	public void create_M_Picking_Job_Line(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::create_M_Picking_Job_Line);
-	}
-
-	private void create_M_Picking_Job_Line(@NonNull final DataTableRow row)
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(row.getAsIdentifier(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID).getAsString());
-		final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier(I_M_Picking_Job_Line.COLUMNNAME_C_OrderLine_ID).getAsString());
-		final I_C_Order order = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
-		final I_M_Product product = productTable.get(row.getAsIdentifier(I_M_Picking_Job_Line.COLUMNNAME_M_Product_ID).getAsString());
-		final BigDecimal qtyToPick = row.getAsBigDecimal(I_M_Picking_Job_Line.COLUMNNAME_QtyToPick);
-		final int uomId = row.getAsInt(I_M_Picking_Job_Line.COLUMNNAME_C_UOM_ID);
-
-		final int bpartnerId = order.getC_BPartner_ID();
-		final int bpartnerLocationId = order.getC_BPartner_Location_ID();
-
-		final I_M_Picking_Job pickingJob = InterfaceWrapperHelper.newInstance(I_M_Picking_Job.class);
-		pickingJob.setC_BPartner_ID(bpartnerId);
-		pickingJob.setC_BPartner_Location_ID(bpartnerLocationId);
-		pickingJob.setC_Order_ID(order.getC_Order_ID());
-		pickingJob.setDeliveryToAddress("cucumber-picking-job");
-		pickingJob.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
-		pickingJob.setPicking_User_ID(UserId.METASFRESH.getRepoId());
-		pickingJob.setPreparationDate(TimeUtil.asTimestamp(Env.getDate(Env.getCtx())));
-		pickingJob.setDeliveryDate(TimeUtil.asTimestamp(Env.getDate(Env.getCtx())));
-		InterfaceWrapperHelper.saveRecord(pickingJob);
-
-		final I_M_Picking_Job_Line line = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line.class);
-		line.setM_Picking_Job_ID(pickingJob.getM_Picking_Job_ID());
-		line.setM_Product_ID(product.getM_Product_ID());
-		line.setC_Order_ID(order.getC_Order_ID());
-		line.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		line.setC_BPartner_ID(bpartnerId);
-		line.setC_BPartner_Location_ID(bpartnerLocationId);
-		line.setQtyToPick(qtyToPick);
-		line.setC_UOM_ID(uomId);
-		line.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
-		InterfaceWrapperHelper.saveRecord(line);
-	}
-
-	/**
 	 * Deactivates every {@code M_Picking_Job_Line} that references the given schedule, releasing the picker
 	 * (so that a subsequent repost / reconcile can proceed — REQUIREMENTS.md TC5).
 	 *
@@ -266,7 +168,7 @@ public class DDOrderPickingReplenishment_StepDef
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final DDOrderPickingReconcileBL reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReconcileBL.class);
+		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 		trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId));
 	}
 
@@ -287,7 +189,7 @@ public class DDOrderPickingReplenishment_StepDef
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final DDOrderPickingReconcileBL reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReconcileBL.class);
+		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 
 		assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
@@ -296,48 +198,13 @@ public class DDOrderPickingReplenishment_StepDef
 				.hasMessageContaining("Kommissionierung läuft bereits");
 	}
 
-	/**
-	 * Voids the single live DD_Order linked to a schedule directly via the document engine, WITHOUT going through
-	 * the reconcile flow — simulating the "DD_Order was never created / got lost between commit and publish" state
-	 * that the drift watchdog is designed to heal (REQUIREMENTS.md §3.5 / TC7).
-	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule whose DD_Order is voided.</p>
-	 */
-	@When("^the DD_Order linked to M_ShipmentSchedule (.*) is voided directly$")
-	public void void_DD_Order_directly(@NonNull final String shipmentScheduleIdentifier)
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-		final I_DD_Order liveDDOrder = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.create()
-				.firstOnlyNotNull(I_DD_Order.class);
-
-		documentBL.processEx(liveDDOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
-	}
-
-	/**
-	 * Runs the {@code DD_Order_Picking_Rebuild} drift-watchdog by invoking the BL the JavaProcess delegates to
-	 * ({@code DDOrderPickingReconcileBL.rebuildDrift()}). Used for the manual-rebuild scenario (REQUIREMENTS.md TC7).
-	 *
-	 * <p>The JavaProcess itself ({@code DD_Order_Picking_Rebuild}) is a thin glue shell that only calls
-	 * {@code rebuildDrift()}; driving the BL directly keeps the cucumber test deterministic and avoids the
-	 * process-engine plumbing while exercising the exact same code path.</p>
-	 */
 	@When("the DD_Order_Picking_Rebuild process is run")
 	public void run_rebuild_process()
 	{
-		final DDOrderPickingReconcileBL reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReconcileBL.class);
+		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 		trxManager.runInNewTrx(reconcileBL::rebuildDrift);
 	}
 
-	/**
-	 * Asserts that the {@code AD_Process} backing the {@code DD_Order_Picking_Rebuild} JavaProcess exists (used by
-	 * the hourly {@code AD_Scheduler}). For REQUIREMENTS.md TC8 — the scheduler engine cannot be driven directly in
-	 * cucumber, so we assert the process the scheduler points at exists and that running it (the rebuild) self-heals
-	 * drift (asserted by the subsequent DD_Order assertion in the scenario).
-	 */
 	@Then("the DD_Order_Picking_Rebuild process exists")
 	public void rebuild_process_exists()
 	{
@@ -347,90 +214,6 @@ public class DDOrderPickingReplenishment_StepDef
 				.as("AD_Process with Value=%s (DD_Order_Picking_Rebuild) must exist", PROCESS_VALUE_DDOrderPickingRebuild)
 				.isNotNull();
 	}
-
-	/**
-	 * Polls for the (single live) DD_Order linked to a schedule and asserts it is Voided
-	 * (REQUIREMENTS.md TC3 — deactivate → void only).
-	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
-	 */
-	@Then("^after not more than (.*)s, the DD_Order linked to M_ShipmentSchedule (.*) is Voided$")
-	public void assert_DD_Order_voided(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		final int scheduleId = schedule.getM_ShipmentSchedule_ID();
-
-		final Supplier<Boolean> isVoided = () -> {
-			final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-					.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-					.create()
-					.anyMatch();
-
-			final boolean voidedExists = queryBL.createQueryBuilder(I_DD_Order.class)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-					.create()
-					.anyMatch();
-
-			// A voided DD_Order exists and there is no live one remaining for the schedule.
-			return voidedExists && !liveExists;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 1000, isVoided, () -> logCurrentDDOrders(scheduleId));
-	}
-
-	/**
-	 * Asserts no live (non-voided) DD_Order exists for the schedule (REQUIREMENTS.md TC6/TC9 — nothing created).
-	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
-	 */
-	@Then("^there is no live DD_Order for M_ShipmentSchedule (.*)$")
-	public void assert_no_live_DD_Order(@NonNull final String shipmentScheduleIdentifier)
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-		final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.create()
-				.anyMatch();
-
-		assertThat(liveExists)
-				.as("No live DD_Order must exist for M_ShipmentSchedule %s", shipmentScheduleIdentifier)
-				.isFalse();
-	}
-
-	/**
-	 * Asserts no DD_Order at all (live or voided) is linked to any schedule of the given order — i.e. the new
-	 * reconcile flow did not fire (REQUIREMENTS.md TC9 — non-packing warehouse untouched by the new flow).
-	 *
-	 * <p>Column: identifier of the C_Order.</p>
-	 */
-	@Then("^there is no reconcile DD_Order for the C_Order (.*)$")
-	public void assert_no_reconcile_DD_Order_for_order(@NonNull final String orderIdentifier)
-	{
-		final I_C_Order order = orderTable.get(orderIdentifier);
-
-		// All schedules of the order; assert none has a reconcile DD_Order (M_ShipmentSchedule_ID linkage).
-		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-				.create()
-				.listIds()
-				.forEach(scheduleId -> {
-					final boolean ddOrderExists = queryBL.createQueryBuilder(I_DD_Order.class)
-							.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-							.create()
-							.anyMatch();
-					assertThat(ddOrderExists)
-							.as("No reconcile DD_Order must exist for schedule %s of order %s (non-packing warehouse)", scheduleId, orderIdentifier)
-							.isFalse();
-				});
-	}
-
-	/** FQN of the reconcile event handler — stored as {@code AD_EventLog_Entry.Classname} by the event framework. */
-	private static final String RECONCILE_HANDLER_CLASSNAME =
-			"de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventHandler";
 
 	/**
 	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler with the expected error state
@@ -443,7 +226,7 @@ public class DDOrderPickingReplenishment_StepDef
 	 *   <li>{@code MsgText} — optional substring the entry's message must contain (case-insensitive like-filter).</li>
 	 * </ul>
 	 */
-	@Then("^after not more than (.*)s, an AD_EventLog_Entry for the reconcile handler is found:$")
+	@Then("^after not more than (.*)s, an AD_EventLog_Entry for the replenishment event handler is found:$")
 	public void assert_reconcile_event_log_entry(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
@@ -477,7 +260,7 @@ public class DDOrderPickingReplenishment_StepDef
 	 * Polls for an Error {@code AD_EventLog_Entry} from the reconcile handler that has an {@code AD_Issue} attached
 	 * (REQUIREMENTS.md TC6 — the network-gap soft-fail logs an AD_Issue).
 	 */
-	@Then("^after not more than (.*)s, an AD_Issue is logged for the reconcile network gap$")
+	@Then("^after not more than (.*)s, an AD_Issue is logged for the replenishment network gap$")
 	public void assert_reconcile_AD_Issue_logged(final int timeoutSec) throws InterruptedException
 	{
 		final Supplier<Boolean> issueLogged = () -> queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
@@ -504,15 +287,4 @@ public class DDOrderPickingReplenishment_StepDef
 		logger.error("*** Waiting for AD_EventLog_Entry, current context:\n{}", sb);
 	}
 
-	private void logCurrentDDOrders(final int scheduleId)
-	{
-		final StringBuilder sb = new StringBuilder("DD_Orders linked to M_ShipmentSchedule_ID=").append(scheduleId).append(":\n");
-		queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.create()
-				.stream(I_DD_Order.class)
-				.forEach(ddOrder -> sb.append(" DD_Order_ID=").append(ddOrder.getDD_Order_ID())
-						.append(" DocStatus=").append(ddOrder.getDocStatus()).append("\n"));
-		logger.error("*** Waiting for DD_Order to be Voided, current context:\n{}", sb);
-	}
 }

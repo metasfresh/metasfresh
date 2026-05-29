@@ -76,7 +76,7 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # The async reconcile event handler records a Done AD_EventLog_Entry on success (REQUIREMENTS §5 TC1).
-    And after not more than 10s, an AD_EventLog_Entry for the reconcile handler is found:
+    And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | IsError |
       | false   |
 
