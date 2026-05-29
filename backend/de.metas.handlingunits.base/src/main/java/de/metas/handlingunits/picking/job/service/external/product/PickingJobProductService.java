@@ -69,6 +69,11 @@ public class PickingJobProductService
 		return productBL.getProductValue(productId);
 	}
 
+	public ITranslatableString getProductNameTrl(@NonNull final ProductId productId)
+	{
+		return productBL.getProductNameTrl(productId);
+	}
+
 	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
 	{
 		return productBL.isValidEAN13Product(ean13, expectedProductId, bpartnerId);

@@ -164,6 +164,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
+	private Boolean _isInvoiceManualRule = null;
 	private IInvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
 
@@ -909,7 +910,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				// Skip invoice candidate if we are adviced to do so
 				// TODO: i think this checking is no longer needed because we are doing it when enqueueing
-				if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
+				if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, isInvoiceManualRule()))
 				{
 					continue;
 				}
@@ -1192,6 +1193,29 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (invoicingParams != null)
 		{
 			return invoicingParams.isIgnoreInvoiceSchedule();
+		}
+
+		return false;
+	}
+
+	@Override
+	public InvoiceCandBLCreateInvoices setInvoiceManualRule(final boolean isInvoiceManualRule)
+	{
+		this._isInvoiceManualRule = isInvoiceManualRule;
+		return this;
+	}
+
+	private boolean isInvoiceManualRule()
+	{
+		if (_isInvoiceManualRule != null)
+		{
+			return _isInvoiceManualRule;
+		}
+
+		final IInvoicingParams invoicingParams = getInvoicingParams();
+		if (invoicingParams != null)
+		{
+			return invoicingParams.isInvoiceManualRule();
 		}
 
 		return false;

@@ -24,7 +24,9 @@ package de.metas.cucumber.stepdefs.edi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -35,6 +37,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,6 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EPCIS_JSON_Export_StepDef
 {
 	private final @NonNull M_InOut_StepDefData inoutTable;
+	private final @NonNull M_HU_StepDefData huTable;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private JsonNode lastEpcisResult;
@@ -281,6 +287,156 @@ public class EPCIS_JSON_Export_StepDef
 			row.getAsOptionalString("uom")
 					.ifPresent(expected -> assertThat(item.path("uom").asText())
 							.as("item uom").isEqualTo(expected));
+		});
+	}
+
+	/**
+	 * Validates jsonb-array fields in the EPCIS JSON that carry arrays of string values.
+	 * Validates {@code desadvReferences[]} and {@code poReferences[]} array fields in the EPCIS JSON.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>field</b> — (required) name of the top-level array field (e.g. {@code desadvReferences}, {@code poReferences})<br>
+	 *   <b>expectedSize</b> — (required) expected number of elements in the array<br>
+	 *   <b>containsValue</b> — (optional) a value that must appear somewhere in the array<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON array field has:
+	 *   | field             | expectedSize | containsValue     |
+	 *   | desadvReferences  | 2            | DESADV-2026-00001 |
+	 *   | poReferences      | 2            | PO_A_S29231       |
+	 * </pre>
+	 */
+	@Then("the EPCIS JSON array field has:")
+	public void validateArrayField(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
+
+		DataTableRows.of(dataTable).forEach(row -> assertEpcisArrayField(row));
+	}
+
+	/**
+	 * Asserts that the {@code pallets[]} array in the last EPCIS JSON result contains exactly the
+	 * given SSCC18 values (order-independent).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>sscc18</b> — (required) expected SSCC18 value; one row per expected pallet
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON pallets contain SSCC18 values in any order:
+	 *   | sscc18             |
+	 *   | 987654321000000016 |
+	 *   | 987654321000000023 |
+	 * </pre>
+	 */
+	@Then("the EPCIS JSON pallets contain SSCC18 values in any order:")
+	public void validatePalletsContainSscc18Values(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
+
+		final JsonNode pallets = lastEpcisResult.path("pallets");
+		assertThat(pallets.isArray()).as("pallets must be a JSON array").isTrue();
+
+		final List<String> expectedSscc18Values = new ArrayList<>();
+		dataTable.asMaps().forEach(rowMap -> expectedSscc18Values.add(rowMap.get("sscc18")));
+
+		assertThat(pallets.size())
+				.as("pallets[] must contain exactly %d entries", expectedSscc18Values.size())
+				.isEqualTo(expectedSscc18Values.size());
+
+		final List<String> actualSscc18Values = new ArrayList<>();
+		pallets.forEach(pallet -> actualSscc18Values.add(pallet.path("sscc").asText()));
+
+		assertThat(actualSscc18Values)
+				.as("pallets[] sscc18 values (any order)")
+				.containsExactlyInAnyOrderElementsOf(expectedSscc18Values);
+	}
+
+	/**
+	 * Asserts that every crate (TU) in the pallet identified by SSCC18 has a dummy GRAI whose middle
+	 * segment contains the expected sanitized POReference string. Used to verify that the
+	 * {@code get_epcis_events_json_fn} derives the per-LU POReference from the source order rather
+	 * than leaking another order's POReference in n:m consolidated shipments.
+	 *
+	 * <p>The GRAI is structured as {@code <prefix><poref_sanitized><2-digit-counter>}. This step
+	 * checks that {@code grai.contains(expectedPOReferenceSanitized)} — i.e. the middle segment
+	 * appears somewhere in the GRAI string.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>sscc18</b> — (required) SSCC18 of the pallet to inspect<br>
+	 *   <b>ExpectedPOReferenceSanitized</b> — (required) expected sanitized POReference substring
+	 *     (≤10 chars, only [A-Za-z0-9_] after sanitization; {@code _} replaces any non-alphanumeric/hyphen char)
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON pallets have dummy GRAIs containing the source order POReference:
+	 *   | sscc18             | ExpectedPOReferenceSanitized |
+	 *   | 987654321000000016 | PO_A_S2923                   |
+	 *   | 987654321000000023 | PO_B_S2923                   |
+	 * </pre>
+	 */
+	@Then("the EPCIS JSON pallets have dummy GRAIs containing the source order POReference:")
+	public void validatePalletDummyGraiContainsPoreference(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastEpcisResult).as("EPCIS JSON result must exist (call the export function first)").isNotNull();
+
+		final JsonNode pallets = lastEpcisResult.path("pallets");
+		assertThat(pallets.isArray()).as("pallets must be a JSON array").isTrue();
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String sscc18 = row.getAsString("sscc18");
+			final String expectedPoRefSanitized = row.getAsString("ExpectedPOReferenceSanitized");
+
+			// Find the pallet with this SSCC18
+			JsonNode matchedPallet = null;
+			for (final JsonNode pallet : pallets)
+			{
+				if (sscc18.equals(pallet.path("sscc").asText()))
+				{
+					matchedPallet = pallet;
+					break;
+				}
+			}
+			assertThat(matchedPallet)
+					.as("Pallet with SSCC18=%s must exist in pallets[]", sscc18)
+					.isNotNull();
+
+			// Every crate in this pallet must have a GRAI containing the expected POReference
+			final JsonNode crates = matchedPallet.path("crates");
+			assertThat(crates.isArray()).as("crates must be a JSON array for pallet sscc=%s", sscc18).isTrue();
+			assertThat(crates.size()).as("pallet sscc=%s must have at least one crate", sscc18).isGreaterThan(0);
+
+			for (int i = 0; i < crates.size(); i++)
+			{
+				final String grai = crates.get(i).path("grai").asText();
+				assertThat(grai)
+						.as("pallet sscc=%s crate[%d] grai must contain '%s'", sscc18, i, expectedPoRefSanitized)
+						.contains(expectedPoRefSanitized);
+			}
+		});
+	}
+
+
+
+	private void assertEpcisArrayField(@NonNull final DataTableRow row)
+	{
+		final String field = row.getAsString("field");
+		final int expectedSize = row.getAsInt("expectedSize");
+
+		final JsonNode arrayNode = lastEpcisResult.path(field);
+		assertThat(arrayNode.isArray())
+				.as("EPCIS JSON field '%s' must be a JSON array", field).isTrue();
+		assertThat(arrayNode.size())
+				.as("EPCIS JSON array '%s' must have %d element(s)", field, expectedSize)
+				.isEqualTo(expectedSize);
+
+		row.getAsOptionalString("containsValue").ifPresent(expected -> {
+			final List<String> actualValues = new ArrayList<>();
+			arrayNode.forEach(el -> actualValues.add(el.asText()));
+			assertThat(actualValues)
+					.as("EPCIS JSON array '%s' must contain '%s'", field, expected)
+					.contains(expected);
 		});
 	}
 

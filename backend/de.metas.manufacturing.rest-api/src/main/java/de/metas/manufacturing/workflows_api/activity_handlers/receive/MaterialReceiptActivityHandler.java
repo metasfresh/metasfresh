@@ -111,7 +111,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				Env.getCtx(),
 				line.getProductId(),
 				customerId,
-				false);
+				line.getCatchWeightUOMId() != null);
 
 		final JsonNewTUTargetList tuTargetList = getNewTUTargets(tuPIItemProducts);
 		final JsonNewLUTargetsList newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId);

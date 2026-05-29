@@ -23,8 +23,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
@@ -206,18 +204,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			payDate = paySelection.getPayDate();
 		}
 
-		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
-				+ "\nUNION\n"
-				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
+		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
 	}
 
 	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
 	{
 		String sql = "SELECT "
 				+ " C_Invoice_ID,"
-				+ " -1 as C_Order_ID,"
-				+ " -1 as C_OrderPaySchedule_ID,"
-				// OpenAmt
+				// OpenAmt: invoiceOpen() handles proforma invoices internally via the
+				// IsFinancial branch (no allocation rows for proformas; paid-detection uses
+				// C_Payment.Proforma_Invoice_ID + DocStatus IN CO/CL).
 				+ " invoiceOpen(i.C_Invoice_ID, 0) as OpenAmt,"
 				// DiscountAmt
 				+ " paymentTermDiscount(i.GrandTotal,i.C_Currency_ID,i.C_PaymentTerm_ID,i.DateInvoiced, ?) as DiscountAmt," // #1 PayDate
@@ -356,9 +352,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private String buildSelectSQL_InvoiceMatchRequirement()
 	{
-		final String whereCreditTransferToVendor = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType !='ARC' AND i.PaymentRule = '" + PaymentRule.DirectDebit.getCode() + "'";
-		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
+		// APF (purchase proforma) always goes through the vendor credit-transfer path regardless of PaymentRule.
+		// ARF (sales proforma) always goes through the customer credit-transfer path regardless of PaymentRule.
+		// Without these bypasses, proforma invoices with a non-standard PaymentRule would be silently dropped.
+		final String whereCreditTransferToVendor = " ((i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "'))"
+				+ " OR dt.DocBaseType='APF')";
+		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType NOT IN ('ARC','ARF') AND i.PaymentRule = '" + PaymentRule.DirectDebit.getCode() + "'";
+		final String whereCreditTransferToCustomer = " ((i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "'))"
+				+ " OR dt.DocBaseType='ARF')";
 
 		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
 		if (matchRequirement == null) // ALL
@@ -383,115 +384,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @NonNull String buildOrderSql(
-			@NonNull final List<Object> sqlParams,
-			@NonNull final CurrencyId C_CurrencyTo_ID,
-			@NonNull final Timestamp payDate,
-			@NonNull final I_C_PaySelection paySelection)
-	{
-		String sql = "SELECT "
-				+ " -1 as C_Invoice_ID," // 1
-				+ " o.C_Order_ID," // 2
-				+ " ops.C_OrderPaySchedule_ID," // 3
-				+ " ops.dueamt as OpenAmt," // 4
-				+ " null as DiscountAmt," // 5
-				+ " null as PaymentRule, "  // 6
-				+ " o.IsSOTrx, " // 7
-				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 8
-				// C_BP_BankAccount_ID
-				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = o.Bill_BPartner_ID AND bpb.IsActive='Y' "
-				+ " AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //9
-				//
-				+ " FROM C_Order o "
-				+ " INNER JOIN C_Doctype dt on o.C_Doctype_ID = dt.C_Doctype_ID "
-				+ " INNER JOIN C_OrderPaySchedule ops on o.C_Order_ID = ops.C_Order_ID "
-				+ " WHERE true AND ops.Status = ? "  //
-				;
-		sqlParams.add(OrderPayScheduleStatus.Awaiting_Pay.getCode()); // #1
-
-		// Only COmpleted/CLosed payment
-		{
-			sql += " AND o.DocStatus IN (?,?)";
-			sqlParams.add(DocStatus.Completed);
-			sqlParams.add(DocStatus.Closed);
-		}
-
-		// Only those orders which are matching C_PaySelection's currency
-		{
-			sql += " AND o.C_Currency_ID=?";
-			sqlParams.add(C_CurrencyTo_ID);
-		}
-
-		// Only for Pay Selection's Organization (if set)
-		if (paySelection.getAD_Org_ID() > 0)
-		{
-			sql += " AND o.AD_Org_ID=? ";
-			sqlParams.add(paySelection.getAD_Org_ID());
-		}
-
-		// Only those payments from our tenant (guard, shall not happen)
-		{
-			sql += " AND o.AD_Client_ID=?";
-			sqlParams.add(paySelection.getAD_Client_ID());
-		}
-
-		//
-		// Exclude orders from existing pay selections if we were not explicitly asked to just update a couple of pay selection lines
-		// or, Include only the pay selection lines that we were advised to include.
-		if (paySelectionLineIdsToUpdate.isEmpty())
-		{
-			sql += " AND NOT EXISTS ("
-					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID AND psl.IsActive='Y' "
-					+ " )";
-		}
-		else
-		{
-			sql += " AND EXISTS ("
-					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID and psl.IsActive='Y' "
-					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
-					+ " )";
-		}
-
-		// Business Partner
-		if (getC_BPartner_ID() > 0)
-		{
-			sql += " AND o.Bill_BPartner_ID=?"; // ##
-			sqlParams.add(getC_BPartner_ID());
-		}
-		// Business Partner Group
-		else if (getC_BP_Group_ID() > 0)
-		{
-			sql += " AND EXISTS (SELECT * FROM C_BPartner bp "
-					+ "WHERE bp.C_BPartner_ID=o.Bill_BPartner_ID AND bp.C_BP_Group_ID=?)"; // ##
-			sqlParams.add(getC_BP_Group_ID());
-		}
-
-		// DateTrx
-		if (isOnlyDue())
-		{
-			sql += " AND ops.DueDate <= ?";
-			sqlParams.add(payDate);
-		}
-
-		// Match Requirement
-		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
-		if (matchRequirement == null) // ALL
-		{
-			// no restriction
-		}
-		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
-		{
-			sql += " AND o.IsSOTrx='N'";
-		}
-		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_CUSTOMER.equals(matchRequirement))
-		{
-			sql += " AND o.IsSOTrx='Y'";
-		}
-		return sql;
-	}
-
 	private void createOrUpdatePaySelectionLine(final ResultSet rs) throws SQLException
 	{
 		final PaySelectionLineCandidate candidate = retrievePaySelectionLineCandidate(rs);
@@ -503,11 +395,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final PaySelectionLineCandidate.Builder candidateBuilder = PaySelectionLineCandidate.builder();
 		final int invoiceId = rs.getInt("C_Invoice_ID");
 		candidateBuilder.setInvoiceId(InvoiceId.ofRepoIdOrNull(invoiceId));
-
-		final int orderId = rs.getInt("C_Order_ID");
-		candidateBuilder.setOrderId(OrderId.ofRepoIdOrNull(orderId));
-		final int orderPayScheduleId = rs.getInt("C_OrderPaySchedule_ID");
-		candidateBuilder.setOrderPayScheduleId(OrderPayScheduleId.ofRepoIdOrNull(orderPayScheduleId));
 
 		final BigDecimal openAmt = rs.getBigDecimal("OpenAmt");
 		candidateBuilder.setOpenAmt(openAmt);
@@ -538,7 +425,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private void createOrUpdatePaySelectionLine(@NonNull final PaySelectionLineCandidate candidate)
 	{
-		if (candidate.getInvoiceId() == null && candidate.getOrderId() == null) // shall not happen
+		if (candidate.getInvoiceId() == null) // shall not happen
 		{
 			return;
 		}
@@ -634,8 +521,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// Update from candidate
 		paySelectionLine.setPaymentRule(candidate.getPaymentRule());
 		paySelectionLine.setC_Invoice_ID(InvoiceId.toRepoId(candidate.getInvoiceId()));
-		paySelectionLine.setC_Order_ID(OrderId.toRepoId(candidate.getOrderId()));
-		paySelectionLine.setC_OrderPaySchedule_ID(OrderPayScheduleId.toRepoId(candidate.getOrderPayScheduleId()));
 		paySelectionLine.setIsSOTrx(candidate.isSOTrx());
 		paySelectionLine.setOpenAmt(candidate.getOpenAmt());
 		paySelectionLine.setPayAmt(candidate.getPayAmt());
@@ -895,24 +780,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private static class PaySelectionLinesToUpdate
 	{
 		private final HashMap<InvoiceId, I_C_PaySelectionLine> byInvoiceId = new HashMap<>();
-		private final HashMap<OrderPayScheduleId, I_C_PaySelectionLine> byOrderPaySchedId = new HashMap<>();
 
 		PaySelectionLinesToUpdate(final List<I_C_PaySelectionLine> lines)
 		{
 			for (final I_C_PaySelectionLine line : lines)
 			{
 				final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
-				final OrderPayScheduleId orderPaySchedId = OrderPayScheduleId.ofRepoIdOrNull(line.getC_OrderPaySchedule_ID());
 				if (invoiceId != null)
 				{
 					final I_C_PaySelectionLine paySelectionLineOld = byInvoiceId.put(invoiceId, line);
 					Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", line, paySelectionLineOld); // shall not happen
-				}
-				else if (orderPaySchedId != null)
-				{
-
-					final I_C_PaySelectionLine old = byOrderPaySchedId.put(orderPaySchedId, line);
-					Check.assumeNull(old, "Duplicate pay selection line for orderpay scheduele: {}, {}", line, old);
 				}
 			}
 		}
@@ -923,10 +800,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			{
 				return Optional.ofNullable(byInvoiceId.remove(candidate.getInvoiceId()));
 			}
-			else if (candidate.getOrderPayScheduleId() != null)
-			{
-				return Optional.ofNullable(byOrderPaySchedId.remove(candidate.getOrderPayScheduleId()));
-			}
 			else
 			{
 				return Optional.empty();
@@ -936,11 +809,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		private List<I_C_PaySelectionLine> dequeueAll()
 		{
 			final List<I_C_PaySelectionLine> result = new ArrayList<>(byInvoiceId.values());
-			result.addAll(byOrderPaySchedId.values());
-
 			byInvoiceId.clear();
-			byOrderPaySchedId.clear();
-
 			return result;
 		}
 	}

@@ -999,6 +999,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_Manual = "M";
 	@Override
 	public void setInvoiceRule (final @Nullable java.lang.String InvoiceRule)
 	{
@@ -2011,6 +2013,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PO_INVOICERULE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String PO_INVOICERULE_AfterPick = "P";
+	/** Manual = M */
+	public static final String PO_INVOICERULE_Manual = "M";
 	@Override
 	public void setPO_InvoiceRule (final @Nullable java.lang.String PO_InvoiceRule)
 	{

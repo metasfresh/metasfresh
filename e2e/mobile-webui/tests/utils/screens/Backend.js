@@ -74,6 +74,31 @@ export const Backend = {
         }
     }),
 
+    /**
+     * Resolve a masterdata identifier (e.g. `"lu1"`) to the underlying handling-unit's
+     * global QR code string. Used by tests that need to scan an HU which was created
+     * indirectly (typically by a picking flow) and therefore has no QR code under
+     * `masterdata.handlingUnits.*`.
+     */
+    getHUQRCodeByIdentifier: async ({ identifier }) => await test.step(`Backend: get HU QR code for "${identifier}"`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getHUQRCode`, {
+            data: {
+                identifier,
+                masterdata: testContext.lastMasterdata,
+                context: testContext.lastContext,
+            },
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
+        return responseBody.qrCode;
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {

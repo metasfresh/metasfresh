@@ -65,17 +65,7 @@ public class BPartnerContactId implements RepoIdAware
 	public static BPartnerContactId ofRepoId(final int bpartnerRepoId, final int contactRepoId)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRepoId);
-
-		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
-		if (userId == null)
-		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@")
-					.appendParametersToMessage()
-					.setParameter("bpartnerId", bpartnerId)
-					.setParameter("contactRepoId", contactRepoId);
-		}
-
-		return of(bpartnerId, userId);
+		return ofRepoId(bpartnerId, contactRepoId);
 	}
 
 	@Nullable
@@ -159,7 +149,7 @@ public class BPartnerContactId implements RepoIdAware
 					BPartnerId.ofRepoId(Integer.parseInt(parts.get(0))),
 					UserId.ofRepoId(Integer.parseInt(parts.get(1))));
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Invalid BPartnerContactId string: " + idStr, ex);
 		}

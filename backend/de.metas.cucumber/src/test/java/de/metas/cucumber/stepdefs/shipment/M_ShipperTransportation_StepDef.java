@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -139,6 +140,57 @@ public class M_ShipperTransportation_StepDef
 			final String shipperTransportationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID + "." + TABLECOLUMN_IDENTIFIER);
 			deliveryInstructionTable.putOrReplace(shipperTransportationIdentifier, shipperTransportation);
 		}
+	}
+
+	/**
+	 * Polling variant of {@code load Transportation Order from Shipment} — waits for the async
+	 * {@code M_InOut.afterComplete → CreatePackagesForShipmentWorkpackageProcessor} chain triggered by
+	 * sysconfig {@code de.metas.handlingunits.picking.addToDailyShipperTransportationOrder=true}.
+	 */
+	@And("^after not more than (.*)s, Transportation Order is found for Shipment:$")
+	public void findTransportationOrderForShipment(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			try
+			{
+				pollTransportationOrderForShipment(timeoutSec, row);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	private void pollTransportationOrderForShipment(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_M_InOut shipment = shipmentTable.get(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
+
+		final I_M_ShipperTransportation[] resultHolder = new I_M_ShipperTransportation[1];
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
+			final I_M_ShipperTransportation found = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.orderBy(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+					.first();
+			if (found == null)
+			{
+				return false;
+			}
+			resultHolder[0] = found;
+			return true;
+		});
+
+		assertThat(resultHolder[0])
+				.as("No M_ShipperTransportation found for M_InOut_ID=%s within %ss — is sysconfig "
+						+ "'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder' set to true?",
+						shipment.getM_InOut_ID(), timeoutSec)
+				.isNotNull();
+
+		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID), resultHolder[0]);
 	}
 
 	@And("metasfresh contains Transport Order")

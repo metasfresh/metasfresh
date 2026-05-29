@@ -42,7 +42,9 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 
 	private static final ImmutableSetMultimap<OrderPayScheduleStatus, OrderPayScheduleStatus> allowedTransitions = ImmutableSetMultimap.<OrderPayScheduleStatus, OrderPayScheduleStatus>builder()
 			.put(Pending, Awaiting_Pay)
+			.put(Awaiting_Pay, Pending) // reversal
 			.put(Awaiting_Pay, Paid)
+			.put(Paid, Awaiting_Pay) // reversal
 			.build();
 
 	@Getter @NonNull final String code;

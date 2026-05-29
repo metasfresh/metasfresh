@@ -7,15 +7,17 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
           "City": "Bonn",
           "CountryCode": "DE",
+          "Email": "noreply@metasfresh.com",
           "Kind": 2,
           "Name1": "metas GmbH",
           "Name2": "senderCompanyName2",
+          "Phone": "12345678",
           "PostCode": "53179",
           "Street1": "Am Noßbacher Weg 2",
           "Street2": ""
         },
         {
-          "Attention": "metas.ro SRL receiverDepartmentName Test Contact Name",
+          "Attention": "metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",
@@ -69,6 +71,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
                   "KindID": 7,
                   "Value": "Test Product"
                 },
@@ -79,6 +85,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 {
                   "KindID": 10,
                   "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "1"
                 }
               ],
               "LineNo": 1
@@ -111,6 +121,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
                   "KindID": 7,
                   "Value": "Test Product 2"
                 },
@@ -121,6 +135,55 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 {
                   "KindID": 10,
                   "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "2"
+                }
+              ],
+              "LineNo": 2
+            },
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "3"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 6,
+                  "Value": "1000"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product 3"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 193,
+                  "Value": "2"
                 }
               ],
               "LineNo": 2
@@ -142,6 +205,22 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
             {
               "Kind": 129,
               "Value": "1 RO"
+            },
+            {
+              "Kind": 23,
+              "Value": "Test Product"
+            },
+            {
+              "Kind": 130,
+              "Value": "10"
+            },
+            {
+              "Kind": 131,
+              "Value": "EUR"
+            },
+            {
+              "Kind": 132,
+              "Value": "Test Product"
             }
           ],
           "Width": 200
@@ -151,14 +230,34 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "GoodsTypeName": "Packet",
           "Height": 150,
           "Length": 1000,
-          "LineWeight": 10000,
+          "LineWeight": 20000,
           "Number": 1,
-          "PkgWeight": 10000,
+          "PkgWeight": 20000,
           "Pkgs": [ ],
           "References": [
             {
               "Kind": 129,
               "Value": "2 RO"
+            },
+            {
+              "Kind": 23,
+              "Value": "Test Product 2,Test Product 3"
+            },
+            {
+              "Kind": 130,
+              "Value": "20"
+            },
+            {
+              "Kind": 131,
+              "Value": "EUR"
+            },
+            {
+              "Kind": 132,
+              "Value": "Test Product 2,Test Product 3"
+            },
+            {
+              "Kind": 133,
+              "Value": "Test Customs Tariff 2,Test Customs Tariff 3"
             }
           ],
           "Width": 200
@@ -166,7 +265,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
       ],
       "OrderNo": "1",
       "PickupDt": "2025-10-02",
-      "ProdConceptID": 2758,
+      "ProdConceptID": 10305,
       "References": [
         {
           "Kind": 108,
@@ -186,11 +285,12 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
         }
       ],
       "Services": [
-        337011
+        972053
       ]
     },
     "options": {
       "Labels": "PDF",
+      "TrackingURL": 1,
       "ValidatePostCode": 1
     }
   }

@@ -44,4 +44,6 @@ public enum ReferenceDateType implements ReferenceListAwareEnum
 
 	public static ReferenceDateType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
+	public boolean isLetterOfCreditDate() {return this == LetterOfCreditDate;}
+
 }

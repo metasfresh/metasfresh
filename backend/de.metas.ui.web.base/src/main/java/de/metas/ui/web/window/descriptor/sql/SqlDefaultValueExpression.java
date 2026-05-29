@@ -32,6 +32,8 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 
 /*
@@ -117,6 +119,16 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 				|| StringLookupValue.class.equals(valueClass))
 		{
 			return new SqlDefaultValueExpression<>(stringExpression, String.class, (rs) -> rs.getString(1));
+		}
+		// Any RepoIdAware (e.g. WebuiImageId, BPartnerId, ...): read the int and wrap via the typed factory.
+		else if (RepoIdAware.class.isAssignableFrom(valueClass))
+		{
+			@SuppressWarnings("unchecked")
+			final Class<RepoIdAware> repoIdClass = (Class<RepoIdAware>)valueClass;
+			return new SqlDefaultValueExpression<>(stringExpression, repoIdClass, (rs) -> {
+				final int repoId = rs.getInt(1);
+				return rs.wasNull() ? null : RepoIdAwares.ofRepoId(repoId, repoIdClass);
+			});
 		}
 
 		throw ExpressionCompileException.newWithPlainMessage("Value type " + valueClass + " is not supported by " + SqlDefaultValueExpression.class);

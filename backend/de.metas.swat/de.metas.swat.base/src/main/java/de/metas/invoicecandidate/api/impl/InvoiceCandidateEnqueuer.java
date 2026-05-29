@@ -266,7 +266,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Check other reasons no to enqueue this ic: Processed, IsError, DateToInvoice.
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
-		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule()))
+		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), getInvoicingParams().isInvoiceManualRule()))
 		{
 			// NOTE: we are not logging any reason because the method already logged the reason if any.
 			return false;

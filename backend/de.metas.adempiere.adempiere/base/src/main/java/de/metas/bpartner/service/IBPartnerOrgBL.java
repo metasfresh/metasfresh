@@ -32,8 +32,10 @@ import lombok.NonNull;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -46,8 +48,13 @@ public interface IBPartnerOrgBL extends ISingletonService
 
 	Optional<BPartnerId> retrieveLinkedBPartnerId(OrgId orgId);
 
+	@Nullable
+	I_C_BPartner_Location retrieveOrgBPLocation(@NonNull OrgId orgId);
+
+	@Nullable
 	I_C_Location retrieveOrgLocation(final OrgId orgId);
 
+	@Nullable
 	default CountryId getOrgCountryId(@NonNull final OrgId orgId)
 	{
 		final I_C_Location orgLocation = retrieveOrgLocation(orgId);

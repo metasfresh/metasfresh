@@ -48,6 +48,13 @@ Feature: Invoice aggregation of 2 IC2 when one IC was previously invoiced and re
       | s_s_2_1    | sol_2_1        | N             |
       | s_s_2_2    | sol_2_2        | N             |
 
+    # Drain the material event queue so invoice-candidate async creation completes before the poll.
+    # Background sets SKIP_WP_PROCESSOR_FOR_AUTOMATION=true, forcing async via RabbitMQ. Under CI load
+    # this poll occasionally exhausts its 60 s budget, cascading to the step-def's 120 s recompute
+    # fallback, which can in turn time out and abort the runner before any test completes
+    # ("Tests run: 0").
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyToInvoice |
       | ic_2_1                 | sol_2_1        | 0            |

@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for Carrier_ShipmentOrder
  *  @author metasfresh (generated) 
@@ -542,6 +541,48 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Receiver_ZipCode = "Receiver_ZipCode";
 
 	/**
+	 * Set Contact Name Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiver_ContactName (@Nullable java.lang.String Receiver_ContactName);
+
+	/**
+	 * Get Contact Name Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiver_ContactName();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_ContactName = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_ContactName", null);
+	String COLUMNNAME_Receiver_ContactName = "Receiver_ContactName";
+
+	/**
+	 * Set Department Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiver_Department (@Nullable java.lang.String Receiver_Department);
+
+	/**
+	 * Get Department Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiver_Department();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_Department = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_Department", null);
+	String COLUMNNAME_Receiver_Department = "Receiver_Department";
+
+	/**
 	 * Set Lieferdatum.
 	 *
 	 * <br>Type: Date
@@ -584,6 +625,27 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Shipper_City = "Shipper_City";
 
 	/**
+	 * Set Contact Name Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipper_ContactName (@Nullable java.lang.String Shipper_ContactName);
+
+	/**
+	 * Get Contact Name Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipper_ContactName();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_ContactName = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_ContactName", null);
+	String COLUMNNAME_Shipper_ContactName = "Shipper_ContactName";
+
+	/**
 	 * Set Lieferant Ländercode (ISO-2).
 	 *
 	 * <br>Type: String
@@ -603,6 +665,48 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_CountryISO2Code = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_CountryISO2Code", null);
 	String COLUMNNAME_Shipper_CountryISO2Code = "Shipper_CountryISO2Code";
+
+	/**
+	 * Set Department Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipper_Department (@Nullable java.lang.String Shipper_Department);
+
+	/**
+	 * Get Department Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipper_Department();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_Department = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_Department", null);
+	String COLUMNNAME_Shipper_Department = "Shipper_Department";
+
+	/**
+	 * Set E-Mail Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipper_Email (@Nullable java.lang.String Shipper_Email);
+
+	/**
+	 * Get E-Mail Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipper_Email();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_Email = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_Email", null);
+	String COLUMNNAME_Shipper_Email = "Shipper_Email";
 
 	/**
 	 * Set Shipper EORI.
@@ -666,6 +770,27 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_Name2 = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_Name2", null);
 	String COLUMNNAME_Shipper_Name2 = "Shipper_Name2";
+
+	/**
+	 * Set Phone Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipper_Phone (@Nullable java.lang.String Shipper_Phone);
+
+	/**
+	 * Get Phone Shipper.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipper_Phone();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_Phone = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_Phone", null);
+	String COLUMNNAME_Shipper_Phone = "Shipper_Phone";
 
 	/**
 	 * Set Straße 1 Lieferant.

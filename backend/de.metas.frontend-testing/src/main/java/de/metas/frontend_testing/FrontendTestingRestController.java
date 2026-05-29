@@ -4,11 +4,15 @@ import de.metas.Profiles;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
+import de.metas.frontend_testing.huQRCode.GetHUQRCodeCommand;
+import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeRequest;
+import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -48,6 +52,7 @@ public class FrontendTestingRestController
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private boolean isEnabled()
 	{
@@ -125,5 +130,15 @@ public class FrontendTestingRestController
 					.execute();
 			return null;
 		});
+	}
+
+	@PostMapping("getHUQRCode")
+	public JsonGetHUQRCodeResponse getHUQRCode(@RequestBody @NonNull final JsonGetHUQRCodeRequest request)
+	{
+		return callInContext(() -> GetHUQRCodeCommand.builder()
+				.huQRCodesService(huQRCodesService)
+				.request(request)
+				.build()
+				.execute());
 	}
 }

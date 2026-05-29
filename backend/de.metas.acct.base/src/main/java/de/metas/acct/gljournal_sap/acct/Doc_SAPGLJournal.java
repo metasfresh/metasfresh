@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.gljournal_sap.PostingSign;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
 import de.metas.acct.gljournal_sap.SAPGLJournalLine;
@@ -140,7 +141,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 
 		if (line.isTaxLine())
 		{
-			factLine.setTaxIdAndUpdateVatCode(line.getTaxId());
+			factLine.setTaxIdAndUpdateVatCode(line.getTaxId(), VATCodeAmountType.Tax);
 		}
 	}
 

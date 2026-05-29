@@ -79,7 +79,7 @@ class GRAISetTest
 		void gs1_values()
 		{
 			final GRAISet set = GRAISet.parseStrings(ImmutableList.of("800307613204003095100691412000"));
-			assertThat(set.toStringList()).containsExactly("7613204.003095.00691412000");
+			assertThat(set.toStringList()).containsExactly("7613204.00309.100691412000");
 		}
 
 		@Test
@@ -90,7 +90,7 @@ class GRAISetTest
 					"800307613204003095100691412000"));
 			assertThat(set.toStringList()).containsExactly(
 					"7613204.00307.1000000001",
-					"7613204.003095.00691412000");
+					"7613204.00309.100691412000");
 		}
 
 		@Test

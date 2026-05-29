@@ -115,7 +115,8 @@ BEGIN
                            'IPA_SSCC18', ph.ipa_sscc18,
                            'M_HU_PackagingCode_Text', pc_lu.packagingcode,
                            'LineItems', COALESCE(items_lat.items_data, '[]'::jsonb),
-                           'GTIN_PackingMaterial', ph.gtin_packingmaterial
+                           -- Defensive trim: master-data sometimes carries stray whitespace
+                           'GTIN_PackingMaterial', NULLIF(btrim(ph.gtin_packingmaterial), '')
                    ) ORDER BY ph.seqno
            )
     INTO v_packs_json
@@ -140,15 +141,17 @@ BEGIN
                                                'SupplierProductNo', p.value,
                                                'Name', p.name,
                                                'Description', p.description,
-                                               'BuyerProductNo', COALESCE(dl.productno, bpp.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, bpp.gtin, p.gtin),
+                                               'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
+                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, p.gtin),
                                                'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
                                                'NetWeight', p.weight,
                                                'GrossWeight', p.grossweight,
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
                                        ),
                                        'QtyOrderedInDesadvLineUOM', dl.qtyentered,
-                                       'QtyDeliveredInDesadvLineUOM', dl.qtydeliveredinuom,
+                                       -- Per-inout qty from edi_desadvline_inoutline; fallback to cumulative
+                                       -- dl.qtydeliveredinuom for single-inout DESADVs.
+                                       'QtyDeliveredInDesadvLineUOM', COALESCE(diol.qtydeliveredinuom, dl.qtydeliveredinuom),
                                        'DesadvLineUOM', COALESCE(dl_uom.uom_json, '{}'::jsonb),
                                        'QtyDeliveredInInvoicingUOM', dl.qtydeliveredininvoiceuom,
                                        'InvoicingUOM', COALESCE(inv_uom.uom_json, '{}'::jsonb),
@@ -157,14 +160,15 @@ BEGIN
                                        'OrderPOReference', o.poreference,
                                        'OrderDocumentNo', o.documentno,
                                        'DesadvLine', dl.line,
+                                       'LineItemLine', ia.pi_line,
                                        'IsDeliveryClosed', COALESCE(diol.desadvlinetotalqtydelivered >= COALESCE(dl.qtyordered_override, dl.qtyordered), true)
                                ),
                                'M_HU_PackagingCode_TU_Text', pc_tu.packagingcode,
                                'Line', ia.pi_line,
-                               'GTIN_TU_PackingMaterial', ia.gtin_tu_packingmaterial,
+                               'GTIN_TU_PackingMaterial', NULLIF(btrim(ia.gtin_tu_packingmaterial), ''),
                                'IsSubArticle', ia.is_sub_article,
                                'MainArticleLine',
-                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line ELSE NULL END
+                               CASE WHEN ia.is_sub_article THEN ia.main_desadv_line END
                        ) ORDER BY ia.is_sub_article, ia.pi_line
                ) AS items_data
         FROM items_assigned ia
@@ -180,15 +184,17 @@ BEGIN
                  LEFT JOIN c_order o ON o.c_order_id = ol.c_order_id
             -- Junction table for per-shipment-line delivery totals (used for IsDeliveryClosed)
                  LEFT JOIN edi_desadvline_inoutline diol ON diol.m_inoutline_id = ia.m_inoutline_id AND diol.edi_desadvline_id = dl.edi_desadvline_id
-            -- BPartner product lookup
+            -- ASI-aware product data lookup (M_Product_ASI_Data with content-based ASI subset matching)
                  LEFT JOIN LATERAL (
-            SELECT gtin, productno
-            FROM c_bpartner_product
+            SELECT gtin, ean_cu, ean13_productcode, productno
+            FROM m_product_asi_data
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id
-              AND c_bpartner_id = d.c_bpartner_id
+              AND (c_bpartner_id IS NULL OR c_bpartner_id = d.c_bpartner_id)
+              AND IsASIAttributesKeySubset(m_attributesetinstance_id, iol.m_attributesetinstance_id)
+            ORDER BY seqno
             LIMIT 1
-            ) bpp ON TRUE
+            ) asi_data ON TRUE
             -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
             SELECT gtin

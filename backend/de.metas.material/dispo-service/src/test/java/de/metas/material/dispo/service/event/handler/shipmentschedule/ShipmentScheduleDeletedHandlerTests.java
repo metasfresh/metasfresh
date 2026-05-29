@@ -136,4 +136,25 @@ public class ShipmentScheduleDeletedHandlerTests
 		assertThat(demandRecord.getQty()).isEqualByComparingTo(ZERO);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(ZERO);
 	}
+
+	@Test
+	public void handleEvent_isDropShipWarehouse_shortCircuits()
+	{
+		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
+				.shipmentScheduleId(76)
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(ZERO)
+						.orderedQuantityDelta(ZERO)
+						.reservedQuantity(ZERO)
+						.reservedQuantityDelta(ZERO)
+						.build())
+				.isDropShipWarehouse(true)
+				.build();
+
+		shipmentScheduleDeletedHandler.handleEvent(event);
+
+		// short-circuit: no MD_Candidate records must have been touched
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
 }

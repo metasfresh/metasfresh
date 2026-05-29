@@ -192,6 +192,13 @@ public class JsonRequestBPartner
 
 	private boolean memoIsSet;
 
+	@ApiModelProperty(position = 167, //
+			value = "Translates to `C_BPartner.IsDiscountPrinted`")
+	private Boolean discountPrinted;
+
+	@ApiModelProperty(hidden = true)
+	private boolean discountPrintedSet;
+
 	@ApiModelProperty(position = 170, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
@@ -339,5 +346,10 @@ public class JsonRequestBPartner
 			this.priceListId = priceListId;
 			this.priceListIdSet = true;
 		}
+	}
+	public void setDiscountPrinted(final Boolean discountPrinted)
+	{
+		this.discountPrinted = discountPrinted;
+		this.discountPrintedSet = true;
 	}
 }

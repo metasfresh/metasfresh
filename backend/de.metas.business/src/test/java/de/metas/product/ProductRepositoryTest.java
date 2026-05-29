@@ -79,7 +79,7 @@ class ProductRepositoryTest
 		final Product product = productRepository.getById(productId);
 
 		assertThat(product.getId()).isEqualTo(productId);
-		assertThat(product.getProductNo()).isEqualTo("productNo");
+		assertThat(product.getValue()).isEqualTo("productNo");
 		assertThat(product.getName().getDefaultValue()).isEqualTo("productName");
 		assertThat(product.getUomId()).isEqualTo(UomId.ofRepoId(uomRecord.getC_UOM_ID()));
 		assertThat(product.getProductType()).isEqualTo("ITEM");
@@ -115,7 +115,7 @@ class ProductRepositoryTest
 		final ProductId productId2 = ProductId.ofRepoId(productRecord2.getM_Product_ID());
 
 		final List<Product> products = productRepository.getByIds(ImmutableSet.of(productId1, productId2));
-		assertThat(products).extracting("id", "productNo", "name.defaultValue", "uomId")
+		assertThat(products).extracting("id", "value", "name.defaultValue", "uomId")
 				.containsExactlyInAnyOrder(
 						tuple(productId1, "productNo1", "productName1", UomId.ofRepoId(uomRecord1.getC_UOM_ID())),
 						tuple(productId2, "productNo2", "productName2", UomId.ofRepoId(uomRecord2.getC_UOM_ID())));
@@ -165,7 +165,7 @@ class ProductRepositoryTest
 		assertThat(createdProduct.getGtin()).isEqualTo(gtin);
 		assertThat(createdProduct.getEan()).isEqualTo(ean);
 		assertThat(createdProduct.getDescription().getDefaultValue()).isEqualTo(description);
-		assertThat(createdProduct.getProductNo()).isEqualTo(code);
+		assertThat(createdProduct.getValue()).isEqualTo(code);
 		assertThat(createdProduct.getUomId()).isEqualTo(createProductRequest.getUomId());
 	}
 
@@ -177,6 +177,7 @@ class ProductRepositoryTest
 
 		final OrgId orgId = OrgId.ofRepoId(100000);
 		final String name = "test name";
+		final String value = "test value";
 		final String type = "ITEM";
 		final boolean stocked = true;
 		final boolean active = true;
@@ -184,7 +185,6 @@ class ProductRepositoryTest
 		final String description = "test description";
 		final String gtin = "test gtin";
 		final String ean = "test ean";
-		final String code = "p1";
 		final String packageSize = "1";
 		final BigDecimal weight = new BigDecimal(100);
 
@@ -193,6 +193,7 @@ class ProductRepositoryTest
 
 		final Product product = Product.builder()
 				.id(productId)
+				.value(value)
 				.name(TranslatableStrings.constant(name))
 				.productCategoryId(defaultProductCategoryId)
 				.productType(type)
@@ -204,7 +205,6 @@ class ProductRepositoryTest
 				.active(active)
 				.stocked(stocked)
 				.orgId(orgId)
-				.productNo(code)
 				.commodityNumberId(commodityNumberId)
 				.manufacturerId(manufacturerId)
 				.packageSize(packageSize)
@@ -219,6 +219,7 @@ class ProductRepositoryTest
 		assertThat(updatedProduct).isNotNull();
 		assertThat(updatedProduct.getOrgId()).isEqualTo(orgId);
 		assertThat(updatedProduct.getName().getDefaultValue()).isEqualTo(name);
+		assertThat(updatedProduct.getValue()).isEqualTo(value);
 		assertThat(updatedProduct.getProductType()).isEqualTo(type);
 		assertThat(updatedProduct.getProductCategoryId()).isEqualTo(defaultProductCategoryId);
 		assertThat(updatedProduct.isStocked()).isEqualTo(stocked);
@@ -227,7 +228,6 @@ class ProductRepositoryTest
 		assertThat(updatedProduct.getGtin()).isEqualTo(gtin);
 		assertThat(updatedProduct.getEan()).isEqualTo(ean);
 		assertThat(updatedProduct.getDescription().getDefaultValue()).isEqualTo(description);
-		assertThat(updatedProduct.getProductNo()).isEqualTo(code);
 		assertThat(updatedProduct.getCommodityNumberId()).isEqualTo(commodityNumberId);
 		assertThat(updatedProduct.getManufacturerId()).isEqualTo(manufacturerId);
 		assertThat(updatedProduct.getPackageSize()).isEqualTo(packageSize);
