@@ -42,9 +42,16 @@ permissions:
 jobs:
   extract:
     runs-on: ubuntu-latest
-    # On the per-run trigger, only act on runs that actually failed (nothing to
-    # record for green runs). schedule + manual dispatch are unaffected.
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure' }}
+    # Guard 1: only ever do work in the canonical repo. workflow_run / schedule /
+    # workflow_dispatch always execute from the DEFAULT branch's copy of this
+    # file, so cherry-picking it onto *_hotfix/*_release within metasfresh is
+    # inert — but if the file is propagated to a customer repo (separate repo,
+    # own default branch), this stops its nightly schedule from burning a runner.
+    # Guard 2: on the per-run trigger, only act on runs that actually failed
+    # (nothing to record for green runs). schedule + manual dispatch are unaffected.
+    if: >-
+      ${{ github.repository == 'metasfresh/metasfresh'
+          && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure') }}
     steps:
       - uses: actions/checkout@v4
 

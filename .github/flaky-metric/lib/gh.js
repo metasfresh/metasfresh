@@ -27,7 +27,7 @@ function listRuns({ branch = 'new_dawn_uat', since, limit = 50 } = {}) {
     '--branch', branch,
     '--workflow', 'cicd.yaml',
     '--limit', String(limit),
-    '--json', 'databaseId,status,conclusion,createdAt,headSha,displayTitle,url',
+    '--json', 'databaseId,status,conclusion,createdAt,headSha,headBranch,displayTitle,url',
   ];
   if (since) {
     const created = sinceToFilter(since);

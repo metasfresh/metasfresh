@@ -4,9 +4,10 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { computeMetricsFromFailures } = require('../lib/sheets');
 
-// Failures row layout: [Key, Run, Date, Commit, TestType, Profile, Scenario, Bucket, Exception, Message]
-const row = (runId, date, scenario, bucket, testType = 'cucumber') => [
-  `${runId}::${scenario}`, `https://x/runs/${runId}`, date, 'abc123', testType, 'cucumber/profile1', scenario, bucket, 'Exc', 'msg',
+// Failures row layout: [Key, Run, Branch, Date, Commit, TestType, Profile, Scenario, Bucket, Exception, Message]
+// Metrics row layout:  [Branch, Scenario, Bucket, TestType, FailCount, RunsFailed, First, Last, LastRun]
+const row = (runId, date, scenario, bucket, branch = 'new_dawn_uat', testType = 'cucumber') => [
+  `${runId}::${scenario}`, `https://x/runs/${runId}`, branch, date, 'abc123', testType, 'cucumber/profile1', scenario, bucket, 'Exc', 'msg',
 ];
 
 test('metrics projection: counts rows + distinct runs per scenario', () => {
@@ -16,12 +17,22 @@ test('metrics projection: counts rows + distinct runs per scenario', () => {
     row(101, '2026-05-26 10:00', 'EDI export', 'K'),
   ];
   const out = computeMetricsFromFailures(rows);
-  const tc5b = out.find((r) => r[0] === 'TC5b');
-  // [scenario, bucket, testType, failCount, runsFailed, first, last, lastRun]
-  assert.strictEqual(tc5b[3], 2, 'failCount = 2 rows');
-  assert.strictEqual(tc5b[4], 2, 'runsFailed = 2 distinct runs');
-  assert.strictEqual(tc5b[5], '2026-05-25 10:00', 'firstFailed = earliest');
-  assert.strictEqual(tc5b[6], '2026-05-26 10:00', 'lastFailed = latest');
+  const tc5b = out.find((r) => r[1] === 'TC5b');
+  assert.strictEqual(tc5b[0], 'new_dawn_uat', 'branch column');
+  assert.strictEqual(tc5b[4], 2, 'failCount = 2 rows');
+  assert.strictEqual(tc5b[5], 2, 'runsFailed = 2 distinct runs');
+  assert.strictEqual(tc5b[6], '2026-05-25 10:00', 'firstFailed = earliest');
+  assert.strictEqual(tc5b[7], '2026-05-26 10:00', 'lastFailed = latest');
+});
+
+test('metrics projection: same scenario on two branches stays as two rows', () => {
+  const rows = [
+    row(100, '2026-05-25 10:00', 'TC5b', 'E', 'new_dawn_uat'),
+    row(200, '2026-05-26 10:00', 'TC5b', 'E', 'soft_panda_hotfix'),
+  ];
+  const out = computeMetricsFromFailures(rows);
+  assert.strictEqual(out.length, 2, 'one row per (branch, scenario)');
+  assert.deepStrictEqual(out.map((r) => r[0]).sort(), ['new_dawn_uat', 'soft_panda_hotfix']);
 });
 
 test('metrics projection: idempotent — same input twice yields identical output', () => {
@@ -31,7 +42,7 @@ test('metrics projection: idempotent — same input twice yields identical outpu
   assert.deepStrictEqual(a, b);
   // Critical-fix guard: re-projecting must NOT double the count (the old
   // accumulate-delta logic inflated this on every nightly run).
-  assert.strictEqual(a[0][3], 2);
+  assert.strictEqual(a[0][4], 2);
 });
 
 test('metrics projection: most-recent classification wins for a re-bucketed scenario', () => {
@@ -40,7 +51,7 @@ test('metrics projection: most-recent classification wins for a re-bucketed scen
     row(101, '2026-05-26 10:00', 'flaky', 'N: queue drain'),
   ];
   const out = computeMetricsFromFailures(rows);
-  assert.strictEqual(out[0][1], 'N: queue drain');
+  assert.strictEqual(out[0][2], 'N: queue drain');
 });
 
 test('metrics projection: rows sorted by failCount desc', () => {
@@ -50,5 +61,5 @@ test('metrics projection: rows sorted by failCount desc', () => {
     row(101, '2026-05-26 10:00', 'common', 'Y'),
   ];
   const out = computeMetricsFromFailures(rows);
-  assert.strictEqual(out[0][0], 'common');
+  assert.strictEqual(out[0][1], 'common');
 });
