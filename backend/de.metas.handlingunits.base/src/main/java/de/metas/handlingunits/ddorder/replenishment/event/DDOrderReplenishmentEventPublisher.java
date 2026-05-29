@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.dd_order.reconcile.event;
+package de.metas.handlingunits.ddorder.replenishment.event;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 
 /**
- * Thin glue that publishes DD_Order picking reconcile events to {@link DDOrderReconciliationTopic#TOPIC}.
+ * Thin glue that publishes DD_Order picking reconcile events to {@link DDOrderReplenishmentConstants#TOPIC}.
  * Each event carries the {@code shipmentScheduleId} property (int).
  *
  * <p>This is glue only: it does not decide <em>whether</em> or <em>when</em> to publish (coalescing,
@@ -19,7 +19,7 @@ import java.util.LinkedHashSet;
  */
 @Component
 @RequiredArgsConstructor
-public class DDOrderReconciliationEventPublisher
+public class DDOrderReplenishmentEventPublisher
 {
 	public static final String PROPERTY_shipmentScheduleId = "shipmentScheduleId";
 	private static final String EVENT_NAME = "DDOrderPickingReconcile";
@@ -38,7 +38,7 @@ public class DDOrderReconciliationEventPublisher
 				.putProperty(PROPERTY_shipmentScheduleId, shipmentScheduleId.getRepoId())
 				.shallBeLogged()
 				.build();
-		eventBusFactory.getEventBus(DDOrderReconciliationTopic.TOPIC).enqueueEvent(event);
+		eventBusFactory.getEventBus(DDOrderReplenishmentConstants.TOPIC).enqueueEvent(event);
 	}
 
 	/**

@@ -20,9 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.dd_order.reconcile.interceptor;
+package de.metas.handlingunits.ddorder.replenishment.interceptor;
 
-import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileService;
+import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_ShipmentSchedule_DDOrderPickingInterceptor
 {
-	@NonNull private final DDOrderPickingReconcileService reconcileService;
+	@NonNull private final DDOrderPickingReplenishmentService reconcileService;
 
 	// Only on CHANGE: a brand-new schedule has no existing DD_Order yet, so there is nothing for the
 	// picker-busy guard to protect — and the record's PK is still 0 at BEFORE_NEW, which the BL cannot resolve.

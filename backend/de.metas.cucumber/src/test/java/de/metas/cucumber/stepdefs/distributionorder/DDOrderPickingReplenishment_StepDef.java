@@ -37,7 +37,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
-import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileBL;
+import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReconcileBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -86,11 +86,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * {@code AD_EventLog} / {@code AD_EventLog_Entry} / {@code AD_Issue} outcomes.</p>
  */
 @RequiredArgsConstructor
-public class DDOrderPickingReconcile_StepDef
+public class DDOrderPickingReplenishment_StepDef
 {
-	private static final Logger logger = LogManager.getLogger(DDOrderPickingReconcile_StepDef.class);
+	private static final Logger logger = LogManager.getLogger(DDOrderPickingReplenishment_StepDef.class);
 
-	/** Topic / event name the reconcile flow publishes to (see {@code DDOrderReconciliationEventPublisher}). */
+	/** Topic / event name the reconcile flow publishes to (see {@code DDOrderReplenishmentEventPublisher}). */
 	private static final String RECONCILE_EVENT_NAME = "DDOrderPickingReconcile";
 
 	/** Value of the AD_Process row backing the {@code DD_Order_Picking_Rebuild} JavaProcess. */
@@ -256,7 +256,7 @@ public class DDOrderPickingReconcile_StepDef
 
 	/**
 	 * Directly invokes {@code DDOrderPickingReconcileBL.reconcile(scheduleId)} in a new transaction
-	 * (mirrors what the async event consumer does — see {@code DDOrderReconciliationEventHandler}).
+	 * (mirrors what the async event consumer does — see {@code DDOrderReplenishmentEventHandler}).
 	 * Used for the controlled-timing race scenario (REQUIREMENTS.md TC5) so the test is deterministic.
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule to reconcile.</p>
@@ -430,7 +430,7 @@ public class DDOrderPickingReconcile_StepDef
 
 	/** FQN of the reconcile event handler — stored as {@code AD_EventLog_Entry.Classname} by the event framework. */
 	private static final String RECONCILE_HANDLER_CLASSNAME =
-			"de.metas.handlingunits.picking.dd_order.reconcile.event.DDOrderReconciliationEventHandler";
+			"de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventHandler";
 
 	/**
 	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler with the expected error state

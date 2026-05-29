@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.dd_order.reconcile;
+package de.metas.handlingunits.ddorder.replenishment;
 
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.document.DocTypeId;
@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 /** DAO for the DD_Order picking-reconcile flow. Methods added per-task as the BL evolves. */
 @Repository
-public class DDOrderPickingReconcileRepository
+public class DDOrderPickingReplenishmentRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -56,7 +56,7 @@ public class DDOrderPickingReconcileRepository
 
 		// Main query: active + not processed + not closed schedules on a packing warehouse with no live DD_Order.
 		//
-		// NOTE: active + not processed + not closed — matches DDOrderPickingReconcileService#classifyAction.
+		// NOTE: active + not processed + not closed — matches DDOrderPickingReplenishmentService#classifyAction.
 		// If one changes, change both.
 		final IQueryBuilder<I_M_ShipmentSchedule> scheduleQueryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -137,7 +137,7 @@ public class DDOrderPickingReconcileRepository
 	 *
 	 * <p>This method is pure data-access: it only persists the records. All non-DAO work — resolving locators,
 	 * the in-transit warehouse, the doc-type, and completing the document via {@link de.metas.document.engine.IDocumentBL}
-	 * — is performed by the caller ({@link DDOrderPickingReconcileService}).
+	 * — is performed by the caller ({@link DDOrderPickingReplenishmentService}).
 	 *
 	 * <p>Note on intentionally-omitted fields: {@code C_BPartner_Location_ID} and {@code PP_Plant_ID} are NOT set.
 	 * This is an internal pick-to-packing move, so neither the partner-location nor the manufacturing-plant context
@@ -146,7 +146,7 @@ public class DDOrderPickingReconcileRepository
 	 *
 	 * @return the saved (Drafted) {@link I_DD_Order} — the caller is responsible for completing it
 	 */
-	public I_DD_Order saveDraftDDOrder(@NonNull final CreateDDOrderRequest request)
+	public I_DD_Order saveDraftDDOrder(@NonNull final CreateDDOrderReplenishmentRequest request)
 	{
 		final OrgId orgId = request.getOrgId();
 

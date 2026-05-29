@@ -2,7 +2,7 @@
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
 @ghActions:run_on_executor6
-Feature: DD_Order picking reconcile — non-packing warehouses are not touched by the new flow
+Feature: DD_Order replenishment — non-packing warehouses are not touched by the new flow
   As a warehouse operator, I want sales orders on a regular (non-packing) warehouse to keep being handled
   by the existing material-disposition path, with no reconcile event and no distribution order created by
   the new packing-reconcile flow, so the new feature is fully scoped to packing warehouses only.

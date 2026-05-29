@@ -1,9 +1,9 @@
-package de.metas.handlingunits.picking.dd_order.reconcile;
+package de.metas.handlingunits.ddorder.replenishment;
 
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.picking.dd_order.reconcile.event.DDOrderReconciliationEventPublisher;
+import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -46,10 +46,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-class DDOrderPickingReconcileServiceTest
+class DDOrderPickingReplenishmentServiceTest
 {
-	private DDOrderPickingReconcileService service;
-	private DDOrderReconciliationEventPublisher publisher;
+	private DDOrderPickingReplenishmentService service;
+	private DDOrderReplenishmentEventPublisher publisher;
 
 	@BeforeEach
 	void beforeEach()
@@ -72,11 +72,11 @@ class DDOrderPickingReconcileServiceTest
 		}).when(documentBL).processEx(any(), any(), any());
 		Services.registerService(IDocumentBL.class, documentBL);
 
-		final DDOrderPickingReconcileRepository repository = new DDOrderPickingReconcileRepository();
+		final DDOrderPickingReplenishmentRepository repository = new DDOrderPickingReplenishmentRepository();
 		final DistributionNetworkRepository distributionNetworkRepository = new DistributionNetworkRepository();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		publisher = mock(DDOrderReconciliationEventPublisher.class);
-		service = new DDOrderPickingReconcileService(repository, distributionNetworkRepository, trxManager, publisher);
+		publisher = mock(DDOrderReplenishmentEventPublisher.class);
+		service = new DDOrderPickingReplenishmentService(repository, distributionNetworkRepository, trxManager, publisher);
 	}
 
 	@Test
@@ -395,7 +395,7 @@ class DDOrderPickingReconcileServiceTest
 		save(ddOrder);
 		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.VOID);
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReplenishmentAction.VOID);
 	}
 
 	@Test
@@ -417,7 +417,7 @@ class DDOrderPickingReconcileServiceTest
 		save(ddOrder);
 		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.RECREATE);
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReplenishmentAction.RECREATE);
 	}
 
 	@Test
@@ -441,7 +441,7 @@ class DDOrderPickingReconcileServiceTest
 		save(ddOrder);
 		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.VOID);
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReplenishmentAction.VOID);
 	}
 
 	@Test
@@ -459,7 +459,7 @@ class DDOrderPickingReconcileServiceTest
 		schedule.setProcessed(true);
 		save(schedule);
 
-		assertThat(service.classifyAction(schedule, null)).isEqualTo(DDOrderReconcileAction.NONE);
+		assertThat(service.classifyAction(schedule, null)).isEqualTo(DDOrderReplenishmentAction.NONE);
 	}
 
 	@Test
@@ -483,7 +483,7 @@ class DDOrderPickingReconcileServiceTest
 		save(ddOrder);
 		final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReconcileAction.VOID);
+		assertThat(service.classifyAction(schedule, existingDDOrderId)).isEqualTo(DDOrderReplenishmentAction.VOID);
 	}
 
 	@Test
@@ -501,7 +501,7 @@ class DDOrderPickingReconcileServiceTest
 		schedule.setIsClosed(true);
 		save(schedule);
 
-		assertThat(service.classifyAction(schedule, null)).isEqualTo(DDOrderReconcileAction.NONE);
+		assertThat(service.classifyAction(schedule, null)).isEqualTo(DDOrderReplenishmentAction.NONE);
 	}
 
 	@Test
@@ -1108,7 +1108,7 @@ class DDOrderPickingReconcileServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// DDOrderReconciliationEventPublisher distinct-id dedup (T15)
+	// DDOrderReplenishmentEventPublisher distinct-id dedup (T15)
 	// -----------------------------------------------------------------------
 
 	@Test
@@ -1118,7 +1118,7 @@ class DDOrderPickingReconcileServiceTest
 		final de.metas.event.IEventBus eventBus = mock(de.metas.event.IEventBus.class);
 		org.mockito.Mockito.when(eventBusFactory.getEventBus(any())).thenReturn(eventBus);
 
-		final DDOrderReconciliationEventPublisher realPublisher = new DDOrderReconciliationEventPublisher(eventBusFactory);
+		final DDOrderReplenishmentEventPublisher realPublisher = new DDOrderReplenishmentEventPublisher(eventBusFactory);
 
 		final ShipmentScheduleId id1 = ShipmentScheduleId.ofRepoId(501);
 		final ShipmentScheduleId id2 = ShipmentScheduleId.ofRepoId(502);

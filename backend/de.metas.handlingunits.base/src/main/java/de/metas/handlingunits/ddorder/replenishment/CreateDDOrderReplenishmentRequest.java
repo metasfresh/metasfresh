@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.dd_order.reconcile;
+package de.metas.handlingunits.ddorder.replenishment;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -20,8 +20,8 @@ import java.time.Instant;
  * saves to the database.
  *
  * <p>All warehouse-resolution (locators, in-transit warehouse, doc-type) is performed by the Service
- * layer ({@link DDOrderPickingReconcileService}) before building this request. The repository
- * ({@link DDOrderPickingReconcileRepository}) is pure data-access: it only builds and saves the
+ * layer ({@link DDOrderPickingReplenishmentService}) before building this request. The repository
+ * ({@link DDOrderPickingReplenishmentRepository}) is pure data-access: it only builds and saves the
  * {@code I_DD_Order} / {@code I_DD_OrderLine} records.
  *
  * <p>Note on intentionally-omitted fields: there is no {@code C_BPartner_Location_ID} nor {@code PP_Plant_ID}.
@@ -30,7 +30,7 @@ import java.time.Instant;
  */
 @Value
 @Builder
-public class CreateDDOrderRequest
+public class CreateDDOrderReplenishmentRequest
 {
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	/** Source (stocking) warehouse — for M_Warehouse_From_ID on header. */

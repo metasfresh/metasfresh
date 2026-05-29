@@ -1,6 +1,6 @@
-package de.metas.handlingunits.picking.dd_order.reconcile;
+package de.metas.handlingunits.ddorder.replenishment;
 
-public enum DDOrderReconcileAction
+public enum DDOrderReplenishmentAction
 {
 	NONE,
 	CREATE,

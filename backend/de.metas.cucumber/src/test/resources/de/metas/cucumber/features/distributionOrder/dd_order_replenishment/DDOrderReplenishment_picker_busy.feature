@@ -2,7 +2,7 @@
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
 @ghActions:run_on_executor6
-Feature: DD_Order picking reconcile — picker-busy guard (sync rollback + async consumer error)
+Feature: DD_Order replenishment — picker-busy guard (sync rollback + async consumer error)
   As a warehouse operator, when a picker is already working on the distribution order of a shipment
   schedule, I want any attempt to change that schedule to be refused immediately (with a clear error),
   and — should the picker grab the job in the race window after the change was accepted — the async

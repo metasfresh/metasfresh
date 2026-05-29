@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.dd_order.reconcile;
+package de.metas.handlingunits.ddorder.replenishment;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
@@ -9,7 +9,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.picking.dd_order.reconcile.event.DDOrderReconciliationEventPublisher;
+import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
@@ -55,22 +55,22 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class DDOrderPickingReconcileService
+public class DDOrderPickingReplenishmentService
 {
-	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
-	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
-	private static final AdMessageKey MSG_DDOrderPickingReconcile_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
+	private static final AdMessageKey MSG_DDOrderPickingReplenishment_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
+	private static final AdMessageKey MSG_DDOrderPickingReplenishment_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
+	private static final AdMessageKey MSG_DDOrderPickingReplenishment_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
 	@VisibleForTesting
-	static final AdMessageKey MSG_DDOrderPickingReconcile_QtyZero = AdMessageKey.of("DDOrderPickingReconcile_QtyZero");
+	static final AdMessageKey MSG_DDOrderPickingReplenishment_QtyZero = AdMessageKey.of("DDOrderPickingReconcile_QtyZero");
 
 	// FQN trx-property key: avoids collisions with any other service that might register an
 	// after-commit accumulator under a shorter, easier-to-clash name.
-	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcile";
+	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishment";
 
-	@NonNull private final DDOrderPickingReconcileRepository repository;
+	@NonNull private final DDOrderPickingReplenishmentRepository repository;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ITrxManager trxManager;
-	@NonNull private final DDOrderReconciliationEventPublisher reconciliationEventPublisher;
+	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -95,7 +95,7 @@ public class DDOrderPickingReconcileService
 		}
 		if (isPickerBusy(ddOrderId))
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, ddOrderId);
+			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, ddOrderId);
 		}
 	}
 
@@ -121,7 +121,7 @@ public class DDOrderPickingReconcileService
 	 * Re-reads schedule, classifies the action (NONE/CREATE/RECREATE/VOID), executes it.
 	 *
 	 * <p><b>No transaction boundary here.</b> The VOID-then-CREATE of the RECREATE branch is only atomic if
-	 * the caller wraps this call in a transaction. The caller ({@code DDOrderReconciliationEventHandler}) MUST invoke this
+	 * the caller wraps this call in a transaction. The caller ({@code DDOrderReplenishmentEventHandler}) MUST invoke this
 	 * via {@code trxManager.runInNewTrx(() -> reconcileService.reconcile(scheduleId))} so that a create-failure rolls back
 	 * the void — never call {@code reconcile()} bare.</p>
 	 */
@@ -129,27 +129,27 @@ public class DDOrderPickingReconcileService
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(scheduleId);
 		final DDOrderId existingDDOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
-		DDOrderReconcileAction action = classifyAction(schedule, existingDDOrderId);
+		DDOrderReplenishmentAction action = classifyAction(schedule, existingDDOrderId);
 
 		// Zero-qty soft no-op: if the schedule's effective QtyOrdered* (Override → Calculated) is <= 0
 		// we must not create a DD_Order (no demand to plan). For CREATE we downgrade to NONE; for
 		// RECREATE the existing DD_Order must be voided — downgrade to VOID. An informational entry
 		// is written to the Event Log so operators can see why no DD_Order was produced.
-		if (action == DDOrderReconcileAction.CREATE || action == DDOrderReconcileAction.RECREATE)
+		if (action == DDOrderReplenishmentAction.CREATE || action == DDOrderReplenishmentAction.RECREATE)
 		{
 			final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
 			if (effectiveQtyOrdered == null || effectiveQtyOrdered.signum() <= 0)
 			{
-				final boolean willVoidExisting = (action == DDOrderReconcileAction.RECREATE);
+				final boolean willVoidExisting = (action == DDOrderReplenishmentAction.RECREATE);
 				Loggables.addLog(
 						"{0}: effective QtyOrdered={1} for M_ShipmentSchedule_ID={2}; no DD_Order will be created{3}",
-						MSG_DDOrderPickingReconcile_QtyZero.toAD_Message(),
+						MSG_DDOrderPickingReplenishment_QtyZero.toAD_Message(),
 						effectiveQtyOrdered,
 						scheduleId.getRepoId(),
 						willVoidExisting ? " and the existing DD_Order will be voided" : "");
 				action = willVoidExisting
-						? DDOrderReconcileAction.VOID
-						: DDOrderReconcileAction.NONE;
+						? DDOrderReplenishmentAction.VOID
+						: DDOrderReplenishmentAction.NONE;
 			}
 		}
 
@@ -189,13 +189,13 @@ public class DDOrderPickingReconcileService
 	 * {@code existingDDOrderId} exactly once before calling this method.</p>
 	 */
 	@VisibleForTesting
-	DDOrderReconcileAction classifyAction(
+	DDOrderReplenishmentAction classifyAction(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@Nullable final DDOrderId existingDDOrderId)
 	{
 		if (!isOnAutoDistributionOrder(schedule))
 		{
-			return DDOrderReconcileAction.NONE;
+			return DDOrderReplenishmentAction.NONE;
 		}
 
 		final boolean hasExistingDDOrder = existingDDOrderId != null;
@@ -205,19 +205,19 @@ public class DDOrderPickingReconcileService
 
 		if (!scheduleRelevant && !hasExistingDDOrder)
 		{
-			return DDOrderReconcileAction.NONE;
+			return DDOrderReplenishmentAction.NONE;
 		}
 		else if (!scheduleRelevant)
 		{
-			return DDOrderReconcileAction.VOID;
+			return DDOrderReplenishmentAction.VOID;
 		}
 		else if (!hasExistingDDOrder)
 		{
-			return DDOrderReconcileAction.CREATE;
+			return DDOrderReplenishmentAction.CREATE;
 		}
 		else
 		{
-			return DDOrderReconcileAction.RECREATE;
+			return DDOrderReplenishmentAction.RECREATE;
 		}
 	}
 
@@ -234,7 +234,7 @@ public class DDOrderPickingReconcileService
 	 * if no source can be resolved, throws the network-gap exception and creates nothing.
 	 *
 	 * <p>Warehouse resolution (locators, in-transit warehouse, doc-type) happens here in the Service;
-	 * the repository ({@link DDOrderPickingReconcileRepository}) only handles the data persistence.</p>
+	 * the repository ({@link DDOrderPickingReplenishmentRepository}) only handles the data persistence.</p>
 	 */
 	private void createDDOrderFor(@NonNull final I_M_ShipmentSchedule schedule)
 	{
@@ -246,7 +246,7 @@ public class DDOrderPickingReconcileService
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(targetWarehouse.getDD_NetworkDistribution_ID());
 
 		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(targetWarehouseId, productId, networkId)
-				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReconcile_NetworkGap, networkId, productId));
+				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReplenishment_NetworkGap, networkId, productId));
 
 		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
 		// Source: the effective QtyOrdered (QtyOrdered_Override → QtyOrdered_Calculated, per IShipmentScheduleEffectiveBL).
@@ -275,7 +275,7 @@ public class DDOrderPickingReconcileService
 		// Fail with a clear config-time error rather than letting a -1 doc-type surface during completeIt.
 		Check.assumeNotNull(docTypeId, "Distribution Order doc-type must exist for orgId={}", orgId);
 
-		final CreateDDOrderRequest request = CreateDDOrderRequest.builder()
+		final CreateDDOrderReplenishmentRequest request = CreateDDOrderReplenishmentRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
 				.targetWarehouseId(targetWarehouseId)
@@ -299,7 +299,7 @@ public class DDOrderPickingReconcileService
 	{
 		if (isPickerBusy(existingDDOrderId))
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingDDOrderId);
+			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
 		}
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.load(existingDDOrderId.getRepoId(), I_DD_Order.class);
 		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
@@ -311,7 +311,7 @@ public class DDOrderPickingReconcileService
 	 * Then void the existing DD_Order and create a fresh one from the current schedule data.
 	 *
 	 * <p><b>No transaction boundary here.</b> The void + create is only atomic if the caller
-	 * ({@code DDOrderReconciliationEventHandler}) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
+	 * ({@code DDOrderReplenishmentEventHandler}) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
 	 * create-failure rolls back the void.</p>
 	 *
 	 * <p>{@code existingDDOrderId} is resolved exactly once by the caller ({@link #reconcile}) — no re-query here.</p>
@@ -323,7 +323,7 @@ public class DDOrderPickingReconcileService
 		// Picker-busy guard: checked ONCE up front, before any mutation
 		if (isPickerBusy(existingDDOrderId))
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReconcile_PickerBusy, existingDDOrderId);
+			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
 		}
 
 		// Void the existing DD_Order (picker already checked — no double check needed)
@@ -356,7 +356,7 @@ public class DDOrderPickingReconcileService
 	{
 		if (warehouse.isAutoDistributionOrder() && warehouse.getDD_NetworkDistribution_ID() <= 0)
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReconcile_MandatoryNetwork);
+			throw new AdempiereException(MSG_DDOrderPickingReplenishment_MandatoryNetwork);
 		}
 	}
 

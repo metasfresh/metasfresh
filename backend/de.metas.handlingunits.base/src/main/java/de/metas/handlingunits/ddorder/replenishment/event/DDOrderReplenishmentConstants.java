@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.dd_order.reconcile.event;
+package de.metas.handlingunits.ddorder.replenishment.event;
 
 import de.metas.event.Topic;
 import lombok.experimental.UtilityClass;
@@ -9,7 +9,7 @@ import lombok.experimental.UtilityClass;
  * after the originating transaction commits.
  */
 @UtilityClass
-public class DDOrderReconciliationTopic
+public class DDOrderReplenishmentConstants
 {
 	public static final Topic TOPIC = Topic.distributedAndAsync("de.metas.distribution.ddorder.picking.reconcile");
 }
