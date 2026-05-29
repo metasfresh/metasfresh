@@ -6,7 +6,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.log.EventLogUserService;
-import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileBL;
+import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -28,8 +28,8 @@ import javax.annotation.PostConstruct;
  *   <li>An <em>Error</em> {@code AD_EventLog_Entry} (with an {@code AD_Issue} attached) is written on
  *       failure, making the event repostable via {@code AD_EventLog_Entry_RepostEvent}.</li>
  * </ul>
- * The reconcile itself still runs in its own transaction (as mandated by
- * {@link DDOrderPickingReconcileBL#reconcile}); {@code invokeHandlerAndLog} does not open a transaction.</p>
+ * The reconcile itself still runs in its own transaction (as required by
+ * {@link DDOrderPickingReconcileService#reconcile}); {@code invokeHandlerAndLog} does not open a transaction.</p>
  */
 @Component
 @Profile(Profiles.PROFILE_App)
@@ -37,7 +37,7 @@ import javax.annotation.PostConstruct;
 public class DDOrderReconciliationEventHandler implements IEventListener
 {
 	// EventBusFactory and EventLogUserService are Spring @Service beans — must be constructor-injected, NOT Services.get.
-	@NonNull private final DDOrderPickingReconcileBL reconcileBL;
+	@NonNull private final DDOrderPickingReconcileService reconcileService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 	@NonNull private final EventLogUserService eventLogUserService;
 	// ITrxManager is an ISingletonService — Services.get is correct.
@@ -57,7 +57,7 @@ public class DDOrderReconciliationEventHandler implements IEventListener
 
 		eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 				.handlerClass(DDOrderReconciliationEventHandler.class)
-				.invokaction(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
+				.invokaction(() -> trxManager.runInNewTrx(() -> reconcileService.reconcile(scheduleId)))
 				.build());
 	}
 }

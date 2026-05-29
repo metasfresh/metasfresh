@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.dd_order.reconcile.interceptor;
 
-import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileBL;
+import de.metas.handlingunits.picking.dd_order.reconcile.DDOrderPickingReconcileService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_Warehouse_DDOrderPickingInterceptor
 {
-	@NonNull private final DDOrderPickingReconcileBL reconcileBL;
+	@NonNull private final DDOrderPickingReconcileService reconcileService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void assertConfigValid(@NonNull final I_M_Warehouse warehouse)
 	{
-		reconcileBL.assertWarehouseConfigurationIsValid(warehouse);
+		reconcileService.assertWarehouseConfigurationIsValid(warehouse);
 	}
 }

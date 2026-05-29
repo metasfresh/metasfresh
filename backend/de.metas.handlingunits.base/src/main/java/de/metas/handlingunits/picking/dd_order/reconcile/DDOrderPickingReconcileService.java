@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
+public class DDOrderPickingReconcileService
 {
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
 	private static final AdMessageKey MSG_DDOrderPickingReconcile_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
@@ -61,7 +61,6 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
-	@Override
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		if (!isOnAutoDistributionOrder(schedule))
@@ -81,7 +80,6 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		}
 	}
 
-	@Override
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		if (!isOnAutoDistributionOrder(schedule))
@@ -101,14 +99,13 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Re-reads schedule, classifies the action (NONE/CREATE/RECREATE/VOID), executes it.
 	 *
 	 * <p><b>No transaction boundary here.</b> The VOID-then-CREATE of the RECREATE branch is only atomic if
 	 * the caller wraps this call in a transaction. The caller ({@code DDOrderReconciliationEventHandler}) MUST invoke this
-	 * via {@code trxManager.runInNewTrx(() -> bl.reconcile(scheduleId))} so that a create-failure rolls back
+	 * via {@code trxManager.runInNewTrx(() -> reconcileService.reconcile(scheduleId))} so that a create-failure rolls back
 	 * the void — never call {@code reconcile()} bare.</p>
 	 */
-	@Override
 	public void reconcile(@NonNull final ShipmentScheduleId scheduleId)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(scheduleId);
@@ -289,7 +286,6 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		createDDOrderFor(schedule);
 	}
 
-	@Override
 	public void rebuildDrift()
 	{
 		// try-with-resources: close the DB cursor even if publishOne throws mid-stream.
@@ -299,7 +295,6 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		}
 	}
 
-	@Override
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)
 	{
 		if (warehouse.isAutoDistributionOrder() && warehouse.getDD_NetworkDistribution_ID() <= 0)
@@ -308,7 +303,6 @@ public class DDOrderPickingReconcileService implements DDOrderPickingReconcileBL
 		}
 	}
 
-	@Override
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
 		return repository.existsPickingJobLineForDDOrder(ddOrderId);
