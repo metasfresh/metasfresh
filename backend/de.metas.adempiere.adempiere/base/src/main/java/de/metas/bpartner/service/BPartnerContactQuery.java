@@ -37,10 +37,10 @@ import lombok.Value;
 public class BPartnerContactQuery
 {
 	/** If set, it overrides the other query parameters */
-	UserId userId;
+	@Nullable UserId userId;
 
 	/** If set, it overrides the {@code value} parameter */
-	ExternalId externalId;
+	@Nullable ExternalId externalId;
 
 	/**
 	 * Search key / code of the contact ({@code AD_User.Value}).
@@ -48,10 +48,10 @@ public class BPartnerContactQuery
 	 * FIXME: {@code AD_User.Value} has no unique constraint — using this field may cause a {@code QueryMoreThanOneRecordsFoundException}
 	 * if multiple contacts share the same value. Add a unique constraint on {@code AD_User.Value} before relying on this.
 	 */
-	String value;
+	@Nullable String value;
 
 	/** If set, it is ANDed to the rest */
-	BPartnerId bPartnerId;
+	@Nullable BPartnerId bPartnerId;
 
 	@Builder
 	private BPartnerContactQuery(
