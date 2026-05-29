@@ -16,7 +16,7 @@
 UPDATE AD_Column
 SET EntityType = 'D',
     IsForceIncludeInGeneratedModel = 'N',
-    Updated = now(),
+    Updated = TIMESTAMP '2026-05-29 10:00:00',
     UpdatedBy = 100
 WHERE AD_Column_ID IN (592616, 592617, 592618)
   AND IsActive = 'Y';

@@ -9,6 +9,9 @@
 --   AD_Field_ID      = 780482
 --   AD_UI_Element_ID = 651837
 
+-- Backup before destructive change (REVIEW.md rule: backup_table before DROP COLUMN)
+SELECT backup_table('c_taxdeclaration', '_iter8_drop_correctionneededreason');
+
 -- 1. Drop physical column
 ALTER TABLE C_TaxDeclaration DROP COLUMN IF EXISTS CorrectionNeededReason;
 
@@ -16,7 +19,7 @@ ALTER TABLE C_TaxDeclaration DROP COLUMN IF EXISTS CorrectionNeededReason;
 UPDATE AD_Column
 SET IsActive = 'N',
     IsForceIncludeInGeneratedModel = 'N',
-    Updated = now(),
+    Updated = TIMESTAMP '2026-05-29 10:00:00',
     UpdatedBy = 100
 WHERE AD_Column_ID = 592619;
 
@@ -25,7 +28,7 @@ UPDATE AD_Field
 SET IsActive = 'N',
     IsDisplayed = 'N',
     IsDisplayedGrid = 'N',
-    Updated = now(),
+    Updated = TIMESTAMP '2026-05-29 10:00:01',
     UpdatedBy = 100
 WHERE AD_Field_ID = 780482;
 
@@ -33,15 +36,15 @@ WHERE AD_Field_ID = 780482;
 UPDATE AD_UI_Element
 SET IsDisplayed = 'N',
     IsDisplayedGrid = 'N',
-    Updated = now(),
+    Updated = TIMESTAMP '2026-05-29 10:00:02',
     UpdatedBy = 100
 WHERE AD_UI_Element_ID = 651837;
 
 -- 5. Deactivate AD_Element + AD_Element_Trl (dedicated element, safe to deactivate)
 UPDATE AD_Element
-SET IsActive = 'N', Updated = now(), UpdatedBy = 100
+SET IsActive = 'N', Updated = TIMESTAMP '2026-05-29 10:00:03', UpdatedBy = 100
 WHERE AD_Element_ID = 584911;
 
 UPDATE AD_Element_Trl
-SET IsActive = 'N', Updated = now(), UpdatedBy = 100
+SET IsActive = 'N', Updated = TIMESTAMP '2026-05-29 10:00:04', UpdatedBy = 100
 WHERE AD_Element_ID = 584911;

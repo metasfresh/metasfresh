@@ -43,7 +43,7 @@ WHERE l.IsActive = 'Y'
 UPDATE AD_Process_Trl
 SET IsTranslated = 'Y', Name = 'Check Drift',
     Description = 'Check whether the Fact_Acct snapshot has drifted from live accounting data.',
-    Updated = TIMESTAMP '2026-05-29 00:00:00', UpdatedBy = 100
+    Updated = TIMESTAMP '2026-05-29 00:00:01', UpdatedBy = 100
 WHERE AD_Language = 'en_US' AND AD_Process_ID = 585627;
 
 -- Wire the process to the C_TaxDeclaration table for WebUI document action button
@@ -57,7 +57,7 @@ INSERT INTO AD_Table_Process (
 )
 VALUES (
     541646 /*From ID Server*/, 0, 0, 'Y',
-    TIMESTAMP '2026-05-29 00:00:00', 100, TIMESTAMP '2026-05-29 00:00:00', 100,
+    TIMESTAMP '2026-05-29 00:00:02', 100, TIMESTAMP '2026-05-29 00:00:02', 100,
     818, 585627,
     'Y', 'N', 'N', 'N', 'N',
     'de.metas.acct'
