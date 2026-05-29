@@ -477,16 +477,20 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @Id:S29231_170
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S29231_170 — Two mobile-picking jobs share one LU: each shipment's EPCIS JSON sees only its own crates
-  ## Regression for get_epcis_events_json_fn (CTE ha_items_with_vtu, me03#29231).
-  ## Production scenario LAF1010-3: picker A picks order 1 onto a fresh LU; picker B then
-  ## targets that same physical LU as the pick-to target for order 2. Both shipments
-  ## reference the same LU via m_hu_assignment. Before the fix, shipment-1's EPCIS JSON
-  ## also enumerated shipment-2's TUs (35 crates instead of 15).
+  Scenario: S29231_170 — Two mobile-picking jobs share one LU: EPCIS emits ONE event per physical SSCC (owner merges both orders, sibling returns {})
+  ## Contract change per me03#29231 customer clarification (Migros/Spavetti LAF1010-3):
+  ## When two sales orders are picked onto ONE shared physical pallet (ONE SSCC), the
+  ## get_epcis_events_json_fn must emit exactly ONE picking+commissioning event for that
+  ## SSCC. The owner shipment (lowest M_InOut_ID sharing the LU) returns the full event:
+  ##   - pallets[0].crates = ALL crates from both orders on that LU (15 total)
+  ##   - desadvReferences[] size 2 (one per DESADV)
+  ##   - poReferences[]     size 2 (one per order)
+  ## The sibling shipment (higher M_InOut_ID) must return {} (empty object) so Eddyson
+  ## does not render a duplicate event for the same physical SSCC.
   ##
   ## The test uses two real mobile picking jobs (LUPickingTarget.ofExistingHU on the
-  ## second job) to produce the bug shape via the production code path — no synthetic
-  ## HU injection. With IsAlwaysSplitHUsEnabled=N the LU survives across both jobs.
+  ## second job) to reproduce the LAF1010-3 shape via the production code path.
+  ## With IsAlwaysSplitHUsEnabled=N the shared LU survives across both picking jobs.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
@@ -634,23 +638,25 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | dA_S29231_170            | bp_S29231_170            | oA_S29231_170         |
       | dB_S29231_170            | bp_S29231_170            | oB_S29231_170         |
 
-    # ─── Shipment A: only its own 5 crates ───────────────────────────────────────────
+    # ─── Per-SSCC contract (me03#29231 customer clarification) ─────────────────────────
+    # ioA has the lower M_InOut_ID (created first) → it is the OWNER.
+    # The owner's event merges ALL crates from the shared physical LU (5 TUs from order A
+    # + 10 TUs from order B = 15 crates total) and carries both DESADV + PO references.
+    # ioB is the SIBLING → the function must return {} so no duplicate event is emitted.
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S29231_170
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
       | 987654321000001700 |
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
-      | 0           | 987654321000001700 | 5          |
+      | 0           | 987654321000001700 | 15         |
+    And the EPCIS JSON array field has:
+      | field            | expectedSize |
+      | desadvReferences | 2            |
+      | poReferences     | 2            |
 
-    # ─── Shipment B: only its own 10 crates ──────────────────────────────────────────
-    When the EPCIS JSON export function is called for M_InOut identified by ioB_S29231_170
-    Then the EPCIS JSON pallets contain SSCC18 values in any order:
-      | sscc18             |
-      | 987654321000001700 |
-    And the EPCIS JSON pallet has:
-      | palletIndex | sscc               | crateCount |
-      | 0           | 987654321000001700 | 10         |
+    # ─── Sibling shipment B must return {} (no duplicate event for the same SSCC) ──────
+    Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170
 
     # ─── DESADV-JSON regression via M_InOut_EDI_Export_JSON/invoke ───────────────────
     # Exercises get_desadv_packs_json_fn's per-M_InOut filter through the production REST
