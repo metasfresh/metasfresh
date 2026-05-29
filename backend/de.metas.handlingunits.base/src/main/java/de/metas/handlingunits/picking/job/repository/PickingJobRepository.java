@@ -90,6 +90,7 @@ public class PickingJobRepository
 	{
 		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode());
 
 		pickerId.appendFilter(queryBuilder, I_M_Picking_Job.COLUMNNAME_Picking_User_ID);
