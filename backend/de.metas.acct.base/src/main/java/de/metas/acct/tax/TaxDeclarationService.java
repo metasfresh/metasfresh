@@ -38,13 +38,14 @@ public class TaxDeclarationService
 
 	public void checkDrift(@NonNull final TaxDeclarationId id)
 	{
+		final I_C_TaxDeclaration record = taxDeclarationRepository.getById(id);
+
 		final int result = DB.getSQLValueEx(
 				ITrx.TRXNAME_ThreadInherited,
 				"SELECT CASE WHEN de_metas_acct.tax_declaration_check_drift(?) THEN 1 ELSE 0 END",
 				new Object[] { id.getRepoId() });
 		final boolean isDriftDetected = result == 1;
 
-		final I_C_TaxDeclaration record = taxDeclarationRepository.getById(id);
 		record.setIsCorrectionNeeded(isDriftDetected);
 		InterfaceWrapperHelper.saveRecord(record);
 	}

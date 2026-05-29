@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/tax_declaration_check_drift.sql
 -- Tax Declaration — create drift-check function
 -- Checks 3 conditions: dead FKs, orphan Fact_Acct rows, amount drift.
 -- Returns TRUE if any drift is detected; FALSE if the snapshot matches live data.

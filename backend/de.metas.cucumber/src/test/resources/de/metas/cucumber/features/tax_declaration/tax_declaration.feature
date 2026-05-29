@@ -599,7 +599,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 # ############################################################################################################################################
   @Id:S0467_TD_071
   @from:cucumber
-  Scenario: drift detected — second independent run verifies set-and-clear semantics work
+  Scenario: drift detected — orphan Fact_Acct rows — independent scenario with separate identifiers to avoid cross-scenario leakage
 
     And metasfresh contains C_TaxCategory
       | Identifier     |

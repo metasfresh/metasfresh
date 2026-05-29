@@ -12,8 +12,8 @@
 -- Backup before destructive change (REVIEW.md rule: backup_table before DROP COLUMN)
 SELECT backup_table('c_taxdeclaration', '_iter8_drop_correctionneededreason');
 
--- 1. Drop physical column
-ALTER TABLE C_TaxDeclaration DROP COLUMN IF EXISTS CorrectionNeededReason;
+-- 1. Drop physical column (wrapped to handle dependent views automatically)
+SELECT public.db_alter_table('C_TaxDeclaration', 'ALTER TABLE C_TaxDeclaration DROP COLUMN IF EXISTS CorrectionNeededReason');
 
 -- 2. Deactivate AD_Column (also clears IsForceIncludeInGeneratedModel)
 UPDATE AD_Column
