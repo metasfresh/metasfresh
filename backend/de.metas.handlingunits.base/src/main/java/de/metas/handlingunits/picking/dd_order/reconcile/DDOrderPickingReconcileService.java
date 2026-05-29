@@ -30,6 +30,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,6 +49,8 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -70,6 +73,7 @@ public class DDOrderPickingReconcileService
 	@NonNull private final DDOrderReconciliationEventPublisher reconciliationEventPublisher;
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -332,8 +336,17 @@ public class DDOrderPickingReconcileService
 
 	public void rebuildDrift()
 	{
+		final Set<WarehouseId> autoDistributionWarehouseIds = queryBL
+				.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(wh -> WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
+				.collect(Collectors.toSet());
+
 		// try-with-resources: close the DB cursor even if publishOne throws mid-stream.
-		try (final Stream<ShipmentScheduleId> schedules = repository.streamSchedulesNeedingDDOrder())
+		try (final Stream<ShipmentScheduleId> schedules = repository.streamSchedulesNeedingDDOrder(autoDistributionWarehouseIds))
 		{
 			schedules.forEach(reconciliationEventPublisher::publishOne);
 		}
@@ -349,7 +362,9 @@ public class DDOrderPickingReconcileService
 
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
-		return repository.existsPickingJobLineForDDOrder(ddOrderId);
+		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(ddOrder.getM_ShipmentSchedule_ID());
+		return repository.existsPickingJobLineForSchedule(scheduleId);
 	}
 
 	/**

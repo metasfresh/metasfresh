@@ -12,8 +12,8 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -21,6 +21,7 @@ import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /** DAO for the DD_Order picking-reconcile flow. Methods added per-task as the BL evolves. */
@@ -31,18 +32,20 @@ public class DDOrderPickingReconcileRepository
 
 	/**
 	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
-	 * ({@code M_Warehouse.IsAutoDistributionOrder='Y'}), and have NO live (non-voided) DD_Order linked.
+	 * (one of the given {@code autoDistributionWarehouseIds}), and have NO live (non-voided) DD_Order linked.
 	 *
 	 * <p>These are the "drifted" schedules that need to be re-reconciled by the watchdog scan.</p>
+	 *
+	 * <p>The caller is responsible for resolving the set of auto-distribution warehouse IDs before calling this method.</p>
 	 */
-	public Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder()
+	public Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder(@NonNull final Set<WarehouseId> autoDistributionWarehouseIds)
 	{
-		// Sub-query: packing warehouse IDs
-		final IQuery<I_M_Warehouse> autoDistributionOrderSubQuery = queryBL
-				.createQueryBuilder(I_M_Warehouse.class)
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
-				.addOnlyActiveRecordsFilter()
-				.create();
+		if (autoDistributionWarehouseIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		final Set<Integer> warehouseRepoIds = WarehouseId.toRepoIds(autoDistributionWarehouseIds);
 
 		// Sub-query: live (non-voided) DD_Orders
 		final IQuery<I_DD_Order> liveDDOrderSubQuery = queryBL
@@ -77,19 +80,13 @@ public class DDOrderPickingReconcileRepository
 		effectivePackingFilter.addCompositeQueryFilter()
 				.setJoinAnd()
 				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
-				.addInSubQueryFilter(
-						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
-						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
-						autoDistributionOrderSubQuery);
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, warehouseRepoIds);
 
 		// branch 2: Override not set → base warehouse decides
 		effectivePackingFilter.addCompositeQueryFilter()
 				.setJoinAnd()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
-				.addInSubQueryFilter(
-						I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
-						I_M_Warehouse.COLUMNNAME_M_Warehouse_ID,
-						autoDistributionOrderSubQuery);
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseRepoIds);
 
 		// schedule must have NO live DD_Order
 		scheduleQueryBuilder.addNotInSubQueryFilter(
@@ -121,23 +118,14 @@ public class DDOrderPickingReconcileRepository
 	}
 
 	/**
-	 * Returns {@code true} iff at least one {@link I_M_Picking_Job_Line} row shares the same
-	 * {@code M_ShipmentSchedule_ID} as the given DD_Order — i.e. a picker is actively working
-	 * on the shipment-schedule this DD_Order was created for.
+	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
+	 * the given shipment schedule — i.e. a picker is actively working on it.
 	 */
-	public boolean existsPickingJobLineForDDOrder(@NonNull final DDOrderId ddOrderId)
+	public boolean existsPickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
 	{
-		final IQuery<I_DD_Order> ddOrderSubQuery = queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId)
-				.create();
-
 		return queryBL
 				.createQueryBuilder(I_M_Picking_Job_Line.class)
-				.addInSubQueryFilter(
-						I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID,
-						I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID,
-						ddOrderSubQuery)
+				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
