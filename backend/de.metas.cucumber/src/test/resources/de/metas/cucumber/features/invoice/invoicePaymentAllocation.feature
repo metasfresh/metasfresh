@@ -177,6 +177,70 @@ Feature: invoice payment allocation
       | *                      |             |             |               |          | salesInvoice   |
 
 
+# ############################################################################################################################################
+# TC: sales invoice with explicit VAT codes — allocation discount triggers tax correction with correct AmountType VAT code
+# Verifies: Doc_AllocationHdr tax correction leg (T_Due_Acct) carries the Tax-AmountType C_VAT_Code
+# ############################################################################################################################################
+  @Id:S0465_100_020
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  Scenario: allocation discount: PayDiscount_Exp_Acct carries Net VAT code, T_Due_Acct carries Tax VAT code (§17 UStG)
+
+    Given metasfresh has date and time 2022-05-11T08:00:00+02:00[Europe/Berlin]
+    And metasfresh contains C_TaxCategory
+      | Identifier    |
+      | taxCategory19 |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | tax19      | taxCategory19    | 19   | DE                       | DE                        |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | sales19_T  | tax19    | Y       | T          |
+      | sales19_N  | tax19    | Y       | N          |
+
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product      | 100.00   | PCE      | taxCategory19    |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoice    | customer1     | 2022-05-11   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID$set |
+      | invoiceL1  | invoice      | product      | 1 PCE       | tax19        |
+    And the invoice identified by invoice is completed
+
+    # Net 100, Tax 19 (19%), Gross 119
+    # Invoice posting: Receivable DR 119, Revenue CR 100 (Net VAT code), T_Due CR 19 (Tax VAT code)
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | C_Receivable_Acct     | 119 EUR     |             | -        | invoice   | -             |
+      | P_Revenue_Acct        |             | 100 EUR     | tax19    | invoice   | sales19_N     |
+      | T_Due_Acct            |             | 19 EUR      | tax19    | invoice   | sales19_T     |
+
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | payment    | customer1     | 107.10 EUR | true      | org_EUR_account     |
+    And the payment identified by payment is completed
+
+    # Allocate: pay 107.10, discount 11.90 (10% Skonto). Tax correction = 11.90/119*19 = 1.90 EUR
+    And create and complete manual payment allocations
+      | C_AllocationHdr_ID | C_Invoice_ID | C_Payment_ID | Amount     | DiscountAmt |
+      | alloc              | invoice      | payment      | 107.10 EUR | 11.90 EUR   |
+
+    # §17 UStG: PayDiscount gross leg and offset leg → Net VAT code (Bemessungsgrundlage reduced)
+    # T_Due_Acct correction → Tax VAT code (Steuerbetrag corrected)
+    # Net contribution to N-bucket: 11.90 − 1.90 = 10.00 EUR ✓
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | PayDiscount_Exp_Acct  | 11.90 EUR   |             | tax19    | alloc     | sales19_N     |
+      | T_Due_Acct            | 1.90 EUR    |             | tax19    | alloc     | sales19_T     |
+      | PayDiscount_Exp_Acct  |             | 1.90 EUR    | tax19    | alloc     | sales19_N     |
+      | *                     |             |             |          | alloc     |               |
 
 
 
@@ -316,6 +380,10 @@ Feature: invoice payment allocation
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | invl_120_1 | inv_120_1    | product_120  | 1 PCE       | tax1     |
       | invl_120_2 | inv_120_2    | product_120  | 1 PCE       | tax1     |
+    And metasfresh contains C_VAT_Codes:
+      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
+      | tax1_N     | tax1     | Y       | N          |
+      | tax1_T     | tax1     | Y       | T          |
     And the invoice identified by inv_120_1 is completed
     And the invoice identified by inv_120_2 is completed
 
@@ -363,12 +431,14 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
       | inv_120_2    | 0      | 2.9         | alloc3             |
+    # §17 UStG: WriteOff offset leg → Net VAT code; T_Due correction → Tax VAT code
+    # Gross write-off leg (2.90 EUR) has no VAT code (createInvoiceWriteOffFacts does not set one)
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
-      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |
-      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
-      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
-      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID | C_VAT_Code_ID |
+      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    | -             |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    | -             |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    | tax1_T        |
+      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    | tax1_N        |
 
 
 

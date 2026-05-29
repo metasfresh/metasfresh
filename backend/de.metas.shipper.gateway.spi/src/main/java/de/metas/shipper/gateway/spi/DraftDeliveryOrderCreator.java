@@ -11,6 +11,7 @@ import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -109,6 +110,7 @@ public interface DraftDeliveryOrderCreator
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
+		@Nullable UserId deliverContactId;
 		@NonNull LocalDate pickupDate;
 		@NonNull LocalTime timeFrom;
 		@NonNull LocalTime timeTo;
@@ -124,6 +126,7 @@ public interface DraftDeliveryOrderCreator
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
+				@Nullable final UserId deliverToContactId,
 				@NonNull final LocalDate pickupDate,
 				@NonNull final LocalTime timeFrom,
 				@NonNull final LocalTime timeTo,
@@ -141,6 +144,7 @@ public interface DraftDeliveryOrderCreator
 			this.fromOrgId = fromOrgId;
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
+			this.deliverContactId = deliverToContactId;
 			this.pickupDate = pickupDate;
 			this.timeFrom = timeFrom;
 			this.timeTo = timeTo;

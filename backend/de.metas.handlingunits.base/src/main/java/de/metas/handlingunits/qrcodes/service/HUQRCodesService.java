@@ -19,6 +19,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.AdProcessId;
@@ -201,13 +202,25 @@ public class HUQRCodesService
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return getHuIdByQRCodeIfExists(qrCode)
-				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code `" + qrCode.toDisplayableQRCode() + "`"));
+				.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
+						.setParameter("qrCode", qrCode.toDisplayableQRCode()));
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
 	{
 		return getHUAssignmentByQRCode(qrCode)
 				.map(HUQRCodeAssignment::getSingleHUId);
+	}
+
+	/**
+	 * Variant of {@link #getHuIdByQRCodeIfExists(HUQRCode)} that also resolves through soft-deleted
+	 * assignments. Use when a stale sticker scan needs to surface a more specific cause than the
+	 * generic "no HU attached" exception (e.g. the HU was destroyed and the destroy interceptor
+	 * deactivated the assignment).
+	 */
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(@NonNull final HUQRCode qrCode)
+	{
+		return huQRCodesRepository.getHuIdByQRCodeIncludingInactive(qrCode);
 	}
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
@@ -289,6 +302,15 @@ public class HUQRCodesService
 	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
 	{
 		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
+	}
+
+	/**
+	 * Soft-delete every active {@code M_HU_QRCode_Assignment} row pointing at the given HU.
+	 * Preserves the row for audit/traceability; existing scan-time lookups already filter on {@code IsActive='Y'}.
+	 */
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
+	{
+		huQRCodesRepository.deactivateAssignmentsByHuId(huId);
 	}
 
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
@@ -420,6 +442,10 @@ public class HUQRCodesService
 			return ean13HUQRCode;
 		}
 
-		throw new AdempiereException("QR code is not handled: " + scannedCode);
+		if (globalQRCode != null)
+		{
+			throw MobileQRCodeMessages.newWrongGlobalQRTypeException(globalQRCode);
+		}
+		throw MobileQRCodeMessages.newNotRecognizedException(scannedCode);
 	}
 }

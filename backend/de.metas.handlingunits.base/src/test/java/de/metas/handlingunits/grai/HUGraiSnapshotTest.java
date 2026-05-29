@@ -22,6 +22,12 @@ class HUGraiSnapshotTest
 	private static final GRAI GRAI_B = GRAI.ofCanonicalString("7613204.00307.1000000002");
 	private static final GRAI GRAI_C = GRAI.ofCanonicalString("7613204.00307.1000000003");
 	private static final GRAI GRAI_D = GRAI.ofCanonicalString("7613204.00307.1000000004");
+	private static final GRAI GRAI_E = GRAI.ofCanonicalString("7613204.00307.1000000005");
+	private static final GRAI GRAI_F = GRAI.ofCanonicalString("7613204.00307.1000000006");
+	private static final GRAI GRAI_G = GRAI.ofCanonicalString("7613204.00307.1000000007");
+	private static final GRAI GRAI_H = GRAI.ofCanonicalString("7613204.00307.1000000008");
+	private static final GRAI GRAI_I = GRAI.ofCanonicalString("7613204.00307.1000000009");
+	private static final GRAI GRAI_J = GRAI.ofCanonicalString("7613204.00307.1000000010");
 
 	// -------------------------------------------------------------------
 	// GET path
@@ -351,6 +357,121 @@ class HUGraiSnapshotTest
 					AttributeChange.of(HuId.ofRepoId(1), GRAISet.of(GRAI_A)));
 			assertThat(delta.hasUnassignedGrais()).isTrue();
 			assertThat(delta.getUnassignedGrais().toSet()).containsExactly(GRAI_B);
+		}
+	}
+
+	// -------------------------------------------------------------------
+	// computeDelta — multiple aggregate blocks (one per product on an LU)
+	// -------------------------------------------------------------------
+
+	@Nested
+	class ComputeDelta_MultipleAggregateBlocks
+	{
+		@Test
+		void threeBlocks_3_3_3_distributesAcrossBlocks()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(
+							AggregateBlock.of(HuId.ofRepoId(10), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(20), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(30), QtyTU.ofInt(3), GRAISet.EMPTY)));
+
+			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(
+					ImmutableList.of(GRAI_A, GRAI_B, GRAI_C, GRAI_D, GRAI_E, GRAI_F, GRAI_G, GRAI_H, GRAI_I)));
+
+			assertThat(delta.getChanges()).containsExactly(
+					AttributeChange.of(HuId.ofRepoId(10), GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B, GRAI_C))),
+					AttributeChange.of(HuId.ofRepoId(20), GRAISet.ofCollection(ImmutableList.of(GRAI_D, GRAI_E, GRAI_F))),
+					AttributeChange.of(HuId.ofRepoId(30), GRAISet.ofCollection(ImmutableList.of(GRAI_G, GRAI_H, GRAI_I))));
+			assertThat(delta.hasUnassignedGrais()).isFalse();
+		}
+
+		/**
+		 * Real-world shape from me03 bug report: 3 products on one LU with tuCounts 3 / 5 / 1 = 9 TUs,
+		 * 9 GRAIs scanned. Before the fix, all 9 ended up on the first VHU.
+		 */
+		@Test
+		void threeBlocks_3_5_1_distributesByCapacity()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(
+							AggregateBlock.of(HuId.ofRepoId(10), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(20), QtyTU.ofInt(5), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(30), QtyTU.ofInt(1), GRAISet.EMPTY)));
+
+			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(
+					ImmutableList.of(GRAI_A, GRAI_B, GRAI_C, GRAI_D, GRAI_E, GRAI_F, GRAI_G, GRAI_H, GRAI_I)));
+
+			assertThat(delta.getChanges()).containsExactly(
+					AttributeChange.of(HuId.ofRepoId(10), GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B, GRAI_C))),
+					AttributeChange.of(HuId.ofRepoId(20), GRAISet.ofCollection(ImmutableList.of(GRAI_D, GRAI_E, GRAI_F, GRAI_G, GRAI_H))),
+					AttributeChange.of(HuId.ofRepoId(30), GRAISet.of(GRAI_I)));
+			assertThat(delta.hasUnassignedGrais()).isFalse();
+		}
+
+		@Test
+		void threeBlocks_partialFill_lastBlockStaysEmpty()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(
+							AggregateBlock.of(HuId.ofRepoId(10), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(20), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(30), QtyTU.ofInt(3), GRAISet.EMPTY)));
+
+			// Only 5 GRAIs for 9 slots → block 10 gets 3, block 20 gets 2, block 30 stays empty (no change).
+			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(
+					ImmutableList.of(GRAI_A, GRAI_B, GRAI_C, GRAI_D, GRAI_E)));
+
+			assertThat(delta.getChanges()).containsExactly(
+					AttributeChange.of(HuId.ofRepoId(10), GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B, GRAI_C))),
+					AttributeChange.of(HuId.ofRepoId(20), GRAISet.ofCollection(ImmutableList.of(GRAI_D, GRAI_E))));
+			assertThat(delta.hasUnassignedGrais()).isFalse();
+		}
+
+		@Test
+		void threeBlocks_preservesExistingValidGraisInLaterBlocks()
+		{
+			// Block 20 already has GRAI_E (correctly assigned). The same desired set must not move it.
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(
+							AggregateBlock.of(HuId.ofRepoId(10), QtyTU.ofInt(2), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(20), QtyTU.ofInt(2), GRAISet.of(GRAI_E)),
+							AggregateBlock.of(HuId.ofRepoId(30), QtyTU.ofInt(2), GRAISet.EMPTY)));
+
+			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(
+					ImmutableList.of(GRAI_A, GRAI_B, GRAI_E, GRAI_C, GRAI_D, GRAI_F)));
+
+			// Block 10: empty → fills from unassigned (A, B).
+			// Block 20: keeps existing E, fills one more slot from unassigned (C).
+			// Block 30: empty → fills from unassigned (D, F).
+			assertThat(delta.getChanges()).containsExactly(
+					AttributeChange.of(HuId.ofRepoId(10), GRAISet.ofCollection(ImmutableList.of(GRAI_A, GRAI_B))),
+					AttributeChange.of(HuId.ofRepoId(20), GRAISet.ofCollection(ImmutableList.of(GRAI_E, GRAI_C))),
+					AttributeChange.of(HuId.ofRepoId(30), GRAISet.ofCollection(ImmutableList.of(GRAI_D, GRAI_F))));
+			assertThat(delta.hasUnassignedGrais()).isFalse();
+		}
+
+		@Test
+		void threeBlocks_overflow_reportsUnassigned()
+		{
+			final HUGraiSnapshot snapshot = snapshotLU(
+					ImmutableList.of(),
+					ImmutableList.of(
+							AggregateBlock.of(HuId.ofRepoId(10), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(20), QtyTU.ofInt(3), GRAISet.EMPTY),
+							AggregateBlock.of(HuId.ofRepoId(30), QtyTU.ofInt(3), GRAISet.EMPTY)));
+
+			// 10 GRAIs for 9 slots → 1 unassigned.
+			final HUGraiDelta delta = snapshot.computeDelta(GRAISet.ofCollection(
+					ImmutableList.of(GRAI_A, GRAI_B, GRAI_C, GRAI_D, GRAI_E, GRAI_F, GRAI_G, GRAI_H, GRAI_I, GRAI_J)));
+
+			assertThat(delta.getChanges()).hasSize(3);
+			assertThat(delta.hasUnassignedGrais()).isTrue();
+			assertThat(delta.getUnassignedGrais().size()).isEqualTo(1);
 		}
 	}
 

@@ -60,6 +60,12 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
+	public boolean isInvoiceManualRule()
+	{
+		return params.getParameterAsBool(PARA_IsInvoiceManualRule);
+	}
+
+	@Override
 	public boolean isUpdateLocationAndContactForInvoice()
 	{
 		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);

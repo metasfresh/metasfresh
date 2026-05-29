@@ -31,7 +31,7 @@ public class MobileUIManufacturingConfigRepository
 			.build();
 
 	private final CCache<ClientId, Optional<MobileUIManufacturingConfig>> globalConfigsCache = CCache.<ClientId, Optional<MobileUIManufacturingConfig>>builder()
-			.tableName(I_MobileUI_UserProfile_MFG.Table_Name)
+			.tableName(I_MobileUI_MFG_Config.Table_Name)
 			.build();
 
 	@NonNull

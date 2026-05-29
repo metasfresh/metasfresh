@@ -12,10 +12,14 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -44,6 +48,7 @@ import java.util.List;
 public class M_Transaction_PostTransactionEvent
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final PostMaterialEventService materialEventService;
 	private final TransactionEventFactory transactionEventCreator;
 	private final TransactionDescriptorFactory transactionDescriptorFactory;
@@ -79,7 +84,8 @@ public class M_Transaction_PostTransactionEvent
 
 	private void createAndPostEventsNow(@NonNull final TransactionDescriptor transaction, final boolean deleted)
 	{
-		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
+		final boolean isDropShipWarehouse = getIsDropShipWarehouse(transaction.getWarehouseId());
+		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted, isDropShipWarehouse);
 		for (final MaterialEvent event : events)
 		{
 			// Use enqueueEventNow because this method runs inside a runAfterCommit callback,
@@ -87,5 +93,16 @@ public class M_Transaction_PostTransactionEvent
 			// nest two after-commit registrations, unnecessarily delaying event posting.
 			materialEventService.enqueueEventNow(event);
 		}
+	}
+
+	private boolean getIsDropShipWarehouse(@Nullable final WarehouseId warehouseId)
+	{
+		if (warehouseId == null)
+		{
+			return false;
+		}
+
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return warehouse != null && warehouse.isDropShipWarehouse();
 	}
 }

@@ -241,18 +241,7 @@ public class CoalesceUtil
 	@NonNull
 	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
 	{
-		if (values == null || values.length == 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		for (final BigDecimal value : values)
-		{
-			if (value != null && value.signum() > 0)
-			{
-				return value;
-			}
-		}
-		return BigDecimal.ZERO;
+		return firstPositiveOrZero(values);
 	}
 
 	@SafeVarargs
@@ -290,6 +279,12 @@ public class CoalesceUtil
 			}
 		}
 		return 0;
+	}
+
+	@NonNull
+	public String firstNotEmptyTrimmedNotNull(@Nullable final String... values)
+	{
+		return Check.assumeNotNull(firstNotEmptyTrimmed(values), "At least one of the given values is not empty {}");
 	}
 
 	/**
@@ -381,7 +376,7 @@ public class CoalesceUtil
 	}
 
 	@NonNull
-	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
+	public BigDecimal firstPositiveOrZero(@Nullable final BigDecimal... values)
 	{
 		if (values == null)
 		{

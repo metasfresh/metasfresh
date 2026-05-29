@@ -69,6 +69,48 @@ export class ListWidget {
   }
 
   /**
+   * Set value by the option's underlying KEY (language-independent).
+   *
+   * The dropdown renders each option with `data-testid="option-${key}"` where
+   * `key` is the AD_Ref_List Value or the lookup's identifier. Selecting by
+   * key avoids depending on the displayed caption, which varies per UI
+   * language.
+   *
+   * @param {string} fieldName - Database column name (e.g., 'DepositType')
+   * @param {string} value - Underlying key of the option to select (e.g., 'NRC')
+   * @param {boolean} triggerSave - Press Tab to trigger save (default: true)
+   */
+  static async setByValue(fieldName, value, triggerSave = true) {
+    return await WidgetCommon.withStep(`ListWidget - Set ${fieldName} by value "${value}"`, async () => {
+      const page = getPage();
+      const container = WidgetCommon.getFieldContainer(fieldName);
+
+      const dropdownTrigger = container.locator('.input-dropdown, input, [class*="dropdown"]').first();
+      await dropdownTrigger.waitFor({ state: 'visible', timeout: WidgetCommon.WIDGET_TIMEOUT });
+
+      const input = container.locator('input').first();
+      const isDisabled = await input.isDisabled().catch(() => false);
+      if (isDisabled) {
+        console.log(`ListWidget - ${fieldName} is readonly, skipping`);
+        return;
+      }
+
+      await dropdownTrigger.click();
+      await WidgetCommon.waitForDropdown();
+
+      const dropdown = page.locator('.input-dropdown-list');
+      await dropdown.locator(`[data-testid="option-${value}"]`).first().click();
+
+      await WidgetCommon.waitForDropdownClosed();
+
+      if (triggerSave) {
+        await WidgetCommon.triggerBlur();
+        await WidgetCommon.waitForSaveComplete();
+      }
+    });
+  }
+
+  /**
    * Set value by option index (0-based).
    *
    * @param {string} fieldName - Database column name

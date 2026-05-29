@@ -26,6 +26,7 @@ import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -64,6 +65,13 @@ public class C_VAT_Code_StepDef
 	 *     <li>{@code IsSOTrx} — {@code Y}/{@code N}/{@code true}/{@code false}: sales-side vs purchase-side code</li>
 	 * </ul>
 	 *
+	 * <p><b>Optional columns</b>:
+	 * <ul>
+	 *     <li>{@code AmountType} — {@code T} (tax amount, default) or {@code N} (net/base amount).
+	 *         If omitted, defaults to {@code T}. Use {@code N} only for VAT codes that represent the net
+	 *         base amount in reverse-charge scenarios (e.g., KZ 84/85 base-amount buckets).</li>
+	 * </ul>
+	 *
 	 * <p>The {@code C_AcctSchema_ID} is always the primary accounting schema of
 	 * {@link StepDefConstants#CLIENT_ID} (resolved via {@link IAcctSchemaBL#getPrimaryAcctSchema}). The
 	 * {@code VATCode} value is a 10-char UUID prefix (the {@code C_VAT_Code.VATCode} column is
@@ -80,9 +88,9 @@ public class C_VAT_Code_StepDef
 	 *   | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
 	 *   | tax19      | taxCategory      | 19   | DE                       | DE                        |
 	 * And metasfresh contains C_VAT_Codes:
-	 *   | Identifier      | C_Tax_ID | IsSOTrx |
-	 *   | vatCode19_sales | tax19    | Y       |
-	 *   | vatCode19_buy   | tax19    | N       |
+	 *   | Identifier      | C_Tax_ID | IsSOTrx | AmountType |
+	 *   | vatCode19_sales | tax19    | Y       | T          |
+	 *   | vatCode19_buy   | tax19    | N       | T          |
 	 * }</pre>
 	 */
 	@And("metasfresh contains C_VAT_Codes:")
@@ -102,11 +110,18 @@ public class C_VAT_Code_StepDef
 		// setter, making two codes for the same C_Tax collide on the truncated prefix.
 		final String vatCodeValue = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
 
+		// AmountType: optional column; defaults to 'T' (tax amount).
+		// getAsOptionalEnum resolves by ReferenceListAwareEnum code ('N'/'T'), so invalid values fail fast
+		// at the step level with a clear enum-resolution error rather than a DB constraint violation.
+		final VATCodeAmountType amountType = row.getAsOptionalEnum("AmountType", VATCodeAmountType.class)
+				.orElse(VATCodeAmountType.Tax);
+
 		final VATCode vatCode = vatCodeDAO.createVATCode(CreateVATCodeRequest.builder()
 				.acctSchemaId(acctSchema.getId())
 				.taxId(taxId)
 				.vatCode(vatCodeValue)
 				.isSOTrx(isSOTrx)
+				.amountType(amountType)
 				.validFrom(StepDefConstants.DEFAULT_ValidFrom)
 				.build());
 

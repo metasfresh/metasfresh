@@ -30,6 +30,7 @@ public class NShiftConstants
 	// config.additionalProperties
 	public static final String ACTOR_ID = "ActorId";
 	public static final String SERVICE_LEVEL = "ServiceLevel";
+	public static final String IS_CREATE_DRAFT_SHIPMENT_ONLY = "IsCreateDraftShipmentOnly";
 
 	// shipAdvises
 	public static final String PROD_CONCEPT_ID = "ProdConceptId";

@@ -89,18 +89,22 @@ public class NShiftShipAdvisorService
 				.build();
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
-				.orderNo(deliveryAdvisorRequest.getId()); //TODO figure out what would make sense here (Mandatory for gls germany already on advise, question is why it's mandatory here). We currently use carrier_shipment_order_id on ship later
+				.orderNo(deliveryAdvisorRequest.getId());
 
 		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryAdvisorRequest.getPickupAddress(), JsonAddressKind.SENDER)
+		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(
+						deliveryAdvisorRequest.getPickupAddress(),
+						deliveryAdvisorRequest.getPickupContact(),
+						JsonAddressKind.SENDER)
 				.attention(deliveryAdvisorRequest.getPickupAddress().getCompanyName1())
 				.build());
 
 		final de.metas.common.delivery.v1.json.JsonAddress deliveryAddress = deliveryAdvisorRequest.getDeliveryAddress();
 		final de.metas.common.delivery.v1.json.JsonContact deliveryContact = deliveryAdvisorRequest.getDeliveryContact();
-		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftReceiverAddress(
+		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftAddressBuilder(
 				deliveryAddress,
-				deliveryContact);
+				deliveryContact,
+				JsonAddressKind.RECEIVER);
 
 		if (deliveryContact != null)
 		{
@@ -147,7 +151,11 @@ public class NShiftShipAdvisorService
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
-				.lineWeight(weightGrams);
+				.lineWeight(weightGrams)
+				.reference(JsonReference.builder()
+						.kind(23) // eSrkContents https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
+						.value(item.getProductValue())
+						.build());
 		if (item.getPackageDimensions() != null)
 		{
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;

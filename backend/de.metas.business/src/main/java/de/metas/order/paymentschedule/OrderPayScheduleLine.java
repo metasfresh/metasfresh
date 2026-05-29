@@ -32,10 +32,10 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 @EqualsAndHashCode
@@ -53,15 +53,21 @@ public class OrderPayScheduleLine
 	final @NonNull Percent percent;
 	final int offsetDays;
 
-	@Setter @NonNull OrderPayScheduleStatus status;
-	@Setter @NonNull LocalDate dueDate;
-	final @NonNull Money dueAmount;
+	@NonNull OrderPayScheduleStatus status;
+	@NonNull LocalDate dueDate;
+	@NonNull final Money dueAmount;
+	/**
+	 * Actual amount due — written exclusively by {@code OrderPayScheduleLCService} for the LC step. NULL on all non-LC rows.
+	 */
+	@Nullable Money dueAmtActual;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
 
-	public void applyAndProcess(@NonNull final DueDateAndStatus dueDateAndStatus)
+	public boolean isLetterOfCreditDate() {return referenceDateType.isLetterOfCreditDate();}
+
+	public void applyAndProcess(@NonNull final OrderPayScheduleLineContext context)
 	{
-		final OrderPayScheduleStatus nextStatus = dueDateAndStatus.getStatus();
+		final OrderPayScheduleStatus nextStatus = context.getStatus();
 
 		if (nextStatus.equals(this.status))
 		{
@@ -74,6 +80,10 @@ public class OrderPayScheduleLine
 		}
 
 		this.status = nextStatus;
-		this.dueDate = dueDateAndStatus.getDueDate();
+		this.dueDate = context.getDueDate();
+		if (context.isSetDueAmtActual())
+		{
+			this.dueAmtActual = context.getDueAmtActual();
+		}
 	}
 }

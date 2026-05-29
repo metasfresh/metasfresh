@@ -31,7 +31,9 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 @Value
@@ -44,6 +46,7 @@ public class JsonDeliveryOrderLineContents
 	@NonNull JsonMoney totalValue;
 	@NonNull String productName;
 	@NonNull String productValue;
+	@Nullable String customsTariff;
 	@NonNull BigDecimal totalWeightInKg;
 	@NonNull JsonQuantity shippedQuantity;
 
@@ -58,6 +61,10 @@ public class JsonDeliveryOrderLineContents
 				return Optional.of(getShippedQuantity().getUomCode());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME:
 				return Optional.of(getProductName());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_VALUE:
+				return Optional.of(getProductValue());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF:
+				return Optional.ofNullable(getCustomsTariff());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID:
 				return Optional.of(getShipmentOrderItemId());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE:
@@ -66,8 +73,34 @@ public class JsonDeliveryOrderLineContents
 				return Optional.of(getTotalValue().getAmount().toPlainString());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE:
 				return Optional.of(getTotalValue().getCurrencyCode());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_KG:
+				return Optional.of(getUnitWeightKg().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G:
+				return Optional.of(kgToG(getUnitWeightKg()).toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_WEIGHT_KG:
+				return Optional.of(getTotalWeightInKg().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_WEIGHT_G:
+				return Optional.of(kgToG(getTotalWeightInKg()).toPlainString());
 			default:
 				return Optional.empty();
 		}
+	}
+
+	@JsonIgnore
+	@NonNull
+	public BigDecimal getUnitWeightKg()
+	{
+		final BigDecimal qty = getShippedQuantity().getValue();
+		if (qty.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		return getTotalWeightInKg().divide(qty, 6, RoundingMode.HALF_UP).stripTrailingZeros();
+	}
+
+	@NonNull
+	private static BigDecimal kgToG(@NonNull final BigDecimal kg)
+	{
+		return kg.multiply(BigDecimal.valueOf(1000)).stripTrailingZeros();
 	}
 }

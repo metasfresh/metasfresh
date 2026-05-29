@@ -56,6 +56,13 @@ class HUGraiSnapshotLoader
 	{
 		if (handlingUnitsBL.isVirtual(hu))
 		{
+			// A pure virtual HU has no GRAI semantics. But a VHU that lives under an HA item
+			// represents a group of aggregated TUs (one per product on an LU); scanning the
+			// VHU is how the mobileUI lets the user assign GRAIs to that specific TU group.
+			if (handlingUnitsBL.isAggregateHU(hu))
+			{
+				return ExplainedOptional.of(loadVHUUnderHA(hu));
+			}
 			return ExplainedOptional.emptyBecause("GRAI scanning not supported for virtual HU " + hu.getM_HU_ID());
 		}
 
@@ -67,6 +74,21 @@ class HUGraiSnapshotLoader
 		{
 			return ExplainedOptional.of(loadTU(hu));
 		}
+	}
+
+	@NonNull
+	private HUGraiSnapshot loadVHUUnderHA(@NonNull final I_M_HU vhu)
+	{
+		final I_M_HU_Item haItem = handlingUnitsDAO.retrieveParentItem(vhu);
+		final QtyTU tuCount = HandlingUnitsBL.getTUsCount(haItem);
+		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
+		final GRAISet existingGrais = readGRAISet(vhu);
+
+		return HUGraiSnapshot.builder()
+				.huId(vhuId)
+				.tus(ImmutableList.of())
+				.aggregateBlocks(ImmutableList.of(HUGraiSnapshot.AggregateBlock.of(vhuId, tuCount, existingGrais)))
+				.build();
 	}
 
 	@NonNull

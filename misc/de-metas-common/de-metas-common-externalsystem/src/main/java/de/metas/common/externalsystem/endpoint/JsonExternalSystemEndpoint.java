@@ -92,4 +92,15 @@ public class JsonExternalSystemEndpoint
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String sftpFilenamePattern;
+
+	/**
+	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
+	 * Camel route dispatches one HTTP/SFTP request per array element. If null/FALSE or the payload
+	 * is a single object, the endpoint runs once as today.
+	 *
+	 * Boxed Boolean so the field is omitted from the wire format when unset — older Camel routes
+	 * that don't know about the flag ignore it transparently.
+	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean arrayFanOut;
 }

@@ -71,6 +71,13 @@ public class ReceiptsScheduleDeletedHandler
 	@Override
 	public void handleEvent(@NonNull final ReceiptScheduleDeletedEvent event)
 	{
+		// dropship-warehouse receipt-schedules bypass material-disposition entirely —
+		// the goods are shipped supplier → customer and never reach our warehouse.
+		if (event.isDropShipWarehouse())
+		{
+			return;
+		}
+
 		final CandidatesQuery query = ReceiptsScheduleHandlerUtil.queryByReceiptScheduleId(event);
 		final Candidate candidateToDelete = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		if (candidateToDelete == null)

@@ -22,10 +22,12 @@
 
 package de.metas.shipper.gateway.commons;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.delivery.v1.json.JsonAddress;
+import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
@@ -70,6 +72,8 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -105,6 +109,7 @@ public class CarrierAdviseCommand
 	@NonNull private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
+	@NonNull private final UserRepository userRepository = SpringContextHolder.instance.getBean(UserRepository.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -174,7 +179,7 @@ public class CarrierAdviseCommand
 	}
 
 	@Nullable
-	private ShipperGatewayId getShipperGatewayIdOrNull(final ShipperId shipperId)
+	private ShipperGatewayId getShipperGatewayIdOrNull(@NonNull final ShipperId shipperId)
 	{
 		return shipperDAO.getShipperGatewayId(shipperId).orElse(null);
 	}
@@ -184,7 +189,7 @@ public class CarrierAdviseCommand
 		return shipmentScheduleService.getById(shipmentScheduleId);
 	}
 
-	private JsonDeliveryAdvisorRequest createAdvisorRequest(final ShipperId shipperId, @NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
+	private JsonDeliveryAdvisorRequest createAdvisorRequest(@NonNull final ShipperId shipperId, @NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
 	{
 		if (shipmentSchedule.getDateOrdered() == null)
 		{
@@ -192,12 +197,28 @@ public class CarrierAdviseCommand
 		}
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
 
+		final I_C_BPartner deliverToBPartner = bpartnerBL.getById(shipmentSchedule.getShipBPartnerId());
+		final I_C_BPartner_Location deliverToBPLocation = Check.assumeNotNull(bpartnerDAO.getBPartnerLocationByIdInTrx(shipmentSchedule.getShipLocationId()), "bp location not null");
+		final User deliverToContact = shipmentSchedule.getShipContactUserId() != null ? userRepository.getByIdInTrx(shipmentSchedule.getShipContactUserId()) : null;
+
+		final OrgId orgId = shipmentSchedule.getOrgId();
+		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId);
+		final I_C_BPartner_Location pickupFromBPLocation = Check.assumeNotNull(bpartnerOrgBL.retrieveOrgBPLocation(orgId), "Org location should be present");
+		final User pickupFromContact = bpartnerBL.retrieveContactOrNull(IBPartnerBL.RetrieveContactRequest.builder()
+				.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.SHIP_TO_DEFAULT)
+				.onlyActive(true)
+				.bpartnerId(BPartnerId.ofRepoId(pickupFromBPartner.getC_BPartner_ID()))
+				.ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_DEFAULT_CONTACT)
+				.build());
+
 		final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder requestBuilder = JsonDeliveryAdvisorRequest.builder()
 				.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()).toString())
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()).toString())
-				.pickupAddress(getJsonPickupAddress(shipmentSchedule))
-				.deliveryAddress(getJsonDeliveryAddress(shipmentSchedule))
+				.pickupAddress(getJsonAddress(pickupFromBPartner, pickupFromBPLocation))
+				.pickupContact(getJsonContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
+				.deliveryAddress(getJsonAddress(deliverToBPartner, deliverToBPLocation))
+				.deliveryContact(getJsonContact(deliverToBPartner, deliverToBPLocation, deliverToContact))
 				.shipperConfig(Objects.requireNonNull(client.getJsonShipperConfig()))
 				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule));
 
@@ -226,13 +247,16 @@ public class CarrierAdviseCommand
 		return requestBuilder.build();
 	}
 
-	private @NonNull JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(final @NonNull ShipmentSchedule shipmentSchedule)
+	@NonNull
+	private JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final Product product = productRepository.getById(shipmentSchedule.getProductId());
 		final PackageDimensions dimensions = PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), shipmentSchedule.getQuantityToDeliver());
 		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(shipmentSchedule.getQuantityToDeliver().toBigDecimal().intValue())
 				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
+				.productName(product.getName().getDefaultValue())
+				.productValue(product.getValue())
 				.packageDimensions(JsonPackageDimensions.builder()
 						.heightInCM(dimensions.getHeightInCM())
 						.widthInCM(dimensions.getWidthInCM())
@@ -241,7 +265,8 @@ public class CarrierAdviseCommand
 				.build();
 	}
 
-	private @NonNull BigDecimal computeProductGrossWeight(final @NonNull ShipmentSchedule shipmentSchedule)
+	@NonNull
+	private BigDecimal computeProductGrossWeight(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final Quantity productGrossWeight = productBL.getGrossWeight(shipmentSchedule.getProductId()).orElseThrow(() -> new AdempiereException("Product weight not found"));
 		//ensure qty is in kg
@@ -249,22 +274,22 @@ public class CarrierAdviseCommand
 				.toBigDecimal().setScale(0, RoundingMode.UP);
 	}
 
-	private @NonNull JsonAddress getJsonDeliveryAddress(final @NonNull ShipmentSchedule shipmentSchedule)
+	@NonNull
+	private JsonAddress getJsonAddress(@NonNull final I_C_BPartner bPartner, @NonNull final I_C_BPartner_Location bpLocation)
 	{
-		final I_C_BPartner deliverToBPartner = bpartnerBL.getById(shipmentSchedule.getShipBPartnerId());
-		final I_C_BPartner_Location deliverToBPLocation = Check.assumeNotNull(bpartnerDAO.getBPartnerLocationByIdInTrx(shipmentSchedule.getShipLocationId()), "bp location not null");
-		final I_C_Location deliverToLocation = locationDAO.getById(LocationId.ofRepoId(deliverToBPLocation.getC_Location_ID()));
-		return JsonShipperConverter.toJsonAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner)
-				.bpartnerId(deliverToBPartner.getC_BPartner_ID())
+		final I_C_Location deliverToLocation = locationDAO.getById(LocationId.ofRepoId(bpLocation.getC_Location_ID()));
+
+		return JsonShipperConverter.toJsonAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, bPartner)
+				.bpartnerId(bPartner.getC_BPartner_ID())
 				.build());
 	}
 
-	private JsonAddress getJsonPickupAddress(final @NonNull ShipmentSchedule shipmentSchedule)
+	@NonNull
+	private JsonContact getJsonContact(@NonNull final I_C_BPartner bPartner,
+									   @NonNull final I_C_BPartner_Location bpLocation,
+									   @Nullable final User contact)
 	{
-		final OrgId orgId = shipmentSchedule.getOrgId();
-		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId);
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(orgId);
-		return JsonShipperConverter.toJsonAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner).build());
+		return JsonShipperConverter.toJsonContactOrNull(DeliveryOrderUtil.getContactPerson(bPartner, bpLocation, contact));
 	}
 
 	private void updateShipmentFromResponse(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final JsonDeliveryAdvisorResponse response)

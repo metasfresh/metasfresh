@@ -408,6 +408,29 @@ public interface I_AD_Process
 	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
+	 * Set Filename Pattern.
+	 * Pattern for the archive's PDF filename. Placeholders: {orgname}, {orgvalue}, {doctype}, {tablename}, {processname}, {processvalue}, {documentno}, {recordid}, {pinstanceid}, plus ${date:&lt;DateTimeFormatter-pattern&gt;} (e.g. ${date:yyyyMMdd_HHmmss}) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended if missing.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilenamePattern (@Nullable java.lang.String FilenamePattern);
+
+	/**
+	 * Get Filename Pattern.
+	 * Pattern for the archive's PDF filename. Placeholders: {orgname}, {orgvalue}, {doctype}, {tablename}, {processname}, {processvalue}, {documentno}, {recordid}, {pinstanceid}, plus ${date:&lt;DateTimeFormatter-pattern&gt;} (e.g. ${date:yyyyMMdd_HHmmss}) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended if missing.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFilenamePattern();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_FilenamePattern = new ModelColumn<>(I_AD_Process.class, "FilenamePattern", null);
+	String COLUMNNAME_FilenamePattern = "FilenamePattern";
+
+	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *

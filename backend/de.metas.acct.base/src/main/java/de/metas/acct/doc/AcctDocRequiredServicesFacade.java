@@ -7,6 +7,7 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
@@ -473,6 +474,18 @@ public class AcctDocRequiredServicesFacade
 	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
 	{
 		return vatCodeDAO.findVATCode(request);
+	}
+
+	public Optional<Boolean> findIsSOTrxByCode(
+			@Nullable final String vatCode,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final TaxId taxId)
+	{
+		if (vatCode == null || vatCode.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return vatCodeDAO.findIsSOTrxByCode(vatCode, acctSchemaId, taxId);
 	}
 
 	public Dimension extractDimensionFromModel(final Object model)

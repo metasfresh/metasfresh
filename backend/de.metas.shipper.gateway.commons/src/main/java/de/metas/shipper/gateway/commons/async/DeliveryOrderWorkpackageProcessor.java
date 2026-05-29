@@ -43,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
@@ -77,8 +78,16 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
 	private static final String PARAM_ShipperGatewayId = "ShipperGatewayId";
 
+	/**
+	 * When {@code false}, suppresses the {@code AD_Archive} auto-print step (the label PDF is still
+	 * persisted on {@code Carrier_ShipmentOrder_Parcel}). Lets test environments without an
+	 * {@code AD_Printer_Config} for the system user avoid "No Printer Configuration defined" failures.
+	 */
+	private static final String SYSCONFIG_PrintLabelsEnabled = "de.metas.shipper.gateway.printLabels.enabled";
+
 	// Services
 	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean isRunInTransaction()
@@ -102,12 +111,20 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(draftedDeliveryOrder);
 		deliveryOrderRepo.save(completedDeliveryOrder);
 
-		final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
+		if (isPrintLabelsEnabled())
+		{
+			final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
 
-		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+			printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+		}
 
 		return Result.SUCCESS;
+	}
+
+	private boolean isPrintLabelsEnabled()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PrintLabelsEnabled, true);
 	}
 
 	private @NonNull ShipperGatewayId getShipperGatewayId()

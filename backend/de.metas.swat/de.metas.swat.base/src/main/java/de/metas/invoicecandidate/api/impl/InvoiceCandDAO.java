@@ -1770,7 +1770,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (!Check.isEmpty(orgIDsAsString))
 		{
 
-			defaultFilter.append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
+			defaultFilter.append(I_C_Invoice_Candidate.Table_Name)
+					.append(".")
+					.append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 					.append(" IN (")
 					.append(orgIDsAsString)
 					.append(")");

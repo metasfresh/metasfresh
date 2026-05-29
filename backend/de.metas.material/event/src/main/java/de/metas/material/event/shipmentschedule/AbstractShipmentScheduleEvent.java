@@ -61,13 +61,16 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final DocumentLineDescriptor documentLineDescriptor;
 
+	private final boolean isDropShipWarehouse;
+
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			@NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
 			final int shipmentScheduleId,
-			@Nullable final DocumentLineDescriptor documentLineDescriptor)
+			@Nullable final DocumentLineDescriptor documentLineDescriptor,
+			final boolean isDropShipWarehouse)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
@@ -75,6 +78,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.shipmentScheduleDetail = shipmentScheduleDetail;
 		this.documentLineDescriptor = documentLineDescriptor;
+		this.isDropShipWarehouse = isDropShipWarehouse;
 	}
 
 	@NonNull

@@ -12,7 +12,6 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.user.UserId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
@@ -23,6 +22,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -525,7 +525,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public ErrorItemBuilder transactionReference(final ITableRecordReference transactionReference)
+		public ErrorItemBuilder transactionReference(@Nullable final ITableRecordReference transactionReference)
 		{
 			innerBuilder.transactionReference(transactionReference);
 			return this;

@@ -24,10 +24,11 @@ package de.metas.payment;
 
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -42,6 +43,8 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
@@ -57,11 +60,13 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 @RequiredArgsConstructor
 public class C_Payment
 {
+	private static final AdMessageKey MSG_ProformaPaymentMustBeFull = AdMessageKey.of("de.metas.invoice.proforma.PaymentMustBeFull");
+
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final CurrencyRepository currencyRepository;
-	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@Init
 	public void registerCallout()
@@ -85,10 +90,13 @@ public class C_Payment
 			return;
 		}
 
-		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(record.getC_OrderPaySchedule_ID());
-		if (orderPayScheduleId != null)
+		// Proforma payments carry C_Order_ID from the proforma↔order allocation, but their PayAmt
+		// comes from the pay-selection line (= proforma's open amount), NOT from order.GrandTotal.
+		// Skipping the recompute keeps the builder-set PayAmt intact and lets the BEFORE_PREPARE
+		// full-payment guard verify it.
+		if (InvoiceId.ofRepoIdOrNull(record.getProforma_Invoice_ID()) != null)
 		{
-			return; // do not update form order, since all amounts are calculated
+			return;
 		}
 
 		final I_C_Order order = orderDAO.getById(orderId);
@@ -117,17 +125,56 @@ public class C_Payment
 		paymentBL.validateDocTypeIsInSync(record);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void updateOrderPayScheduleStatus(final I_C_Payment payment)
+	/**
+	 * Proforma payments must be full payments: {@code abs(PayAmt)} must equal the proforma's
+	 * {@code GrandTotal}. Partial payments are forbidden because there are no
+	 * {@code C_AllocationLine} rows for proforma payments (no accounting), so a residual balance
+	 * cannot be reconciled. Reversal symmetry is automatic — {@code abs(-GrandTotal) == GrandTotal}.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
+	public void assertProformaPaymentIsFull(@NonNull final I_C_Payment payment)
 	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(payment.getC_Order_ID());
-		final OrderPayScheduleId orderPayScheduleId = OrderPayScheduleId.ofRepoIdOrNull(payment.getC_OrderPaySchedule_ID());
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
+		if (proformaInvoiceId == null)
+		{
+			return; // not a proforma payment
+		}
 
-		if (orderId == null || orderPayScheduleId == null)
+		final I_C_Invoice proforma = invoiceBL.getById(proformaInvoiceId);
+		assertProformaPaymentIsFull(proformaInvoiceId, proforma.getGrandTotal(), payment.getPayAmt());
+	}
+
+	/**
+	 * Pure helper for the proforma full-payment guard — extracted so it can be unit-tested
+	 * without spinning up the full {@code IInvoiceBL} dependency chain.
+	 */
+	static void assertProformaPaymentIsFull(
+			@NonNull final InvoiceId proformaInvoiceId,
+			@NonNull final BigDecimal expectedGrandTotal,
+			@NonNull final BigDecimal actualPayAmt)
+	{
+		final BigDecimal actualAbs = actualPayAmt.abs();
+		if (actualAbs.compareTo(expectedGrandTotal) != 0)
+		{
+			throw new AdempiereException(MSG_ProformaPaymentMustBeFull)
+					.appendParametersToMessage()
+					.setParameter("proformaInvoiceId", proformaInvoiceId)
+					.setParameter("expectedGrandTotal", expectedGrandTotal)
+					.setParameter("actualPayAmtAbs", actualAbs);
+		}
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REVERSECORRECT,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	public void recomputeProformaIsPaid(@NonNull final I_C_Payment payment)
+	{
+		final InvoiceId proformaInvoiceId = InvoiceId.ofRepoIdOrNull(payment.getProforma_Invoice_ID());
+		if (proformaInvoiceId == null)
 		{
 			return;
 		}
-
-		orderPayScheduleService.markAsPaid(orderId, orderPayScheduleId);
+		invoiceBL.scheduleUpdateIsPaid(proformaInvoiceId);
 	}
 }

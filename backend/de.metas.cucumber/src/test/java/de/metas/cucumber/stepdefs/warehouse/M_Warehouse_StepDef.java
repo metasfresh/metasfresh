@@ -109,6 +109,9 @@ public class M_Warehouse_StepDef
 						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
 					}
 
+					final boolean isDropShipWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsDropShipWarehouse).orElse(false);
+					warehouseRecord.setIsDropShipWarehouse(isDropShipWarehouse);
+
 					final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
 							.map(bpartnerTable::getId)
 							.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID);

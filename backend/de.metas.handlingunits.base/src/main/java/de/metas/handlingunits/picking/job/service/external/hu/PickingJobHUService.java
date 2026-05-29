@@ -227,6 +227,10 @@ public class PickingJobHUService
 
 	public HuId getHuIdByQRCode(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCode(huQRCode);}
 
+	public Optional<HuId> getHuIdByQRCodeIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode);}
+
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode);}
+
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req) {return inventoryService.createInventoryForMissingQty(req);}
 
 	public PickFromHUsSupplier newPickFromHUsSupplier()

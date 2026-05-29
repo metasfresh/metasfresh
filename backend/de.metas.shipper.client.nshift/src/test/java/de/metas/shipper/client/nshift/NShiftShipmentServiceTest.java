@@ -71,6 +71,11 @@ public class NShiftShipmentServiceTest
 	private static final String REFERENCE_KIND_CUSTOMER_REFERENCE = "7";
 
 	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_1 = "129";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_2 = "130";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_3 = "131";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_4 = "132";
+	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_5 = "133";
+	private static final String LINE_REFERENCE_KIND_CONTENTS = "23";
 
 	// see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields DetailGroupKind
 	private static final String DETAIL_GROUP_KEY_CUSTOMS_ARTICLE = "1";
@@ -81,6 +86,7 @@ public class NShiftShipmentServiceTest
 	private static final String DETAIL_KIND_UNIT_VALUE = "2";
 	private static final String DETAIL_KIND_COUNTRY_OF_ORIGIN = "4";
 	private static final String DETAIL_KIND_QUANTITY = "5";
+	private static final String DETAIL_KIND_UNIT_WEIGHT = "6";
 	private static final String DETAIL_KIND_DESCRIPTION_OF_GOODS = "7";
 	private static final String DETAIL_KIND_UNIT_OF_MEASURE = "8";
 	private static final String DETAIL_KIND_TOTAL_VALUE = "10";
@@ -90,10 +96,13 @@ public class NShiftShipmentServiceTest
 	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "123"); //nShift portal actorId
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
+	private static final String URL = System.getProperty("nshift.test.url", "https://demo.shipmentserver.com:8080");
+
 	private static final JsonDeliveryRequest DELIVERY_REQUEST = JsonDeliveryRequest.builder()
 			.deliveryOrderId(1)
-			.shipperProduct(JsonShipperProduct.builder().code("shipperProductCode").build())
-			.service(JsonCarrierService.builder().id("337011").name("serviceName").build())
+			.shipperProduct(JsonShipperProduct.builder().code("10305").name("DHL Freight API - EuroConnect International").build())
+			.service(JsonCarrierService.builder().id("972053").name("Ex Works").build())
+			.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
 			.pickupAddress(JsonAddress.builder()
 					.bpartnerId(123)
 					.companyName1("metas GmbH")
@@ -105,6 +114,13 @@ public class NShiftShipmentServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
+					.build())
+			.pickupContact(JsonContact.builder()
+					.name("Test Pickup Contact Name")
+					.department("Test Contact Department")
+					.language("de")
+					.phone("12345678")
+					.emailAddress("noreply@metasfresh.com")
 					.build())
 			.pickupDate("2025-10-02")
 			.timeFrom("10:00:00")
@@ -123,7 +139,8 @@ public class NShiftShipmentServiceTest
 					.houseNo("3")
 					.build())
 			.deliveryContact(JsonContact.builder()
-					.name("Test Contact Name")
+					.name("Test Delivery Contact Name")
+					.department("Test Contact Department")
 					.language("de")
 					.phone("12341234")
 					.emailAddress("noreply@metasfresh.com")
@@ -161,7 +178,7 @@ public class NShiftShipmentServiceTest
 					.build())
 			.deliveryOrderParcel(JsonDeliveryOrderParcel.builder()
 					.id("2")
-					.grossWeightKg(BigDecimal.TEN)
+					.grossWeightKg(BigDecimal.valueOf(20))
 					.packageDimensions(JsonPackageDimensions.builder()
 							.lengthInCM(100)
 							.widthInCM(20)
@@ -180,23 +197,42 @@ public class NShiftShipmentServiceTest
 									.build())
 							.productName("Test Product 2")
 							.productValue("Test Product 2")
+							.customsTariff("Test Customs Tariff 2")
 							.totalWeightInKg(BigDecimal.TEN)
 							.shippedQuantity(JsonQuantity.builder()
 									.value(BigDecimal.TEN)
 									.uomCode("PCE")
 									.build())
-							.build()))
+							.build(),
+							JsonDeliveryOrderLineContents.builder()
+									.shipmentOrderItemId("3")
+									.unitPrice(JsonMoney.builder()
+											.amount(BigDecimal.TEN)
+											.currencyCode("EUR")
+											.build())
+									.totalValue(JsonMoney.builder()
+											.amount(BigDecimal.TEN)
+											.currencyCode("EUR")
+											.build())
+									.productName("Test Product 3")
+									.productValue("Test Product 3")
+									.customsTariff("Test Customs Tariff 3")
+									.totalWeightInKg(BigDecimal.TEN)
+									.shippedQuantity(JsonQuantity.builder()
+											.value(BigDecimal.TEN)
+											.uomCode("PCE")
+											.build())
+									.build()))
 					.build())
 			.shipperEORI("Shipper EORI")
 			.receiverEORI("Receiver EORI")
 			.shipperConfig(JsonShipperConfig.builder()
-					.url("https://demo.shipmentserver.com:8080")
+					.url(URL)
 					.password(PASSWORD)
 					.username(USERNAME)
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
+					.additionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY, "N")
 					.build())
-			.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
-			.shipperProduct(JsonShipperProduct.builder().code("2758").name("DHL - Euroconnect").build())
 			.mappingConfigs(JsonMappingConfigList.ofList(ImmutableList.of(
 					JsonMappingConfig.builder()
 							.seqNo(10)
@@ -381,6 +417,43 @@ public class NShiftShipmentServiceTest
 							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE)
 							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
 							.mappingRuleValue("RO")
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(280)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CONTENTS)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(290)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_2)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(300)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_3)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(310)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_4)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_VALUE)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(320)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_5)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF)
+							.build(),
+					JsonMappingConfig.builder()
+							.seqNo(330)
+							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+							.attributeKey(DETAIL_KIND_UNIT_WEIGHT)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G)
 							.build()
 			)))
 

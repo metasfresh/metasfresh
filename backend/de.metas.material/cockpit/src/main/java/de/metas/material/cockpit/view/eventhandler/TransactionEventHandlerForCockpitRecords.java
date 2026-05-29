@@ -68,6 +68,13 @@ public class TransactionEventHandlerForCockpitRecords
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
+		// dropship-warehouse transactions bypass cockpit entirely —
+		// the goods are shipped supplier → customer and never reach our warehouse.
+		if (event.isDropShipWarehouse())
+		{
+			return;
+		}
+
 		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}

@@ -54,10 +54,6 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
       | bp_S0500      | true                 | 9900000500010         |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID | M_Product_ID |
-      | bp_S0500      | p_S0500      |
-
     # HU Packing Instruction hierarchy: LU holds up to 10 TU, each TU holds 2 PCE
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID   |
@@ -140,10 +136,6 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
       | bp_S0500_020  | true                 | 9900000500020         |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID | M_Product_ID |
-      | bp_S0500_020  | p_S0500_020  |
-
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID       |
       | pi_LU_S0500_020  |
@@ -221,10 +213,6 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
       | bp_S0500_030  | true                 | 9900000500030         |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID | M_Product_ID |
-      | bp_S0500_030  | p_S0500_030  |
-
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference            |
       | o_S0500_030  | true    | bp_S0500_030  | 2026-03-11  | po_ref_S0500_030_@Date@ |
@@ -259,7 +247,7 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
   @from:cucumber
   Scenario: S0500_040 - GTIN_CU from M_Product and GTIN_TU from PI Item Product in DESADV pack
   Product has GTIN set. M_HU_PI_Item_Product has GTIN_LU_PackingMaterial_Fallback.
-  C_BPartner_Product has customer-specific GTIN.
+  M_Product_ASI_Data has customer-specific GTIN.
   DESADV pack and pack item should reflect the GTINs.
 
     Given metasfresh contains M_Products:
@@ -285,9 +273,9 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
       | bp_S0500_040  | true                 | 9900000500040         |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID | M_Product_ID | GTIN          |
-      | bp_S0500_040  | p_S0500_040  | 0575095404663 |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_S0500_040_bp_S0500_040 | p_S0500_040 | bp_S0500_040 | 10 | 0575095404663 |
 
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID | PackagingCode | HU_UnitType |
@@ -372,10 +360,6 @@ Feature: EDI DESADV with aggregate HU — QtyTU, QtyCUsPerTU, QtyCUsPerLU
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
       | bp_S0500_050  | true                 | 9900000500050         |
-
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID | M_Product_ID |
-      | bp_S0500_050  | p_S0500_050  |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID       |

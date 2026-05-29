@@ -38,6 +38,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
+	private Boolean invoiceManualRule = null;
 	private Boolean storeInvoicesInResult = null;
 	private Boolean assumeOneInvoice = null;
 	private LocalDate dateInvoiced;
@@ -131,6 +132,28 @@ public class PlainInvoicingParams implements IInvoicingParams
 	public void setIgnoreInvoiceSchedule(final boolean ignoreInvoiceSchedule)
 	{
 		this.ignoreInvoiceSchedule = ignoreInvoiceSchedule;
+	}
+
+	@Override
+	public boolean isInvoiceManualRule()
+	{
+		if (invoiceManualRule != null)
+		{
+			return invoiceManualRule;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isInvoiceManualRule();
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public void setInvoiceManualRule(final boolean invoiceManualRule)
+	{
+		this.invoiceManualRule = invoiceManualRule;
 	}
 
 	@Nullable

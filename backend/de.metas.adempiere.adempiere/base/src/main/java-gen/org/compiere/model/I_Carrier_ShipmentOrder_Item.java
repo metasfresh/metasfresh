@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for Carrier_ShipmentOrder_Item
  *  @author metasfresh (generated) 
@@ -183,6 +182,27 @@ public interface I_Carrier_ShipmentOrder_Item
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Customs Tariff Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCustomsTariffNumber (@Nullable java.lang.String CustomsTariffNumber);
+
+	/**
+	 * Get Customs Tariff Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCustomsTariffNumber();
+
+	ModelColumn<I_Carrier_ShipmentOrder_Item, Object> COLUMN_CustomsTariffNumber = new ModelColumn<>(I_Carrier_ShipmentOrder_Item.class, "CustomsTariffNumber", null);
+	String COLUMNNAME_CustomsTariffNumber = "CustomsTariffNumber";
 
 	/**
 	 * Set Active.

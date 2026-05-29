@@ -92,7 +92,7 @@ public class SqlOrderByValue
 			this.sqlOrderByColumnNameFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, sqlSelectValueEffective.getColumnNameAlias());
 			this.sourceSqlExpression = ConstantStringExpression.of(sqlSelectValueEffective.toSqlString());
 		}
-		else if (columnName != null && Check.isNotBlank(columnName))
+		else if (Check.isNotBlank(columnName))
 		{
 			this.sqlSelectDisplayValue = null;
 			this.sqlSelectValue = null;

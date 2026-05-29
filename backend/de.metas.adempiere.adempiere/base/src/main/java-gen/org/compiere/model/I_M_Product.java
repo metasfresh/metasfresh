@@ -441,6 +441,29 @@ public interface I_M_Product
 	String COLUMNNAME_DietType = "DietType";
 
 	/**
+	 * Set Pfandart.
+	 * Einwegpfand / Mehrwegpfand classification used for EDIFACT IMD+C deposit segment emission.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepositType (@Nullable java.lang.String DepositType);
+
+	/**
+	 * Get Pfandart.
+	 * Einwegpfand / Mehrwegpfand classification used for EDIFACT IMD+C deposit segment emission.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepositType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DepositType = new ModelColumn<>(I_M_Product.class, "DepositType", null);
+	String COLUMNNAME_DepositType = "DepositType";
+
+	/**
 	 * Set Discontinued.
 	 * This product is no longer available
 	 *

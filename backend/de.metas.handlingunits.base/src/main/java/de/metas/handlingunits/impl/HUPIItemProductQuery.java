@@ -46,9 +46,8 @@ import java.util.Set;
 /* package */ final class HUPIItemProductQuery implements IHUPIItemProductQuery
 {
 	private int huPIItemId = -1;
-	private ImmutableSet<ProductId> onlyProductIds = null;
-	@Nullable
-	private PriceListVersionId priceListVersionId = null;
+	@Nullable private ImmutableSet<ProductId> onlyProductIds = null;
+	@Nullable private PriceListVersionId priceListVersionId = null;
 	private int bpartnerId = -1;
 	private ZonedDateTime date = null;
 	private boolean allowAnyProduct = true;
@@ -116,7 +115,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public void setOnlyProductIds(final Collection<ProductId> productIds)
+	public void setOnlyProductIds(@Nullable final Collection<ProductId> productIds)
 	{
 		this.onlyProductIds = productIds != null ? ImmutableSet.copyOf(productIds) : null;
 	}

@@ -48,4 +48,9 @@ public class CreateVATCodeRequest
 	@Nullable LocalDate validFrom;
 	@Nullable LocalDate validTo;
 	@Nullable String description;
+
+	/**
+	 * {@code null} means the default amount type ({@link VATCodeAmountType#Tax}) is used.
+	 */
+	@Nullable VATCodeAmountType amountType;
 }

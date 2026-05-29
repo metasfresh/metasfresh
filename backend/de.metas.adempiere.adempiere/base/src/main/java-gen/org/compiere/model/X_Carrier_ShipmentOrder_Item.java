@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for Carrier_ShipmentOrder_Item
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_Carrier_ShipmentOrder_Item extends org.compiere.model.PO implements I_Carrier_ShipmentOrder_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1016123494L;
+	private static final long serialVersionUID = 501137430L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder_Item (final Properties ctx, final int Carrier_ShipmentOrder_Item_ID, @Nullable final String trxName)
@@ -105,6 +105,18 @@ public class X_Carrier_ShipmentOrder_Item extends org.compiere.model.PO implemen
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setCustomsTariffNumber (final @Nullable java.lang.String CustomsTariffNumber)
+	{
+		set_Value (COLUMNNAME_CustomsTariffNumber, CustomsTariffNumber);
+	}
+
+	@Override
+	public java.lang.String getCustomsTariffNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_CustomsTariffNumber);
 	}
 
 	@Override

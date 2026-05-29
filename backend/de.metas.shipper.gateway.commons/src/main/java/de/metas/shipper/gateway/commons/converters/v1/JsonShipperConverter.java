@@ -25,8 +25,11 @@ package de.metas.shipper.gateway.commons.converters.v1;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
+import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
+import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
@@ -34,6 +37,8 @@ import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.util.Check;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierService;
 import de.metas.product.PackageDimensions;
@@ -46,11 +51,13 @@ import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Contract;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -64,6 +71,7 @@ import java.util.stream.StreamSupport;
 public class JsonShipperConverter
 {
 	@NonNull private final CarrierProductRepository carrierProductRepository;
+	@NonNull private final CurrencyRepository currencyRepository;
 
 	public JsonDeliveryRequest toJson(@NonNull final ShipperConfig config, @NonNull final DeliveryOrder order, @NonNull final ShipperMappingConfigList mappingConfigs)
 	{
@@ -71,6 +79,7 @@ public class JsonShipperConverter
 		return JsonDeliveryRequest.builder()
 				.deliveryOrderId(DeliveryOrderId.toRepoId(order.getId()))
 				.pickupAddress(toJsonAddress(order.getPickupAddress()))
+				.pickupContact(toJsonContactOrNull(order.getPickupContact()))
 				.pickupDate(pickupDate.getDate().toString())
 				.timeFrom(pickupDate.getTimeFrom().toString())
 				.timeTo(pickupDate.getTimeTo().toString())
@@ -104,7 +113,8 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @Nullable JsonGoodsType toJsonGoodsType(final @Nullable CarrierGoodsType goodsType)
+	@Nullable
+	private JsonGoodsType toJsonGoodsType(@Nullable final CarrierGoodsType goodsType)
 	{
 		if (goodsType == null)
 		{
@@ -116,7 +126,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @NonNull Set<JsonCarrierService> toCarrierServices(final @NonNull Set<CarrierService> services)
+	private @NonNull Set<JsonCarrierService> toCarrierServices(@NonNull final  Set<CarrierService> services)
 	{
 		if (services.isEmpty())
 		{
@@ -128,7 +138,8 @@ public class JsonShipperConverter
 				.collect(Collectors.toSet());
 	}
 
-	private JsonCarrierService toJsonCarrierService(final @NonNull CarrierService carrierService)
+	@NonNull
+	private JsonCarrierService toJsonCarrierService(@NonNull final CarrierService carrierService)
 	{
 		return JsonCarrierService.builder()
 				.id(carrierService.getExternalId())
@@ -136,7 +147,8 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	public @NonNull JsonShipperConfig toJsonShipperConfig(final @NonNull ShipperConfig config)
+	@NonNull
+	public JsonShipperConfig toJsonShipperConfig(@NonNull final ShipperConfig config)
 	{
 		return JsonShipperConfig.builder()
 				.url(config.getUrl())
@@ -149,6 +161,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
+	@NonNull
 	public static JsonAddress toJsonAddress(@NonNull final Address address)
 	{
 		final Integer bpartnerId = address.getBpartnerId() > 0 ? address.getBpartnerId() : null;
@@ -167,12 +180,14 @@ public class JsonShipperConverter
 	}
 
 	@Nullable
-	private JsonContact toJsonContactOrNull(final @Nullable ContactPerson contact)
+	@Contract("!null -> !null")
+	public static JsonContact toJsonContactOrNull(@Nullable final ContactPerson contact)
 	{
 		if (contact == null) {return null;}
 
 		return JsonContact.builder()
 				.name(contact.getName())
+				.department(contact.getDepartment())
 				.phone(contact.getPhoneAsStringOrNull())
 				.emailAddress(contact.getEmailAddress())
 				.language(contact.getLanguageCode())
@@ -181,13 +196,40 @@ public class JsonShipperConverter
 
 	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(@NonNull final DeliveryOrderParcel line)
 	{
+		Check.assumeNotNull(line.getId(), "lineId shouldn't be null");
 		return JsonDeliveryOrderParcel.builder()
-				.id(line.getId() != null ? String.valueOf(line.getId().getRepoId()) : null)
+				.id(String.valueOf(line.getId().getRepoId()))
 				.content(line.getContent())
 				.grossWeightKg(line.getGrossWeightKg())
 				.packageDimensions(toJsonPackageDimensions(line.getPackageDimensions()))
 				.packageId(line.getPackageId().toString())
-				.contents(java.util.Collections.emptyList())
+				.contents(line.getItems().stream().map(this::toJsonDeliveryOrderLineContents).collect(Collectors.toList()))
+				.build();
+	}
+
+	private JsonDeliveryOrderLineContents toJsonDeliveryOrderLineContents(@NonNull final DeliveryOrderItem item)
+	{
+		Check.assumeNotNull(item.getId(), "itemId shouldn't be null");
+		Check.assumeEquals(item.getTotalValue().getCurrencyId(), item.getUnitPrice().getCurrencyId()); // in sync with de.metas.shipper.gateway.commons.model.ShipmentOrderRepository.createItem
+		final String currencyCode = currencyRepository.getById(item.getTotalValue().getCurrencyId()).getCurrencyCode().toThreeLetterCode();
+		return JsonDeliveryOrderLineContents.builder()
+				.shipmentOrderItemId(String.valueOf(item.getId()))
+				.productName(item.getProductName())
+				.productValue(item.getProductValue())
+				.customsTariff(item.getCustomsTariff())
+				.shippedQuantity(JsonQuantity.builder()
+						.value(item.getShippedQuantity().toBigDecimal())
+						.uomCode(item.getShippedQuantity().getUOMSymbol())
+						.build())
+				.unitPrice(JsonMoney.builder()
+						.amount(item.getUnitPrice().toBigDecimal())
+						.currencyCode(currencyCode)
+						.build())
+				.totalValue(JsonMoney.builder()
+						.amount(item.getTotalValue().toBigDecimal())
+				        .currencyCode(currencyCode)
+						.build())
+				.totalWeightInKg(item.getTotalWeightInKg())
 				.build();
 	}
 

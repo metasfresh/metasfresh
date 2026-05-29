@@ -86,8 +86,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs
-		);
+		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
 		try
@@ -137,7 +136,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem)
 	{
 		final String awb = jsonDeliveryResponseItem.getAwb();
-		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
+		final byte[] labelPdfBase64 = jsonDeliveryResponseItem.getLabelPdfBase64();
+		final byte[] labelData = labelPdfBase64 != null ? Base64.getDecoder().decode(labelPdfBase64) : null;
 		final String trackingUrl = jsonDeliveryResponseItem.getTrackingUrl();
 
 		return line.toBuilder()
