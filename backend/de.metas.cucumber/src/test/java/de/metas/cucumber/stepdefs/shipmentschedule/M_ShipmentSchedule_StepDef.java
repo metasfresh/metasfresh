@@ -688,7 +688,7 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
+	public void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(tableRow.getAsIdentifier());
 

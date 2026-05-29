@@ -17,30 +17,14 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
-/**
- * Consumes DD_Order picking reconcile events from {@link DDOrderReplenishmentConstants#TOPIC}.
- * Each event carries the {@code shipmentScheduleId} property, which is extracted and passed to the
- * reconciliation business logic in a new transaction.
- *
- * <p>The processing is routed through {@link EventLogUserService#invokeHandlerAndLog} so that:
- * <ul>
- *   <li>A <em>Done</em> {@code AD_EventLog_Entry} is written on success.</li>
- *   <li>An <em>Error</em> {@code AD_EventLog_Entry} (with an {@code AD_Issue} attached) is written on
- *       failure, making the event repostable via {@code AD_EventLog_Entry_RepostEvent}.</li>
- * </ul>
- * The reconcile itself still runs in its own transaction (as required by
- * {@link DDOrderPickingReplenishmentService#reconcile}); {@code invokeHandlerAndLog} does not open a transaction.</p>
- */
 @Component
 @Profile(Profiles.PROFILE_App)
 @RequiredArgsConstructor
 public class DDOrderReplenishmentEventHandler implements IEventListener
 {
-	// EventBusFactory and EventLogUserService are Spring @Service beans — must be constructor-injected, NOT Services.get.
 	@NonNull private final DDOrderPickingReplenishmentService reconcileService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 	@NonNull private final EventLogUserService eventLogUserService;
-	// ITrxManager is an ISingletonService — Services.get is correct.
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@PostConstruct
@@ -57,7 +41,7 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 
 		eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 				.handlerClass(DDOrderReplenishmentEventHandler.class)
-				.invokaction(() -> trxManager.runInNewTrx(() -> reconcileService.reconcile(scheduleId)))
+				.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> reconcileService.reconcile(scheduleId)))
 				.build());
 	}
 }

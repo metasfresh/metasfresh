@@ -44,6 +44,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -194,14 +195,8 @@ public class M_Warehouse_StepDef
 							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
 							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));
 
-					// IsAutoDistributionOrder marks a warehouse as a "packing warehouse" for which the dedicated DD_Order
-					// reconciliation flow runs (combined with MRP_Exclude=Y to keep material-dispo out). When Y,
-					// DD_NetworkDistribution_ID is mandatory and is validated by the M_Warehouse interceptor on save.
-					final OptionalBoolean isAutoDistributionOrder = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder);
-					if (isAutoDistributionOrder.isPresent())
-					{
-						warehouseRecord.setIsAutoDistributionOrder(isAutoDistributionOrder.isTrue());
-					}
+					row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder)
+							.ifPresent(warehouseRecord::setIsAutoDistributionOrder);
 
 					// DD_NetworkDistribution_ID resolves the source warehouse for the packing warehouse via the
 					// distribution network (target -> source). Referenced by identifier from a previously created
@@ -276,7 +271,8 @@ public class M_Warehouse_StepDef
 					assertThatThrownBy(() -> saveRecord(warehouseRecord))
 							.as("Saving M_Warehouse %s with IsAutoDistributionOrder=%s and no DD_NetworkDistribution_ID must be rejected",
 									valueAndName.getValue(), isAutoDistributionOrder.toBooleanString())
-							.isInstanceOf(Throwable.class);
+							.isInstanceOf(AdempiereException.class)
+							.hasMessageContaining("Verteilungsnetz");
 				});
 	}
 }
