@@ -1,15 +1,16 @@
-package de.metas.handlingunits.ddorder.replenishment;
+package de.metas.distribution.ddorder.replenishment;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
+import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
@@ -18,7 +19,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.planning.ddorder.DistributionNetwork;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
-import de.metas.material.planning.ddorder.DistributionNetworkLine;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -45,7 +45,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -62,9 +61,10 @@ public class DDOrderPickingReplenishmentService
 
 	// FQN trx-property key: avoids collisions with any other service that might register an
 	// after-commit accumulator under a shorter, easier-to-clash name.
-	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishment";
+	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishment";
 
 	@NonNull private final DDOrderPickingReplenishmentRepository repository;
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
@@ -296,7 +296,7 @@ public class DDOrderPickingReplenishmentService
 		{
 			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
 		}
-		final I_DD_Order ddOrderRecord = repository.getById(existingDDOrderId);
+		final I_DD_Order ddOrderRecord = ddOrderLowLevelDAO.getById(existingDDOrderId);
 		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
@@ -322,7 +322,7 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		// Void the existing DD_Order (picker already checked — no double check needed)
-		final I_DD_Order ddOrderRecord = repository.getById(existingDDOrderId);
+		final I_DD_Order ddOrderRecord = ddOrderLowLevelDAO.getById(existingDDOrderId);
 		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
 		// Create a fresh DD_Order from the current schedule data
@@ -395,12 +395,6 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		final DistributionNetwork network = distributionNetworkRepository.getById(networkId);
-		final List<DistributionNetworkLine> lines = network.getLinesByTargetWarehouse(targetWarehouseId);
-		if (lines.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(lines.get(0).getSourceWarehouseId());
+		return network.getFirstSourceWarehouseIdByTargetWarehouse(targetWarehouseId);
 	}
 }

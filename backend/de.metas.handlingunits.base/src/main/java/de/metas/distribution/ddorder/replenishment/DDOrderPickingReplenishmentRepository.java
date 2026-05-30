@@ -1,4 +1,4 @@
-package de.metas.handlingunits.ddorder.replenishment;
+package de.metas.distribution.ddorder.replenishment;
 
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.document.DocTypeId;
@@ -6,7 +6,6 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -41,9 +40,6 @@ public class DDOrderPickingReplenishmentRepository
 	 *
 	 * <p>The caller is responsible for resolving the set of auto-distribution warehouse IDs before calling this method.</p>
 	 *
-	 * <p>Note: this repository reads {@link I_DD_Order} directly (a foreign table owned by {@code de.metas.manufacturing}).
-	 * {@code DDOrderLowLevelDAO} lives in {@code de.metas.manufacturing}, which is not a dependency of
-	 * {@code de.metas.handlingunits.base}; keeping the read-only demand query here avoids an unwanted cross-module dep.</p>
 	 */
 	public Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder(@NonNull final Set<WarehouseId> autoDistributionWarehouseIds)
 	{
@@ -208,14 +204,6 @@ public class DDOrderPickingReplenishmentRepository
 		InterfaceWrapperHelper.save(ddOrderLine);
 
 		return ddOrder;
-	}
-
-	/** Returns the {@link I_DD_Order} record for the given ID; throws if not found. The model interface is exposed intentionally because callers pass it directly to {@code IDocumentBL#processEx}, which requires it. */
-	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
-	{
-		final I_DD_Order record = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
-		Check.assumeNotNull(record, "DD_Order not found for id={}", ddOrderId);
-		return record;
 	}
 
 	/**
