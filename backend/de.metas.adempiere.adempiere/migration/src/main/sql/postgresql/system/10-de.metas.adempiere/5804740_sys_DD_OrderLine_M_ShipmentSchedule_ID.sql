@@ -3,7 +3,7 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-05-26:
 --   AD_MigrationScript  5804740 (this script)
---   AD_Column           592626  (DD_OrderLine.M_ShipmentSchedule_ID)
+--   AD_Column           592666  (DD_OrderLine.M_ShipmentSchedule_ID)
 
 -- =============================================================================
 -- 1. AD_Column (DD_OrderLine — lookup AD_Table_ID by name)
@@ -15,7 +15,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        DefaultValue, EntityType, IsKey, IsParent, IsSelectionColumn,
                        IsTranslated, IsIdentifier, IsEncrypted, IsAllowLogging,
                        PersonalDataCategory)
-VALUES (592626 /*From ID Server*/, 0, 0, 'Y',
+VALUES (592666 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-05-26 14:25:00','YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-05-26 14:25:00','YYYY-MM-DD HH24:MI:SS'), 100,
         0,
@@ -35,7 +35,7 @@ VALUES (592626 /*From ID Server*/, 0, 0, 'Y',
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
 FROM AD_Language l, AD_Column t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 592626
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 592666
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
 -- =============================================================================
