@@ -38,6 +38,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -138,13 +139,26 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Deactivates every {@code M_Picking_Job_Line} that references the given schedule, releasing the picker
-	 * (so that a subsequent repost / reconcile can proceed).
+	 * TEST INFRASTRUCTURE — NOT a business action.
+	 *
+	 * <p>This step is the teardown counterpart of the synthetic picker-busy fixture created by
+	 * {@code metasfresh contains M_Picking_Job_Line:} (see {@code M_Picking_Job_Line_StepDef}). That fixture
+	 * is a deliberately minimal {@code M_Picking_Job} + {@code M_Picking_Job_Line} created directly via the model
+	 * layer to make the picker-busy guard ({@code DDOrderPickingReplenishmentService#isPickerBusy} →
+	 * {@code existsPickingJobLineForSchedule}, an active-records query) see a busy picker — WITHOUT standing up the
+	 * full real picking workflow (warehouse stock, HUs, a running picking-worker session).</p>
+	 *
+	 * <p>There is no single real-world business action that "releases" this fixture: the product's real
+	 * close/abort flows ({@code PickingJobService#abort} / {@code #complete}) operate on a fully-loaded
+	 * {@code PickingJob} aggregate — they cannot act on this stripped-down fixture. Deactivating the fixture rows is
+	 * therefore pure test plumbing: it simulates "the picker is no longer working on this schedule" so a subsequent
+	 * repost / reconcile can proceed, and it stops the rows polluting later scenarios that query for active
+	 * picking records. Modelled as {@code @Given} (setup/teardown), not {@code @When} (a user action).</p>
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
 	 */
-	@When("^the M_Picking_Job_Line for M_ShipmentSchedule (.*) is removed$")
-	public void remove_M_Picking_Job_Line(@NonNull final String shipmentScheduleIdentifier)
+	@Given("^the M_Picking_Job_Line for M_ShipmentSchedule (.*) is deactivated as test cleanup$")
+	public void deactivate_M_Picking_Job_Line_as_test_cleanup(@NonNull final String shipmentScheduleIdentifier)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)

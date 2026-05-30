@@ -80,10 +80,9 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | M_ShipmentSchedule_ID | QtyOrdered_Override |
       | shipmentSchedule      | 8                   |
 
-    # Cleanup first so it always runs regardless of subsequent assertion results.
-    # Deactivates the picking job line (and its parent job) so it does not
-    # pollute subsequent test scenarios that query for active picking records.
-    When the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is removed
+    # Test cleanup (not a business action): deactivate the synthetic picker-busy fixture so its
+    # rows do not pollute subsequent scenarios that query for active picking records.
+    Given the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is deactivated as test cleanup
 
     # The DD_Order is untouched (still the original Completed one, qty 5).
     Then after not more than 10s, the DD_Order linked to shipment schedule is found:
@@ -114,10 +113,11 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
 
-    # Once the picker releases the job (picking line inactivated), reprocessing the event succeeds.
-    # The reconcile classifies as RECREATE (active schedule + existing live DD_Order): the old DD_Order
-    # is voided and a fresh one is created. Capturing a new Identifier pins that recreate actually happened.
-    When the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is removed
+    # Simulate the picker releasing the job by deactivating the synthetic picker-busy fixture (test
+    # cleanup, not a business action). Then reprocessing the event succeeds: the reconcile classifies as
+    # RECREATE (active schedule + existing live DD_Order) — the old DD_Order is voided and a fresh one is
+    # created. Capturing a new Identifier pins that recreate actually happened.
+    Given the M_Picking_Job_Line for M_ShipmentSchedule shipmentSchedule is deactivated as test cleanup
     And the reconcile event for M_ShipmentSchedule shipmentSchedule is processed
     Then after not more than 10s, the DD_Order linked to shipment schedule is found:
       | Identifier  | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
