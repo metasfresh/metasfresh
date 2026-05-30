@@ -1,6 +1,6 @@
-package de.metas.handlingunits.ddorder.replenishment.process;
+package de.metas.distribution.ddorder.replenishment.process;
 
-import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
+import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.process.JavaProcess;
 import org.compiere.SpringContextHolder;
 

@@ -1,6 +1,6 @@
-package de.metas.handlingunits.ddorder.replenishment.interceptor;
+package de.metas.distribution.ddorder.replenishment.interceptor;
 
-import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
+import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

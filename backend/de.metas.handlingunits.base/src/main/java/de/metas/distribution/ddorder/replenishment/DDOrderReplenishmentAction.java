@@ -1,4 +1,4 @@
-package de.metas.handlingunits.ddorder.replenishment;
+package de.metas.distribution.ddorder.replenishment;
 
 public enum DDOrderReplenishmentAction
 {

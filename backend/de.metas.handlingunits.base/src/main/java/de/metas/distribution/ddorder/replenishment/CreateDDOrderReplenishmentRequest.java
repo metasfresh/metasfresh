@@ -1,4 +1,4 @@
-package de.metas.handlingunits.ddorder.replenishment;
+package de.metas.distribution.ddorder.replenishment;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;

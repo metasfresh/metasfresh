@@ -1,4 +1,4 @@
-package de.metas.handlingunits.ddorder.replenishment.event;
+package de.metas.distribution.ddorder.replenishment.event;
 
 import de.metas.Profiles;
 import de.metas.event.Event;
@@ -6,7 +6,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.log.EventLogUserService;
-import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
+import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.NonNull;

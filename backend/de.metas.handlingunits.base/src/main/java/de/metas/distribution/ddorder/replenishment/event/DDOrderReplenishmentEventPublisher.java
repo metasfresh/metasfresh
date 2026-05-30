@@ -1,4 +1,4 @@
-package de.metas.handlingunits.ddorder.replenishment.event;
+package de.metas.distribution.ddorder.replenishment.event;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
