@@ -10,7 +10,6 @@ import de.metas.i18n.AdMessageKey;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -49,11 +48,6 @@ public class DistributionJobSwitchPickFromLocatorCommand
 	{
 		final DistributionJobLoader loader = new DistributionJobLoader(loadingSupportServices);
 		final DistributionJob job = loader.loadByJobId(jobId);
-
-		if (!job.canSwitchPickFromLocator())
-		{
-			throw new AdempiereException(MSG_NOT_AVAILABLE);
-		}
 
 		final LocatorId currentLocatorId = job.getSinglePickFromLocatorId();
 		final LocatorId nextLocatorId = nextLocatorResolver.resolveNext(currentLocatorId);
