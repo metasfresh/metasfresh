@@ -39,10 +39,9 @@ const DistributionPickFromScreen = () => {
     const huScannedCode = toQRCodeString(parsedQRCode);
     const isScanProductCodeRequired = lineIdParam == null || isRequireScanningProductCode({ activity });
 
-    // When no product scan is required we already know the line, so resolve the HU now and cap the proposed
-    // move-qty to what the scanned HU actually holds: min(HU available qty, line remaining). Without this the
-    // dialog would default to the whole outstanding line qty even when the scanned HU holds less.
-    // When a product scan IS required, the qty is resolved later in resolveProductScannedCode.
+    // Without this cap the dialog would default to the whole outstanding line qty even when the scanned HU
+    // holds less. We can only resolve the HU's qty here when no product scan is required (the line is known);
+    // otherwise the qty is resolved later in resolveProductScannedCode.
     let qtyTarget = qtyToPickRemaining;
     let qtyMax;
     if (!isScanProductCodeRequired) {

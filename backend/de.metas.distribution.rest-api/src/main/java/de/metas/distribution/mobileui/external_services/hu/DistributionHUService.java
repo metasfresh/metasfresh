@@ -117,6 +117,7 @@ public class DistributionHUService
 				.filter(Quantity::isPositive);
 	}
 
+	/** Resolves the HU id from an already-parsed {@link HUQRCode}. For a raw scanned code use {@link #resolveHUId(ScannedCode)} instead. */
 	@NonNull
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode huQRCode)
 	{

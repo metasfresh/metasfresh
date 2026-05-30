@@ -29,8 +29,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-
-import java.math.BigDecimal;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,6 +42,7 @@ import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -297,14 +296,20 @@ public class DistributionRestService
 			nextEligiblePickFromLineId = job.getNextEligiblePickFromLineId(productId).orElse(null);
 		}
 
-		final HuId huId = huService.getHuIdByQRCode(huQRCode);
-		final BigDecimal qtyAvailable = huService.getProductQuantityIfAny(huId, productId)
-				.map(qty -> qty.toBigDecimal())
-				.orElse(null);
+		// Only needed when there's a line to pick into: the mobile UI caps the proposed move-qty to
+		// min(scanned-HU-available-qty, line-remaining). Skip the HU storage read for the no-line case.
+		BigDecimal qtyAvailableBD = null;
+		if (nextEligiblePickFromLineId != null)
+		{
+			final HuId huId = huService.getHuIdByQRCode(huQRCode);
+			qtyAvailableBD = huService.getProductQuantityIfAny(huId, productId)
+					.map(qty -> qty.toBigDecimal())
+					.orElse(null);
+		}
 
 		return JsonGetNextEligiblePickFromLineResponse.builder()
 				.lineId(nextEligiblePickFromLineId)
-				.qtyAvailable(qtyAvailable)
+				.qtyAvailable(qtyAvailableBD)
 				.build();
 	}
 
