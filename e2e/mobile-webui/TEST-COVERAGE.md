@@ -6,8 +6,8 @@
 
 | Module | Covered | Total | % |
 |---|---|---|---|
-| Login / Home | 8 | 10 | 80% |
-| Barcode Scanner Modes | 3 | 4 | 75% |
+| Login / Home | 8 | 11 | 73% |
+| Barcode Scanner Modes | 8 | 11 | 73% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
@@ -40,25 +40,38 @@
 | Scan HU ID (M_HU_ID) from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan ExternalBarcode from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan workplace QR code from home screen → opens Workplace Manager, name and assigned status shown | `home_screen.spec.js` |
-| DataWedge IME — scan HU QR code via InputConnection injection → navigates to HU Manager, qty shown | `home_screen.spec.js` |
+| ❌ Generated HU QR code scan from home screen → navigates correctly | — |
 
-**5/5 — 100%**
+**4/5 — 80%**
 
 ---
 
 ## Barcode Scanner Modes
 
+### Attribute regression guards
+
+| Scenario | Test |
+|---|---|
+| `#input-text` has `type="text"` (never `type="hidden"`) — DataWedge IME requires a real text input | `barcode_scanner_modes.spec.js` |
+| `#input-text` has `inputmode="none"` by default — virtual keyboard suppressed on device | `barcode_scanner_modes.spec.js` |
+| `#input-text` does NOT have `readonly` attribute — DataWedge IME (InputConnection) must not be blocked | `barcode_scanner_modes.spec.js` |
+| `#input-text` has CSS class `input-text-offscreen` when `showInputText=N`, and `type="text"` (not `type="hidden"`) | `barcode_scanner_modes.spec.js` |
+
+**4/4 — 100%**
+
 ### Input path coverage
 
 | Scenario | Test |
 |---|---|
-| Mode A — DataWedge IME: set input value + fire input/change + Enter keyup → barcode forwarded | `home_screen.spec.js` |
-| Mode C1 — Keystroke scanner: keydown events on window, rate-based buffering → barcode forwarded | covered across 35+ spec files |
+| Mode A — DataWedge IME: set input value + fire input/change + Enter keyup → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C1 — Keystroke scanner: keydown events on window, rate-based buffering → barcode forwarded | `barcode_scanner_modes.spec.js` |
 | Mode C2 — Ctrl+V paste: clipboard mocked, keydown Ctrl+V on window → barcode forwarded | `barcode_scanner_modes.spec.js` |
 | Mode C3 — Manual typing: fill visible editable input + Enter → barcode forwarded | `barcode_scanner_modes.spec.js` |
 | ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
+| ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
+| ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
 
-**3/4 — 75%** (Mode B excluded — untestable in Playwright CI)
+**4/5 — 80%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
 
 ---
 
