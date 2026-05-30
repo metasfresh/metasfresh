@@ -281,6 +281,27 @@ public class C_TaxDeclaration_StepDef
 		}
 	}
 
+	/**
+	 * Invoke {@link TaxDeclarationService#createCorrectionWithDriftCheck(TaxDeclarationId)} on the chain member and register the result under {@code <identifier>_correction}.
+	 * Any failure is stashed for {@link #assertOperationFailedWithMessage(String)}.
+	 */
+	@When("invoke Create Correction with drift check on C_TaxDeclaration {string}")
+	public void invokeCreateCorrectionWithDriftCheck(@NonNull final String identifier)
+	{
+		lastException = null;
+		final I_C_TaxDeclaration chainMember = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
+		try
+		{
+			final TaxDeclarationId correctionId = taxDeclarationService.createCorrectionWithDriftCheck(TaxDeclarationId.ofRepoId(chainMember.getC_TaxDeclaration_ID()));
+			final I_C_TaxDeclaration correction = InterfaceWrapperHelper.load(correctionId.getRepoId(), I_C_TaxDeclaration.class);
+			taxDeclarationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier + "_correction"), correction);
+		}
+		catch (final AdempiereException e)
+		{
+			lastException = e;
+		}
+	}
+
 	/** Assert the declaration's {@code IsCorrectionNeeded} flag ({@code Y}/{@code N}); reloads from DB to avoid stale-cache false-positives. */
 	@Then("C_TaxDeclaration {string} has IsCorrectionNeeded = {string}")
 	public void assertIsCorrectionNeeded(@NonNull final String identifier, @NonNull final String expectedFlag)
