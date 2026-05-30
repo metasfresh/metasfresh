@@ -85,7 +85,7 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
       | false   |
 
   @from:cucumber
-  Scenario: The hourly scheduler self-heals drift via the same rebuild process (TC8)
+  Scenario: The hourly scheduler self-heals drift via the same rebuild process
     # The AD_Scheduler engine cannot be driven inside cucumber; instead we assert the AD_Process the hourly
     # scheduler points at exists, and that running that exact process (the rebuild) heals the drift — which is
     # what the scheduler invocation does on its hourly cadence.
