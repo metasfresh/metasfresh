@@ -7,6 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 10 | 80% |
+| Barcode Scanner Modes | 3 | 4 | 75% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
@@ -39,8 +40,25 @@
 | Scan HU ID (M_HU_ID) from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan ExternalBarcode from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan workplace QR code from home screen → opens Workplace Manager, name and assigned status shown | `home_screen.spec.js` |
+| DataWedge IME — scan HU QR code via InputConnection injection → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 
-**4/4 — 100%**
+**5/5 — 100%**
+
+---
+
+## Barcode Scanner Modes
+
+### Input path coverage
+
+| Scenario | Test |
+|---|---|
+| Mode A — DataWedge IME: set input value + fire input/change + Enter keyup → barcode forwarded | `home_screen.spec.js` |
+| Mode C1 — Keystroke scanner: keydown events on window, rate-based buffering → barcode forwarded | covered across 35+ spec files |
+| Mode C2 — Ctrl+V paste: clipboard mocked, keydown Ctrl+V on window → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C3 — Manual typing: fill visible editable input + Enter → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
+
+**3/4 — 75%** (Mode B excluded — untestable in Playwright CI)
 
 ---
 
