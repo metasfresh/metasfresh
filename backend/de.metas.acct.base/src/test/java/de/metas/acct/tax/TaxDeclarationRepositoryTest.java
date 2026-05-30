@@ -137,4 +137,36 @@ class TaxDeclarationRepositoryTest
 		final I_C_TaxDeclaration result = repository.getLatestInChain(originalId);
 		Assertions.assertThat(result.getC_TaxDeclaration_ID()).isEqualTo(originalId.getRepoId());
 	}
+
+	// ---------------------------------------------------------------------------
+	// isLatestInChain tests
+	// ---------------------------------------------------------------------------
+
+	@Test
+	void isLatestInChain_originalWithNoProcessedCorrection_isLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		Assertions.assertThat(repository.isLatestInChain(idOf(original))).isTrue();
+	}
+
+	@Test
+	void isLatestInChain_originalSupersededByProcessedCorrection_isNotLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		Assertions.assertThat(repository.isLatestInChain(idOf(original))).isFalse();
+	}
+
+	@Test
+	void isLatestInChain_latestProcessedCorrection_isLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		final I_C_TaxDeclaration corr = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		Assertions.assertThat(repository.isLatestInChain(idOf(corr))).isTrue();
+	}
+
+	private static TaxDeclarationId idOf(final I_C_TaxDeclaration record)
+	{
+		return TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_ID());
+	}
 }

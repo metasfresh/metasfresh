@@ -115,4 +115,18 @@ public class TaxDeclarationRepository
 				.first();
 		return latestCorrection != null ? latestCorrection : getById(originalId);
 	}
+
+	/**
+	 * @return true iff {@code id} is the latest LIVE entry in its correction chain
+	 *         (an Original with no Processed Correction, or the most recent Processed Correction).
+	 */
+	public boolean isLatestInChain(@NonNull final TaxDeclarationId id)
+	{
+		final I_C_TaxDeclaration record = getById(id);
+		final TaxDeclarationId originalId = record.isCorrection()
+				? TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_Original_ID())
+				: id;
+		final I_C_TaxDeclaration latest = getLatestInChain(originalId);
+		return latest.getC_TaxDeclaration_ID() == id.getRepoId();
+	}
 }
