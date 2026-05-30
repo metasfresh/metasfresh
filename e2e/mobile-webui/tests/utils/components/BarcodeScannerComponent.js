@@ -147,6 +147,22 @@ export const BarcodeScannerComponent = {
         }
     }),
 
+    // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,
+    // then dispatches a keydown Ctrl+V on window — the useKeyboardBarcodeReader hook
+    // intercepts it and calls onReadDone(clipboardText).
+    pasteViaClipboard: async (barcode) => await test.step(`${NAME} - Paste via Ctrl+V`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        await page.evaluate((value) => {
+            Object.defineProperty(navigator, 'clipboard', {
+                value: { readText: () => Promise.resolve(value) },
+                configurable: true,
+            });
+        }, barcode);
+        await page.evaluate(() => {
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+        });
+    }),
+
     expectCssClass: async ({ present, absent }) => await test.step(`${NAME} - Expect CSS class (present=${present}, absent=${absent})`, async () => {
         await BarcodeScannerComponent.waitToAttach({});
         if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(`(^|\\s)${present}(\\s|$)`));

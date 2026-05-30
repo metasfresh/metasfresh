@@ -7,7 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 8 | 9 | 89% |
+| Barcode Scanner Modes | 8 | 11 | 73% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
@@ -71,7 +71,7 @@
 | ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
 | ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
 
-**4/5 — 80%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
+**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
 
 ---
 
