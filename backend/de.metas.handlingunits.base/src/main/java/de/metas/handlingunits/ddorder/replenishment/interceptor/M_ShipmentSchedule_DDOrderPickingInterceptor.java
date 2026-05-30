@@ -53,7 +53,9 @@ public class M_ShipmentSchedule_DDOrderPickingInterceptor
 			ifColumnsChanged = {
 					I_M_ShipmentSchedule.COLUMNNAME_IsActive,
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
 					I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
 					I_M_ShipmentSchedule.COLUMNNAME_Processed,
 					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
 			})

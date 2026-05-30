@@ -420,6 +420,9 @@ public class DD_Order_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * @cucumber.stepdef Voids the live DD_Order linked to the given shipment schedule by applying the Void action directly on the document.
+	 */
 	@When("^the DD_Order linked to M_ShipmentSchedule (.*) is voided directly$")
 	public void void_DD_Order_directly(@NonNull final String shipmentScheduleIdentifier)
 	{
@@ -434,6 +437,9 @@ public class DD_Order_StepDef
 		documentBL.processEx(liveDDOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
+	/**
+	 * @cucumber.stepdef Polls until exactly one Voided DD_Order exists for the given shipment schedule and no live (non-voided) one remains.
+	 */
 	@Then("^after not more than (.*)s, the DD_Order linked to M_ShipmentSchedule (.*) is Voided$")
 	public void assert_DD_Order_voided(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
 	{
@@ -460,6 +466,9 @@ public class DD_Order_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 1000, isVoided, () -> logCurrentDDOrders(scheduleId));
 	}
 
+	/**
+	 * @cucumber.stepdef Asserts immediately that no live (non-voided) DD_Order exists for the given shipment schedule.
+	 */
 	@Then("^there is no live DD_Order for M_ShipmentSchedule (.*)$")
 	public void assert_no_live_DD_Order(@NonNull final String shipmentScheduleIdentifier)
 	{
@@ -477,6 +486,9 @@ public class DD_Order_StepDef
 				.isFalse();
 	}
 
+	/**
+	 * @cucumber.stepdef Asserts that none of the shipment schedules belonging to the given sales order has a reconcile DD_Order (i.e., the order's schedules are for non-packing warehouses).
+	 */
 	@Then("^there is no reconcile DD_Order for the C_Order (.*)$")
 	public void assert_no_reconcile_DD_Order_for_order(@NonNull final String orderIdentifier)
 	{
