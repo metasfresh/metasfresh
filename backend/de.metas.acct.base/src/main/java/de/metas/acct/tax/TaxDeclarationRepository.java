@@ -124,7 +124,9 @@ public class TaxDeclarationRepository
 
 	/**
 	 * Returns the latest LIVE (Processed='Y') Correction in the chain rooted at {@code originalId},
-	 * ordered by Created DESC; falls back to the Original itself if no completed Correction exists.
+	 * ordered by C_TaxDeclaration_ID DESC (sequence-allocated, so the highest id is the most recently
+	 * created Correction — deterministic, with no Created-timestamp tie); falls back to the Original
+	 * itself if no completed Correction exists.
 	 */
 	public I_C_TaxDeclaration getLatestInChain(@NonNull final TaxDeclarationId originalId)
 	{
@@ -133,7 +135,7 @@ public class TaxDeclarationRepository
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, true)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_C_TaxDeclaration.COLUMNNAME_Created)
+				.orderByDescending(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID)
 				.create()
 				.first();
 		return latestCorrection != null ? latestCorrection : getById(originalId);
