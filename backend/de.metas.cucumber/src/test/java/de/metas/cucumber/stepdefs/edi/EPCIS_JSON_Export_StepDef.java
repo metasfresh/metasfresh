@@ -393,6 +393,30 @@ public class EPCIS_JSON_Export_StepDef
 	}
 
 	/**
+	 * Asserts the value of {@code "de.metas.edi".epcis_has_events(M_InOut_ID)} — the boolean predicate
+	 * for the scripted-adapter outbound-selection WHERE-clause. TRUE = the shipment would emit at least
+	 * one EPCIS event (owns a pallet/SSCC); FALSE = it must not be exported (sibling of a shared pallet,
+	 * or no pallets), so metasfresh never sends an empty EPCIS document.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS export-relevance for M_InOut identified by ioA_S29231_170 is true
+	 * </pre>
+	 */
+	@Then("^the EPCIS export-relevance for M_InOut identified by (.*) is (true|false)$")
+	public void assertEpcisHasEvents(@NonNull final String inoutIdentifier, final boolean expected)
+	{
+		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final int inoutId = inout.getM_InOut_ID();
+		final String sql = "SELECT CASE WHEN \"de.metas.edi\".epcis_has_events(?) THEN 'Y' ELSE 'N' END";
+		final String actual = DB.getSQLValueStringEx(Trx.TRXNAME_None, sql, inoutId);
+
+		assertThat("Y".equals(actual))
+				.as("epcis_has_events(M_InOut_ID=%d): expected %s but DB returned raw '%s'", inoutId, expected, actual)
+				.isEqualTo(expected);
+	}
+
+	/**
 	 * Asserts that every crate (TU) in the pallet identified by SSCC18 has a dummy GRAI whose middle
 	 * segment contains the expected sanitized POReference string. Used to verify that the
 	 * {@code get_epcis_events_json_fn} derives the per-LU POReference from the source order rather

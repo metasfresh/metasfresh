@@ -658,6 +658,11 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # ─── Sibling shipment B must return {} (no duplicate event for the same SSCC) ──────
     Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170
 
+    # ─── Export-relevance predicate (drives the scripted-adapter outbound WHERE-clause, so the
+    #     sibling is never selected for export → metasfresh never emits an empty EPCIS document) ──
+    Then the EPCIS export-relevance for M_InOut identified by ioA_S29231_170 is true
+    And the EPCIS export-relevance for M_InOut identified by ioB_S29231_170 is false
+
     # ─── DESADV-JSON regression via M_InOut_EDI_Export_JSON/invoke ───────────────────
     # Exercises get_desadv_packs_json_fn's per-M_InOut filter through the production REST
     # path. Without the SQL fix, the response for shipment A would also include shipment B's
