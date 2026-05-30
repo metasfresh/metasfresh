@@ -100,6 +100,22 @@ public class TaxDeclarationRepository
 	}
 
 	/**
+	 * @return true iff at least one ACTIVE, NOT-yet-Processed Correction (IsCorrection='Y',
+	 *         Processed='N') exists for {@code originalId}, excluding the row {@code excludeId}.
+	 */
+	public boolean hasUnprocessedCorrectionFor(@NonNull final TaxDeclarationId originalId, final int excludeId)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_Original_ID, originalId)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, true)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, false)
+				.addNotEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID, excludeId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	/**
 	 * Returns the latest LIVE (Processed='Y') Correction in the chain rooted at {@code originalId},
 	 * ordered by Created DESC; falls back to the Original itself if no completed Correction exists.
 	 */

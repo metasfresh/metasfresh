@@ -169,4 +169,39 @@ class TaxDeclarationRepositoryTest
 	{
 		return TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_ID());
 	}
+
+	// ---------------------------------------------------------------------------
+	// hasUnprocessedCorrectionFor tests
+	// ---------------------------------------------------------------------------
+
+	@Test
+	void hasUnprocessedCorrectionFor_noCorrection_false()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), -1)).isFalse();
+	}
+
+	@Test
+	void hasUnprocessedCorrectionFor_draftCorrectionExists_true()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true); // draft (not processed) correction
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), -1)).isTrue();
+	}
+
+	@Test
+	void hasUnprocessedCorrectionFor_onlyProcessedCorrection_false()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true); // processed correction
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), -1)).isFalse();
+	}
+
+	@Test
+	void hasUnprocessedCorrectionFor_excludesSelf()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		final I_C_TaxDeclaration draft = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true);
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), draft.getC_TaxDeclaration_ID())).isFalse();
+	}
 }
