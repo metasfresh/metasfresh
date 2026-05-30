@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0105_Picking
-@allure.label.feature:F00230_MobileUI_Picking
+@allure.label.epic:E0106_Distribution
+@allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — non-packing warehouses are not touched by the new flow
   As a warehouse operator, I want sales orders on a regular (non-packing) warehouse to keep being handled

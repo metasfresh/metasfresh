@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0105_Picking
-@allure.label.feature:F00230_MobileUI_Picking
+@allure.label.epic:E0106_Distribution
+@allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — create a distribution order for a packing-warehouse sales order
   As a warehouse operator running a packing workplace ("Packtisch"),
@@ -78,7 +78,7 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
     And after not more than 120s, the DD_Order linked to shipment schedule is found:
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
-    # The async reconcile event handler records a Done AD_EventLog_Entry on success (REQUIREMENTS §5 TC1).
+    # The async reconcile event handler records a Done AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | IsError |
       | false   |

@@ -36,14 +36,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_ShipmentSchedule_DDOrderPickingInterceptor
 {
-	@NonNull private final DDOrderPickingReplenishmentService reconcileService;
+	@NonNull private final DDOrderPickingReplenishmentService replenishmentService;
 
 	// Only on CHANGE: a brand-new schedule has no existing DD_Order yet, so there is nothing for the
 	// picker-busy guard to protect — and the record's PK is still 0 at BEFORE_NEW, which the BL cannot resolve.
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	public void assertCanChange(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		reconcileService.assertCanChange(schedule);
+		replenishmentService.assertCanChange(schedule);
 	}
 
 	// Only fire reconcile when the columns that drive classifyAction actually changed.
@@ -61,6 +61,6 @@ public class M_ShipmentSchedule_DDOrderPickingInterceptor
 			})
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		reconcileService.scheduleReconcileAfterCommit(schedule);
+		replenishmentService.scheduleReconcileAfterCommit(schedule);
 	}
 }

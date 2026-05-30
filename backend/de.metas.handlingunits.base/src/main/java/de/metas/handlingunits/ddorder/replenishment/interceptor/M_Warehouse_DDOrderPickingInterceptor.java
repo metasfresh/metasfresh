@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_Warehouse_DDOrderPickingInterceptor
 {
-	@NonNull private final DDOrderPickingReplenishmentService reconcileService;
+	@NonNull private final DDOrderPickingReplenishmentService replenishmentService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void assertConfigValid(@NonNull final I_M_Warehouse warehouse)
 	{
-		reconcileService.assertWarehouseConfigurationIsValid(warehouse);
+		replenishmentService.assertWarehouseConfigurationIsValid(warehouse);
 	}
 }

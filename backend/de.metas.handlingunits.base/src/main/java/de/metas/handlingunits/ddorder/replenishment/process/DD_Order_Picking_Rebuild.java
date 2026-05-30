@@ -6,12 +6,12 @@ import org.compiere.SpringContextHolder;
 
 public class DD_Order_Picking_Rebuild extends JavaProcess
 {
-	private final DDOrderPickingReplenishmentService reconcileService = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
+	private final DDOrderPickingReplenishmentService replenishmentService = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 
 	@Override
 	protected String doIt()
 	{
-		reconcileService.rebuildDrift();
+		replenishmentService.rebuildDrift();
 		return MSG_OK;
 	}
 }

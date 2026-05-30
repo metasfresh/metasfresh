@@ -70,14 +70,14 @@ public class DDOrderPickingReplenishment_StepDef
 {
 	private static final Logger logger = LogManager.getLogger(DDOrderPickingReplenishment_StepDef.class);
 
-	/** Topic / event name the reconcile flow publishes to (see {@code DDOrderReplenishmentEventPublisher}). */
-	private static final String RECONCILE_EVENT_NAME = "DDOrderPickingReconcile";
+	/** Topic / event name the replenishment flow publishes to (see {@code DDOrderReplenishmentEventPublisher}). */
+	private static final String REPLENISHMENT_EVENT_NAME = "DDOrderPickingReconcile";
 
 	/** Value of the AD_Process row backing the {@code DD_Order_Picking_Rebuild} JavaProcess. */
 	private static final String PROCESS_VALUE_DDOrderPickingRebuild = "DD_Order_Picking_Rebuild";
 
 	/** FQN of the replenishment event handler — stored as {@code AD_EventLog_Entry.Classname} by the event framework. */
-	private static final String RECONCILE_HANDLER_CLASSNAME = DDOrderReplenishmentEventHandler.class.getName();
+	private static final String REPLENISHMENT_HANDLER_CLASSNAME = DDOrderReplenishmentEventHandler.class.getName();
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -251,7 +251,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 			final Supplier<Boolean> entryFound = () -> {
 				final org.adempiere.ad.dao.IQueryBuilder<I_AD_EventLog_Entry> queryBuilder = queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
-						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, RECONCILE_HANDLER_CLASSNAME)
+						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_IsError, expectedError);
 				if (msgTextFragment != null)
 				{
@@ -280,7 +280,7 @@ public class DDOrderPickingReplenishment_StepDef
 	public void assert_reconcile_AD_Issue_logged(final int timeoutSec) throws InterruptedException
 	{
 		final Supplier<Boolean> issueLogged = () -> queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
-				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, RECONCILE_HANDLER_CLASSNAME)
+				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
 				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_IsError, true)
 				.addNotNull(I_AD_EventLog_Entry.COLUMNNAME_AD_Issue_ID)
 				.create()

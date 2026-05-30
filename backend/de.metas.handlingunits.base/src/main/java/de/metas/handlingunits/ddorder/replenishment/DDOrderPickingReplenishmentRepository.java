@@ -149,7 +149,7 @@ public class DDOrderPickingReplenishmentRepository
 	 *
 	 * <p>Note on intentionally-omitted fields: {@code C_BPartner_Location_ID} and {@code PP_Plant_ID} are NOT set.
 	 * This is an internal pick-to-packing move, so neither the partner-location nor the manufacturing-plant context
-	 * applies. (If a dt204 packing warehouse ever turns out to have a PP_Plant that MRP needs, resolve it via
+	 * applies. (If a packing warehouse ever turns out to have a PP_Plant that MRP needs, resolve it via
 	 * {@code warehouseBL.getPlantId(targetWarehouseId)} — not expected.)</p>
 	 *
 	 * @return the saved (Drafted) {@link I_DD_Order} — the caller is responsible for completing it

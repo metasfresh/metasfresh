@@ -22,7 +22,7 @@ import javax.annotation.PostConstruct;
 @RequiredArgsConstructor
 public class DDOrderReplenishmentEventHandler implements IEventListener
 {
-	@NonNull private final DDOrderPickingReplenishmentService reconcileService;
+	@NonNull private final DDOrderPickingReplenishmentService replenishmentService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 	@NonNull private final EventLogUserService eventLogUserService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -41,7 +41,7 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 
 		eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 				.handlerClass(DDOrderReplenishmentEventHandler.class)
-				.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> reconcileService.reconcile(scheduleId)))
+				.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId)))
 				.build());
 	}
 }

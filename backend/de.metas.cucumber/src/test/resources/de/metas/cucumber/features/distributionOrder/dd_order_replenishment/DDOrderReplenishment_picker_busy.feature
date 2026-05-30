@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0105_Picking
-@allure.label.feature:F00230_MobileUI_Picking
+@allure.label.epic:E0106_Distribution
+@allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — picker-busy guard (sync rollback + async consumer error)
   As a warehouse operator, when a picker is already working on the distribution order of a shipment

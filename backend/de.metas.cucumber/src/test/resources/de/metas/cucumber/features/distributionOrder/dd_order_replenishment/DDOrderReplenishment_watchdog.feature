@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0105_Picking
-@allure.label.feature:F00230_MobileUI_Picking
+@allure.label.epic:E0106_Distribution
+@allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly scheduler)
   As a warehouse operator, I want a drift watchdog that recreates any distribution order that fell
@@ -79,7 +79,7 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
-    # AD_EventLog_Entry on success (REQUIREMENTS §5 TC7).
+    # AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | IsError |
       | false   |
@@ -96,7 +96,7 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
       | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
-    # AD_EventLog_Entry on success (REQUIREMENTS §5 TC8).
+    # AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
       | IsError |
       | false   |
