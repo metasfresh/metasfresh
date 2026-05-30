@@ -333,6 +333,17 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
     And the tax declaration "td" is completed
+
+    # A second posted invoice in the same period drifts the snapshot, so Create Correction has work to do.
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceDrift    | customer      | 2024-01-20   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceDriftL1  | invoiceDrift | product      | 2 PCE       | tax19    |
+    And the invoice identified by invoiceDrift is completed
+    And Wait until documents invoiceDrift is posted
+
     And invoke Create Correction on C_TaxDeclaration "td"
 
     When the tax declaration "td" is reactivated expecting failure
@@ -376,6 +387,16 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the tax declaration "td" is built
     And the tax declaration "td" is completed
 
+    # A second posted invoice in the same period drifts the snapshot, so Create Correction has work to do.
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceDrift    | customer      | 2024-01-20   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceDriftL1  | invoiceDrift | product      | 2 PCE       | tax19    |
+    And the invoice identified by invoiceDrift is completed
+    And Wait until documents invoiceDrift is posted
+
     When invoke Create Correction on C_TaxDeclaration "td"
     Then the tax declaration "td_correction" is a Correction inheriting Period, DateAcct and AcctSchema from "td"
 
@@ -416,60 +437,23 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
       | td         | acctSchema      | 2024-01-15 |
     And the tax declaration "td" is built
     And the tax declaration "td" is completed
-    And C_TaxDeclaration "td" has IsCorrectionNeeded set to "Y"
+
+    # A second posted invoice in the same period is real drift; Create Correction picks it up
+    # and sets the Original's IsCorrectionNeeded flag from the live Fact_Acct.
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | invoiceDrift    | customer      | 2024-01-20   | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invoiceDriftL1  | invoiceDrift | product      | 2 PCE       | tax19    |
+    And the invoice identified by invoiceDrift is completed
+    And Wait until documents invoiceDrift is posted
 
     And invoke Create Correction on C_TaxDeclaration "td"
     And the tax declaration "td_correction" is built
 
     When the tax declaration "td_correction" is completed
     Then C_TaxDeclaration "td" has IsCorrectionNeeded = "N"
-
-
-# ############################################################################################################################################
-# TC-D10 — A Correction of a Correction is rejected (star topology: only an Original may be the template)
-# ############################################################################################################################################
-  @Id:S0467_TD_100
-  @from:cucumber
-  Scenario: a Correction of a Correction is rejected
-
-    And metasfresh contains C_TaxCategory
-      | Identifier  |
-      | taxCategory |
-    And metasfresh contains C_Tax
-      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | tax19      | taxCategory      | 19   | DE                       | DE                        |
-    And metasfresh contains C_VAT_Codes:
-      | Identifier | C_Tax_ID | IsSOTrx | AmountType |
-      | sales19    | tax19    | Y       | T          |
-    And metasfresh contains M_Products:
-      | Identifier |
-      | product    |
-    And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | salesPLV               | product      | 100.00   | PCE      | taxCategory      |
-    And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | DateInvoiced | IsSOTrx | C_Currency_ID |
-      | invoice    | customer      | 2024-01-15   | true    | EUR           |
-    And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invoiceL1  | invoice      | product      | 10 PCE      | tax19    |
-    And the invoice identified by invoice is completed
-    And Wait until documents invoice is posted
-
-    And metasfresh contains C_TaxDeclaration:
-      | Identifier | C_AcctSchema_ID | Date       |
-      | td         | acctSchema      | 2024-01-15 |
-    And the tax declaration "td" is built
-    And the tax declaration "td" is completed
-
-    # First Correction: legal. Build + complete it so it becomes a locked (Processed='Y') Correction.
-    And invoke Create Correction on C_TaxDeclaration "td"
-    And the tax declaration "td_correction" is built
-    And the tax declaration "td_correction" is completed
-
-    # Second Correction anchored to the first Correction: rejected — only an Original may be the template.
-    When invoke Create Correction on C_TaxDeclaration "td_correction"
-    Then the tax declaration operation fails with message 'TAXDECLARATION_ORIGINAL_MUST_BE_ORIGINAL'
 
 
 # ############################################################################################################################################
@@ -646,11 +630,11 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
 
 
 # ############################################################################################################################################
-# TC-D13 — Create Correction with drift check creates a Correction when drift is present
+# TC-D13 — Create Correction creates a Correction when the period has drifted since completion
 # ############################################################################################################################################
   @Id:S0467_TD_130
   @from:cucumber
-  Scenario: Create Correction with drift check creates a Correction when drift is present
+  Scenario: Create Correction creates a Correction when the period has drifted since the declaration was completed
 
     And metasfresh contains C_TaxCategory
       | Identifier     |
@@ -693,16 +677,16 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the invoice identified by invoiceCw1b is completed
     And Wait until documents invoiceCw1b is posted
 
-    When invoke Create Correction with drift check on C_TaxDeclaration "tdCw1"
+    When invoke Create Correction on C_TaxDeclaration "tdCw1"
     Then the tax declaration "tdCw1_correction" is a Correction inheriting Period, DateAcct and AcctSchema from "tdCw1"
 
 
 # ############################################################################################################################################
-# TC-D14 — Create Correction with drift check is rejected when no correction is needed
+# TC-D14 — Create Correction is rejected when the period has not drifted (no correction needed)
 # ############################################################################################################################################
   @Id:S0467_TD_140
   @from:cucumber
-  Scenario: Create Correction with drift check is rejected when no correction is needed
+  Scenario: Create Correction is rejected when no correction is needed
 
     And metasfresh contains C_TaxCategory
       | Identifier     |
@@ -735,18 +719,18 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the tax declaration "tdCw2" is built
     And the tax declaration "tdCw2" is completed
 
-    # No second invoice → no drift → Create Correction with drift check must reject
-    When invoke Create Correction with drift check on C_TaxDeclaration "tdCw2"
+    # No second invoice → no drift → Create Correction must reject
+    When invoke Create Correction on C_TaxDeclaration "tdCw2"
     Then the tax declaration operation fails with message 'TAXDECLARATION_NO_CORRECTION_NEEDED'
 
 
 # ############################################################################################################################################
-# TC-D15 — Create Correction with drift check from a completed Correction spawns a new Correction off the original
-# Proves drift is evaluated against the latest completed correction, not the stale original.
+# TC-D15 — Create Correction invoked on a completed Correction spawns a new Correction off the Original
+# Drift is evaluated against the latest completed correction in the chain, not the stale Original.
 # ############################################################################################################################################
   @Id:S0467_TD_150
   @from:cucumber
-  Scenario: Create Correction with drift check from a completed Correction spawns a new Correction off the original
+  Scenario: Create Correction invoked on a completed Correction spawns a new Correction off the Original
 
     And metasfresh contains C_TaxCategory
       | Identifier     |
@@ -789,7 +773,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And the invoice identified by invoiceCw3b is completed
     And Wait until documents invoiceCw3b is posted
 
-    When invoke Create Correction with drift check on C_TaxDeclaration "tdCw3"
+    When invoke Create Correction on C_TaxDeclaration "tdCw3"
     And the tax declaration "tdCw3_correction" is built
     And the tax declaration "tdCw3_correction" is completed
 
@@ -804,16 +788,16 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And Wait until documents invoiceCw3c is posted
 
     # Resolves to root tdCw3, checks drift against the latest-in-chain (the completed first correction)
-    When invoke Create Correction with drift check on C_TaxDeclaration "tdCw3_correction"
+    When invoke Create Correction on C_TaxDeclaration "tdCw3_correction"
     Then the tax declaration "tdCw3_correction_correction" is a Correction inheriting Period, DateAcct and AcctSchema from "tdCw3"
 
 
 # ############################################################################################################################################
-# TC-D16 — Create Correction with drift check is rejected while a draft Correction exists
+# TC-D16 — Create Correction is rejected while a draft Correction already exists
 # ############################################################################################################################################
   @Id:S0467_TD_160
   @from:cucumber
-  Scenario: Create Correction with drift check is rejected while a draft Correction exists
+  Scenario: Create Correction is rejected while a draft Correction exists
 
     And metasfresh contains C_TaxCategory
       | Identifier     |
@@ -857,7 +841,7 @@ Feature: Tax Declaration Build ("Steuererklärung aufbauen")
     And Wait until documents invoiceCw4b is posted
 
     # First call creates a DRAFT correction (not built / not completed)
-    When invoke Create Correction with drift check on C_TaxDeclaration "tdCw4"
+    When invoke Create Correction on C_TaxDeclaration "tdCw4"
     # Second call must reject — a draft correction already exists
-    When invoke Create Correction with drift check on C_TaxDeclaration "tdCw4"
+    When invoke Create Correction on C_TaxDeclaration "tdCw4"
     Then the tax declaration operation fails with message 'TAXDECLARATION_CORRECTION_DRAFT_EXISTS'
