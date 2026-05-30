@@ -6,8 +6,8 @@ INSERT INTO AD_Message (
     AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     Value, MsgText, MsgType, EntityType, ErrorCode
 ) VALUES (
-    545736, 0, 0, 'Y',
-    TIMESTAMP '2026-05-30 00:00:00', 100, TIMESTAMP '2026-05-30 00:00:00', 100,
+    545736 /*From ID Server*/, 0, 0, 'Y',
+    TIMESTAMP '2026-05-30 00:00:01', 100, TIMESTAMP '2026-05-30 00:00:01', 100,
     'TaxDeclaration_CheckCorrectionNeed_NotLatest',
     'Es existiert bereits eine neuere Berichtigung — bitte diese prüfen.',
     'E', 'de.metas.acct', 'TAXDECLARATION_CORRECTION_NOT_LATEST'
@@ -18,7 +18,7 @@ INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTrans
     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 VALUES
     ('en_US', 545736, 'A newer correction exists — check that one instead.',
-     NULL, 'Y', 0, 0, TIMESTAMP '2026-05-30 00:00:00', 100, TIMESTAMP '2026-05-30 00:00:00', 100, 'Y');
+     NULL, 'Y', 0, 0, TIMESTAMP '2026-05-30 00:00:02', 100, TIMESTAMP '2026-05-30 00:00:02', 100, 'Y');
 
 -- Other active system languages — base-language fallback
 INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated,
@@ -36,8 +36,8 @@ INSERT INTO AD_Message (
     AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     Value, MsgText, MsgType, EntityType, ErrorCode
 ) VALUES (
-    545737, 0, 0, 'Y',
-    TIMESTAMP '2026-05-30 00:00:00', 100, TIMESTAMP '2026-05-30 00:00:00', 100,
+    545737 /*From ID Server*/, 0, 0, 'Y',
+    TIMESTAMP '2026-05-30 00:00:03', 100, TIMESTAMP '2026-05-30 00:00:03', 100,
     'TaxDeclaration_CreateCorrection_DraftExists',
     'Bitte zuerst die vorhandene Berichtigung im Entwurf abschließen oder löschen.',
     'E', 'de.metas.acct', 'TAXDECLARATION_CORRECTION_DRAFT_EXISTS'
@@ -48,7 +48,7 @@ INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTrans
     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 VALUES
     ('en_US', 545737, 'Complete or delete the existing draft correction first.',
-     NULL, 'Y', 0, 0, TIMESTAMP '2026-05-30 00:00:00', 100, TIMESTAMP '2026-05-30 00:00:00', 100, 'Y');
+     NULL, 'Y', 0, 0, TIMESTAMP '2026-05-30 00:00:04', 100, TIMESTAMP '2026-05-30 00:00:04', 100, 'Y');
 
 -- Other active system languages — base-language fallback
 INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated,
@@ -66,8 +66,8 @@ INSERT INTO AD_Message (
     AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
     Value, MsgText, MsgType, EntityType, ErrorCode
 ) VALUES (
-    545738, 0, 0, 'Y',
-    TIMESTAMP '2026-05-30 00:00:00', 100, TIMESTAMP '2026-05-30 00:00:00', 100,
+    545738 /*From ID Server*/, 0, 0, 'Y',
+    TIMESTAMP '2026-05-30 00:00:05', 100, TIMESTAMP '2026-05-30 00:00:05', 100,
     'TaxDeclaration_CreateCorrection_NoCorrectionNeeded',
     'Keine Berichtigung erforderlich — die Voranmeldung ist weiterhin korrekt.',
     'E', 'de.metas.acct', 'TAXDECLARATION_NO_CORRECTION_NEEDED'
@@ -78,7 +78,7 @@ INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTrans
     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
 VALUES
     ('en_US', 545738, 'No correction needed — the declaration is still accurate.',
-     NULL, 'Y', 0, 0, TIMESTAMP '2026-05-30 00:00:00', 100, TIMESTAMP '2026-05-30 00:00:00', 100, 'Y');
+     NULL, 'Y', 0, 0, TIMESTAMP '2026-05-30 00:00:06', 100, TIMESTAMP '2026-05-30 00:00:06', 100, 'Y');
 
 -- Other active system languages — base-language fallback
 INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, MsgTip, IsTranslated,
