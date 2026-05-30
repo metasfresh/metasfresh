@@ -30,10 +30,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -50,7 +48,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -73,7 +70,6 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -300,7 +296,7 @@ public class DDOrderPickingReplenishmentService
 		{
 			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
 		}
-		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.load(existingDDOrderId.getRepoId(), I_DD_Order.class);
+		final I_DD_Order ddOrderRecord = repository.getById(existingDDOrderId);
 		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
@@ -326,7 +322,7 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		// Void the existing DD_Order (picker already checked — no double check needed)
-		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.load(existingDDOrderId.getRepoId(), I_DD_Order.class);
+		final I_DD_Order ddOrderRecord = repository.getById(existingDDOrderId);
 		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
 		// Create a fresh DD_Order from the current schedule data
@@ -335,14 +331,7 @@ public class DDOrderPickingReplenishmentService
 
 	public void rebuildDrift()
 	{
-		final Set<WarehouseId> autoDistributionWarehouseIds = queryBL
-				.createQueryBuilder(I_M_Warehouse.class)
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(wh -> WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
-				.collect(Collectors.toSet());
+		final Set<WarehouseId> autoDistributionWarehouseIds = repository.getAutoDistributionWarehouseIds();
 
 		// try-with-resources: close the DB cursor even if publishOne throws mid-stream.
 		try (final Stream<ShipmentScheduleId> schedules = repository.streamSchedulesNeedingDDOrder(autoDistributionWarehouseIds))
@@ -361,8 +350,7 @@ public class DDOrderPickingReplenishmentService
 
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
-		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(ddOrder.getM_ShipmentSchedule_ID());
+		final ShipmentScheduleId scheduleId = repository.getShipmentScheduleId(ddOrderId);
 		return repository.existsPickingJobLineForSchedule(scheduleId);
 	}
 

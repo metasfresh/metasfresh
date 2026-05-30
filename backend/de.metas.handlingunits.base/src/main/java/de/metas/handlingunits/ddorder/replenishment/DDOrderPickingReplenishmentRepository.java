@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** DAO for the DD_Order picking-reconcile flow. Methods added per-task as the BL evolves. */
@@ -205,5 +207,39 @@ public class DDOrderPickingReplenishmentRepository
 		InterfaceWrapperHelper.save(ddOrderLine);
 
 		return ddOrder;
+	}
+
+	/**
+	 * Loads the {@link I_DD_Order} record for the given ID.
+	 *
+	 * <p>Centralises all {@link InterfaceWrapperHelper#load} calls for {@link I_DD_Order} in this repository.</p>
+	 */
+	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
+	{
+		return InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
+	}
+
+	/**
+	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
+	 */
+	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		return ShipmentScheduleId.ofRepoId(ddOrder.getM_ShipmentSchedule_ID());
+	}
+
+	/**
+	 * Returns the IDs of all warehouses that have {@code IsAutoDistributionOrder=Y}.
+	 */
+	public Set<WarehouseId> getAutoDistributionWarehouseIds()
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(wh -> WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
+				.collect(Collectors.toSet());
 	}
 }
