@@ -25,8 +25,12 @@ import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+
+import java.math.BigDecimal;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -293,8 +297,14 @@ public class DistributionRestService
 			nextEligiblePickFromLineId = job.getNextEligiblePickFromLineId(productId).orElse(null);
 		}
 
+		final HuId huId = huService.getHuIdByQRCode(huQRCode);
+		final BigDecimal qtyAvailable = huService.getProductQuantityIfAny(huId, productId)
+				.map(qty -> qty.toBigDecimal())
+				.orElse(null);
+
 		return JsonGetNextEligiblePickFromLineResponse.builder()
 				.lineId(nextEligiblePickFromLineId)
+				.qtyAvailable(qtyAvailable)
 				.build();
 	}
 

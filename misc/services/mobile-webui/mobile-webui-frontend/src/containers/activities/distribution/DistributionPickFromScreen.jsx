@@ -36,16 +36,38 @@ const DistributionPickFromScreen = () => {
       throw trl('activities.distribution.qrcode.differentProduct');
     }
 
+    const huScannedCode = toQRCodeString(parsedQRCode);
+    const isScanProductCodeRequired = lineIdParam == null || isRequireScanningProductCode({ activity });
+
+    // When no product scan is required we already know the line, so resolve the HU now and cap the proposed
+    // move-qty to what the scanned HU actually holds: min(HU available qty, line remaining). Without this the
+    // dialog would default to the whole outstanding line qty even when the scanned HU holds less.
+    // When a product scan IS required, the qty is resolved later in resolveProductScannedCode.
+    let qtyTarget = qtyToPickRemaining;
+    let qtyMax;
+    if (!isScanProductCodeRequired) {
+      const { qtyAvailable } = await getNextEligiblePickFromLine({
+        wfProcessId,
+        huQRCode: huScannedCode,
+        lineId: lineIdParam,
+      });
+      if (qtyAvailable != null) {
+        qtyTarget = Math.min(qtyAvailable, qtyToPickRemaining);
+        qtyMax = qtyTarget;
+      }
+    }
+
     return {
-      scannedBarcode: toQRCodeString(parsedQRCode),
-      isScanProductCodeRequired: lineIdParam == null || isRequireScanningProductCode({ activity }),
-      qtyTarget: qtyToPickRemaining,
+      scannedBarcode: huScannedCode,
+      isScanProductCodeRequired,
+      qtyTarget,
+      qtyMax,
       uom,
     };
   };
 
   const resolveProductScannedCode = async ({ huScannedCode, productScannedCode }) => {
-    const { lineId } = await getNextEligiblePickFromLine({
+    const { lineId, qtyAvailable } = await getNextEligiblePickFromLine({
       wfProcessId,
       huQRCode: huScannedCode,
       productScannedCode,
@@ -64,8 +86,11 @@ const DistributionPickFromScreen = () => {
       return {};
     }
 
+    // Cap the proposed move-qty to what the scanned HU actually holds: min(HU available qty, line remaining).
+    const qtyTarget = qtyAvailable != null ? Math.min(qtyAvailable, qtyToPickRemaining) : qtyToPickRemaining;
     return {
-      qtyTarget: qtyToPickRemaining,
+      qtyTarget,
+      qtyMax: qtyTarget,
       uom,
     };
   };

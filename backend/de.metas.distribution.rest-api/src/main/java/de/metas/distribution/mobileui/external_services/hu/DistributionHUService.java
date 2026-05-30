@@ -105,10 +105,22 @@ public class DistributionHUService
 
 	public Quantity getProductQuantity(@NonNull final HuId huId, @NonNull ProductId productId)
 	{
+		return getProductQuantityIfAny(huId, productId)
+				.orElseThrow(() -> new AdempiereException(PRODUCT_DOES_NOT_MATCH));
+	}
+
+	/** Non-throwing variant of {@link #getProductQuantity(HuId, ProductId)} — empty when the HU holds no positive qty of the product. */
+	public Optional<Quantity> getProductQuantityIfAny(@NonNull final HuId huId, @NonNull final ProductId productId)
+	{
 		return getHUProductStorage(huId, productId)
 				.map(IHUProductStorage::getQty)
-				.filter(Quantity::isPositive)
-				.orElseThrow(() -> new AdempiereException(PRODUCT_DOES_NOT_MATCH));
+				.filter(Quantity::isPositive);
+	}
+
+	@NonNull
+	public HuId getHuIdByQRCode(@NonNull final HUQRCode huQRCode)
+	{
+		return huQRCodesService.getHuIdByQRCode(huQRCode);
 	}
 
 	private Optional<IHUProductStorage> getHUProductStorage(final @NotNull HuId huId, final @NotNull ProductId productId)
