@@ -23,9 +23,8 @@ public class DDOrderReplenishmentEventPublisher
 
 	public void publishOne(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		// shallBeLogged() is required so the event-bus sets up the EventLogEntryCollector thread-local
-		// (EventBus.invokeEventListener → isWasLogged); without it the handler's invokeHandlerAndLog
-		// fails with "Missing thread-local EventLogEntryCollector", and no AD_EventLog Done/Error is recorded.
+		// shallBeLogged() is required: without it the event-bus never sets up the EventLogEntryCollector
+		// thread-local, the handler throws "Missing thread-local EventLogEntryCollector", and no AD_EventLog is recorded.
 		final Event event = Event.builder()
 				.setEventName(EVENT_NAME)
 				.putProperty(PROPERTY_shipmentScheduleId, shipmentScheduleId.getRepoId())

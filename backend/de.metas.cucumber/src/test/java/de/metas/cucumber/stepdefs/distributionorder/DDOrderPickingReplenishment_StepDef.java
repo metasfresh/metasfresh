@@ -46,10 +46,13 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -277,7 +280,7 @@ public class DDOrderPickingReplenishment_StepDef
 			final Supplier<Boolean> entryFound = () -> {
 				// AD_EventLog_Entry has no direct link to the schedule; pin it via the parent AD_EventLog's
 				// source record reference (set by DDOrderReplenishmentEventPublisher).
-				final org.adempiere.ad.dao.IQueryBuilder<I_AD_EventLog_Entry> queryBuilder = queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
+				final IQueryBuilder<I_AD_EventLog_Entry> queryBuilder = queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_IsError, expectedError);
 				if (msgTextFragment != null)
@@ -307,10 +310,10 @@ public class DDOrderPickingReplenishment_StepDef
 	 * Builds the sub-query selecting the {@code AD_EventLog} records whose source record reference points to the
 	 * given shipment schedule (set by {@code DDOrderReplenishmentEventPublisher}).
 	 */
-	private org.compiere.model.IQuery<I_AD_EventLog> eventLogsForSchedule(final int shipmentScheduleId)
+	private IQuery<I_AD_EventLog> eventLogsForSchedule(final int shipmentScheduleId)
 	{
-		final org.adempiere.util.lang.impl.TableRecordReference scheduleRef =
-				org.adempiere.util.lang.impl.TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		final TableRecordReference scheduleRef =
+				TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
 		return queryBL.createQueryBuilder(I_AD_EventLog.class)
 				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_AD_Table_ID, scheduleRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_Record_ID, scheduleRef.getRecord_ID())
