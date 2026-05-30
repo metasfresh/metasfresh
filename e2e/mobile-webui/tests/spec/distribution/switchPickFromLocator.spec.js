@@ -124,11 +124,11 @@ test('Switch pick-from locator — successive presses cycle round-robin', async 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Switch pick-from locator — button hidden once picking has started', async ({ page }) => {
+test('Switch pick-from locator — button stays visible after picking has started', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
-    allure.story('mobileUI DD_Order switch from-locator is unavailable after the first pick');
+    allure.story('mobileUI DD_Order switch from-locator stays available after the first pick (mid-job switch)');
     allure.severity('normal');
 
     const masterdata = await createMasterdata({ qtyToMove: 100 });
@@ -150,8 +150,8 @@ test('Switch pick-from locator — button hidden once picking has started', asyn
         await DistributionLineScreen.goBack();
     });
 
-    await test.step('After pick: switch button is hidden', async () => {
-        await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: false });
+    await test.step('After pick: switch button is still visible (mid-job switch supported)', async () => {
+        await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });
 });
 
