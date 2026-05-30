@@ -37,6 +37,10 @@ public class DDOrderPickingReplenishmentRepository
 	 * <p>These are the "drifted" schedules that need to be re-reconciled by the watchdog scan.</p>
 	 *
 	 * <p>The caller is responsible for resolving the set of auto-distribution warehouse IDs before calling this method.</p>
+	 *
+	 * <p>Note: this repository reads {@link I_DD_Order} directly (a foreign table owned by {@code de.metas.manufacturing}).
+	 * {@code DDOrderLowLevelDAO} lives in {@code de.metas.manufacturing}, which is not a dependency of
+	 * {@code de.metas.handlingunits.base}; keeping the read-only demand query here avoids an unwanted cross-module dep.</p>
 	 */
 	public Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder(@NonNull final Set<WarehouseId> autoDistributionWarehouseIds)
 	{
@@ -120,6 +124,10 @@ public class DDOrderPickingReplenishmentRepository
 	/**
 	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
 	 * the given shipment schedule — i.e. a picker is actively working on it.
+	 *
+	 * <p>Note: this repository reads {@link I_M_Picking_Job_Line} directly (a foreign table from the picking domain).
+	 * The picking DAO lives in {@code de.metas.handlingunits.base} but {@code DDOrderPickingReplenishmentRepository}
+	 * owns this read-only demand query to avoid scattering picker-busy knowledge across modules.</p>
 	 */
 	public boolean existsPickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
 	{

@@ -10,7 +10,7 @@ INSERT INTO AD_Process (
 	Type, Updated, UpdatedBy, Value
 ) VALUES (
 	'3', 0, 0, 585623 /*From ID Server*/,
-	'Y', 'de.metas.handlingunits.picking.dd_order.reconcile.process.DD_Order_Picking_Rebuild', 'N',
+	'Y', 'de.metas.handlingunits.ddorder.replenishment.process.DD_Order_Picking_Rebuild', 'N',
 	TO_TIMESTAMP('2026-05-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y',
 	'N', 'N', 'N', 'N', 'N', 'Y', 'Y', 0,
 	'Rebuild Picking DD_Orders',

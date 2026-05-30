@@ -1,6 +1,6 @@
 -- Expose M_ShipmentSchedule_ID on the Distribution Order window (header + line tabs)
 -- DisplayLogic '@M_ShipmentSchedule_ID/0@>0' → field shown only when the value is set (> 0).
--- Used by DD_Order picking reconcile flow (https://github.com/metasfresh/me03/issues/29966).
+-- Used by DD_Order picking replenishment flow.
 --
 -- IDs allocated from idserver.metas.de on 2026-05-26:
 --   AD_Field    780487  (DD_Order header tab, column DD_Order.M_ShipmentSchedule_ID)

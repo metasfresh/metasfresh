@@ -56,12 +56,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Step definitions specific to the DD_Order picking-reconcile flow
- * (see {@code DDOrderPickingReconcileBL}, REQUIREMENTS.md §3).
+ * Step definitions specific to the DD_Order picking-replenishment flow
+ * (see {@code DDOrderPickingReplenishmentService}).
  *
  * <p>Covers the reconcile-only assertions that have no home in a single domain step-def class:
  * deactivating / re-quantifying a schedule, simulating a busy picker via a {@code M_Picking_Job_Line},
- * directly driving the BL ({@code reconcile} / {@code rebuildDrift}) for deterministic race / watchdog
+ * directly driving the service ({@code reconcile} / {@code rebuildDrift}) for deterministic race / watchdog
  * scenarios, running the {@code DD_Order_Picking_Rebuild} process, and inspecting the reconcile
  * {@code AD_EventLog} / {@code AD_EventLog_Entry} / {@code AD_Issue} outcomes.</p>
  */
@@ -172,9 +172,10 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Directly invokes {@code DDOrderPickingReconcileBL.reconcile(scheduleId)} in a new transaction
-	 * (mirrors what the async event consumer does — see {@code DDOrderReplenishmentEventHandler}).
-	 * Used for the controlled-timing race scenario (REQUIREMENTS.md TC5) so the test is deterministic.
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(ShipmentScheduleId)} in
+	 * {@code runInThreadInheritedTrx}, matching the transaction wrapping used by
+	 * {@code DDOrderReplenishmentEventHandler}. Used for the controlled-timing race scenario so the test
+	 * is deterministic.
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule to reconcile.</p>
 	 */
@@ -188,14 +189,14 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Directly invokes {@code DDOrderPickingReconcileBL.reconcile(scheduleId)} and asserts it FAILS while the
-	 * picker is busy (the consumer-side definitive guard — REQUIREMENTS.md TC5). Asserts the thrown exception is
-	 * an {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(ShipmentScheduleId)} and asserts it
+	 * FAILS while the picker is busy (the service-side definitive guard). Asserts the thrown exception is an
+	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
 	 * The DD_Order is left unchanged.
 	 *
-	 * <p>Note: this step drives the BL directly (not via the async event handler) so no {@code AD_EventLog_Entry}
-	 * is produced. The handler-level error-recording path (IsError=true in AD_EventLog_Entry) is covered by TC6,
-	 * which goes through the real async event flow.</p>
+	 * <p>Note: this step drives the service directly (not via the async event handler) so no
+	 * {@code AD_EventLog_Entry} is produced. The handler-level error-recording path (IsError=true in
+	 * AD_EventLog_Entry) is covered by the scenario that goes through the real async event flow.</p>
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
 	 */

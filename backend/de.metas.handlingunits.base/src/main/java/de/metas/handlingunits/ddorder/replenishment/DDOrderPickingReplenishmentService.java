@@ -121,9 +121,9 @@ public class DDOrderPickingReplenishmentService
 	 * Re-reads schedule, classifies the action (NONE/CREATE/RECREATE/VOID), executes it.
 	 *
 	 * <p><b>No transaction boundary here.</b> The VOID-then-CREATE of the RECREATE branch is only atomic if
-	 * the caller wraps this call in a transaction. The caller ({@code DDOrderReplenishmentEventHandler}) MUST invoke this
-	 * via {@code trxManager.runInNewTrx(() -> reconcileService.reconcile(scheduleId))} so that a create-failure rolls back
-	 * the void — never call {@code reconcile()} bare.</p>
+	 * the caller wraps this call in a transaction. The caller ({@code DDOrderReplenishmentEventHandler}) wraps
+	 * this call in {@code trxManager.runInThreadInheritedTrx(...)} to provide a rollback boundary so that a
+	 * create-failure rolls back the void.</p>
 	 */
 	public void reconcile(@NonNull final ShipmentScheduleId scheduleId)
 	{
@@ -311,8 +311,8 @@ public class DDOrderPickingReplenishmentService
 	 * Then void the existing DD_Order and create a fresh one from the current schedule data.
 	 *
 	 * <p><b>No transaction boundary here.</b> The void + create is only atomic if the caller
-	 * ({@code DDOrderReplenishmentEventHandler}) wraps {@link #reconcile(ShipmentScheduleId)} in {@code trxManager.runInNewTrx(...)} so a
-	 * create-failure rolls back the void.</p>
+	 * ({@code DDOrderReplenishmentEventHandler}) wraps {@link #reconcile(ShipmentScheduleId)} in
+	 * {@code trxManager.runInThreadInheritedTrx(...)} so a create-failure rolls back the void.</p>
 	 *
 	 * <p>{@code existingDDOrderId} is resolved exactly once by the caller ({@link #reconcile}) — no re-query here.</p>
 	 */
@@ -382,7 +382,7 @@ public class DDOrderPickingReplenishmentService
 	 */
 	@VisibleForTesting
 	Optional<WarehouseId> resolveSourceWarehouse(
-			@NonNull final WarehouseId autoDistributionOrderId,
+			@NonNull final WarehouseId targetWarehouseId,
 			@NonNull final ProductId productId,
 			@Nullable final DistributionNetworkId networkId)
 	{
@@ -392,7 +392,7 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		final DistributionNetwork network = distributionNetworkRepository.getById(networkId);
-		final List<DistributionNetworkLine> lines = network.getLinesByTargetWarehouse(autoDistributionOrderId);
+		final List<DistributionNetworkLine> lines = network.getLinesByTargetWarehouse(targetWarehouseId);
 		if (lines.isEmpty())
 		{
 			return Optional.empty();
