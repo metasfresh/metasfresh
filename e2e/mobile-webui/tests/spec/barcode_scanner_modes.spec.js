@@ -34,11 +34,10 @@ const createMasterdata = async ({ extraSysconfigs } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('Paste — scan via Ctrl+V clipboard', async ({ page, context }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0295: Frontend MobileUI');
-    allure.tag('F12000: Frontend MobileUI');
-    allure.tag('F12000');
-    allure.story('Barcode scanning modes — Ctrl+V paste');
-    allure.severity('normal');
+    await allure.epic('E0295: Frontend MobileUI');
+    await allure.feature('F12000: Frontend MobileUI');
+    await allure.story('Barcode scanning modes — Ctrl+V paste');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
     const huBarcode = masterdata.handlingUnits.HU1.qrCode;
@@ -83,11 +82,10 @@ test('Paste — scan via Ctrl+V clipboard', async ({ page, context }) => {
 // noinspection JSUnusedLocalSymbols
 test('Manual typing — visible editable input submits on Enter', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0295: Frontend MobileUI');
-    allure.tag('F12000: Frontend MobileUI');
-    allure.tag('F12000');
-    allure.story('Barcode scanning modes — manual typing into visible input');
-    allure.severity('normal');
+    await allure.epic('E0295: Frontend MobileUI');
+    await allure.feature('F12000: Frontend MobileUI');
+    await allure.story('Barcode scanning modes — manual typing into visible input');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({
         extraSysconfigs: {
@@ -102,13 +100,10 @@ test('Manual typing — visible editable input submits on Enter', async ({ page 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    // The input is visible and editable in this configuration.
-    // fill() sets the value without triggering the onChange debounce.
-    // Pressing Enter fires onKeyUp → handleInputTextKeyPress →
-    // validateScannedBarcodeAndForward in BarcodeScannerComponent.
-    const inputLocator = page.locator('#input-text');
-    await inputLocator.fill(huBarcode);
-    await page.keyboard.press('Enter');
+    // fill + Enter exercises the manual-typing path: onKeyUp → handleInputTextKeyPress →
+    // validateScannedBarcodeAndForward. BarcodeScannerComponent.typeManually() encapsulates
+    // the locator so the spec stays free of direct page.locator() calls.
+    await BarcodeScannerComponent.typeManually(huBarcode);
 
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
