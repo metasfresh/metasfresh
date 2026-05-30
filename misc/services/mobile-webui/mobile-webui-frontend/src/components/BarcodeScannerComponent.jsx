@@ -121,9 +121,19 @@ const BarcodeScannerComponent = ({
       if (isShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      inputTextRef?.current?.focus();
+      if (!isInputTextReadonly) {
+        inputTextRef?.current?.focus();
+      }
     } /* no deps, call it on each render */
   );
+
+  // DataWedge IME needs a focused editable input to establish InputConnection.
+  // Focus once on mount; the window-level hook handles all subsequent scan events.
+  useEffect(() => {
+    if (isInputTextReadonly) {
+      inputTextRef?.current?.focus();
+    }
+  }, []); // eslint-disable-line
 
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
@@ -253,9 +263,14 @@ const BarcodeScannerComponent = ({
   };
 
   const handleInputTextBlur = () => {
-    setTimeout(() => {
-      inputTextRef?.current?.focus();
-    }, 2000);
+    // Only re-focus editable inputs. Re-focusing a readonly input inside a 2s
+    // timer triggered by a user tap lands in a user-gesture context where
+    // inputMode="none" is ignored on some Android browsers.
+    if (!isInputTextReadonly) {
+      setTimeout(() => {
+        inputTextRef?.current?.focus();
+      }, 2000);
+    }
   };
 
   return (
