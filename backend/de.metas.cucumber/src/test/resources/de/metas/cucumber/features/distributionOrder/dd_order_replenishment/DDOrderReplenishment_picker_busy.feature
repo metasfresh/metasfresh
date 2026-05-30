@@ -52,7 +52,7 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
       | network                   | packingWH      | stockWH              | shipper      |
 
-    # TC1 starting state: one sales order on the packing warehouse → exactly one Completed DD_Order.
+    # One completed sales order on the packing warehouse is the starting state for every scenario.
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | order      | true    | customer      | 2022-05-17  | packingWH      |
@@ -105,7 +105,7 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
     # Processing the reconcile event (the consumer-side definitive guard) is rejected while the picker is busy.
     # NOTE: this step drives the BL directly (not via the async DDOrderReconciliationEventHandler) so
     # no AD_EventLog_Entry is produced here. The handler's error-recording path (IsError=true) is covered
-    # by TC6, which goes through the real async event flow. TC5 is about the BL-level picker-busy guard.
+    # by the async-flow scenario. This scenario focuses on the BL-level picker-busy guard.
     Then processing the reconcile event for M_ShipmentSchedule shipmentSchedule is rejected
 
     # The DD_Order is left unchanged by the failed reconcile.

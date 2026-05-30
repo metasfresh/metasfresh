@@ -52,7 +52,7 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
       | network                   | packingWH      | stockWH              | shipper      |
 
-    # TC1 starting state: one sales order on the packing warehouse → exactly one Completed DD_Order.
+    # One completed sales order on the packing warehouse is the starting state for every scenario.
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | order      | true    | customer      | 2022-05-17  | packingWH      |

@@ -33,6 +33,7 @@ import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEv
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -84,6 +85,7 @@ public class DDOrderPickingReplenishment_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
@@ -132,7 +134,7 @@ public class DDOrderPickingReplenishment_StepDef
 							.hasMessageContaining("Kommissionierung läuft bereits");
 
 					// Reload and assert the persisted value is unchanged (the rolled-back save left no mark).
-					final I_M_ShipmentSchedule reloaded = InterfaceWrapperHelper.loadOutOfTrx(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
+					final I_M_ShipmentSchedule reloaded = shipmentSchedulePA.getById(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
 					assertThat(reloaded.getQtyOrdered_Override())
 							.as("M_ShipmentSchedule.QtyOrdered_Override must be unchanged after the rejected save")
 							.isEqualByComparingTo(originalQtyOverride == null ? BigDecimal.ZERO : originalQtyOverride);
