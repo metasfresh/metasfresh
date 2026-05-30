@@ -70,6 +70,8 @@ BEGIN
     -- Authoritative carriers from Fact_Acct: VATCode (string) + VATCodeAmountType.
     -- Both are written by the per-leg matcher at posting time (no LEFT JOIN to
     -- C_VAT_Code needed → avoids ambiguity when same VATCode has both N+T rows).
+    -- All tax-relevant period facts are snapshotted — the report is identical
+    -- regardless of whether the declaration is an Original or a Correction.
     -- =========================================================
     INSERT INTO C_TaxDeclarationAcct (
         C_TaxDeclarationAcct_ID,

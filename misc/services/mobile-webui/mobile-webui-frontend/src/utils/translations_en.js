@@ -2,6 +2,7 @@ const translations = {
   appName: 'metasfresh mobile',
   error: {
     PleaseTryAgain: 'Please try again',
+    InternalError: 'Please try again. If the problem persists, contact support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Connection error',
     },
@@ -89,6 +90,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Target QR Code must be scanned first!',
       scanLuOrLocator: 'Scan LU or locator',
+      action: {
+        bulkActions: {
+          windowName: 'Bulk Actions',
+          closeScanner: 'Close scanner',
+          move: 'Move',
+          moveSuccess: 'HU moved successfully',
+          scanHUPlaceholder: 'Scan HU',
+          scanTargetPlaceholder: 'Scan target location',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packing line',
@@ -131,6 +142,7 @@ const translations = {
       reopenLU: 'Reopen LU',
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
+      noMatchingLines: 'No matching lines found',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -139,6 +151,7 @@ const translations = {
       scanHU: 'Scan pick from HU',
       scanProduct: 'Scan Product',
       scanDropToLocator: 'Scan drop to Locator',
+      switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
       qrcode: {

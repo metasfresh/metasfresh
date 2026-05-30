@@ -176,6 +176,16 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | C_Payment_ID.Identifier | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt   |
       | lcPayment               | Y            | null         | lcInvoice           | 20596.32 |
 
+    # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.32 EUR.
+    # (No C_AllocationHdr in S1 — proforma payment never creates allocation lines.)
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID |
+      | V_Prepayment_Acct     | 20596.32 EUR |              | lcPayment |
+      | B_InTransit_Acct      |              | 20596.32 EUR | lcPayment |
+    Then Fact_Acct records balances for documents lcPayment are matching
+      | AccountConceptualName | SourceBalance  |
+      | V_Prepayment_Acct     | 20596.32 EUR   |
+
     # The proforma flips to IsPaid=Y when its full payment completes — the regular
     # allocation-driven IsPaid update doesn't fire because proforma payments have no
     # C_AllocationLine rows; the C_Payment AFTER_COMPLETE interceptor sets the flag directly.
@@ -319,6 +329,15 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | Identifier | IsPaid |
       | lcInvoice  | Y      |
 
+    # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.32 EUR.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID |
+      | V_Prepayment_Acct     | 20596.32 EUR |              | lcPayment |
+      | B_InTransit_Acct      |              | 20596.32 EUR | lcPayment |
+    Then Fact_Acct records balances for documents lcPayment are matching
+      | AccountConceptualName | SourceBalance  |
+      | V_Prepayment_Acct     | 20596.32 EUR   |
+
     Then the order identified by lcOrder has following pay schedule lines by ReferenceDateType
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
       | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | P      |
@@ -352,6 +371,17 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | ReferenceDateType | BaseAmt  | DueAmt   | DueAmt_Actual | ReferenceDate | DueDate    | Status |
       | LC                | 68654.40 | 20596.32 | 20596.32      | 2026-04-24    | 2026-04-24 | WP     |
       | BL                | 68654.40 | 48058.08 | null          | null          | 9999-12-01 | PR     |
+
+    # Accounting: original payment + reversal cancel each other → V_Prepayment nets to 0.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID         |
+      | V_Prepayment_Acct     | 20596.32 EUR  |               | lcPayment         |
+      | B_InTransit_Acct      |               | 20596.32 EUR  | lcPayment         |
+      | V_Prepayment_Acct     | -20596.32 EUR |               | lcPaymentReversal |
+      | B_InTransit_Acct      |               | -20596.32 EUR | lcPaymentReversal |
+    Then Fact_Acct records balances for documents lcPayment,lcPaymentReversal are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | 0           |
 
     # AC #17 — invoiceOpenToDate proforma branch after payment reversal:
     # The reversal payment ends at DocStatus='RE' which the SUM-based paid-detection excludes,
@@ -529,6 +559,15 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | C_Payment_ID.Identifier | OpenAmt  |
       | customerPayment         | 20596.31 |
 
+    # Accounting: AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +20596.31 EUR.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID       |
+      | V_Prepayment_Acct     | 20596.31 EUR |              | customerPayment |
+      | B_InTransit_Acct      |              | 20596.31 EUR | customerPayment |
+    Then Fact_Acct records balances for documents customerPayment are matching
+      | AccountConceptualName | SourceBalance  |
+      | V_Prepayment_Acct     | 20596.31 EUR   |
+
     # ── R1: line A received 195 PCE (ordered 196, 1 short) ──
     # HU receipt: QtyCUsPerTU=195 → 1 HU with 195 PCE → receipt r1 QtyEntered=195.
     # receiptValue_R1 = round(OL_A_gross / 196 × 195, 2)
@@ -570,8 +609,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # AC #4: alloc = MIN(R1×0.30, prepay) = MIN(31807.99×0.30, 20596.31) = MIN(9542.40, 20596.31) = 9,542.40
     Then validate C_AllocationLines for invoice inv1Partial
-      | Amount   |
-      | -9542.40 |
+      | C_AllocationHdr_ID | Amount   |
+      | s5_alloc1          | -9542.40 |
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 9542.4 EUR  |             | s5_alloc1 |
+      | V_Prepayment_Acct     |             | 9542.4 EUR  | s5_alloc1 |
 
     # AC #5: R1 sub-row → Status=Awaiting_Pay; C_Invoice_ID=inv1Partial
     #        prepay.AvailableAmt = 20,596.31 − 9,542.40 = 11,053.91
@@ -624,8 +667,12 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
 
     # AC #8: alloc = remaining prepay = 11,053.91 (Final rule — full prepay consumed)
     Then validate C_AllocationLines for invoice inv2Final
-      | Amount    |
-      | -11053.91 |
+      | C_AllocationHdr_ID | Amount    |
+      | s5_alloc2          | -11053.91 |
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID |
+      | V_Liability_Acct      | 11053.91 EUR |              | s5_alloc2 |
+      | V_Prepayment_Acct     |              | 11053.91 EUR | s5_alloc2 |
 
     # AC #9: R2 sub-row → Status=Awaiting_Pay; prepay.AvailableAmt = 0
     Then the order identified by customerOrder has following pay schedules
@@ -643,6 +690,22 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | Identifier | OpenAmt  |
       | inv2Final  | 26038.08 |
 
+    # Accounting: full prepay consumed — V_Prepayment and V_Liability both net to zero.
+    # customerPayment opened V_Prepayment; s5_alloc1 + s5_alloc2 closed it.
+    # Note: V_Liability does NOT net to zero here — the prepayment (20596.31) only partially covers
+    # the total invoices (68899.98). The remaining open liability stays until the invoices are fully paid.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr  | AmtSourceCr  | Record_ID       |
+      | *                     |              |              | customerPayment |
+      | V_Prepayment_Acct     | 20596.31 EUR |              | customerPayment |
+      | V_Liability_Acct      | 9542.4 EUR   |              | s5_alloc1       |
+      | V_Prepayment_Acct     |              | 9542.4 EUR   | s5_alloc1       |
+      | V_Liability_Acct      | 11053.91 EUR |              | s5_alloc2       |
+      | V_Prepayment_Acct     |              | 11053.91 EUR | s5_alloc2       |
+    Then Fact_Acct records balances for documents customerPayment,inv1Partial,inv2Final,s5_alloc1,s5_alloc2 are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | 0           |
+
     # ── Final state: LC Paid; R1 + R2 both Awaiting_Pay; no remainder; Σ alloc = 20,596.31 ──
     # Σ alloc = 9,542.40 + 11,053.91 = 20,596.31 = full LC prepay consumed ✓
     # OpenAmt uses net (C_Invoice.GrandTotal = net; tax stored separately in C_InvoiceTax)
@@ -651,3 +714,78 @@ Feature: Split-payment unified end-to-end story using customer-spreadsheet numbe
       | LC                | null       | 68654.38 | 20596.31 | 20596.31      | 2026-04-24    | 2026-04-24 | P      | null         |
       | BL                | r1         | 31807.99 | 22265.59 | null          | 2026-04-24    | 2026-04-24 | WP     | inv1Partial  |
       | BL                | r2         | 37092.00 | 25964.40 | null          | 2026-04-24    | 2026-04-24 | WP     | inv2Final    |
+
+
+  Scenario: S6 - Vendor advance payment (IsPrepayment=Y) allocation must clear V_Prepayment_Acct
+
+    # ── Product + price for S6 (standalone accounting regression — no PO or pay-schedule) ──
+    And metasfresh contains M_Products:
+      | Identifier |
+      | s6_product |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_purchase           | s6_product   | 5000.00  | PCE      |
+
+    # ── Proforma invoice — sets IsPrepayment=Y on the payment via MPayment.beforeSave ──
+    # (MPayment.beforeSave computes IsPrepayment from Proforma_Invoice_ID; direct setIsPrepayment is overridden.)
+    And metasfresh contains C_Invoice:
+      | Identifier   | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | s6_proforma  | vendor        | Proforma-Rechnung (Lieferant) | 2026-04-24   | false   | EUR           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   |
+      | s6_proforma_line | s6_proforma  | s6_product   | 1 PCE       | 5000.00 |
+    And the invoice identified by s6_proforma is completed
+
+    # ── Vendor invoice (real invoice to allocate against) ──
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
+      | s6_invoice | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price   |
+      | s6_line    | s6_invoice   | s6_product   | 1 PCE       | 5000.00 |
+    And the invoice identified by s6_invoice is completed
+
+    # ── Vendor prepayment — Proforma_Invoice_ID triggers IsPrepayment=Y → Doc_Payment posts to V_Prepayment_Acct ──
+    # Bug (pre-fix): allocation resolved B_PaymentSelect_Acct instead → V_Prepayment stayed permanently open.
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+      | s6_payment | vendor        | 5000 EUR | false     | org_EUR_account     | s6_proforma         |
+    And the payment identified by s6_payment is completed
+
+    # ── Post-payment: V_Prepayment_Acct must be non-zero (payment opened it) ──
+    # AP prepayment posts DR V_Prepayment / CR B_InTransit → SourceBalance = +5000.
+    # SourceBalance (source-currency amount) avoids accounting-schema FX conversion uncertainty.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID  |
+      | V_Prepayment_Acct     | 5000 EUR    |             | s6_payment |
+      | B_InTransit_Acct      |             | 5000 EUR    | s6_payment |
+    Then Fact_Acct records balances for documents s6_payment are matching
+      | AccountConceptualName | SourceBalance |
+      | V_Prepayment_Acct     | 5000 EUR      |
+
+    # ── Allocate payment to invoice ──
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID |
+      | s6_invoice   | s6_payment   |
+    And validate C_AllocationLines
+      | C_Invoice_ID | C_Payment_ID | C_AllocationHdr_ID |
+      | s6_invoice   | s6_payment   | s6_alloc           |
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5000 EUR    |             | s6_alloc  |
+      | V_Prepayment_Acct     |             | 5000 EUR    | s6_alloc  |
+
+    # ── Core assertion: V_Prepayment and V_Liability must both net to zero ──
+    # V_Prepayment_Acct: opened by payment posting, reversed by allocation → net 0
+    # V_Liability_Acct:  opened by invoice posting, reversed by allocation → net 0
+    # Regression: without the fix the allocation used B_PaymentSelect_Acct → V_Prepayment stayed non-zero.
+    Then Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID  |
+      | *                     |             |             | s6_payment |
+      | V_Prepayment_Acct     | 5000 EUR    |             | s6_payment |
+      | V_Liability_Acct      | 5000 EUR    |             | s6_alloc   |
+      | V_Prepayment_Acct     |             | 5000 EUR    | s6_alloc   |
+    Then Fact_Acct records balances for documents s6_payment,s6_invoice,s6_alloc are matching
+      | AccountConceptualName | AcctBalance |
+      | V_Prepayment_Acct     | 0           |
+      | V_Liability_Acct      | 0           |

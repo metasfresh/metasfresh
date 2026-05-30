@@ -50,16 +50,19 @@ public class NShiftGateway_StepDef
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 
+	@Nullable private JsonDeliveryAdvisorRequest capturedAdvisorRequest = null;
+
 	/**
 	 * Holds the most recent {@link JsonDeliveryRequest} captured by the shipment service stub.
 	 * Reset to {@code null} each time {@link #stubShipmentServiceWithSuccess()} is called.
 	 */
-	@Nullable
-	private JsonDeliveryRequest capturedShipmentRequest = null;
+	@Nullable private JsonDeliveryRequest capturedShipmentRequest = null;
 
 	@Given("the nShift ship advisor service is stubbed to return a successful response based on the request")
 	public void stubShipAdvisorServiceWithDynamicSuccess(@NonNull final DataTable dataTable)
 	{
+		capturedAdvisorRequest = null;
+
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 		final CarrierProduct carrierProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
 		final CarrierGoodsType carrierGoodsType = carrierGoodsTypeTable.get(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
@@ -70,6 +73,7 @@ public class NShiftGateway_StepDef
 				.thenAnswer((Answer<JsonDeliveryAdvisorResponse>)invocation -> {
 
 					final JsonDeliveryAdvisorRequest actualRequest = invocation.getArgument(0);
+					capturedAdvisorRequest = actualRequest;
 
 					return JsonDeliveryAdvisorResponse.builder()
 							.requestId(actualRequest.getId())
@@ -98,6 +102,8 @@ public class NShiftGateway_StepDef
 	@Given("the nShift ship advisor service is stubbed to return an error response based on the request")
 	public void stubShipAdvisorServiceWithDynamicError()
 	{
+		capturedAdvisorRequest = null;
+
 		when(shipAdvisorServiceMock.advise(any(JsonDeliveryAdvisorRequest.class)))
 				.thenAnswer((Answer<JsonDeliveryAdvisorResponse>)invocation -> {
 
@@ -159,13 +165,13 @@ public class NShiftGateway_StepDef
 
 		// --- carrier product (shipperProduct.code) ---
 		final CarrierProduct expectedProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
-		softly.assertThat(capturedShipmentRequest.getShipperProduct().getCode())
+		softly.assertThat(capturedShipmentRequest.getShipperProduct() != null ? capturedShipmentRequest.getShipperProduct().getCode() : null)
 				.as("shipperProduct.code")
 				.isEqualTo(expectedProduct.getCode());
 
 		// --- goods type (goodsType.id) ---
 		final CarrierGoodsType expectedGoodsType = carrierGoodsTypeTable.get(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
-		softly.assertThat(capturedShipmentRequest.getGoodsType().getId())
+		softly.assertThat(capturedShipmentRequest.getGoodsType() != null ?capturedShipmentRequest.getGoodsType().getId() : null)
 				.as("goodsType.id")
 				.isEqualTo(expectedGoodsType.getExternalId());
 
@@ -235,6 +241,17 @@ public class NShiftGateway_StepDef
 		}
 
 		softly.assertAll();
+	}
+
+	@And("the last nShift ship advisor request had shipperConfig serviceLevel {string}")
+	public void assertLastAdvisorRequestShipperConfigServiceLevel(@NonNull final String expectedServiceLevel)
+	{
+		assertThat(capturedAdvisorRequest)
+				.as("nShift ship advisor service was not called")
+				.isNotNull();
+		assertThat(capturedAdvisorRequest.getShipperConfig().getAdditionalProperty("ServiceLevel"))
+				.as("shipperConfig.ServiceLevel")
+				.isEqualTo(expectedServiceLevel);
 	}
 
 	private static void assertAddress(

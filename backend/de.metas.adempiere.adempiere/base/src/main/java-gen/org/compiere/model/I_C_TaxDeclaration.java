@@ -51,7 +51,8 @@ public interface I_C_TaxDeclaration
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set null.
+	 * Set Accounting Schema.
+	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -60,7 +61,8 @@ public interface I_C_TaxDeclaration
 	void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/**
-	 * Get null.
+	 * Get Accounting Schema.
+	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -99,6 +101,7 @@ public interface I_C_TaxDeclaration
 
 	/**
 	 * Set Period.
+	 * Period of the Calendar
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -108,6 +111,7 @@ public interface I_C_TaxDeclaration
 
 	/**
 	 * Get Period.
+	 * Period of the Calendar
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -171,7 +175,33 @@ public interface I_C_TaxDeclaration
 	String COLUMNNAME_C_TaxDeclaration_ID = "C_TaxDeclaration_ID";
 
 	/**
+	 * Set Original Tax Declaration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxDeclaration_Original_ID (int C_TaxDeclaration_Original_ID);
+
+	/**
+	 * Get Original Tax Declaration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxDeclaration_Original_ID();
+
+	@Nullable org.compiere.model.I_C_TaxDeclaration getC_TaxDeclaration_Original();
+
+	void setC_TaxDeclaration_Original(@Nullable org.compiere.model.I_C_TaxDeclaration C_TaxDeclaration_Original);
+
+	ModelColumn<I_C_TaxDeclaration, org.compiere.model.I_C_TaxDeclaration> COLUMN_C_TaxDeclaration_Original_ID = new ModelColumn<>(I_C_TaxDeclaration.class, "C_TaxDeclaration_Original_ID", org.compiere.model.I_C_TaxDeclaration.class);
+	String COLUMNNAME_C_TaxDeclaration_Original_ID = "C_TaxDeclaration_Original_ID";
+
+	/**
 	 * Set Accounting Date.
+	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -181,6 +211,7 @@ public interface I_C_TaxDeclaration
 
 	/**
 	 * Get Accounting Date.
+	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -258,6 +289,7 @@ public interface I_C_TaxDeclaration
 
 	/**
 	 * Set Document No.
+	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -267,6 +299,7 @@ public interface I_C_TaxDeclaration
 
 	/**
 	 * Get Document No.
+	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -299,6 +332,48 @@ public interface I_C_TaxDeclaration
 
 	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsActive = new ModelColumn<>(I_C_TaxDeclaration.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Correction?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCorrection (boolean IsCorrection);
+
+	/**
+	 * Get Correction?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCorrection();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsCorrection = new ModelColumn<>(I_C_TaxDeclaration.class, "IsCorrection", null);
+	String COLUMNNAME_IsCorrection = "IsCorrection";
+
+	/**
+	 * Set Correction needed?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCorrectionNeeded (boolean IsCorrectionNeeded);
+
+	/**
+	 * Get Correction needed?.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCorrectionNeeded();
+
+	ModelColumn<I_C_TaxDeclaration, Object> COLUMN_IsCorrectionNeeded = new ModelColumn<>(I_C_TaxDeclaration.class, "IsCorrectionNeeded", null);
+	String COLUMNNAME_IsCorrectionNeeded = "IsCorrectionNeeded";
 
 	/**
 	 * Set Processed.

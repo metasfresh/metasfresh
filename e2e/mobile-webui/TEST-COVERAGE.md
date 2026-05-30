@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 10 | 80% |
 | Picking | 44 | 47 | 94% |
-| Distribution | 27 | 30 | 90% |
+| Distribution | 32 | 35 | 91% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -193,8 +193,13 @@
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
+| "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" button is hidden once picking has started | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after switch, scanning an HU from the original locator is rejected with "HU is not at the target trolley" | `distribution/switchPickFromLocator.spec.js` |
 
-**5/5 — 100%**
+**10/10 — 100%**
 
 ### Distribution — HU scanning
 

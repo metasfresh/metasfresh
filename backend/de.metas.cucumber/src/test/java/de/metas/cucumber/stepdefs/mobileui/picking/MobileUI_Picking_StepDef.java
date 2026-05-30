@@ -90,6 +90,17 @@ public class MobileUI_Picking_StepDef
 		context.setWfProcess(wfProcess);
 	}
 
+	@When("^set picking target as existing LU identified by (.*)$")
+	public void setPickingLUTargetExisting(@NonNull final String huIdentifier)
+	{
+		final HuId luId = huTable.getId(huIdentifier);
+		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(luId);
+		final LUPickingTarget pickingTarget = LUPickingTarget.ofExistingHU(luId, qrCode);
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.setPickingTarget(context.getWfProcessIdNotNull(), pickingTarget);
+		context.setWfProcess(wfProcess);
+	}
+
 	@When("^set picking target as new TU identified by (.*)$")
 	public void setPickingTUTarget(@NonNull final String packingInstructionsIdentifier)
 	{

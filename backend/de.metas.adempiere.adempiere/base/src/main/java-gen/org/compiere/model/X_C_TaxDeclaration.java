@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_TaxDeclaration, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1163124041L;
+	private static final long serialVersionUID = -1047379587L;
 
     /** Standard Constructor */
     public X_C_TaxDeclaration (final Properties ctx, final int C_TaxDeclaration_ID, @Nullable final String trxName)
@@ -116,6 +116,33 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	public int getC_TaxDeclaration_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_TaxDeclaration_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_TaxDeclaration getC_TaxDeclaration_Original()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_TaxDeclaration_Original_ID, org.compiere.model.I_C_TaxDeclaration.class);
+	}
+
+	@Override
+	public void setC_TaxDeclaration_Original(final org.compiere.model.I_C_TaxDeclaration C_TaxDeclaration_Original)
+	{
+		set_ValueFromPO(COLUMNNAME_C_TaxDeclaration_Original_ID, org.compiere.model.I_C_TaxDeclaration.class, C_TaxDeclaration_Original);
+	}
+
+	@Override
+	public void setC_TaxDeclaration_Original_ID (final int C_TaxDeclaration_Original_ID)
+	{
+		if (C_TaxDeclaration_Original_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxDeclaration_Original_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxDeclaration_Original_ID, C_TaxDeclaration_Original_ID);
+	}
+
+	@Override
+	public int getC_TaxDeclaration_Original_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxDeclaration_Original_ID);
 	}
 
 	@Override
@@ -240,6 +267,30 @@ public class X_C_TaxDeclaration extends org.compiere.model.PO implements I_C_Tax
 	public java.lang.String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
+	}
+
+	@Override
+	public void setIsCorrection (final boolean IsCorrection)
+	{
+		set_Value (COLUMNNAME_IsCorrection, IsCorrection);
+	}
+
+	@Override
+	public boolean isCorrection() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCorrection);
+	}
+
+	@Override
+	public void setIsCorrectionNeeded (final boolean IsCorrectionNeeded)
+	{
+		set_Value (COLUMNNAME_IsCorrectionNeeded, IsCorrectionNeeded);
+	}
+
+	@Override
+	public boolean isCorrectionNeeded() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCorrectionNeeded);
 	}
 
 	@Override

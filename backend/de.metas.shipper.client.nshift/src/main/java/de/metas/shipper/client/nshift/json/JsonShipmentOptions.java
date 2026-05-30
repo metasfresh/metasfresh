@@ -35,25 +35,12 @@ import java.util.UUID;
 public class JsonShipmentOptions
 {
 
-	@JsonProperty("ServiceLevel")
-	String serviceLevel;
+	@JsonProperty("Labels")
+	JsonLabelType labelType;
 
 	@JsonProperty("TrackingURL")
 	@JsonSerialize(converter = BooleanToIntConverter.class)
 	Boolean trackingURL;
-
-	@JsonProperty("RequiredDeliveryDate")
-	String requiredDeliveryDate; // Expects DATETIME format, e.g., "YYYY-MM-DDTHH:mm:ss"
-
-	@JsonProperty("Visibility")
-	String visibility;
-
-	@JsonProperty("Submit")
-	@JsonSerialize(converter = BooleanToIntConverter.class)
-	Boolean submit;
-
-	@JsonProperty("Labels")
-	JsonLabelType labelType;
 
 	@JsonProperty("TicketUserName")
 	String ticketUserName;
@@ -67,10 +54,32 @@ public class JsonShipmentOptions
 	@JsonProperty("DropZoneDocPrinterKey")
 	String dropZoneDocPrinterKey;
 
-	@JsonProperty("ValidatePostCode")
+	@JsonProperty("UseShippingRules")
 	@JsonSerialize(converter = BooleanToIntConverter.class)
-	Boolean validatePostCode;
+	Boolean useShippingRules;
 
-	@JsonProperty("Place")
-	String place;
+	@JsonProperty("ServiceLevel")
+	String serviceLevel;
+
+	@JsonProperty("RerunCSROnError")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean rerunCSROnError;
+
+	@JsonProperty("Token")
+	String token;
+
+	@JsonProperty("ReturnShipment")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean returnShipment;
+
+	@JsonProperty("PriceCalculation")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean priceCalculation;
+
+	@JsonProperty("UseErrorLabels")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean useErrorLabels;
+
+	@JsonProperty("SaveShipmentOnError")
+	String saveShipmentOnError;
 }
