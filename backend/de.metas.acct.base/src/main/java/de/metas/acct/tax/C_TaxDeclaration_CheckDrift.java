@@ -15,8 +15,6 @@ public class C_TaxDeclaration_CheckDrift extends JavaProcess implements IProcess
 
 	@NonNull private final TaxDeclarationService taxDeclarationService =
 			SpringContextHolder.instance.getBean(TaxDeclarationService.class);
-	@NonNull private final TaxDeclarationRepository taxDeclarationRepository =
-			SpringContextHolder.instance.getBean(TaxDeclarationRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(
@@ -33,7 +31,7 @@ public class C_TaxDeclaration_CheckDrift extends JavaProcess implements IProcess
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Declaration is not yet completed");
 		}
 
-		if (!taxDeclarationRepository.isLatestInChain(TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_ID())))
+		if (!taxDeclarationService.isLatestInChain(TaxDeclarationId.ofRepoId(td.getC_TaxDeclaration_ID())))
 		{
 			return ProcessPreconditionsResolution.reject(MSG_NotLatest);
 		}
