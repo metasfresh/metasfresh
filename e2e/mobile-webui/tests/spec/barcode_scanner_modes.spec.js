@@ -178,27 +178,10 @@ test('Mode C2 — Paste: scan via Ctrl+V clipboard', async ({ page, context }) =
     // Grant clipboard-read permission so navigator.clipboard.readText() resolves.
     await context.grantPermissions(['clipboard-read']);
 
-    // Mock navigator.clipboard.readText to return the HU QR code without needing
-    // the OS clipboard. The hook calls readText() asynchronously after the keydown.
-    await page.evaluate((barcode) => {
-        Object.defineProperty(navigator, 'clipboard', {
-            value: {
-                readText: () => Promise.resolve(barcode),
-            },
-            configurable: true,
-        });
-    }, huBarcode);
-
-    // Wait for the scanner input to be in the DOM before firing the paste event.
-    await BarcodeScannerComponent.waitToAttach({});
-
-    // Dispatch Ctrl+V on the window — the hook's keydown listener picks it up.
-    await page.evaluate(() => {
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
-    });
-
+    // pasteViaClipboard mocks navigator.clipboard.readText and dispatches Ctrl+V on window.
     // The hook resolves the clipboard Promise asynchronously, then calls
     // validateScannedBarcodeAndForward which navigates to the HU Manager.
+    await BarcodeScannerComponent.pasteViaClipboard(huBarcode);
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
 });
