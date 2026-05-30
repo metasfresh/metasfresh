@@ -143,14 +143,14 @@ class TaxDeclarationRepositoryTest
 	// ---------------------------------------------------------------------------
 
 	@Test
-	void isLatestInChain_originalWithNoProcessedCorrection_isLatest()
+	public void isLatestInChain_originalWithNoProcessedCorrection_isLatest()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		Assertions.assertThat(repository.isLatestInChain(idOf(original))).isTrue();
 	}
 
 	@Test
-	void isLatestInChain_originalSupersededByProcessedCorrection_isNotLatest()
+	public void isLatestInChain_originalSupersededByProcessedCorrection_isNotLatest()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
@@ -158,11 +158,29 @@ class TaxDeclarationRepositoryTest
 	}
 
 	@Test
-	void isLatestInChain_latestProcessedCorrection_isLatest()
+	public void isLatestInChain_latestProcessedCorrection_isLatest()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		final I_C_TaxDeclaration corr = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
 		Assertions.assertThat(repository.isLatestInChain(idOf(corr))).isTrue();
+	}
+
+	@Test
+	public void isLatestInChain_supersededCorrection_isNotLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+
+		final I_C_TaxDeclaration corr1 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		// Force distinct Created timestamps so corr2 is unambiguously the "newer" correction
+		// (mirrors getLatestInChain_returnsLatestCompletedCorrection).
+		InterfaceWrapperHelper.setValue(corr1, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-01 10:00:00"));
+		InterfaceWrapperHelper.save(corr1);
+
+		final I_C_TaxDeclaration corr2 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true); // newer processed correction
+		InterfaceWrapperHelper.setValue(corr2, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-02 10:00:00"));
+		InterfaceWrapperHelper.save(corr2);
+
+		Assertions.assertThat(repository.isLatestInChain(idOf(corr1))).isFalse();
 	}
 
 	private static TaxDeclarationId idOf(final I_C_TaxDeclaration record)
@@ -175,33 +193,41 @@ class TaxDeclarationRepositoryTest
 	// ---------------------------------------------------------------------------
 
 	@Test
-	void hasUnprocessedCorrectionFor_noCorrection_false()
+	public void hasUnprocessedCorrectionFor_noCorrection_false()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
-		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), -1)).isFalse();
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isFalse();
 	}
 
 	@Test
-	void hasUnprocessedCorrectionFor_draftCorrectionExists_true()
+	public void hasUnprocessedCorrectionFor_draftCorrectionExists_true()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true); // draft (not processed) correction
-		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), -1)).isTrue();
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isTrue();
 	}
 
 	@Test
-	void hasUnprocessedCorrectionFor_onlyProcessedCorrection_false()
+	public void hasUnprocessedCorrectionFor_onlyProcessedCorrection_false()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true); // processed correction
-		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), -1)).isFalse();
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isFalse();
 	}
 
 	@Test
-	void hasUnprocessedCorrectionFor_excludesSelf()
+	public void hasUnprocessedCorrectionFor_excludesSelf()
 	{
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		final I_C_TaxDeclaration draft = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true);
-		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), draft.getC_TaxDeclaration_ID())).isFalse();
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), idOf(draft))).isFalse();
+	}
+
+	@Test
+	public void hasUnprocessedCorrectionFor_inactiveDraftCorrection_false()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, false); // inactive draft correction
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isFalse();
 	}
 }
