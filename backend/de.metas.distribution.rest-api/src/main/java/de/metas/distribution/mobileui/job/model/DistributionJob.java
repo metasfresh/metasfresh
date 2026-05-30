@@ -216,8 +216,7 @@ public class DistributionJob
 
 	public boolean canSwitchPickFromLocator()
 	{
-		return getSinglePickFromLocatorIdOrNull() != null
-				&& streamSteps().noneMatch(DistributionJobStep::isPickedFromLocator);
+		return getSinglePickFromLocatorIdOrNull() != null;
 	}
 
 	@Nullable
