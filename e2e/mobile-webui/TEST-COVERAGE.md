@@ -7,7 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 8 | 11 | 73% |
+| Barcode Scanner Modes | 8 | 9 | 89% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |

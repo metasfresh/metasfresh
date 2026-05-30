@@ -224,24 +224,25 @@ test('Mode C3 — Manual: visible editable input, isInputTextReadonly=N, fill+En
             'mobileui.frontend.barcodeScanner.isInputTextReadonly': 'N',
         },
     });
-    const huBarcode = masterdata.handlingUnits.HU1.qrCode;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    // Navigate to HU Manager first so the barcode scanner is in the right context.
-    // The ApplicationsListScreen scanner itself will forward the barcode,
-    // but we also do the inline attribute assert here before scanning.
+    // Navigate to HU Manager so the barcode scanner renders from SysConfig (no hardcoded prop).
+    // The ApplicationsListScreen hardcodes isShowInputText={false}, which would override the
+    // SysConfig and make the attribute assertion below meaningless.
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
 
-    // Inline attribute assert: when isInputTextReadonly=N, inputmode attribute is absent
+    // Regression guard: when isInputTextReadonly=N, inputmode attribute must be absent
     // (virtual keyboard suppression is disabled to allow manual typing).
     await BarcodeScannerComponent.expectAttributes({ inputmode: null });
 
     // fill + Enter exercises the manual-typing path: onKeyUp → handleInputTextKeyPress →
     // validateScannedBarcodeAndForward. BarcodeScannerComponent.typeManually() encapsulates
     // the locator so the spec stays free of direct page.locator() calls.
-    await BarcodeScannerComponent.typeManually(huBarcode);
+    await BarcodeScannerComponent.typeManually(masterdata.handlingUnits.HU1.qrCode);
 
-    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.waitForHUInfoPanel();
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
 });
