@@ -5,11 +5,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.I_C_TaxDeclarationAcct;
 import org.compiere.model.I_C_TaxDeclarationLine;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -45,6 +47,28 @@ public class TaxDeclarationRepository
 		record.setProcessed(false);
 		InterfaceWrapperHelper.save(record);
 		return TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_ID());
+	}
+
+	public void runBuild(@NonNull final TaxDeclarationId id)
+	{
+		DB.executeFunctionCallEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT de_metas_acct.tax_declaration_build(?)",
+				new Object[] { id });
+	}
+
+	public boolean isDriftDetected(@NonNull final TaxDeclarationId id)
+	{
+		final int result = DB.getSQLValueEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT CASE WHEN de_metas_acct.tax_declaration_check_drift(?) THEN 1 ELSE 0 END",
+				new Object[] { id.getRepoId() });
+		return result == 1;
+	}
+
+	public void save(@NonNull final I_C_TaxDeclaration record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	public void deleteChildRows(@NonNull final TaxDeclarationId id)
