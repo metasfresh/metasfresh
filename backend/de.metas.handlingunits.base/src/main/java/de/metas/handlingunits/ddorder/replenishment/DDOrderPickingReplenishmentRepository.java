@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -209,14 +210,12 @@ public class DDOrderPickingReplenishmentRepository
 		return ddOrder;
 	}
 
-	/**
-	 * Loads the {@link I_DD_Order} record for the given ID.
-	 *
-	 * <p>Centralises all {@link InterfaceWrapperHelper#load} calls for {@link I_DD_Order} in this repository.</p>
-	 */
+	/** Returns the {@link I_DD_Order} record for the given ID; throws if not found. The model interface is exposed intentionally because callers pass it directly to {@code IDocumentBL#processEx}, which requires it. */
 	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
 	{
-		return InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
+		final I_DD_Order record = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
+		Check.assumeNotNull(record, "DD_Order not found for id={}", ddOrderId);
+		return record;
 	}
 
 	/**
@@ -224,8 +223,11 @@ public class DDOrderPickingReplenishmentRepository
 	 */
 	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
 	{
-		final I_DD_Order ddOrder = getById(ddOrderId);
-		return ShipmentScheduleId.ofRepoId(ddOrder.getM_ShipmentSchedule_ID());
+		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 
 	/**
@@ -235,8 +237,8 @@ public class DDOrderPickingReplenishmentRepository
 	{
 		return queryBL
 				.createQueryBuilder(I_M_Warehouse.class)
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
 				.create()
 				.stream()
 				.map(wh -> WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
