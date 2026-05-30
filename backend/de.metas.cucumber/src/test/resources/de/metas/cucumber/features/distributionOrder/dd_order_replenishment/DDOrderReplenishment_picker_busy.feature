@@ -68,7 +68,7 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | ddOrder    | shipmentSchedule      | CO | stockWH             | packingWH         | 5          |
 
   @from:cucumber
-  Scenario: A busy picker makes the beforeSave interceptor reject the schedule change (TC4)
+  Scenario: A busy picker makes the beforeSave interceptor reject the schedule change
     # The picker is busy: a M_Picking_Job_Line references the same M_ShipmentSchedule_ID as the DD_Order.
     Given metasfresh contains M_Picking_Job_Line:
       | M_ShipmentSchedule_ID | C_OrderLine_ID | M_Product_ID | QtyToPick | C_UOM_ID |
@@ -96,7 +96,7 @@ Feature: DD_Order replenishment — picker-busy guard (sync rollback + async con
       | ddOrder    | CO |
 
   @from:cucumber
-  Scenario: A picker who grabs the job in the race window makes the async reconcile event fail (TC5)
+  Scenario: A picker who grabs the job in the race window makes the async reconcile event fail
     # Simulate the race deterministically: the picker becomes busy AFTER the schedule change was accepted
     # but BEFORE the reconcile event is processed by the consumer.
     Given metasfresh contains M_Picking_Job_Line:

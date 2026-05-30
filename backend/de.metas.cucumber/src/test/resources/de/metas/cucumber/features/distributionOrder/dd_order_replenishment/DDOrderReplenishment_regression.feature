@@ -34,7 +34,7 @@ Feature: DD_Order replenishment — non-packing warehouses are not touched by th
       | customerLocation | bPLocation_1 | customer      |
 
   @from:cucumber
-  Scenario: A sales order on a regular warehouse produces no reconcile DD_Order (TC9)
+  Scenario: A sales order on a regular warehouse produces no reconcile DD_Order
     # A plain warehouse: IsAutoDistributionOrder=N (default), no MRP_Exclude, no DD_NetworkDistribution.
     Given metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsAutoDistributionOrder |

@@ -51,7 +51,7 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
       | packingWH      | customer      | customerLocation       | Y           | Y                  | network                   |
 
   @from:cucumber
-  Scenario: A missing source line makes the reconcile event fail softly, then succeeds after the network is fixed (TC6)
+  Scenario: A missing source line makes the reconcile event fail softly, then succeeds after the network is fixed
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | order      | true    | customer      | 2022-05-17  | packingWH      |
