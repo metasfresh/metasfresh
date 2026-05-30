@@ -106,20 +106,14 @@ class TaxDeclarationRepositoryTest
 	@Test
 	public void getLatestInChain_returnsLatestCompletedCorrection()
 	{
-		// Given: an Original + 2 completed Corrections (Created at different times — the later one wins)
+		// Given: an Original + 2 completed Corrections
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(original.getC_TaxDeclaration_ID());
 
 		final I_C_TaxDeclaration correction1 = createTaxDeclaration(true, originalId.getRepoId(), true, true);
-		// Force correction1.Created to be earlier than correction2 via InterfaceWrapperHelper.setValue
-		InterfaceWrapperHelper.setValue(correction1, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-01 10:00:00"));
-		InterfaceWrapperHelper.save(correction1);
-
 		final I_C_TaxDeclaration correction2 = createTaxDeclaration(true, originalId.getRepoId(), true, true);
-		InterfaceWrapperHelper.setValue(correction2, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-02 10:00:00"));
-		InterfaceWrapperHelper.save(correction2);
 
-		// When / Then: should return the LATER Correction
+		// When / Then: should return correction2, which has the higher C_TaxDeclaration_ID
 		final I_C_TaxDeclaration result = repository.getLatestInChain(originalId);
 		Assertions.assertThat(result.getC_TaxDeclaration_ID()).isEqualTo(correction2.getC_TaxDeclaration_ID());
 	}
@@ -171,14 +165,8 @@ class TaxDeclarationRepositoryTest
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 
 		final I_C_TaxDeclaration corr1 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
-		// Force distinct Created timestamps so corr2 is unambiguously the "newer" correction
-		// (mirrors getLatestInChain_returnsLatestCompletedCorrection).
-		InterfaceWrapperHelper.setValue(corr1, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-01 10:00:00"));
-		InterfaceWrapperHelper.save(corr1);
-
-		final I_C_TaxDeclaration corr2 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true); // newer processed correction
-		InterfaceWrapperHelper.setValue(corr2, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-02 10:00:00"));
-		InterfaceWrapperHelper.save(corr2);
+		final I_C_TaxDeclaration corr2 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		// corr2 is saved after corr1, so it has the higher C_TaxDeclaration_ID and is the latest in chain
 
 		Assertions.assertThat(repository.isLatestInChain(idOf(corr1))).isFalse();
 	}
