@@ -19,6 +19,8 @@ public class TaxDeclarationService
 	private static final AdMessageKey MSG_TaxDeclaration_AlreadyProcessed = AdMessageKey.of("TaxDeclaration_AlreadyProcessed");
 	private static final AdMessageKey MSG_TaxDeclaration_CreateCorrection_OriginalNotLocked = AdMessageKey.of("TaxDeclaration_CreateCorrection_OriginalNotLocked");
 	private static final AdMessageKey MSG_TaxDeclaration_OriginalMustBeOriginal = AdMessageKey.of("TaxDeclaration_OriginalMustBeOriginal");
+	private static final AdMessageKey MSG_TaxDeclaration_CreateCorrection_DraftExists = AdMessageKey.of("TaxDeclaration_CreateCorrection_DraftExists");
+	private static final AdMessageKey MSG_TaxDeclaration_CreateCorrection_NoCorrectionNeeded = AdMessageKey.of("TaxDeclaration_CreateCorrection_NoCorrectionNeeded");
 
 	@NonNull private final TaxDeclarationRepository taxDeclarationRepository;
 
@@ -73,5 +75,32 @@ public class TaxDeclarationService
 				.isCorrection(true)
 				.originalId(originalId)
 				.build());
+	}
+
+	/**
+	 * Create a Correction for the chain that {@code anyChainMemberId} belongs to, after verifying a correction is actually needed.
+	 * Resolves to the root Original, rejects when an unprocessed draft Correction already exists, runs the drift check,
+	 * and rejects when no drift is detected. Returns the id of the newly spawned (still draft) Correction.
+	 */
+	public TaxDeclarationId createCorrectionWithDriftCheck(@NonNull final TaxDeclarationId anyChainMemberId)
+	{
+		final I_C_TaxDeclaration record = taxDeclarationRepository.getById(anyChainMemberId);
+		final TaxDeclarationId originalId = record.isCorrection()
+				? TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_Original_ID())
+				: anyChainMemberId;
+
+		if (taxDeclarationRepository.hasUnprocessedCorrectionFor(originalId, null))
+		{
+			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_DraftExists);
+		}
+
+		checkDrift(originalId);
+		final I_C_TaxDeclaration original = taxDeclarationRepository.getById(originalId);
+		if (!original.isCorrectionNeeded())
+		{
+			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_NoCorrectionNeeded);
+		}
+
+		return createCorrection(originalId);
 	}
 }
