@@ -94,9 +94,13 @@ public class TaxDeclarationService
 			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_DraftExists);
 		}
 
-		checkDrift(originalId);
-		final I_C_TaxDeclaration original = taxDeclarationRepository.getById(originalId);
-		if (!original.isCorrectionNeeded())
+		// Drift is evaluated against the latest-in-chain snapshot (most recent completed correction, or the
+		// original if none): once a correction is completed it — not the stale original — represents current truth.
+		final TaxDeclarationId latestId = TaxDeclarationId.ofRepoId(
+				taxDeclarationRepository.getLatestInChain(originalId).getC_TaxDeclaration_ID());
+		checkDrift(latestId);
+		final I_C_TaxDeclaration latest = taxDeclarationRepository.getById(latestId);
+		if (!latest.isCorrectionNeeded())
 		{
 			throw new AdempiereException(MSG_TaxDeclaration_CreateCorrection_NoCorrectionNeeded);
 		}
