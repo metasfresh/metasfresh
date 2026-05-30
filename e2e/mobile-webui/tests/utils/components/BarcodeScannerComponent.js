@@ -133,4 +133,23 @@ export const BarcodeScannerComponent = {
         await page.locator('#input-text').fill(barcode);
         await page.keyboard.press('Enter');
     }),
+
+    // Asserts DOM attributes on #input-text. Pass null as value to assert the attribute is ABSENT.
+    // Example: expectAttributes({ type: 'text', inputmode: 'none', readonly: null })
+    expectAttributes: async (expectedAttrs) => await test.step(`${NAME} - Expect attributes: ${JSON.stringify(expectedAttrs)}`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        for (const [attr, expectedValue] of Object.entries(expectedAttrs)) {
+            if (expectedValue === null) {
+                await expect(page.locator('#input-text')).not.toHaveAttribute(attr);
+            } else {
+                await expect(page.locator('#input-text')).toHaveAttribute(attr, expectedValue);
+            }
+        }
+    }),
+
+    expectCssClass: async ({ present, absent }) => await test.step(`${NAME} - Expect CSS class (present=${present}, absent=${absent})`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(present));
+        if (absent) await expect(page.locator('#input-text')).not.toHaveClass(new RegExp(absent));
+    }),
 }
