@@ -38,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
@@ -127,6 +128,7 @@ public class CreateHUCommand
 								.clientId(ClientId.METASFRESH)
 								.orgId(MasterdataContext.ORG_ID)
 								.warehouseId(warehouseId)
+								.locatorId(getLocatorIdOrNull())
 								.productId(productId)
 								.qty(Quantity.of(getTotalQtyCUs(), uom))
 								.movementDate(SystemTime.asZonedDateTime())
@@ -134,6 +136,15 @@ public class CreateHUCommand
 								.build()
 				)
 		);
+	}
+
+	@Nullable
+	private LocatorId getLocatorIdOrNull()
+	{
+		final Identifier locatorIdentifier = request.getLocator();
+		return locatorIdentifier != null
+				? context.getId(locatorIdentifier, LocatorId.class)
+				: null;
 	}
 
 	@NonNull
