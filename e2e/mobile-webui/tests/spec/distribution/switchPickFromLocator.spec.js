@@ -47,10 +47,11 @@ const createMasterdata = async ({ qtyToMove }) => {
     });
 };
 
-// Two HUs on two different locators of the SAME source warehouse, and a single DD_Order line (qty = 2×HU)
-// that starts on locator A. This lets one job be fulfilled by picking HU1 from locator A, switching the
-// pick-from locator mid-job to B, then picking HU2 from locator B.
-const createMasterdataTwoLocators = async ({ qtyPerHU }) => {
+// Two HUs (qtyPerHU each) on two different locators of the SAME source warehouse, and a single DD_Order
+// line of `lineQty` that starts on locator A. With lineQty between one and two HUs (e.g. 170 for two
+// 100-HUs) the picker fulfills the line by picking HU1 fully from locator A, switching the pick-from
+// locator mid-job to B, then picking the remainder from HU2 at locator B.
+const createMasterdataTwoLocators = async ({ qtyPerHU, lineQty }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -75,9 +76,9 @@ const createMasterdataTwoLocators = async ({ qtyPerHU }) => {
                     warehouseTo: "wh2",
                     warehouseInTransit: "whInTransit",
                     plant: "plantId",
-                    // Single line covering both HUs; starts on locator A so the picker begins where HU1 sits.
+                    // Single line; starts on locator A so the picker begins where HU1 sits.
                     lines: [
-                        { product: "P1", qtyEntered: qtyPerHU * 2, locatorFrom: "wh1_l1" },
+                        { product: "P1", qtyEntered: lineQty, locatorFrom: "wh1_l1" },
                     ],
                 },
             },
@@ -293,7 +294,10 @@ test('Switch pick-from locator — pick from locator A, switch mid-job, pick fro
     allure.story('mobileUI DD_Order picker can fulfill one order from two locators via a mid-job Lagerort leer press');
     allure.severity('critical');
 
-    const masterdata = await createMasterdataTwoLocators({ qtyPerHU: 100 });
+    // Line needs 170; HU1 (locator A) and HU2 (locator B) hold 100 each. So picking covers two cases:
+    //   • locator A, HU1 (100 available): system proposes 100 (HU-limited)
+    //   • locator B, HU2 (100 available, 70 still needed): system proposes 70 (remaining-line-limited)
+    const masterdata = await createMasterdataTwoLocators({ qtyPerHU: 100, lineQty: 170 });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -310,7 +314,7 @@ test('Switch pick-from locator — pick from locator A, switch mid-job, pick fro
         await DistributionJobScreen.expectSwitchPickFromLocatorButton({ visible: true });
     });
 
-    await test.step('Pick HU1 from locator A (100 of 200)', async () => {
+    await test.step('Pick HU1 from locator A — system proposes 100 (the HU holds 100)', async () => {
         await DistributionJobScreen.clickLineButton({ index: 1 });
         await DistributionLineScreen.scanHUToMove({
             huQRCode: masterdata.handlingUnits.HU1.qrCode,
@@ -328,26 +332,25 @@ test('Switch pick-from locator — pick from locator A, switch mid-job, pick fro
         await DistributionJobScreen.switchPickFromLocator({ expectNextLocatorId: locatorBId });
     });
 
-    await test.step('Pick HU2 from locator B (remaining 100 of 200)', async () => {
+    await test.step('Pick HU2 from locator B — system proposes 70 (only 70 still needed)', async () => {
         await DistributionJobScreen.clickLineButton({ index: 1 });
         await DistributionLineScreen.scanHUToMove({
             huQRCode: masterdata.handlingUnits.HU2.qrCode,
-            qtyToMove: '100',
-            expectedQtyToMove: '100',
+            qtyToMove: '70',
+            expectedQtyToMove: '70',
         });
         await DistributionLineScreen.goBack();
     });
 
-    await test.step('Drop both HUs to wh2 + complete + assert backend state', async () => {
+    await test.step('Drop to wh2 + complete + assert HU1 fully moved (100 → wh2)', async () => {
         await DistributionJobScreen.dropAllTo({
             dropToLocatorQRCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode,
         });
         await DistributionJobScreen.complete();
         await Backend.expect({
-            title: 'After cross-locator pick + drop: HU1 and HU2 are both at wh2',
+            title: 'After cross-locator pick (100 from A + 70 from B) + drop: HU1 is fully at wh2',
             hus: {
                 HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
-                HU2: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
             },
         });
     });
