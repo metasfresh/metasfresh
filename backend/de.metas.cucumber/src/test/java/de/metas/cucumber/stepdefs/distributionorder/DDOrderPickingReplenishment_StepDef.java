@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDef;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.handlingunits.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.handlingunits.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
@@ -246,12 +247,18 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler with the expected error state
-	 * and (optionally) a message fragment (network gap ends the event in Error;
-	 * also covers the Done outcome of the watchdog rebuild).
+	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler for a SPECIFIC
+	 * shipment schedule, with the expected error state and (optionally) a message fragment
+	 * (network gap ends the event in Error; also covers the Done outcome of the watchdog rebuild).
+	 *
+	 * <p>The entry is tied to its originating schedule via the parent {@code AD_EventLog}'s source record
+	 * reference ({@code AD_Table_ID}=M_ShipmentSchedule + {@code Record_ID}=the schedule), which the
+	 * {@code DDOrderReplenishmentEventPublisher} now sets. This prevents matching a stale entry left behind
+	 * by a previous scenario (false-green isolation bug).</p>
 	 *
 	 * <p>Columns:</p>
 	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the schedule that triggered the reconcile (required).</li>
 	 *   <li>{@code IsError} — {@code true} for the Error outcome, {@code false} for the Done outcome (required).</li>
 	 *   <li>{@code MsgText} — optional substring the entry's message must contain (case-insensitive like-filter).</li>
 	 * </ul>
@@ -260,10 +267,14 @@ public class DDOrderPickingReplenishment_StepDef
 	public void assert_reconcile_event_log_entry(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
+			final String shipmentScheduleIdentifier = row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).getAsString();
+			final int shipmentScheduleId = shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID();
 			final boolean expectedError = row.getAsBoolean(I_AD_EventLog_Entry.COLUMNNAME_IsError);
 			final String msgTextFragment = row.getAsOptionalString(I_AD_EventLog_Entry.COLUMNNAME_MsgText).orElse(null);
 
 			final Supplier<Boolean> entryFound = () -> {
+				// AD_EventLog_Entry has no direct link to the schedule; pin it via the parent AD_EventLog's
+				// source record reference (set by DDOrderReplenishmentEventPublisher).
 				final org.adempiere.ad.dao.IQueryBuilder<I_AD_EventLog_Entry> queryBuilder = queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_IsError, expectedError);
@@ -271,6 +282,10 @@ public class DDOrderPickingReplenishment_StepDef
 				{
 					queryBuilder.addStringLikeFilter(I_AD_EventLog_Entry.COLUMNNAME_MsgText, msgTextFragment, /*ignoreCase*/ true);
 				}
+				queryBuilder.addInSubQueryFilter(
+						I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_ID,
+						I_AD_EventLog.COLUMNNAME_AD_EventLog_ID,
+						eventLogsForSchedule(shipmentScheduleId));
 				return queryBuilder.create().anyMatch();
 			};
 
@@ -284,6 +299,20 @@ public class DDOrderPickingReplenishment_StepDef
 				throw new RuntimeException(e);
 			}
 		});
+	}
+
+	/**
+	 * Builds the sub-query selecting the {@code AD_EventLog} records whose source record reference points to the
+	 * given shipment schedule (set by {@code DDOrderReplenishmentEventPublisher}).
+	 */
+	private org.compiere.model.IQuery<I_AD_EventLog> eventLogsForSchedule(final int shipmentScheduleId)
+	{
+		final org.adempiere.util.lang.impl.TableRecordReference scheduleRef =
+				org.adempiere.util.lang.impl.TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		return queryBL.createQueryBuilder(I_AD_EventLog.class)
+				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_AD_Table_ID, scheduleRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_Record_ID, scheduleRef.getRecord_ID())
+				.create();
 	}
 
 	/**

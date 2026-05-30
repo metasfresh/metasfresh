@@ -81,8 +81,8 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | IsError |
-      | false   |
+      | M_ShipmentSchedule_ID | IsError |
+      | shipmentSchedule      | false   |
 
   @from:cucumber
   Scenario: The hourly scheduler self-heals drift via the same rebuild process
@@ -98,5 +98,5 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | IsError |
-      | false   |
+      | M_ShipmentSchedule_ID | IsError |
+      | shipmentSchedule      | false   |

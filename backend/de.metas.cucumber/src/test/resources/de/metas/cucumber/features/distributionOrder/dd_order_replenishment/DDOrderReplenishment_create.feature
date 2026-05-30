@@ -80,8 +80,8 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
     # The async reconcile event handler records a Done AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | IsError |
-      | false   |
+      | M_ShipmentSchedule_ID | IsError |
+      | shipmentSchedule      | false   |
 
   @from:cucumber
   Scenario: Flagging a warehouse as packing without a distribution network is rejected

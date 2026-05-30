@@ -3,8 +3,10 @@ package de.metas.handlingunits.ddorder.replenishment.event;
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -27,6 +29,11 @@ public class DDOrderReplenishmentEventPublisher
 		final Event event = Event.builder()
 				.setEventName(EVENT_NAME)
 				.putProperty(PROPERTY_shipmentScheduleId, shipmentScheduleId.getRepoId())
+				// Tie the resulting AD_EventLog (and thus its AD_EventLog_Entry rows) to the schedule that
+				// triggered the reconcile. EventLogService.saveEvent copies this into AD_EventLog.AD_Table_ID /
+				// Record_ID, which lets callers (incl. tests) pin a log entry to its originating schedule
+				// instead of matching any reconcile entry globally.
+				.setSourceRecordReference(TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId.getRepoId()))
 				.shallBeLogged()
 				.build();
 		eventBusFactory.getEventBus(DDOrderReplenishmentConstants.TOPIC).enqueueEvent(event);

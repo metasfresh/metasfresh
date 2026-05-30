@@ -93,5 +93,5 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
     And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
     # The async reconcile event handler records a Done AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | IsError |
-      | false   |
+      | M_ShipmentSchedule_ID | IsError |
+      | shipmentSchedule      | false   |
