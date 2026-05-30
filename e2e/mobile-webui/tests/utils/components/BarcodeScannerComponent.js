@@ -149,7 +149,7 @@ export const BarcodeScannerComponent = {
 
     expectCssClass: async ({ present, absent }) => await test.step(`${NAME} - Expect CSS class (present=${present}, absent=${absent})`, async () => {
         await BarcodeScannerComponent.waitToAttach({});
-        if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(present));
-        if (absent) await expect(page.locator('#input-text')).not.toHaveClass(new RegExp(absent));
+        if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(`(^|\\s)${present}(\\s|$)`));
+        if (absent) await expect(page.locator('#input-text')).not.toHaveClass(new RegExp(`(^|\\s)${absent}(\\s|$)`));
     }),
 }
