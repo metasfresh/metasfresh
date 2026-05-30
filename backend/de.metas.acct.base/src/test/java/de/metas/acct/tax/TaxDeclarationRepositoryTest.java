@@ -106,20 +106,14 @@ class TaxDeclarationRepositoryTest
 	@Test
 	public void getLatestInChain_returnsLatestCompletedCorrection()
 	{
-		// Given: an Original + 2 completed Corrections (Created at different times — the later one wins)
+		// Given: an Original + 2 completed Corrections
 		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
 		final TaxDeclarationId originalId = TaxDeclarationId.ofRepoId(original.getC_TaxDeclaration_ID());
 
 		final I_C_TaxDeclaration correction1 = createTaxDeclaration(true, originalId.getRepoId(), true, true);
-		// Force correction1.Created to be earlier than correction2 via InterfaceWrapperHelper.setValue
-		InterfaceWrapperHelper.setValue(correction1, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-01 10:00:00"));
-		InterfaceWrapperHelper.save(correction1);
-
 		final I_C_TaxDeclaration correction2 = createTaxDeclaration(true, originalId.getRepoId(), true, true);
-		InterfaceWrapperHelper.setValue(correction2, I_C_TaxDeclaration.COLUMNNAME_Created, Timestamp.valueOf("2025-01-02 10:00:00"));
-		InterfaceWrapperHelper.save(correction2);
 
-		// When / Then: should return the LATER Correction
+		// When / Then: should return correction2, which has the higher C_TaxDeclaration_ID
 		final I_C_TaxDeclaration result = repository.getLatestInChain(originalId);
 		Assertions.assertThat(result.getC_TaxDeclaration_ID()).isEqualTo(correction2.getC_TaxDeclaration_ID());
 	}
@@ -136,5 +130,92 @@ class TaxDeclarationRepositoryTest
 		// When / Then: draft Corrections don't count as "live"; falls back to Original
 		final I_C_TaxDeclaration result = repository.getLatestInChain(originalId);
 		Assertions.assertThat(result.getC_TaxDeclaration_ID()).isEqualTo(originalId.getRepoId());
+	}
+
+	// ---------------------------------------------------------------------------
+	// isLatestInChain tests
+	// ---------------------------------------------------------------------------
+
+	@Test
+	public void isLatestInChain_originalWithNoProcessedCorrection_isLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		Assertions.assertThat(repository.isLatestInChain(idOf(original))).isTrue();
+	}
+
+	@Test
+	public void isLatestInChain_originalSupersededByProcessedCorrection_isNotLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		Assertions.assertThat(repository.isLatestInChain(idOf(original))).isFalse();
+	}
+
+	@Test
+	public void isLatestInChain_latestProcessedCorrection_isLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		final I_C_TaxDeclaration corr = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		Assertions.assertThat(repository.isLatestInChain(idOf(corr))).isTrue();
+	}
+
+	@Test
+	public void isLatestInChain_supersededCorrection_isNotLatest()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+
+		final I_C_TaxDeclaration corr1 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		final I_C_TaxDeclaration corr2 = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true);
+		// corr2 is saved after corr1, so it has the higher C_TaxDeclaration_ID and is the latest in chain
+
+		Assertions.assertThat(repository.isLatestInChain(idOf(corr1))).isFalse();
+	}
+
+	private static TaxDeclarationId idOf(final I_C_TaxDeclaration record)
+	{
+		return TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_ID());
+	}
+
+	// ---------------------------------------------------------------------------
+	// hasUnprocessedCorrectionFor tests
+	// ---------------------------------------------------------------------------
+
+	@Test
+	public void hasUnprocessedCorrectionFor_noCorrection_false()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isFalse();
+	}
+
+	@Test
+	public void hasUnprocessedCorrectionFor_draftCorrectionExists_true()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true); // draft (not processed) correction
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isTrue();
+	}
+
+	@Test
+	public void hasUnprocessedCorrectionFor_onlyProcessedCorrection_false()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), true, true); // processed correction
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isFalse();
+	}
+
+	@Test
+	public void hasUnprocessedCorrectionFor_excludesSelf()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		final I_C_TaxDeclaration draft = createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, true);
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), idOf(draft))).isFalse();
+	}
+
+	@Test
+	public void hasUnprocessedCorrectionFor_inactiveDraftCorrection_false()
+	{
+		final I_C_TaxDeclaration original = createTaxDeclaration(false, 0, true, true);
+		createTaxDeclaration(true, original.getC_TaxDeclaration_ID(), false, false); // inactive draft correction
+		Assertions.assertThat(repository.hasUnprocessedCorrectionFor(idOf(original), null)).isFalse();
 	}
 }
