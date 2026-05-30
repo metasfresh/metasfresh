@@ -245,8 +245,7 @@ public class DDOrderPickingReplenishmentService
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(targetWarehouse.getDD_NetworkDistribution_ID());
 
-		final WarehouseId sourceWarehouseId = resolveSourceWarehouse(targetWarehouseId, productId, networkId)
-				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReplenishment_NetworkGap, networkId, productId));
+		final WarehouseId sourceWarehouseId = getFirstSourceWarehouseIdOrThrow(networkId, targetWarehouseId, productId);
 
 		// Build the qty as a Quantity in the product's stock UOM (mirrors HUs2DDOrderProducer, which carries a Quantity).
 		// Source: the effective QtyOrdered (QtyOrdered_Override → QtyOrdered_Calculated, per IShipmentScheduleEffectiveBL).
@@ -365,6 +364,22 @@ public class DDOrderPickingReplenishmentService
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.load(ddOrderId.getRepoId(), I_DD_Order.class);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(ddOrder.getM_ShipmentSchedule_ID());
 		return repository.existsPickingJobLineForSchedule(scheduleId);
+	}
+
+	/**
+	 * Returns the source (stocking) warehouse ID for the given target warehouse from the distribution network,
+	 * or throws a network-gap exception if no matching line is found.
+	 *
+	 * <p>This is the mandatory call site for {@link #createDDOrderFor}: when no source warehouse can be resolved
+	 * the DD_Order must not be created and the caller receives a clear error instead of a silent no-op.</p>
+	 */
+	private WarehouseId getFirstSourceWarehouseIdOrThrow(
+			@Nullable final DistributionNetworkId networkId,
+			@NonNull final WarehouseId targetWarehouseId,
+			@NonNull final ProductId productId)
+	{
+		return resolveSourceWarehouse(targetWarehouseId, productId, networkId)
+				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReplenishment_NetworkGap, networkId, productId));
 	}
 
 	/**

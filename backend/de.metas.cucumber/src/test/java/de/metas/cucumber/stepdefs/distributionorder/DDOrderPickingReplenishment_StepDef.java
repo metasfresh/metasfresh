@@ -130,7 +130,7 @@ public class DDOrderPickingReplenishment_StepDef
 							.hasMessageContaining("Kommissionierung läuft bereits");
 
 					// Reload and assert the persisted value is unchanged (the rolled-back save left no mark).
-					final I_M_ShipmentSchedule reloaded = InterfaceWrapperHelper.load(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
+					final I_M_ShipmentSchedule reloaded = InterfaceWrapperHelper.loadOutOfTrx(schedule.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
 					assertThat(reloaded.getQtyOrdered_Override())
 							.as("M_ShipmentSchedule.QtyOrdered_Override must be unchanged after the rejected save")
 							.isEqualByComparingTo(originalQtyOverride == null ? BigDecimal.ZERO : originalQtyOverride);

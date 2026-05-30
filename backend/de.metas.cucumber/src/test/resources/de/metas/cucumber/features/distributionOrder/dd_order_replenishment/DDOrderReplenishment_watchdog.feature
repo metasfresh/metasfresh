@@ -72,7 +72,7 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
     And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
 
   @from:cucumber
-  Scenario: Running the rebuild process manually recreates the missing DD_Order (TC7)
+  Scenario: Running the rebuild process manually recreates the missing DD_Order
     When the DD_Order_Picking_Rebuild process is run
 
     Then after not more than 30s, the DD_Order linked to shipment schedule is found:

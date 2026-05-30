@@ -84,6 +84,13 @@ public class M_Picking_Job_Line_StepDef
 
 	private void create_M_Picking_Job_Line(@NonNull final DataTableRow row)
 	{
+		// Direct model creation is intentional: this step exists solely to make the picker-busy guard
+		// visible to the DDOrderPickingReplenishmentService (which checks M_Picking_Job_Line by schedule ID).
+		// The real-world picking workflow (MobileUI_Picking_StepDef#start, REST API) drives a full Spring
+		// context and requires a warehouse with stock, HUs, and a running picking-worker session — state
+		// that is irrelevant for the busy-guard tests and prohibitively expensive to set up just for that.
+		// A minimal, logically-deleted (IsActive=false) job/line is the smallest fixture that produces
+		// the exact DB state the guard checks, without polluting other tests.
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(row.getAsIdentifier(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID).getAsString());
 		final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier(I_M_Picking_Job_Line.COLUMNNAME_C_OrderLine_ID).getAsString());
 		final I_C_Order order = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);

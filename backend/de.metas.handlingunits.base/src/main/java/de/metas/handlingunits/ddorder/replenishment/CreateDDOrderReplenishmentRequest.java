@@ -33,17 +33,11 @@ import java.time.Instant;
 public class CreateDDOrderReplenishmentRequest
 {
 	@NonNull ShipmentScheduleId shipmentScheduleId;
-	/** Source (stocking) warehouse — for M_Warehouse_From_ID on header. */
 	@NonNull WarehouseId sourceWarehouseId;
-	/** Target (packing) warehouse — for M_Warehouse_To_ID on header. */
 	@NonNull WarehouseId targetWarehouseId;
-	/** In-transit warehouse — for M_Warehouse_ID (transit) on header. */
 	@NonNull WarehouseId inTransitWarehouseId;
-	/** Default locator in the source warehouse — for M_Locator_ID on the DD_Order line. */
 	@NonNull LocatorId locatorFromId;
-	/** Default locator in the target (packing) warehouse — for M_LocatorTo_ID on the DD_Order line. */
 	@NonNull LocatorId locatorToId;
-	/** Distribution Order document type — resolved by the Service from AD_Client / org. */
 	@NonNull DocTypeId docTypeId;
 	@NonNull ProductId productId;
 	@NonNull Quantity qty;

@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -195,15 +196,10 @@ public class M_Warehouse_StepDef
 							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
 							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));
 
-					row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder)
-							.ifPresent(warehouseRecord::setIsAutoDistributionOrder);
-
 					// DD_NetworkDistribution_ID resolves the source warehouse for the packing warehouse via the
 					// distribution network (target -> source). Referenced by identifier from a previously created
 					// DD_NetworkDistribution.
-					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_DD_NetworkDistribution_ID)
-							.map(identifier -> identifier.lookupIdIn(ddNetworkTable))
-							.ifPresent(networkId -> warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId()));
+					applyAutoDistributionOrderFields(row, warehouseRecord);
 
 					saveRecord(warehouseRecord);
 
@@ -250,29 +246,59 @@ public class M_Warehouse_StepDef
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Warehouse_ID)
 				.forEach(row -> {
 					final ValueAndName valueAndName = row.suggestValueAndName();
-
-					final I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-					warehouseRecord.setValue(valueAndName.getValue());
-					warehouseRecord.setName(valueAndName.getName());
-					warehouseRecord.setSeparator("*");
-					warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(StepDefConstants.METASFRESH_AG_BPARTNER_ID));
-					warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID));
+					final I_M_Warehouse warehouseRecord = buildWarehouseRecord(row, valueAndName);
 
 					final OptionalBoolean isAutoDistributionOrder = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder);
-					if (isAutoDistributionOrder.isPresent())
-					{
-						warehouseRecord.setIsAutoDistributionOrder(isAutoDistributionOrder.isTrue());
-					}
-
-					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_DD_NetworkDistribution_ID)
-							.map(identifier -> identifier.lookupIdIn(ddNetworkTable))
-							.ifPresent(networkId -> warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId()));
-
 					assertThatThrownBy(() -> saveRecord(warehouseRecord))
 							.as("Saving M_Warehouse %s with IsAutoDistributionOrder=%s and no DD_NetworkDistribution_ID must be rejected",
 									valueAndName.getValue(), isAutoDistributionOrder.toBooleanString())
 							.isInstanceOf(AdempiereException.class)
 							.hasMessageContaining("Verteilungsnetz");
 				});
+	}
+
+	/**
+	 * Builds a new (unsaved) {@code M_Warehouse} record from the given row, applying the mandatory
+	 * fields (Value, Name, Separator, default BPartner / BPartnerLocation) and the optional
+	 * {@code IsAutoDistributionOrder} / {@code DD_NetworkDistribution_ID} columns.
+	 *
+	 * <p>Used by {@link #saving_M_Warehouse_is_rejected}. The full upsert step
+	 * ({@link #create_M_Warehouse}) calls {@link #applyAutoDistributionOrderFields} directly
+	 * because it resolves BPartner from the row (not from the metasfresh-AG default).</p>
+	 */
+	private I_M_Warehouse buildWarehouseRecord(
+			@NonNull final DataTableRow row,
+			@NonNull final ValueAndName valueAndName)
+	{
+		final I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouseRecord.setValue(valueAndName.getValue());
+		warehouseRecord.setName(valueAndName.getName());
+		warehouseRecord.setSeparator("*");
+		warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(StepDefConstants.METASFRESH_AG_BPARTNER_ID));
+		warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID));
+
+		applyAutoDistributionOrderFields(row, warehouseRecord);
+
+		return warehouseRecord;
+	}
+
+	/**
+	 * Applies the {@code IsAutoDistributionOrder} and {@code DD_NetworkDistribution_ID} columns from the
+	 * row to the given warehouse record. Both columns are optional; absent columns leave the record
+	 * fields unchanged.
+	 *
+	 * <p>Shared by {@link #create_M_Warehouse} and {@link #buildWarehouseRecord} to keep the
+	 * auto-distribution-order field-population in one place.</p>
+	 */
+	private void applyAutoDistributionOrderFields(
+			@NonNull final DataTableRow row,
+			@NonNull final I_M_Warehouse warehouseRecord)
+	{
+		row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder)
+				.ifPresent(warehouseRecord::setIsAutoDistributionOrder);
+
+		row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_DD_NetworkDistribution_ID)
+				.map(identifier -> identifier.lookupIdIn(ddNetworkTable))
+				.ifPresent(networkId -> warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId()));
 	}
 }
