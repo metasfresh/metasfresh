@@ -90,7 +90,7 @@ public class DDOrderPickingReplenishment_StepDef
 	 * Changes a shipment schedule's effective quantity by setting {@code QtyOrdered_Override} and saving.
 	 * The save fires the {@code M_ShipmentSchedule} interceptor (sync picker-busy guard + after-commit reconcile),
 	 * which on a packing warehouse with no busy picker voids the old DD_Order and recreates a fresh one with the
-	 * new quantity (REQUIREMENTS.md TC2).
+	 * new quantity.
 	 *
 	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyOrdered_Override} (new quantity).</p>
 	 */
@@ -104,7 +104,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Attempts to change a shipment schedule quantity and asserts the {@code beforeSave} interceptor REJECTS the
-	 * save (picker-busy guard, REQUIREMENTS.md TC4). Asserts the thrown exception is an
+	 * save (picker-busy guard). Asserts the thrown exception is an
 	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
 	 * The schedule record is reloaded and asserted unchanged.
 	 *
@@ -139,7 +139,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Deactivates every {@code M_Picking_Job_Line} that references the given schedule, releasing the picker
-	 * (so that a subsequent repost / reconcile can proceed — REQUIREMENTS.md TC5).
+	 * (so that a subsequent repost / reconcile can proceed).
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
 	 */
@@ -185,7 +185,7 @@ public class DDOrderPickingReplenishment_StepDef
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
-		trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId));
+		trxManager.runInThreadInheritedTrx(() -> reconcileBL.reconcile(scheduleId));
 	}
 
 	/**
@@ -207,7 +207,7 @@ public class DDOrderPickingReplenishment_StepDef
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 
-		assertThatThrownBy(() -> trxManager.runInNewTrx(() -> reconcileBL.reconcile(scheduleId)))
+		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> reconcileBL.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
 				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
@@ -218,7 +218,7 @@ public class DDOrderPickingReplenishment_StepDef
 	public void run_rebuild_process()
 	{
 		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
-		trxManager.runInNewTrx(reconcileBL::rebuildDrift);
+		trxManager.runInThreadInheritedTrx(reconcileBL::rebuildDrift);
 	}
 
 	@Then("the DD_Order_Picking_Rebuild process exists")
@@ -233,8 +233,8 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler with the expected error state
-	 * and (optionally) a message fragment (REQUIREMENTS.md TC6 — network gap ends the event in Error;
-	 * also covers the Done outcome of the watchdog rebuild in TC7).
+	 * and (optionally) a message fragment (network gap ends the event in Error;
+	 * also covers the Done outcome of the watchdog rebuild).
 	 *
 	 * <p>Columns:</p>
 	 * <ul>
@@ -274,7 +274,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Polls for an Error {@code AD_EventLog_Entry} from the reconcile handler that has an {@code AD_Issue} attached
-	 * (REQUIREMENTS.md TC6 — the network-gap soft-fail logs an AD_Issue).
+	 * (network-gap soft-fail logs an AD_Issue).
 	 */
 	@Then("^after not more than (.*)s, an AD_Issue is logged for the replenishment network gap$")
 	public void assert_reconcile_AD_Issue_logged(final int timeoutSec) throws InterruptedException

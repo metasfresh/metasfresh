@@ -247,7 +247,7 @@ class DDOrderPickingReplenishmentServiceTest
 	void resolveSourceWarehouse_returns_resolvedWarehouse_whenNetworkLineMatches()
 	{
 		final WarehouseId sourceWarehouseId = WarehouseId.ofRepoId(10);
-		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(20);
+		final WarehouseId targetWarehouseId = WarehouseId.ofRepoId(20);
 		final ProductId productId = ProductId.ofRepoId(30);
 
 		// create distribution network with a line: source → packing
@@ -258,13 +258,13 @@ class DDOrderPickingReplenishmentServiceTest
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		line.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(targetWarehouseId, productId, networkId);
 
 		assertThat(result).isPresent();
 		assertThat(result.get()).isEqualTo(sourceWarehouseId);
@@ -273,11 +273,11 @@ class DDOrderPickingReplenishmentServiceTest
 	@Test
 	void resolveSourceWarehouse_returnsEmpty_whenNoMatchingLine()
 	{
-		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(21);
+		final WarehouseId targetWarehouseId = WarehouseId.ofRepoId(21);
 		final WarehouseId differentWarehouseId = WarehouseId.ofRepoId(22);
 		final ProductId productId = ProductId.ofRepoId(31);
 
-		// create distribution network with a line that does NOT target autoDistributionOrderId
+		// create distribution network with a line that does NOT target targetWarehouseId
 		final I_DD_NetworkDistribution network = newInstance(I_DD_NetworkDistribution.class);
 		network.setName("TestNetwork2");
 		save(network);
@@ -285,13 +285,13 @@ class DDOrderPickingReplenishmentServiceTest
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(WarehouseId.ofRepoId(50).getRepoId());
-		line.setM_Warehouse_ID(differentWarehouseId.getRepoId()); // target is NOT autoDistributionOrderId
+		line.setM_Warehouse_ID(differentWarehouseId.getRepoId()); // target is NOT targetWarehouseId
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(targetWarehouseId, productId, networkId);
 
 		assertThat(result).isNotPresent();
 	}
@@ -299,10 +299,10 @@ class DDOrderPickingReplenishmentServiceTest
 	@Test
 	void resolveSourceWarehouse_returnsEmpty_whenNetworkIsNull()
 	{
-		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(23);
+		final WarehouseId targetWarehouseId = WarehouseId.ofRepoId(23);
 		final ProductId productId = ProductId.ofRepoId(32);
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, null);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(targetWarehouseId, productId, null);
 
 		assertThat(result).isNotPresent();
 	}
@@ -509,7 +509,7 @@ class DDOrderPickingReplenishmentServiceTest
 	{
 		final WarehouseId sourceA = WarehouseId.ofRepoId(40);  // priorityNo=10 → highest priority
 		final WarehouseId sourceB = WarehouseId.ofRepoId(41);  // priorityNo=20 → lower priority
-		final WarehouseId autoDistributionOrderId = WarehouseId.ofRepoId(42);
+		final WarehouseId targetWarehouseId = WarehouseId.ofRepoId(42);
 		final ProductId productId = ProductId.ofRepoId(33);
 
 		// create distribution network with two lines targeting the same packing warehouse
@@ -520,7 +520,7 @@ class DDOrderPickingReplenishmentServiceTest
 		final I_DD_NetworkDistributionLine lineA = newInstance(I_DD_NetworkDistributionLine.class);
 		lineA.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		lineA.setM_WarehouseSource_ID(sourceA.getRepoId());
-		lineA.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		lineA.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		lineA.setM_Shipper_ID(1);
 		lineA.setPriorityNo(10);
 		save(lineA);
@@ -528,14 +528,14 @@ class DDOrderPickingReplenishmentServiceTest
 		final I_DD_NetworkDistributionLine lineB = newInstance(I_DD_NetworkDistributionLine.class);
 		lineB.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		lineB.setM_WarehouseSource_ID(sourceB.getRepoId());
-		lineB.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		lineB.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		lineB.setM_Shipper_ID(1);
 		lineB.setPriorityNo(20);
 		save(lineB);
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(network.getDD_NetworkDistribution_ID());
 
-		final Optional<WarehouseId> result = service.resolveSourceWarehouse(autoDistributionOrderId, productId, networkId);
+		final Optional<WarehouseId> result = service.resolveSourceWarehouse(targetWarehouseId, productId, networkId);
 
 		// expect: sourceA is returned because priorityNo=10 < 20
 		assertThat(result).isPresent();
@@ -616,19 +616,19 @@ class DDOrderPickingReplenishmentServiceTest
 		network.setName("CreateBranchNetwork");
 		save(network);
 
-		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId targetWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		line.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		// active schedule on the packing warehouse
 		// QtyOrdered_Calculated is the qty source (M1: QtyOrdered* only — no QtyToDeliver fallback)
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		schedule.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
 		schedule.setQtyOrdered_Calculated(new BigDecimal("17"));
 		schedule.setIsActive(true);
@@ -650,7 +650,7 @@ class DDOrderPickingReplenishmentServiceTest
 		// header warehouse = IN-TRANSIT (mirrors HUs2DDOrderProducer); source/target on dedicated columns
 		assertThat(ddOrder.getM_Warehouse_ID()).as("header warehouse is in-transit").isEqualTo(inTransitWarehouseId.getRepoId());
 		assertThat(ddOrder.getM_Warehouse_From_ID()).isEqualTo(sourceWarehouseId.getRepoId());
-		assertThat(ddOrder.getM_Warehouse_To_ID()).isEqualTo(autoDistributionOrderId.getRepoId());
+		assertThat(ddOrder.getM_Warehouse_To_ID()).isEqualTo(targetWarehouseId.getRepoId());
 		assertThat(ddOrder.getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getRepoId());
 		assertThat(ddOrder.getDatePromised()).as("DatePromised is set").isNotNull();
 		assertThat(ddOrder.getDateOrdered()).as("DateOrdered is set").isNotNull();
@@ -781,19 +781,19 @@ class DDOrderPickingReplenishmentServiceTest
 		network.setName("RecreateNetwork");
 		save(network);
 
-		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId targetWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		line.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		// ACTIVE schedule on the packing warehouse
 		// QtyOrdered_Calculated is the qty source (M1: QtyOrdered* only — no QtyToDeliver fallback)
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		schedule.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
 		schedule.setQtyOrdered_Calculated(new BigDecimal("25"));
 		schedule.setIsActive(true);
@@ -901,10 +901,10 @@ class DDOrderPickingReplenishmentServiceTest
 		network.setName("EmptyNetwork");
 		save(network);
 
-		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId targetWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		schedule.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		schedule.setM_Product_ID(556);
 		// QtyOrdered_Calculated is the qty source (M1: QtyOrdered* only — no QtyToDeliver fallback)
 		schedule.setQtyOrdered_Calculated(new BigDecimal("5"));
@@ -950,18 +950,18 @@ class DDOrderPickingReplenishmentServiceTest
 		network.setName("ZeroQtyNoCreateNetwork");
 		save(network);
 
-		final WarehouseId autoDistributionOrderId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
+		final WarehouseId targetWarehouseId = createWarehouse(true, network.getDD_NetworkDistribution_ID());
 
 		final I_DD_NetworkDistributionLine line = newInstance(I_DD_NetworkDistributionLine.class);
 		line.setDD_NetworkDistribution_ID(network.getDD_NetworkDistribution_ID());
 		line.setM_WarehouseSource_ID(sourceWarehouseId.getRepoId());
-		line.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		line.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		line.setM_Shipper_ID(1);
 		save(line);
 
 		// ACTIVE schedule on the packing warehouse, but QtyOrdered_Calculated is 0
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_Warehouse_ID(autoDistributionOrderId.getRepoId());
+		schedule.setM_Warehouse_ID(targetWarehouseId.getRepoId());
 		schedule.setM_Product_ID(productId.getRepoId());
 		schedule.setQtyOrdered_Calculated(BigDecimal.ZERO);
 		schedule.setIsActive(true);
