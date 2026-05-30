@@ -263,14 +263,9 @@ const BarcodeScannerComponent = ({
   };
 
   const handleInputTextBlur = () => {
-    // Only re-focus editable inputs. Re-focusing a readonly input inside a 2s
-    // timer triggered by a user tap lands in a user-gesture context where
-    // inputMode="none" is ignored on some Android browsers.
-    if (!isInputTextReadonly) {
-      setTimeout(() => {
-        inputTextRef?.current?.focus();
-      }, 2000);
-    }
+    setTimeout(() => {
+      inputTextRef?.current?.focus();
+    }, 2000);
   };
 
   return (
