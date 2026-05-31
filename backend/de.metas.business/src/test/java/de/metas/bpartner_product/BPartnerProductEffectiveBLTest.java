@@ -93,6 +93,48 @@ public class BPartnerProductEffectiveBLTest
 		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDays(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).isEqualTo(0);
 	}
 
+	@Test
+	public void getPurchaseTransportDaysIfSet_bpartnerProductHasValue_returnsBPartnerProductValue()
+	{
+		final BPartnerId vendorId = createVendor(3);
+
+		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		bpartnerProduct.setC_BPartner_ID(vendorId.getRepoId());
+		bpartnerProduct.setM_Product_ID(42);
+		bpartnerProduct.setDeliveryTime_Promised(7);
+		saveRecord(bpartnerProduct);
+
+		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDaysIfSet(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).contains(7);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_bpartnerProductHasNoValue_fallsBackToBPartner()
+	{
+		final BPartnerId vendorId = createVendor(3);
+
+		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		bpartnerProduct.setC_BPartner_ID(vendorId.getRepoId());
+		bpartnerProduct.setM_Product_ID(42);
+		// DeliveryTime_Promised not set → null in DB
+		saveRecord(bpartnerProduct);
+
+		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDaysIfSet(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).contains(3);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_noBPartnerProduct_fallsBackToBPartner()
+	{
+		final BPartnerId vendorId = createVendor(5);
+		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDaysIfSet(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).contains(5);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_nothingSet_returnsEmpty()
+	{
+		final BPartnerId vendorId = createVendor(null);
+		assertThat(bpartnerProductEffectiveBL.getPurchaseTransportDaysIfSet(vendorId, ProductId.ofRepoId(42), OrgId.ANY)).isEmpty();
+	}
+
 	private BPartnerId createVendor(final Integer poTransportDays)
 	{
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);

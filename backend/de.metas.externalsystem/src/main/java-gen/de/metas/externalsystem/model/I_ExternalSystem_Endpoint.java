@@ -93,6 +93,29 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_AuthType = "AuthType";
 
 	/**
+	 * Set Array Fan-Out.
+	 * If true and the upstream conversion returns a JSON array, one separate request is sent to this endpoint per array element.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsArrayFanOut (boolean IsArrayFanOut);
+
+	/**
+	 * Get Array Fan-Out.
+	 * If true and the upstream conversion returns a JSON array, one separate request is sent to this endpoint per array element.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isArrayFanOut();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_IsArrayFanOut = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "IsArrayFanOut", null);
+	String COLUMNNAME_IsArrayFanOut = "IsArrayFanOut";
+
+	/**
 	 * Set Client ID.
 	 *
 	 * <br>Type: String

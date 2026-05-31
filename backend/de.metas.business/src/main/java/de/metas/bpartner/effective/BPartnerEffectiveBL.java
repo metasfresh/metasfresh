@@ -50,6 +50,7 @@ import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -79,9 +80,32 @@ public class BPartnerEffectiveBL
 		return getByRecord(bpartnerDAO.getById(bPartnerId));
 	}
 
+	/**
+	 * Returns the vendor-level default purchase transport days as configured on
+	 * {@code C_BPartner.PO_TransportDays}, preserving the "is set?" distinction.
+	 * <p>
+	 * Return-value semantics — required contract for callers that chain this with
+	 * a lower-priority fallback:
+	 * <ul>
+	 *   <li>{@code Optional.empty()} — the column is NULL on {@code C_BPartner}; the caller
+	 *       may fall through to a lower-priority source (e.g. {@code PP_Product_Planning}).</li>
+	 *   <li>{@code Optional.of(0)} — the vendor was <b>explicitly</b> set to 0 transport days.
+	 *       Callers <b>must</b> use this 0 and <b>must not</b> fall through to a lower tier;
+	 *       conflating "set to 0" with "not set" is a behavioural bug.</li>
+	 *   <li>{@code Optional.of(n)} for {@code n &gt; 0} — explicit configured value.</li>
+	 * </ul>
+	 *
+	 * @see de.metas.bpartner_product.BPartnerProductEffectiveBL#getPurchaseTransportDaysIfSet(BPartnerId, de.metas.product.ProductId, OrgId)
+	 *      for the higher-priority vendor-product variant that chains into this method.
+	 */
+	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
+	{
+		return bpartnerDAO.getPurchaseTransportDays(bPartnerId);
+	}
+
 	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
 	{
-		return getById(bPartnerId).getPurchaseTransportDays();
+		return getPurchaseTransportDaysIfSet(bPartnerId).orElse(0);
 	}
 
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
@@ -198,8 +222,6 @@ public class BPartnerEffectiveBL
 		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
 		return parentGroupId != null ? bpGroupDAO.getById(parentGroupId) : null;
 	}
-
-
 
 	@Nullable
 	private <T, V> T getEffectiveValue(

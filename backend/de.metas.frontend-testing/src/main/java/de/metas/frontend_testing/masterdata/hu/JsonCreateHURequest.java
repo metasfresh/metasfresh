@@ -16,6 +16,8 @@ public class JsonCreateHURequest
 {
 	@Nullable Identifier product;
 	@Nullable Identifier warehouse;
+	/** Optional: when set, the HU is created on this specific locator (must belong to {@link #warehouse}); when null, the warehouse's default locator is used. */
+	@Nullable Identifier locator;
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
 	@Nullable Boolean generateHUQRCode;
