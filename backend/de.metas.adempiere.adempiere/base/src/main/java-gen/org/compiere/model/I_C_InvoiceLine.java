@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_InvoiceLine
  *  @author metasfresh (generated) 
@@ -19,7 +18,7 @@ public interface I_C_InvoiceLine
 
 
 	/**
-	 * Set Asset-Gruppe.
+	 * Set Asset Group.
 	 * Group of Assets
 	 *
 	 * <br>Type: TableDir
@@ -29,7 +28,7 @@ public interface I_C_InvoiceLine
 	void setA_Asset_Group_ID (int A_Asset_Group_ID);
 
 	/**
-	 * Get Asset-Gruppe.
+	 * Get Asset Group.
 	 * Group of Assets
 	 *
 	 * <br>Type: TableDir
@@ -73,7 +72,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
-	 * Set Capital vs Expense.
+	 * Set Capital/Expense.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -82,7 +81,7 @@ public interface I_C_InvoiceLine
 	void setA_CapvsExp (@Nullable java.lang.String A_CapvsExp);
 
 	/**
-	 * Get Capital vs Expense.
+	 * Get Capital/Expense.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -94,7 +93,34 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_A_CapvsExp = "A_CapvsExp";
 
 	/**
-	 * Set Asset Related?.
+	 * Set Account.
+	 * Account used
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAccount_ID (int Account_ID);
+
+	/**
+	 * Get Account.
+	 * Account used
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAccount_ID();
+
+	@Nullable org.compiere.model.I_C_ElementValue getAccount();
+
+	void setAccount(@Nullable org.compiere.model.I_C_ElementValue Account);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new ModelColumn<>(I_C_InvoiceLine.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_Account_ID = "Account_ID";
+
+	/**
+	 * Set Create Asset.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -103,7 +129,7 @@ public interface I_C_InvoiceLine
 	void setA_CreateAsset (boolean A_CreateAsset);
 
 	/**
-	 * Get Asset Related?.
+	 * Get Create Asset.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -113,27 +139,6 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_A_CreateAsset = new ModelColumn<>(I_C_InvoiceLine.class, "A_CreateAsset", null);
 	String COLUMNNAME_A_CreateAsset = "A_CreateAsset";
-
-	/**
-	 * Set A_Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setA_Processed (boolean A_Processed);
-
-	/**
-	 * Get A_Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isA_Processed();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_A_Processed = new ModelColumn<>(I_C_InvoiceLine.class, "A_Processed", null);
-	String COLUMNNAME_A_Processed = "A_Processed";
 
 	/**
 	 * Get Client.
@@ -192,6 +197,27 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setA_Processed (boolean A_Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isA_Processed();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_A_Processed = new ModelColumn<>(I_C_InvoiceLine.class, "A_Processed", null);
+	String COLUMNNAME_A_Processed = "A_Processed";
+
+	/**
 	 * Set Pricing system.
 	 *
 	 * <br>Type: Search
@@ -234,6 +260,26 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -261,8 +307,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -271,8 +316,7 @@ public interface I_C_InvoiceLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -281,6 +325,27 @@ public interface I_C_InvoiceLine
 	int getC_Charge_ID();
 
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+
+	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
 	 * Set Invoice.
@@ -486,113 +551,6 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
-	 * Set Tax.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Tax.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Tax_ID();
-
-	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
-
-	/**
-	 * Set Tax Category.
-	 * Tax Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Tax Category.
-	 * Tax Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_TaxCategory_ID();
-
-	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
-
-	/**
-	 * Set BPartner UOM.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_BPartner_ID (int C_UOM_BPartner_ID);
-
-	/**
-	 * Get BPartner UOM.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_BPartner_ID();
-
-	String COLUMNNAME_C_UOM_BPartner_ID = "C_UOM_BPartner_ID";
-
-	/**
-	 * Set Shipping Location.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Shipping_Location_ID (int C_Shipping_Location_ID);
-
-	/**
-	 * Get Shipping Location.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Shipping_Location_ID();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Shipping_Location_ID", null);
-	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -618,6 +576,113 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Shipping_Location_ID (int C_Shipping_Location_ID);
+
+	/**
+	 * Get Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Shipping_Location_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Shipping_Location_ID", null);
+	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
+
+	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Set BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_BPartner_ID (int C_UOM_BPartner_ID);
+
+	/**
+	 * Get BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_BPartner_ID();
+
+	String COLUMNNAME_C_UOM_BPartner_ID = "C_UOM_BPartner_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: Text
@@ -639,7 +704,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set External ID.
+	 * Set External IDs.
 	 * List of external IDs from C_Invoice_Candidates;
  delimited with ';
 ,;
@@ -652,7 +717,7 @@ public interface I_C_InvoiceLine
 	void setExternalIds (@Nullable java.lang.String ExternalIds);
 
 	/**
-	 * Get External ID.
+	 * Get External IDs.
 	 * List of external IDs from C_Invoice_Candidates;
  delimited with ';
 ,;
@@ -692,7 +757,7 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Set Description Only.
-	 * Nur Beschreibung
+	 * if true, the line is just description and no transaction
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -702,7 +767,7 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Get Description Only.
-	 * Nur Beschreibung
+	 * if true, the line is just description and no transaction
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -735,7 +800,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_IsOrderLineReadOnly = "IsOrderLineReadOnly";
 
 	/**
-	 * Set andrucken.
+	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -745,7 +810,7 @@ public interface I_C_InvoiceLine
 	void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get andrucken.
+	 * Get Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -756,6 +821,27 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_InvoiceLine.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
+
+	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_InvoiceLine.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
 
 	/**
 	 * Set SeqNo..
@@ -779,7 +865,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Gutschrift Grund.
+	 * Set Credit Reason.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -788,7 +874,7 @@ public interface I_C_InvoiceLine
 	void setLine_CreditMemoReason (@Nullable java.lang.String Line_CreditMemoReason);
 
 	/**
-	 * Get Gutschrift Grund.
+	 * Get Credit Reason.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -920,7 +1006,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set RMA-Position.
+	 * Set RMA Line.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -930,7 +1016,7 @@ public interface I_C_InvoiceLine
 	void setM_RMALine_ID (int M_RMALine_ID);
 
 	/**
-	 * Get RMA-Position.
+	 * Get RMA Line.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -989,7 +1075,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
-	 * Set Mindestpreis.
+	 * Set Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -999,7 +1085,7 @@ public interface I_C_InvoiceLine
 	void setPriceLimit (BigDecimal PriceLimit);
 
 	/**
-	 * Get Mindestpreis.
+	 * Get Limit Price.
 	 * Lowest price for a product
 	 *
 	 * <br>Type: CostPrice
@@ -1012,8 +1098,8 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_PriceLimit = "PriceLimit";
 
 	/**
-	 * Set Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Set List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -1022,8 +1108,8 @@ public interface I_C_InvoiceLine
 	void setPriceList (BigDecimal PriceList);
 
 	/**
-	 * Get Auszeichnungspreis.
-	 * Auszeichnungspreis
+	 * Get List Price.
+	 * List Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -1056,8 +1142,8 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Set Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1066,8 +1152,8 @@ public interface I_C_InvoiceLine
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Get Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1144,6 +1230,27 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_Reason = new ModelColumn<>(I_C_InvoiceLine.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
+
+	/**
 	 * Set Referenced Invoice Line.
 	 *
 	 * <br>Type: ID
@@ -1211,7 +1318,7 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_RRStartDate = "RRStartDate";
 
 	/**
-	 * Set Ressourcenzuordnung.
+	 * Set Resource Assignment.
 	 * Resource Assignment
 	 *
 	 * <br>Type: Assignment
@@ -1221,7 +1328,7 @@ public interface I_C_InvoiceLine
 	void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID);
 
 	/**
-	 * Get Ressourcenzuordnung.
+	 * Get Resource Assignment.
 	 * Resource Assignment
 	 *
 	 * <br>Type: Assignment
@@ -1234,8 +1341,8 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
 
 	/**
-	 * Set Steuerbetrag.
-	 * Tax Amount for a document
+	 * Set Tax Amount.
+	 * Tax Amount for Credit Card transaction
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1244,8 +1351,8 @@ public interface I_C_InvoiceLine
 	void setTaxAmt (@Nullable BigDecimal TaxAmt);
 
 	/**
-	 * Get Steuerbetrag.
-	 * Tax Amount for a document
+	 * Get Tax Amount.
+	 * Tax Amount for Credit Card transaction
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1479,26 +1586,4 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
-
-	/**
-	 * Get Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Flatrate_Term_ID();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Flatrate_Term_ID", null);
-	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
-
 }

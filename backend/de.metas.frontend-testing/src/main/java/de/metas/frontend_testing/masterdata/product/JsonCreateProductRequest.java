@@ -26,6 +26,22 @@ public class JsonCreateProductRequest
 	@Nullable String value;
 	@Nullable String name;
 
+	/**
+	 * Product type — either the enum name ({@code "Item"}, {@code "Service"}, …) or the
+	 * AD ref-list code ({@code "I"}, {@code "S"}, …). Defaults to {@code Item} when omitted.
+	 * Non-item types (Service, Resource, ExpenseType, …) are NOT stocked by default — useful
+	 * for "bracket" / "header" products that carry a price but are not physically shipped.
+	 */
+	@Nullable String type;
+
+	/**
+	 * Explicit {@code M_Product.IsStocked} override. When {@code null} the value is derived
+	 * from {@link #type} ({@code Item} → stocked, anything else → not stocked).
+	 * Set to {@code false} on an {@code Item} product when you want a "bracket" / bundle
+	 * line that participates in the order flow but should not be tracked as stock.
+	 */
+	@Nullable Boolean isStocked;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
@@ -47,6 +63,14 @@ public class JsonCreateProductRequest
 	 * Example values: "Lot", "Serial", "LotSerial"
 	 */
 	@Nullable String attributeSetName;
+
+	/**
+	 * Identifier of a {@link de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest}
+	 * created in the same request. When set, the product is linked via
+	 * {@code M_Product.C_CompensationGroup_Schema_ID} after the schema is created — this turns the
+	 * product into a "trigger product" that materialises the schema's template lines on an order.
+	 */
+	@Nullable Identifier compensationGroupSchema;
 
 	//
 	//
