@@ -46,6 +46,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig
+ * Repository Cluster: WarehouseRepository, WarehouseDAO
+ */
 @Repository
 public class WarehouseRepository
 {
@@ -142,6 +146,25 @@ public class WarehouseRepository
 	{
 		return getWarehouseMap().allActive.stream()
 				.map(Warehouse::getWarehouseId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * Returns the IDs of all active warehouses that have {@code IsAutoDistributionOrder=Y}.
+	 *
+	 * <p>This is a direct query (not served from the {@link WarehouseMap} cache) because the
+	 * cached {@link Warehouse} model does not carry the {@code IsAutoDistributionOrder} flag.</p>
+	 */
+	@NonNull
+	public ImmutableSet<WarehouseId> getAutoDistributionWarehouseIds()
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
+				.create()
+				.stream()
+				.map(wh -> WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

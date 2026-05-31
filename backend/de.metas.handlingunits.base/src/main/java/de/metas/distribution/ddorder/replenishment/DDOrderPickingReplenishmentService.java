@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
@@ -62,6 +63,7 @@ public class DDOrderPickingReplenishmentService
 	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishment";
 
 	@NonNull private final DDOrderPickingReplenishmentRepository repository;
+	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ITrxManager trxManager;
@@ -326,7 +328,7 @@ public class DDOrderPickingReplenishmentService
 
 	public void rebuildDrift()
 	{
-		final Set<WarehouseId> autoDistributionWarehouseIds = repository.getAutoDistributionWarehouseIds();
+		final Set<WarehouseId> autoDistributionWarehouseIds = warehouseRepository.getAutoDistributionWarehouseIds();
 
 		// try-with-resources: close the DB cursor even if publishOne throws mid-stream.
 		try (final Stream<ShipmentScheduleId> schedules = repository.streamSchedulesNeedingDDOrder(autoDistributionWarehouseIds))
