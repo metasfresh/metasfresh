@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -195,7 +195,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<reportElement key="textField-20" x="457" y="6" width="43" height="12" forecolor="#000000" uuid="13f10026-f4a5-4106-b562-2972eb43d034">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" )) && $P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -205,7 +205,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="502" y="6" width="43" height="12" forecolor="#000000" uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -259,7 +259,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="23063069-0aae-45ed-93fe-4444f6d4f434">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $R{show_price}.equals( "Y" ) ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $P{PRINTER_OPTS_IsPrintPrices}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -289,7 +289,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="502" y="0" width="43" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
-					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -333,7 +333,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="457" y="0" width="43" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" )) && $P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -515,7 +515,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" ) ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $P{PRINTER_OPTS_IsPrintPrices}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -543,7 +543,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<band height="12">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
-					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 && $P{PRINTER_OPTS_IsPrintPrices}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
