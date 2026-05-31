@@ -63,6 +63,18 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 // scanning the HU's QR code must navigate to the HU Manager and show the HU quantity.
 test.describe('Scan paths', () => {
 
+    // Sysconfigs changed by a test (showInputText/isInputTextReadonly are global). Captured per
+    // test and restored in afterEach so the editable-input config never leaks into later specs —
+    // even when the test fails before reaching its end.
+    let previousSysconfigs = null;
+
+    test.afterEach(async () => {
+        if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
+            await Backend.setSysconfigs(previousSysconfigs);
+        }
+        previousSysconfigs = null;
+    });
+
     // noinspection JSUnusedLocalSymbols
     test('DataWedge IME — InputConnection injection forwards barcode', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
@@ -135,6 +147,8 @@ test.describe('Scan paths', () => {
                 'mobileui.frontend.barcodeScanner.isInputTextReadonly': 'N',
             },
         });
+        // Captured for afterEach restore (see top of describe block).
+        previousSysconfigs = masterdata.previousSysconfigs;
 
         await LoginScreen.login(masterdata.login.user);
         await ApplicationsListScreen.expectVisible();
