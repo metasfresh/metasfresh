@@ -25,7 +25,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,7 +37,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Component;
 
@@ -261,16 +259,16 @@ public class DDOrderPickingReplenishmentService
 		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(orgId);
 
 		// Resolve Distribution Order document type — required by completeIt.
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(
+		// Throws DocTypeNotFoundException with a clear config-time error rather than letting a -1 doc-type surface during completeIt.
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
 						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-						.adClientId(Env.getAD_Client_ID())
+						.adClientId(schedule.getAD_Client_ID())
 						.adOrgId(orgId.getRepoId())
 						.build());
-		// Fail with a clear config-time error rather than letting a -1 doc-type surface during completeIt.
-		Check.assumeNotNull(docTypeId, "Distribution Order doc-type must exist for orgId={}", orgId);
 
-		final CreateDDOrderReplenishmentRequest request = CreateDDOrderReplenishmentRequest.builder()
+		// Repository saves the header + line; Service completes the document (document engine is not DAO).
+		final I_DD_Order ddOrder = repository.saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
 				.targetWarehouseId(targetWarehouseId)
@@ -283,10 +281,7 @@ public class DDOrderPickingReplenishmentService
 				.orgId(orgId)
 				.datePromised(SystemTime.asInstant())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
-				.build();
-
-		// Repository saves the header + line; Service completes the document (document engine is not DAO).
-		final I_DD_Order ddOrder = repository.saveDraftDDOrder(request);
+				.build());
 		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
