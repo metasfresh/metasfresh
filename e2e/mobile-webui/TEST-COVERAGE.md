@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 10 | 80% |
 | Picking | 44 | 47 | 94% |
-| Distribution | 33 | 36 | 92% |
+| Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -210,11 +210,12 @@
 | GTIN-validation mode: scan HU by M_HU_ID, confirm with product GTIN | `distribution/pickFrom_validate_GTIN.spec.js` |
 | GTIN-validation mode: scan HU by ExternalBarcode, confirm with product GTIN | `distribution/pickFrom_validate_GTIN.spec.js` |
 | Only 1 matching unit → qty dialog skipped | `distribution/pickFrom_validate_GTIN.spec.js` |
+| GTIN-validation mode: scan unknown product code → "no product found" error, line stays unpicked | `distribution/pickFrom_validate_GTIN.spec.js` |
 | Scan distribution HU by QR code | `distribution/scan_HU_barcodes.spec.js` |
 | Scan distribution HU by M_HU_ID | `distribution/scan_HU_barcodes.spec.js` |
 | Scan distribution HU by ExternalBarcode | `distribution/scan_HU_barcodes.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Distribution + Manufacturing cross-flow
 

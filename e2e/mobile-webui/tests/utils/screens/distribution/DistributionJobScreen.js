@@ -43,6 +43,13 @@ export const DistributionJobScreen = {
         })
     }),
 
+    // Split variant of scanHUToMove: use when the product-code scan must be asserted
+    // on its own (e.g. wrapped in expectErrorToast).
+    scanHU: async ({ huQRCode }) => await test.step(`${NAME} - Scan HU ${huQRCode}`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.waitForScreen();
+    }),
+
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
         await lineButtonLocator({ index }).tap({ timeout: FAST_ACTION_TIMEOUT });
         await DistributionLineScreen.waitForScreen();
