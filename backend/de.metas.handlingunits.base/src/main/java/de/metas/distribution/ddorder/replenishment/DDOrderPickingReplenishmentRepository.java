@@ -154,7 +154,6 @@ public class DDOrderPickingReplenishmentRepository
 		ddOrder.setIsInTransit(false);
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
-		// DD_Order persistence is owned by DDOrderLowLevelDAO; delegate the actual save there.
 		ddOrderLowLevelDAO.save(ddOrder);
 
 		//
