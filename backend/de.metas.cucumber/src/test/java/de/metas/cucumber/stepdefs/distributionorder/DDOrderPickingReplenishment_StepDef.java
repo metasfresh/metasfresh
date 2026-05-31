@@ -150,8 +150,14 @@ public class DDOrderPickingReplenishment_StepDef
 	/**
 	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(ShipmentScheduleId)} in
 	 * {@code runInThreadInheritedTrx}, matching the transaction wrapping used by
-	 * {@code DDOrderReplenishmentEventHandler}. Used for the controlled-timing race scenario so the test
-	 * is deterministic.
+	 * {@code DDOrderReplenishmentEventHandler}.
+	 *
+	 * <p>Real-world trigger: in production this reconcile runs asynchronously when the
+	 * {@code M_ShipmentSchedule} interceptor publishes the after-commit {@code DDOrderPickingReconcile}
+	 * event (on a relevant column change), or when the {@code DD_Order_Picking_Rebuild} watchdog reposts it.
+	 * The step calls the service directly only to control ordering for the deterministic race scenario —
+	 * driving it through the real async bus would make the picker-grabs-the-job-in-the-race-window timing
+	 * non-deterministic and the test flaky.</p>
 	 *
 	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule to reconcile.</p>
 	 */
@@ -188,6 +194,13 @@ public class DDOrderPickingReplenishment_StepDef
 				.hasMessageContaining("Kommissionierung läuft bereits");
 	}
 
+	/**
+	 * Runs the drift-rebuild that the {@code DD_Order_Picking_Rebuild} {@code AD_Process} performs.
+	 *
+	 * <p>Real-world trigger: a user (or a scheduler) runs the {@code DD_Order_Picking_Rebuild} process from the
+	 * application; it republishes a reconcile event for every schedule that has drifted from its DD_Order. The
+	 * step invokes {@code rebuildDrift} directly to keep the watchdog scenario deterministic.</p>
+	 */
 	@When("the DD_Order_Picking_Rebuild process is run")
 	public void run_rebuild_process()
 	{
