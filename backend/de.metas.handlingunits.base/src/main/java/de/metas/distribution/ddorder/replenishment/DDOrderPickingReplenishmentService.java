@@ -4,12 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.AdMessageKey;
@@ -67,6 +66,7 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
+	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
@@ -74,7 +74,6 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -271,7 +270,6 @@ public class DDOrderPickingReplenishmentService
 						.adOrgId(orgId.getRepoId())
 						.build());
 
-		// Repository saves the header + line; Service completes the document (document engine is not DAO).
 		final I_DD_Order ddOrder = repository.saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
@@ -286,7 +284,7 @@ public class DDOrderPickingReplenishmentService
 				.datePromised(SystemTime.asInstant())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
 				.build());
-		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		ddOrderService.complete(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
@@ -295,8 +293,7 @@ public class DDOrderPickingReplenishmentService
 		{
 			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
 		}
-		final I_DD_Order ddOrderRecord = ddOrderLowLevelDAO.getById(existingDDOrderId);
-		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+		ddOrderService.voidIt(existingDDOrderId);
 	}
 
 	/**
@@ -321,8 +318,7 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		// Void the existing DD_Order (picker already checked — no double check needed)
-		final I_DD_Order ddOrderRecord = ddOrderLowLevelDAO.getById(existingDDOrderId);
-		documentBL.processEx(ddOrderRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+		ddOrderService.voidIt(existingDDOrderId);
 
 		// Create a fresh DD_Order from the current schedule data
 		createDDOrderFor(schedule);
