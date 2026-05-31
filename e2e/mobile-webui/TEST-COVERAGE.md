@@ -7,7 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 8 | 11 | 73% |
+| Barcode Scanner Modes | 5 | 8 | 63% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
@@ -48,18 +48,15 @@
 
 ## Barcode Scanner Modes
 
-### Attribute regression guards
+### HTML state of #input-text
 
 | Scenario | Test |
 |---|---|
-| `#input-text` has `type="text"` (never `type="hidden"`) — DataWedge IME requires a real text input | `barcode_scanner_modes.spec.js` |
-| `#input-text` has `inputmode="none"` by default — virtual keyboard suppressed on device | `barcode_scanner_modes.spec.js` |
-| `#input-text` does NOT have `readonly` attribute — DataWedge IME (InputConnection) must not be blocked | `barcode_scanner_modes.spec.js` |
-| `#input-text` has CSS class `input-text-offscreen` when `showInputText=N`, and `type="text"` (not `type="hidden"`) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
 
-**4/4 — 100%**
+**1/1 — 100%**
 
-### Input path coverage
+### Scan paths
 
 | Scenario | Test |
 |---|---|

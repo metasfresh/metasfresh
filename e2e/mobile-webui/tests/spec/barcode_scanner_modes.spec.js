@@ -37,73 +37,26 @@ const createMasterdataWithHU = async ({ extraSysconfigs } = {}) => {
     });
 };
 
-// These tests detect if the #input-text DOM attributes are accidentally reverted
-// to a state that breaks DataWedge IME text injection or causes a virtual keyboard popup.
-test.describe('Attribute regression guards', () => {
+// Regression guard: all four HTML properties of #input-text must hold simultaneously for
+// DataWedge IME to work and for the virtual keyboard to stay suppressed.
+// Any single regression (e.g. readOnly added back, type changed to hidden) breaks DataWedge.
+// noinspection JSUnusedLocalSymbols
+test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden', async ({ page }) => {
+    await allure.epic('E0295: Frontend MobileUI');
+    await allure.feature('F12000: Frontend MobileUI');
+    await allure.story('Barcode scanning modes');
+    await allure.severity('critical');
 
-    // noinspection JSUnusedLocalSymbols
-    test('input type is text, not hidden', async ({ page }) => {
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.feature('F12000: Frontend MobileUI');
-        await allure.story('Barcode scanning modes');
-        await allure.severity('critical');
+    const masterdata = await createLoginMasterdata();
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
 
-        const masterdata = await createLoginMasterdata();
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-
-        await BarcodeScannerComponent.expectAttributes({ type: 'text' });
-    });
-
-    // noinspection JSUnusedLocalSymbols
-    test('inputMode=none suppresses virtual keyboard by default', async ({ page }) => {
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.feature('F12000: Frontend MobileUI');
-        await allure.story('Barcode scanning modes');
-        await allure.severity('critical');
-
-        const masterdata = await createLoginMasterdata();
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-
-        // HTML attribute is lowercase 'inputmode' (case-insensitive in HTML, but Playwright matches the attribute name).
-        await BarcodeScannerComponent.expectAttributes({ inputmode: 'none' });
-    });
-
-    // noinspection JSUnusedLocalSymbols
-    test('readOnly attribute is absent — DataWedge IME connection preserved', async ({ page }) => {
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.feature('F12000: Frontend MobileUI');
-        await allure.story('Barcode scanning modes');
-        await allure.severity('critical');
-
-        const masterdata = await createLoginMasterdata();
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-
-        // readonly attribute must be absent — DataWedge IME injects via InputConnection,
-        // which is blocked when the input is readonly.
-        await BarcodeScannerComponent.expectAttributes({ readonly: null });
-    });
-
-    // noinspection JSUnusedLocalSymbols
-    test('input is CSS-hidden, not removed from DOM, when showInputText=N', async ({ page }) => {
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.feature('F12000: Frontend MobileUI');
-        await allure.story('Barcode scanning modes');
-        await allure.severity('critical');
-
-        // showInputText defaults to N — this is the normal operating mode.
-        const masterdata = await createLoginMasterdata();
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-
-        // Belt-and-suspenders: input is hidden via CSS class, NOT via type=hidden.
-        // type=hidden would break DataWedge IME (InputConnection requires an actual text input).
-        await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
-        await BarcodeScannerComponent.expectAttributes({ type: 'text' });
-    });
-
+    // type=text: required for Android InputConnection (type=hidden cannot receive focus)
+    // inputmode=none: suppresses virtual keyboard while keeping InputConnection alive
+    // readonly absent: readOnly kills InputConnection — DataWedge injection silently fails
+    // input-text-offscreen: CSS-hidden, NOT removed from DOM (type=hidden would break IME)
+    await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: null });
+    await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
 });
 
 // Each test drives one real-world way a barcode reaches the app, end to end:
