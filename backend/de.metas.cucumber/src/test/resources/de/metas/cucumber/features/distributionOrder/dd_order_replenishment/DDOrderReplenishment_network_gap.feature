@@ -71,7 +71,7 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
     And after not more than 120s, an AD_EventLog_Entry for the replenishment event handler is found:
       | M_ShipmentSchedule_ID | IsError | MsgText      |
       | shipmentSchedule      | true    | %Quelllager% |
-    And after not more than 10s, an AD_Issue is logged for the replenishment network gap
+    And after not more than 10s, an AD_Issue is logged for the replenishment network gap of M_ShipmentSchedule shipmentSchedule
 
     # Fix the network: add the missing source line resolving stockWH for the packing warehouse, then repost.
     When metasfresh contains DD_NetworkDistributionLine

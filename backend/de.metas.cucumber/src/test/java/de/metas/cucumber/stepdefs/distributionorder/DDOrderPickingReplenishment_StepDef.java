@@ -322,15 +322,34 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Polls for an Error {@code AD_EventLog_Entry} from the reconcile handler that has an {@code AD_Issue} attached
-	 * (network-gap soft-fail logs an AD_Issue).
+	 * (network-gap soft-fail logs an AD_Issue), pinned to a SPECIFIC shipment schedule.
+	 *
+	 * <p>The entry is tied to its originating schedule via the parent {@code AD_EventLog}'s source record
+	 * reference ({@code AD_Table_ID}=M_ShipmentSchedule + {@code Record_ID}=the schedule), which the
+	 * {@code DDOrderReplenishmentEventPublisher} sets. This prevents matching a stale Error+AD_Issue entry left
+	 * behind by a previous scenario on a multi-scenario DB run (false-green isolation bug).</p>
+	 *
+	 * <p>Param: the identifier (from {@code M_ShipmentSchedule_StepDefData}) of the schedule that triggered the
+	 * reconcile (required).</p>
+	 *
+	 * <p>Example:</p>
+	 * <pre>
+	 * And after not more than 10s, an AD_Issue is logged for the replenishment network gap of M_ShipmentSchedule shipmentSchedule
+	 * </pre>
 	 */
-	@Then("^after not more than (.*)s, an AD_Issue is logged for the replenishment network gap$")
-	public void assert_reconcile_AD_Issue_logged(final int timeoutSec) throws InterruptedException
+	@Then("^after not more than (.*)s, an AD_Issue is logged for the replenishment network gap of M_ShipmentSchedule (.*)$")
+	public void assert_reconcile_AD_Issue_logged(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
 	{
+		final int shipmentScheduleId = shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID();
+
 		final Supplier<Boolean> issueLogged = () -> queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
 				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
 				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_IsError, true)
 				.addNotNull(I_AD_EventLog_Entry.COLUMNNAME_AD_Issue_ID)
+				.addInSubQueryFilter(
+						I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_ID,
+						I_AD_EventLog.COLUMNNAME_AD_EventLog_ID,
+						eventLogsForSchedule(shipmentScheduleId))
 				.create()
 				.anyMatch();
 
