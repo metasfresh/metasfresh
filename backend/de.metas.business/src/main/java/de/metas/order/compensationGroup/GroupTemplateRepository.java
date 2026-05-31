@@ -121,6 +121,7 @@ public class GroupTemplateRepository
 				.contractConditionsId(ConditionsId.ofRepoIdOrNull(record.getC_Flatrate_Conditions_ID()))
 				.isAllowSeparateInvoicing(record.isAllowSeparateInvoicing())
 				.isHideWhenPrinting(record.isHideWhenPrinting())
+				.isWithoutCharge(record.isWithoutCharge())
 				.build();
 	}
 

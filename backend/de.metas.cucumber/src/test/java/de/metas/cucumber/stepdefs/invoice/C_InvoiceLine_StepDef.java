@@ -365,6 +365,12 @@ public class C_InvoiceLine_StepDef
 		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_ExternalIds)
 				.ifPresent(externalIds -> softly.assertThat(invoiceLine.getExternalIds()).as(I_C_InvoiceLine.COLUMNNAME_ExternalIds).isEqualTo(externalIds));
 
+		row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_IsWithoutCharge)
+				.ifPresent(isWithoutCharge -> softly.assertThat(invoiceLine.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
+
+		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_Reason)
+				.ifPresent(reason -> softly.assertThat(invoiceLine.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
 		softly.assertAll();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));

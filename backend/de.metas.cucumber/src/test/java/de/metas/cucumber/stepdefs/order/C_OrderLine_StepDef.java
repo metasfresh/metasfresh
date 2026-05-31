@@ -801,6 +801,12 @@ public class C_OrderLine_StepDef
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
 				.ifPresent(externalId -> softly.assertThat(orderLine.getExternalId()).isEqualTo(externalId));
 
+		row.getAsOptionalBoolean(I_C_OrderLine.COLUMNNAME_IsWithoutCharge)
+				.ifPresent(isWithoutCharge -> softly.assertThat(orderLine.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Reason)
+				.ifPresent(reason -> softly.assertThat(orderLine.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
 		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
 		if (projectIdentifier != null)
 		{

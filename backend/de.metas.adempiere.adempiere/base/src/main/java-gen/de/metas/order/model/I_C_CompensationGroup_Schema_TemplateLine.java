@@ -1,8 +1,7 @@
 package de.metas.order.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_CompensationGroup_Schema_TemplateLine
  *  @author metasfresh (generated) 
@@ -231,6 +230,27 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 
 	ModelColumn<I_C_CompensationGroup_Schema_TemplateLine, Object> COLUMN_IsHideWhenPrinting = new ModelColumn<>(I_C_CompensationGroup_Schema_TemplateLine.class, "IsHideWhenPrinting", null);
 	String COLUMNNAME_IsHideWhenPrinting = "IsHideWhenPrinting";
+
+	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_CompensationGroup_Schema_TemplateLine, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_CompensationGroup_Schema_TemplateLine.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
 
 	/**
 	 * Set Product.

@@ -1,3 +1,6 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Sales_Invoice_Details.sql
+-- gh#29558 F00127.1 Single price for bundle -- expose IsWithoutCharge + Reason in Docs_Sales_Invoice_Details
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_C_Invoice_ID numeric,
                                                                                        IN p_AD_Language  Character Varying(6))
 ;
@@ -285,4 +288,3 @@ $$
     LANGUAGE sql
     STABLE
 ;
-

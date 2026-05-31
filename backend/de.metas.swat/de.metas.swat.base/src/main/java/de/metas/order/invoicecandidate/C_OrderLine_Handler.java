@@ -357,6 +357,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
+
+		// F00127.1 — propagate free-of-charge flag. Lives in setOrderedData so amendments
+		// to the order line after IC creation also flow through.
+		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
+		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
 	}
 
 	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)

@@ -625,6 +625,12 @@ public class C_Invoice_Candidate_StepDef
 									softly.assertThat(finalInvoiceCandidate.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 								});
 
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsWithoutCharge)
+								.ifPresent(isWithoutCharge -> softly.assertThat(finalInvoiceCandidate.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Reason)
+								.ifPresent(reason -> softly.assertThat(finalInvoiceCandidate.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
 						softly.assertAll();
 					}
 					catch (final Throwable e)
