@@ -7,6 +7,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -23,27 +24,24 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * DAO for the DD_Order picking-reconcile flow.
+ * Repository for the DD_Order picking-reconcile flow.
  *
- * <p>Owns the M_ShipmentSchedule "needs a DD_Order" demand scan, plus the DD_Order/DD_OrderLine
- * persistence of the reconcile document. DD_Order <i>querying</i> (live-DD_Order sub-query,
- * find/lookup by schedule) lives in {@link DDOrderLowLevelDAO}; the picker-busy
- * M_Picking_Job_Line read lives in {@code PickingJobRepository} (its owning DAO); this repository
- * obtains those sub-queries from those DAOs and the service composes the cross-model joins.</p>
+ * <p>Owns the M_ShipmentSchedule "needs a DD_Order" demand scan, and builds the DD_Order/DD_OrderLine
+ * records of the reconcile document in memory. DD_Order/DD_OrderLine <i>persistence</i> (the actual
+ * {@code save}) is owned by {@link DDOrderLowLevelDAO}; DD_Order <i>querying</i> (live-DD_Order
+ * sub-query, find/lookup by schedule) also lives there. The picker-busy M_Picking_Job_Line read lives
+ * in {@code PickingJobRepository} (its owning DAO); this repository obtains those sub-queries from
+ * those DAOs and the service composes the cross-model joins.</p>
  *
- * Repository Tables: M_ShipmentSchedule (read), DD_Order (write), DD_OrderLine (write)
+ * Repository Tables: M_ShipmentSchedule (read)
  * Repository Cluster: DDOrderPickingReplenishmentRepository, DDOrderPickingReplenishmentService
  */
 @Repository
+@RequiredArgsConstructor
 public class DDOrderPickingReplenishmentRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
-
-	public DDOrderPickingReplenishmentRepository(@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO)
-	{
-		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
-	}
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 
 	/**
 	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
@@ -116,9 +114,10 @@ public class DDOrderPickingReplenishmentRepository
 
 	/**
 	 * Builds exactly one {@link I_DD_Order} (with a single {@link I_DD_OrderLine}) for the picking-reconcile flow,
-	 * saves both records to the database, and returns the saved (Drafted) {@link I_DD_Order}.
+	 * persists both records (header then line) via {@link DDOrderLowLevelDAO} — the owner of DD_Order/DD_OrderLine
+	 * persistence — and returns the saved (Drafted) {@link I_DD_Order}.
 	 *
-	 * <p>This method is pure data-access: it only persists the records. All non-DAO work — resolving locators,
+	 * <p>This method is pure data-access: it only builds and persists the records. All non-DAO work — resolving locators,
 	 * the in-transit warehouse, the doc-type, and completing the document via {@link de.metas.document.engine.IDocumentBL}
 	 * — is performed by the caller ({@link DDOrderPickingReplenishmentService}).
 	 *
@@ -155,7 +154,8 @@ public class DDOrderPickingReplenishmentRepository
 		ddOrder.setIsInTransit(false);
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
-		InterfaceWrapperHelper.save(ddOrder);
+		// DD_Order persistence is owned by DDOrderLowLevelDAO; delegate the actual save there.
+		ddOrderLowLevelDAO.save(ddOrder);
 
 		//
 		// Line
@@ -177,7 +177,7 @@ public class DDOrderPickingReplenishmentRepository
 		ddOrderLine.setM_LocatorTo_ID(request.getLocatorToId().getRepoId());
 		ddOrderLine.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
 		ddOrderLine.setIsInvoiced(false);
-		InterfaceWrapperHelper.save(ddOrderLine);
+		ddOrderLowLevelDAO.save(ddOrderLine);
 
 		return ddOrder;
 	}
