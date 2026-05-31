@@ -343,21 +343,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceentered}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20-ohne" x="430" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf282">
-					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y") && "Y".equals($F{iswithoutcharge})]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Field.WithoutCharge}]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="125" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">

@@ -51,11 +51,12 @@ const BUNDLE_PRICE_DE = '199,00';
 // in this test — keep one source of truth, never hard-code a localised string.
 const TEST_LANGUAGE = 'de_DE';
 
-// Each free component row renders the without-charge label twice on the PDF
-// (once in the price-per-unit column, once in the line-total column).
+// Each free component row renders the without-charge label ONCE on the PDF —
+// only in the line-total (Summe) column. The price-per-unit column is left blank
+// for free items (per the me03#26061 concept). So one occurrence per free line.
 const FREE_COMPONENT_COUNT = 2;
-const OCCURRENCES_PER_FREE_LINE = 2;
-const EXPECTED_WITHOUT_CHARGE_OCCURRENCES = FREE_COMPONENT_COUNT * OCCURRENCES_PER_FREE_LINE; // 4
+const OCCURRENCES_PER_FREE_LINE = 1;
+const EXPECTED_WITHOUT_CHARGE_OCCURRENCES = FREE_COMPONENT_COUNT * OCCURRENCES_PER_FREE_LINE; // 2
 
 test.describe('Compensation Group bundle (F00127.1)', () => {
     test('PrinterStarterSet bundle: SO + Invoice PDFs render "Ohne Berechnung" only on free components', async ({ page }) => {
@@ -189,6 +190,7 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
             .catch(() => {});
         await page.waitForTimeout(2000);
 
+        // Step 4: Verify the schema expansion (3 lines) and complete the order.
         await SalesOrderPage.goToOrderLineTab();
         const gridRowCount = await page.locator('table tbody tr').count();
         console.log(`[F00127.1] Order lines visible in grid: ${gridRowCount} (expected ${expectedLineCount} = PrinterStarterSet + Ink + Paper)`);
@@ -243,7 +245,9 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         console.log(`[F00127.1] SO PDF text length: ${soPdfText.length}`);
         allure.attachment('Sales Order PDF — extracted text', soPdfText, 'text/plain');
 
-        // Persist artefacts for the UAT folder so the human reviewer sees the actual rendered output.
+        // Best-effort: copy the rendered PDFs into the local UAT working folder for manual review.
+        // This is a developer-machine convenience only — on CI the path doesn't exist and the
+        // try/catch below no-ops. The authoritative CI artefacts are the allure attachments above.
         const screenshotsDir = path.resolve(process.cwd(), '..', '..', 'ai-work', '29558', 'screenshots');
         try {
             fs.mkdirSync(screenshotsDir, { recursive: true });
@@ -268,7 +272,7 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         const soWithoutChargeCount = countOccurrencesIgnoringWhitespace(soPdfText, soWithoutChargeLabel);
         expect(
             soWithoutChargeCount,
-            `SO PDF: expected exactly ${EXPECTED_WITHOUT_CHARGE_OCCURRENCES} occurrences of the without-charge label ("${soWithoutChargeLabel}") (Ink + Paper × price + line-total). If 6 → a paid component was wrongly auto-flagged; if 2 → only one free component is rendered.`,
+            `SO PDF: expected exactly ${EXPECTED_WITHOUT_CHARGE_OCCURRENCES} occurrences of the without-charge label ("${soWithoutChargeLabel}") — one per free component (Ink + Paper), line-total column only. If 3 → a paid component was wrongly auto-flagged; if 1 → only one free component is rendered; if 4 → the label is wrongly also in the price-per-unit column.`,
         ).toBe(EXPECTED_WITHOUT_CHARGE_OCCURRENCES);
         console.log(`[F00127.1] SO PDF "${soWithoutChargeLabel}" occurrences: ${soWithoutChargeCount}`);
 
@@ -326,7 +330,7 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         const invWithoutChargeCount = countOccurrencesIgnoringWhitespace(invPdfText, invWithoutChargeLabel);
         expect(
             invWithoutChargeCount,
-            `Invoice PDF: expected exactly ${EXPECTED_WITHOUT_CHARGE_OCCURRENCES} occurrences of the without-charge label ("${invWithoutChargeLabel}") (Ink + Paper × price + line-total).`,
+            `Invoice PDF: expected exactly ${EXPECTED_WITHOUT_CHARGE_OCCURRENCES} occurrences of the without-charge label ("${invWithoutChargeLabel}") — one per free component (Ink + Paper), line-total column only.`,
         ).toBe(EXPECTED_WITHOUT_CHARGE_OCCURRENCES);
         console.log(`[F00127.1] Invoice PDF "${invWithoutChargeLabel}" occurrences: ${invWithoutChargeCount}`);
 

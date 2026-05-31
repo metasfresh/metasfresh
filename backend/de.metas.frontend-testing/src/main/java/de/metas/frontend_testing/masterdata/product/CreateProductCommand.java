@@ -56,6 +56,7 @@ import org.eevolution.model.X_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -130,9 +131,7 @@ public class CreateProductCommand
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
 		final ProductType productType = resolveProductType(request.getType());
 		productRecord.setProductType(productType.getCode());
-		// IsStocked default: Items yes, non-items (Service, Resource, …) no. Explicit override on
-		// the request takes precedence — set {@code isStocked=false} on an {@code Item} to model
-		// a "bracket" / non-stocked bundle line whose ship/inout candidates are still produced.
+		// Explicit request override wins; otherwise Items are stocked, non-items are not.
 		final Boolean explicitIsStocked = request.getIsStocked();
 		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked.booleanValue() : productType.isItem());
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
@@ -450,7 +449,7 @@ public class CreateProductCommand
 	 * Accepts both the enum name ({@code "Item"}, {@code "Service"}, …) and the AD ref-list code
 	 * ({@code "I"}, {@code "S"}, …). Falls back to {@link ProductType#Item} when {@code null}/blank.
 	 */
-	private static ProductType resolveProductType(@javax.annotation.Nullable final String requestType)
+	private static ProductType resolveProductType(@Nullable final String requestType)
 	{
 		final String trimmed = StringUtils.trimBlankToNull(requestType);
 		if (trimmed == null)
