@@ -54,14 +54,23 @@ public class PickingJobRepository
 
 	/**
 	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
-	 * the given shipment schedule — i.e. a picker is actively working on it.
+	 * the given shipment schedule AND belongs to an in-progress (not voided/completed) picking job —
+	 * i.e. a picker is actively working on it.
 	 */
 	public boolean existsActivePickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
 	{
+		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addNotInArrayFilter(
+						I_M_Picking_Job.COLUMNNAME_DocStatus,
+						ImmutableList.of(PickingJobDocStatus.Voided.getCode(), PickingJobDocStatus.Completed.getCode()))
+				.create();
+
 		return queryBL
 				.createQueryBuilder(I_M_Picking_Job_Line.class)
 				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
 				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, inProgressJobsQuery)
 				.create()
 				.anyMatch();
 	}
