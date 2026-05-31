@@ -30,8 +30,6 @@ import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
-import de.metas.handlingunits.model.I_M_Picking_Job;
-import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -66,10 +64,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * (see {@code DDOrderPickingReplenishmentService}).
  *
  * <p>Covers the reconcile-only assertions that have no home in a single domain step-def class:
- * deactivating / re-quantifying a schedule, simulating a busy picker via a {@code M_Picking_Job_Line},
- * directly driving the service ({@code reconcile} / {@code rebuildDrift}) for deterministic race / watchdog
- * scenarios, running the {@code DD_Order_Picking_Rebuild} process, and inspecting the reconcile
+ * changing a schedule quantity (and asserting the picker-busy rejection), directly driving the service
+ * ({@code reconcile} / {@code rebuildDrift}) for deterministic race / watchdog scenarios, running the
+ * {@code DD_Order_Picking_Rebuild} process, and inspecting the reconcile
  * {@code AD_EventLog} / {@code AD_EventLog_Entry} / {@code AD_Issue} outcomes.</p>
+ *
+ * <p>The picker is made busy / released through the REAL mobile picking workflow (REST: start the
+ * wfProcess + scan the picking slot to create an in-progress {@code M_Picking_Job_Line}, then abort the
+ * wfProcess to void it) — see the {@code DDOrderReplenishment_picker_busy.feature} for the end-to-end flow.</p>
  */
 @RequiredArgsConstructor
 public class DDOrderPickingReplenishment_StepDef
@@ -142,53 +144,6 @@ public class DDOrderPickingReplenishment_StepDef
 					assertThat(reloaded.getQtyOrdered_Override())
 							.as("M_ShipmentSchedule.QtyOrdered_Override must be unchanged after the rejected save")
 							.isEqualByComparingTo(originalQtyOverride == null ? BigDecimal.ZERO : originalQtyOverride);
-				});
-	}
-
-	/**
-	 * TEST INFRASTRUCTURE — NOT a business action.
-	 *
-	 * <p>This step is the teardown counterpart of the synthetic picker-busy fixture created by
-	 * {@code metasfresh contains M_Picking_Job_Line:} (see {@code M_Picking_Job_Line_StepDef}). That fixture
-	 * is a deliberately minimal {@code M_Picking_Job} + {@code M_Picking_Job_Line} created directly via the model
-	 * layer to make the picker-busy guard ({@code DDOrderPickingReplenishmentService#isPickerBusy} →
-	 * {@code existsPickingJobLineForSchedule}, an active-records query) see a busy picker — WITHOUT standing up the
-	 * full real picking workflow (warehouse stock, HUs, a running picking-worker session).</p>
-	 *
-	 * <p>There is no single real-world business action that "releases" this fixture: the product's real
-	 * close/abort flows ({@code PickingJobService#abort} / {@code #complete}) operate on a fully-loaded
-	 * {@code PickingJob} aggregate — they cannot act on this stripped-down fixture. Deactivating the fixture rows is
-	 * therefore pure test plumbing: it simulates "the picker is no longer working on this schedule" so a subsequent
-	 * repost / reconcile can proceed, and it stops the rows polluting later scenarios that query for active
-	 * picking records. Modelled as {@code @Given} (setup/teardown), not {@code @When} (a user action).</p>
-	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
-	 */
-	@Given("^the M_Picking_Job_Line for M_ShipmentSchedule (.*) is deactivated as test cleanup$")
-	public void deactivate_M_Picking_Job_Line_as_test_cleanup(@NonNull final String shipmentScheduleIdentifier)
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
-				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
-				.create()
-				.list(I_M_Picking_Job_Line.class)
-				.forEach(line -> {
-					line.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(line);
-
-					// If the parent job has no more active lines, deactivate it too so it
-					// doesn't appear in picking-workflow tests that query for active M_Picking_Job records.
-					final boolean jobHasActiveLines = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
-							.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, line.getM_Picking_Job_ID())
-							.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_IsActive, true)
-							.create()
-							.anyMatch();
-					if (!jobHasActiveLines)
-					{
-						final I_M_Picking_Job job = InterfaceWrapperHelper.load(line.getM_Picking_Job_ID(), I_M_Picking_Job.class);
-						job.setIsActive(false);
-						InterfaceWrapperHelper.saveRecord(job);
-					}
 				});
 	}
 
