@@ -1,6 +1,6 @@
 package de.metas.distribution.ddorder.replenishment;
 
-import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
@@ -20,15 +20,31 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-/** DAO for the DD_Order picking-reconcile flow. Methods added per-task as the BL evolves. */
+/**
+ * DAO for the DD_Order picking-reconcile flow.
+ *
+ * <p>Owns the M_ShipmentSchedule "needs a DD_Order" demand scan and the M_Picking_Job_Line
+ * "picker busy" read for this flow, plus the DD_Order/DD_OrderLine persistence of the reconcile
+ * document. DD_Order <i>querying</i> (live-DD_Order sub-query, find/lookup by schedule) lives in
+ * {@link DDOrderLowLevelDAO}; this repository obtains those sub-queries from the DAO and the
+ * service composes the cross-model join.</p>
+ *
+ * Repository Tables: M_ShipmentSchedule (read), M_Picking_Job_Line (read), DD_Order (write), DD_OrderLine (write)
+ * Repository Cluster: DDOrderPickingReplenishmentRepository, DDOrderPickingReplenishmentService
+ */
 @Repository
 public class DDOrderPickingReplenishmentRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
+
+	public DDOrderPickingReplenishmentRepository(@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO)
+	{
+		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
+	}
 
 	/**
 	 * Returns a stream of shipment schedule IDs that are active, on a packing warehouse
@@ -48,12 +64,10 @@ public class DDOrderPickingReplenishmentRepository
 
 		final Set<Integer> warehouseRepoIds = WarehouseId.toRepoIds(autoDistributionWarehouseIds);
 
-		// Sub-query: live (non-voided) DD_Orders
-		final IQuery<I_DD_Order> liveDDOrderSubQuery = queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.addOnlyActiveRecordsFilter()
-				.create();
+		// Sub-query: live (non-voided) DD_Orders.
+		// DD_Order is a foreign sub-model here; its querying is owned by DDOrderLowLevelDAO.
+		// This repository obtains the sub-query from the DAO and joins it to the M_ShipmentSchedule scan it owns.
+		final IQuery<I_DD_Order> liveDDOrderSubQuery = ddOrderLowLevelDAO.retrieveLiveDDOrdersQuery();
 
 		// Main query: active + not processed + not closed schedules on a packing warehouse with no live DD_Order.
 		//
@@ -99,23 +113,6 @@ public class DDOrderPickingReplenishmentRepository
 				.create()
 				.stream()
 				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
-	}
-
-	/**
-	 * Returns the ID of the first active (non-voided) DD_Order linked to the given shipment schedule,
-	 * or empty if none exists.
-	 */
-	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
-	{
-		return queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
-				.create()
-				.firstOptional(I_DD_Order.class)
-				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
 	/**
@@ -202,17 +199,5 @@ public class DDOrderPickingReplenishmentRepository
 		InterfaceWrapperHelper.save(ddOrderLine);
 
 		return ddOrder;
-	}
-
-	/**
-	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
-	 */
-	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
-	{
-		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
-				.create()
-				.firstOnlyNotNull(I_DD_Order.class);
-		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 }

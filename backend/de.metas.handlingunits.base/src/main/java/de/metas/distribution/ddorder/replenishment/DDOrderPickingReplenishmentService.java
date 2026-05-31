@@ -84,7 +84,7 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final DDOrderId ddOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
+		final DDOrderId ddOrderId = ddOrderLowLevelDAO.findActiveDDOrderForSchedule(scheduleId).orElse(null);
 		if (ddOrderId == null)
 		{
 			return;
@@ -124,7 +124,7 @@ public class DDOrderPickingReplenishmentService
 	public void reconcile(@NonNull final ShipmentScheduleId scheduleId)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(scheduleId);
-		final DDOrderId existingDDOrderId = repository.findActiveDDOrderForSchedule(scheduleId).orElse(null);
+		final DDOrderId existingDDOrderId = ddOrderLowLevelDAO.findActiveDDOrderForSchedule(scheduleId).orElse(null);
 		DDOrderReplenishmentAction action = classifyAction(schedule, existingDDOrderId);
 
 		// Zero-qty soft no-op: if the schedule's effective QtyOrdered* (Override → Calculated) is <= 0
@@ -347,7 +347,7 @@ public class DDOrderPickingReplenishmentService
 
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
-		final ShipmentScheduleId scheduleId = repository.getShipmentScheduleId(ddOrderId);
+		final ShipmentScheduleId scheduleId = ddOrderLowLevelDAO.getShipmentScheduleId(ddOrderId);
 		return repository.existsPickingJobLineForSchedule(scheduleId);
 	}
 

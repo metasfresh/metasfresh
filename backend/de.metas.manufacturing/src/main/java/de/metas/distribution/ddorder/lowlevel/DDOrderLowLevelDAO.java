@@ -5,6 +5,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ProductId;
@@ -30,6 +31,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
+import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Repository;
@@ -38,6 +40,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -65,6 +68,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+/**
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative
+ * Repository Cluster: DDOrderLowLevelDAO, DDOrderLowLevelService
+ */
 @Repository
 public class DDOrderLowLevelDAO
 {
@@ -79,6 +86,51 @@ public class DDOrderLowLevelDAO
 	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
 	{
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
+	}
+
+	/**
+	 * Returns a sub-query selecting all live (non-voided), active {@link I_DD_Order} records.
+	 *
+	 * <p>Intended to be consumed by callers as an {@code IN}/{@code NOT IN} sub-query filter
+	 * (e.g. "shipment schedules that have / have no live DD_Order"). The cross-model join is
+	 * composed in the caller's service; this DAO owns only the DD_Order side of the query.</p>
+	 */
+	public IQuery<I_DD_Order> retrieveLiveDDOrdersQuery()
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.addOnlyActiveRecordsFilter()
+				.create();
+	}
+
+	/**
+	 * Returns the ID of the first active (non-voided) DD_Order linked to the given shipment schedule,
+	 * or empty if none exists.
+	 */
+	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.firstOptional(I_DD_Order.class)
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
+	 */
+	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
