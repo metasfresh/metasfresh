@@ -602,8 +602,8 @@ public class M_ShipmentSchedule_StepDef
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 		final boolean isPresent = row.getAsBoolean("IsPresent");
 
-		final long count = queryBL.createQueryBuilder(I_M_Packageable_V.class)
-				.addOnlyActiveRecordsFilter()
+		// note: no addOnlyActiveRecordsFilter() — the M_Packageable_V view already filters IsActive='Y'
+		final int count = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
 				.count();
