@@ -63,16 +63,27 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 // scanning the HU's QR code must navigate to the HU Manager and show the HU quantity.
 test.describe('Scan paths', () => {
 
-    // Sysconfigs changed by a test (showInputText/isInputTextReadonly are global). Captured per
-    // test and restored in afterEach so the editable-input config never leaks into later specs —
-    // even when the test fails before reaching its end.
-    let previousSysconfigs = null;
+    // The manual-typing test flips two GLOBAL barcode-scanner sysconfigs to make the input
+    // visible + editable. They MUST be reset after each test: a leaked isInputTextReadonly='N'
+    // makes every later spec's scanner editable, and BarcodeScannerComponent.type() then
+    // double-inserts characters (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"),
+    // breaking unrelated picking scans.
+    //
+    // Reset is deterministic — NOT via masterdata's previousSysconfigs — because the masterdata
+    // API can set a sysconfig but cannot delete a row it created (isInputTextReadonly has no
+    // pre-existing row, so a previous-value restore is a no-op and the 'N' row would persist).
+    // The mobile-webui suite always runs on a mobile device, so the scanner defaults are
+    // showInputText='Y' and isInputTextReadonly='Y' (readonly). afterEach runs even on failure.
+    let scannerSysconfigsChanged = false;
 
     test.afterEach(async () => {
-        if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
-            await Backend.setSysconfigs(previousSysconfigs);
+        if (scannerSysconfigsChanged) {
+            await Backend.setSysconfigs({
+                'mobileui.frontend.barcodeScanner.showInputText': 'Y',
+                'mobileui.frontend.barcodeScanner.isInputTextReadonly': 'Y',
+            });
+            scannerSysconfigsChanged = false;
         }
-        previousSysconfigs = null;
     });
 
     // noinspection JSUnusedLocalSymbols
@@ -147,8 +158,8 @@ test.describe('Scan paths', () => {
                 'mobileui.frontend.barcodeScanner.isInputTextReadonly': 'N',
             },
         });
-        // Captured for afterEach restore (see top of describe block).
-        previousSysconfigs = masterdata.previousSysconfigs;
+        // Signals afterEach to reset the scanner sysconfigs (see top of describe block).
+        scannerSysconfigsChanged = true;
 
         await LoginScreen.login(masterdata.login.user);
         await ApplicationsListScreen.expectVisible();
