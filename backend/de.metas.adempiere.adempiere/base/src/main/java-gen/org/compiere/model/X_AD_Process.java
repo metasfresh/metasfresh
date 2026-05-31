@@ -246,9 +246,21 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public java.lang.String getEntityType() 
+	public java.lang.String getEntityType()
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
+	}
+
+	@Override
+	public void setFilenamePattern (final @Nullable java.lang.String FilenamePattern)
+	{
+		set_Value (COLUMNNAME_FilenamePattern, FilenamePattern);
+	}
+
+	@Override
+	public java.lang.String getFilenamePattern()
+	{
+		return get_ValueAsString(COLUMNNAME_FilenamePattern);
 	}
 
 	@Override

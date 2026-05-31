@@ -36,7 +36,7 @@ public abstract class AbstractPrintingTest
 	}
 
 	@BeforeEach
-	public final void setup(TestInfo testInfo)
+	public final void setup(final TestInfo testInfo)
 	{
 		helper = new Helper(testInfo);
 		helper.setup();
@@ -49,7 +49,7 @@ public abstract class AbstractPrintingTest
 
 		Services.registerService(IInvoiceDAO.class, new PlainInvoiceDAO());
 
-		final ArchiveFileNameService archiveFileNameService = new ArchiveFileNameService();
+		final ArchiveFileNameService archiveFileNameService = ArchiveFileNameService.newInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(archiveFileNameService);
 
 		Services.registerService(IPrintPackageBL.class, new PrintPackageBL(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService)));

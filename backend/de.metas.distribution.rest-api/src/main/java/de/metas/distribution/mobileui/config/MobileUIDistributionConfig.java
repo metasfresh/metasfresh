@@ -17,6 +17,7 @@ public class MobileUIDistributionConfig
 	boolean isRequireScanningProductCode;
 	boolean isNavigateToJobsListAfterPickFromComplete;
 	boolean isCompleteJobAutomatically;
+	boolean isPrintDDOrderOnComplete;
 
 	@NonNull @Default QueryLimit maxLaunchers = QueryLimit.NO_LIMIT;
 	@NonNull @Default QueryLimit maxStartedLaunchers = QueryLimit.NO_LIMIT;
