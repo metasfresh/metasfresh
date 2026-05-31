@@ -48,8 +48,6 @@ public class DistributionProductService
 
 		if (productId == null)
 		{
-			// Translatable, user-friendly error (userValidationError=true via the AdMessageKey ctor) with an
-			// ErrorCode derived from AD_Message.ErrorCode. {0} = the scanned code.
 			throw new AdempiereException(MSG_NoProductForScannedCode, scannedProductCode.getAsString());
 		}
 
