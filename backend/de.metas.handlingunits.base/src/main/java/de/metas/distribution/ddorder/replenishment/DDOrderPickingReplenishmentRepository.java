@@ -2,7 +2,6 @@ package de.metas.distribution.ddorder.replenishment;
 
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.document.DocTypeId;
-import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.OrgId;
@@ -26,13 +25,13 @@ import java.util.stream.Stream;
 /**
  * DAO for the DD_Order picking-reconcile flow.
  *
- * <p>Owns the M_ShipmentSchedule "needs a DD_Order" demand scan and the M_Picking_Job_Line
- * "picker busy" read for this flow, plus the DD_Order/DD_OrderLine persistence of the reconcile
- * document. DD_Order <i>querying</i> (live-DD_Order sub-query, find/lookup by schedule) lives in
- * {@link DDOrderLowLevelDAO}; this repository obtains those sub-queries from the DAO and the
- * service composes the cross-model join.</p>
+ * <p>Owns the M_ShipmentSchedule "needs a DD_Order" demand scan, plus the DD_Order/DD_OrderLine
+ * persistence of the reconcile document. DD_Order <i>querying</i> (live-DD_Order sub-query,
+ * find/lookup by schedule) lives in {@link DDOrderLowLevelDAO}; the picker-busy
+ * M_Picking_Job_Line read lives in {@code PickingJobRepository} (its owning DAO); this repository
+ * obtains those sub-queries from those DAOs and the service composes the cross-model joins.</p>
  *
- * Repository Tables: M_ShipmentSchedule (read), M_Picking_Job_Line (read), DD_Order (write), DD_OrderLine (write)
+ * Repository Tables: M_ShipmentSchedule (read), DD_Order (write), DD_OrderLine (write)
  * Repository Cluster: DDOrderPickingReplenishmentRepository, DDOrderPickingReplenishmentService
  */
 @Repository
@@ -113,24 +112,6 @@ public class DDOrderPickingReplenishmentRepository
 				.create()
 				.stream()
 				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
-	}
-
-	/**
-	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
-	 * the given shipment schedule — i.e. a picker is actively working on it.
-	 *
-	 * <p>Note: this repository reads {@link I_M_Picking_Job_Line} directly (a foreign table from the picking domain).
-	 * The picking DAO lives in {@code de.metas.handlingunits.base} but {@code DDOrderPickingReplenishmentRepository}
-	 * owns this read-only demand query to avoid scattering picker-busy knowledge across modules.</p>
-	 */
-	public boolean existsPickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_Picking_Job_Line.class)
-				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.anyMatch();
 	}
 
 	/**

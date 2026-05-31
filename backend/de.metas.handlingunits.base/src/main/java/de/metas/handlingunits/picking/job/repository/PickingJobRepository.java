@@ -38,10 +38,33 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Owns the picking-job aggregate persistence (M_Picking_Job header + its lines / steps / picked-HUs /
+ * HU-alternatives). Loading and saving of the aggregate is delegated to {@link PickingJobLoaderAndSaver}
+ * (and {@link PickingJobSaver} / {@link PickingJobCreateRepoHelper}); this class also exposes read-only
+ * existence / lookup queries over the same tables.
+ *
+ * Repository Tables: M_Picking_Job, M_Picking_Job_Line, M_Picking_Job_Step, M_Picking_Job_Step_HUAlternative, M_Picking_Job_Step_PickedHU, M_Picking_Job_HUAlternative
+ * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper
+ */
 @Repository
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
+	 * the given shipment schedule — i.e. a picker is actively working on it.
+	 */
+	public boolean existsActivePickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
 
 	public PickingJob createNewAndGet(
 			@NonNull final PickingJobCreateRepoRequest request,

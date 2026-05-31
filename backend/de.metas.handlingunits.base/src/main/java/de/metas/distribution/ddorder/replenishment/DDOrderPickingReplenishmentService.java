@@ -11,6 +11,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
@@ -63,6 +64,7 @@ public class DDOrderPickingReplenishmentService
 	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishment";
 
 	@NonNull private final DDOrderPickingReplenishmentRepository repository;
+	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
@@ -348,7 +350,7 @@ public class DDOrderPickingReplenishmentService
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
 		final ShipmentScheduleId scheduleId = ddOrderLowLevelDAO.getShipmentScheduleId(ddOrderId);
-		return repository.existsPickingJobLineForSchedule(scheduleId);
+		return pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId);
 	}
 
 	/**
