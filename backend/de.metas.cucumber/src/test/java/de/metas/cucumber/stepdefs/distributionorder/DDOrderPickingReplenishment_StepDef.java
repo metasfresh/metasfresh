@@ -89,6 +89,7 @@ public class DDOrderPickingReplenishment_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	@NonNull private final DDOrderPickingReplenishmentService replenishmentService = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 
 	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
@@ -204,8 +205,7 @@ public class DDOrderPickingReplenishment_StepDef
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
-		trxManager.runInThreadInheritedTrx(() -> reconcileBL.reconcile(scheduleId));
+		trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId));
 	}
 
 	/**
@@ -225,9 +225,8 @@ public class DDOrderPickingReplenishment_StepDef
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 
-		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> reconcileBL.reconcile(scheduleId)))
+		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
 				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
@@ -237,8 +236,7 @@ public class DDOrderPickingReplenishment_StepDef
 	@When("the DD_Order_Picking_Rebuild process is run")
 	public void run_rebuild_process()
 	{
-		final DDOrderPickingReplenishmentService reconcileBL = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
-		trxManager.runInThreadInheritedTrx(reconcileBL::rebuildDrift);
+		trxManager.runInThreadInheritedTrx(replenishmentService::rebuildDrift);
 	}
 
 	@Then("the DD_Order_Picking_Rebuild process exists")
