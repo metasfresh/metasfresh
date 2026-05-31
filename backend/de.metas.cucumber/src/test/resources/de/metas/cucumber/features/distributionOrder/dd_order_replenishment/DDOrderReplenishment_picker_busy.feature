@@ -68,9 +68,14 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
+    # IsAllowPickingAnyHU=Y so starting the picking job does NOT require HUs to be pre-planned/allocated
+    # to the schedule (the schedule sits on an auto-distribution warehouse awaiting replenishment, so its
+    # stock is not allocated up front) — the picker may grab any HU, matching how the Playwright picking
+    # tests configure the profile. This lets a real picking job start and create the in-progress
+    # M_Picking_Job_Line the busy guard checks.
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy |
-      | N                   | CREATE_AND_COMPLETE  |
+      | Y                   | CREATE_AND_COMPLETE  |
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | packingInventory          | 2021-10-12   | packingWH      |
