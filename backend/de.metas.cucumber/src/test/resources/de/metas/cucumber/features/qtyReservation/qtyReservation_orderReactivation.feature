@@ -3,9 +3,9 @@
 @allure.label.feature:F_QtyReservation
 @ghActions:run_on_executor5
 Feature: Qty Reservation — reconcile reservation to ordered qty on order reactivation
-## Validates that a qty reservation is reconciled (shrunk) to the order line's ordered
-## quantity when a completed sales order is reactivated, its line quantity reduced, and
-## the order re-completed.
+# Validates that a qty reservation is reconciled (shrunk) to the order line's ordered
+# quantity when a completed sales order is reactivated, its line quantity reduced, and
+# the order re-completed.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -32,11 +32,11 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
   @from:cucumber
   @Id:S_QtyRes_300
   Scenario: Reservation is reconciled to reduced ordered qty after order reactivation
-  ## _Given a product with 100 PCE (10 TUs) on-hand stock and a sales order for 100 PCE
-  ## _And an M_QtyReservation for 100 PCE
-  ## _When shipment is generated for the full 100, then reversed (reservation restored)
-  ## _And the order is reactivated, the order line reduced to 75 PCE, and the order re-completed
-  ## _Then the reservation is reconciled down to 75 PCE (shrink-on-complete)
+  # Given a product with 100 PCE (10 TUs) on-hand stock and a sales order for 100 PCE
+  # And an M_QtyReservation for 100 PCE
+  # When shipment is generated for the full 100, then reversed (reservation restored)
+  # And the order is reactivated, the order line reduced to 75 PCE, and the order re-completed
+  # Then the reservation is reconciled down to 75 PCE (shrink-on-complete)
 
     Given metasfresh contains M_Products:
       | Identifier | IsStocked |
@@ -104,8 +104,8 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
     # Customer reduces the order: reactivate, cut the line from 100 to 75 PCE, re-complete
     And the order identified by order is reactivated
     And update C_OrderLine:
-      | C_OrderLine_ID | QtyEntered | QtyOrdered |
-      | orderLine      | 75         | 75         |
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
+      | orderLine                 | 75             | 75             |
     And the order identified by order is completed
 
     # Reconcile assertion: the reservation is shrunk to the new ordered qty
