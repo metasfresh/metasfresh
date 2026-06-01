@@ -10,6 +10,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
@@ -70,19 +71,38 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 			return false;
 		}
 
-		// Collect distinct M_InOut_IDs from the invoice lines
-		final List<I_C_InvoiceLine> invoiceLines = queryBL
+		// Collect distinct M_InOutLine_IDs from invoice lines that have a shipment link
+		final List<I_C_InvoiceLine> invoiceLinesWithInOutLine = queryBL
 				.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addCompareFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, CompareQueryFilter.Operator.GREATER, 0)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
 
-		final Set<Integer> inOutIds = new HashSet<Integer>();
-		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
+		final Set<Integer> inOutLineIds = new HashSet<>();
+		for (final I_C_InvoiceLine invoiceLine : invoiceLinesWithInOutLine)
 		{
-			final I_M_InOutLine inOutLine = invoiceLine.getM_InOutLine();
-			if (inOutLine != null && inOutLine.getM_InOut_ID() > 0)
+			inOutLineIds.add(invoiceLine.getM_InOutLine_ID());
+		}
+
+		if (inOutLineIds.isEmpty())
+		{
+			return false;
+		}
+
+		// ONE batched query for all inout lines → collect distinct M_InOut_IDs
+		final List<I_M_InOutLine> inOutLines = queryBL
+				.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		final Set<Integer> inOutIds = new HashSet<>();
+		for (final I_M_InOutLine inOutLine : inOutLines)
+		{
+			if (inOutLine.getM_InOut_ID() > 0)
 			{
 				inOutIds.add(inOutLine.getM_InOut_ID());
 			}

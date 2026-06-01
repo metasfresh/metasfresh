@@ -187,6 +187,27 @@ public class InvoiceNotificationDelayHandlerTest
 		assertThat(handler.shouldDelaySending(g.log)).isFalse();
 	}
 
+	@Test
+	public void sysConfigOn_invoiceWithoutInOutLines_doesNotDelay()
+	{
+		setSysConfig(true);
+		// Invoice whose C_InvoiceLine has M_InOutLine_ID = 0 (no shipment link) → returns false
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		save(invoice);
+
+		final I_C_InvoiceLine invoiceLine = newInstance(I_C_InvoiceLine.class);
+		invoiceLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		// M_InOutLine_ID stays 0 (default) — no shipment link
+		save(invoiceLine);
+
+		final I_C_Doc_Outbound_Log log = newInstance(I_C_Doc_Outbound_Log.class);
+		log.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
+		log.setRecord_ID(invoice.getC_Invoice_ID());
+		save(log);
+
+		assertThat(handler.shouldDelaySending(log)).isFalse();
+	}
+
 	// ------------------------------------------------------------------
 	// Helper DTO
 	// ------------------------------------------------------------------

@@ -95,7 +95,7 @@ class MailWorkpackageProcessorDelayTest
 	void caseB_pastTimeout_doesNotThrow()
 	{
 		final long nowMillis = System.currentTimeMillis();
-		SystemTime.setFixedTimeSource(ZonedDateTime.now());
+		SystemTime.setFixedTimeSource(ZonedDateTime.ofInstant(java.time.Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault()));
 
 		final I_C_Queue_WorkPackage workpackage = InterfaceWrapperHelper.newInstance(I_C_Queue_WorkPackage.class);
 		InterfaceWrapperHelper.save(workpackage);

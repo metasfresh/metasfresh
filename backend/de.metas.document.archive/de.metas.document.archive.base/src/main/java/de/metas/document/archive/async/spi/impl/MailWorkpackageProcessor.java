@@ -1,5 +1,6 @@
 package de.metas.document.archive.async.spi.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -125,6 +126,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return Result.SUCCESS;
 	}
 
+	@VisibleForTesting
 	static void assertNotificationReadyOrSkip(
 			@NonNull final DocOutboundNotificationDelayService notificationDelayService,
 			@NonNull final I_C_Queue_WorkPackage workpackage,
