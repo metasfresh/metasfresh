@@ -2,17 +2,22 @@ package de.metas.document.archive.notification.delay.impl;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.notification.delay.DocOutboundNotificationDelayHandler;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_Carrier_ShipmentOrder;
+import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -20,18 +25,21 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Delays invoice notification until all carrier-advised shipment schedules of the invoice's
- * shipments have their advising resolved — controlled by SysConfig
- * {@link #SYSCONFIG_DelayUntilCarrierConfirmed}.
+ * Delays invoice notification until tracking URLs are available for all carrier-tracked shipments
+ * linked to the invoice — controlled by SysConfig {@link #SYSCONFIG_DelayUntilCarrierConfirmed}.
  *
- * <p>A delay is issued when ANY linked {@code M_ShipmentSchedule} has a shipper assigned
- * ({@code M_Shipper_ID > 0}) AND its {@code Carrier_Advising_Status} is one of
- * {@code NR} (NotRequested), {@code R} (Requested), or {@code IP} (InProgress).
- * Statuses {@code CO} (Completed), {@code FA} (Failed), and {@code MAN} (Manual)
- * — as well as schedules with no shipper — do NOT cause a delay.</p>
- *
- * <p>This approach correctly catches the "carrier advising requested / in-progress but not yet
- * done" window that the previous parcel-existence check was blind to.</p>
+ * <p>The check is per {@code M_InOut} linked to the invoice via its invoice lines:
+ * <ol>
+ *   <li>If the inout's shipper has no configured gateway ({@code M_Shipper.ShipperGateway} is
+ *       blank) the inout is skipped — no tracking is expected for it.</li>
+ *   <li>If a gateway is configured but no {@code M_ShippingPackage} rows exist for the inout yet,
+ *       the carrier has not been invoked — <em>delay</em>.</li>
+ *   <li>If packages exist, every reachable {@code Carrier_ShipmentOrder_Parcel} must carry a
+ *       non-blank {@code TrackingURL}.  Any missing URL — or any package/order/parcel gap in the
+ *       chain — causes a <em>delay</em>.</li>
+ * </ol>
+ * When all gateway-inouts satisfy condition 3, the notification is released (returns
+ * {@code false}).</p>
  */
 @Component
 public class InvoiceNotificationDelayHandler implements DocOutboundNotificationDelayHandler
@@ -40,6 +48,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@Override
 	public String getTableName()
@@ -61,81 +70,120 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 			return false;
 		}
 
-		// Step 1: collect distinct M_InOutLine_IDs from the invoice lines
+		// Collect distinct M_InOut_IDs from the invoice lines
 		final List<I_C_InvoiceLine> invoiceLines = queryBL
 				.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.addCompareFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, CompareQueryFilter.Operator.GREATER, 0)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
 
-		final Set<Integer> inOutLineIds = new HashSet<Integer>();
+		final Set<Integer> inOutIds = new HashSet<Integer>();
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
-			final int inOutLineId = invoiceLine.getM_InOutLine_ID();
-			if (inOutLineId > 0)
+			final I_M_InOutLine inOutLine = invoiceLine.getM_InOutLine();
+			if (inOutLine != null && inOutLine.getM_InOut_ID() > 0)
 			{
-				inOutLineIds.add(inOutLineId);
+				inOutIds.add(inOutLine.getM_InOut_ID());
 			}
 		}
 
-		if (inOutLineIds.isEmpty())
+		for (final int inOutId : inOutIds)
 		{
-			// no shipment-linked lines → nothing to wait for
-			return false;
-		}
-
-		// Step 2: collect distinct M_ShipmentSchedule_IDs via QtyPicked join
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-
-		final Set<Integer> scheduleIds = new HashSet<Integer>();
-		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : qtyPickedRecords)
-		{
-			final int scheduleId = qtyPicked.getM_ShipmentSchedule_ID();
-			if (scheduleId > 0)
+			final I_M_InOut inOut = InterfaceWrapperHelper.load(inOutId, I_M_InOut.class);
+			if (inOut == null)
 			{
-				scheduleIds.add(scheduleId);
-			}
-		}
-
-		if (scheduleIds.isEmpty())
-		{
-			// no linked schedules → nothing to wait for
-			return false;
-		}
-
-		// Step 3: load the schedules and check Carrier_Advising_Status
-		final List<I_M_ShipmentSchedule> schedules = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-
-		for (final I_M_ShipmentSchedule schedule : schedules)
-		{
-			if (schedule.getM_Shipper_ID() <= 0)
-			{
-				// no shipper assigned → this schedule is not carrier-advised, skip
 				continue;
 			}
-			final String advisingStatus = schedule.getCarrier_Advising_Status();
-			if (X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_NotRequested.equals(advisingStatus)
-					|| X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_Requested.equals(advisingStatus)
-					|| X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_InProgress.equals(advisingStatus))
+
+			final int shipperId = inOut.getM_Shipper_ID();
+			if (shipperId <= 0)
 			{
-				// carrier advising has not resolved yet → delay the notification
+				// no shipper assigned → not carrier-relevant, skip
+				continue;
+			}
+
+			if (!shipperDAO.getShipperGatewayId(ShipperId.ofRepoId(shipperId)).isPresent())
+			{
+				// shipper has no gateway configured → no tracking expected, skip
+				continue;
+			}
+
+			if (isCarrierTrackingPending(inOutId))
+			{
 				return true;
 			}
 		}
 
-		// carrier advising resolved (Completed/Failed/Manual) or not applicable
+		return false;
+	}
+
+	/**
+	 * Steps 2 + 3: check whether carrier tracking is still pending for the given inout.
+	 *
+	 * @return {@code true} if we should delay (packages missing or any tracking URL blank)
+	 */
+	private boolean isCarrierTrackingPending(final int inOutId)
+	{
+		// Step 2: check whether any packages exist for this inout
+		final List<I_M_ShippingPackage> packages = queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, inOutId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		if (packages.isEmpty())
+		{
+			// gateway configured but carrier not yet invoked → delay
+			return true;
+		}
+
+		// Step 3: check that every package has a shipment order with parcels that all have tracking URLs
+		for (final I_M_ShippingPackage pkg : packages)
+		{
+			final int transportationId = pkg.getM_ShipperTransportation_ID();
+			if (transportationId <= 0)
+			{
+				return true;
+			}
+
+			final List<I_Carrier_ShipmentOrder> orders = queryBL
+					.createQueryBuilder(I_Carrier_ShipmentOrder.class)
+					.addEqualsFilter(I_Carrier_ShipmentOrder.COLUMNNAME_M_ShipperTransportation_ID, transportationId)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.list();
+
+			if (orders.isEmpty())
+			{
+				return true;
+			}
+
+			for (final I_Carrier_ShipmentOrder order : orders)
+			{
+				final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryBL
+						.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+						.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, order.getCarrier_ShipmentOrder_ID())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.list();
+
+				if (parcels.isEmpty())
+				{
+					return true;
+				}
+
+				for (final I_Carrier_ShipmentOrder_Parcel parcel : parcels)
+				{
+					if (Check.isBlank(parcel.getTrackingURL()))
+					{
+						return true;
+					}
+				}
+			}
+		}
+
 		return false;
 	}
 }
