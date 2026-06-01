@@ -160,7 +160,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_UI_Element_ID,AD_Field_ID,A
                            Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize)
 VALUES (0,0,651942 /*From ID Server*/,780642 /*From ID Server*/,553601,548456,
         TO_TIMESTAMP('2026-05-29 10:04:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',
-        'N','Y','Y','N',
+        'N','Y','N','N',
         'z. Hd. (Empfänger)',150,0,0,
         TO_TIMESTAMP('2026-05-29 10:04:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M');
 
@@ -194,6 +194,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_UI_Element_ID,AD_Field_ID,A
                            Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize)
 VALUES (0,0,651943 /*From ID Server*/,780643 /*From ID Server*/,553599,548456,
         TO_TIMESTAMP('2026-05-29 10:04:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',
-        'N','Y','Y','N',
+        'N','Y','N','N',
         'z. Hd. (Lieferant)',140,0,0,
         TO_TIMESTAMP('2026-05-29 10:04:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M');
