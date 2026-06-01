@@ -86,6 +86,15 @@ public final class DeliveryOrderUtil
 				.bpartnerId(bpartner.getC_BPartner_ID());
 	}
 
+	public Address.AddressBuilder prepareAddressFromLocationBP(
+			@NonNull final I_C_Location location,
+			@NonNull final I_C_BPartner bpartner,
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
+		return prepareAddressFromLocationBP(location, bpartner)
+				.attention(StringUtils.trimBlankToNull(bpartnerLocation.getAttention()));
+	}
+
 	public CountryCode createShipperCountryCode(final CountryId countryId)
 	{
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);

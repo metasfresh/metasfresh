@@ -97,6 +97,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
+	 * Set Attention.
+	 * Attention, door code or additional mandatory information for the shipping label (max. 30 characters)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAttention (@Nullable java.lang.String Attention);
+
+	/**
+	 * Get Attention.
+	 * Attention, door code or additional mandatory information for the shipping label (max. 30 characters)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAttention();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Attention = new ModelColumn<>(I_C_BPartner_Location.class, "Attention", null);
+	String COLUMNNAME_Attention = "Attention";
+
+	/**
 	 * Set Partner Name.
 	 *
 	 * <br>Type: String
@@ -391,6 +414,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_GLN = "GLN";
 
 	/**
+	 * Set GLN-GCP Length.
+	 * Length of the GCP (GS1 Company Prefix) in the GLN
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGLN_GCPLength (int GLN_GCPLength);
+
+	/**
+	 * Get GLN-GCP Length.
+	 * Length of the GCP (GS1 Company Prefix) in the GLN
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGLN_GCPLength();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_GLN_GCPLength = new ModelColumn<>(I_C_BPartner_Location.class, "GLN_GCPLength", null);
+	String COLUMNNAME_GLN_GCPLength = "GLN_GCPLength";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -509,7 +555,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDefaultVisitorAddress(boolean IsDefaultVisitorAddress);
+	void setIsDefaultVisitorAddress (boolean IsDefaultVisitorAddress);
 
 	/**
 	 * Get Default Visitor Address.

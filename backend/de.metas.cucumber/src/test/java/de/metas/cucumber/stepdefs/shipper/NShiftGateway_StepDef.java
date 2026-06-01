@@ -243,6 +243,39 @@ public class NShiftGateway_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Asserts address and contact fields on the most-recently-captured {@link JsonDeliveryAdvisorRequest}.
+	 * All columns are optional. {@code Sender*} columns target the pickup address/contact;
+	 * {@code Receiver*} columns target the delivery address/contact.
+	 * Supported columns: {@code SenderCompanyName}, {@code SenderCountryCode}, {@code SenderAttention},
+	 * {@code ReceiverCompanyName}, {@code ReceiverCompanyName2}, {@code ReceiverStreet},
+	 * {@code ReceiverAdditionalAddressInfo}, {@code ReceiverHouseNo}, {@code ReceiverZip},
+	 * {@code ReceiverCity}, {@code ReceiverCountryCode}, {@code ReceiverAttention},
+	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail}.
+	 * <p>
+	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
+	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by
+	 * {@link de.metas.shipper.client.nshift.NShiftShipAdvisorService#buildRequest}, which is
+	 * verified by {@code NShiftShipAdvisorServiceTest}.
+	 */
+	@And("validate the captured nShift advisor request:")
+	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
+	{
+		assertThat(capturedAdvisorRequest)
+				.as("nShift ship advisor service was not called")
+				.isNotNull();
+
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final SoftAssertions softly = new SoftAssertions();
+
+		assertAddress(softly, capturedAdvisorRequest.getPickupAddress(), row, "Sender", "pickupAddress");
+		assertContact(softly, capturedAdvisorRequest.getPickupContact(), row, "Sender", "pickupContact");
+		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), row, "Receiver", "deliveryAddress");
+		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
+
+		softly.assertAll();
+	}
+
 	@And("the last nShift ship advisor request had shipperConfig serviceLevel {string}")
 	public void assertLastAdvisorRequestShipperConfigServiceLevel(@NonNull final String expectedServiceLevel)
 	{
@@ -269,7 +302,8 @@ public class NShiftGateway_StepDef
 				|| row.getAsOptionalString(columnPrefix + "HouseNo").isPresent()
 				|| row.getAsOptionalString(columnPrefix + "Zip").isPresent()
 				|| row.getAsOptionalString(columnPrefix + "City").isPresent()
-				|| row.getAsOptionalString(columnPrefix + "CountryCode").isPresent();
+				|| row.getAsOptionalString(columnPrefix + "CountryCode").isPresent()
+				|| row.getAsOptionalString(columnPrefix + "Attention").isPresent();
 		if (!any)
 		{
 			return;
@@ -296,6 +330,8 @@ public class NShiftGateway_StepDef
 				.assertThat(actual.getCity()).as(label + ".city").isEqualTo(expected));
 		row.getAsOptionalString(columnPrefix + "CountryCode").ifPresent(expected -> softly
 				.assertThat(actual.getCountry()).as(label + ".country").isEqualTo(expected));
+		row.getAsOptionalString(columnPrefix + "Attention").ifPresent(expected -> softly
+				.assertThat(actual.getAttention()).as(label + ".attention").isEqualTo(expected));
 	}
 
 	private static void assertContact(

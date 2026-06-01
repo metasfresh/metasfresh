@@ -44,8 +44,8 @@ Feature: nShift Shipment
       | Identifier | Value           | Name            | Name2                  | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | nshift_customer | nShift Customer | nShift Logistics Dept. | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | OPT.Address2 |
-      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2      |
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | Address2 | Attention  |
+      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2  | Attention Test |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -103,8 +103,8 @@ Feature: nShift Shipment
       | cs4        | nShift       |
 
   @from:cucumber
-@allure.label.epic:E0355_Transport_Planning_Extralogistik
-@allure.label.feature:F00355
+  @allure.label.epic:E0355_Transport_Planning_Extralogistik
+  @allure.label.feature:F00355
   Scenario: nShift Carrier Advise
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
@@ -221,9 +221,12 @@ Feature: nShift Shipment
     And validate Carrier_ShipmentOrder_Items:
       | Carrier_ShipmentOrder_ID | ProductName    | ArticleValue   | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
       | cso_do                   | nShift Product | nshift_product | 12345678            | 10         | 10    | 100        | 21              |
+    And validate the captured nShift advisor request:
+      | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        |
+      | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test       | nShift Customer Contact | +41791234567         | contact@nshift-test.example |
     And validate the captured nShift shipment request:
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | ParcelGrossWeightKg |
-      | cp1                | cgt1                  | cs1                | cs2                 | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 21                  |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | ParcelGrossWeightKg |
+      | cp1                | cgt1                  | cs1                | cs2                 | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test       | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 21                  |
 
   Scenario: nShift Carrier Advise uses ExternalSystem-specific service level
     Given metasfresh contains External System

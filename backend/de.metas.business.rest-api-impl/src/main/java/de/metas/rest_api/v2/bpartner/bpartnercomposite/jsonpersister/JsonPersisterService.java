@@ -859,9 +859,11 @@ public class JsonPersisterService
 			bpartner.setName3(StringUtils.trim(jsonBPartner.getName3()));
 		}
 
-		if (jsonBPartner.isLookupLabelSet())
+		// glnLookupLabel is canonical; lookupLabel is deprecated but still supported for backward compatibility
+		if (jsonBPartner.isGlnLookupLabelSet() || jsonBPartner.isLookupLabelSet())
 		{
-			bpartner.setGlnLookupLabel(StringUtils.trim(jsonBPartner.getLookupLabel()));
+			bpartner.setGlnLookupLabel(StringUtils.trim(
+					CoalesceUtil.coalesceNotNull(jsonBPartner.getGlnLookupLabel(), jsonBPartner.getLookupLabel())));
 		}
 
 		if (jsonBPartner.isCustomerSet())
@@ -1214,11 +1216,13 @@ public class JsonPersisterService
 			contact.setName(StringUtils.trim(jsonBPartnerContact.getName()));
 		}
 
-		// value
-		if (jsonBPartnerContact.isCodeSet())
-		{
-			contact.setValue(StringUtils.trim(jsonBPartnerContact.getCode()));
-		}
+		// FIXME: never was active — code was not propagated to AD_User.Value before this change.
+		// Disabled because AD_User.Value has no unique constraint and BPartnerDAO.getBPartnerContactIdBy queries by Value
+		// using firstOnlyOrNull which would throw on duplicates. Add a unique constraint on AD_User.Value before enabling.
+		// if (jsonBPartnerContact.isCodeSet())
+		// {
+		// 	contact.setValue(StringUtils.trim(jsonBPartnerContact.getCode()));
+		// }
 
 		// description
 		if (jsonBPartnerContact.isDescriptionSet())
@@ -1800,6 +1804,12 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isVatIdSet())
 		{
 			location.setVatTaxId(VATIdentifier.ofNullable(jsonBPartnerLocation.getVatId()));
+		}
+
+		// attention
+		if (jsonBPartnerLocation.isAttentionSet())
+		{
+			location.setAttention(StringUtils.trim(jsonBPartnerLocation.getAttention()));
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
