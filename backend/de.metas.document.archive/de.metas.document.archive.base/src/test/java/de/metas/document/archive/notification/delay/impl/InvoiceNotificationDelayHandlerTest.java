@@ -34,7 +34,7 @@ public class InvoiceNotificationDelayHandlerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		handler = new InvoiceNotificationDelayHandler();
+		handler = new InvoiceNotificationDelayHandler(new CarrierTrackingDelayRepository());
 	}
 
 	private void setSysConfig(final boolean enabled)
