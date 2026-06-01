@@ -16,3 +16,8 @@
 -- (which defaults to NULLS FIRST) does not match the requested order and is ignored.
 CREATE INDEX IF NOT EXISTS M_ShipmentSchedule_DeliveryDate_Eff
     ON M_ShipmentSchedule (COALESCE(DeliveryDate_Override, DeliveryDate) DESC NULLS LAST, M_ShipmentSchedule_ID ASC);
+
+-- Remove the ad-hoc diagnostic index created manually while investigating this
+-- problem; the canonical index above supersedes it (functionally identical).
+-- No-op where it was never created.
+DROP INDEX IF EXISTS idx_m_shipmentschedule_deliverydate_eff;
