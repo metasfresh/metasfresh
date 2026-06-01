@@ -5,6 +5,7 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -108,6 +109,20 @@ public class QtyReservationService
 	public QtyTU getReservedQtyTU(@NonNull final OrderAndLineId orderLineId)
 	{
 		return repository.getReservedQtyTU(orderLineId);
+	}
+
+	/**
+	 * Shrinks the active reservations of each sales-order line of the given order so that
+	 * the line's total reserved Qty never exceeds the line's current {@code QtyOrdered}.
+	 * One-directional: only reduces, never grows.
+	 */
+	public void reconcileToOrderedQty(@NonNull final OrderId orderId)
+	{
+		ReconcileQtyReservationsCommand.builder()
+				.qtyReservationRepository(repository)
+				.orderId(orderId)
+				.build()
+				.execute();
 	}
 
 }
