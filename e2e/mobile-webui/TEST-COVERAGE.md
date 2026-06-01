@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 10 | 80% |
 | Picking | 44 | 47 | 94% |
-| Distribution | 30 | 33 | 91% |
+| Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -195,9 +195,12 @@
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
-| "Lagerort leer" button is hidden once picking has started | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after switch, scanning an HU from the original locator is rejected with "HU is not at the target trolley" | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) | `distribution/switchPickFromLocator.spec.js` |
 
-**8/8 — 100%**
+**11/11 — 100%**
 
 ### Distribution — HU scanning
 
@@ -207,11 +210,12 @@
 | GTIN-validation mode: scan HU by M_HU_ID, confirm with product GTIN | `distribution/pickFrom_validate_GTIN.spec.js` |
 | GTIN-validation mode: scan HU by ExternalBarcode, confirm with product GTIN | `distribution/pickFrom_validate_GTIN.spec.js` |
 | Only 1 matching unit → qty dialog skipped | `distribution/pickFrom_validate_GTIN.spec.js` |
+| GTIN-validation mode: scan unknown product code → "no product found" error, line stays unpicked | `distribution/pickFrom_validate_GTIN.spec.js` |
 | Scan distribution HU by QR code | `distribution/scan_HU_barcodes.spec.js` |
 | Scan distribution HU by M_HU_ID | `distribution/scan_HU_barcodes.spec.js` |
 | Scan distribution HU by ExternalBarcode | `distribution/scan_HU_barcodes.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Distribution + Manufacturing cross-flow
 

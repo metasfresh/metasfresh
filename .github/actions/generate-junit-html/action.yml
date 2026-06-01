@@ -33,7 +33,7 @@ runs:
     # Download previous history from last run on same branch
     - name: Download previous Allure history
       if: inputs.history-artifact-name != ''
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v21
       with:
         name: ${{ inputs.history-artifact-name }}
         path: junit-history-temp

@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { GetQuantityDialog } from '../picking/GetQuantityDialog';
 import { DistributionUtils } from './DistributionUtils';
@@ -52,6 +52,11 @@ export const DistributionLinePickFromScreen = {
 
         typeProductCode: async (productScannedCode) => await test.step(`${NAME} - Type Product Scanned Code: ${productScannedCode}`, async () => {
             await BarcodeScannerComponent.type({ scannedCode: productScannedCode, testId: 'scanProductCode-input' });
+        }),
+
+        goBackToJobScreen: async () => await test.step(`${NAME} - Go back to job screen`, async () => {
+            await page.locator(ID_BACK_BUTTON).tap();
+            await DistributionJobScreen.waitForScreen();
         }),
 
         fillQuantityDialog: async ({ qtyToMove, expectedQtyToMove, expectedError }) => await test.step(`${NAME} - Fill Quantity Dialog`, async () => {

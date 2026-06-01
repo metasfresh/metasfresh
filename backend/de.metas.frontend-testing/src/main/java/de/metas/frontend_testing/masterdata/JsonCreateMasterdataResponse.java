@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
@@ -42,6 +43,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
+	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
 	@NonNull Map<String, JsonCreateProductResponse> products;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;

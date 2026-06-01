@@ -740,6 +740,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
+				// F00127.1 — propagate free-of-charge flag from IC to invoice line
+				invoiceLine.setIsWithoutCharge(cand.isWithoutCharge());
+				invoiceLine.setReason(cand.isWithoutCharge() ? cand.getReason() : null);
+
 				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
 				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
 
