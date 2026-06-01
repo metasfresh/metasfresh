@@ -458,10 +458,12 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | sscc18             |
       | 987654321000000016 |
       | 987654321000000023 |
+    # 2 orders / 2 DESADVs but ONE consolidated shipment (1 M_InOut) → ONE delivery note.
     And the EPCIS JSON array field has:
-      | field            | expectedSize |
-      | desadvReferences | 2            |
-      | poReferences     | 2            |
+      | field               | expectedSize |
+      | desadvReferences    | 2            |
+      | poReferences        | 2            |
+      | shipmentDocumentNos | 1            |
     # ─── Per-LU POReference in dummy GRAI ────────────────────────────────────────────
     # POReferences are '1234567893' (Order A, 10 digits → LPAD no-op → '1234567893') and
     # '9876543210' (Order B, 10 digits → LPAD no-op → '9876543210').
@@ -650,10 +652,13 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000001700 | 15         |
+    # 2 orders / 2 DESADVs delivered via TWO M_InOuts sharing one SSCC → TWO delivery notes
+    # (the owner's merged event references both; this is what the EPCIS desadv bizTransaction carries).
     And the EPCIS JSON array field has:
-      | field            | expectedSize |
-      | desadvReferences | 2            |
-      | poReferences     | 2            |
+      | field               | expectedSize |
+      | desadvReferences    | 2            |
+      | poReferences        | 2            |
+      | shipmentDocumentNos | 2            |
 
     # ─── Sibling shipment B must return {} (no duplicate event for the same SSCC) ──────
     Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170

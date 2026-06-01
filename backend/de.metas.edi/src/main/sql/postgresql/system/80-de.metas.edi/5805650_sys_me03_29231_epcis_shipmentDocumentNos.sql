@@ -1,3 +1,14 @@
+-- Migration: me03#29231 — EPCIS export: add shipmentDocumentNos[] (delivery-note numbers)
+-- https://github.com/metasfresh/me03/issues/29231
+--
+-- get_epcis_events_json_fn now also emits shipmentDocumentNos[] = DISTINCT M_InOut.DocumentNo of the
+-- DESADV messages on this SSCC (via the edi_desadv_m_inout junction). This is the value the receiver's
+-- EPCIS desadv bizTransaction must carry — the delivery-note number ("Lieferschein", Migros M-EPCIS
+-- Anwendungsrichtlinie §5.8) — NOT EDI_Desadv.DocumentNo (which is 1:1 per ORDER and not unique across
+-- a partial delivery; Migros rejected it on LAF-1021, cf. sp80 PR #3491). Cardinality falls out
+-- naturally: 2 orders on one M_InOut → one delivery note; 2 M_InOuts sharing one SSCC → two.
+-- desadvReferences[]/poReferences[] are unchanged.
+
 /*
  * #%L
  * de.metas.edi
