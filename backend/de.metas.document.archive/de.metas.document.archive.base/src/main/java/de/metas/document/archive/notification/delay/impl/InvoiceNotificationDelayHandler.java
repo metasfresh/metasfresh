@@ -30,6 +30,9 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 {
 	public static final String SYSCONFIG_DelayUntilCarrierConfirmed = "delayNotificationUntilShipmentConfirmedByCarrier";
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public String getTableName()
 	{
@@ -40,7 +43,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 	public boolean shouldDelaySending(@NonNull final I_C_Doc_Outbound_Log log)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(log.getAD_Client_ID(), log.getAD_Org_ID());
-		if (!Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DelayUntilCarrierConfirmed, false, clientAndOrgId))
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_DelayUntilCarrierConfirmed, false, clientAndOrgId))
 		{
 			return false;
 		}
@@ -51,7 +54,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 			return false;
 		}
 
-		final List<I_C_InvoiceLine> invoiceLines = Services.get(IQueryBL.class)
+		final List<I_C_InvoiceLine> invoiceLines = queryBL
 				.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.addCompareFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, CompareQueryFilter.Operator.GREATER, 0)
@@ -88,7 +91,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 
 	private boolean hasPendingCarrierTracking(final int inOutId)
 	{
-		final List<I_M_ShippingPackage> packages = Services.get(IQueryBL.class)
+		final List<I_M_ShippingPackage> packages = queryBL
 				.createQueryBuilder(I_M_ShippingPackage.class)
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, inOutId)
 				.addCompareFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, CompareQueryFilter.Operator.GREATER, 0)
@@ -100,7 +103,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 		{
 			final int shippingTransportationId = pkg.getM_ShipperTransportation_ID();
 
-			final List<I_Carrier_ShipmentOrder> orders = Services.get(IQueryBL.class)
+			final List<I_Carrier_ShipmentOrder> orders = queryBL
 					.createQueryBuilder(I_Carrier_ShipmentOrder.class)
 					.addEqualsFilter(I_Carrier_ShipmentOrder.COLUMNNAME_M_ShipperTransportation_ID, shippingTransportationId)
 					.addOnlyActiveRecordsFilter()
@@ -109,7 +112,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 
 			for (final I_Carrier_ShipmentOrder order : orders)
 			{
-				final List<I_Carrier_ShipmentOrder_Parcel> parcels = Services.get(IQueryBL.class)
+				final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryBL
 						.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
 						.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, order.getCarrier_ShipmentOrder_ID())
 						.addOnlyActiveRecordsFilter()
