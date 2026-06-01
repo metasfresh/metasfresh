@@ -5,6 +5,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.model.I_C_Order;
@@ -15,6 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
 /*
@@ -45,6 +47,7 @@ public class C_Order
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
@@ -132,5 +135,15 @@ public class C_Order
 
 		throw new AdempiereException(ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS)
 				.markAsUserValidationError();
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void reconcileQtyReservations(final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+		qtyReservationService.reconcileToOrderedQty(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 }
