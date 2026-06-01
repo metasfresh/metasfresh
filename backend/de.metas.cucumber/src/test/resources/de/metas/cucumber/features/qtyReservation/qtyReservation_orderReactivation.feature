@@ -57,10 +57,10 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
       | plv_1                  | product      | 10.00    | PCE               |
 
-    # 100 PCE on-hand stock (10 complete TUs of 10 PCE each)
+    # 100 PCE on-hand stock (10 complete TUs of 10 PCE each → 10 HUs)
     And metasfresh contains single line completed inventories
-      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
-      | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 100 PCE  | huPIP_10PCE             | hu      |
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID | M_HU_ID2 | M_HU_ID3 | M_HU_ID4 | M_HU_ID5 | M_HU_ID6 | M_HU_ID7 | M_HU_ID8 | M_HU_ID9 | M_HU_ID10 |
+      | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 100 PCE  | huPIP_10PCE             | hu1     | hu2      | hu3      | hu4      | hu5      | hu6      | hu7      | hu8      | hu9      | hu10      |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And metasfresh contains C_Orders:
