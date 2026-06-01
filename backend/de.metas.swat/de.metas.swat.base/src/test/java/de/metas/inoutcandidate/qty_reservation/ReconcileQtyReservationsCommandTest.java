@@ -12,6 +12,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_QtyReservation;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +29,7 @@ class ReconcileQtyReservationsCommandTest
 	private QtyReservationService service;
 	private I_C_UOM uom;
 	private int productId;
+	private int warehouseId;
 
 	@BeforeEach
 	void beforeEach()
@@ -35,6 +37,7 @@ class ReconcileQtyReservationsCommandTest
 		AdempiereTestHelper.get().init();
 		uom = BusinessTestHelper.createUOM("Kg");
 		productId = BusinessTestHelper.createProductId("P1", uom).getRepoId();
+		warehouseId = createWarehouseId();
 
 		final QtyReservationRepository repository = new QtyReservationRepository();
 		service = new QtyReservationService(mock(IShipmentScheduleInvalidateBL.class), repository);
@@ -53,6 +56,26 @@ class ReconcileQtyReservationsCommandTest
 		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records).hasSize(1);
 		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("75"));
+		assertThat(records.get(0).getQtyTU()).isEqualByComparingTo(new BigDecimal("75"));
+	}
+
+	@Test
+	void doesNotShrinkBelowDelivered()
+	{
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("40"));
+
+		final I_M_QtyReservation record = createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("100"), new BigDecimal("100"));
+		record.setQtyDelivered(new BigDecimal("50"));
+		InterfaceWrapperHelper.save(record);
+
+		service.reconcileToOrderedQty(orderId);
+
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		assertThat(records).hasSize(1);
+		// clamped to delivered (50), NOT down to QtyOrdered (40)
+		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("50"));
+		assertThat(records.get(0).getQtyDelivered()).isEqualByComparingTo(new BigDecimal("50"));
 	}
 
 	@Test
@@ -117,6 +140,15 @@ class ReconcileQtyReservationsCommandTest
 
 	// --- helpers ---
 
+	private int createWarehouseId()
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setValue("WH");
+		warehouse.setName("WH");
+		InterfaceWrapperHelper.save(warehouse);
+		return warehouse.getM_Warehouse_ID();
+	}
+
 	private OrderId createSalesOrder()
 	{
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
@@ -130,6 +162,7 @@ class ReconcileQtyReservationsCommandTest
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(orderId.getRepoId());
 		orderLine.setM_Product_ID(productId);
+		orderLine.setM_Warehouse_ID(warehouseId);
 		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
 		orderLine.setQtyOrdered(qtyOrdered);
 		orderLine.setQtyEntered(qtyOrdered);

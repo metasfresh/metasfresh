@@ -1,11 +1,13 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.QtyTU;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -114,15 +116,24 @@ public class QtyReservationService
 	/**
 	 * Shrinks the active reservations of each sales-order line of the given order so that
 	 * the line's total reserved Qty never exceeds the line's current {@code QtyOrdered}.
-	 * One-directional: only reduces, never grows.
+	 * One-directional: only reduces, never grows; a reservation is never shrunk below its
+	 * already-delivered qty. Shipment schedules of changed lines are invalidated afterwards.
 	 */
 	public void reconcileToOrderedQty(@NonNull final OrderId orderId)
 	{
-		ReconcileQtyReservationsCommand.builder()
+		final ImmutableSet<OrderLineId> changedOrderLineIds = ReconcileQtyReservationsCommand.builder()
 				.qtyReservationRepository(repository)
 				.orderId(orderId)
 				.build()
 				.execute();
+
+		// invalidate shipment schedules of the lines whose reservations actually changed,
+		// consistent with makeReservation()/deleteReservation()
+		for (final OrderLineId orderLineId : changedOrderLineIds)
+		{
+			final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderLineId);
+			invalidateShipmentSchedulesForSalesOrderLine(orderLine);
+		}
 	}
 
 }

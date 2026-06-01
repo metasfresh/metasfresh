@@ -47,7 +47,7 @@ public class C_Order
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
+	private final SpringContextHolder.Lazy<QtyReservationService> qtyReservationService = SpringContextHolder.lazyBean(QtyReservationService.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
@@ -144,6 +144,6 @@ public class C_Order
 		{
 			return;
 		}
-		qtyReservationService.reconcileToOrderedQty(OrderId.ofRepoId(order.getC_Order_ID()));
+		qtyReservationService.get().reconcileToOrderedQty(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 }

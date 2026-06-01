@@ -13,6 +13,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_QtyReservation;
 
@@ -51,7 +52,16 @@ public class ReconcileQtyReservationsCommand
 		this.orderId = orderId;
 	}
 
-	public void execute()
+	/**
+	 * Shrinks the total reserved Qty of each sales-order line down to the line's current {@code QtyOrdered}.
+	 * <p>
+	 * One-directional (only reduces, never grows). A row's {@code Qty} is never shrunk below that row's
+	 * already-delivered qty ({@code QtyDelivered}). All comparison/subtraction arithmetic is performed in the
+	 * order-line UOM; per-row reductions are converted back to each reservation's own UOM before being applied.
+	 *
+	 * @return the order-line IDs whose reservations were actually modified (empty if nothing changed)
+	 */
+	public ImmutableSet<OrderLineId> execute()
 	{
 		final List<OrderAndLineId> orderLineIds = orderDAO.retrieveAllOrderLineIds(orderId);
 
@@ -63,6 +73,12 @@ public class ReconcileQtyReservationsCommand
 		{
 			final OrderLineId orderLineId = orderAndLineId.getOrderLineId();
 			final Quantity qtyOrdered = orderLineBL.getQtyOrdered(orderAndLineId);
+
+			// cancelled / zero-qty lines have nothing to reconcile against
+			if (qtyOrdered.signum() <= 0)
+			{
+				continue;
+			}
 
 			final ImmutableList<QtyReservation> reservations = qtyReservationRepository.getActiveByOrderLineId(orderLineId);
 			if (reservations.isEmpty())
@@ -81,19 +97,22 @@ public class ReconcileQtyReservationsCommand
 				totalReserved = totalReserved == null ? qtyInLineUOM : totalReserved.add(qtyInLineUOM);
 			}
 
-			if (totalReserved == null || totalReserved.compareTo(qtyOrdered) <= 0)
+			// reservations is non-empty, so totalReserved is non-null here
+			if (totalReserved.compareTo(qtyOrdered) <= 0)
 			{
 				continue; // nothing to shrink for this line
 			}
 
-			BigDecimal excess = totalReserved.subtract(qtyOrdered).toBigDecimal();
+			// excess to remove, expressed in the order-line UOM
+			BigDecimal excessInLineUOM = totalReserved.subtract(qtyOrdered).toBigDecimal();
 
 			// Reduce PS rows before OH rows. Within a group: stable by reservation id.
 			final List<QtyReservation> ordered = sortPlannedSupplyBeforeOnHand(reservations);
 
+			boolean lineChanged = false;
 			for (final QtyReservation reservation : ordered)
 			{
-				if (excess.signum() <= 0)
+				if (excessInLineUOM.signum() <= 0)
 				{
 					break;
 				}
@@ -104,8 +123,34 @@ public class ReconcileQtyReservationsCommand
 					continue;
 				}
 
-				final BigDecimal reductionFromThisRow = excess.min(rowQty);
-				final BigDecimal newQtyBD = rowQty.subtract(reductionFromThisRow).max(BigDecimal.ZERO);
+				// already-delivered qty is the floor below which this row must never shrink
+				final BigDecimal rowQtyDelivered = reservation.getQtyDelivered().toBigDecimal().max(BigDecimal.ZERO);
+
+				// the most this row can give up (in the reservation's own UOM), never below delivered
+				final BigDecimal reducibleRowQty = rowQty.subtract(rowQtyDelivered).max(BigDecimal.ZERO);
+				if (reducibleRowQty.signum() <= 0)
+				{
+					continue;
+				}
+
+				// convert this row's reducible qty to the order-line UOM so excess/min/subtract are all in one UOM
+				final BigDecimal reducibleRowQtyInLineUOM = uomConversionBL.convertQuantityTo(
+								reservation.getQty().toZero().add(reducibleRowQty),
+								reservation.getProductId(),
+								qtyOrdered.getUomId())
+						.toBigDecimal();
+
+				final BigDecimal reductionInLineUOM = excessInLineUOM.min(reducibleRowQtyInLineUOM);
+
+				// convert the reduction back to the reservation's own UOM
+				final BigDecimal reductionInRowUOM = uomConversionBL.convertQuantityTo(
+								qtyOrdered.toZero().add(reductionInLineUOM),
+								reservation.getProductId(),
+								reservation.getQty().getUomId())
+						.toBigDecimal();
+
+				// clamp: never shrink below already-delivered qty
+				final BigDecimal newQtyBD = rowQty.subtract(reductionInRowUOM).max(rowQtyDelivered);
 
 				final BigDecimal rowQtyTU = reservation.getQtyTU().toBigDecimal();
 				final BigDecimal newQtyTUBD = rowQtyTU
@@ -114,24 +159,31 @@ public class ReconcileQtyReservationsCommand
 
 				final Quantity newQty = reservation.getQty().toZero().add(newQtyBD);
 				newQtyByReservationId.put(reservation.getId(), new NewQty(newQty, QtyTU.ofBigDecimal(newQtyTUBD)));
+				lineChanged = true;
 
-				excess = excess.subtract(reductionFromThisRow);
+				excessInLineUOM = excessInLineUOM.subtract(reductionInLineUOM);
 			}
 
-			affectedOrderLineIds.add(orderLineId);
+			if (lineChanged)
+			{
+				affectedOrderLineIds.add(orderLineId);
+			}
 		}
 
+		final ImmutableSet<OrderLineId> changedOrderLineIds = affectedOrderLineIds.build();
 		if (newQtyByReservationId.isEmpty())
 		{
-			return;
+			return ImmutableSet.of();
 		}
 
 		qtyReservationRepository.updateByOrderLineIds(
-				affectedOrderLineIds.build(),
+				changedOrderLineIds,
 				before -> {
 					final NewQty newQty = newQtyByReservationId.get(before.getId());
-					return newQty != null ? before.withQty(newQty.qty, newQty.qtyTU) : before;
+					return newQty != null ? before.withQty(newQty.getQty(), newQty.getQtyTU()) : before;
 				});
+
+		return changedOrderLineIds;
 	}
 
 	/**
@@ -166,19 +218,14 @@ public class ReconcileQtyReservationsCommand
 				.stream()
 				.forEach(record -> result.put(
 						QtyReservationId.ofRepoId(record.getM_QtyReservation_ID()),
-						SupplyType.PLANNED_SUPPLY.getCode().equals(record.getSupplyType())));
+						SupplyType.ofCode(record.getSupplyType()).isPlannedSupply()));
 		return result;
 	}
 
-	private static final class NewQty
+	@Value
+	private static class NewQty
 	{
-		final Quantity qty;
-		final QtyTU qtyTU;
-
-		NewQty(@NonNull final Quantity qty, @NonNull final QtyTU qtyTU)
-		{
-			this.qty = qty;
-			this.qtyTU = qtyTU;
-		}
+		@NonNull Quantity qty;
+		@NonNull QtyTU qtyTU;
 	}
 }
