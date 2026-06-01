@@ -23,6 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
@@ -59,12 +60,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(SnapshotExtension.class)
 public class NShiftShipmentServiceTest
 {
-	private Expect expect;
-
 	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "123"); //nShift portal actorId
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
 	private static final String URL = System.getProperty("nshift.test.url", "https://demo.shipmentserver.com:8080");
+
+	@Autowired
+	@NonNull
+	private NShiftShipmentService nShiftShipmentService;
+
+	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
+	private Expect expect;
 
 	private static final JsonDeliveryRequest DELIVERY_REQUEST = JsonDeliveryRequest.builder()
 			.deliveryOrderId(1)
@@ -82,7 +88,7 @@ public class NShiftShipmentServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
-					.attention("z. Hd. Sender Test")
+					.attention("Attention Sender Test")
 					.build())
 			.pickupContact(JsonContact.builder()
 					.name("Test Pickup Contact Name")
@@ -106,7 +112,7 @@ public class NShiftShipmentServiceTest
 					.street("Alecsandri")
 					.additionalAddressInfo("")
 					.houseNo("3")
-					.attention("z. Hd. Test")
+					.attention("Attention Test")
 					.build())
 			.deliveryContact(JsonContact.builder()
 					.name("Test Delivery Contact Name")
@@ -205,9 +211,6 @@ public class NShiftShipmentServiceTest
 					.build())
 			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
 			.build();
-
-	@Autowired
-	NShiftShipmentService nShiftShipmentService;
 
 	@Test
 	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")

@@ -288,28 +288,6 @@ public class C_BPartner_Location_StepDef
 		saveRecord(locationRecord);
 	}
 
-	@And("load C_BPartner_Location by bpartner and GLN:")
-	public void load_C_BPartner_Location_by_bpartner_and_GLN(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row ->
-		{
-			final StepDefDataIdentifier bpIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
-			final String gln = row.getAsString(I_C_BPartner_Location.COLUMNNAME_GLN);
-
-			final I_C_BPartner_Location location = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerRecord.getC_BPartner_ID())
-					.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.firstOnly(I_C_BPartner_Location.class);
-			assertThat(location).as("C_BPartner_Location for bpartner=%s GLN=%s", bpIdentifier, gln).isNotNull();
-
-			final StepDefDataIdentifier locationIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
-			bPartnerLocationTable.putOrReplace(locationIdentifier, location);
-		});
-	}
-
 	@And("validate C_BPartner_Location:")
 	public void validate_C_BPartner_Location(@NonNull final DataTable dataTable)
 	{

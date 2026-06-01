@@ -77,40 +77,40 @@ public class CreateBPartnerV2_StepDef
 			final SoftAssertions softly = new SoftAssertions();
 
 			row.getAsOptionalString(JsonResponseBPartner.NAME)
-					.ifPresent(v -> softly.assertThat(bpartner.getName()).as(JsonResponseBPartner.NAME).isEqualTo(v));
+					.ifPresent(name -> softly.assertThat(bpartner.getName()).as(JsonResponseBPartner.NAME).isEqualTo(name));
 			row.getAsOptionalString(JsonResponseBPartner.CODE)
-					.ifPresent(v -> softly.assertThat(bpartner.getCode()).as(JsonResponseBPartner.CODE).isEqualTo(v));
+					.ifPresent(code -> softly.assertThat(bpartner.getCode()).as(JsonResponseBPartner.CODE).isEqualTo(code));
 			row.getAsOptionalString(JsonResponseBPartner.COMPANY_NAME)
-					.ifPresent(v -> softly.assertThat(bpartner.getCompanyName()).as(JsonResponseBPartner.COMPANY_NAME).isEqualTo(DataTableUtil.nullToken2Null(v)));
+					.ifPresent(companyName -> softly.assertThat(bpartner.getCompanyName()).as(JsonResponseBPartner.COMPANY_NAME).isEqualTo(DataTableUtil.nullToken2Null(companyName)));
 			row.getAsOptionalString(JsonResponseBPartner.PHONE)
-					.ifPresent(v -> softly.assertThat(bpartner.getPhone()).as(JsonResponseBPartner.PHONE).isEqualTo(DataTableUtil.nullToken2Null(v)));
+					.ifPresent(phone -> softly.assertThat(bpartner.getPhone()).as(JsonResponseBPartner.PHONE).isEqualTo(DataTableUtil.nullToken2Null(phone)));
 			row.getAsOptionalString(JsonResponseBPartner.LANGUAGE)
-					.ifPresent(v -> softly.assertThat(bpartner.getLanguage()).as(JsonResponseBPartner.LANGUAGE).contains(v));
+					.ifPresent(language -> softly.assertThat(bpartner.getLanguage()).as(JsonResponseBPartner.LANGUAGE).contains(language));
 			row.getAsOptionalString(JsonResponseBPartner.URL)
-					.ifPresent(v -> softly.assertThat(bpartner.getUrl()).as(JsonResponseBPartner.URL).isEqualTo(DataTableUtil.nullToken2Null(v)));
+					.ifPresent(url -> softly.assertThat(bpartner.getUrl()).as(JsonResponseBPartner.URL).isEqualTo(DataTableUtil.nullToken2Null(url)));
 			row.getAsOptionalString(JsonResponseBPartner.GROUP_NAME)
-					.ifPresent(v -> softly.assertThat(bpartner.getGroup()).as(JsonResponseBPartner.GROUP_NAME).isEqualTo(v));
+					.ifPresent(group -> softly.assertThat(bpartner.getGroup()).as(JsonResponseBPartner.GROUP_NAME).isEqualTo(group));
 			row.getAsOptionalString(JsonResponseBPartner.VAT_ID)
-					.ifPresent(v -> softly.assertThat(bpartner.getVatId()).as(JsonResponseBPartner.VAT_ID).isEqualTo(DataTableUtil.nullToken2Null(v)));
+					.ifPresent(vatId -> softly.assertThat(bpartner.getVatId()).as(JsonResponseBPartner.VAT_ID).isEqualTo(DataTableUtil.nullToken2Null(vatId)));
 			row.getAsOptionalString(JsonResponseBPartner.PARENT_ID)
-					.ifPresent(v ->
+					.ifPresent(parentId ->
 					{
-						final String parentIdEff = DataTableUtil.nullToken2Null(v);
+						final String parentIdEff = DataTableUtil.nullToken2Null(parentId);
 						if (parentIdEff == null)
 						{
 							softly.assertThat(bpartner.getParentId()).isNull();
 						}
 						else
 						{
-							softly.assertThat(bpartner.getParentId().getValue()).as(JsonResponseBPartner.PARENT_ID).isEqualTo(Integer.parseInt(v));
+							softly.assertThat(bpartner.getParentId().getValue()).as(JsonResponseBPartner.PARENT_ID).isEqualTo(Integer.parseInt(parentId));
 						}
 					});
 			row.getAsOptionalString(JsonResponseBPartner.GLN_LOOKUP_LABEL)
-					.ifPresent(v -> softly.assertThat(bpartner.getGlnLookupLabel()).as(JsonResponseBPartner.GLN_LOOKUP_LABEL).isEqualTo(v));
+					.ifPresent(glnLookupLabel -> softly.assertThat(bpartner.getGlnLookupLabel()).as(JsonResponseBPartner.GLN_LOOKUP_LABEL).isEqualTo(glnLookupLabel));
 
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartner.getMetasfreshId().getValue());
 
-			row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CreatedBy)
+			row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_CreatedBy)
 					.ifPresent(createdByIdentifier ->
 					{
 						final I_AD_User userRecord = userTable.get(createdByIdentifier);
@@ -119,7 +119,7 @@ public class CreateBPartnerV2_StepDef
 					});
 
 			row.getAsOptionalBoolean(JsonResponseBPartner.DISCOUNT_PRINTED)
-					.ifPresent(v -> softly.assertThat(bPartnerRecord.isDiscountPrinted()).as(JsonResponseBPartner.DISCOUNT_PRINTED).isEqualTo(v));
+					.ifPresent(discountPrinted -> softly.assertThat(bPartnerRecord.isDiscountPrinted()).as(JsonResponseBPartner.DISCOUNT_PRINTED).isEqualTo(discountPrinted));
 
 			softly.assertAll();
 
@@ -142,27 +142,27 @@ public class CreateBPartnerV2_StepDef
 					.orElseThrow(() -> new AdempiereException("Location not found: bpartner=" + bpartnerIdentifier + " location=" + locationIdentifier));
 
 			row.getAsOptionalString(JsonResponseLocation.ADDRESS_1).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getAddress1()).as(JsonResponseLocation.ADDRESS_1).isEqualTo(v));
+					.ifPresent(address1 -> softly.assertThat(location.getAddress1()).as(JsonResponseLocation.ADDRESS_1).isEqualTo(address1));
 			row.getAsOptionalString(JsonResponseLocation.ADDRESS_2).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getAddress2()).as(JsonResponseLocation.ADDRESS_2).isEqualTo(v));
+					.ifPresent(address2 -> softly.assertThat(location.getAddress2()).as(JsonResponseLocation.ADDRESS_2).isEqualTo(address2));
 			row.getAsOptionalString(JsonResponseLocation.POSTAL).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getPostal()).as(JsonResponseLocation.POSTAL).isEqualTo(v));
+					.ifPresent(postal -> softly.assertThat(location.getPostal()).as(JsonResponseLocation.POSTAL).isEqualTo(postal));
 			row.getAsOptionalString(JsonResponseLocation.PO_BOX).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getPoBox()).as(JsonResponseLocation.PO_BOX).isEqualTo(v));
+					.ifPresent(poBox -> softly.assertThat(location.getPoBox()).as(JsonResponseLocation.PO_BOX).isEqualTo(poBox));
 			row.getAsOptionalString(JsonResponseLocation.DISTRICT).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getDistrict()).as(JsonResponseLocation.DISTRICT).isEqualTo(v));
+					.ifPresent(district -> softly.assertThat(location.getDistrict()).as(JsonResponseLocation.DISTRICT).isEqualTo(district));
 			row.getAsOptionalString(JsonResponseLocation.REGION).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getRegion()).as(JsonResponseLocation.REGION).isEqualTo(v));
+					.ifPresent(region -> softly.assertThat(location.getRegion()).as(JsonResponseLocation.REGION).isEqualTo(region));
 			row.getAsOptionalString(JsonResponseLocation.CITY).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getCity()).as(JsonResponseLocation.CITY).isEqualTo(v));
+					.ifPresent(city -> softly.assertThat(location.getCity()).as(JsonResponseLocation.CITY).isEqualTo(city));
 			row.getAsOptionalString(JsonResponseLocation.COUNTRY_CODE).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getCountryCode()).as(JsonResponseLocation.COUNTRY_CODE).isEqualTo(v));
+					.ifPresent(countryCode -> softly.assertThat(location.getCountryCode()).as(JsonResponseLocation.COUNTRY_CODE).isEqualTo(countryCode));
 			row.getAsOptionalString(JsonResponseLocation.GLN).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getGln()).as(JsonResponseLocation.GLN).isEqualTo(v));
+					.ifPresent(gln -> softly.assertThat(location.getGln()).as(JsonResponseLocation.GLN).isEqualTo(gln));
 			row.getAsOptionalString(JsonResponseLocation.VAT_ID).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getVatId()).as(JsonResponseLocation.VAT_ID).isEqualTo(v));
+					.ifPresent(vatId -> softly.assertThat(location.getVatId()).as(JsonResponseLocation.VAT_ID).isEqualTo(vatId));
 			row.getAsOptionalString(JsonResponseLocation.ATTENTION).map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(location.getAttention()).as(JsonResponseLocation.ATTENTION).isEqualTo(v));
+					.ifPresent(attention -> softly.assertThat(location.getAttention()).as(JsonResponseLocation.ATTENTION).isEqualTo(attention));
 
 			softly.assertAll();
 		});
@@ -183,18 +183,18 @@ public class CreateBPartnerV2_StepDef
 			final SoftAssertions softly = new SoftAssertions();
 
 			row.getAsOptionalString(JsonResponseContact.NAME)
-					.ifPresent(v -> softly.assertThat(contact.getName()).as(JsonResponseContact.NAME).isEqualTo(v));
+					.ifPresent(name -> softly.assertThat(contact.getName()).as(JsonResponseContact.NAME).isEqualTo(name));
 			// FIXME: code (AD_User.Value) assertion disabled — no unique constraint on AD_User.Value yet (see BPartnerCompositeSaver)
 			// row.getAsOptionalString(JsonResponseContact.CODE)
-			// 		.ifPresent(v -> softly.assertThat(contact.getCode()).as(JsonResponseContact.CODE).isEqualTo(v));
+			// 		.ifPresent(code -> softly.assertThat(contact.getCode()).as(JsonResponseContact.CODE).isEqualTo(code));
 			row.getAsOptionalString(JsonResponseContact.EMAIL)
 					.map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(contact.getEmail()).as(JsonResponseContact.EMAIL).isEqualTo(v));
+					.ifPresent(email -> softly.assertThat(contact.getEmail()).as(JsonResponseContact.EMAIL).isEqualTo(email));
 			row.getAsOptionalString(JsonResponseContact.FAX)
 					.map(DataTableUtil::nullToken2Null)
-					.ifPresent(v -> softly.assertThat(contact.getFax()).as(JsonResponseContact.FAX).isEqualTo(v));
+					.ifPresent(fax -> softly.assertThat(contact.getFax()).as(JsonResponseContact.FAX).isEqualTo(fax));
 			row.getAsOptionalBoolean(JsonResponseContact.INVOICE_EMAIL_ENABLED)
-					.ifPresent(v -> softly.assertThat(contact.getInvoiceEmailEnabled()).as(JsonResponseContact.INVOICE_EMAIL_ENABLED).isEqualTo(v));
+					.ifPresent(invoiceEmailEnabled -> softly.assertThat(contact.getInvoiceEmailEnabled()).as(JsonResponseContact.INVOICE_EMAIL_ENABLED).isEqualTo(invoiceEmailEnabled));
 
 			softly.assertAll();
 		});

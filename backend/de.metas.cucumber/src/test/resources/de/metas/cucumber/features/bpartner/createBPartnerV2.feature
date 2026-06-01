@@ -51,7 +51,7 @@ Feature: create or update BPartner v2
                         "countryCode":"DE",
                         "postal":null,
                         "vatId": null,
-                        "attention": "z. Hd. Test"
+                        "attention": "Attention Test"
                      }
                   },
                   {
@@ -108,7 +108,7 @@ Feature: create or update BPartner v2
       | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company | null     | null  | de       | null | test-group | vatId_BPartner001 | DIVISION_A     | Y               |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | address1      | address2      | poBox      | district | region      | city      | countryCode | gln | postal | vatId              | attention   |
-      | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null     | null        | null      | DE          | l11 | null   | null               | z. Hd. Test |
+      | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null     | null        | null      | DE          | l11 | null   | null               | Attention Test |
       | ext-ALBERTA-001    | gln-l22            | null          | test_address2 | test_poBox | null     | test_region | test_city | DE          | l22 | null   | vatId_Location_l22 | null        |
     # FIXME: code (AD_User.Value) assertion disabled — no unique constraint on AD_User.Value yet (see BPartnerCompositeSaver)
     And verify that contact was created for bpartner

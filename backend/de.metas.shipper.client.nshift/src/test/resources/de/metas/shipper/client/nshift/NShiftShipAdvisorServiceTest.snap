@@ -3,7 +3,7 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
     "data": {
       "Addresses": [
         {
-          "Attention": "z. Hd. Sender Test metas GmbH",
+          "Attention": "Attention Sender Test metas GmbH",
           "City": "Bonn",
           "CountryCode": "DE",
           "Email": "noreply@metasfresh.com",
@@ -16,7 +16,7 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "Street2": ""
         },
         {
-          "Attention": "z. Hd. Test metas.ro SRL Test Delivery Contact Name",
+          "Attention": "Attention Test metas.ro SRL Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",

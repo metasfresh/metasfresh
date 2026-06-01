@@ -141,17 +141,20 @@ VALUES (0,0,780642 /*From ID Server*/,592664,548456,
         TO_TIMESTAMP('2026-05-29 10:04:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100);
 
 -- 2026-05-29T10:04:00.001Z
-INSERT INTO AD_Field_Trl (AD_Client_ID,AD_Field_ID,AD_Language,Created,CreatedBy,Description,Help,IsActive,IsTranslated,Name,Updated,UpdatedBy,AD_Org_ID)
-SELECT 0,780642 /*From ID Server*/,l.AD_Language,
-       TO_TIMESTAMP('2026-05-29 10:04:00.001000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,
-       NULL,NULL,'Y','N','z. Hd. (Empfänger)',
-       TO_TIMESTAMP('2026-05-29 10:04:00.001000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0
-FROM AD_Language l WHERE l.IsActive='Y'
-  AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Field_ID=780642 AND tt.AD_Language=l.AD_Language);
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=780642 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
 
 -- 2026-05-29T10:04:00.002Z
-UPDATE AD_Field_Trl SET Name='Attn. (Receiver)', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-05-29 10:04:00.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
-WHERE AD_Field_ID=780642 AND AD_Language='en_US';
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(584923)
+;
+
+-- 2026-05-29T10:04:00.003Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=780642
+;
+
+-- 2026-05-29T10:04:00.004Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(780642)
+;
 
 -- AD_UI_Element: Receiver_Attention in receiver group (553601), SeqNo=150
 -- 2026-05-29T10:04:01.000Z
@@ -175,17 +178,20 @@ VALUES (0,0,780643 /*From ID Server*/,592665,548456,
         TO_TIMESTAMP('2026-05-29 10:04:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100);
 
 -- 2026-05-29T10:04:02.001Z
-INSERT INTO AD_Field_Trl (AD_Client_ID,AD_Field_ID,AD_Language,Created,CreatedBy,Description,Help,IsActive,IsTranslated,Name,Updated,UpdatedBy,AD_Org_ID)
-SELECT 0,780643 /*From ID Server*/,l.AD_Language,
-       TO_TIMESTAMP('2026-05-29 10:04:02.001000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,
-       NULL,NULL,'Y','N','z. Hd. (Lieferant)',
-       TO_TIMESTAMP('2026-05-29 10:04:02.001000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0
-FROM AD_Language l WHERE l.IsActive='Y'
-  AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Field_ID=780643 AND tt.AD_Language=l.AD_Language);
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=780643 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
 
 -- 2026-05-29T10:04:02.002Z
-UPDATE AD_Field_Trl SET Name='Attn. (Shipper)', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-05-29 10:04:02.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
-WHERE AD_Field_ID=780643 AND AD_Language='en_US';
+/* DDL */ select update_FieldTranslation_From_AD_Name_Element(584924)
+;
+
+-- 2026-05-29T10:04:02.003Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=780643
+;
+
+-- 2026-05-29T10:04:02.004Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(780643)
+;
 
 -- AD_UI_Element: Shipper_Attention in shipper group (553599), SeqNo=140
 -- 2026-05-29T10:04:03.000Z
