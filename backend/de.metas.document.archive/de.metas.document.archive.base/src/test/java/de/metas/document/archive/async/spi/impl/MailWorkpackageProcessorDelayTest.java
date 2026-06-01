@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,7 +73,8 @@ class MailWorkpackageProcessorDelayTest
 	void caseA_withinTimeout_throws()
 	{
 		final long nowMillis = System.currentTimeMillis();
-		SystemTime.setFixedTimeSource(ZonedDateTime.now());
+		// Use the same millis for both Created and the fixed time source so elapsed == 0 exactly
+		SystemTime.setFixedTimeSource(ZonedDateTime.ofInstant(java.time.Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault()));
 
 		final I_C_Queue_WorkPackage workpackage = InterfaceWrapperHelper.newInstance(I_C_Queue_WorkPackage.class);
 		InterfaceWrapperHelper.save(workpackage);
@@ -121,6 +123,33 @@ class MailWorkpackageProcessorDelayTest
 		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
 
 		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(noDelayService, workpackage, logLines))
+				.doesNotThrowAnyException();
+	}
+
+	/**
+	 * Case D: handler IS registered for I_C_Invoice but returns false (no delay) => does not throw.
+	 * Covers the "handler exists but says no-delay" path that Case C (no handlers at all) did not.
+	 */
+	@Test
+	void caseD_handlerReturnsFalse_doesNotThrow()
+	{
+		final DocOutboundNotificationDelayHandler noDelayHandler = new DocOutboundNotificationDelayHandler()
+		{
+			@Override
+			public String getTableName() { return I_C_Invoice.Table_Name; }
+
+			@Override
+			public boolean shouldDelaySending(final I_C_Doc_Outbound_Log log) { return false; }
+		};
+		final DocOutboundNotificationDelayService serviceWithNoDelayHandler =
+				new DocOutboundNotificationDelayService(Optional.of(ImmutableList.of(noDelayHandler)));
+
+		final I_C_Queue_WorkPackage workpackage = InterfaceWrapperHelper.newInstance(I_C_Queue_WorkPackage.class);
+		InterfaceWrapperHelper.save(workpackage);
+
+		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
+
+		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(serviceWithNoDelayHandler, workpackage, logLines))
 				.doesNotThrowAnyException();
 	}
 }

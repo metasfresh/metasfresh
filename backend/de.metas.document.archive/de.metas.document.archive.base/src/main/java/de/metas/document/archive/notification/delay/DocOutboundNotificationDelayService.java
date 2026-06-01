@@ -23,6 +23,10 @@ public class DocOutboundNotificationDelayService
 
 	public boolean shouldDelaySending(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
 	{
+		if (docOutboundLog.getRecord_ID() <= 0)
+		{
+			return false;
+		}
 		final TableRecordReference recordRef = TableRecordReference.ofOrNull(
 				docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID());
 		if (recordRef == null)
