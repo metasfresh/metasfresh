@@ -5,6 +5,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.notification.delay.DocOutboundNotificationDelayHandler;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.shipping.IShipperDAO;
@@ -102,7 +103,7 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 	/** @return the distinct shipments ({@code M_InOut}) the invoice's lines were derived from. */
 	private ImmutableSet<InOutId> retrieveShipmentIds(@NonNull final InvoiceId invoiceId)
 	{
-		final ImmutableSet<Integer> inOutLineIds = queryBL
+		final ImmutableSet<InOutLineId> inOutLineIds = queryBL
 				.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.addCompareFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, Operator.GREATER, 0)
@@ -110,7 +111,8 @@ public class InvoiceNotificationDelayHandler implements DocOutboundNotificationD
 				.create()
 				.list()
 				.stream()
-				.map(I_C_InvoiceLine::getM_InOutLine_ID)
+				.map(line -> InOutLineId.ofRepoIdOrNull(line.getM_InOutLine_ID()))
+				.filter(java.util.Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (inOutLineIds.isEmpty())

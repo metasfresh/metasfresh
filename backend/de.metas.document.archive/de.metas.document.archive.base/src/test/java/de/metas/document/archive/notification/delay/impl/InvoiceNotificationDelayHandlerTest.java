@@ -208,6 +208,19 @@ public class InvoiceNotificationDelayHandlerTest
 		assertThat(handler.shouldDelaySending(log)).isFalse();
 	}
 
+	@Test
+	public void gatewayShipper_secondPackageMissingTrackingUrl_delays()
+	{
+		setSysConfig(true);
+		// Two packages: first has a tracking URL (resolved), second has a blank tracking URL → delay.
+		// This proves the loop continues past the first good package rather than short-circuiting on it.
+		final I_M_Shipper shipper = createShipper("nshift");
+		final GraphResult g = buildInvoiceGraph(shipper);
+		addPackageWithParcel(g.inOutId, "https://track/good");   // first package: fully resolved
+		addPackageWithParcel(g.inOutId, null);                    // second package: no tracking URL yet
+		assertThat(handler.shouldDelaySending(g.log)).isTrue();
+	}
+
 	// ------------------------------------------------------------------
 	// Helper DTO
 	// ------------------------------------------------------------------
