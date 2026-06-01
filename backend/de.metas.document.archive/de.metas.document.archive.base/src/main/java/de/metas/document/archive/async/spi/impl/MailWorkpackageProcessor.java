@@ -4,6 +4,8 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.archive.notification.delay.DocOutboundNotificationDelayService;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.DocBaseAndSubType;
@@ -89,8 +91,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientService docOutBoundRecipientService = SpringContextHolder.instance.getBean(DocOutBoundRecipientService.class);
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient DocOutboundNotificationDelayService notificationDelayService = SpringContextHolder.instance.getBean(DocOutboundNotificationDelayService.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
+	private static final int NOTIFICATION_DELAY_TIMEOUT_MILLIS = 30 * 1000;
+	private static final int NOTIFICATION_DELAY_RETRY_MILLIS = 2 * 1000;
 
 	private static final AdMessageKey MSG_EmailSubject = AdMessageKey.of("MailWorkpackageProcessor.EmailSubject");
 	private static final AdMessageKey MSG_EmailMessage = AdMessageKey.of("MailWorkpackageProcessor.EmailMessage");
@@ -99,6 +104,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	public Result processWorkPackage(final @NonNull I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log_Line.class);
+		assertNotificationReadyOrSkip(notificationDelayService, workpackage, logLines);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
 		{
 			final I_AD_Archive archive = logLine.getAD_Archive();
@@ -117,6 +123,31 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		return Result.SUCCESS;
+	}
+
+	static void assertNotificationReadyOrSkip(
+			@NonNull final DocOutboundNotificationDelayService notificationDelayService,
+			@NonNull final I_C_Queue_WorkPackage workpackage,
+			@NonNull final List<I_C_Doc_Outbound_Log_Line> logLines)
+	{
+		final boolean anyNeedsDelay = logLines.stream()
+				.map(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log)
+				.anyMatch(notificationDelayService::shouldDelaySending);
+		if (!anyNeedsDelay)
+		{
+			return;
+		}
+
+		final long elapsedMillis = SystemTime.millis() - workpackage.getCreated().getTime();
+		if (elapsedMillis >= NOTIFICATION_DELAY_TIMEOUT_MILLIS)
+		{
+			Loggables.get().addLog("gh26820: notification delay timeout ({}ms) reached for C_Queue_WorkPackage_ID={}; sending anyway",
+					NOTIFICATION_DELAY_TIMEOUT_MILLIS, workpackage.getC_Queue_WorkPackage_ID());
+			return;
+		}
+
+		throw WorkpackageSkipRequestException.createWithTimeout(
+				"gh26820: waiting for shipment tracking URL(s) before sending notification", NOTIFICATION_DELAY_RETRY_MILLIS);
 	}
 
 	private void sendEMail(
