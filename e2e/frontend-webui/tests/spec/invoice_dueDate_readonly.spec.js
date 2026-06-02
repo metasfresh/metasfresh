@@ -15,18 +15,16 @@ import { SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
  * set to true when the field's data.readonly===true (WidgetRenderer.js line 171).
  * The resulting <input> therefore carries the HTML disabled attribute.
  *
- * me03 issue: https://github.com/metasfresh/me03/issues/29412
  */
 
-test.describe('Invoice DueDate readonly (migration 5805840)', () => {
+test.describe('Invoice DueDate read-only', () => {
   test('Datum Faelligkeit is read-only on invoice window (de_DE)', async ({ page }) => {
-    // === ALLURE METADATA ===
-    allure.epic('E0340_Invoicing');
-    allure.feature('F00700_Invoicing');
-    allure.story('DueDate rendered read-only — migration 5805840');
+    allure.epic('E0340: Invoicing');
+    allure.tag('F00765: Due Date Management');
+    allure.story('DueDate field is rendered read-only on the invoice form');
     allure.severity('critical');
     allure.description(`
-## E0340_Invoicing / F00700_Invoicing
+## E0340: Invoicing / F00765: Due Date Management
 
 ### Test scenario
 
@@ -55,17 +53,9 @@ attribute on the underlying <input> element. The test:
 
     test.setTimeout(180000); // 3 minutes — page load can be slow on first navigation
 
-    // =========================================================================
-    // STEP 1: Establish an authenticated session via REST, then navigate.
-    //
-    // We bypass the UI login form entirely and use the REST API directly.
-    // This avoids the "AlreadyLoggedInException" race that occurs when the
-    // Playwright button-click fires loginComplete after authenticate has
-    // already established a session. Using page.request gives us a Playwright
-    // request context that shares cookies with the page navigation.
-    // =========================================================================
+    // STEP 1: REST login (bypasses AlreadyLoggedInException race on UI login form).
     await test.step('Authenticate via REST (WebUI role)', async () => {
-      const WEBAPI = 'http://localhost:8080';
+      const WEBAPI = (process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api').replace(/\/rest\/api$/, '');
 
       // Step A: check if there's already a valid session (avoids 500 on loginComplete)
       const sessionResp = await page.request.get(`${WEBAPI}/rest/api/userSession`).catch(() => null);
@@ -81,9 +71,9 @@ attribute on the underlying <input> element. The test:
         const authBody = await authResp.json().catch(() => ({}));
         console.log('[STEP 1] authenticate loginComplete:', authBody.loginComplete);
 
-        // Step C: if role selection needed, pick the WebUI role (roles[0])
+        // Step C: if role selection needed, pick the first available role (WebUI role)
         if (authBody.loginComplete === false && authBody.roles && authBody.roles.length > 0) {
-          const webUiRole = authBody.roles.find((r) => r.key === '540024_1000000_1000000') || authBody.roles[0];
+          const webUiRole = authBody.roles[0];
           await page.request.post(`${WEBAPI}/rest/api/login/loginComplete`, {
             data: webUiRole,
           });
@@ -110,9 +100,7 @@ attribute on the underlying <input> element. The test:
       console.log('[STEP 1] SPA loaded, URL:', page.url());
     });
 
-    // =========================================================================
     // STEP 2: Open the first accessible invoice record (already on list from Step 1).
-    // =========================================================================
     let invoiceRecordId;
     await test.step('Open first invoice record from list', async () => {
       // List was loaded during Step 1 navigation — just wait for it to settle
@@ -132,11 +120,13 @@ attribute on the underlying <input> element. The test:
       await firstRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await firstRow.dblclick();
 
+      const windowUrlPattern = new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/\\d+`);
       await page.waitForURL(
-        (url) => /\/window\/167\/\d+/.test(url.toString()),
+        (url) => windowUrlPattern.test(url.toString()),
         { timeout: SLOW_ACTION_TIMEOUT }
       );
-      const urlMatch = page.url().match(/\/window\/167\/(\d+)/);
+      const recordUrlPattern = new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/(\\d+)`);
+      const urlMatch = page.url().match(recordUrlPattern);
       invoiceRecordId = urlMatch ? urlMatch[1] : 'unknown';
 
       // Wait for document header panel
@@ -153,13 +143,8 @@ attribute on the underlying <input> element. The test:
       console.log(`[STEP 2] Invoice record ${invoiceRecordId} loaded`);
     });
 
-    // =========================================================================
-    // STEP 3: Click on the main document header area to focus the document
-    // (not a sub-tab grid row) before pressing Alt+E.
-    //
-    // After dblclick-open the grid sub-tab has focus. Alt+E then opens the
-    // Advanced Edit for a LINE. We need to click a document-level field first.
-    // =========================================================================
+    // STEP 3: Click the document header to shift focus away from the sub-tab grid
+    // (after dblclick-open, grid has focus; Alt+E would open LINE Advanced Edit instead).
     await test.step('Focus main document header (scope Alt+E to document)', async () => {
       // The DocumentNo field is always present in the main form and is disabled
       // (read-only on completed invoices) — safe to click without side-effects.
@@ -180,17 +165,9 @@ attribute on the underlying <input> element. The test:
       }
     });
 
-    // =========================================================================
     // STEP 4: Open the Advanced Edit modal via SubHeader UI button.
-    //
-    // AD_UI_Element 615817 places DueDate in the "advanced edit" section of
-    // the main invoice document (AD_Tab_ID=263). This section is only visible
-    // via the Advanced Edit modal (SubHeader → pencil icon, or Alt+E).
-    //
-    // We prefer the SubHeader click-path over Alt+E because the keyboard
-    // shortcut requires document focus which can be unreliable after
-    // programmatic navigation.
-    // =========================================================================
+    // DueDate (AD_UI_Element 615817) lives in the advanced-edit section; SubHeader path
+    // is preferred over Alt+E because keyboard focus after programmatic navigation is unreliable.
     await test.step('Open Advanced Edit modal via SubHeader', async () => {
       // Open the SubHeader panel (the "more" / three-dot button)
       const moreButton = page.locator('.meta-icon-more');
@@ -212,17 +189,17 @@ attribute on the underlying <input> element. The test:
       await advEditItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await advEditItem.click();
 
-      // Wait for the modal panel to appear
+      // Wait for the modal panel to appear and DueDate field to be rendered
       await page
         .locator('.panel-modal')
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await page.waitForTimeout(500);
+      await page
+        .locator('.panel-modal .form-field-DueDate')
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       console.log('[STEP 4] Advanced Edit modal opened');
     });
 
-    // =========================================================================
-    // STEP 5: Locate DueDate widget and assert it is disabled
-    // =========================================================================
+    // STEP 5: Locate DueDate widget and assert it is disabled.
     await test.step('Assert DueDate field is rendered read-only (disabled)', async () => {
       // The RawWidget wrapper gets class "form-field-DueDate" (from widgetFieldsName).
       // Inside it, the DatePicker renders <input class="form-control"> with disabled
