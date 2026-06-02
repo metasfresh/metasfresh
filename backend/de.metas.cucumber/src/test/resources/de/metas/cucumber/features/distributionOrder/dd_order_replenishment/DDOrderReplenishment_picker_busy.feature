@@ -8,10 +8,13 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
   and the async reconcile event to be refused as well — until the picking job is aborted, after which a
   repost recreates the distribution order with the new quantity.
 
-  # The picker is made busy through the REAL mobile picking workflow (REST: start the wfProcess + scan the
-  # picking slot), which produces an in-progress (Drafted) M_Picking_Job_Line for the schedule. The picker
-  # is released through the REAL abort endpoint (POST .../wfProcess/{wfProcessId}/abort), which voids the
-  # picking job so the (voided-aware) busy guard reports the picker as free again.
+  # The picker is made busy through the REAL mobile picking workflow (REST: start the wfProcess), which
+  # creates an active (in-progress) M_Picking_Job_Line for the schedule. With IsAllowPickingAnyHU=Y the
+  # start call alone produces the picking job + line (qtyToPick from the schedule, no pre-planned steps),
+  # which is exactly what the busy guard checks (an active M_Picking_Job_Line whose job is not
+  # Voided/Completed). The picker is released through the REAL abort endpoint
+  # (POST .../wfProcess/{wfProcessId}/abort), which voids the picking job so the (voided-aware) busy guard
+  # reports the picker as free again.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -86,9 +89,6 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | packingInventoryLine          | packingProductHU   |
-    And metasfresh contains M_PickingSlot:
-      | Identifier  | PickingSlot | IsDynamic |
-      | pickingSlot | 063.1       | Y         |
 
     # --- One completed sales order on the packing warehouse is the starting state for every scenario ----
     And metasfresh contains C_Orders:
@@ -107,19 +107,17 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
 
   @from:cucumber
   Scenario: A busy picker (real picking job) makes the beforeSave interceptor reject the schedule change
-    # Start a REAL picking job for the order and scan the picking slot. This creates an in-progress
-    # (Drafted) M_Picking_Job_Line referencing the same M_ShipmentSchedule_ID as the DD_Order, so the
-    # busy guard now reports the picker as busy.
+    # Start a REAL picking job for the order. With IsAllowPickingAnyHU=Y the start call creates an active
+    # M_Picking_Job_Line referencing the same M_ShipmentSchedule_ID as the DD_Order (no pre-planned steps),
+    # so the busy guard now reports the picker as busy. We only capture the WF process id from the start
+    # response (no picking-step extraction — there are none in the allow-any-HU flow) so the abort can run.
     Given create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | order                 | customer                 | customerLocation                  |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
     And process response and extract picking step and main HU picking candidate:
-      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
-      | pickingWF                  | pickingActivity             | pickingLine            | pickingStep            | pickingStepQR                |
-    And scan M_PickingSlot for PickingJob
-      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
-      | pickingWF                  | pickingSlot                 |
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
+      | pickingWF                  | pickingActivity             | pickingLine            |
 
     # Attempting to change the schedule qty is rejected by the M_ShipmentSchedule.beforeSave guard
     # (the tx rolls back; the schedule's persisted value stays unchanged and no event is published).
@@ -144,17 +142,16 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
 
   @from:cucumber
   Scenario: A busy picker (real picking job) makes the reconcile event fail; aborting the job lets the repost recreate the DD_Order
-    # Start a REAL picking job for the order and scan the picking slot — picker is now busy.
+    # Start a REAL picking job for the order — with IsAllowPickingAnyHU=Y the start call alone creates the
+    # active M_Picking_Job_Line, so the picker is now busy. Only the WF process id is captured (no
+    # picking-step extraction — there are none in the allow-any-HU flow) so the abort can run.
     Given create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | order                 | customer                 | customerLocation                  |
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
     And process response and extract picking step and main HU picking candidate:
-      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
-      | pickingWF                  | pickingActivity             | pickingLine            | pickingStep            | pickingStepQR                |
-    And scan M_PickingSlot for PickingJob
-      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
-      | pickingWF                  | pickingSlot                 |
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
+      | pickingWF                  | pickingActivity             | pickingLine            |
 
     # Processing the reconcile event (the consumer-side definitive guard) is rejected while the picker is busy.
     # NOTE: this step drives the BL directly (not via the async DDOrderReconciliationEventHandler) so
