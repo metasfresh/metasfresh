@@ -646,11 +646,10 @@ public final class AggregationEngine
 			return null;
 		}
 		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
-		// Fail-closed: an override is only applied when a payment term explicitly allows it.
-		// In production every IC has a payment term (setPaymentTermIfMissing fills it from the BPartner
-		// or throws, see M_InOutLine_Handler and InvoiceCandidateHandlerBL); the null branch is
-		// therefore unreachable in normal usage, but we guard it explicitly here so that the unit-test
-		// layer (which has no interceptors) is not silently permissive.
+		// Fail-closed: without a payment term there is nothing to check, so deny the override.
+		// In production this branch is unreachable because every IC has a payment term set before
+		// aggregation begins; the guard exists so that unit tests (which skip the IC handler pipeline)
+		// don't silently apply the override.
 		if (paymentTermId == null || !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
 		{
 			return null;

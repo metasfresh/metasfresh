@@ -334,11 +334,10 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
 
-		// Explicitly clear both payment term fields to simulate an IC with no payment term resolved.
-		// The test infrastructure always populates C_PaymentTerm_ID via createInvoiceCandidate(),
-		// so we zero it out here before aggregation.
-		ic1.setC_PaymentTerm_ID(0);
-		ic1.setC_PaymentTerm_Override_ID(0);
+		// Clear both payment term fields: the IC builder sets a default payment term,
+		// so we clear it explicitly to reach the no-payment-term code path.
+		ic1.setC_PaymentTerm_ID(-1);
+		ic1.setC_PaymentTerm_Override_ID(-1);
 		InterfaceWrapperHelper.save(ic1);
 
 		updateInvalidCandidates();
