@@ -216,8 +216,8 @@ public class PickingJobRestService
 	}
 
 	/**
-	 * GRAI-scan flow: resolves the locator for the eagerly-created TU, then delegates to
-	 * {@link PickingJobService#createTUFromGRAI}.
+	 * Processes the GRAI-scan TU-target assignment for the given picking-job line;
+	 * resolves the target locator from the line's shipment-schedule warehouse, then creates the TU.
 	 */
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,

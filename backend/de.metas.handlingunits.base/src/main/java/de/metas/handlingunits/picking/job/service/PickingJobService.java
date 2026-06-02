@@ -171,6 +171,7 @@ public class PickingJobService implements PickingSlotListener
 				.pickingSlotService(pickingSlotService)
 				.huService(huService)
 				.shipmentService(shipmentService)
+				.bpartnerService(bpartnerService)
 				//
 				.pickingJob(pickingJob)
 				.execute();
@@ -627,21 +628,16 @@ public class PickingJobService implements PickingSlotListener
 	 * Delegates to {@link PickingJobCreateTUFromGRAICommand}; see that command for the step-by-step flow and the
 	 * AD_Message keys carried by the thrown {@link AdempiereException}s.
 	 *
-	 * @param lineId       the line being picked (the command resolves the TU type/capacity per the line's product);
-	 *                     must not be {@code null} for the GRAI flow.
+	 * @param lineId       the picking-job line being picked; the command resolves the TU type/capacity per the line's product.
 	 * @param scannedGrai  the raw scanned GRAI barcode.
 	 * @param tuLocatorId  the locator the eagerly-created TU is placed at (see {@link #resolveTuLocatorId}).
 	 */
 	public PickingJob createTUFromGRAI(
 			@NonNull final PickingJob pickingJob,
-			@Nullable final PickingJobLineId lineId,
+			@NonNull final PickingJobLineId lineId,
 			@NonNull final String scannedGrai,
 			@NonNull final LocatorId tuLocatorId)
 	{
-		final PickingJobLineId lineIdEffective = Check.assumeNotNull(
-				lineId,
-				"lineId must be set for the GRAI-scan picking flow; pickingJob={}", pickingJob);
-
 		return PickingJobCreateTUFromGRAICommand.builder()
 				.pickingJobService(this)
 				.huService(huService)
@@ -649,7 +645,7 @@ public class PickingJobService implements PickingSlotListener
 				.graiTargetService(graiTargetService)
 				//
 				.pickingJob(pickingJob)
-				.lineId(lineIdEffective)
+				.lineId(lineId)
 				.scannedGrai(scannedGrai)
 				.tuLocatorId(tuLocatorId)
 				//
@@ -657,18 +653,18 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * Resolves the locator at which a GRAI-scanned TU is to be created.
-	 * <p>
-	 * There is no warehouse/locator on the picking-job header, and picking <i>steps</i> (which carry a
-	 * pick-from locator) may not exist yet when the worker scans the GRAI. The stable source available at
-	 * scan time is the line's shipment-schedule warehouse — the same warehouse the normal pick flow uses
-	 * ({@code ShipmentScheduleInfo.getWarehouseId()}). We place the empty TU at that warehouse's default locator.
+	 * Returns the locator at which the eagerly-created GRAI-scanned TU is placed;
+	 * uses the default locator of the warehouse associated with the line's shipment schedule.
 	 */
 	@NonNull
 	public LocatorId resolveTuLocatorId(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobLineId lineId)
 	{
+		// There is no warehouse/locator on the picking-job header, and picking steps (which carry a
+		// pick-from locator) may not exist yet when the worker scans the GRAI. The stable source
+		// available at scan time is the line's shipment-schedule warehouse — the same warehouse
+		// the normal pick flow uses (ShipmentScheduleInfo.getWarehouseId()).
 		final PickingJobLine line = pickingJob.getLineById(lineId);
 		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
 		final WarehouseId warehouseId = shipmentScheduleService.getById(shipmentScheduleId).getWarehouseId();
@@ -676,8 +672,8 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * @return {@code true} if the GRAI-scan picking flow is enabled for the given customer
-	 * (i.e. the customer's {@code GRAIRequired} is {@code Yes} or {@code YesWithDummyGRAIs}).
+	 * @return {@code true} if the GRAI-scan TU-target flow is enabled for the given customer;
+	 * {@code false} if {@code customerId} is {@code null} or the customer has GRAI scanning disabled.
 	 */
 	public boolean isGraiScanEnabled(@Nullable final BPartnerId customerId)
 	{

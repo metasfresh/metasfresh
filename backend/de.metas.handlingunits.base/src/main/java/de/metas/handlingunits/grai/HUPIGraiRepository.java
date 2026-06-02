@@ -21,12 +21,11 @@ public class HUPIGraiRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
-	 * Resolves a parsed GRAI to its TU type ({@code M_HU_PI}) via the {@code M_HU_PI_GRAI} table.
+	 * Returns the {@link HuPackingInstructionsId} of the TU packing instruction configured for the given GRAI
+	 * (matched by company-prefix and asset-type).
 	 *
-	 * <p>Queries {@code M_HU_PI_GRAI WHERE GRAI_CompanyPrefix = grai.companyPrefix AND GRAI_AssetType = grai.assetType}.
-	 * The global unique index on {@code (GRAI_CompanyPrefix, GRAI_AssetType)} guarantees at most one match.
-	 *
-	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAINoMatchingTUType} when no row matches.
+	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAINoMatchingTUType}
+	 *                            when no active GRAI-to-TU mapping exists for the given GRAI.
 	 */
 	@NonNull
 	public HuPackingInstructionsId resolveHuPackingInstructionsId(@NonNull final GRAI grai)

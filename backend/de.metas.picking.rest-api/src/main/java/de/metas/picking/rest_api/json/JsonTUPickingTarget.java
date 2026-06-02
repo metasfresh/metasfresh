@@ -40,7 +40,6 @@ import javax.annotation.Nullable;
 public class JsonTUPickingTarget
 {
 	// Note: id/caption are nullable so the mobile UI can POST a GRAI-only body (just {@link #grai} set).
-	// For the manual per-type / existing-TU targets they are always populated by {@link #of(TUPickingTarget)}.
 	@Nullable String id;
 	@Nullable String caption;
 

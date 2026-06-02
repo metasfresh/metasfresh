@@ -108,14 +108,12 @@ public class PickingJobCreateTUFromGRAICommand
 
 	private PickingJob executeInTrx()
 	{
-		// Steps 1..4 — parse, resolve TU type, LU check, capacity.
 		final Optional<LUPickingTarget> luTargetOpt = pickingJob.getLuPickingTargetEffective(lineId);
 		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
 				scannedGrai,
 				luTargetOpt,
 				getLineProductId());
 
-		// Step 5 — create one empty physical TU, attach the GRAI, set it as the line's existing-TU target.
 		final HuId tuHuId = createEmptyTU(resolved.getTuPIId());
 		huGraiService.setGrais(tuHuId, GRAISet.of(resolved.getGrai()));
 
