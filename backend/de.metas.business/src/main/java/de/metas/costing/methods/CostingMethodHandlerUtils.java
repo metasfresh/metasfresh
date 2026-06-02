@@ -198,6 +198,11 @@ public class CostingMethodHandlerUtils
 		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
+	/**
+	 * Returns the {@link CurrentCost} row for the given segment and element, acquiring a
+	 * {@code SELECT ... FOR UPDATE} row lock on the underlying {@code M_Cost} record via the
+	 * repository. The lock is held until the end of the current transaction.
+	 */
 	public final CurrentCost getCurrentCostForUpdate(final CostSegmentAndElement costSegmentAndElement)
 	{
 		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);

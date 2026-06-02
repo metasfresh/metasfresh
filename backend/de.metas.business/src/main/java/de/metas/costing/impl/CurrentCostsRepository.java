@@ -77,6 +77,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+/**
+ * Repository Tables: M_Cost
+ * Repository Cluster: CurrentCostsRepository
+ */
 @Component
 public class CurrentCostsRepository implements ICurrentCostsRepository
 {
