@@ -6,6 +6,7 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -272,7 +273,7 @@ class PickingJobGraiTargetServiceTest
 				.hasMessageContaining("GRAINoCapacityForProduct"); // matches AD_Message key (no rows in test env)
 	}
 
-	/** Step 4 happy path — all steps pass and the result holds the expected IDs. */
+	/** Step 4 happy path — all steps pass and the result holds the expected IDs and the parsed GRAI. */
 	@Test
 	void resolveTuTypeAndCapacity_allStepsPass_returnsResolution()
 	{
@@ -285,6 +286,9 @@ class PickingJobGraiTargetServiceTest
 
 		assertThat(result.getTuPIId()).isEqualTo(HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()));
 		assertThat(result.getHuPIItemProductId()).isNotNull();
+		// The resolution must carry the parsed GRAI so that the lazy-create path can stamp it onto the
+		// framework-created TU at first pick (Phase R lazy behaviour).
+		assertThat(result.getGrai()).isEqualTo(GRAI.ofCanonicalString("7613204.00307.999999"));
 	}
 
 	@NonNull
