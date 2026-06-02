@@ -186,19 +186,19 @@ public class CostingMethodHandlerUtils
 				.collect(Collectors.toList());
 	}
 
-	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	public final CurrentCost getCurrentCostForUpdate(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(request);
-		return getCurrentCost(costSegmentAndElement);
+		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostDetail costDetail)
+	public final CurrentCost getCurrentCostForUpdate(final CostDetail costDetail)
 	{
 		final CostSegmentAndElement costSegmentAndElement = costDetailsService.extractCostSegmentAndElement(costDetail);
-		return getCurrentCost(costSegmentAndElement);
+		return getCurrentCostForUpdate(costSegmentAndElement);
 	}
 
-	public final CurrentCost getCurrentCost(final CostSegmentAndElement costSegmentAndElement)
+	public final CurrentCost getCurrentCostForUpdate(final CostSegmentAndElement costSegmentAndElement)
 	{
 		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
