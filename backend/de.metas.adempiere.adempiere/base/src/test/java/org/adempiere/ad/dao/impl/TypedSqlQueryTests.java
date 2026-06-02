@@ -222,6 +222,18 @@ public class TypedSqlQueryTests
 		}
 
 		@Test
+		public void default_emitsNoLockingClause()
+		{
+			// No setForUpdate call at all — the default state must not emit any locking clause
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+
+			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+
+			assertThat(sql).doesNotContain("FOR UPDATE");
+		}
+
+		@Test
 		public void lockWithUnion_throwsAdempiereException()
 		{
 			final Properties ctx = new Properties();

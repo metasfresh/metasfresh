@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -128,8 +129,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	@Nullable
 	private List<SqlQueryUnion<T>> unions;
-
-	// forUpdate state is inherited from AbstractTypedQuery
 
 	protected TypedSqlQuery(
 			@NonNull final Properties ctx,
@@ -288,14 +287,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param forUpdateSkipLocked true to add FOR UPDATE SKIP LOCKED to the query
 	 * @return this query instance for method chaining
-	 * @deprecated use {@link #setForUpdate(org.adempiere.ad.dao.ForUpdate)} instead
 	 */
-	@Deprecated
 	public TypedSqlQuery<T> setForUpdateSkipLocked(final boolean forUpdateSkipLocked)
 	{
 		return (TypedSqlQuery<T>)setForUpdate(forUpdateSkipLocked
-				? org.adempiere.ad.dao.ForUpdate.FOR_UPDATE_SKIP_LOCKED
-				: org.adempiere.ad.dao.ForUpdate.NONE);
+				? ForUpdate.FOR_UPDATE_SKIP_LOCKED
+				: ForUpdate.NONE);
 	}
 
 	@Override
@@ -1268,24 +1265,20 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		// Append the row-locking clause (FOR UPDATE / FOR UPDATE SKIP LOCKED) after ORDER BY.
 		// PostgreSQL forbids FOR UPDATE with UNION or GROUP BY — fail fast with a clear message.
-		final org.adempiere.ad.dao.ForUpdate forUpdate = getForUpdate();
-		if (forUpdate != org.adempiere.ad.dao.ForUpdate.NONE)
+		final ForUpdate forUpdate = getForUpdate();
+		if (forUpdate != ForUpdate.NONE)
 		{
 			if (unions != null && !unions.isEmpty())
 			{
-				throw new org.adempiere.exceptions.AdempiereException("FOR UPDATE cannot be combined with UNION queries")
+				throw new AdempiereException("FOR UPDATE cannot be combined with UNION queries")
 						.appendParametersToMessage();
 			}
 			if (groupByClause != null && groupByClause.length() > 0)
 			{
-				throw new org.adempiere.exceptions.AdempiereException("FOR UPDATE cannot be combined with GROUP BY")
+				throw new AdempiereException("FOR UPDATE cannot be combined with GROUP BY")
 						.appendParametersToMessage();
 			}
-			final String sqlClause = forUpdate.getSqlClause();
-			if (sqlClause != null)
-			{
-				sqlBuffer.append("\n ").append(sqlClause);
-			}
+			sqlBuffer.append("\n ").append(forUpdate.getSqlClause());
 		}
 
 		String sql = sqlBuffer.toString();
