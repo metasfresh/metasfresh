@@ -217,7 +217,7 @@ public class PickingJobRestService
 	/**
 	 * Processes the GRAI-scan TU-target assignment for the given picking-job line.
 	 * Resolves the TU type/capacity from the scanned GRAI, builds a new-TU target carrying the
-	 * GRAI, and stores it on the line.  No physical HU is created here.
+	 * GRAI, and stores it on the line. No physical HU is created here.
 	 */
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,

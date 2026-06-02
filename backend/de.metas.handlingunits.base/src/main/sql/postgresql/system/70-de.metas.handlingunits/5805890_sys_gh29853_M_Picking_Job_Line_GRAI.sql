@@ -35,6 +35,11 @@ UPDATE AD_Element_Trl SET Name='Current Pick To TU GRAI', PrintName='Current Pic
 WHERE AD_Element_ID=584935 AND AD_Language='en_US'
 ;
 
+-- propagate the en_US element override down to all dependent _Trl tables
+-- 2026-06-03T10:00:13.000Z
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584935 /*AD_Element_ID*/, 'en_US')
+;
+
 -- Column: M_Picking_Job_Line.Current_PickTo_TU_GRAI
 -- 2026-06-03T10:01:00.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
