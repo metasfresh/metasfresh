@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
@@ -12,6 +13,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -45,6 +48,8 @@ import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_lin
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
+import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobCreateTUFromGRAICommand;
+import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGraiTargetService;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
@@ -71,6 +76,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -104,6 +113,11 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final HUGraiService huGraiService;
+	@NonNull private final PickingJobGraiTargetService graiTargetService;
+
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -608,6 +622,80 @@ public class PickingJobService implements PickingSlotListener
 
 		pickingJobRepository.save(pickingJobChanged);
 		return pickingJobChanged;
+	}
+
+	/**
+	 * GRAI-scan picking entry point: creates one empty TU (resolved from the scanned GRAI), attaches the scanned
+	 * GRAI to it, and sets it as the line's existing-TU picking target — all in a single transaction.
+	 * Delegates to {@link PickingJobCreateTUFromGRAICommand}; see that command for the step-by-step flow and the
+	 * AD_Message keys carried by the thrown {@link AdempiereException}s.
+	 *
+	 * @param lineId       the line being picked (the command resolves the TU type/capacity per the line's product);
+	 *                     must not be {@code null} for the GRAI flow.
+	 * @param scannedGrai  the raw scanned GRAI barcode.
+	 * @param tuLocatorId  the locator the eagerly-created TU is placed at (see {@link #resolveTuLocatorId}).
+	 */
+	public PickingJob createTUFromGRAI(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final String scannedGrai,
+			@NonNull final LocatorId tuLocatorId)
+	{
+		final PickingJobLineId lineIdEffective = Check.assumeNotNull(
+				lineId,
+				"lineId must be set for the GRAI-scan picking flow; pickingJob={}", pickingJob);
+
+		return PickingJobCreateTUFromGRAICommand.builder()
+				.pickingJobService(this)
+				.huService(huService)
+				.huGraiService(huGraiService)
+				.graiTargetService(graiTargetService)
+				//
+				.pickingJob(pickingJob)
+				.lineId(lineIdEffective)
+				.scannedGrai(scannedGrai)
+				.tuLocatorId(tuLocatorId)
+				//
+				.execute();
+	}
+
+	/**
+	 * Resolves the locator at which a GRAI-scanned TU is to be created.
+	 * <p>
+	 * There is no warehouse/locator on the picking-job header, and picking <i>steps</i> (which carry a
+	 * pick-from locator) may not exist yet when the worker scans the GRAI. The stable source available at
+	 * scan time is the line's shipment-schedule warehouse — the same warehouse the normal pick flow uses
+	 * ({@code ShipmentScheduleInfo.getWarehouseId()}). We place the empty TU at that warehouse's default locator.
+	 */
+	@NonNull
+	public LocatorId resolveTuLocatorId(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final PickingJobLineId lineId)
+	{
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
+		final WarehouseId warehouseId = shipmentScheduleService.getById(shipmentScheduleId).getWarehouseId();
+		return warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+	}
+
+	/**
+	 * @return {@code true} if the GRAI-scan picking flow is enabled for the given customer
+	 * (i.e. the customer's {@code GRAIRequired} is {@code Yes} or {@code YesWithDummyGRAIs}).
+	 */
+	public boolean isGraiScanEnabled(@Nullable final BPartnerId customerId)
+	{
+		return !getGRAIRequired(customerId).isNo();
+	}
+
+	@NonNull
+	private GRAIRequired getGRAIRequired(@Nullable final BPartnerId customerId)
+	{
+		if (customerId == null)
+		{
+			return GRAIRequired.No;
+		}
+		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
+		return GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)

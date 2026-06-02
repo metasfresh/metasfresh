@@ -136,12 +136,23 @@ public class PickingRestController
 
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
-		final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
-		if (target != null && !target.isNewTU())
+
+		final WFProcess wfProcess;
+		if (jsonTarget != null && jsonTarget.isGRAIScan())
 		{
-			throw new AdempiereException("Only New-TU targets are allowed");
+			// GRAI-scan flow: server resolves the TU type from the scanned GRAI, creates the TU + attaches the GRAI,
+			// and sets it as the line's existing-TU target. Manual-button behavior (below) stays unchanged.
+			wfProcess = pickingMobileApplication.setTUPickingTargetFromGRAI(wfProcessId, lineId, jsonTarget.getGrai(), getLoggedUserId());
 		}
-		final WFProcess wfProcess = pickingMobileApplication.setTUPickingTarget(wfProcessId, lineId, target, getLoggedUserId());
+		else
+		{
+			final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
+			if (target != null && !target.isNewTU())
+			{
+				throw new AdempiereException("Only New-TU targets are allowed");
+			}
+			wfProcess = pickingMobileApplication.setTUPickingTarget(wfProcessId, lineId, target, getLoggedUserId());
+		}
 		return workflowRestController.toJson(wfProcess);
 	}
 

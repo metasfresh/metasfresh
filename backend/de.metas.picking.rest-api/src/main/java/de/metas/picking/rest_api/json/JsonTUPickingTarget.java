@@ -38,8 +38,10 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonTUPickingTarget
 {
-	@NonNull String id;
-	@NonNull String caption;
+	// Note: id/caption are nullable so the mobile UI can POST a GRAI-only body (just {@link #grai} set).
+	// For the manual per-type / existing-TU targets they are always populated by {@link #of(TUPickingTarget)}.
+	@Nullable String id;
+	@Nullable String caption;
 
 	//
 	// New TU
@@ -51,6 +53,11 @@ public class JsonTUPickingTarget
 	@Nullable HuId tuId;
 	@Nullable String tuQRCode;
 
+	//
+	// GRAI scan: when set (and no tuPIId/tuId), the server resolves the TU type from the scanned GRAI,
+	// creates the TU + attaches the GRAI, and sets it as the line's existing-TU target.
+	@Nullable String grai;
+
 	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
 	{
 		return builder()
@@ -61,6 +68,11 @@ public class JsonTUPickingTarget
 				.tuId(target.getTuId())
 				.tuQRCode(target.getTuQRCode() != null ? target.getTuQRCode().toGlobalQRCodeString() : null)
 				.build();
+	}
+
+	public boolean isGRAIScan()
+	{
+		return grai != null && !grai.trim().isEmpty();
 	}
 
 	public TUPickingTarget unbox()
