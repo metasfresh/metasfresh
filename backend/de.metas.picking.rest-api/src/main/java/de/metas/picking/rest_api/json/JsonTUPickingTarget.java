@@ -70,11 +70,6 @@ public class JsonTUPickingTarget
 				.build();
 	}
 
-	public boolean isGRAIScan()
-	{
-		return grai != null;
-	}
-
 	public TUPickingTarget unbox()
 	{
 		return TUPickingTarget.builder()

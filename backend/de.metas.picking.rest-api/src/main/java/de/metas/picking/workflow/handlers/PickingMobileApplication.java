@@ -85,7 +85,6 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
-import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
@@ -589,16 +588,15 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	public WFProcess setTUPickingTargetFromGRAI(
 			@NonNull final WFProcessId wfProcessId,
-			@Nullable final PickingJobLineId lineId,
+			@NonNull final PickingJobLineId lineId,
 			@NonNull final ScannedCode scannedGrai,
 			@NonNull final UserId callerId)
 	{
-		final PickingJobLineId lineIdNonNull = Check.assumeNotNull(lineId, "lineId must be set for the GRAI-scan picking flow");
 		return changeWFProcessById(
 				wfProcessId,
 				(wfProcess, pickingJob) -> {
 					wfProcess.assertHasAccess(callerId);
-					return pickingJobRestService.setTUPickingTargetFromGRAI(pickingJob, lineIdNonNull, scannedGrai);
+					return pickingJobRestService.setTUPickingTargetFromGRAI(pickingJob, lineId, scannedGrai);
 				});
 	}
 
