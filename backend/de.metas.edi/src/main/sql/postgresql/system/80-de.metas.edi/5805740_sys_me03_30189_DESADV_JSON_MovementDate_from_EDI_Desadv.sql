@@ -1,7 +1,15 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/desadv_json/M_InOut_Export_EDI_DESADV_JSON_V.sql
+--
+-- The DESADV JSON export emitted the shipment goods-movement date (io.movementdate) as 'MovementDate'.
+-- That diverged from the legacy CCTOP XML export (M_InOut_Desadv_V), where the field named MovementDate
+-- is EDI_Desadv.MovementDate -- which is set from C_Order.DatePromised at DESADV creation
+-- (DesadvBL.retrieveOrCreateDesadv). Switch the JSON export to d.movementdate so the outgoing DESADV
+-- carries the promised delivery date (per-DESADV, also correct for consolidated shipments), consistent
+-- with the legacy path.
 
--- Main view that uses the functions and other views
-drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
-CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V$new;
+
+CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V$new AS
 SELECT io.m_inout_id,
        -- Top-level column so PostgREST can filter by (m_inout_id, edi_desadv_id).
        -- A consolidated shipment links to N DESADVs via edi_desadv_m_inout; view emits N rows.
@@ -81,5 +89,11 @@ SELECT io.m_inout_id,
   AND io.docstatus IN ('CO', 'CL')
 ;
 
--- Example query
---select * from M_InOut_Export_EDI_DESADV_JSON_V where m_inout_id=1001857;
+SELECT db_alter_view(
+    'M_InOut_Export_EDI_DESADV_JSON_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('M_InOut_Export_EDI_DESADV_JSON_V$new'))
+);
+
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V$new;
