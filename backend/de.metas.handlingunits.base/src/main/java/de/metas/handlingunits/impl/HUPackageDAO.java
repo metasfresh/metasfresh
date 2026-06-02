@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -57,6 +58,29 @@ public class HUPackageDAO implements IHUPackageDAO
 				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID()))
 				.create()
 				.list(I_M_Package_HU.class);
+	}
+
+	@Override
+	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final ImmutableSet<PackageId> packageIds)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addInArrayFilter(I_M_Package_HU.COLUMN_M_Package_ID, packageIds)
+				.create()
+				.list(I_M_Package_HU.class);
+	}
+
+	@Override
+	public List<de.metas.handlingunits.model.I_M_HU_Assignment> retrieveInOutLineHUAssignments(
+			@NonNull final ImmutableSet<HuId> luHuIds)
+	{
+		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(org.compiere.model.I_M_InOutLine.class);
+		return queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(de.metas.handlingunits.model.I_M_HU_Assignment.COLUMNNAME_M_HU_ID, luHuIds)
+				.addEqualsFilter(de.metas.handlingunits.model.I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, inOutLineTableId)
+				.create()
+				.list();
 	}
 
 	@Override

@@ -125,6 +125,7 @@ public class ShipmentOrderRepository
 				.productName(item.getProductName())
 				.productValue(item.getArticleValue())
 				.customsTariff(item.getCustomsTariffNumber())
+				.countryOfOrigin(item.getCountryOfOrigin())
 				.totalWeightInKg(item.getTotalWeightInKg())
 				.unitPrice(Money.of(item.getPrice(), currencyId))
 				.totalValue(Money.of(item.getTotalPrice(), currencyId))
@@ -390,6 +391,7 @@ public class ShipmentOrderRepository
 		po.setProductName(item.getProductName());
 		po.setArticleValue(item.getProductValue());
 		po.setCustomsTariffNumber(item.getCustomsTariff());
+		po.setCountryOfOrigin(item.getCountryOfOrigin());
 		Check.assumeEquals(item.getTotalValue().getCurrencyId(), item.getUnitPrice().getCurrencyId());
 		po.setPrice(item.getUnitPrice().toBigDecimal());
 		po.setC_Currency_ID(item.getUnitPrice().getCurrencyId().getRepoId());

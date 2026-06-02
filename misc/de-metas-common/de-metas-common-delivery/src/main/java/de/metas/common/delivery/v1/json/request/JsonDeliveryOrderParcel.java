@@ -70,6 +70,12 @@ public class JsonDeliveryOrderParcel
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF:
 				//Empty Strings should be filtered out by gateway implementation
 				return Optional.of(contents.stream().map(JsonDeliveryOrderLineContents::getCustomsTariff).filter(Objects::nonNull).collect(Collectors.joining(",")));
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
+				final ImmutableSet<String> countriesOfOrigin = contents.stream()
+						.map(JsonDeliveryOrderLineContents::getCountryOfOrigin)
+						.filter(Objects::nonNull)
+						.collect(ImmutableSet.toImmutableSet());
+				return countriesOfOrigin.size() == 1 ? Optional.of(countriesOfOrigin.iterator().next()) : Optional.empty();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE:
 				return Optional.of(contents.stream()
 						.map(JsonDeliveryOrderLineContents::getTotalValue)

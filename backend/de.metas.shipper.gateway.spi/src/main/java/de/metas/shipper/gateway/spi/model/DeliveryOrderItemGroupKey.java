@@ -22,26 +22,31 @@
 
 package de.metas.shipper.gateway.spi.model;
 
-import de.metas.money.Money;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
+/**
+ * Captures the customs-relevant attributes of a {@link DeliveryOrderItem} that determine
+ * which items can share the same {@link DeliveryOrderParcel}.
+ * Items with the same key are placed in the same parcel; items with different keys must
+ * be separated into distinct parcels (e.g. for customs declarations).
+ * <p>
+ * Analogous to {@link de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey}
+ * which groups packages into delivery orders.
+ */
 @Value
-@Builder
-public class DeliveryOrderItem
+public class DeliveryOrderItemGroupKey
 {
-	@Nullable DeliveryOrderItemId id;
-	@NonNull Money unitPrice;
-	@NonNull Money totalValue;
-	@NonNull String productName;
-	@NonNull String productValue;
-	@Nullable String customsTariff;
+	/**
+	 * ISO 3166-1 alpha-2 country of origin (e.g. {@code "IT"}, {@code "DE"}).
+	 * {@code null} means no country is set on this item.
+	 */
 	@Nullable String countryOfOrigin;
-	@NonNull BigDecimal totalWeightInKg;
-	@NonNull Quantity shippedQuantity;
+
+	public static DeliveryOrderItemGroupKey of(@NonNull final DeliveryOrderItem item)
+	{
+		return new DeliveryOrderItemGroupKey(item.getCountryOfOrigin());
+	}
 }

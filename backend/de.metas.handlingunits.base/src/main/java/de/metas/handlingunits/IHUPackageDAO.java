@@ -22,6 +22,7 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
@@ -39,9 +40,18 @@ public interface IHUPackageDAO extends ISingletonService
 
 	List<I_M_Package_HU> retrievePackageHUs(org.compiere.model.I_M_Package mpackage);
 
+	List<I_M_Package_HU> retrievePackageHUs(ImmutableSet<PackageId> packageIds);
+
 	List<I_M_Package_HU> retrievePackageHUs(Set<HuId> huIds);
 
 	List<PackageId> retrievePackageIds(HuId huId);
+
+	/**
+	 * Returns all {@code M_HU_Assignment} records where {@code M_HU_ID} is one of the given LU HU IDs
+	 * and the assignment references an {@code M_InOutLine} record (AD_Table_ID = M_InOutLine table).
+	 * Used to map each InOutLine within a package to its VHU and thus its country of origin.
+	 */
+	List<de.metas.handlingunits.model.I_M_HU_Assignment> retrieveInOutLineHUAssignments(ImmutableSet<HuId> luHuIds);
 
 	List<I_M_HU> retrieveHUs(org.compiere.model.I_M_Package mpackage);
 

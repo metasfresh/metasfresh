@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.nshift;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -32,6 +33,15 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -54,10 +64,12 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderItemGroupKey;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -65,18 +77,27 @@ import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences;
 
@@ -99,7 +120,12 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
+
+	private static final Logger logger = LoggerFactory.getLogger(NShiftDraftDeliveryOrderCreator.class);
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
@@ -190,25 +216,168 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull
 	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
+		final Map<PackageId, Map<InOutAndLineId, String>> countryByPackage = fetchCountryOfOriginByInOutLine(packageInfos);
+
 		return packageInfos.stream()
-				.map(packageInfo -> {
-					final ImmutableList<DeliveryOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
-							.stream()
-							.map(this::createDeliveryOrderItems)
-							.collect(ImmutableList.toImmutableList());
-					return DeliveryOrderParcel.builder()
-							.packageDimensions(packageInfo.getPackageDimension())
-							.packageId(packageInfo.getPackageId())
-							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
-							.content(packageInfo.getDescription())
-							.items(deliveryOrderItems)
-							.build();
-				})
+				.flatMap(packageInfo -> toParcelsGroupedByCountryOfOrigin(packageInfo, countryByPackage.getOrDefault(packageInfo.getPackageId(), ImmutableMap.of())))
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * Two bulk queries across all packages:
+	 * 1. M_Package_HU → collect all LU HuIds and their owning PackageId.
+	 * 2. M_HU_Assignment filtered by those LU HuIds and by M_InOutLine table → for each assignment
+	 *    read the VHU's CountryOfOrigin attribute.
+	 * Returns a map from InOutLineId to CountryOfOrigin (absent when not set).
+	 */
 	@NonNull
-	private DeliveryOrderItem createDeliveryOrderItems(@NonNull final PackageItem packageItem)
+	private Map<PackageId, Map<InOutAndLineId, String>> fetchCountryOfOriginByInOutLine(
+			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	{
+		final ImmutableSet<PackageId> packageIds = packageInfos.stream()
+				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPackageId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Step 1 — pre-build PackageId→InOutId (one load per unique PackageId, not per HU record)
+		// InOutId is not on I_M_HU_Assignment — derive it from the package record.
+		final Map<PackageId, InOutId> inOutIdByPackageId = new HashMap<>();
+		for (final PackageId pkgId : packageIds)
+		{
+			final InOutId inOutId = purchaseOrderToShipperTransportationRepository.getPackageById(pkgId).getInOutId();
+			if (inOutId != null)
+			{
+				inOutIdByPackageId.put(pkgId, inOutId);
+			}
+		}
+
+		// Build HuId maps from the bulk M_Package_HU query
+		final Map<HuId, InOutId> inOutIdByLuHuId = new HashMap<>();
+		final Map<HuId, PackageId> pkgIdByLuHuId = new HashMap<>();
+		huPackageDAO.retrievePackageHUs(packageIds).forEach(pkgHU -> {
+			final PackageId pkgId = PackageId.ofRepoId(pkgHU.getM_Package_ID());
+			final InOutId inOutId = inOutIdByPackageId.get(pkgId);
+			if (inOutId != null)
+			{
+				final HuId luHuId = HuId.ofRepoId(pkgHU.getM_HU_ID());
+				inOutIdByLuHuId.put(luHuId, inOutId);
+				pkgIdByLuHuId.put(luHuId, pkgId);
+			}
+		});
+		final ImmutableSet<HuId> allPackageLuIds = ImmutableSet.copyOf(inOutIdByLuHuId.keySet());
+
+		if (allPackageLuIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		// Step 2 — M_HU_Assignment for those LU HuIds referencing M_InOutLine records
+		final List<I_M_HU_Assignment> assignments = huPackageDAO.retrieveInOutLineHUAssignments(allPackageLuIds);
+
+		if (assignments.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		// Step 3 — collect VHU IDs from the assignments; load them all in one query
+		final ImmutableSet<HuId> vhuIds = assignments.stream()
+				.filter(a -> a.getVHU_ID() > 0)
+				.map(a -> HuId.ofRepoId(a.getVHU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<HuId, I_M_HU> vhuById = vhuIds.isEmpty()
+				? ImmutableMap.of()
+				: handlingUnitsDAO.getByIds(vhuIds).stream()
+						.collect(Collectors.toMap(hu -> HuId.ofRepoId(hu.getM_HU_ID()), hu -> hu));
+
+		// Step 4 — build InOutLineId → CountryOfOrigin map from each assignment's VHU attribute
+		final HashMap<PackageId, Map<InOutAndLineId, String>> result = new HashMap<>();
+		for (final I_M_HU_Assignment assignment : assignments)
+		{
+			final HuId luHuId = HuId.ofRepoId(assignment.getM_HU_ID());
+			final InOutId assignmentInOutId = inOutIdByLuHuId.get(luHuId);
+			if (assignmentInOutId == null) { continue; }
+			final PackageId pkgId = pkgIdByLuHuId.get(luHuId);
+			if (pkgId == null) { continue; }
+			final InOutAndLineId inOutAndLineId = InOutAndLineId.ofRepoId(assignmentInOutId, assignment.getRecord_ID());
+			final Map<InOutAndLineId, String> pkgMap = result.computeIfAbsent(pkgId, k -> new LinkedHashMap<>());
+			if (pkgMap.containsKey(inOutAndLineId)) { continue; } // first assignment wins per InOutLine
+			final HuId vhuId = assignment.getVHU_ID() > 0 ? HuId.ofRepoId(assignment.getVHU_ID()) : null;
+			final I_M_HU vhu = vhuId != null ? vhuById.get(vhuId) : null;
+			final String coo = vhu != null ? huAttributesBL.getHUAttributeValue(vhu, HUAttributeConstants.ATTR_CountryOfOrigin) : null;
+			pkgMap.put(inOutAndLineId, coo); // value null = line belongs to package but no country set
+		}
+		return result;
+	}
+
+	/**
+	 * Converts one {@code PackageInfo} into one or more {@link DeliveryOrderParcel}s.
+	 * Items with different countries of origin are split into separate parcels so each parcel
+	 * carries a uniform country — required for customs declarations in nShift.
+	 * Items without a country are grouped together in one parcel.
+	 */
+	@NonNull
+	private Stream<DeliveryOrderParcel> toParcelsGroupedByCountryOfOrigin(
+			@NonNull final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo,
+			@NonNull final Map<InOutAndLineId, String> countryByInOutLine)
+	{
+		// Filter to InOutLines assigned to this package only.
+		// getPackageContents() returns ALL InOutLines of the M_InOut — without this filter
+		// each of N packages sharing one M_InOut sees all N lines, causing N² parcels.
+		final ImmutableList<DeliveryOrderItem> allItems = purchaseOrderToShipperTransportationRepository
+				.getPackageById(packageInfo.getPackageId())
+				.getPackageContents()
+				.stream()
+				.filter(item -> countryByInOutLine.isEmpty()
+						|| (item.getInOutAndLineId() != null && countryByInOutLine.containsKey(item.getInOutAndLineId())))
+				.map(packageItem -> createDeliveryOrderItem(packageItem, countryByInOutLine))
+				.collect(ImmutableList.toImmutableList());
+
+		if (allItems.isEmpty() && !countryByInOutLine.isEmpty())
+		{
+			logger.warn("Package {} has no items after InOutLine assignment filter — no parcel created. Check M_HU_Assignment.",
+					packageInfo.getPackageId());
+			return Stream.empty();
+		}
+
+		// Group items by parcel key — items with the same key go into the same parcel
+		final LinkedHashMap<DeliveryOrderItemGroupKey, List<DeliveryOrderItem>> byCountry = allItems.stream()
+				.collect(Collectors.groupingBy(
+						DeliveryOrderItemGroupKey::of,
+						LinkedHashMap::new,
+						Collectors.toList()));
+
+		if (byCountry.size() <= 1)
+		{
+			// All items share the same country (or none) — single parcel, existing weight applies
+			return Stream.of(DeliveryOrderParcel.builder()
+					.packageDimensions(packageInfo.getPackageDimension())
+					.packageId(packageInfo.getPackageId())
+					.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
+					.content(packageInfo.getDescription())
+					.items(allItems)
+					.build());
+		}
+
+		// Multiple countries — one parcel per country group; gross weight derived from item weights
+		return byCountry.values().stream()
+				.map(items -> {
+					final BigDecimal groupWeightKg = items.stream()
+							.map(DeliveryOrderItem::getTotalWeightInKg)
+							.reduce(BigDecimal.ZERO, BigDecimal::add);
+					return DeliveryOrderParcel.builder()
+							.packageDimensions(packageInfo.getPackageDimension())
+							.packageId(packageInfo.getPackageId())
+							.grossWeightKg(groupWeightKg.compareTo(BigDecimal.ZERO) > 0 ? groupWeightKg : packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
+							.content(packageInfo.getDescription())
+							.items(ImmutableList.copyOf(items))
+							.build();
+				});
+	}
+
+	@NonNull
+	private DeliveryOrderItem createDeliveryOrderItem(
+			@NonNull final PackageItem packageItem,
+			@NonNull final Map<InOutAndLineId, String> countryByInOutLine)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
@@ -225,10 +394,15 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
+		final String countryOfOrigin = packageItem.getInOutAndLineId() != null
+				? countryByInOutLine.get(packageItem.getInOutAndLineId())
+				: null;
+
 		return DeliveryOrderItem.builder()
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
 				.customsTariff(customsTariff)
+				.countryOfOrigin(countryOfOrigin)
 				.totalWeightInKg(weightInKg)
 				.shippedQuantity(packageItem.getQuantity())
 				.unitPrice(unitPrice)

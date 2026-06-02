@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
@@ -77,11 +78,9 @@ public class AD_User_StepDef
 	@Given("metasfresh contains AD_Users:")
 	public void metasfresh_contains_ad_users(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createUser(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_AD_User_ID)
+				.forEach(this::createUser);
 	}
 
 	@And("load AD_User:")
@@ -127,10 +126,8 @@ public class AD_User_StepDef
 		}
 	}
 
-	private void createUser(final Map<String, String> tableRowMap)
+	private void createUser(@NonNull final DataTableRow tableRow)
 	{
-		final DataTableRow tableRow = DataTableRow.singleRow(tableRowMap);
-
 		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final String email = tableRow.getAsOptionalString(COLUMNNAME_EMail).orElse(null);
 
@@ -144,67 +141,37 @@ public class AD_User_StepDef
 		userRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		userRecord.setName(valueAndName.getName());
 		userRecord.setEMail(email);
-		
+
 		tableRow.getAsOptionalString(COLUMNNAME_Password).ifPresent(userRecord::setPassword);
 		tableRow.getAsOptionalString(COLUMNNAME_AD_Language).ifPresent(userRecord::setAD_Language);
 		tableRow.getAsOptionalBoolean(COLUMNNAME_IsMFProcurementUser).ifPresent(b -> {
 			final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
 			procurementUserRecord.setIsMFProcurementUser(b);
 		});
-
-		if (tableRowMap.containsKey("OPT." + COLUMNNAME_ProcurementPassword))
-		{
+		tableRow.getAsOptionalString(COLUMNNAME_ProcurementPassword).ifPresent(pwd -> {
 			final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
-			procurementUserRecord.setProcurementPassword(tableRowMap.get("OPT." + COLUMNNAME_ProcurementPassword));
-		}
+			procurementUserRecord.setProcurementPassword(pwd);
+		});
 
-		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(bPartnerIdentifier))
-		{
-			final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
-			userRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-		}
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerTable::get)
+				.ifPresent(bp -> userRecord.setC_BPartner_ID(bp.getC_BPartner_ID()));
 
-		final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(bpLocationIdentifier))
-		{
-			final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
-			assertThat(bPartnerLocation).isNotNull();
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.map(bpartnerLocationTable::get)
+				.ifPresent(loc -> userRecord.setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID()));
 
-			userRecord.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
-		}
-
-		final String phone = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + I_AD_User.COLUMNNAME_Phone);
-		if (Check.isNotBlank(phone))
-		{
-			userRecord.setPhone(phone);
-		}
-
-		final String login = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + COLUMNNAME_Login);
-		if (Check.isNotBlank(login))
-		{
-			userRecord.setLogin(login);
-		}
-
-		final Boolean isBillToContactDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRowMap, "OPT." + COLUMNNAME_IsBillToContact_Default, null);
-		if (isBillToContactDefault != null)
-		{
-			userRecord.setIsBillToContact_Default(isBillToContactDefault);
-		}
-
-		final String notificationType = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + COLUMNNAME_NotificationType);
-		if (Check.isNotBlank(notificationType))
-		{
-			userRecord.setNotificationType(notificationType);
-		}
+		tableRow.getAsOptionalString(I_AD_User.COLUMNNAME_Phone).ifPresent(userRecord::setPhone);
+		tableRow.getAsOptionalString(COLUMNNAME_Login).ifPresent(userRecord::setLogin);
+		tableRow.getAsOptionalBoolean(COLUMNNAME_IsBillToContact_Default)
+				.ifPresent(userRecord::setIsBillToContact_Default);
+		tableRow.getAsOptionalString(COLUMNNAME_NotificationType).ifPresent(userRecord::setNotificationType);
 
 		InterfaceWrapperHelper.saveRecord(userRecord);
 
-		final Integer roleId = DataTableUtil.extractIntegerOrNullForColumnName(tableRowMap, "OPT.Role_ID");
-		if (roleId != null)
-		{
-			roleDAO.createUserRoleAssignmentIfMissing(UserId.ofRepoId(userRecord.getAD_User_ID()), RoleId.ofRepoId(roleId));
-		}
+		tableRow.getAsOptionalInt(I_AD_User_Roles.COLUMNNAME_AD_Role_ID)
+				.ifPresent(roleId -> roleDAO.createUserRoleAssignmentIfMissing(
+						UserId.ofRepoId(userRecord.getAD_User_ID()), RoleId.ofRepoId(roleId)));
 
 		tableRow.getAsOptionalIdentifier("REST.Context.AD_User_ID")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), userRecord.getAD_User_ID()));

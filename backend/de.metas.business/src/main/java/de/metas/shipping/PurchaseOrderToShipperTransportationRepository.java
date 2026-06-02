@@ -3,6 +3,7 @@ package de.metas.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -181,13 +182,13 @@ public class PurchaseOrderToShipperTransportationRepository
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
 				.create()
 				.stream()
-				.map(PurchaseOrderToShipperTransportationRepository::toPackageItem)
+				.map(inOutLine -> toPackageItem(inOutLine, inOutId))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Nullable
-	private static PackageItem toPackageItem(@NonNull final I_M_InOutLine inOutLine)
+	private static PackageItem toPackageItem(@NonNull final I_M_InOutLine inOutLine, @NonNull final InOutId inOutId)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(inOutLine.getM_Product_ID());
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
@@ -199,6 +200,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.productId(productId)
 				.quantity(Quantitys.of(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
 				.orderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(inOutLine.getC_Order_ID()), orderLineId))
+				.inOutAndLineId(InOutAndLineId.ofRepoId(inOutId, inOutLine.getM_InOutLine_ID()))
 				.build();
 	}
 
