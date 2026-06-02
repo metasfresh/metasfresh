@@ -20,9 +20,9 @@ import java.time.Instant;
  * saves to the database.
  *
  * <p>All warehouse-resolution (locators, in-transit warehouse, doc-type) is performed by the Service
- * layer ({@link DDOrderPickingReplenishmentService}) before building this request. The repository
- * ({@link DDOrderPickingReplenishmentRepository}) is pure data-access: it only builds and saves the
- * {@code I_DD_Order} / {@code I_DD_OrderLine} records.
+ * layer ({@link DDOrderPickingReplenishmentService}) before building this request. The service assembles
+ * the {@code I_DD_Order} / {@code I_DD_OrderLine} records from this request and delegates their persistence
+ * to {@code DDOrderLowLevelDAO} (the owner of DD_Order/DD_OrderLine persistence).
  *
  * <p>Note on intentionally-omitted fields: there is no {@code C_BPartner_Location_ID} nor {@code PP_Plant_ID}.
  * The reconcile flow is an internal pick-to-packing move, so the partner-location and manufacturing-plant context

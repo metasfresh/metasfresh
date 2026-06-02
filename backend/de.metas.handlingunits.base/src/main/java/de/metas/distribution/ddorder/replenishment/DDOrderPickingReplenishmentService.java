@@ -29,16 +29,24 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -62,7 +70,6 @@ public class DDOrderPickingReplenishmentService
 	// after-commit accumulator under a shorter, easier-to-clash name.
 	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishment";
 
-	@NonNull private final DDOrderPickingReplenishmentRepository repository;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
@@ -70,6 +77,7 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -231,7 +239,7 @@ public class DDOrderPickingReplenishmentService
 	 * if no source can be resolved, throws the network-gap exception and creates nothing.
 	 *
 	 * <p>Warehouse resolution (locators, in-transit warehouse, doc-type) happens here in the Service;
-	 * the repository ({@link DDOrderPickingReplenishmentRepository}) only handles the data persistence.</p>
+	 * {@link #saveDraftDDOrder} assembles the records and delegates persistence to {@link DDOrderLowLevelDAO}.</p>
 	 */
 	private void createDDOrderFor(@NonNull final I_M_ShipmentSchedule schedule)
 	{
@@ -270,7 +278,7 @@ public class DDOrderPickingReplenishmentService
 						.adOrgId(orgId.getRepoId())
 						.build());
 
-		final I_DD_Order ddOrder = repository.saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
+		final I_DD_Order ddOrder = saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
 				.sourceWarehouseId(sourceWarehouseId)
 				.targetWarehouseId(targetWarehouseId)
@@ -285,6 +293,68 @@ public class DDOrderPickingReplenishmentService
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
 				.build());
 		ddOrderService.complete(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Builds exactly one {@link I_DD_Order} (with a single {@link I_DD_OrderLine}) for the picking-reconcile flow,
+	 * persists both records (header then line) via {@link DDOrderLowLevelDAO} — the owner of DD_Order/DD_OrderLine
+	 * persistence — and returns the saved (Drafted) {@link I_DD_Order}.
+	 *
+	 * <p>The cross-model warehouse/locator/doc-type resolution is done by {@link #createDDOrderFor} and arrives
+	 * here as a fully-formed {@link CreateDDOrderReplenishmentRequest}. This method only assembles the records and
+	 * delegates persistence to the DD_Order DAO; the caller completes the returned document.</p>
+	 */
+	private I_DD_Order saveDraftDDOrder(@NonNull final CreateDDOrderReplenishmentRequest request)
+	{
+		final OrgId orgId = request.getOrgId();
+
+		//
+		// Header
+		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
+		ddOrder.setAD_Org_ID(orgId.getRepoId());
+		if (request.getBpartnerId() != null)
+		{
+			ddOrder.setC_BPartner_ID(request.getBpartnerId().getRepoId());
+		}
+		ddOrder.setC_DocType_ID(DocTypeId.toRepoId(request.getDocTypeId()));
+		ddOrder.setM_Warehouse_ID(request.getInTransitWarehouseId().getRepoId());
+		ddOrder.setM_Warehouse_From_ID(request.getSourceWarehouseId().getRepoId());
+		ddOrder.setM_Warehouse_To_ID(request.getTargetWarehouseId().getRepoId());
+		ddOrder.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
+		ddOrder.setDateOrdered(TimeUtil.asTimestamp(request.getDatePromised()));
+		ddOrder.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
+		ddOrder.setMRP_Generated(true);
+		ddOrder.setMRP_AllowCleanup(true);
+		ddOrder.setIsSOTrx(false);
+		ddOrder.setIsInDispute(false);
+		ddOrder.setIsInTransit(false);
+		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
+		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
+		ddOrderLowLevelDAO.save(ddOrder);
+
+		//
+		// Line
+		final I_DD_OrderLine ddOrderLine = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class);
+		ddOrderLine.setDD_Order_ID(ddOrder.getDD_Order_ID());
+		ddOrderLine.setAD_Org_ID(orgId.getRepoId());
+		ddOrderLine.setDateOrdered(ddOrder.getDateOrdered());
+		ddOrderLine.setDatePromised(ddOrder.getDatePromised());
+		ddOrderLine.setM_Product_ID(request.getProductId().getRepoId());
+		ddOrderLine.setC_UOM_ID(request.getQty().getUomId().getRepoId());
+		// This flow operates entirely in the product's stock UOM (internal pick-to-packing move):
+		// QtyToDeliver is always stock UOM and source UOM == stock UOM, so QtyEntered == QtyOrdered == TargetQty
+		// intentionally. (HUs2DDOrderProducer distinguishes QtyEntered=sourceUOM vs QtyOrdered/TargetQty=stockUOM;
+		// revisit only if a real source-UOM != stock-UOM case arises here.)
+		ddOrderLine.setQtyEntered(request.getQty().toBigDecimal());
+		ddOrderLine.setQtyOrdered(request.getQty().toBigDecimal());
+		ddOrderLine.setTargetQty(request.getQty().toBigDecimal());
+		ddOrderLine.setM_Locator_ID(request.getLocatorFromId().getRepoId());
+		ddOrderLine.setM_LocatorTo_ID(request.getLocatorToId().getRepoId());
+		ddOrderLine.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
+		ddOrderLine.setIsInvoiced(false);
+		ddOrderLowLevelDAO.save(ddOrderLine);
+
+		return ddOrder;
 	}
 
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
@@ -329,10 +399,79 @@ public class DDOrderPickingReplenishmentService
 		final Set<WarehouseId> autoDistributionWarehouseIds = warehouseRepository.getAutoDistributionWarehouseIds();
 
 		// try-with-resources: close the DB cursor even if publishOne throws mid-stream.
-		try (final Stream<ShipmentScheduleId> schedules = repository.streamSchedulesNeedingDDOrder(autoDistributionWarehouseIds))
+		try (final Stream<ShipmentScheduleId> schedules = streamSchedulesNeedingDDOrder(autoDistributionWarehouseIds))
 		{
 			schedules.forEach(reconciliationEventPublisher::publishOne);
 		}
+	}
+
+	/**
+	 * Streams the {@link ShipmentScheduleId}s of active, not-processed, not-closed shipment schedules
+	 * that are on one of the given auto-distribution (packing) warehouses and have NO live (Completed)
+	 * {@link I_DD_Order} linked. These are the "drifted" schedules the watchdog scan must re-reconcile.
+	 *
+	 * <p>This is a cross-sub-model join: the M_ShipmentSchedule scan (owned here, where this service can see
+	 * the shipment-schedule sub-model) is filtered by the live-DD_Order sub-query {@link DDOrderLowLevelDAO#queryCompletedDDOrders()}
+	 * (owned by the DD_Order DAO). Per the layering decision, the service is the right place to compose such joins.</p>
+	 *
+	 * <p>Auto-distribution warehouse-ID resolution stays in {@link WarehouseRepository}; the caller passes the
+	 * resolved set in.</p>
+	 */
+	private Stream<ShipmentScheduleId> streamSchedulesNeedingDDOrder(@NonNull final Set<WarehouseId> autoDistributionWarehouseIds)
+	{
+		if (autoDistributionWarehouseIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		final Set<Integer> warehouseRepoIds = WarehouseId.toRepoIds(autoDistributionWarehouseIds);
+
+		// Sub-query: live (Completed) DD_Orders — owned by the DD_Order DAO.
+		final IQuery<I_DD_Order> liveDDOrderSubQuery = ddOrderLowLevelDAO.queryCompletedDDOrders();
+
+		// Main query: active + not processed + not closed schedules on a packing warehouse with no live DD_Order.
+		//
+		// NOTE: active + not processed + not closed — matches #classifyAction. If one changes, change both.
+		final IQueryBuilder<I_M_ShipmentSchedule> scheduleQueryBuilder = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsClosed, false);
+
+		// Schedule must be on a packing EFFECTIVE warehouse, mirroring IShipmentScheduleEffectiveBL#getWarehouseId
+		// (Override-takes-priority) used by the BL. A plain OR over base/Override would wrongly include a schedule
+		// whose base warehouse is packing but whose Override points to a non-packing warehouse, generating a spurious
+		// watchdog event that the BL then no-ops via classifyAction=NONE.
+		//
+		//   (M_Warehouse_Override_ID IS NOT NULL AND M_Warehouse_Override_ID IN packing)
+		//   OR
+		//   (M_Warehouse_Override_ID IS NULL     AND M_Warehouse_ID          IN packing)
+		final ICompositeQueryFilter<I_M_ShipmentSchedule> effectivePackingFilter = scheduleQueryBuilder
+				.addCompositeQueryFilter()
+				.setJoinOr();
+
+		// branch 1: Override set and pointing at a packing warehouse
+		effectivePackingFilter.addCompositeQueryFilter()
+				.setJoinAnd()
+				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, warehouseRepoIds);
+
+		// branch 2: Override not set → base warehouse decides
+		effectivePackingFilter.addCompositeQueryFilter()
+				.setJoinAnd()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseRepoIds);
+
+		// schedule must have NO live DD_Order
+		scheduleQueryBuilder.addNotInSubQueryFilter(
+				I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+				I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID,
+				liveDDOrderSubQuery);
+
+		return scheduleQueryBuilder
+				.create()
+				.stream()
+				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
 	}
 
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)
