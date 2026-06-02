@@ -71,6 +71,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -635,7 +636,7 @@ public class PickingJobService implements PickingSlotListener
 	public PickingJob createTUFromGRAI(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobLineId lineId,
-			@NonNull final String scannedGrai)
+			@NonNull final ScannedCode scannedGrai)
 	{
 		final Optional<LUPickingTarget> luTargetOpt = pickingJob.getLuPickingTargetEffective(lineId);
 		final PickingJobLine line = pickingJob.getLineById(lineId);

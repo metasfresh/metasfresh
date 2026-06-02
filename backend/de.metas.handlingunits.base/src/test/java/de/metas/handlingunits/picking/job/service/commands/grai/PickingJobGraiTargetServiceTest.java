@@ -21,6 +21,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -213,7 +214,7 @@ class PickingJobGraiTargetServiceTest
 	void resolveTuTypeAndCapacity_unparseableScan_throwsInvalidGRAIBarcode()
 	{
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
-				"   ", // blank → GRAI.parse returns null
+				ScannedCode.ofString("not-a-grai"), // non-blank but unparseable → GRAI.parse returns null
 				Optional.empty(),
 				PRODUCT_ID))
 				.isInstanceOf(AdempiereException.class)
@@ -226,7 +227,7 @@ class PickingJobGraiTargetServiceTest
 	{
 		// No M_HU_PI_GRAI rows inserted at all.
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
-				"7613204.00307.999999",
+				ScannedCode.ofString("7613204.00307.999999"),
 				Optional.empty(),
 				PRODUCT_ID))
 				.isInstanceOf(AdempiereException.class)
@@ -245,7 +246,7 @@ class PickingJobGraiTargetServiceTest
 				luPI.getName());
 
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
-				"7613204.00307.999999",
+				ScannedCode.ofString("7613204.00307.999999"),
 				Optional.of(luTarget),
 				PRODUCT_ID))
 				.isInstanceOf(AdempiereException.class)
@@ -266,7 +267,7 @@ class PickingJobGraiTargetServiceTest
 				luPI.getName());
 
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
-				"7613204.00307.999999",
+				ScannedCode.ofString("7613204.00307.999999"),
 				Optional.of(luTarget),
 				otherProductId))
 				.isInstanceOf(AdempiereException.class)
@@ -280,7 +281,7 @@ class PickingJobGraiTargetServiceTest
 		mapGrai("7613204", "00307", tuPI);
 
 		final GraiTuResolution result = service.resolveTuTypeAndCapacity(
-				"7613204.00307.999999",
+				ScannedCode.ofString("7613204.00307.999999"),
 				Optional.empty(),
 				PRODUCT_ID);
 

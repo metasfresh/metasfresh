@@ -590,7 +590,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	public WFProcess setTUPickingTargetFromGRAI(
 			@NonNull final WFProcessId wfProcessId,
 			@Nullable final PickingJobLineId lineId,
-			@NonNull final String scannedGrai,
+			@NonNull final ScannedCode scannedGrai,
 			@NonNull final UserId callerId)
 	{
 		final PickingJobLineId lineIdNonNull = Check.assumeNotNull(lineId, "lineId must be set for the GRAI-scan picking flow");

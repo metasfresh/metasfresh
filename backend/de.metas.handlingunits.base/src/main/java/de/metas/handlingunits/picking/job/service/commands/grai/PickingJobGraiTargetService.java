@@ -16,6 +16,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,15 +56,15 @@ public class PickingJobGraiTargetService
 	 */
 	@NonNull
 	public GraiTuResolution resolveTuTypeAndCapacity(
-			@NonNull final String scannedGrai,
+			@NonNull final ScannedCode scannedGrai,
 			@NonNull final Optional<LUPickingTarget> luTargetOpt,
 			@NonNull final ProductId lineProductId)
 	{
 		// 1. Parse
-		final GRAI grai = GRAI.parse(scannedGrai);
+		final GRAI grai = GRAI.parse(scannedGrai.getAsString());
 		if (grai == null)
 		{
-			throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, scannedGrai);
+			throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, scannedGrai.getAsString());
 		}
 
 		// 2. Resolve TU type — propagates GRAINoMatchingTUType

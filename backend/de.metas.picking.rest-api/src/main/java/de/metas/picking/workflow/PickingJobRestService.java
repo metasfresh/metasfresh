@@ -52,6 +52,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -222,7 +223,7 @@ public class PickingJobRestService
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobLineId lineId,
-			@NonNull final String scannedGrai)
+			@NonNull final ScannedCode scannedGrai)
 	{
 		return pickingJobService.createTUFromGRAI(pickingJob, lineId, scannedGrai);
 	}

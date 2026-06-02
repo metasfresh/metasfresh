@@ -22,11 +22,11 @@
 
 package de.metas.picking.rest_api.json;
 
-import de.metas.common.util.Check;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -56,7 +56,7 @@ public class JsonTUPickingTarget
 	//
 	// GRAI scan: when set (and no tuPIId/tuId), the server resolves the TU type from the scanned GRAI,
 	// creates the TU + attaches the GRAI, and sets it as the line's existing-TU target.
-	@Nullable String grai;
+	@Nullable ScannedCode grai;
 
 	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
 	{
@@ -72,7 +72,7 @@ public class JsonTUPickingTarget
 
 	public boolean isGRAIScan()
 	{
-		return !Check.isBlank(grai);
+		return grai != null;
 	}
 
 	public TUPickingTarget unbox()
