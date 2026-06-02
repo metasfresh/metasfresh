@@ -98,9 +98,14 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine  | order      | product      | 5          |
     And the order identified by order is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | Warehouse_ID |
-      | shipmentSchedule | orderLine      | packingWH    |
+    # Wait for QtyToDeliver=5 (not just the schedule's existence): the async M_ShipmentScheduleQueue
+    # revalidation worker populates QtyToDeliver, and M_Packageable_V (hence the picking-job start below)
+    # only sees the schedule once QtyToDeliver > 0. The packing warehouse is MRP_Exclude=Y, so readiness
+    # comes solely from this revalidation — waiting only for the row to exist would race the worker and
+    # make the picking start fail intermittently with "Absolutely nothing to pick".
+    And after not more than 120s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | Warehouse_ID | QtyToDeliver |
+      | shipmentSchedule | orderLine      | packingWH    | 5            |
     And after not more than 120s, the DD_Order linked to shipment schedule is found:
       | Identifier | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
       | ddOrder    | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
