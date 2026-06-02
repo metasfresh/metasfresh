@@ -28,6 +28,8 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -54,7 +56,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -83,6 +84,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
+ * DAO cluster for C_Invoice, C_InvoiceLine, C_InvoiceTax, C_LandedCost.
+ * Queries on other tables belong in their own DAO/Repo (e.g. C_PaymentTerm → IPaymentTermRepository).
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
  *
  * @author ts
@@ -718,14 +721,16 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public Collection<String> retrieveDocNosWithPaymentTermDisallowingOverride(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
 	{
-		final IQuery<I_C_PaymentTerm> disallowingPaymentTerms = queryBL
-				.createQueryBuilder(I_C_PaymentTerm.class)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate, false)
-				.create();
+		final Set<PaymentTermId> disallowingIds = Services.get(IPaymentTermRepository.class)
+				.getPaymentTermIdsByIsAllowOverrideDueDate(false);
+		if (disallowingIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID, disallowingPaymentTerms)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, disallowingIds)
 				.addFilter(filter)
 				.setLimit(QueryLimit.TEN)
 				.create()
@@ -739,10 +744,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter,
 			@NonNull final Timestamp dueDate)
 	{
-		final IQuery<I_C_PaymentTerm> allowingPaymentTerms = queryBL
-				.createQueryBuilder(I_C_PaymentTerm.class)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate, true)
-				.create();
+		final Set<PaymentTermId> allowingIds = Services.get(IPaymentTermRepository.class)
+				.getPaymentTermIdsByIsAllowOverrideDueDate(true);
+		if (allowingIds.isEmpty())
+		{
+			return 0;
+		}
 
 		final IQueryUpdater<org.compiere.model.I_C_Invoice> queryUpdater = queryBL
 				.createCompositeQueryUpdater(org.compiere.model.I_C_Invoice.class)
@@ -751,7 +758,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addFilter(filter)
-				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID, allowingPaymentTerms)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, allowingIds)
 				.create()
 				.update(queryUpdater);
 	}

@@ -24,6 +24,8 @@ package de.metas.invoice.process;
 
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.PlainInvoiceDAO;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.impl.PaymentTermRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -56,6 +58,7 @@ class C_Invoice_OverrideDueDateTest
 		AdempiereTestHelper.get().init();
 		invoiceDAO = new PlainInvoiceDAO();
 		Services.registerService(IInvoiceDAO.class, invoiceDAO);
+		Services.registerService(IPaymentTermRepository.class, new PaymentTermRepository());
 		queryBL = Services.get(IQueryBL.class);
 	}
 

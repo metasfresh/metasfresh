@@ -923,17 +923,6 @@ public class C_Invoice_StepDef
 
 	/**
 	 * Runs the {@code C_Invoice_OverrideDueDate} AD_Process on each invoice row in the DataTable.
-	 * <p>
-	 * In production this action is triggered by the user selecting one or more completed invoices
-	 * and running the "C_Invoice_OverrideDueDate" process from the action menu. The process updates
-	 * {@code C_Invoice.DueDate} only for invoices whose payment term has
-	 * {@code IsAllowOverrideDueDate=Y}; invoices with {@code IsAllowOverrideDueDate=N} are silently
-	 * skipped by the production gate in {@code C_Invoice_OverrideDueDate.doIt()}.
-	 * <p>
-	 * The process is invoked once per DataTable row, with a {@code whereClause} that pins the
-	 * selection to exactly that invoice. After {@code executeSync()} the step re-loads each invoice
-	 * out-of-transaction (bypassing any thread-level snapshot) so that subsequent validate steps
-	 * see the committed state.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -958,17 +947,7 @@ public class C_Invoice_StepDef
 			final int invoiceId = invoice.getC_Invoice_ID();
 			final Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
 
-			// In the cucumber Spring-Boot environment Env.getCtx() has AD_Client_ID=0
-			// (System) and AD_Role_ID=0 (System Administrator). The process's
-			// getQueryFilterOrElseFalse() applies role-based client/org restrictions,
-			// and the inner IQueryBL.createQueryBuilder() calls also read Env.getCtx()
-			// directly. With the System Administrator role those restrictions filter
-			// to AD_Client_ID=0, so the update silently affects 0 rows.
-			//
-			// Fix: run the process under the same WebUI role that the Background step
-			// establishes (the logged-in user's "WebUI" role for client 1000000). Build
-			// a temporary context for that combination and switch the global thread
-			// context to it for the duration of the process run.
+			// run with the invoice's client ctx + WebUI role; the default cucumber ctx (System client/role) would match no records
 			final ClientId invoiceClientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
 			final UserId loggedUserId = Env.getLoggedUserId();
 			final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
@@ -992,9 +971,8 @@ public class C_Invoice_StepDef
 					.getResult()
 					.propagateErrorIfAny();
 
-			// Re-load out-of-transaction so subsequent validate steps see the committed DB state
-			// rather than any thread-level snapshot that still holds the pre-process value.
-			final I_C_Invoice freshInvoice = InterfaceWrapperHelper.loadOutOfTrx(invoiceId, I_C_Invoice.class);
+			// Re-load out-of-transaction so subsequent validate steps see the committed DB state.
+			final I_C_Invoice freshInvoice = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(invoiceId), I_C_Invoice.class);
 			invoiceTable.putOrReplace(invoiceIdentifier, freshInvoice);
 		});
 	}

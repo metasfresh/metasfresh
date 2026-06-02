@@ -62,6 +62,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * DAO cluster for C_Invoice, C_InvoiceLine, C_InvoiceTax, C_LandedCost.
+ * Queries on other tables belong in their own DAO/Repo (e.g. C_PaymentTerm → IPaymentTermRepository).
+ */
 public interface IInvoiceDAO extends ISingletonService
 {
 	void save(org.compiere.model.I_C_Invoice invoice);

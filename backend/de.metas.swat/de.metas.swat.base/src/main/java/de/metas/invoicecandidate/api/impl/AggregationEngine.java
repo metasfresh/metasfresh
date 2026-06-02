@@ -646,10 +646,6 @@ public final class AggregationEngine
 			return null;
 		}
 		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
-		// Fail-closed: without a payment term there is nothing to check, so deny the override.
-		// In production this branch is unreachable because every IC has a payment term set before
-		// aggregation begins; the guard exists so that unit tests (which skip the IC handler pipeline)
-		// don't silently apply the override.
 		if (paymentTermId == null || !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
 		{
 			return null;

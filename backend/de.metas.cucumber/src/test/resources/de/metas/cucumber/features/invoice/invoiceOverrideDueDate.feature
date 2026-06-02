@@ -93,7 +93,7 @@ Feature: Invoice override-due-date from Rechnungsdisposition
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
   @Id:S0209_310
-  Scenario: C_Invoice_OverrideDueDate process gate — flag=N invoices are skipped; flag=Y invoices are updated
+  Scenario: S0209_310: C_Invoice_OverrideDueDate updates the due date only for invoices whose payment term allows overriding it
     # Two invoices created directly: one with a permissive payment term (flag=Y), one with a
     # restrictive payment term (flag=N). Both are completed so DueDate is rule-computed
     # (DateInvoiced 2026-03-01 + NetDays 30 = 2026-03-31). The C_Invoice_OverrideDueDate process
