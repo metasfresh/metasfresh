@@ -206,7 +206,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | M_ShipmentSchedule_ID.Identifier | OPT.Processed |
       | s_s_bug                          | false         |
 
-    # BUG (RED): the fully-picked schedule on a draft shipment must NOT be packageable
+    # the fully-picked schedule, now entirely on a draft shipment, must NOT be packageable
     Then validate M_Packageable_V for shipmentSchedule identified by s_s_bug
       | IsPresent |
       | N         |
