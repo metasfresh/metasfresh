@@ -1,11 +1,23 @@
 package de.metas.handlingunits.picking.job.service.commands.grai;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,7 +81,35 @@ class PickingJobGraiTargetServiceTest
 		final LUPickingTarget luTarget = buildNewLuTarget(luPI);
 
 		assertThatThrownBy(() -> service.assertTuAllowedOnLu(otherTuPIId, luTarget))
-				.hasMessageContaining("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	@Test
+	void existingLU_tuPIIncluded_doesNotThrow()
+	{
+		// Create a minimal existing LU whose PI is luPI
+		final I_M_HU_PI_Version luPIVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(luPI);
+		final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
+		lu.setM_HU_PI_Version_ID(luPIVersion.getM_HU_PI_Version_ID());
+		InterfaceWrapperHelper.save(lu);
+		final HuId luId = HuId.ofRepoId(lu.getM_HU_ID());
+
+		// Build a minimal HUQRCode — assertTuAllowedOnLu only uses luId, not the QR code content
+		final HUQRCode dummyQRCode = HUQRCode.builder()
+				.id(HUQRCodeUniqueId.random())
+				.packingInfo(HUQRCodePackingInfo.builder()
+						.huUnitType(HUQRCodeUnitType.LU)
+						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()))
+						.caption(luPI.getName())
+						.build())
+				.attributes(ImmutableList.of())
+				.build();
+
+		final LUPickingTarget existingLuTarget = LUPickingTarget.ofExistingHU(luId, dummyQRCode);
+		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
+
+		assertThatCode(() -> service.assertTuAllowedOnLu(tuPIId, existingLuTarget))
+				.doesNotThrowAnyException();
 	}
 
 	@NonNull

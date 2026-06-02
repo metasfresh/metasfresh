@@ -22,21 +22,21 @@ public class PickingJobGraiTargetService
 	private static final AdMessageKey MSG_TU_NOT_ALLOWED_ON_LU = AdMessageKey.of("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
 
 	/**
-	 * Asserts that the given TU packing-instruction ({@code tuPIId}) is allowed on the given LU picking target.
-	 *
-	 * <p>"Allowed" means: an {@code M_HU_PI_Item} with {@code ItemType='HU'} and
-	 * {@code Included_HU_PI_ID = tuPIId} exists on the LU PI's current version.
+	 * Verifies the TU PI is permitted on the LU picking target; throws keyed {@code GRAITUNotAllowedOnLU} otherwise.
 	 *
 	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAITUNotAllowedOnLU}
-	 *                            when no such item is found.
+	 *                            when no matching M_HU_PI_Item is found.
 	 */
 	public void assertTuAllowedOnLu(
 			@NonNull final HuPackingInstructionsId tuPIId,
 			@NonNull final LUPickingTarget luTarget)
 	{
-		final HuPackingInstructionsId luPIId = resolveLuPackingInstructionsId(luTarget);
-
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final HuPackingInstructionsId luPIId = resolveLuPackingInstructionsId(luTarget, handlingUnitsDAO);
+
+		// NOTE: bpartnerId=null intentionally — only generic (no-partner) M_HU_PI_Items are matched.
+		// Partner-specific inclusions (C_BPartner_ID != null) are not considered here because
+		// GRAI mapping is configured at the general M_HU_PI level, and generic inclusions cover the expected case.
 		final boolean allowed = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, /* bpartnerId= */ null).isPresent();
 
 		if (!allowed)
@@ -53,7 +53,9 @@ public class PickingJobGraiTargetService
 	 * </ul>
 	 */
 	@NonNull
-	private static HuPackingInstructionsId resolveLuPackingInstructionsId(@NonNull final LUPickingTarget luTarget)
+	private static HuPackingInstructionsId resolveLuPackingInstructionsId(
+			@NonNull final LUPickingTarget luTarget,
+			@NonNull final IHandlingUnitsDAO handlingUnitsDAO)
 	{
 		if (luTarget.isNewLU())
 		{
@@ -61,10 +63,8 @@ public class PickingJobGraiTargetService
 		}
 		else
 		{
-			// Existing LU: read M_HU_PI_ID from the HU record
 			final HuId luId = luTarget.getLuIdNotNull();
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final I_M_HU lu = handlingUnitsDAO.getById(luId);
 			return handlingUnitsBL.getPackingInstructionsId(lu);
 		}
