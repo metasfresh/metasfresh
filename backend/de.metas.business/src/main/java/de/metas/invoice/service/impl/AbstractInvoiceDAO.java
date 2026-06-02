@@ -700,6 +700,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return docBaseAndSubType.equals(targetDocType);
 	}
 
+	@Override
 	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
 	{
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
@@ -713,6 +714,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
 	public Collection<String> retrieveDocNosWithPaymentTermDisallowingOverride(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
 	{
 		final IQuery<I_C_PaymentTerm> disallowingPaymentTerms = queryBL

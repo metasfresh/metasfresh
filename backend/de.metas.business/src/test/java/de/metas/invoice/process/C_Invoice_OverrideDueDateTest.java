@@ -41,8 +41,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 
 /**
  * Unit tests for {@link IInvoiceDAO#retrieveDocNosWithPaymentTermDisallowingOverride(IQueryFilter)}.
- * <p>
- * Uses the POJO in-memory query engine via {@link PlainInvoiceDAO}.
  */
 class C_Invoice_OverrideDueDateTest
 {
@@ -103,6 +101,26 @@ class C_Invoice_OverrideDueDateTest
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setDocumentNo("INV-002");
 		invoice.setC_PaymentTerm_ID(pt.getC_PaymentTerm_ID());
+		InterfaceWrapperHelper.saveRecord(invoice);
+
+		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
+
+		final Collection<String> result = invoiceDAO.retrieveDocNosWithPaymentTermDisallowingOverride(filter);
+
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * An invoice with no payment term set is not part of the disallowing set: the precondition
+	 * does not reject it. The override process's bulk update skips it anyway (it only touches
+	 * invoices whose payment term explicitly allows the override).
+	 */
+	@Test
+	void invoiceWithNoPaymentTerm_notIncluded()
+	{
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setDocumentNo("INV-003");
+		// C_PaymentTerm_ID intentionally left unset
 		InterfaceWrapperHelper.saveRecord(invoice);
 
 		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
