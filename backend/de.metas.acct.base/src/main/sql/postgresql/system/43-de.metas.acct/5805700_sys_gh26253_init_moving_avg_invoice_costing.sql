@@ -35,7 +35,8 @@ BEGIN
     END IF;
 
     IF v_CurrentCostingMethod = 'M' THEN
-        RAISE EXCEPTION 'C_AcctSchema_ID % is already on MovingAverageInvoice', p_C_AcctSchema_ID;
+        RAISE NOTICE 'C_AcctSchema_ID % is already on MovingAverageInvoice, nothing to do', p_C_AcctSchema_ID;
+        RETURN;
     END IF;
 
     -- Find the material cost element for the current costing method
@@ -68,6 +69,10 @@ BEGIN
             v_AD_Client_ID;
     END IF;
 
+    -- Backup affected tables before making changes
+    PERFORM backup_table('m_cost',       '_pre_mai');
+    PERFORM backup_table('c_acctschema', '_pre_mai');
+
     -- Seed M_Cost records for the MAI cost element.
     -- Skip products that already have a record for the target cost element.
     INSERT INTO m_cost (
@@ -98,7 +103,7 @@ BEGIN
         src.c_uom_id,
         0,
         'Y',
-        now(), 0, now(), 0
+        now(), 99, now(), 99
     FROM m_cost src
     WHERE src.c_acctschema_id  = p_C_AcctSchema_ID
       AND src.m_costelement_id = v_CurrentCostElementId
@@ -119,7 +124,7 @@ BEGIN
     UPDATE c_acctschema
     SET  costingmethod = 'M',
          updated       = now(),
-         updatedby     = 0
+         updatedby     = 99
     WHERE c_acctschema_id = p_C_AcctSchema_ID;
 
     RAISE NOTICE 'C_AcctSchema_InitMovingAvgInvoice: C_AcctSchema_ID=% switched to costingmethod=M',
