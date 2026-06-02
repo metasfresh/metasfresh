@@ -80,6 +80,9 @@ public class PickingJobGraiTargetService
 
 	/**
 	 * Verifies the TU PI is permitted on the LU picking target.
+	 *
+	 * @throws AdempiereException (keyed {@code GRAITUNotAllowedOnLU}) if the TU type is not a
+	 *         configured includable TU on the LU's packing instruction.
 	 */
 	public void assertTuAllowedOnLu(
 			@NonNull final HuPackingInstructionsId tuPIId,
@@ -101,6 +104,8 @@ public class PickingJobGraiTargetService
 	/**
 	 * Returns the {@link HUPIItemProductId} of the active capacity record for the given TU packing instruction and product;
 	 * the default-for-product record is preferred when multiple matches exist.
+	 *
+	 * @throws AdempiereException (keyed {@code GRAINoCapacityForProduct}) if no capacity record matches the product.
 	 */
 	@NonNull
 	public HUPIItemProductId resolveCapacity(
@@ -132,6 +137,7 @@ public class PickingJobGraiTargetService
 	@NonNull
 	private HuPackingInstructionsId resolveLuPackingInstructionsId(@NonNull final LUPickingTarget luTarget)
 	{
+		// New-LU: use the PI carried by the target; existing-LU: resolve the PI from the actual HU record.
 		if (luTarget.isNewLU())
 		{
 			return luTarget.getLuPIIdNotNull();
