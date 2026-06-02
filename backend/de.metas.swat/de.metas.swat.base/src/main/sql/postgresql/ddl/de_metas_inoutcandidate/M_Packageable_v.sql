@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -179,13 +179,7 @@ FROM (SELECT
       WHERE TRUE
         AND s.Processed = 'N'
         AND s.IsActive = 'Y'
-        AND (s.QtyToDeliver > 0 OR EXISTS (
-                 SELECT 1
-                 FROM M_ShipmentSchedule_QtyPicked sqp
-                 WHERE sqp.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
-                   AND sqp.IsActive = 'Y'
-                   AND sqp.Processed = 'N'
-                   AND sqp.M_InOutLine_ID IS NULL))
+        AND (s.QtyToDeliver > 0 OR s.qtypicklist > 0)
         AND s.isclosed = 'N'
         AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)) p
 ;
