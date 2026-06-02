@@ -204,4 +204,17 @@ public interface IInvoiceDAO extends ISingletonService
 	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+
+	/**
+	 * Returns the DocumentNos of invoices matching {@code filter} whose effective payment term
+	 * has {@code IsAllowOverrideDueDate='N'}.
+	 * <p>
+	 * Used by {@code C_Invoice_OverrideDueDate} to reject selections that contain invoices
+	 * whose payment terms disallow manual due-date overrides.
+	 *
+	 * @param filter the query filter that describes the process selection (usually from
+	 *               {@link de.metas.process.IProcessPreconditionsContext#getQueryFilter})
+	 * @return up to {@link org.adempiere.ad.dao.QueryLimit#TEN} DocumentNos for display in the rejection message
+	 */
+	Collection<String> retrieveDocNosWithPaymentTermDisallowingOverride(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 }

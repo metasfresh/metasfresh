@@ -36,7 +36,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaymentTerm;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -46,6 +48,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 {
 	private final static String PARAM_OVERRIDE_DUE_DATE = "OverrideDueDate";
 	public static final AdMessageKey PAID_INVOICES_MESSAGE = AdMessageKey.of("Invoices_already_paid");
+	public static final AdMessageKey DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE = AdMessageKey.of("DueDateOverrideNotAllowed");
 	@Param(parameterName = PARAM_OVERRIDE_DUE_DATE, mandatory = true)
 	private Timestamp p_OverrideDueDate;
 
@@ -59,11 +62,21 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		final Collection<String> paidInvoiceDocNos = invoiceDAO.retrievePaidInvoiceDocNosForFilter(context.getQueryFilter(I_C_Invoice.class));
+
+		final IQueryFilter<I_C_Invoice> selectionFilter = context.getQueryFilter(I_C_Invoice.class);
+
+		final Collection<String> paidInvoiceDocNos = invoiceDAO.retrievePaidInvoiceDocNosForFilter(selectionFilter);
 		if (!paidInvoiceDocNos.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICES_MESSAGE, paidInvoiceDocNos));
 		}
+
+		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermDisallowingOverride(selectionFilter);
+		if (!disallowedDocNos.isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE, disallowedDocNos));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -74,9 +87,16 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 				.addSetColumnValue(I_C_Invoice.COLUMNNAME_DueDate, p_OverrideDueDate);
 
 		final IQueryFilter<I_C_Invoice> filter = getProcessInfo().getQueryFilterOrElseFalse();
+
+		final IQuery<I_C_PaymentTerm> allowingPaymentTerms = queryBL
+				.createQueryBuilder(I_C_PaymentTerm.class)
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate, true)
+				.create();
+
 		queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addFilter(filter)
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID, allowingPaymentTerms)
 				.create()
 				.update(queryUpdater);
 		return MSG_OK;
