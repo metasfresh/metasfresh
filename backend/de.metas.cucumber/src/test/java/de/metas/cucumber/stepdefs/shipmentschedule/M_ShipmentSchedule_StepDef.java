@@ -70,7 +70,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
@@ -575,50 +574,6 @@ public class M_ShipmentSchedule_StepDef
 				throw new AdempiereException("Unhandled M_ShipmentSchedule action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
-		}
-	}
-
-	/**
-	 * Assert whether a given M_ShipmentSchedule is (or is not) part of the M_Packageable_V view.
-	 * The view narrows which schedules are packageable/pickable; this step asserts that membership directly.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>IsPresent</b> — (required) Y = the schedule must appear in M_Packageable_V; N = it must not appear<br>
-	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then validate M_Packageable_V for shipmentSchedule identified by shipmentSchedule_1
-	 *   | IsPresent |
-	 *   | Y         |
-	 * </pre>
-	 */
-	@Then("^validate M_Packageable_V for shipmentSchedule identified by (.*)$")
-	public void validate_M_Packageable_V(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable dataTable)
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		final int shipmentScheduleId = shipmentSchedule.getM_ShipmentSchedule_ID();
-
-		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
-		final boolean isPresent = row.getAsBoolean("IsPresent");
-
-		// note: no addOnlyActiveRecordsFilter() — the M_Packageable_V view already filters IsActive='Y'
-		final int count = queryBL.createQueryBuilder(I_M_Packageable_V.class)
-				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
-				.create()
-				.count();
-
-		if (isPresent)
-		{
-			assertThat(count)
-					.as("Expected M_ShipmentSchedule_ID=%s (identifier=%s) to be present in M_Packageable_V, but found %s row(s)", shipmentScheduleId, shipmentScheduleIdentifier, count)
-					.isGreaterThanOrEqualTo(1);
-		}
-		else
-		{
-			assertThat(count)
-					.as("Expected M_ShipmentSchedule_ID=%s (identifier=%s) to NOT be present in M_Packageable_V, but found %s row(s)", shipmentScheduleId, shipmentScheduleIdentifier, count)
-					.isZero();
 		}
 	}
 
