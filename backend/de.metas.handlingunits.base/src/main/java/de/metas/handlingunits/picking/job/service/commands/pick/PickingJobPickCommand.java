@@ -512,13 +512,13 @@ public class PickingJobPickCommand
 	/**
 	 * Stamps the GRAI carried by a new-TU picking target onto the physical TU that the framework just materialized,
 	 * so the operator-scanned GRAI ends up on the real HU. No-op when the source target carries no GRAI.
-	 * Runs inside the current pick transaction (called from within {@link #executeInTrx()}).
 	 */
 	private void stampGraiIfPresent(@NonNull final TUPickingTarget sourceTarget, @NonNull final HuId newTuId)
 	{
 		final GRAI grai = sourceTarget.getGrai();
 		if (grai != null)
 		{
+			// Must be called inside the pick transaction so the attribute write commits together with the pick.
 			huGraiService.setGrais(newTuId, GRAISet.of(grai));
 		}
 	}
