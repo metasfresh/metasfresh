@@ -270,6 +270,27 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_Current_PickTo_LU_QRCode = "Current_PickTo_LU_QRCode";
 
 	/**
+	 * Set Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_GRAI (@Nullable java.lang.String Current_PickTo_TU_GRAI);
+
+	/**
+	 * Get Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_TU_GRAI();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Current_PickTo_TU_GRAI = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_GRAI", null);
+	String COLUMNNAME_Current_PickTo_TU_GRAI = "Current_PickTo_TU_GRAI";
+
+	/**
 	 * Set Current Pick To TU.
 	 *
 	 * <br>Type: Search
