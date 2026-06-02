@@ -9,9 +9,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
+/**
+ * Repository Tables: M_HU_PI_GRAI
+ * Repository Cluster: HUPIGraiRepository
+ */
 @Repository
 public class HUPIGraiRepository
 {
@@ -30,28 +31,18 @@ public class HUPIGraiRepository
 	@NonNull
 	public HuPackingInstructionsId resolveHuPackingInstructionsId(@NonNull final GRAI grai)
 	{
-		final String[] parts = grai.toCanonicalString().split("\\.");
-		if (parts.length != 3)
-		{
-			throw new AdempiereException("Invalid canonical GRAI format: " + grai.toCanonicalString());
-		}
-		final String companyPrefix = parts[0];
-		final String assetType = parts[1];
-
-		final List<I_M_HU_PI_GRAI> records = queryBL.createQueryBuilder(I_M_HU_PI_GRAI.class)
+		final I_M_HU_PI_GRAI record = queryBL.createQueryBuilder(I_M_HU_PI_GRAI.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_CompanyPrefix, companyPrefix)
-				.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_AssetType, assetType)
+				.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_CompanyPrefix, grai.getCompanyPrefix())
+				.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_AssetType, grai.getAssetType())
 				.create()
-				.list();
+				.firstOnly(I_M_HU_PI_GRAI.class); // global unique index on (CompanyPrefix, AssetType) → throws DBException on >1
 
-		if (records.isEmpty())
+		if (record == null)
 		{
 			throw new AdempiereException(MSG_NO_MATCHING_TU_TYPE, grai.toCanonicalString());
 		}
 
-		// The global unique index guarantees at most one row; take the first defensively.
-		final I_M_HU_PI_GRAI record = records.get(0);
 		return HuPackingInstructionsId.ofRepoId(record.getM_HU_PI_ID());
 	}
 }

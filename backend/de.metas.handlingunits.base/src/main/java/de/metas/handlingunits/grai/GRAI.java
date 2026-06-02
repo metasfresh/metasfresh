@@ -118,6 +118,24 @@ public class GRAI implements Comparable<GRAI>
 		return new GRAI(companyPrefix + "." + assetType + "." + serial);
 	}
 
+	/**
+	 * @return the GS1 company prefix part of the canonical {@code companyPrefix.assetType.serial} value.
+	 */
+	@NonNull
+	public String getCompanyPrefix()
+	{
+		return canonicalValue.substring(0, canonicalValue.indexOf('.'));
+	}
+
+	/**
+	 * @return the asset-type part of the canonical {@code companyPrefix.assetType.serial} value.
+	 */
+	@NonNull
+	public String getAssetType()
+	{
+		return canonicalValue.substring(canonicalValue.indexOf('.') + 1, canonicalValue.lastIndexOf('.'));
+	}
+
 	@Override
 	@Deprecated
 	public String toString() {return toCanonicalString();}
