@@ -67,6 +67,7 @@ const createMasterdata = async () => {
 test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment is created', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('DO_NOT_CREATE picking — order must stay gone after draft shipment');
     allure.severity('critical');
@@ -100,8 +101,7 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
     // --- Create a DRAFT shipment from the shipment schedule (desktop WebUI "generate shipments",
     //     IsCompleteShipments=false). This binds M_ShipmentSchedule_QtyPicked.M_InOutLine_ID with
     //     Processed='N' — the exact data state that triggered the bug. ---
-    const { shipmentScheduleId } = await ShipmentScheduleBackend.createDraftShipmentForOrder({ documentNo, token });
-    console.log(`[INFO] Draft shipment created for order ${documentNo}, M_ShipmentSchedule_ID=${shipmentScheduleId}`);
+    await ShipmentScheduleBackend.createDraftShipmentForOrder({ documentNo, token });
 
     // --- After the draft shipment binds all the pending picked qty to a shipment line, the order
     //     must NOT remain in the mobileUI picking list. ON UN-FIXED CODE THIS ASSERTION FAILS:
@@ -109,7 +109,6 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
     //     it keys on qtypicklist>0 instead of on still-unbound QtyPicked rows). That failure is the RED. ---
     await test.step("After the draft shipment, the order must NOT re-appear in the picking list (the fix's correct behaviour)", async () => {
         await PickingJobsListScreen.goBack();
-        await ApplicationsListScreen.waitForScreen();
         await ApplicationsListScreen.startApplication('picking');
         await PickingJobsListScreen.waitForScreen();
         await PickingJobsListScreen.filterByDocumentNo(documentNo);

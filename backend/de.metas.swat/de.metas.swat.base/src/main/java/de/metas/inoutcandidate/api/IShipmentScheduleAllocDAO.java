@@ -131,7 +131,14 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * with M_InOutLine_ID already set — i.e., draft-shipment allocations that are part of
 	 * QtyPickList but not yet reflected in the stored QtyToDeliver.
 	 *
-	 * Used to detect stale QtyToDeliver from race conditions between GenerateInOut workpackages.
+	 * Two callers rely on this:
+	 * <ul>
+	 *     <li>Detecting stale QtyToDeliver from race conditions between GenerateInOut workpackages.</li>
+	 *     <li>The mobileUI picking-launcher filter (de.metas.handlingunits.base
+	 *         {@code PickingJobShipmentScheduleService#filterOutDraftShipmentBound}), which uses it to drop
+	 *         schedules whose pending pick qty is already bound to a draft shipment so a fully-picked order
+	 *         placed on a draft shipment does not reappear in the picking launcher.</li>
+	 * </ul>
 	 *
 	 * @see #retrieveQtyPickedAndUnconfirmed — QtyPickList includes these records
 	 */

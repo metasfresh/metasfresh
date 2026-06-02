@@ -252,8 +252,7 @@ public class PickingJobService implements PickingSlotListener
 			onlyShipmentScheduleIds = null;
 		}
 
-		// Exclude schedules whose pending pick qty is entirely bound to a draft shipment, so the launcher facets
-		// stay consistent with the candidate list (me03 29437).
+		// Exclude schedules whose pending pick qty is already bound to a draft shipment, so the launcher facets stay consistent with the candidate list.
 		return shipmentScheduleService.filterOutDraftShipmentBound(
 				shipmentScheduleService.stream(
 						query.toPackageableQueryBuilder()

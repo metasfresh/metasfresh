@@ -131,12 +131,13 @@ public class PickingJobShipmentScheduleService
 	}
 
 	/**
-	 * Excludes packageables whose pending pick qty is entirely bound to a draft (not-yet-completed) shipment.
+	 * Excludes packageables that have at least one unprocessed QtyPicked record already bound to a draft
+	 * (not-yet-completed) shipment ({@code M_InOutLine_ID IS NOT NULL, Processed='N'}).
 	 * <p>
 	 * A fully-picked order that has been put on a draft shipment leaves its shipment schedule with a positive
 	 * QtyToDeliver/QtyPickList (the draft shipment is not deducted until completed), so it would otherwise
 	 * reappear in the mobileUI picking launcher. We discriminate those schedules via the very same criterion
-	 * used by shipment generation ({@code M_InOutLine_ID IS NOT NULL AND Processed='N'}).
+	 * used by shipment generation.
 	 * <p>
 	 * Reversed shipments replay picked rows with {@code M_InOutLine_ID IS NULL} and are therefore NOT matched by
 	 * the DAO, so they correctly stay visible for re-picking.

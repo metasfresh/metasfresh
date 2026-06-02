@@ -72,8 +72,7 @@ public class PickingJobCandidateRetrieveCommand
 			onlyShipmentScheduleIds = null;
 		}
 
-		// Exclude schedules whose pending pick qty is entirely bound to a draft shipment, so a fully-picked
-		// order that's been put on a draft shipment does not reappear in the mobileUI picking launcher (me03 29437).
+		// Exclude schedules whose pending pick qty is already bound to a draft shipment, so a fully-picked order placed on a draft shipment does not reappear in the picking launcher.
 		return shipmentScheduleService.filterOutDraftShipmentBound(
 				shipmentScheduleService.stream(
 						query.toPackageableQueryBuilder()
