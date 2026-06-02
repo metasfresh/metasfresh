@@ -50,7 +50,6 @@ import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_lin
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
-import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGraiTargetService;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
@@ -640,9 +639,9 @@ public class PickingJobService implements PickingSlotListener
 	{
 		final Optional<LUPickingTarget> luTargetOpt = pickingJob.getLuPickingTargetEffective(lineId);
 		final PickingJobLine line = pickingJob.getLineById(lineId);
-		final PickingJobGraiTargetService.GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
+		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
 				scannedGrai,
-				luTargetOpt,
+				luTargetOpt.orElse(null),
 				line.getProductId());
 
 		final GRAI grai = resolved.getGrai();

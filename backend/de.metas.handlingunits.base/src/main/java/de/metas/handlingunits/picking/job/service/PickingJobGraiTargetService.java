@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands.grai;
+package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -20,16 +20,15 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Service for GRAI picking target checks — specifically, verifying that a resolved TU packing-instruction
- * is includable in the effective picking-target LU's packing instruction.
+ * Resolves the TU type and capacity for a GRAI-scan picking target, and verifies the resolved TU
+ * is includable in the effective picking-target LU.
  */
 @Service
 @RequiredArgsConstructor
@@ -46,56 +45,41 @@ public class PickingJobGraiTargetService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	/**
-	 * Steps 1..4 of the GRAI flow: parse, resolve TU type, optional LU check, capacity.
-	 * Does <b>not</b> create any HU.
+	 * Parses the scanned GRAI, resolves the TU type, checks it against the effective LU target (if any)
+	 * and resolves the capacity for the line's product. Creates no HU.
 	 *
-	 * @param scannedGrai   the raw scanned barcode (step 1)
-	 * @param luTargetOpt   the effective LU picking target; empty → the TU-LU check (step 3) is skipped
-	 * @param lineProductId the line's product, used to derive capacity (step 4)
-	 * @return a {@link GraiTuResolution} holding the parsed GRAI, the resolved TU PI id and the PIIP id
+	 * @param luTarget the effective LU picking target; {@code null} → the TU-LU check is skipped
 	 */
 	@NonNull
 	public GraiTuResolution resolveTuTypeAndCapacity(
 			@NonNull final ScannedCode scannedGrai,
-			@NonNull final Optional<LUPickingTarget> luTargetOpt,
+			@Nullable final LUPickingTarget luTarget,
 			@NonNull final ProductId lineProductId)
 	{
-		// 1. Parse
 		final GRAI grai = GRAI.parse(scannedGrai.getAsString());
 		if (grai == null)
 		{
 			throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, scannedGrai.getAsString());
 		}
 
-		// 2. Resolve TU type — propagates GRAINoMatchingTUType
 		final HuPackingInstructionsId tuPIId = huPIGraiRepository.resolveHuPackingInstructionsId(grai);
 
-		// 3. TU-LU association check — only when there is an effective LU target.
-		// A loose TU with no LU target has nothing to be checked against, so the check is skipped.
-		luTargetOpt.ifPresent(luTarget -> assertTuAllowedOnLu(tuPIId, luTarget));
+		if (luTarget != null)
+		{
+			assertTuAllowedOnLu(tuPIId, luTarget);
+		}
 
-		// 4. Capacity for the line's product — propagates GRAINoCapacityForProduct
 		final HUPIItemProductId huPIItemProductId = resolveCapacity(tuPIId, lineProductId);
 
-		return new GraiTuResolution(grai, tuPIId, huPIItemProductId);
+		return GraiTuResolution.builder()
+				.grai(grai)
+				.tuPIId(tuPIId)
+				.huPIItemProductId(huPIItemProductId)
+				.build();
 	}
 
 	/**
-	 * Result of steps 1..4 of the GRAI flow.
-	 */
-	@Value
-	public static class GraiTuResolution
-	{
-		@NonNull GRAI grai;
-		@NonNull HuPackingInstructionsId tuPIId;
-		@NonNull HUPIItemProductId huPIItemProductId;
-	}
-
-	/**
-	 * Verifies the TU PI is permitted on the LU picking target; throws keyed {@code GRAITUNotAllowedOnLU} otherwise.
-	 *
-	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAITUNotAllowedOnLU}
-	 *                            when the TU type is not configured as an includable TU on the LU's packing instruction.
+	 * Verifies the TU PI is permitted on the LU picking target.
 	 */
 	public void assertTuAllowedOnLu(
 			@NonNull final HuPackingInstructionsId tuPIId,
@@ -117,9 +101,6 @@ public class PickingJobGraiTargetService
 	/**
 	 * Returns the {@link HUPIItemProductId} of the active capacity record for the given TU packing instruction and product;
 	 * the default-for-product record is preferred when multiple matches exist.
-	 *
-	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAINoCapacityForProduct}
-	 *                            when no active capacity record exists for this TU type and product.
 	 */
 	@NonNull
 	public HUPIItemProductId resolveCapacity(
@@ -148,10 +129,6 @@ public class PickingJobGraiTargetService
 		return HUPIItemProductId.ofRepoId(selected.getM_HU_PI_Item_Product_ID());
 	}
 
-	/**
-	 * Returns the packing instructions ID of the given LU picking target
-	 * (resolved from the target itself for a new-LU target, or from the existing HU record otherwise).
-	 */
 	@NonNull
 	private HuPackingInstructionsId resolveLuPackingInstructionsId(@NonNull final LUPickingTarget luTarget)
 	{

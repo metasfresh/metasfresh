@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands.grai;
+package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -15,7 +15,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
-import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGraiTargetService.GraiTuResolution;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -32,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -215,7 +213,7 @@ class PickingJobGraiTargetServiceTest
 	{
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
 				ScannedCode.ofString("not-a-grai"), // non-blank but unparseable → GRAI.parse returns null
-				Optional.empty(),
+				null,
 				PRODUCT_ID))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("InvalidGRAIBarcode"); // matches AD_Message key (no rows in test env)
@@ -228,7 +226,7 @@ class PickingJobGraiTargetServiceTest
 		// No M_HU_PI_GRAI rows inserted at all.
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
 				ScannedCode.ofString("7613204.00307.999999"),
-				Optional.empty(),
+				null,
 				PRODUCT_ID))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GRAINoMatchingTUType"); // matches AD_Message key (no rows in test env)
@@ -247,7 +245,7 @@ class PickingJobGraiTargetServiceTest
 
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
 				ScannedCode.ofString("7613204.00307.999999"),
-				Optional.of(luTarget),
+				luTarget,
 				PRODUCT_ID))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GRAITUNotAllowedOnLU"); // matches AD_Message key (no rows in test env)
@@ -268,7 +266,7 @@ class PickingJobGraiTargetServiceTest
 
 		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
 				ScannedCode.ofString("7613204.00307.999999"),
-				Optional.of(luTarget),
+				luTarget,
 				otherProductId))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("GRAINoCapacityForProduct"); // matches AD_Message key (no rows in test env)
@@ -282,7 +280,7 @@ class PickingJobGraiTargetServiceTest
 
 		final GraiTuResolution result = service.resolveTuTypeAndCapacity(
 				ScannedCode.ofString("7613204.00307.999999"),
-				Optional.empty(),
+				null,
 				PRODUCT_ID);
 
 		assertThat(result.getTuPIId()).isEqualTo(HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()));
