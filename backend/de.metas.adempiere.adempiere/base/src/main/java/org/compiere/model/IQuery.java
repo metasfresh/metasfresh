@@ -34,6 +34,7 @@ import de.metas.util.collections.IteratorUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -397,12 +398,12 @@ public interface IQuery<T>
 	 * <em>first</em> read of the target row. Upgrading from a shared lock acquired
 	 * earlier in the same transaction to an exclusive lock is a well-known deadlock source.
 	 *
-	 * <p>Use {@link org.adempiere.ad.dao.ForUpdate#NONE} (the default) to emit no locking clause.
+	 * <p>Use {@link ForUpdate#NONE} (the default) to emit no locking clause.
 	 *
 	 * @param forUpdate the desired locking mode; never {@code null}
 	 * @return this query instance (fluent API)
 	 */
-	IQuery<T> setForUpdate(@NonNull org.adempiere.ad.dao.ForUpdate forUpdate);
+	IQuery<T> setForUpdate(@NonNull ForUpdate forUpdate);
 
 	/**
 	 * Filter by context AD_Client_ID
