@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.service.commands.grai;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -136,7 +137,7 @@ public class PickingJobCreateTUFromGRAICommand
 	 * The TU carries no product — the product is picked into it later via the normal pick flow.
 	 */
 	@NonNull
-	private HuId createEmptyTU(@NonNull final de.metas.handlingunits.HuPackingInstructionsId tuPIId)
+	private HuId createEmptyTU(@NonNull final HuPackingInstructionsId tuPIId)
 	{
 		final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(tuPIId);
 

@@ -40,10 +40,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for {@link PickingJobGraiTargetService}.
  * <p>
- * Covers {@link PickingJobGraiTargetService#assertTuAllowedOnLu} (B3 TU-LU check),
- * {@link PickingJobGraiTargetService#resolveCapacity} (B3 capacity resolution), and
+ * Covers {@link PickingJobGraiTargetService#assertTuAllowedOnLu} (TU-LU association check),
+ * {@link PickingJobGraiTargetService#resolveCapacity} (PIIP capacity resolution), and
  * {@link PickingJobGraiTargetService#resolveTuTypeAndCapacity} — the four GRAI error paths
- * (steps 1..4 of the design §4).
+ * (parse → resolve TU type → LU check → capacity for product).
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobGraiTargetServiceTest
@@ -65,7 +65,7 @@ class PickingJobGraiTargetServiceTest
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 
-		service = new PickingJobGraiTargetService();
+		service = new PickingJobGraiTargetService(new HUPIGraiRepository());
 
 		// Create LU PI
 		luPI = huTestHelper.createHUDefinition("LU-PI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

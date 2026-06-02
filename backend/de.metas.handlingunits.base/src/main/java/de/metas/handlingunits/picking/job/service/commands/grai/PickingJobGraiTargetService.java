@@ -18,6 +18,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -30,13 +31,14 @@ import java.util.Optional;
  * is includable in the effective picking-target LU's packing instruction.
  */
 @Service
+@RequiredArgsConstructor
 public class PickingJobGraiTargetService
 {
 	private static final AdMessageKey MSG_INVALID_GRAI_BARCODE = AdMessageKey.of("de.metas.handlingunits.picking.InvalidGRAIBarcode");
 	private static final AdMessageKey MSG_TU_NOT_ALLOWED_ON_LU = AdMessageKey.of("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
 	private static final AdMessageKey MSG_NO_CAPACITY_FOR_PRODUCT = AdMessageKey.of("de.metas.handlingunits.picking.GRAINoCapacityForProduct");
 
-	private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
+	@NonNull private final HUPIGraiRepository huPIGraiRepository;
 
 	/**
 	 * Steps 1..4 of the GRAI flow: parse, resolve TU type, optional LU check, capacity.

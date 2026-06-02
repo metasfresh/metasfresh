@@ -17,6 +17,8 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
+import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -238,7 +240,9 @@ public class PickingJobTestHelper
 				PickingShipmentService.newInstanceForUnitTesting(),
 				configService,
 				pickingJobScheduleService,
-				huService
+				huService,
+				new HUGraiService(),
+				new PickingJobGraiTargetService(new HUPIGraiRepository())
 		);
 
 		huTracer = new HUTracerInstance()
