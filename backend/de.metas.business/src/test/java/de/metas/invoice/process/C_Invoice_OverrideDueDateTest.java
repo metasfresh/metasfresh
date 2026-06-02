@@ -42,7 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 
 /**
- * Unit tests for {@link IInvoiceDAO#retrieveDocNosWithPaymentTermDisallowingOverride(IQueryFilter)}.
+ * Unit tests for {@link IInvoiceDAO#retrieveDocNosWithPaymentTermDisallowingOverride(IQueryFilter)}
+ * and {@link IInvoiceDAO#setDueDateWherePaymentTermAllowsOverride(IQueryFilter, java.sql.Timestamp)}.
  */
 class C_Invoice_OverrideDueDateTest
 {
