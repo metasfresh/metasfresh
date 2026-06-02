@@ -387,7 +387,8 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.huService(huService);
+				.huService(huService)
+				.huGraiService(huGraiService);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)

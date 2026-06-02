@@ -8,6 +8,9 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -116,6 +119,7 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final HUGraiService huGraiService;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
@@ -154,6 +158,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
+			final @NonNull HUGraiService huGraiService,
 			//
 			final @NonNull PickingJob pickingJob,
 			//
@@ -183,6 +188,7 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
+		this.huGraiService = huGraiService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
@@ -485,17 +491,35 @@ public class PickingJobPickCommand
 			{
 				if (result.isSingleTopLevelTUOnly())
 				{
-					setPickingTUTarget(result.getSingleTopLevelTU());
+					final TU tu = result.getSingleTopLevelTU();
+					stampGraiIfPresent(tuPickingTarget, tu.getId());
+					setPickingTUTarget(tu);
 				}
 				else if (result.isSingleLU())
 				{
 					final LU lu = result.getSingleLU();
 					if (lu.getTus().isSingleTU())
 					{
-						setPickingTUTarget(lu.getTus().getSingleTU());
+						final TU tu = lu.getTus().getSingleTU();
+						stampGraiIfPresent(tuPickingTarget, tu.getId());
+						setPickingTUTarget(tu);
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Stamps the GRAI carried by a new-TU picking target onto the physical TU that the framework just materialized,
+	 * so the operator-scanned GRAI ends up on the real HU. No-op when the source target carries no GRAI.
+	 * Runs inside the current pick transaction (called from within {@link #executeInTrx()}).
+	 */
+	private void stampGraiIfPresent(@NonNull final TUPickingTarget sourceTarget, @NonNull final HuId newTuId)
+	{
+		final GRAI grai = sourceTarget.getGrai();
+		if (grai != null)
+		{
+			huGraiService.setGrais(newTuId, GRAISet.of(grai));
 		}
 	}
 
