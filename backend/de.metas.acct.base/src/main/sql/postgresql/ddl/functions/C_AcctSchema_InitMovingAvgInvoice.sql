@@ -69,9 +69,9 @@ BEGIN
             v_AD_Client_ID;
     END IF;
 
-    -- Backup affected tables before making changes (suffix includes schema ID to avoid collision)
-    PERFORM backup_table('m_cost',       '_pre_mai_' || p_C_AcctSchema_ID);
-    PERFORM backup_table('c_acctschema', '_pre_mai_' || p_C_AcctSchema_ID);
+    -- Backup affected tables before making changes
+    PERFORM backup_table('m_cost',       '_pre_mai');
+    PERFORM backup_table('c_acctschema', '_pre_mai');
 
     -- Seed M_Cost records for the MAI cost element.
     -- Skip products that already have a record for the target cost element + cost type.
