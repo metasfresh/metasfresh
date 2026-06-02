@@ -133,7 +133,7 @@ const BarcodeScannerComponent = ({
     if (isInputTextReadonly) {
       inputTextRef?.current?.focus();
     }
-  }, []); // eslint-disable-line
+  }, []);
 
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
