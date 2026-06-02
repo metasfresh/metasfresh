@@ -1,116 +1,65 @@
 package de.metas.frontend_testing.masterdata.sysconfig;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.model.X_AD_SysConfig;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
+/**
+ * Resets the barcode-scanner sysconfigs to their defaults, then applies the per-test overrides.
+ * <p>
+ * Resetting first means no test inherits another test's leaked scanner state (e.g. a leaked
+ * {@code isInputTextReadonly='N'} that would make every later spec's scanner editable). All writes
+ * go through {@link ISysConfigBL#setValueAtConfigLevel(String, String)}, which targets the
+ * (client,org) matching each sysconfig's declared {@code ConfigurationLevel} so the
+ * {@code AD_SysConfig} interceptor does not reject them.
+ */
 @Builder
 public class SysconfigCommand
 {
+	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.of(
+			"mobileui.frontend.barcodeScanner.showInputText", "Y",
+			"mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y");
+
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@Nullable private final Map<String, String> sysconfigs;
 
 	/**
-	 * Sets the given sysconfigs and returns the previous values.
-	 *
-	 * @return map from sysconfig name to its previous value (null if it didn't exist before)
+	 * @return map from sysconfig name to its previous (effective) value, captured before any write
 	 */
 	public ImmutableMap<String, String> execute()
 	{
-		if (sysconfigs == null || sysconfigs.isEmpty())
+		// capture previous EFFECTIVE values for every name we will touch (defaults + overrides), BEFORE writing
+		final LinkedHashSet<String> names = new LinkedHashSet<>(SCANNER_SYSCONFIG_DEFAULTS.keySet());
+		if (sysconfigs != null)
 		{
-			return ImmutableMap.of();
+			names.addAll(sysconfigs.keySet());
+		}
+		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
+		for (final String name : names)
+		{
+			final String prev = sysConfigBL.getValue(name);
+			if (prev != null)
+			{
+				previousValues.put(name, prev);
+			}
 		}
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		// reset scanner sysconfigs to defaults (so no test inherits another test's leaked scanner state)
+		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
 
-		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
-
-		for (final Map.Entry<String, String> entry : sysconfigs.entrySet())
+		// apply per-test overrides
+		if (sysconfigs != null)
 		{
-			final String name = entry.getKey();
-			final String newValue = entry.getValue();
-
-			final ClientAndOrgId target = computeTarget(name);
-
-			// Capture the value that exists at exactly this level (not the cascaded/effective value),
-			// so a later restore via setSysconfigs round-trips back to the same level.
-			// Note: AD_SysConfig has no delete API, so a sysconfig that did not exist at this level
-			// beforehand cannot be fully removed on restore - acceptable for test masterdata.
-			final String previousValue = retrieveValueAtLevel(name, target);
-			if (previousValue != null)
-			{
-				previousValues.put(name, previousValue);
-			}
-
-			sysConfigBL.setValue(name, newValue, target.getClientId(), target.getOrgId());
+			sysconfigs.forEach(sysConfigBL::setValueAtConfigLevel);
 		}
 
 		return previousValues.build();
-	}
-
-	/**
-	 * Determines the (client, org) at which the given sysconfig must be written, based on its
-	 * {@code ConfigurationLevel} as declared on the system record. System/Client-level parameters
-	 * cannot be saved at org level (the {@code AD_SysConfig} interceptor throws "Can't Save Org
-	 * Level ..."), so we target the matching level:
-	 * <ul>
-	 *     <li>System ({@code S}) → client=SYSTEM, org=ANY</li>
-	 *     <li>Client ({@code C}) → client=METASFRESH, org=ANY</li>
-	 *     <li>Organization ({@code O}) or unknown → client=METASFRESH, org=MAIN</li>
-	 * </ul>
-	 */
-	private static ClientAndOrgId computeTarget(@NonNull final String name)
-	{
-		final I_AD_SysConfig systemRecord = retrieveRecordAtLevel(name, ClientAndOrgId.SYSTEM);
-		final String configurationLevel = systemRecord != null ? systemRecord.getConfigurationLevel() : null;
-
-		if (X_AD_SysConfig.CONFIGURATIONLEVEL_System.equals(configurationLevel))
-		{
-			return ClientAndOrgId.SYSTEM;
-		}
-		else if (X_AD_SysConfig.CONFIGURATIONLEVEL_Client.equals(configurationLevel))
-		{
-			return ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY);
-		}
-		else
-		{
-			return ClientAndOrgId.MAIN;
-		}
-	}
-
-	@Nullable
-	private static String retrieveValueAtLevel(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		final I_AD_SysConfig record = retrieveRecordAtLevel(name, clientAndOrgId);
-		return record != null ? record.getValue() : null;
-	}
-
-	/**
-	 * Reads the exact {@code AD_SysConfig} record for the given name at the given client/org.
-	 * Intentionally does NOT filter on {@code IsActive}, to mirror the {@code AD_SysConfig}
-	 * interceptor's own {@code retrieveConfigLevel} lookup (which also ignores IsActive) - so that
-	 * {@link #computeTarget} predicts exactly whether the interceptor would reject the write.
-	 */
-	@Nullable
-	private static I_AD_SysConfig retrieveRecordAtLevel(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_SysConfig.class)
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId().getRepoId())
-				.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId().getRepoId())
-				.create()
-				.first(I_AD_SysConfig.class);
 	}
 }

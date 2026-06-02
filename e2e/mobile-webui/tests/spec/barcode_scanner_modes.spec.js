@@ -6,24 +6,29 @@ import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 import { allure } from 'allure-playwright';
 
+const scannerSysconfigs = ({ showInputText, isInputTextReadonly }) => ({
+    ...(showInputText != null && { 'mobileui.frontend.barcodeScanner.showInputText': showInputText }),
+    ...(isInputTextReadonly != null && { 'mobileui.frontend.barcodeScanner.isInputTextReadonly': isInputTextReadonly }),
+});
+
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
-const createLoginMasterdata = async ({ extraSysconfigs } = {}) => {
+const createLoginMasterdata = async ({ extraSysconfigs, showInputText, isInputTextReadonly } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            sysconfigs: { ...extraSysconfigs },
+            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly }), ...extraSysconfigs },
             login: { user: { language: 'en_US' } },
         },
     });
 };
 
 // Full masterdata: login + a handling unit, so scanning its QR code navigates to the HU Manager.
-const createMasterdataWithHU = async ({ extraSysconfigs } = {}) => {
+const createMasterdataWithHU = async ({ extraSysconfigs, showInputText, isInputTextReadonly } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            sysconfigs: { ...extraSysconfigs },
+            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly }), ...extraSysconfigs },
             login: { user: { language: 'en_US' } },
             products: { P1: {} },
             warehouses: { wh1: {} },
@@ -64,27 +69,14 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 test.describe('Scan paths', () => {
 
     // The manual-typing test flips two GLOBAL barcode-scanner sysconfigs to make the input
-    // visible + editable. They MUST be reset after each test: a leaked isInputTextReadonly='N'
-    // makes every later spec's scanner editable, and BarcodeScannerComponent.type() then
-    // double-inserts characters (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"),
-    // breaking unrelated picking scans.
+    // visible + editable. A leaked isInputTextReadonly='N' would make every later spec's scanner
+    // editable, and BarcodeScannerComponent.type() would then double-insert characters
+    // (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"), breaking unrelated picking scans.
     //
-    // Reset is deterministic — NOT via masterdata's previousSysconfigs — because the masterdata
-    // API can set a sysconfig but cannot delete a row it created (isInputTextReadonly has no
-    // pre-existing row, so a previous-value restore is a no-op and the 'N' row would persist).
-    // The mobile-webui suite always runs on a mobile device, so the scanner defaults are
-    // showInputText='Y' and isInputTextReadonly='Y' (readonly). afterEach runs even on failure.
-    let scannerSysconfigsChanged = false;
-
-    test.afterEach(async () => {
-        if (scannerSysconfigsChanged) {
-            await Backend.setSysconfigs({
-                'mobileui.frontend.barcodeScanner.showInputText': 'Y',
-                'mobileui.frontend.barcodeScanner.isInputTextReadonly': 'Y',
-            });
-            scannerSysconfigsChanged = false;
-        }
-    });
+    // No explicit reset is needed here: SysconfigCommand resets the scanner sysconfigs to their
+    // mobile defaults (showInputText='Y', isInputTextReadonly='Y') at the start of every
+    // createMasterdata call, so each test starts from a clean scanner state regardless of what a
+    // prior test left behind.
 
     // noinspection JSUnusedLocalSymbols
     test('DataWedge IME — InputConnection injection forwards barcode', async ({ page }) => {
@@ -151,15 +143,11 @@ test.describe('Scan paths', () => {
         await allure.severity('critical');
 
         const masterdata = await createMasterdataWithHU({
-            extraSysconfigs: {
-                // Make the input visible so Playwright can locate and fill it.
-                'mobileui.frontend.barcodeScanner.showInputText': 'Y',
-                // Ensure the input is editable (not inputMode="none") so fill() works.
-                'mobileui.frontend.barcodeScanner.isInputTextReadonly': 'N',
-            },
+            // showInputText='Y' makes the input visible so Playwright can locate and fill it.
+            showInputText: 'Y',
+            // isInputTextReadonly='N' makes the input editable (not inputMode="none") so fill() works.
+            isInputTextReadonly: 'N',
         });
-        // Signals afterEach to reset the scanner sysconfigs (see top of describe block).
-        scannerSysconfigsChanged = true;
 
         await LoginScreen.login(masterdata.login.user);
         await ApplicationsListScreen.expectVisible();
