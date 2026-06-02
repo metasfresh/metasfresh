@@ -56,8 +56,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
