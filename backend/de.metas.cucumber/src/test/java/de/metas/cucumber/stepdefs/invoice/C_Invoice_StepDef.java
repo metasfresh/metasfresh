@@ -69,7 +69,15 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.IsPartialInvoice;
+import de.metas.invoice.process.C_Invoice_OverrideDueDate;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import org.adempiere.service.ClientId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -157,6 +165,8 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 @RequiredArgsConstructor
 public class C_Invoice_StepDef
 {
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -912,15 +922,18 @@ public class C_Invoice_StepDef
 	}
 
 	/**
-	 * Invokes the {@code C_Invoice_OverrideDueDate} process directly on a set of invoices.
+	 * Runs the {@code C_Invoice_OverrideDueDate} AD_Process on each invoice row in the DataTable.
 	 * <p>
 	 * In production this action is triggered by the user selecting one or more completed invoices
 	 * and running the "C_Invoice_OverrideDueDate" process from the action menu. The process updates
 	 * {@code C_Invoice.DueDate} only for invoices whose payment term has
 	 * {@code IsAllowOverrideDueDate=Y}; invoices with {@code IsAllowOverrideDueDate=N} are silently
-	 * skipped. This step invokes the business logic directly — bypassing the process-execution
-	 * infrastructure — to avoid context/permission issues that arise when the process is run
-	 * via {@code ProcessInfo} in the cucumber Spring-Boot environment.
+	 * skipped by the production gate in {@code C_Invoice_OverrideDueDate.doIt()}.
+	 * <p>
+	 * The process is invoked once per DataTable row, with a {@code whereClause} that pins the
+	 * selection to exactly that invoice. After {@code executeSync()} the step re-loads each invoice
+	 * out-of-transaction (bypassing any thread-level snapshot) so that subsequent validate steps
+	 * see the committed state.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -932,23 +945,57 @@ public class C_Invoice_StepDef
 	 * When C_Invoice_OverrideDueDate process is invoked:
 	 *   | C_Invoice_ID | OverrideDueDate |
 	 *   | inv_allow    | 2026-12-31      |
-	 *   | inv_disallow | 2026-12-31      |
 	 * </pre>
 	 */
 	@And("C_Invoice_OverrideDueDate process is invoked:")
 	public void invoke_C_Invoice_OverrideDueDate_process(@NonNull final DataTable dataTable)
 	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Invoice_OverrideDueDate.class);
+
 		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+			final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID);
+			final I_C_Invoice invoice = invoiceIdentifier.lookupNotNullIn(invoiceTable);
+			final int invoiceId = invoice.getC_Invoice_ID();
 			final java.sql.Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
 
-			final org.compiere.model.I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.load(invoice.getC_PaymentTerm_ID(), org.compiere.model.I_C_PaymentTerm.class);
-			if (paymentTerm != null && paymentTerm.isAllowOverrideDueDate())
-			{
-				invoice.setDueDate(overrideDueDate);
-				InterfaceWrapperHelper.save(invoice);
-			}
-			InterfaceWrapperHelper.refresh(invoice);
+			// In the cucumber Spring-Boot environment Env.getCtx() has AD_Client_ID=0
+			// (System) and AD_Role_ID=0 (System Administrator). The process's
+			// getQueryFilterOrElseFalse() applies role-based client/org restrictions,
+			// and the inner IQueryBL.createQueryBuilder() calls also read Env.getCtx()
+			// directly. With the System Administrator role those restrictions filter
+			// to AD_Client_ID=0, so the update silently affects 0 rows.
+			//
+			// Fix: run the process under the same WebUI role that the Background step
+			// establishes (the logged-in user's "WebUI" role for client 1000000). Build
+			// a temporary context for that combination and switch the global thread
+			// context to it for the duration of the process run.
+			final ClientId invoiceClientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
+			final UserId loggedUserId = Env.getLoggedUserId();
+			final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+					.stream()
+					.filter(r -> "WebUI".equals(r.getName()))
+					.map(Role::getId)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+			ProcessInfo.builder()
+					.setAD_Process_ID(processId.getRepoId())
+					.setClientId(invoiceClientId)
+					.setRoleId(roleId)
+					.setCreateTemporaryCtx()
+					.setTableName(I_C_Invoice.Table_Name)
+					.setWhereClause(COLUMNNAME_C_Invoice_ID + "=" + invoiceId)
+					.addParameter("OverrideDueDate", overrideDueDate)
+					.buildAndPrepareExecution()
+					.switchContextWhenRunning()
+					.executeSync()
+					.getResult()
+					.propagateErrorIfAny();
+
+			// Re-load out-of-transaction so subsequent validate steps see the committed DB state
+			// rather than any thread-level snapshot that still holds the pre-process value.
+			final I_C_Invoice freshInvoice = InterfaceWrapperHelper.loadOutOfTrx(invoiceId, I_C_Invoice.class);
+			invoiceTable.putOrReplace(invoiceIdentifier, freshInvoice);
 		});
 	}
 
