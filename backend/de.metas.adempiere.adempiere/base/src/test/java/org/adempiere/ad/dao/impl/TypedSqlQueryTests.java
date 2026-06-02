@@ -207,6 +207,7 @@ public class TypedSqlQueryTests
 
 			assertThat(sql).contains("FOR NO KEY UPDATE");
 			assertThat(sql).doesNotContain("SKIP LOCKED");
+			assertThat(sql).contains("ORDER BY AD_Table_ID");
 			// ORDER BY must appear before FOR NO KEY UPDATE
 			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR NO KEY UPDATE"));
 		}
