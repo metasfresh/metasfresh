@@ -135,6 +135,9 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      graiScan: {
+        multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
+      },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',
       pickingSlot: 'Packing slot',
