@@ -110,7 +110,6 @@ public class PickingJobQuery
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
-				// Exclude schedules with nothing left to pick whose picked qty is already bound to a (draft) shipment line.
 				.excludeFullyOnDraftShipment(true)
 				.scannedProductCodes(this.getScannedProductCodes())
 				.maximumFixedPreparationDate(currentTime)
