@@ -1,6 +1,8 @@
 package org.adempiere.ad.dao.impl;
 
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_OrderLine;
@@ -172,6 +174,75 @@ public class TypedSqlQueryTests
 											  + " WHERE (M_Product_ID=1000002)\n"
 											  + " ORDER BY C_OrderLine_ID\n"
 											  + ")\n");
+		}
+	}
+
+	@Nested
+	public class forUpdateClauses
+	{
+		@Test
+		public void forUpdate_emitsClauseAfterOrderBy()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+
+			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+
+			assertThat(sql).contains("ORDER BY AD_Table_ID");
+			assertThat(sql).contains("FOR UPDATE");
+			assertThat(sql).doesNotContain("SKIP LOCKED");
+			// ORDER BY must appear before FOR UPDATE
+			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR UPDATE"));
+		}
+
+		@Test
+		public void forUpdateSkipLocked_emitsClause()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_UPDATE_SKIP_LOCKED);
+
+			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+
+			assertThat(sql).contains("FOR UPDATE SKIP LOCKED");
+			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR UPDATE SKIP LOCKED"));
+		}
+
+		@Test
+		public void none_emitsNoLockingClause()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.NONE);
+
+			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+
+			assertThat(sql).doesNotContain("FOR UPDATE");
+		}
+
+		@Test
+		public void lockWithUnion_throwsAdempiereException()
+		{
+			final Properties ctx = new Properties();
+			final TypedSqlQuery<I_C_OrderLine> query = new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1", ITrx.TRXNAME_None);
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=2", ITrx.TRXNAME_None), true);
+
+			assertThatThrownBy(() -> query.buildSQL("avoidDBConnection", null, null, true))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("FOR UPDATE");
+		}
+
+		@Test
+		public void lockWithGroupBy_throwsAdempiereException()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+
+			assertThatThrownBy(() -> query.buildSQL("avoidDBConnection", null, "TableName", true))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("FOR UPDATE");
 		}
 	}
 }

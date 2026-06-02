@@ -129,7 +129,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Nullable
 	private List<SqlQueryUnion<T>> unions;
 
-	private boolean forUpdateSkipLocked = false;
+	// forUpdate state is inherited from AbstractTypedQuery
 
 	protected TypedSqlQuery(
 			@NonNull final Properties ctx,
@@ -288,11 +288,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param forUpdateSkipLocked true to add FOR UPDATE SKIP LOCKED to the query
 	 * @return this query instance for method chaining
+	 * @deprecated use {@link #setForUpdate(org.adempiere.ad.dao.ForUpdate)} instead
 	 */
+	@Deprecated
 	public TypedSqlQuery<T> setForUpdateSkipLocked(final boolean forUpdateSkipLocked)
 	{
-		this.forUpdateSkipLocked = forUpdateSkipLocked;
-		return this;
+		return (TypedSqlQuery<T>)setForUpdate(forUpdateSkipLocked
+				? org.adempiere.ad.dao.ForUpdate.FOR_UPDATE_SKIP_LOCKED
+				: org.adempiere.ad.dao.ForUpdate.NONE);
 	}
 
 	@Override
@@ -1263,11 +1266,26 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
-		// Add FOR UPDATE SKIP LOCKED clause if enabled
-		// This must come after ORDER BY but before LIMIT
-		if (forUpdateSkipLocked)
+		// Append the row-locking clause (FOR UPDATE / FOR UPDATE SKIP LOCKED) after ORDER BY.
+		// PostgreSQL forbids FOR UPDATE with UNION or GROUP BY — fail fast with a clear message.
+		final org.adempiere.ad.dao.ForUpdate forUpdate = getForUpdate();
+		if (forUpdate != org.adempiere.ad.dao.ForUpdate.NONE)
 		{
-			sqlBuffer.append("\n FOR UPDATE SKIP LOCKED");
+			if (unions != null && !unions.isEmpty())
+			{
+				throw new org.adempiere.exceptions.AdempiereException("FOR UPDATE cannot be combined with UNION queries")
+						.appendParametersToMessage();
+			}
+			if (groupByClause != null && groupByClause.length() > 0)
+			{
+				throw new org.adempiere.exceptions.AdempiereException("FOR UPDATE cannot be combined with GROUP BY")
+						.appendParametersToMessage();
+			}
+			final String sqlClause = forUpdate.getSqlClause();
+			if (sqlClause != null)
+			{
+				sqlBuffer.append("\n ").append(sqlClause);
+			}
 		}
 
 		String sql = sqlBuffer.toString();
