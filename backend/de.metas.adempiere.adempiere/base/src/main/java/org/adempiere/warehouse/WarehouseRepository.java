@@ -136,6 +136,7 @@ public class WarehouseRepository
 				.name(warehouse.getName())
 				.resourceId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
 				.isReceiveAsSourceHU(warehouse.isReceiveAsSourceHU())
+				.isAutoDistributionOrder(warehouse.isAutoDistributionOrder())
 				.warehouseSourceHUConfigs(new WarehouseSourceHUConfigList(configs))
 				.active(warehouse.isActive())
 				.build();
@@ -151,21 +152,11 @@ public class WarehouseRepository
 
 	/**
 	 * Returns the IDs of all active warehouses that have {@code IsAutoDistributionOrder=Y}.
-	 *
-	 * <p>This is a direct query (not served from the {@link WarehouseMap} cache) because the
-	 * cached {@link Warehouse} model does not carry the {@code IsAutoDistributionOrder} flag.</p>
 	 */
 	@NonNull
 	public ImmutableSet<WarehouseId> getAutoDistributionWarehouseIds()
 	{
-		return queryBL
-				.createQueryBuilder(I_M_Warehouse.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsAutoDistributionOrder, true)
-				.create()
-				.stream()
-				.map(wh -> WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+		return getWarehouseMap().getAutoDistributionWarehouseIds();
 	}
 
 	//
@@ -194,6 +185,15 @@ public class WarehouseRepository
 				throw new AdempiereException("Warehouse not found by ID: " + id);
 			}
 			return warehouse;
+		}
+
+		@NonNull
+		public ImmutableSet<WarehouseId> getAutoDistributionWarehouseIds()
+		{
+			return allActive.stream()
+					.filter(Warehouse::isAutoDistributionOrder)
+					.map(Warehouse::getWarehouseId)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }
