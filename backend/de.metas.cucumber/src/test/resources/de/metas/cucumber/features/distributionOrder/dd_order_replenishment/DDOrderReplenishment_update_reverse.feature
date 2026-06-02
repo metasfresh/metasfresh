@@ -86,7 +86,7 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
   @from:cucumber
   Scenario: Overriding the schedule quantity to zero voids the DD_Order and creates no replacement (picker not busy)
     # The operator decides not to deliver this line after all and sets QtyOrdered_Override to 0
-    # (effective QtyOrdered = Override -> Calculated, so the override wins and the effective qty is 0).
+    # (Override has priority over Calculated; Override=0 -> effective qty=0).
     # The M_ShipmentSchedule afterSave reconcile fires: classifyAction sees an active schedule with a live
     # DD_Order (RECREATE), but the zero-qty soft no-op guard downgrades it to VOID — no demand to plan,
     # so the existing DD_Order is voided and NO replacement is created.
@@ -95,8 +95,8 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
       | shipmentSchedule      | 0                   |
 
     # The existing DD_Order is voided and NO new live DD_Order is created.
+    # (the "is Voided" step already asserts a voided DD_Order exists AND no live one remains for the schedule)
     Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
-    And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
     # The original DD_Order (captured in Background as ddOrder_v1) must now be Voided.
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
