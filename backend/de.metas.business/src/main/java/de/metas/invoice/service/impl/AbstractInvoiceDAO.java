@@ -29,7 +29,6 @@ import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -719,18 +718,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Collection<String> retrieveDocNosWithPaymentTermDisallowingOverride(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
+	public Collection<String> retrieveDocNosWithPaymentTermIn(
+			@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			@NonNull final Collection<PaymentTermId> paymentTermIds)
 	{
-		final Set<PaymentTermId> disallowingIds = Services.get(IPaymentTermRepository.class)
-				.getPaymentTermIdsByIsAllowOverrideDueDate(false);
-		if (disallowingIds.isEmpty())
+		if (paymentTermIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, disallowingIds)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
 				.addFilter(filter)
 				.setLimit(QueryLimit.TEN)
 				.create()
@@ -740,13 +739,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public int setDueDateWherePaymentTermAllowsOverride(
+	public int setDueDateWherePaymentTermIn(
 			@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			@NonNull final Collection<PaymentTermId> paymentTermIds,
 			@NonNull final Timestamp dueDate)
 	{
-		final Set<PaymentTermId> allowingIds = Services.get(IPaymentTermRepository.class)
-				.getPaymentTermIdsByIsAllowOverrideDueDate(true);
-		if (allowingIds.isEmpty())
+		if (paymentTermIds.isEmpty())
 		{
 			return 0;
 		}
@@ -758,7 +756,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addFilter(filter)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, allowingIds)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
 				.create()
 				.update(queryUpdater);
 	}

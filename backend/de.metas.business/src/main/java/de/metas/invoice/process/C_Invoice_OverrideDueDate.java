@@ -24,6 +24,8 @@ package de.metas.invoice.process;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -40,6 +42,7 @@ import org.compiere.model.I_C_Invoice;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Set;
 
 public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -50,6 +53,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	private Timestamp p_OverrideDueDate;
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -68,7 +72,8 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICES_MESSAGE, paidInvoiceDocNos));
 		}
 
-		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermDisallowingOverride(selectionFilter);
+		final Set<PaymentTermId> disallowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(false);
+		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermIn(selectionFilter, disallowing);
 		if (!disallowedDocNos.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE, disallowedDocNos));
@@ -80,7 +85,8 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		invoiceDAO.setDueDateWherePaymentTermAllowsOverride(getProcessInfo().getQueryFilterOrElseFalse(), p_OverrideDueDate);
+		final Set<PaymentTermId> allowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true);
+		invoiceDAO.setDueDateWherePaymentTermIn(getProcessInfo().getQueryFilterOrElseFalse(), allowing, p_OverrideDueDate);
 		return MSG_OK;
 	}
 

@@ -39,6 +39,7 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
@@ -211,24 +212,32 @@ public interface IInvoiceDAO extends ISingletonService
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
 	/**
-	 * Returns the DocumentNos of invoices matching {@code filter} whose effective payment term
-	 * has {@code IsAllowOverrideDueDate='N'}.
+	 * Returns the DocumentNos of invoices matching {@code filter} whose payment term ID is in
+	 * {@code paymentTermIds}. Pass the set of IDs whose flag you want to match; the caller
+	 * is responsible for resolving which terms allow or disallow the override.
+	 * Returns an empty collection immediately when {@code paymentTermIds} is empty.
 	 *
-	 * @param filter the query filter that describes the process selection (usually from
-	 *               {@link de.metas.process.IProcessPreconditionsContext#getQueryFilter})
+	 * @param filter         the query filter that describes the process selection
+	 * @param paymentTermIds the payment-term IDs to check against; an empty collection yields an empty result
 	 * @return up to {@link org.adempiere.ad.dao.QueryLimit#TEN} DocumentNos for display in the rejection message
 	 */
-	Collection<String> retrieveDocNosWithPaymentTermDisallowingOverride(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+	Collection<String> retrieveDocNosWithPaymentTermIn(
+			IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			Collection<PaymentTermId> paymentTermIds);
 
 	/**
 	 * Bulk-updates the {@code DueDate} column of all active invoices that match {@code filter}
-	 * <em>and</em> whose payment term has {@code IsAllowOverrideDueDate='Y'}.
-	 * Invoices without a payment term or with the flag set to {@code 'N'} are intentionally skipped.
+	 * <em>and</em> whose payment term ID is in {@code paymentTermIds}.
+	 * The caller is responsible for passing only the IDs whose flag allows the override.
+	 * Returns 0 immediately when {@code paymentTermIds} is empty.
 	 *
-	 * @param filter   the query filter that describes the process selection (usually from
-	 *                 {@link de.metas.process.ProcessInfo#getQueryFilterOrElseFalse()})
-	 * @param dueDate  the new due date to set
+	 * @param filter         the query filter that describes the process selection
+	 * @param paymentTermIds the payment-term IDs to update for; an empty collection yields 0 updates
+	 * @param dueDate        the new due date to set
 	 * @return number of invoice records updated
 	 */
-	int setDueDateWherePaymentTermAllowsOverride(IQueryFilter<org.compiere.model.I_C_Invoice> filter, Timestamp dueDate);
+	int setDueDateWherePaymentTermIn(
+			IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			Collection<PaymentTermId> paymentTermIds,
+			Timestamp dueDate);
 }
