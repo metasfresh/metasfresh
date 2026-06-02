@@ -54,7 +54,8 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 VALUES (0,0,585629,265,541647 /*From ID Server*/,now(),100,'D','Y',now(),100,'Y','N','N','N','N')
 ;
 
--- Make CostingMethod read-only: users must use the initialization process to change it
+-- Make CostingMethod read-only across all windows: users must use the initialization
+-- process to change it. Intentionally global — direct editing of this field is never safe.
 -- 2026-06-02
 UPDATE AD_Field
 SET IsReadOnly='Y', Updated=now(), UpdatedBy=100

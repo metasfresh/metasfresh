@@ -13,7 +13,7 @@
 CREATE OR REPLACE FUNCTION public.C_AcctSchema_InitMovingAvgInvoice(
     p_C_AcctSchema_ID numeric
 )
-    RETURNS void
+    RETURNS text
     LANGUAGE plpgsql
 AS
 $$
@@ -36,7 +36,7 @@ BEGIN
 
     IF v_CurrentCostingMethod = 'M' THEN
         RAISE NOTICE 'C_AcctSchema_ID % is already on MovingAverageInvoice, nothing to do', p_C_AcctSchema_ID;
-        RETURN;
+        RETURN 'C_AcctSchema_ID ' || p_C_AcctSchema_ID || ' is already on MovingAverageInvoice, nothing to do';
     END IF;
 
     -- Find the material cost element for the current costing method
@@ -47,6 +47,7 @@ BEGIN
       AND costelementtype  = 'M'
       AND costingmethod    = v_CurrentCostingMethod
       AND isactive         = 'Y'
+    ORDER BY m_costelement_id
     LIMIT 1;
 
     IF v_CurrentCostElementId IS NULL THEN
@@ -62,6 +63,7 @@ BEGIN
       AND costelementtype = 'M'
       AND costingmethod   = 'M'
       AND isactive        = 'Y'
+    ORDER BY m_costelement_id
     LIMIT 1;
 
     IF v_MAICostElementId IS NULL THEN
@@ -69,12 +71,12 @@ BEGIN
             v_AD_Client_ID;
     END IF;
 
-    -- Backup affected tables before making changes
-    PERFORM backup_table('m_cost',       '_pre_mai');
-    PERFORM backup_table('c_acctschema', '_pre_mai');
+    -- Backup affected tables before making changes (suffix includes schema ID to avoid collision)
+    PERFORM backup_table('m_cost',       '_pre_mai_' || p_C_AcctSchema_ID);
+    PERFORM backup_table('c_acctschema', '_pre_mai_' || p_C_AcctSchema_ID);
 
     -- Seed M_Cost records for the MAI cost element.
-    -- Skip products that already have a record for the target cost element.
+    -- Skip products that already have a record for the target cost element + cost type.
     INSERT INTO m_cost (
         ad_client_id, ad_org_id,
         m_product_id, m_costtype_id, c_acctschema_id,
@@ -96,8 +98,8 @@ BEGIN
         src.m_attributesetinstance_id,
         src.currentcostprice,
         src.currentqty,
-        src.currentcostprice * src.currentqty,      -- seeds cumulatedamt for weighted-average formula
-        src.currentqty,                             -- seeds cumulatedqty
+        src.currentcostprice * src.currentqty,  -- seeds cumulatedamt for weighted-average formula
+        src.currentqty,                         -- seeds cumulatedqty
         src.currentcostpricell,
         src.c_currency_id,
         src.c_uom_id,
@@ -114,6 +116,7 @@ BEGIN
             AND tgt.m_product_id              = src.m_product_id
             AND tgt.m_costelement_id          = v_MAICostElementId
             AND tgt.m_attributesetinstance_id = src.m_attributesetinstance_id
+            AND tgt.m_costtype_id             = src.m_costtype_id
       );
 
     GET DIAGNOSTICS v_RowsInserted = ROW_COUNT;
@@ -129,5 +132,7 @@ BEGIN
 
     RAISE NOTICE 'C_AcctSchema_InitMovingAvgInvoice: C_AcctSchema_ID=% switched to costingmethod=M',
         p_C_AcctSchema_ID;
+
+    RETURN 'Seeded ' || v_RowsInserted || ' M_Cost records for C_AcctSchema_ID=' || p_C_AcctSchema_ID || ', switched to costingmethod=M';
 END;
 $$;
