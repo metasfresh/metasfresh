@@ -39,7 +39,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
@@ -80,7 +79,6 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -229,7 +227,7 @@ public class DDOrderPickingReplenishmentService
 	private boolean isOnAutoDistributionOrder(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final I_M_Warehouse warehouse = warehouseBL.getById(warehouseId);
 		return warehouse.isAutoDistributionOrder();
 	}
 
@@ -245,7 +243,7 @@ public class DDOrderPickingReplenishmentService
 	{
 		final OrgId orgId = OrgId.ofRepoId(schedule.getAD_Org_ID());
 		final WarehouseId targetWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse targetWarehouse = warehouseDAO.getById(targetWarehouseId);
+		final I_M_Warehouse targetWarehouse = warehouseBL.getById(targetWarehouseId);
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(targetWarehouse.getDD_NetworkDistribution_ID());

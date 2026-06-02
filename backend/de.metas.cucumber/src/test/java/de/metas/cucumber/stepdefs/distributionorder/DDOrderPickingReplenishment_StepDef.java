@@ -115,7 +115,7 @@ public class DDOrderPickingReplenishment_StepDef
 	/**
 	 * Attempts to change a shipment schedule quantity and asserts the {@code beforeSave} interceptor REJECTS the
 	 * save (picker-busy guard). Asserts the thrown exception is an
-	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
+	 * {@link AdempiereException} containing the German picker-busy AD_Message text "Kommissionierung läuft bereits".
 	 * The schedule record is reloaded and asserted unchanged.
 	 *
 	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyOrdered_Override} (attempted quantity).</p>
@@ -172,7 +172,7 @@ public class DDOrderPickingReplenishment_StepDef
 	/**
 	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(ShipmentScheduleId)} and asserts it
 	 * FAILS while the picker is busy (the service-side definitive guard). Asserts the thrown exception is an
-	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
+	 * {@link AdempiereException} containing the German picker-busy AD_Message text "Kommissionierung läuft bereits".
 	 * The DD_Order is left unchanged.
 	 *
 	 * <p>Real-world trigger: same async reconcile as {@code process_reconcile_event} — in production the
