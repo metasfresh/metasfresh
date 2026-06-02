@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
@@ -10,7 +9,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -43,7 +41,6 @@ public class PickingJobShipmentScheduleService
 	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
-	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
 	public static PickingJobShipmentScheduleService newInstanceForUnitTesting()
@@ -128,43 +125,6 @@ public class PickingJobShipmentScheduleService
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return packagingDAO.stream(query);
-	}
-
-	/**
-	 * Excludes packageables that have at least one unprocessed QtyPicked record already bound to a draft
-	 * (not-yet-completed) shipment ({@code M_InOutLine_ID IS NOT NULL, Processed='N'}).
-	 * <p>
-	 * A fully-picked order that has been put on a draft shipment leaves its shipment schedule with a positive
-	 * QtyToDeliver/QtyPickList (the draft shipment is not deducted until completed), so it would otherwise
-	 * reappear in the mobileUI picking launcher. We discriminate those schedules via the very same criterion
-	 * used by shipment generation.
-	 * <p>
-	 * Reversed shipments replay picked rows with {@code M_InOutLine_ID IS NULL} and are therefore NOT matched by
-	 * the DAO, so they correctly stay visible for re-picking.
-	 * <p>
-	 * The stream is materialized once and the draft-allocation lookup is a single batched DAO call (no N+1).
-	 */
-	public Stream<Packageable> filterOutDraftShipmentBound(@NonNull final Stream<Packageable> packageables)
-	{
-		final ImmutableList<Packageable> materialized = packageables.collect(ImmutableList.toImmutableList());
-		if (materialized.isEmpty())
-		{
-			return Stream.of();
-		}
-
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = materialized.stream()
-				.map(Packageable::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableSet<ShipmentScheduleId> draftShipmentBoundIds =
-				shipmentScheduleAllocDAO.getScheduleIdsWithDraftShipmentAllocations(shipmentScheduleIds);
-		if (draftShipmentBoundIds.isEmpty())
-		{
-			return materialized.stream();
-		}
-
-		return materialized.stream()
-				.filter(packageable -> !draftShipmentBoundIds.contains(packageable.getShipmentScheduleId()));
 	}
 
 	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)

@@ -110,6 +110,9 @@ public class PickingJobQuery
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
+				// Exclude schedules whose pending pick qty is already bound to a draft shipment, so a fully-picked order
+				// placed on a draft shipment does not reappear in the picking launcher. Feeds both the candidate stream and the facets.
+				.excludeFullyOnDraftShipment(true)
 				.scannedProductCodes(this.getScannedProductCodes())
 				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
