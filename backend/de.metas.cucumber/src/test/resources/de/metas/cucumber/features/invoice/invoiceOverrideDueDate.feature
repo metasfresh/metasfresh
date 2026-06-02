@@ -119,7 +119,7 @@ Feature: Invoice override-due-date from Rechnungsdisposition
     When C_Invoice_OverrideDueDate process is invoked:
       | C_Invoice_ID | OverrideDueDate |
       | inv_allow    | 2026-12-31      |
-    When C_Invoice_OverrideDueDate process is invoked:
+    And C_Invoice_OverrideDueDate process is invoked:
       | C_Invoice_ID | OverrideDueDate |
       | inv_disallow | 2026-12-31      |
     # Permissive payment term (IsAllowOverrideDueDate=Y): DueDate updated to the requested date.

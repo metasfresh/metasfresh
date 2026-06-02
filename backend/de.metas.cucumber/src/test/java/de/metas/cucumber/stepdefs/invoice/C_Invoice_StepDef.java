@@ -77,7 +77,6 @@ import de.metas.process.ProcessInfo;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
-import org.adempiere.service.ClientId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -106,6 +105,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
@@ -956,7 +956,7 @@ public class C_Invoice_StepDef
 			final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID);
 			final I_C_Invoice invoice = invoiceIdentifier.lookupNotNullIn(invoiceTable);
 			final int invoiceId = invoice.getC_Invoice_ID();
-			final java.sql.Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
+			final Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
 
 			// In the cucumber Spring-Boot environment Env.getCtx() has AD_Client_ID=0
 			// (System) and AD_Role_ID=0 (System Administrator). The process's
