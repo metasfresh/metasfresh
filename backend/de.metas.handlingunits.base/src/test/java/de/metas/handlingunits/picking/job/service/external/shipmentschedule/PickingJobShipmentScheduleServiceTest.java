@@ -22,7 +22,6 @@
 
 package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.bpartner.BPartnerId;
@@ -166,6 +165,6 @@ public class PickingJobShipmentScheduleServiceTest
 		final Stream<Packageable> result = service.filterOutDraftShipmentBound(
 				Stream.of(packageable(1), packageable(2)));
 
-		assertThat(ImmutableList.copyOf(scheduleIdsOf(result))).isEmpty();
+		assertThat(scheduleIdsOf(result)).isEmpty();
 	}
 }
