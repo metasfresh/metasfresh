@@ -175,6 +175,14 @@ public class DDOrderPickingReplenishment_StepDef
 	 * {@link AdempiereException} containing the word "picking" (the picker-busy AD_Message text).
 	 * The DD_Order is left unchanged.
 	 *
+	 * <p>Real-world trigger: same async reconcile as {@code process_reconcile_event} — in production the
+	 * {@code M_ShipmentSchedule} interceptor ({@code M_ShipmentSchedule_DDOrderPickingInterceptor#scheduleReconcileAfterCommit})
+	 * publishes the after-commit reconcile event, the {@code DDOrderReplenishmentEventHandler} picks it up and calls
+	 * {@code replenishmentService.reconcile(scheduleId)}; this step asserts the service-side picker-busy guard rejects
+	 * that reconcile when a picker has grabbed the job in the meantime. The step calls the service directly only to
+	 * control ordering for the deterministic race scenario — driving it through the real async bus would make the
+	 * picker-grabs-the-job-in-the-race-window timing non-deterministic and the test flaky.</p>
+	 *
 	 * <p>Note: this step drives the service directly (not via the async event handler) so no
 	 * {@code AD_EventLog_Entry} is produced. The handler-level error-recording path (IsError=true in
 	 * AD_EventLog_Entry) is covered by the scenario that goes through the real async event flow.</p>
@@ -207,6 +215,16 @@ public class DDOrderPickingReplenishment_StepDef
 		trxManager.runInThreadInheritedTrx(replenishmentService::rebuildDrift);
 	}
 
+	/**
+	 * Asserts the {@code DD_Order_Picking_Rebuild} {@code AD_Process} is registered (its Value resolves to an
+	 * {@code AdProcessId}).
+	 *
+	 * <p>Real-world trigger: this is the {@code AD_Process} backing the {@code DD_Order_Picking_Rebuild}
+	 * {@code JavaProcess} that a warehouse supervisor runs manually from the WebUI (or a scheduler runs
+	 * periodically) to re-reconcile schedules that have drifted from their DD_Order; its {@code doIt} calls
+	 * {@code replenishmentService.rebuildDrift()}. The step guards against the process row going missing (a
+	 * deleted/renamed AD_Process record would silently disable the watchdog in production).</p>
+	 */
 	@Then("the DD_Order_Picking_Rebuild process exists")
 	public void rebuild_process_exists()
 	{
