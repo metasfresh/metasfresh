@@ -33,6 +33,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -187,7 +188,7 @@ class InvoiceDAO_DueDateOverrideTest
 
 		assertThat(updated).isEqualTo(1);
 		InterfaceWrapperHelper.refresh(invoice);
-		assertThat(org.compiere.util.TimeUtil.asLocalDate(invoice.getDueDate())).isEqualTo(ld("2025-06-30"));
+		assertThat(TimeUtil.asLocalDate(invoice.getDueDate())).isEqualTo(ld("2025-06-30"));
 	}
 
 	/**

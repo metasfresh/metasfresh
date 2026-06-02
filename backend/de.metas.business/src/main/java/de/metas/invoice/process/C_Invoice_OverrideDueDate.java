@@ -23,6 +23,7 @@
 package de.metas.invoice.process;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
@@ -39,6 +40,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -92,12 +94,12 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	{
 		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()))
 		{
-			final java.sql.Timestamp ts = queryBL.createQueryBuilder(I_C_Invoice.class)
+			final Timestamp ts = queryBL.createQueryBuilder(I_C_Invoice.class)
 					.addOnlyActiveRecordsFilter()
 					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
 					.create()
-					.first(I_C_Invoice.COLUMNNAME_DueDate, java.sql.Timestamp.class);
-			return org.compiere.util.TimeUtil.asLocalDate(ts);
+					.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
+			return TimeUtil.asLocalDate(ts);
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
