@@ -22,7 +22,6 @@
 
 package de.metas.payment.paymentterm.repository.impl;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -277,11 +276,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@NonNull
 	public Set<PaymentTermId> getPaymentTermIdsByIsAllowOverrideDueDate(final boolean isAllowOverrideDueDate)
 	{
-		return ImmutableSet.copyOf(
-				queryBL.createQueryBuilderOutOfTrx(I_C_PaymentTerm.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate, isAllowOverrideDueDate)
-						.create()
-						.listIds(PaymentTermId::ofRepoId));
+		return getIndexedPaymentTerms().getPaymentTermIdsByIsAllowOverrideDueDate(isAllowOverrideDueDate);
 	}
 }

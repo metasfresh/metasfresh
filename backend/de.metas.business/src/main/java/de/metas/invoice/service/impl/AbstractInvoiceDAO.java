@@ -63,6 +63,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -704,22 +705,22 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
+	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<I_C_Invoice> filter)
 	{
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, true)
 				.addFilter(filter)
 				.setLimit(QueryLimit.TEN)
 				.create()
 				.stream()
-				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
+				.map(I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
 	public Collection<String> retrieveDocNosWithPaymentTermIn(
-			@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			@NonNull final IQueryFilter<I_C_Invoice> filter,
 			@NonNull final Collection<PaymentTermId> paymentTermIds)
 	{
 		if (paymentTermIds.isEmpty())
@@ -727,33 +728,33 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			return ImmutableList.of();
 		}
 
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
 				.addFilter(filter)
 				.setLimit(QueryLimit.TEN)
 				.create()
 				.stream()
-				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
+				.map(I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
 	public int setDueDateWherePaymentTermIn(
-			@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			@NonNull final IQueryFilter<I_C_Invoice> filter,
 			@NonNull final Collection<PaymentTermId> paymentTermIds,
-			@NonNull final Timestamp dueDate)
+			@NonNull final LocalDate dueDate)
 	{
 		if (paymentTermIds.isEmpty())
 		{
 			return 0;
 		}
 
-		final IQueryUpdater<org.compiere.model.I_C_Invoice> queryUpdater = queryBL
-				.createCompositeQueryUpdater(org.compiere.model.I_C_Invoice.class)
-				.addSetColumnValue(org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate, dueDate);
+		final IQueryUpdater<I_C_Invoice> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_C_Invoice.class)
+				.addSetColumnValue(I_C_Invoice.COLUMNNAME_DueDate, TimeUtil.asTimestamp(dueDate));
 
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addFilter(filter)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)

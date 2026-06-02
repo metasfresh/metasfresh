@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.invoice.process;
+package de.metas.invoice.service.impl;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.impl.PlainInvoiceDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.repository.impl.PaymentTermRepository;
@@ -32,24 +32,24 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
+import static de.metas.adempiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 
 /**
  * Unit tests for {@link IInvoiceDAO#retrieveDocNosWithPaymentTermIn(IQueryFilter, java.util.Collection)}
- * and {@link IInvoiceDAO#setDueDateWherePaymentTermIn(IQueryFilter, java.util.Collection, java.sql.Timestamp)}.
+ * and {@link IInvoiceDAO#setDueDateWherePaymentTermIn(IQueryFilter, java.util.Collection, LocalDate)}.
  */
-class C_Invoice_OverrideDueDateTest
+class InvoiceDAO_DueDateOverrideTest
 {
 	private IInvoiceDAO invoiceDAO;
 	private IPaymentTermRepository paymentTermRepository;
@@ -81,6 +81,8 @@ class C_Invoice_OverrideDueDateTest
 	{
 		// payment term with flag=N (disallows override)
 		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setValue("PT-N");
+		pt.setName("PT-N");
 		pt.setIsAllowOverrideDueDate(false);
 		InterfaceWrapperHelper.saveRecord(pt);
 
@@ -106,6 +108,8 @@ class C_Invoice_OverrideDueDateTest
 	{
 		// payment term with flag=Y (allows override)
 		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setValue("PT-Y");
+		pt.setName("PT-Y");
 		pt.setIsAllowOverrideDueDate(true);
 		InterfaceWrapperHelper.saveRecord(pt);
 
@@ -152,6 +156,11 @@ class C_Invoice_OverrideDueDateTest
 		return Timestamp.from(Instant.parse(isoDate + "T00:00:00Z"));
 	}
 
+	private static LocalDate ld(final String isoDate)
+	{
+		return LocalDate.parse(isoDate);
+	}
+
 	/**
 	 * An invoice whose payment term has {@code IsAllowOverrideDueDate='Y'} must have its
 	 * DueDate set to the requested value.
@@ -160,6 +169,8 @@ class C_Invoice_OverrideDueDateTest
 	void flagY_dueDateIsUpdated()
 	{
 		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setValue("PT-Y-2");
+		pt.setName("PT-Y-2");
 		pt.setIsAllowOverrideDueDate(true);
 		InterfaceWrapperHelper.saveRecord(pt);
 
@@ -169,15 +180,14 @@ class C_Invoice_OverrideDueDateTest
 		invoice.setDueDate(ts("2024-01-01"));
 		InterfaceWrapperHelper.saveRecord(invoice);
 
-		final Timestamp newDueDate = ts("2025-06-30");
 		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
 
 		final Set<PaymentTermId> allowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true);
-		final int updated = invoiceDAO.setDueDateWherePaymentTermIn(filter, allowing, newDueDate);
+		final int updated = invoiceDAO.setDueDateWherePaymentTermIn(filter, allowing, ld("2025-06-30"));
 
 		assertThat(updated).isEqualTo(1);
 		InterfaceWrapperHelper.refresh(invoice);
-		assertThat(invoice.getDueDate()).isEqualTo(newDueDate);
+		assertThat(org.compiere.util.TimeUtil.asLocalDate(invoice.getDueDate())).isEqualTo(ld("2025-06-30"));
 	}
 
 	/**
@@ -188,6 +198,8 @@ class C_Invoice_OverrideDueDateTest
 	void flagN_dueDateIsNotUpdated()
 	{
 		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setValue("PT-N-2");
+		pt.setName("PT-N-2");
 		pt.setIsAllowOverrideDueDate(false);
 		InterfaceWrapperHelper.saveRecord(pt);
 
@@ -201,7 +213,7 @@ class C_Invoice_OverrideDueDateTest
 		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
 
 		final Set<PaymentTermId> allowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true);
-		final int updated = invoiceDAO.setDueDateWherePaymentTermIn(filter, allowing, ts("2025-06-30"));
+		final int updated = invoiceDAO.setDueDateWherePaymentTermIn(filter, allowing, ld("2025-06-30"));
 
 		assertThat(updated).isEqualTo(0);
 		InterfaceWrapperHelper.refresh(invoice);
@@ -225,7 +237,7 @@ class C_Invoice_OverrideDueDateTest
 		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
 
 		final Set<PaymentTermId> allowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true);
-		final int updated = invoiceDAO.setDueDateWherePaymentTermIn(filter, allowing, ts("2025-06-30"));
+		final int updated = invoiceDAO.setDueDateWherePaymentTermIn(filter, allowing, ld("2025-06-30"));
 
 		assertThat(updated).isEqualTo(0);
 		InterfaceWrapperHelper.refresh(invoice);

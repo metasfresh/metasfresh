@@ -22,9 +22,9 @@
 
 package de.metas.invoice.process;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -37,12 +37,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.I_C_Invoice;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Set;
 
 public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -50,7 +48,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	public static final AdMessageKey PAID_INVOICES_MESSAGE = AdMessageKey.of("Invoices_already_paid");
 	public static final AdMessageKey DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE = AdMessageKey.of("DueDateOverrideNotAllowed");
 	@Param(parameterName = PARAM_OVERRIDE_DUE_DATE, mandatory = true)
-	private Timestamp p_OverrideDueDate;
+	private LocalDate p_OverrideDueDate;
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
@@ -72,8 +70,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICES_MESSAGE, paidInvoiceDocNos));
 		}
 
-		final Set<PaymentTermId> disallowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(false);
-		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermIn(selectionFilter, disallowing);
+		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermIn(selectionFilter, paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(false));
 		if (!disallowedDocNos.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE, disallowedDocNos));
@@ -85,8 +82,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Set<PaymentTermId> allowing = paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true);
-		invoiceDAO.setDueDateWherePaymentTermIn(getProcessInfo().getQueryFilterOrElseFalse(), allowing, p_OverrideDueDate);
+		invoiceDAO.setDueDateWherePaymentTermIn(getProcessInfo().getQueryFilterOrElseFalse(), paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true), p_OverrideDueDate);
 		return MSG_OK;
 	}
 
@@ -96,11 +92,12 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	{
 		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()))
 		{
-			return queryBL.createQueryBuilder(I_C_Invoice.class)
+			final java.sql.Timestamp ts = queryBL.createQueryBuilder(I_C_Invoice.class)
 					.addOnlyActiveRecordsFilter()
 					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
 					.create()
-					.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
+					.first(I_C_Invoice.COLUMNNAME_DueDate, java.sql.Timestamp.class);
+			return org.compiere.util.TimeUtil.asLocalDate(ts);
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

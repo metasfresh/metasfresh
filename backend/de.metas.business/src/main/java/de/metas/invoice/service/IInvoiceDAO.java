@@ -52,7 +52,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -209,7 +209,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 
-	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<I_C_Invoice> filter);
 
 	/**
 	 * Returns the DocumentNos of invoices matching {@code filter} whose payment term ID is in
@@ -222,7 +222,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return up to {@link org.adempiere.ad.dao.QueryLimit#TEN} DocumentNos for display in the rejection message
 	 */
 	Collection<String> retrieveDocNosWithPaymentTermIn(
-			IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			IQueryFilter<I_C_Invoice> filter,
 			Collection<PaymentTermId> paymentTermIds);
 
 	/**
@@ -237,7 +237,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return number of invoice records updated
 	 */
 	int setDueDateWherePaymentTermIn(
-			IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			IQueryFilter<I_C_Invoice> filter,
 			Collection<PaymentTermId> paymentTermIds,
-			Timestamp dueDate);
+			LocalDate dueDate);
 }
