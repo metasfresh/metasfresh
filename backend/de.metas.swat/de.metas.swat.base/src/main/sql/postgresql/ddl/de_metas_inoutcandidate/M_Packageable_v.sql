@@ -200,7 +200,7 @@ SELECT db_alter_view(
                'm_packageable_v',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE views.table_name = 'm_packageable_v$new')
+                WHERE lower(views.table_name) = lower('m_packageable_v$new'))
        )
 ;
 

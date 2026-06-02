@@ -7,7 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 10 | 80% |
-| Picking | 45 | 48 | 94% |
+| Picking | 46 | 49 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -136,8 +136,9 @@
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
 | DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
+| DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 
-**6/6 — 100%**
+**7/7 — 100%**
 
 ### Product-based picking
 
