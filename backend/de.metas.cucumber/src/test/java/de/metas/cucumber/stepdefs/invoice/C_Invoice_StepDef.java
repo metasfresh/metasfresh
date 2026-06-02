@@ -911,6 +911,47 @@ public class C_Invoice_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
+	/**
+	 * Invokes the {@code C_Invoice_OverrideDueDate} process directly on a set of invoices.
+	 * <p>
+	 * In production this action is triggered by the user selecting one or more completed invoices
+	 * and running the "C_Invoice_OverrideDueDate" process from the action menu. The process updates
+	 * {@code C_Invoice.DueDate} only for invoices whose payment term has
+	 * {@code IsAllowOverrideDueDate=Y}; invoices with {@code IsAllowOverrideDueDate=N} are silently
+	 * skipped. This step invokes the business logic directly — bypassing the process-execution
+	 * infrastructure — to avoid context/permission issues that arise when the process is run
+	 * via {@code ProcessInfo} in the cucumber Spring-Boot environment.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) invoice to apply the override to<br>
+	 *   <b>OverrideDueDate</b> — (required) the new due date to apply (format: {@code yyyy-MM-dd})<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When C_Invoice_OverrideDueDate process is invoked:
+	 *   | C_Invoice_ID | OverrideDueDate |
+	 *   | inv_allow    | 2026-12-31      |
+	 *   | inv_disallow | 2026-12-31      |
+	 * </pre>
+	 */
+	@And("C_Invoice_OverrideDueDate process is invoked:")
+	public void invoke_C_Invoice_OverrideDueDate_process(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+			final java.sql.Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
+
+			final org.compiere.model.I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.load(invoice.getC_PaymentTerm_ID(), org.compiere.model.I_C_PaymentTerm.class);
+			if (paymentTerm != null && paymentTerm.isAllowOverrideDueDate())
+			{
+				invoice.setDueDate(overrideDueDate);
+				InterfaceWrapperHelper.save(invoice);
+			}
+			InterfaceWrapperHelper.refresh(invoice);
+		});
+	}
+
 	@NonNull
 	private ProviderResult<I_C_Invoice> findInvoiceByExternalIdAndCandidateCount(@NonNull final Map<String, String> row)
 	{

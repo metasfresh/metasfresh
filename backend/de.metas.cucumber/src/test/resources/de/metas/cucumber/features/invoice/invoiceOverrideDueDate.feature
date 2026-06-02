@@ -88,3 +88,45 @@ Feature: Invoice override-due-date from Rechnungsdisposition
     And validate created invoices
       | Identifier   | DocStatus | DueDate    |
       | inv_disallow | CO        | 2026-03-31 |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00700_Invoicing
+  @Id:S0209_310
+  Scenario: C_Invoice_OverrideDueDate process gate — flag=N invoices are skipped; flag=Y invoices are updated
+    # Two invoices created directly: one with a permissive payment term (flag=Y), one with a
+    # restrictive payment term (flag=N). Both are completed so DueDate is rule-computed
+    # (DateInvoiced 2026-03-01 + NetDays 30 = 2026-03-31). The C_Invoice_OverrideDueDate process
+    # is then invoked separately on each invoice with OverrideDueDate=2026-12-31.
+    # Expected: the permissive invoice picks up the new date; the restrictive invoice keeps its
+    # rule-based date — the process silently skips it.
+    Given metasfresh contains C_Invoice:
+      | Identifier   | C_BPartner_ID | IsSOTrx | DateInvoiced | C_Currency.ISO_Code | C_PaymentTerm_ID |
+      | inv_allow    | customer      | Y       | 2026-03-01   | EUR                 | pt_allow         |
+      | inv_disallow | customer      | Y       | 2026-03-01   | EUR                 | pt_disallow      |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | Price |
+      | inv_allow    | p_1          | 1 PCE       | 10.00 |
+      | inv_disallow | p_1          | 1 PCE       | 10.00 |
+    And the invoice identified by inv_allow is completed
+    And the invoice identified by inv_disallow is completed
+    # After completion, both invoices have DueDate = 2026-03-31 (2026-03-01 + 30 NetDays).
+    And validate created invoices
+      | Identifier   | DocStatus | DueDate    |
+      | inv_allow    | CO        | 2026-03-31 |
+      | inv_disallow | CO        | 2026-03-31 |
+    # Invoke the override-due-date process on each invoice individually.
+    When C_Invoice_OverrideDueDate process is invoked:
+      | C_Invoice_ID | OverrideDueDate |
+      | inv_allow    | 2026-12-31      |
+    When C_Invoice_OverrideDueDate process is invoked:
+      | C_Invoice_ID | OverrideDueDate |
+      | inv_disallow | 2026-12-31      |
+    # Permissive payment term (IsAllowOverrideDueDate=Y): DueDate updated to the requested date.
+    Then validate created invoices
+      | Identifier | DocStatus | DueDate    |
+      | inv_allow  | CO        | 2026-12-31 |
+    # Restrictive payment term (IsAllowOverrideDueDate=N): DueDate unchanged — process skips it.
+    And validate created invoices
+      | Identifier   | DocStatus | DueDate    |
+      | inv_disallow | CO        | 2026-03-31 |
