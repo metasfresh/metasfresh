@@ -124,6 +124,5 @@ COMMENT ON FUNCTION de_metas_material.retrieve_available_for_sales(integer, nume
     * p_salesOrderLookBehindHours: Used to ignore old/stale sales order lines. Returned rows have a SalesOrderLastUpdated date not before now() minus the given number of hours.
     * p_M_Warehouse_ID: optional filter by p_M_Warehouse_ID if the caller passes one
 
-    Also see https://github.com/metasfresh/metasfresh/issues/5108
-    Also see https://github.com/metasfresh/me03/issues/7048'
+    Also see https://github.com/metasfresh/metasfresh/issues/5108'
 ;
