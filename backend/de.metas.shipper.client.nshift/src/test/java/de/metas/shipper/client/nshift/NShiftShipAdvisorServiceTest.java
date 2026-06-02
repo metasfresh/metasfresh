@@ -23,6 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
@@ -71,6 +72,7 @@ public class NShiftShipAdvisorServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
+					.attention("Attention Sender Test")
 					.build())
 			.pickupContact(JsonContact.builder()
 					.name("Test Pickup Contact Name")
@@ -94,6 +96,7 @@ public class NShiftShipAdvisorServiceTest
 					.street("Alecsandri")
 					.additionalAddressInfo("")
 					.houseNo("3")
+					.attention("Attention Test")
 					.build())
 			.deliveryContact(JsonContact.builder()
 					.name("Test Delivery Contact Name")
@@ -125,10 +128,14 @@ public class NShiftShipAdvisorServiceTest
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.SERVICE_LEVEL, SHIP_RULE_SERVICE_LEVEL)
 					.build())
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
 			.build();
 
 	@Autowired
+	@NonNull
 	private NShiftShipAdvisorService nShiftShipAdvisorService;
+
+	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
 
 	@Test

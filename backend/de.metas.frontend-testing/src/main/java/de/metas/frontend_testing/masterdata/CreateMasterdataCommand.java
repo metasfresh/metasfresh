@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.compensation_group.CreateCompensationGroupSchemaCommand;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.frontend_testing.masterdata.dd_order.DDOrderCommand;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
@@ -98,6 +101,10 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
+		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
+		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
+		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
+		linkProductsToCompensationGroupSchemas();
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
@@ -126,6 +133,7 @@ public class CreateMasterdataCommand
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)
+				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
 				.products(products)
 				.resources(resources)
 				.productPlannings(productPlannings)
@@ -189,6 +197,50 @@ public class CreateMasterdataCommand
 				.identifier(identifier)
 				.build()
 				.execute();
+	}
+
+	private ImmutableMap<String, JsonCompensationGroupSchemaResponse> createCompensationGroupSchemas()
+	{
+		return process(request.getCompensationGroupSchemas(), this::createCompensationGroupSchema);
+	}
+
+	private JsonCompensationGroupSchemaResponse createCompensationGroupSchema(final String identifier, final JsonCompensationGroupSchemaRequest request)
+	{
+		return CreateCompensationGroupSchemaCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	/**
+	 * For every product whose request set {@link JsonCreateProductRequest#getCompensationGroupSchema()},
+	 * resolves the schema identifier (now that schemas have been created) and writes the FK to
+	 * {@code M_Product.C_CompensationGroup_Schema_ID}.
+	 */
+	private void linkProductsToCompensationGroupSchemas()
+	{
+		final Map<String, JsonCreateProductRequest> productRequests = request.getProducts();
+		if (productRequests == null || productRequests.isEmpty())
+		{
+			return;
+		}
+
+		productRequests.forEach((productIdentifier, productRequest) -> {
+			final Identifier schemaIdentifier = productRequest.getCompensationGroupSchema();
+			if (schemaIdentifier == null)
+			{
+				return;
+			}
+
+			final de.metas.product.ProductId productId = context.getId(Identifier.ofString(productIdentifier), de.metas.product.ProductId.class);
+			final de.metas.order.compensationGroup.GroupTemplateId schemaId = context.getId(schemaIdentifier, de.metas.order.compensationGroup.GroupTemplateId.class);
+
+			final org.compiere.model.I_M_Product productRecord = org.adempiere.model.InterfaceWrapperHelper.load(productId, org.compiere.model.I_M_Product.class);
+			productRecord.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
+			org.adempiere.model.InterfaceWrapperHelper.save(productRecord);
+		});
 	}
 
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()

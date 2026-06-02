@@ -48,4 +48,5 @@ public class JsonAddress
 
 	// Optional; used only for logging/debugging in some processors
 	@Nullable Integer bpartnerId;
+	@Nullable String attention;
 }

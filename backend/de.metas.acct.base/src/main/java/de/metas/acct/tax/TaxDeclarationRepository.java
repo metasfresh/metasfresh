@@ -4,12 +4,17 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.I_C_TaxDeclarationAcct;
 import org.compiere.model.I_C_TaxDeclarationLine;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 @Repository
 public class TaxDeclarationRepository
@@ -42,6 +47,28 @@ public class TaxDeclarationRepository
 		record.setProcessed(false);
 		InterfaceWrapperHelper.save(record);
 		return TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_ID());
+	}
+
+	public void runBuild(@NonNull final TaxDeclarationId id)
+	{
+		DB.executeFunctionCallEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT de_metas_acct.tax_declaration_build(?)",
+				new Object[] { id });
+	}
+
+	public boolean isDriftDetected(@NonNull final TaxDeclarationId id)
+	{
+		final int result = DB.getSQLValueEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT CASE WHEN de_metas_acct.tax_declaration_check_drift(?) THEN 1 ELSE 0 END",
+				new Object[] { id.getRepoId() });
+		return result == 1;
+	}
+
+	public void save(@NonNull final I_C_TaxDeclaration record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	public void deleteChildRows(@NonNull final TaxDeclarationId id)
@@ -100,8 +127,30 @@ public class TaxDeclarationRepository
 	}
 
 	/**
+	 * @return true iff at least one ACTIVE, NOT-yet-Processed Correction (IsCorrection='Y',
+	 *         Processed='N') exists for {@code originalId}, excluding {@code excludeId} when non-null.
+	 */
+	public boolean hasUnprocessedCorrectionFor(
+			@NonNull final TaxDeclarationId originalId,
+			@Nullable final TaxDeclarationId excludeId)
+	{
+		final IQueryBuilder<I_C_TaxDeclaration> builder = queryBL.createQueryBuilder(I_C_TaxDeclaration.class)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_Original_ID, originalId)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, true)
+				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, false)
+				.addOnlyActiveRecordsFilter();
+		if (excludeId != null)
+		{
+			builder.addNotEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID, excludeId);
+		}
+		return builder.create().anyMatch();
+	}
+
+	/**
 	 * Returns the latest LIVE (Processed='Y') Correction in the chain rooted at {@code originalId},
-	 * ordered by Created DESC; falls back to the Original itself if no completed Correction exists.
+	 * ordered by C_TaxDeclaration_ID DESC (sequence-allocated, so the highest id is the most recently
+	 * created Correction — deterministic, with no Created-timestamp tie); falls back to the Original
+	 * itself if no completed Correction exists.
 	 */
 	public I_C_TaxDeclaration getLatestInChain(@NonNull final TaxDeclarationId originalId)
 	{
@@ -110,9 +159,23 @@ public class TaxDeclarationRepository
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_IsCorrection, true)
 				.addEqualsFilter(I_C_TaxDeclaration.COLUMNNAME_Processed, true)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_C_TaxDeclaration.COLUMNNAME_Created)
+				.orderByDescending(I_C_TaxDeclaration.COLUMNNAME_C_TaxDeclaration_ID)
 				.create()
 				.first();
 		return latestCorrection != null ? latestCorrection : getById(originalId);
+	}
+
+	/**
+	 * @return true iff {@code id} is the latest LIVE entry in its correction chain
+	 *         (an Original with no Processed Correction, or the most recent Processed Correction).
+	 */
+	public boolean isLatestInChain(@NonNull final TaxDeclarationId id)
+	{
+		final I_C_TaxDeclaration record = getById(id);
+		final TaxDeclarationId originalId = record.isCorrection()
+				? TaxDeclarationId.ofRepoId(record.getC_TaxDeclaration_Original_ID())
+				: id;
+		final I_C_TaxDeclaration latest = getLatestInChain(originalId);
+		return TaxDeclarationId.ofRepoId(latest.getC_TaxDeclaration_ID()).equals(id);
 	}
 }

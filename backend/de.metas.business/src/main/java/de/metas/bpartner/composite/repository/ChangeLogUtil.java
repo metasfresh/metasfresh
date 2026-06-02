@@ -137,6 +137,7 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_Title, BPartnerContact.TITLE)
 			.put(I_AD_User.COLUMNNAME_Phone2, BPartnerContact.PHONE2)
 			.put(I_AD_User.COLUMNNAME_C_Job_ID, BPartnerContact.JOB_ID)
+			.put(I_AD_User.COLUMNNAME_Department, BPartnerContact.DEPARTMENT)
 			.build();
 
 	@VisibleForTesting
@@ -157,6 +158,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
 			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_Attention, BPartnerLocation.ATTENTION)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,

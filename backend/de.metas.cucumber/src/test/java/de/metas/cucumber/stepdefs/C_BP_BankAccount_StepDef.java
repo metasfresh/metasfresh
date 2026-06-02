@@ -38,6 +38,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CleanWhitespaceQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
@@ -106,6 +107,23 @@ public class C_BP_BankAccount_StepDef
 		{
 			loadBankAccount(dataTableRow);
 		}
+	}
+
+	@And("locate C_BP_BankAccount by IBAN:")
+	public void locate_C_BP_BankAccount_by_IBAN(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final String iban = row.getAsString(I_C_BP_BankAccount.COLUMNNAME_IBAN);
+
+			final I_C_BP_BankAccount bankAccountRecord = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+					.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban, CleanWhitespaceQueryFilterModifier.getInstance())
+					.create()
+					.firstOnlyOptional()
+					.orElseThrow(() -> new AdempiereException("No C_BP_BankAccount found for IBAN=" + iban));
+
+			bpBankAccountTable.putOrReplace(row.getAsIdentifier(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID), bankAccountRecord);
+		});
 	}
 
 	@And("update C_BP_BankAccount:")

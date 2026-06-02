@@ -62,6 +62,8 @@ import de.metas.product.Product;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigRepository;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
@@ -112,6 +114,8 @@ public class CarrierAdviseCommand
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final UserRepository userRepository = SpringContextHolder.instance.getBean(UserRepository.class);
 	@NonNull private final CarrierProductAllocationService carrierProductAllocationService = SpringContextHolder.instance.getBean(CarrierProductAllocationService.class);
+	@NonNull private final ShipperMappingConfigRepository shipperMappingConfigRepository = SpringContextHolder.instance.getBean(ShipperMappingConfigRepository.class);
+	@NonNull private final JsonShipperConverter jsonShipperConverter = SpringContextHolder.instance.getBean(JsonShipperConverter.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -253,6 +257,9 @@ public class CarrierAdviseCommand
 			requestBuilder.shipperConfig(effectiveShipperConfig);
 		}
 
+		final ShipperMappingConfigList mappingConfigs = shipperMappingConfigRepository.getByShipperId(shipperId);
+		requestBuilder.mappingConfigs(jsonShipperConverter.toJsonMappingConfigList(mappingConfigs));
+
 		return requestBuilder.build();
 	}
 
@@ -288,7 +295,7 @@ public class CarrierAdviseCommand
 	{
 		final I_C_Location deliverToLocation = locationDAO.getById(LocationId.ofRepoId(bpLocation.getC_Location_ID()));
 
-		return JsonShipperConverter.toJsonAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, bPartner)
+		return JsonShipperConverter.toJsonAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, bPartner, bpLocation)
 				.bpartnerId(bPartner.getC_BPartner_ID())
 				.build());
 	}

@@ -261,19 +261,27 @@ public class C_TaxDeclaration_StepDef
 	}
 
 	/**
-	 * Invoke {@link TaxDeclarationService#createCorrection(TaxDeclarationId)} on the original and register the result under {@code <originalIdentifier>_correction}.
+	 * Invoke {@link TaxDeclarationService#createCorrection(TaxDeclarationId)} on the chain member registered under {@code identifier}
+	 * and register the resulting Correction under {@code <identifier>_correction}.
 	 * Any failure is stashed for {@link #assertOperationFailedWithMessage(String)}.
+	 *
+	 * <p>Required columns: {@code identifier} (string — the declaration's step-def identifier)
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * When invoke Create Correction on C_TaxDeclaration "td1"
+	 * }</pre>
 	 */
 	@When("invoke Create Correction on C_TaxDeclaration {string}")
-	public void invokeCreateCorrection(@NonNull final String originalIdentifier)
+	public void invokeCreateCorrection(@NonNull final String identifier)
 	{
 		lastException = null;
-		final I_C_TaxDeclaration original = taxDeclarationTable.get(StepDefDataIdentifier.ofString(originalIdentifier));
+		final I_C_TaxDeclaration chainMember = taxDeclarationTable.get(StepDefDataIdentifier.ofString(identifier));
 		try
 		{
-			final TaxDeclarationId correctionId = taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(original.getC_TaxDeclaration_ID()));
-			final I_C_TaxDeclaration correction = InterfaceWrapperHelper.load(correctionId.getRepoId(), I_C_TaxDeclaration.class);
-			taxDeclarationTable.putOrReplace(StepDefDataIdentifier.ofString(originalIdentifier + "_correction"), correction);
+			final TaxDeclarationId correctionId = taxDeclarationService.createCorrection(TaxDeclarationId.ofRepoId(chainMember.getC_TaxDeclaration_ID()));
+			final I_C_TaxDeclaration correction = taxDeclarationService.getById(correctionId);
+			taxDeclarationTable.putOrReplace(StepDefDataIdentifier.ofString(identifier + "_correction"), correction);
 		}
 		catch (final AdempiereException e)
 		{

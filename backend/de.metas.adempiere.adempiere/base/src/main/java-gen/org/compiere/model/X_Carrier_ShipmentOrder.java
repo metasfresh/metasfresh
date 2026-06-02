@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_Carrier_ShipmentOrder, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1793447054L;
+	private static final long serialVersionUID = 1388190658L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder (final Properties ctx, final int Carrier_ShipmentOrder_ID, @Nullable final String trxName)
@@ -173,6 +173,18 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setReceiver_Attention (final @Nullable java.lang.String Receiver_Attention)
+	{
+		set_Value (COLUMNNAME_Receiver_Attention, Receiver_Attention);
+	}
+
+	@Override
+	public java.lang.String getReceiver_Attention() 
+	{
+		return get_ValueAsString(COLUMNNAME_Receiver_Attention);
+	}
+
+	@Override
 	public void setReceiver_City (final @Nullable java.lang.String Receiver_City)
 	{
 		set_Value (COLUMNNAME_Receiver_City, Receiver_City);
@@ -185,6 +197,18 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setReceiver_ContactName (final @Nullable java.lang.String Receiver_ContactName)
+	{
+		set_Value (COLUMNNAME_Receiver_ContactName, Receiver_ContactName);
+	}
+
+	@Override
+	public java.lang.String getReceiver_ContactName() 
+	{
+		return get_ValueAsString(COLUMNNAME_Receiver_ContactName);
+	}
+
+	@Override
 	public void setReceiver_CountryISO2Code (final @Nullable java.lang.String Receiver_CountryISO2Code)
 	{
 		set_Value (COLUMNNAME_Receiver_CountryISO2Code, Receiver_CountryISO2Code);
@@ -194,6 +218,18 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	public java.lang.String getReceiver_CountryISO2Code() 
 	{
 		return get_ValueAsString(COLUMNNAME_Receiver_CountryISO2Code);
+	}
+
+	@Override
+	public void setReceiver_Department (final @Nullable java.lang.String Receiver_Department)
+	{
+		set_Value (COLUMNNAME_Receiver_Department, Receiver_Department);
+	}
+
+	@Override
+	public java.lang.String getReceiver_Department() 
+	{
+		return get_ValueAsString(COLUMNNAME_Receiver_Department);
 	}
 
 	@Override
@@ -305,30 +341,6 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setReceiver_ContactName (final @Nullable java.lang.String Receiver_ContactName)
-	{
-		set_Value (COLUMNNAME_Receiver_ContactName, Receiver_ContactName);
-	}
-
-	@Override
-	public java.lang.String getReceiver_ContactName() 
-	{
-		return get_ValueAsString(COLUMNNAME_Receiver_ContactName);
-	}
-
-	@Override
-	public void setReceiver_Department (final @Nullable java.lang.String Receiver_Department)
-	{
-		set_Value (COLUMNNAME_Receiver_Department, Receiver_Department);
-	}
-
-	@Override
-	public java.lang.String getReceiver_Department() 
-	{
-		return get_ValueAsString(COLUMNNAME_Receiver_Department);
-	}
-
-	@Override
 	public void setShipmentDate (final java.sql.Timestamp ShipmentDate)
 	{
 		set_Value (COLUMNNAME_ShipmentDate, ShipmentDate);
@@ -338,6 +350,18 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	public java.sql.Timestamp getShipmentDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ShipmentDate);
+	}
+
+	@Override
+	public void setShipper_Attention (final @Nullable java.lang.String Shipper_Attention)
+	{
+		set_Value (COLUMNNAME_Shipper_Attention, Shipper_Attention);
+	}
+
+	@Override
+	public java.lang.String getShipper_Attention() 
+	{
+		return get_ValueAsString(COLUMNNAME_Shipper_Attention);
 	}
 
 	@Override
