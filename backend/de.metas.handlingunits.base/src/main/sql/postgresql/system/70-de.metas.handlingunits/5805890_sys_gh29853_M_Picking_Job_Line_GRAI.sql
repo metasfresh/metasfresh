@@ -10,13 +10,15 @@
 --   AD_UI_ElementGroup 552640 ("pick to" group in that tab — from 5766820)
 --
 -- This column is an internal persistence column (not user-facing).
--- Pattern matches sibling Current_PickTo_TU_QRCode (5766820_M_Picking_Job_Line.Current_PickTo_TU_ID.sql)
--- which is also IsDisplayed='N' in AD_Field and AD_UI_Element.
+-- Pattern matches sibling Current_PickTo_TU_QRCode (5766820_M_Picking_Job_Line.Current_PickTo_TU_ID.sql):
+--   AD_Field.IsDisplayed='N' (same as sibling).
+--   AD_UI_Element.IsDisplayed='N': intentional — Current_PickTo_TU_GRAI is a pure backend persistence
+--   column never shown to users (unlike the QRCode sibling whose AD_UI_Element.IsDisplayed='Y', SeqNo=70).
 
 -- AD_Element: Current_PickTo_TU_GRAI
 -- 2026-06-03T10:00:00.000Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
-VALUES (0,584935 /*From ID Server*/,0,'Current_PickTo_TU_GRAI',TO_TIMESTAMP('2026-06-03 10:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits','Y','Current Pick To TU GRAI','Current Pick To TU GRAI',TO_TIMESTAMP('2026-06-03 10:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+VALUES (0,584935 /*From ID Server*/,0,'Current_PickTo_TU_GRAI',TO_TIMESTAMP('2026-06-03 10:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits','Y','Aktuelles Pickziel-TU GRAI','Aktuelles Pickziel-TU GRAI',TO_TIMESTAMP('2026-06-03 10:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-06-03T10:00:01.000Z
@@ -25,6 +27,12 @@ SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Na
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584935
 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2026-06-03T10:00:12.000Z
+UPDATE AD_Element_Trl SET Name='Current Pick To TU GRAI', PrintName='Current Pick To TU GRAI', IsTranslated='Y',
+  Updated=TO_TIMESTAMP('2026-06-03 10:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
+WHERE AD_Element_ID=584935 AND AD_Language='en_US'
 ;
 
 -- Column: M_Picking_Job_Line.Current_PickTo_TU_GRAI
@@ -47,7 +55,7 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 
 -- Physical column (new column — use ALTER TABLE ADD COLUMN, not t_alter_column)
 -- 2026-06-03T10:02:00.000Z
-/* DDL */ SELECT public.db_alter_table('M_Picking_Job_Line','ALTER TABLE public.M_Picking_Job_Line ADD COLUMN IF NOT EXISTS Current_PickTo_TU_GRAI VARCHAR(255)')
+/* DDL */ SELECT public.db_alter_table('M_Picking_Job_Line','ALTER TABLE public.M_Picking_Job_Line ADD COLUMN IF NOT EXISTS Current_PickTo_TU_GRAI TEXT')
 ;
 
 -- Field: Kommissionieraufgabe(541331,de.metas.handlingunits) -> Picking Job Line(544862,de.metas.handlingunits) -> Current Pick To TU GRAI
@@ -83,5 +91,5 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=780663
 -- IsDisplayed='N': hidden — internal persistence column
 -- 2026-06-03T10:04:00.000Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,780663,0,544862,552640,651963 /*From ID Server*/,'F',TO_TIMESTAMP('2026-06-03 10:04:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','N','N','Current Pick To TU GRAI',0,0,0,TO_TIMESTAMP('2026-06-03 10:04:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+VALUES (0,780663,0,544862,552640,651963 /*From ID Server*/,'F',TO_TIMESTAMP('2026-06-03 10:04:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','N','N','Aktuelles Pickziel-TU GRAI',90,0,0,TO_TIMESTAMP('2026-06-03 10:04:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
