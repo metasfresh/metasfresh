@@ -32,13 +32,11 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Column_ID=592669
 
 -- AD_Field (tab 548459 = Paketposition, last content field before system section)
 INSERT INTO AD_Field (AD_Client_ID,AD_Org_ID,AD_Field_ID,AD_Column_ID,AD_Tab_ID,
-                      Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,
-                      IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,
-                      IsSameLine,Name,Updated,UpdatedBy)
+                      Created,CreatedBy,DisplayLength,EntityType,
+                      IsActive,IsDisplayed,Name,Updated,UpdatedBy)
 VALUES (0,0,780646 /*From ID Server*/,592669,548459,
-        TO_TIMESTAMP('2026-06-01 10:00:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,2,'D','Y','Y',
-        'Y','Y','N','N','N','N',
-        'N','Herkunftsland',TO_TIMESTAMP('2026-06-01 10:00:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100);
+        TO_TIMESTAMP('2026-06-01 10:00:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,2,'D',
+        'Y','Y','Herkunftsland',TO_TIMESTAMP('2026-06-01 10:00:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100);
 
 -- AD_Field_Trl skeleton + sync name from AD_Element + element link
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID,Description,Help,Name,IsTranslated,AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive)
