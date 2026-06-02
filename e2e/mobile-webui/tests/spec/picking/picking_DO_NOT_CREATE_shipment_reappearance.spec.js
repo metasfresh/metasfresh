@@ -74,7 +74,6 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
 
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
-    const token = masterdata.login.user.token;
 
     // --- Pick all qty and complete in the mobileUI ---
     await LoginScreen.login(masterdata.login.user);
@@ -98,10 +97,11 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
     // legitimately shown in the picking list (it still has to be shipped). We do NOT assert it gone
     // here — that is normal and unchanged by the fix.
 
-    // --- Create a DRAFT shipment from the shipment schedule (desktop WebUI "generate shipments",
-    //     IsCompleteShipments=false). This binds M_ShipmentSchedule_QtyPicked.M_InOutLine_ID with
-    //     Processed='N' — the exact data state that triggered the bug. ---
-    await ShipmentScheduleBackend.createDraftShipmentForOrder({ documentNo, token });
+    // --- Create a DRAFT shipment from the shipment schedule (frontendTesting masterdata
+    //     `shipments` block, quantityType='P', complete=false). This binds
+    //     M_ShipmentSchedule_QtyPicked.M_InOutLine_ID with Processed='N' — the exact data
+    //     state that triggered the bug. ---
+    await ShipmentScheduleBackend.createDraftShipmentForOrder({ orderIdentifier: 'SO1' });
 
     // --- After the draft shipment binds all the pending picked qty to a shipment line, the order
     //     must NOT remain in the mobileUI picking list. ON UN-FIXED CODE THIS ASSERTION FAILS:
