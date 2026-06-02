@@ -38,6 +38,7 @@ public class Warehouse
 	@NonNull String name;
 	@Nullable ResourceId resourceId;
 	boolean isReceiveAsSourceHU;
+	boolean isAutoDistributionOrder;
 	@NonNull WarehouseSourceHUConfigList warehouseSourceHUConfigs;
 	boolean active;
 
