@@ -25,6 +25,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
+import org.adempiere.ad.trx.api.impl.DeadlockRetryPolicy;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,6 +56,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
+
+	/** Retries a self-managed document action on DB deadlock; see processIt0. */
+	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.defaults();
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
@@ -119,7 +123,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
-		final Boolean processed = trxManager.call(trxName, new TrxCallable<Boolean>()
+		final TrxCallable<Boolean> processCallable = new TrxCallable<Boolean>()
 		{
 			@Override
 			public Boolean call() throws Exception
@@ -148,7 +152,23 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 				// put back the transaction which document had initially
 				setTrxName(document.getDocumentModel(), trxName, true /* ignoreIfNotHandled */);
 			}
-		});
+		};
+
+		final Boolean processed;
+		if (trxManager.isNull(trxName))
+		{
+			// The engine owns the transaction (a new one is opened per attempt): on a DB deadlock the whole
+			// document action is rolled back, so re-running it is equivalent to the user re-triggering it.
+			// Why: a document reversal (holding DELETE row locks) can deadlock against a concurrent accounting
+			// posting whose deferred FK checks at COMMIT reference the deleted rows — not preventable by lock ordering.
+			processed = DEADLOCK_RETRY_POLICY.call(() -> trxManager.call(trxName, processCallable), document.getDocumentInfo());
+		}
+		else
+		{
+			// Caller owns the transaction: a deadlock has already aborted the caller's whole trx;
+			// retrying only this inner part would be incorrect -> propagate immediately.
+			processed = trxManager.call(trxName, processCallable);
+		}
 
 		return processed != null && processed;
 	}
