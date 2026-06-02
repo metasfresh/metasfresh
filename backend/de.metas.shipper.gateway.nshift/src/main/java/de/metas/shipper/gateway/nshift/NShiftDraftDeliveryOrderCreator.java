@@ -218,10 +218,12 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	private Map<PackageId, Map<InOutAndLineId, String>> fetchCountryOfOriginByInOutLine(
 			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
+		final ImmutableSet<PackageId> packageIds = packageInfos.stream()
+				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPackageId)
+				.collect(ImmutableSet.toImmutableSet());
 		final Map<PackageId, InOutId> inOutIdByPackageId = new HashMap<>();
-		for (final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
+		for (final PackageId pkgId : packageIds)
 		{
-			final PackageId pkgId = packageInfo.getPackageId();
 			final InOutId inOutId = purchaseOrderToShipperTransportationRepository.getPackageById(pkgId).getInOutId();
 			if (inOutId != null)
 			{

@@ -24,9 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Spring service for HU-level package queries used during shipment processing.
- */
 @Service
 public class HUPackageService
 {
