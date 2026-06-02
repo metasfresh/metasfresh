@@ -23,7 +23,6 @@ package org.adempiere.ad.trx.api.impl;
  */
 
 import org.adempiere.exceptions.DBDeadLockDetectedException;
-import org.adempiere.exceptions.DBException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

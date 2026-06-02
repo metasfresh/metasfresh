@@ -57,7 +57,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	/** Retries a self-managed document action on DB deadlock; see processIt0. */
+	/** see processIt0 — only used when the engine owns the transaction. */
 	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.defaults();
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
@@ -154,8 +154,15 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		};
 
+		// Engine owns the transaction when there is none to inherit: trxName is null/None,
+		// OR it is the ThreadInherited marker while NO actual thread transaction exists
+		// (trxManager.call then opens its own new transaction). Observed mis-classification:
+		// cucumber-loaded models carry the ThreadInherited marker with no active trx.
+		final boolean engineOwnsTrx = trxManager.isNull(trxName)
+				|| (ITrx.TRXNAME_ThreadInherited.equals(trxName) && !trxManager.hasThreadInheritedTrx());
+
 		final Boolean processed;
-		if (trxManager.isNull(trxName))
+		if (engineOwnsTrx)
 		{
 			// The engine owns the transaction (a new one is opened per attempt): on a DB deadlock the whole
 			// document action is rolled back, so re-running it is equivalent to the user re-triggering it.

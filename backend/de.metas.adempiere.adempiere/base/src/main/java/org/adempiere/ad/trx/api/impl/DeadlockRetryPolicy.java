@@ -62,7 +62,7 @@ public class DeadlockRetryPolicy
 	private DeadlockRetryPolicy(final int maxAttempts, final long backoffMillis)
 	{
 		this.maxAttempts = maxAttempts > 0 ? maxAttempts : DEFAULT_MAX_ATTEMPTS;
-		this.backoffMillis = backoffMillis > 0 ? backoffMillis : DEFAULT_BACKOFF_MILLIS;
+		this.backoffMillis = backoffMillis >= 0 ? backoffMillis : DEFAULT_BACKOFF_MILLIS; // 0 = no sleep (tests)
 	}
 
 	/** Creates the default policy (3 attempts, 5 s backoff). */
