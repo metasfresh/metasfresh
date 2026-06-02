@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
@@ -79,7 +78,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -116,7 +114,6 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final HUGraiService huGraiService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull
@@ -694,8 +691,7 @@ public class PickingJobService implements PickingSlotListener
 		{
 			return GRAIRequired.No;
 		}
-		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
-		return GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
+		return bpartnerService.getGRAIRequired(customerId);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)

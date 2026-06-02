@@ -140,8 +140,7 @@ public class PickingRestController
 		final WFProcess wfProcess;
 		if (jsonTarget != null && jsonTarget.isGRAIScan())
 		{
-			// GRAI-scan flow: server resolves the TU type from the scanned GRAI, creates the TU + attaches the GRAI,
-			// and sets it as the line's existing-TU target. Manual-button behavior (below) stays unchanged.
+			// GRAI-scan flow: delegate to the mobile application to resolve + create the TU.
 			wfProcess = pickingMobileApplication.setTUPickingTargetFromGRAI(wfProcessId, lineId, jsonTarget.getGrai(), getLoggedUserId());
 		}
 		else

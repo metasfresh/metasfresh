@@ -22,6 +22,7 @@
 
 package de.metas.picking.rest_api.json;
 
+import de.metas.common.util.Check;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
@@ -72,7 +73,7 @@ public class JsonTUPickingTarget
 
 	public boolean isGRAIScan()
 	{
-		return grai != null && !grai.trim().isEmpty();
+		return !Check.isBlank(grai);
 	}
 
 	public TUPickingTarget unbox()

@@ -217,12 +217,11 @@ public class PickingJobRestService
 
 	/**
 	 * GRAI-scan flow: resolves the locator for the eagerly-created TU, then delegates to
-	 * {@link PickingJobService#createTUFromGRAI}. The {@link de.metas.handlingunits.picking.job.service.commands.grai.PickingJobCreateTUFromGRAICommand}
-	 * resolves the TU type from the scanned GRAI, creates the TU + attaches the GRAI, and sets it as the line's existing-TU target.
+	 * {@link PickingJobService#createTUFromGRAI}.
 	 */
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,
-			@Nullable final PickingJobLineId lineId,
+			@NonNull final PickingJobLineId lineId,
 			@NonNull final String scannedGrai)
 	{
 		final LocatorId tuLocatorId = pickingJobService.resolveTuLocatorId(pickingJob, lineId);
