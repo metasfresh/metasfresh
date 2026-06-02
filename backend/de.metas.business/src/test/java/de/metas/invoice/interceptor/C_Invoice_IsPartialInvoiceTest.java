@@ -90,8 +90,7 @@ class C_Invoice_IsPartialInvoiceTest
 		interceptor = new C_Invoice(
 				Mockito.mock(PaymentReservationService.class),
 				Mockito.mock(IDocumentLocationBL.class),
-				Mockito.mock(InvoiceDueDateProviderService.class),
-				Mockito.mock(IPaymentTermRepository.class));
+				Mockito.mock(InvoiceDueDateProviderService.class));
 	}
 
 	// -------------------------------------------------------------------------

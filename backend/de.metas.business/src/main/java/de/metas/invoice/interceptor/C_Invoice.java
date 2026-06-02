@@ -21,6 +21,7 @@ import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -43,8 +44,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -58,6 +57,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -65,6 +65,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -81,9 +82,9 @@ public class C_Invoice // 03771
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final InvoiceDueDateProviderService invoiceDueDateProviderService;
-	@NonNull private final IPaymentTermRepository paymentTermRepository;
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -568,23 +569,22 @@ public class C_Invoice // 03771
 	{
 		final Timestamp dueDateBefore = invoice.getDueDate();
 		setDueDateOnInvoice(invoice, invoiceDueDateProviderService, paymentTermRepository, orgDAO);
-		if (!java.util.Objects.equals(dueDateBefore, invoice.getDueDate()))
+		if (!Objects.equals(dueDateBefore, invoice.getDueDate()))
 		{
 			InterfaceWrapperHelper.save(invoice);
 		}
 	}
 
 	/**
-	 * Package-private helper — testable without Spring context.
-	 * <p>
-	 * (a) DueDate == null: compute via provider chain and write with org timezone.<br>
-	 * (b) DueDate != null, flag=N, value differs from computed: force the computed value.
+	 * When DueDate is null, it is computed via the provider chain and written using the org's timezone.
+	 * When DueDate is already set and the payment term does not allow overriding it (IsAllowOverrideDueDate=N),
+	 * the computed value replaces the stored one.
 	 * UI readonly logic is client-side only; REST/EDI calls and stale drafts bypass it and
 	 * can store a value that does not match the payment term. Enforcing here keeps the stored
-	 * date consistent with the payment term regardless of how the invoice was completed.<br>
-	 * (c) DueDate != null, flag=Y: leave untouched — the override is intentional.<br>
-	 * Defensive: no payment term set → skip flag enforcement; the provider chain owns fallbacks
-	 * for case (a).
+	 * date consistent with the payment term regardless of how the invoice was completed.
+	 * When IsAllowOverrideDueDate=Y, the user-supplied date is left untouched — the override is intentional.
+	 * When no payment term is set, flag enforcement is skipped; the provider chain owns fallbacks
+	 * for the null-DueDate case.
 	 */
 	static void setDueDateOnInvoice(
 			@NonNull final I_C_Invoice invoice,
@@ -597,7 +597,6 @@ public class C_Invoice // 03771
 
 		if (invoice.getDueDate() == null)
 		{
-			// Case (a): no due date set — compute and write with org timezone
 			final LocalDate computed = invoiceDueDateProviderService.provideDueDateFor(invoiceId);
 			invoice.setDueDate(TimeUtil.asTimestamp(computed, orgZone));
 			return;
@@ -613,11 +612,10 @@ public class C_Invoice // 03771
 
 		if (paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
 		{
-			// Case (c): override is allowed — leave the user-supplied date untouched
 			return;
 		}
 
-		// Case (b): flag=N — recompute and replace if the stored value differs
+		// flag=N — recompute and replace if the stored value differs
 		final LocalDate computed = invoiceDueDateProviderService.provideDueDateFor(invoiceId);
 		final Timestamp computedTs = TimeUtil.asTimestamp(computed, orgZone);
 		if (!computedTs.equals(invoice.getDueDate()))
