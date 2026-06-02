@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -140,11 +140,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
-    <field name="isdisplayproductcostlabel" class="java.lang.String">
-        <property name="com.jaspersoft.studio.field.name" value="isdisplayproductcostlabel"/>
-        <property name="com.jaspersoft.studio.field.label" value="isdisplayproductcostlabel"/>
-    </field>
-
+	<field name="isdisplayproductcostlabel" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isdisplayproductcostlabel"/>
+		<property name="com.jaspersoft.studio.field.label" value="isdisplayproductcostlabel"/>
+	</field>
 	<field name="pricepattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="pricepattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="pricepattern"/>
@@ -160,10 +159,6 @@
 	<field name="priceqtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
-	</field>
-	<field name="isdisplayproductcostlabel" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="isdisplayproductcostlabel"/>
-		<property name="com.jaspersoft.studio.field.label" value="isdisplayproductcostlabel"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
