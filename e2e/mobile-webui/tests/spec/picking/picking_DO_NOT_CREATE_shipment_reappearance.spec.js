@@ -5,21 +5,12 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
-import { ShipmentScheduleBackend } from "../../utils/screens/picking/ShipmentScheduleBackend";
 
 /**
- * Reproduces the bug: with picking profile "Don't create shipment" (DO_NOT_CREATE),
- * after picking all qty and completing the job in the mobileUI, the order correctly
- * disappears from the picking list. When a user then generates a DRAFT shipment from
- * the shipment schedule in the desktop WebUI, the picked order WRONGLY re-appeared in
- * the mobileUI picking list.
- *
- * Expectation (the correct behaviour the fix must achieve): once a job is completed
- * and the order disappears, it must NOT re-appear merely because a draft shipment was
- * created. It should only re-appear if the shipment is reversed and the user must pick again.
- *
- * On the current (un-fixed) code, the final assertion (order STAYS gone) FAILS because
- * the order re-appears — that failure is the RED that proves the bug.
+ * With picking profile "Don't create shipment" (DO_NOT_CREATE), a fully-picked order whose
+ * picked qty is bound to a DRAFT shipment must NOT appear in the mobileUI picking launcher:
+ * there is nothing left to pick. It re-appears only if the shipment is reversed (the picked
+ * qty becomes unbound again and the order genuinely has to be picked once more).
  */
 
 const createMasterdata = async () => {
@@ -97,21 +88,18 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
     // legitimately shown in the picking list (it still has to be shipped). We do NOT assert it gone
     // here — that is normal and unchanged by the fix.
 
-    // --- Create a DRAFT shipment from the shipment schedule (frontendTesting masterdata
-    //     `shipments` block, quantityType='P', complete=false). This binds
-    //     M_ShipmentSchedule_QtyPicked.M_InOutLine_ID with Processed='N' — the exact data
-    //     state that triggered the bug. ---
-    await ShipmentScheduleBackend.createDraftShipmentForOrder({ orderIdentifier: 'SO1' });
+    // --- Create a DRAFT shipment from the shipment schedule (quantityType='P', complete=false).
+    //     This binds M_ShipmentSchedule_QtyPicked.M_InOutLine_ID with Processed='N' — picked qty
+    //     fully assigned to a draft shipment line. ---
+    await Backend.createDraftShipmentForOrder({ orderIdentifier: 'SO1' });
 
-    // --- After the draft shipment binds all the pending picked qty to a shipment line, the order
-    //     must NOT remain in the mobileUI picking list. ON UN-FIXED CODE THIS ASSERTION FAILS:
-    //     the order wrongly re-appears (the packageable view still treats it as pickable because
-    //     it keys on qtypicklist>0 instead of on still-unbound QtyPicked rows). That failure is the RED. ---
-    await test.step("After the draft shipment, the order must NOT re-appear in the picking list (the fix's correct behaviour)", async () => {
+    // --- With all picked qty bound to the draft shipment line, the order has nothing left to pick
+    //     and must NOT be listed in the mobileUI picking launcher. ---
+    await test.step("After the draft shipment, the order must NOT be in the picking list", async () => {
         await PickingJobsListScreen.goBack();
         await ApplicationsListScreen.startApplication('picking');
         await PickingJobsListScreen.waitForScreen();
         await PickingJobsListScreen.filterByDocumentNo(documentNo);
-        await PickingJobsListScreen.expectNoJobButtonForDocumentNo(documentNo); // BUG: order wrongly re-appears here on un-fixed code
+        await PickingJobsListScreen.expectJobButtons([]);
     });
 });

@@ -99,6 +99,40 @@ export const Backend = {
         return responseBody.qrCode;
     }),
 
+    /**
+     * Create a DRAFT shipment (M_InOut DocStatus='DR', Processed='N') from the shipment schedule
+     * of a previously-created sales order, via the same frontendTesting masterdata channel as
+     * {@link Backend.createMasterdata}. The order created earlier stays in the masterdata context
+     * (carried via testContext.lastContext), so the `shipments` block references it by its map key.
+     *
+     * quantityType:'P' ships the already-PICKED qty (with createShipmentPolicy='NO' QtyToDeliver is 0,
+     * so the default 'D' would yield an empty shipment); complete:false leaves the M_InOut as a draft.
+     *
+     * @param {Object} args
+     * @param {string} [args.orderIdentifier='SO1'] - the sales order's masterdata map key.
+     * @returns {Promise<{shipmentId: string, documentNo: string}>}
+     */
+    createDraftShipmentForOrder: async ({ orderIdentifier = 'SO1' } = {}) => await test.step(`Backend: create DRAFT shipment for order ${orderIdentifier}`, async () => {
+        const response = await Backend.createMasterdata({
+            request: {
+                shipments: {
+                    DRAFT_SHIPMENT: {
+                        salesOrder: orderIdentifier,
+                        quantityType: 'P',
+                        complete: false,
+                    },
+                },
+            },
+        });
+
+        const shipment = response?.shipments?.DRAFT_SHIPMENT;
+        if (!shipment?.id) {
+            throw new Error('Draft shipment was not created:\n' + JSON.stringify(response, null, 2));
+        }
+
+        return { shipmentId: shipment.id, documentNo: shipment.documentNo };
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {

@@ -94,16 +94,6 @@ export const PickingJobsListScreen = {
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
 
-    /**
-     * Assert that there is NO picking-job launcher for the given sales order documentNo.
-     * Use this (instead of expectJobButtons([])) when the local DB may contain other pickable
-     * orders from prior runs — it scopes the assertion to a single order rather than the global
-     * launcher count.
-     */
-    expectNoJobButtonForDocumentNo: async (documentNo) => await test.step(`${NAME} - Expect NO job button for documentNo ${documentNo}`, async () => {
-        await expect(locateJobButtons({ documentNo })).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
-    }),
-
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await PickingJobsListScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();

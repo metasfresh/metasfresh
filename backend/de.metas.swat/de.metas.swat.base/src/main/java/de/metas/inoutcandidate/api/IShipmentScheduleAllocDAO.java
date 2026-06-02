@@ -132,10 +132,6 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * QtyPickList but not yet reflected in the stored QtyToDeliver.
 	 *
 	 * Used for detecting stale QtyToDeliver from race conditions between GenerateInOut workpackages.
-	 * <p>
-	 * (The mobileUI picking launcher applies the equivalent "fully on draft shipment" criterion in SQL
-	 * via {@code PackageableQuery#excludeFullyOnDraftShipment} / the {@code IsPickQtyOnDraftShipment}
-	 * view column, so it no longer calls this method.)
 	 *
 	 * @see #retrieveQtyPickedAndUnconfirmed — QtyPickList includes these records
 	 */
