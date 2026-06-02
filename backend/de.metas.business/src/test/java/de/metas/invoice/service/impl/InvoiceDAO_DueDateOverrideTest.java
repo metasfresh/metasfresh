@@ -47,8 +47,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static de.metas.adempiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 
 /**
- * Unit tests for {@link IInvoiceDAO#retrieveDocNosWithPaymentTermIn(IQueryFilter, java.util.Collection)}
- * and {@link IInvoiceDAO#setDueDateWherePaymentTermIn(IQueryFilter, java.util.Collection, LocalDate)}.
+ * Unit tests for {@link IInvoiceDAO#retrieveDocNosWithPaymentTermIn(IQueryFilter, java.util.Collection)},
+ * {@link IInvoiceDAO#setDueDateWherePaymentTermIn(IQueryFilter, java.util.Collection, LocalDate)}
+ * and {@link IInvoiceDAO#retrieveFirstDueDate(IQueryFilter)}.
  */
 class InvoiceDAO_DueDateOverrideTest
 {
@@ -243,5 +244,41 @@ class InvoiceDAO_DueDateOverrideTest
 		assertThat(updated).isEqualTo(0);
 		InterfaceWrapperHelper.refresh(invoice);
 		assertThat(invoice.getDueDate()).isEqualTo(originalDueDate);
+	}
+
+	// -----------------------------------------------------------------------
+	// Tests for IInvoiceDAO#retrieveFirstDueDate
+	// -----------------------------------------------------------------------
+
+	/**
+	 * When the selection contains an invoice with a DueDate, that date is returned as {@link LocalDate}.
+	 */
+	@Test
+	void retrieveFirstDueDate_invoiceWithDueDate_returnsThatDate()
+	{
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setDocumentNo("INV-DD-001");
+		invoice.setDueDate(ts("2025-03-15"));
+		InterfaceWrapperHelper.saveRecord(invoice);
+
+		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
+
+		final LocalDate result = invoiceDAO.retrieveFirstDueDate(filter);
+
+		assertThat(result).isEqualTo(ld("2025-03-15"));
+	}
+
+	/**
+	 * When no invoice matches the filter, {@code null} is returned.
+	 */
+	@Test
+	void retrieveFirstDueDate_noMatchingInvoice_returnsNull()
+	{
+		// Use a filter that matches nothing (non-existent ID)
+		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(Integer.MAX_VALUE);
+
+		final LocalDate result = invoiceDAO.retrieveFirstDueDate(filter);
+
+		assertThat(result).isNull();
 	}
 }

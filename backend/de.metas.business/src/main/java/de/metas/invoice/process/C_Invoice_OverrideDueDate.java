@@ -23,7 +23,6 @@
 package de.metas.invoice.process;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
@@ -36,11 +35,9 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -54,7 +51,6 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -94,12 +90,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	{
 		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()))
 		{
-			final Timestamp ts = queryBL.createQueryBuilder(I_C_Invoice.class)
-					.addOnlyActiveRecordsFilter()
-					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
-					.create()
-					.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
-			return TimeUtil.asLocalDate(ts);
+			return invoiceDAO.retrieveFirstDueDate(getProcessInfo().getQueryFilterOrElseFalse());
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

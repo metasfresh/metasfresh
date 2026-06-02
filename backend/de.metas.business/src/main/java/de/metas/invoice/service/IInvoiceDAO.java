@@ -45,6 +45,8 @@ import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+
+import javax.annotation.Nullable;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -224,6 +226,16 @@ public interface IInvoiceDAO extends ISingletonService
 	Collection<String> retrieveDocNosWithPaymentTermIn(
 			IQueryFilter<I_C_Invoice> filter,
 			Collection<PaymentTermId> paymentTermIds);
+
+	/**
+	 * Returns the first DueDate among all active invoices matching {@code filter},
+	 * or {@code null} when no matching invoice exists or none has a DueDate set.
+	 *
+	 * @param filter the query filter that describes the process selection
+	 * @return the DueDate of the first matching invoice, or {@code null}
+	 */
+	@Nullable
+	LocalDate retrieveFirstDueDate(IQueryFilter<I_C_Invoice> filter);
 
 	/**
 	 * Bulk-updates the {@code DueDate} column of all active invoices that match {@code filter}

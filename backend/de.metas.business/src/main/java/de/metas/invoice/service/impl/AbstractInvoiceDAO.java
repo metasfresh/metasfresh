@@ -704,6 +704,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return docBaseAndSubType.equals(targetDocType);
 	}
 
+	@Nullable
+	@Override
+	public LocalDate retrieveFirstDueDate(@NonNull final IQueryFilter<I_C_Invoice> filter)
+	{
+		final Timestamp dueDate = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addFilter(filter)
+				.create()
+				.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
+		return TimeUtil.asLocalDate(dueDate);
+	}
+
 	@Override
 	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<I_C_Invoice> filter)
 	{
