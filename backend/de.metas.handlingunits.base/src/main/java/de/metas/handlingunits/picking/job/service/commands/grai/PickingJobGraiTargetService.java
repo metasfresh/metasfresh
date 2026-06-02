@@ -1,11 +1,14 @@
 package de.metas.handlingunits.picking.job.service.commands.grai;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -15,10 +18,12 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service for GRAI picking target checks — specifically, verifying that a resolved TU packing-instruction
@@ -27,8 +32,57 @@ import java.util.List;
 @Service
 public class PickingJobGraiTargetService
 {
+	private static final AdMessageKey MSG_INVALID_GRAI_BARCODE = AdMessageKey.of("de.metas.handlingunits.picking.InvalidGRAIBarcode");
 	private static final AdMessageKey MSG_TU_NOT_ALLOWED_ON_LU = AdMessageKey.of("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
 	private static final AdMessageKey MSG_NO_CAPACITY_FOR_PRODUCT = AdMessageKey.of("de.metas.handlingunits.picking.GRAINoCapacityForProduct");
+
+	private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
+
+	/**
+	 * Steps 1..4 of the GRAI flow: parse, resolve TU type, optional LU check, capacity.
+	 * Does <b>not</b> create any HU.
+	 *
+	 * @param scannedGrai   the raw scanned barcode (step 1)
+	 * @param luTargetOpt   the effective LU picking target; empty → the TU-LU check (step 3) is skipped
+	 * @param lineProductId the line's product, used to derive capacity (step 4)
+	 * @return a {@link GraiTuResolution} holding the parsed GRAI, the resolved TU PI id and the PIIP id
+	 */
+	@NonNull
+	public GraiTuResolution resolveTuTypeAndCapacity(
+			@NonNull final String scannedGrai,
+			@NonNull final Optional<LUPickingTarget> luTargetOpt,
+			@NonNull final ProductId lineProductId)
+	{
+		// 1. Parse
+		final GRAI grai = GRAI.parse(scannedGrai);
+		if (grai == null)
+		{
+			throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, scannedGrai);
+		}
+
+		// 2. Resolve TU type — propagates GRAINoMatchingTUType
+		final HuPackingInstructionsId tuPIId = huPIGraiRepository.resolveHuPackingInstructionsId(grai);
+
+		// 3. TU-LU association check — only when there is an effective LU target.
+		// A loose TU with no LU target has nothing to be checked against, so the check is skipped.
+		luTargetOpt.ifPresent(luTarget -> assertTuAllowedOnLu(tuPIId, luTarget));
+
+		// 4. Capacity for the line's product — propagates GRAINoCapacityForProduct
+		final HUPIItemProductId huPIItemProductId = resolveCapacity(tuPIId, lineProductId);
+
+		return new GraiTuResolution(grai, tuPIId, huPIItemProductId);
+	}
+
+	/**
+	 * Result of steps 1..4 of the GRAI flow.
+	 */
+	@Value
+	public static class GraiTuResolution
+	{
+		@NonNull GRAI grai;
+		@NonNull HuPackingInstructionsId tuPIId;
+		@NonNull HUPIItemProductId huPIItemProductId;
+	}
 
 	/**
 	 * Verifies the TU PI is permitted on the LU picking target; throws keyed {@code GRAITUNotAllowedOnLU} otherwise.
@@ -79,9 +133,9 @@ public class PickingJobGraiTargetService
 		final List<I_M_HU_PI_Item_Product> allPiips = piipDAO.retrievePIMaterialItemProducts(miItem);
 
 		// Filter to those matching the requested productId (or AllowAnyProduct)
-		final List<I_M_HU_PI_Item_Product> matching = allPiips.stream()
+		final ImmutableList<I_M_HU_PI_Item_Product> matching = allPiips.stream()
 				.filter(piip -> piip.isAllowAnyProduct() || ProductId.ofRepoId(piip.getM_Product_ID()).equals(productId))
-				.collect(java.util.stream.Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 		if (matching.isEmpty())
 		{

@@ -6,13 +6,16 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGraiTargetService.GraiTuResolution;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -28,23 +31,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * TDD test for {@link PickingJobGraiTargetService#assertTuAllowedOnLu}.
+ * Tests for {@link PickingJobGraiTargetService}.
+ * <p>
+ * Covers {@link PickingJobGraiTargetService#assertTuAllowedOnLu} (B3 TU-LU check),
+ * {@link PickingJobGraiTargetService#resolveCapacity} (B3 capacity resolution), and
+ * {@link PickingJobGraiTargetService#resolveTuTypeAndCapacity} — the four GRAI error paths
+ * (steps 1..4 of the design §4).
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobGraiTargetServiceTest
 {
+	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(1001);
+
 	private HUTestHelper huTestHelper;
 	private PickingJobGraiTargetService service;
 
 	/** LU PI that contains the TU PI via an M_HU_PI_Item(ItemType=HU). */
 	private I_M_HU_PI luPI;
-	/** TU PI that is linked to the LU PI. */
+	/** TU PI that IS linked to the LU PI and HAS a PIIP for {@link #PRODUCT_ID}. */
 	private I_M_HU_PI tuPI;
 	/** Another TU PI that is NOT linked to the LU PI. */
 	private I_M_HU_PI otherTuPI;
@@ -59,15 +70,19 @@ class PickingJobGraiTargetServiceTest
 		// Create LU PI
 		luPI = huTestHelper.createHUDefinition("LU-PI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 
-		// Create TU PI that will be linked to the LU PI
+		// Create TU PI that will be linked to the LU PI and carries a PIIP for PRODUCT_ID
 		tuPI = huTestHelper.createHUDefinition("TU-PI", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("10"));
+		final I_M_HU_PI_Item miItem = huTestHelper.createHU_PI_Item_Material(tuPI);
+		huTestHelper.assignProduct(miItem, PRODUCT_ID, new BigDecimal("10"), huTestHelper.uomEach);
 
 		// Create a second TU PI that is NOT linked to the LU PI
 		otherTuPI = huTestHelper.createHUDefinition("OTHER-TU-PI", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-
-		// Link tuPI to luPI via an M_HU_PI_Item(ItemType='HU', Included_HU_PI_ID=tuPI)
-		huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("10"));
 	}
+
+	// =====================================================================
+	// Tests for assertTuAllowedOnLu
+	// =====================================================================
 
 	@Test
 	void tuPIIncludedInLuPI_doesNotThrow()
@@ -183,6 +198,96 @@ class PickingJobGraiTargetServiceTest
 		assertThat(result).isEqualTo(HUPIItemProductId.ofRepoId(defaultPiip.getM_HU_PI_Item_Product_ID()));
 	}
 
+	// =====================================================================
+	// Tests for resolveTuTypeAndCapacity (the four GRAI error paths, steps 1..4)
+	// The happy-path (step 5: physically create the TU + attach the GRAI) requires a fully built
+	// PickingJob + locator and is exercised at integration / Playwright E2E level.
+	//
+	// Note on hasMessageContaining("...GRAI..."): the assertions match the AD_Message key string
+	// because the unit-test environment has no AD_Message rows loaded, so getMessage() returns
+	// the key itself (e.g. "de.metas.handlingunits.picking.InvalidGRAIBarcode").
+	// =====================================================================
+
+	/** Step 1 — an unparseable scan throws InvalidGRAIBarcode. */
+	@Test
+	void resolveTuTypeAndCapacity_unparseableScan_throwsInvalidGRAIBarcode()
+	{
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
+				"   ", // blank → GRAI.parse returns null
+				Optional.empty(),
+				PRODUCT_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("InvalidGRAIBarcode"); // matches AD_Message key (no rows in test env)
+	}
+
+	/** Step 2 — a parseable GRAI with no M_HU_PI_GRAI mapping throws GRAINoMatchingTUType. */
+	@Test
+	void resolveTuTypeAndCapacity_noMapping_throwsGRAINoMatchingTUType()
+	{
+		// No M_HU_PI_GRAI rows inserted at all.
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
+				"7613204.00307.999999",
+				Optional.empty(),
+				PRODUCT_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("GRAINoMatchingTUType"); // matches AD_Message key (no rows in test env)
+	}
+
+	/** Step 3 — the resolved TU is not includable in the effective LU target → GRAITUNotAllowedOnLU. */
+	@Test
+	void resolveTuTypeAndCapacity_tuNotAllowedOnLU_throwsGRAITUNotAllowedOnLU()
+	{
+		// A separate TU PI that is NOT linked to luPI, but IS mapped from the scanned GRAI.
+		mapGrai("7613204", "00307", otherTuPI);
+
+		final LUPickingTarget luTarget = LUPickingTarget.ofPackingInstructions(
+				HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()),
+				luPI.getName());
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
+				"7613204.00307.999999",
+				Optional.of(luTarget),
+				PRODUCT_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("GRAITUNotAllowedOnLU"); // matches AD_Message key (no rows in test env)
+	}
+
+	/** Step 4 — the resolved TU has no PIIP for the line's product → GRAINoCapacityForProduct. */
+	@Test
+	void resolveTuTypeAndCapacity_noCapacityForProduct_throwsGRAINoCapacityForProduct()
+	{
+		// Map the scanned GRAI to tuPI (which only has a PIIP for PRODUCT_ID),
+		// then ask for a different product that has no PIIP.
+		mapGrai("7613204", "00307", tuPI);
+		final ProductId otherProductId = ProductId.ofRepoId(9999);
+
+		final LUPickingTarget luTarget = LUPickingTarget.ofPackingInstructions(
+				HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()),
+				luPI.getName());
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(
+				"7613204.00307.999999",
+				Optional.of(luTarget),
+				otherProductId))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("GRAINoCapacityForProduct"); // matches AD_Message key (no rows in test env)
+	}
+
+	/** Step 4 happy path — all steps pass and the result holds the expected IDs. */
+	@Test
+	void resolveTuTypeAndCapacity_allStepsPass_returnsResolution()
+	{
+		mapGrai("7613204", "00307", tuPI);
+
+		final GraiTuResolution result = service.resolveTuTypeAndCapacity(
+				"7613204.00307.999999",
+				Optional.empty(),
+				PRODUCT_ID);
+
+		assertThat(result.getTuPIId()).isEqualTo(HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()));
+		assertThat(result.getHuPIItemProductId()).isNotNull();
+	}
+
 	@NonNull
 	private static LUPickingTarget buildNewLuTarget(@NonNull final I_M_HU_PI pi)
 	{
@@ -190,5 +295,17 @@ class PickingJobGraiTargetServiceTest
 				HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID()),
 				pi.getName()
 		);
+	}
+
+	private void mapGrai(
+			@NonNull final String companyPrefix,
+			@NonNull final String assetType,
+			@NonNull final I_M_HU_PI huPI)
+	{
+		final I_M_HU_PI_GRAI record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
+		record.setGRAI_CompanyPrefix(companyPrefix);
+		record.setGRAI_AssetType(assetType);
+		record.setM_HU_PI_ID(huPI.getM_HU_PI_ID());
+		InterfaceWrapperHelper.save(record);
 	}
 }
