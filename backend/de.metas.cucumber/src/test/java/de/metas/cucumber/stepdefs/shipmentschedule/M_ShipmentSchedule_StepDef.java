@@ -311,10 +311,7 @@ public class M_ShipmentSchedule_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And shipment is generated for the following shipment schedule
-	 *   | M_ShipmentSchedule_ID | M_InOut_ID |
-	 *   | shipmentSchedule_1    | shipment_1 |
-	 * And shipment is generated for the following shipment schedule
-	 *   | M_ShipmentSchedule_ID  | M_InOut_ID |
+	 *   | M_ShipmentSchedule_ID   | M_InOut_ID |
 	 *   | ss_product, ss_product2 | shipment_1 |
 	 * </pre>
 	 */
