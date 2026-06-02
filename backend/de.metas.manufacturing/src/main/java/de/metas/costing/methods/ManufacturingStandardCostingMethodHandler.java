@@ -190,7 +190,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
-		return currentCostsRepo.getOrCreate(costSegmentAndElement);
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
 
 	private CostDetailCreateResult createIssueOrReceipt(final CostDetailCreateRequest request)
@@ -494,7 +494,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	private CostPrice getProductActualCostPrice(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegmentAndElement)
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement)
 				.getCostPrice();
 	}
 

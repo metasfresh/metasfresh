@@ -200,7 +200,7 @@ public class CostingMethodHandlerUtils
 
 	public final CurrentCost getCurrentCost(final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrCreate(costSegmentAndElement);
+		return currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 	}
 
 	public final void saveCurrentCost(final CurrentCost currentCost)

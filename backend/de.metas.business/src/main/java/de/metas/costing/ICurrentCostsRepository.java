@@ -43,7 +43,17 @@ public interface ICurrentCostsRepository
 	@Nullable
 	CurrentCost getOrNull(CostSegmentAndElement costSegmentAndElement);
 
-	CurrentCost getOrCreate(CostSegmentAndElement costSegmentAndElement);
+	/**
+	 * Returns the current cost record for the given segment, creating one if absent.
+	 *
+	 * <p>Acquires a PostgreSQL row lock ({@code SELECT ... FOR UPDATE}) on the existing row, held until transaction end.
+	 * The lock is effective only inside a transaction — without one the read behaves like a plain read
+	 * (and cannot participate in a deadlock).
+	 * This method should be the transaction's first read of the row; a prior plain read or a
+	 * FK-child insert before calling this method re-creates the lock-upgrade deadlock hazard.
+	 * If caching is ever added to the implementation, this path must bypass it.
+	 */
+	CurrentCost getOrCreateForUpdate(CostSegmentAndElement costSegmentAndElement);
 
 	CurrentCost create(CostSegmentAndElement costSegmentAndElement);
 
