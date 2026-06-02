@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
@@ -731,5 +732,27 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.stream()
 				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public int setDueDateWherePaymentTermAllowsOverride(
+			@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter,
+			@NonNull final Timestamp dueDate)
+	{
+		final IQuery<I_C_PaymentTerm> allowingPaymentTerms = queryBL
+				.createQueryBuilder(I_C_PaymentTerm.class)
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsAllowOverrideDueDate, true)
+				.create();
+
+		final IQueryUpdater<org.compiere.model.I_C_Invoice> queryUpdater = queryBL
+				.createCompositeQueryUpdater(org.compiere.model.I_C_Invoice.class)
+				.addSetColumnValue(org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate, dueDate);
+
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addFilter(filter)
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID, allowingPaymentTerms)
+				.create()
+				.update(queryUpdater);
 	}
 }

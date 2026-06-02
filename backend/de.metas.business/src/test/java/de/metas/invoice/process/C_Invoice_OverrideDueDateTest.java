@@ -34,6 +34,8 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,5 +130,91 @@ class C_Invoice_OverrideDueDateTest
 		final Collection<String> result = invoiceDAO.retrieveDocNosWithPaymentTermDisallowingOverride(filter);
 
 		assertThat(result).isEmpty();
+	}
+
+	// -----------------------------------------------------------------------
+	// Tests for IInvoiceDAO#setDueDateWherePaymentTermAllowsOverride
+	// -----------------------------------------------------------------------
+
+	private static Timestamp ts(final String isoDate)
+	{
+		return Timestamp.from(Instant.parse(isoDate + "T00:00:00Z"));
+	}
+
+	/**
+	 * An invoice whose payment term has {@code IsAllowOverrideDueDate='Y'} must have its
+	 * DueDate set to the requested value.
+	 */
+	@Test
+	void flagY_dueDateIsUpdated()
+	{
+		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setIsAllowOverrideDueDate(true);
+		InterfaceWrapperHelper.saveRecord(pt);
+
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setDocumentNo("INV-Y-001");
+		invoice.setC_PaymentTerm_ID(pt.getC_PaymentTerm_ID());
+		invoice.setDueDate(ts("2024-01-01"));
+		InterfaceWrapperHelper.saveRecord(invoice);
+
+		final Timestamp newDueDate = ts("2025-06-30");
+		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
+
+		final int updated = invoiceDAO.setDueDateWherePaymentTermAllowsOverride(filter, newDueDate);
+
+		assertThat(updated).isEqualTo(1);
+		InterfaceWrapperHelper.refresh(invoice);
+		assertThat(invoice.getDueDate()).isEqualTo(newDueDate);
+	}
+
+	/**
+	 * An invoice whose payment term has {@code IsAllowOverrideDueDate='N'} must NOT have its
+	 * DueDate changed.
+	 */
+	@Test
+	void flagN_dueDateIsNotUpdated()
+	{
+		final I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setIsAllowOverrideDueDate(false);
+		InterfaceWrapperHelper.saveRecord(pt);
+
+		final Timestamp originalDueDate = ts("2024-01-01");
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setDocumentNo("INV-N-001");
+		invoice.setC_PaymentTerm_ID(pt.getC_PaymentTerm_ID());
+		invoice.setDueDate(originalDueDate);
+		InterfaceWrapperHelper.saveRecord(invoice);
+
+		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
+
+		final int updated = invoiceDAO.setDueDateWherePaymentTermAllowsOverride(filter, ts("2025-06-30"));
+
+		assertThat(updated).isEqualTo(0);
+		InterfaceWrapperHelper.refresh(invoice);
+		assertThat(invoice.getDueDate()).isEqualTo(originalDueDate);
+	}
+
+	/**
+	 * An invoice with no payment term at all must NOT be updated (it fails the
+	 * {@code addInSubQueryFilter} join, so it is skipped).
+	 */
+	@Test
+	void noPaymentTerm_dueDateIsNotUpdated()
+	{
+		final Timestamp originalDueDate = ts("2024-01-01");
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setDocumentNo("INV-NOPT-001");
+		// C_PaymentTerm_ID intentionally left unset
+		invoice.setDueDate(originalDueDate);
+		InterfaceWrapperHelper.saveRecord(invoice);
+
+		final IQueryFilter<I_C_Invoice> filter = filterByInvoiceId(invoice.getC_Invoice_ID());
+
+		final int updated = invoiceDAO.setDueDateWherePaymentTermAllowsOverride(filter, ts("2025-06-30"));
+
+		assertThat(updated).isEqualTo(0);
+		InterfaceWrapperHelper.refresh(invoice);
+		assertThat(invoice.getDueDate()).isEqualTo(originalDueDate);
 	}
 }

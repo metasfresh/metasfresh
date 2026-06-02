@@ -51,6 +51,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -214,4 +215,16 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return up to {@link org.adempiere.ad.dao.QueryLimit#TEN} DocumentNos for display in the rejection message
 	 */
 	Collection<String> retrieveDocNosWithPaymentTermDisallowingOverride(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+
+	/**
+	 * Bulk-updates the {@code DueDate} column of all active invoices that match {@code filter}
+	 * <em>and</em> whose payment term has {@code IsAllowOverrideDueDate='Y'}.
+	 * Invoices without a payment term or with the flag set to {@code 'N'} are intentionally skipped.
+	 *
+	 * @param filter   the query filter that describes the process selection (usually from
+	 *                 {@link de.metas.process.ProcessInfo#getQueryFilterOrElseFalse()})
+	 * @param dueDate  the new due date to set
+	 * @return number of invoice records updated
+	 */
+	int setDueDateWherePaymentTermAllowsOverride(IQueryFilter<org.compiere.model.I_C_Invoice> filter, Timestamp dueDate);
 }
