@@ -64,7 +64,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
                 },
                 {
                   "KindID": 4,
-                  "Value": "DE DE RO"
+                  "Value": "DE RO"
                 },
                 {
                   "KindID": 5,
