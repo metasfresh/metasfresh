@@ -70,7 +70,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative
- * Repository Cluster: DDOrderLowLevelDAO, DDOrderLowLevelService
+ * Repository Cluster: DDOrderLowLevelDAO
  */
 @Repository
 public class DDOrderLowLevelDAO
@@ -89,23 +89,23 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Returns a sub-query selecting all live (non-voided), active {@link I_DD_Order} records.
+	 * Returns a sub-query selecting all live (Completed), active {@link I_DD_Order} records.
 	 *
 	 * <p>Intended to be consumed by callers as an {@code IN}/{@code NOT IN} sub-query filter
 	 * (e.g. "shipment schedules that have / have no live DD_Order"). The cross-model join is
 	 * composed in the caller's service; this DAO owns only the DD_Order side of the query.</p>
 	 */
-	public IQuery<I_DD_Order> retrieveLiveDDOrdersQuery()
+	public IQuery<I_DD_Order> queryCompletedDDOrders()
 	{
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter()
 				.create();
 	}
 
 	/**
-	 * Returns the ID of the first active (non-voided) DD_Order linked to the given shipment schedule,
+	 * Returns the ID of the first active (Completed) DD_Order linked to the given shipment schedule,
 	 * or empty if none exists.
 	 */
 	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
@@ -113,7 +113,7 @@ public class DDOrderLowLevelDAO
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
