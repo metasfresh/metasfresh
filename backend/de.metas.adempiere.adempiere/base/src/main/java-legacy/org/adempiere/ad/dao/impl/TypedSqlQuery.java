@@ -280,21 +280,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-	/**
-	 * Enable PostgreSQL FOR UPDATE SKIP LOCKED clause for optimized concurrent row locking.
-	 * When enabled, the query will lock returned rows and automatically skip rows that are already locked by other transactions.
-	 * This is useful for work queue implementations where multiple processors poll concurrently.
-	 *
-	 * @param forUpdateSkipLocked true to add FOR UPDATE SKIP LOCKED to the query
-	 * @return this query instance for method chaining
-	 */
-	public TypedSqlQuery<T> setForUpdateSkipLocked(final boolean forUpdateSkipLocked)
-	{
-		return (TypedSqlQuery<T>)setForUpdate(forUpdateSkipLocked
-				? ForUpdate.FOR_UPDATE_SKIP_LOCKED
-				: ForUpdate.NONE);
-	}
-
 	@Override
 	public TypedSqlQuery<T> setRequiredAccess(@Nullable final Access access)
 	{
