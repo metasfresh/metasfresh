@@ -138,7 +138,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Tab_ID = 549285
   AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Tab_ID = 549285);
 
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584932 /*window/tab element*/);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584932 /*tab element — propagate to AD_Tab_Trl*/);
 
 -- ============================================================
 -- 4. AD_Fields (M_HU_PI_ID, GRAI_CompanyPrefix, GRAI_AssetType, IsActive, AD_Org_ID, AD_Client_ID)
