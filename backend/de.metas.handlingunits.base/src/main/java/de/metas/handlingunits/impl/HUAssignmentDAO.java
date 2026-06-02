@@ -2,7 +2,9 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import org.adempiere.ad.table.api.AdTableId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -534,6 +536,19 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
+			@NonNull final ImmutableSet<HuId> huIds,
+			@NonNull final AdTableId adTableId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				.create()
 				.list();
 	}

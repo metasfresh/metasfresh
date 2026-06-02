@@ -22,7 +22,10 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -439,5 +442,14 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			}
 		}
 		return countTUs;
+	}
+
+	@Override
+	public List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
+			@NonNull final ImmutableSet<HuId> huIds,
+			@NonNull final String tableName)
+	{
+		final AdTableId adTableId = Services.get(IADTableDAO.class).retrieveAdTableId(tableName);
+		return huAssignmentDAO.retrieveAssignmentsForHUsAndTable(huIds, adTableId);
 	}
 }

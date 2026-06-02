@@ -71,19 +71,6 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<de.metas.handlingunits.model.I_M_HU_Assignment> retrieveInOutLineHUAssignments(
-			@NonNull final ImmutableSet<HuId> luHuIds)
-	{
-		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(org.compiere.model.I_M_InOutLine.class);
-		return queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_HU_Assignment.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(de.metas.handlingunits.model.I_M_HU_Assignment.COLUMNNAME_M_HU_ID, luHuIds)
-				.addEqualsFilter(de.metas.handlingunits.model.I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, inOutLineTableId)
-				.create()
-				.list();
-	}
-
-	@Override
 	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final Set<HuId> huIds)
 	{
 		return queryBL

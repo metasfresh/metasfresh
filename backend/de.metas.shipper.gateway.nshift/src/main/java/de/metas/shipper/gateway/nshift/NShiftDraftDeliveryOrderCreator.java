@@ -33,13 +33,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.shipping.HUPackageService;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -84,7 +78,6 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -112,6 +105,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final UserRepository userRepository;
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final CustomsTariffRepository customsTariffRepository;
+	@NonNull private final HUPackageService huPackageService;
 
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -120,9 +114,6 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	@NonNull private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
-	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 
 	private static final Logger logger = LoggerFactory.getLogger(NShiftDraftDeliveryOrderCreator.class);
@@ -223,90 +214,21 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Two bulk queries across all packages:
-	 * 1. M_Package_HU → collect all LU HuIds and their owning PackageId.
-	 * 2. M_HU_Assignment filtered by those LU HuIds and by M_InOutLine table → for each assignment
-	 *    read the VHU's CountryOfOrigin attribute.
-	 * Returns a map from InOutLineId to CountryOfOrigin (absent when not set).
-	 */
 	@NonNull
 	private Map<PackageId, Map<InOutAndLineId, String>> fetchCountryOfOriginByInOutLine(
 			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
-		final ImmutableSet<PackageId> packageIds = packageInfos.stream()
-				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPackageId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		// Step 1 — pre-build PackageId→InOutId (one load per unique PackageId, not per HU record)
-		// InOutId is not on I_M_HU_Assignment — derive it from the package record.
 		final Map<PackageId, InOutId> inOutIdByPackageId = new HashMap<>();
-		for (final PackageId pkgId : packageIds)
+		for (final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
 		{
+			final PackageId pkgId = packageInfo.getPackageId();
 			final InOutId inOutId = purchaseOrderToShipperTransportationRepository.getPackageById(pkgId).getInOutId();
 			if (inOutId != null)
 			{
 				inOutIdByPackageId.put(pkgId, inOutId);
 			}
 		}
-
-		// Build HuId maps from the bulk M_Package_HU query
-		final Map<HuId, InOutId> inOutIdByLuHuId = new HashMap<>();
-		final Map<HuId, PackageId> pkgIdByLuHuId = new HashMap<>();
-		huPackageDAO.retrievePackageHUs(packageIds).forEach(pkgHU -> {
-			final PackageId pkgId = PackageId.ofRepoId(pkgHU.getM_Package_ID());
-			final InOutId inOutId = inOutIdByPackageId.get(pkgId);
-			if (inOutId != null)
-			{
-				final HuId luHuId = HuId.ofRepoId(pkgHU.getM_HU_ID());
-				inOutIdByLuHuId.put(luHuId, inOutId);
-				pkgIdByLuHuId.put(luHuId, pkgId);
-			}
-		});
-		final ImmutableSet<HuId> allPackageLuIds = ImmutableSet.copyOf(inOutIdByLuHuId.keySet());
-
-		if (allPackageLuIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		// Step 2 — M_HU_Assignment for those LU HuIds referencing M_InOutLine records
-		final List<I_M_HU_Assignment> assignments = huPackageDAO.retrieveInOutLineHUAssignments(allPackageLuIds);
-
-		if (assignments.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		// Step 3 — collect VHU IDs from the assignments; load them all in one query
-		final ImmutableSet<HuId> vhuIds = assignments.stream()
-				.filter(a -> a.getVHU_ID() > 0)
-				.map(a -> HuId.ofRepoId(a.getVHU_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Map<HuId, I_M_HU> vhuById = vhuIds.isEmpty()
-				? ImmutableMap.of()
-				: handlingUnitsDAO.getByIds(vhuIds).stream()
-						.collect(Collectors.toMap(hu -> HuId.ofRepoId(hu.getM_HU_ID()), hu -> hu));
-
-		// Step 4 — build InOutLineId → CountryOfOrigin map from each assignment's VHU attribute
-		final HashMap<PackageId, Map<InOutAndLineId, String>> result = new HashMap<>();
-		for (final I_M_HU_Assignment assignment : assignments)
-		{
-			final HuId luHuId = HuId.ofRepoId(assignment.getM_HU_ID());
-			final InOutId assignmentInOutId = inOutIdByLuHuId.get(luHuId);
-			if (assignmentInOutId == null) { continue; }
-			final PackageId pkgId = pkgIdByLuHuId.get(luHuId);
-			if (pkgId == null) { continue; }
-			final InOutAndLineId inOutAndLineId = InOutAndLineId.ofRepoId(assignmentInOutId, assignment.getRecord_ID());
-			final Map<InOutAndLineId, String> pkgMap = result.computeIfAbsent(pkgId, k -> new LinkedHashMap<>());
-			if (pkgMap.containsKey(inOutAndLineId)) { continue; } // first assignment wins per InOutLine
-			final HuId vhuId = assignment.getVHU_ID() > 0 ? HuId.ofRepoId(assignment.getVHU_ID()) : null;
-			final I_M_HU vhu = vhuId != null ? vhuById.get(vhuId) : null;
-			final String coo = vhu != null ? huAttributesBL.getHUAttributeValue(vhu, HUAttributeConstants.ATTR_CountryOfOrigin) : null;
-			pkgMap.put(inOutAndLineId, coo); // value null = line belongs to package but no country set
-		}
-		return result;
+		return huPackageService.fetchCountryOfOriginByInOutLine(inOutIdByPackageId);
 	}
 
 	/**
