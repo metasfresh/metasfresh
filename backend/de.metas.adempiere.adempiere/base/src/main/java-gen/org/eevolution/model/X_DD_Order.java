@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 639688899L;
+	private static final long serialVersionUID = -1516942113L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -769,6 +769,21 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isMRP_ToDelete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public int getM_ShipmentSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override

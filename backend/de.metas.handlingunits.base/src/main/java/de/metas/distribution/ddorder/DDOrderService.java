@@ -140,6 +140,18 @@ public class DDOrderService
 		documentBL.processEx(ddOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 	}
 
+	public void complete(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	public void voidIt(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+	}
+
 	public void print(@NonNull final DDOrderId ddOrderId)
 	{
 		DefaultModelArchiver.builder()
