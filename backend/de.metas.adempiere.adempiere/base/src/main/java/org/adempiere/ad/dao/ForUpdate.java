@@ -42,6 +42,23 @@ public enum ForUpdate
 	FOR_UPDATE("FOR UPDATE"),
 
 	/**
+	 * Appends {@code FOR NO KEY UPDATE}.
+	 *
+	 * <p>Weaker than {@link #FOR_UPDATE}: conflicts with itself, {@link #FOR_UPDATE}, and {@code FOR SHARE},
+	 * but is <em>compatible</em> with {@code FOR KEY SHARE}.
+	 * PostgreSQL acquires {@code FOR KEY SHARE} at commit time to validate {@code DEFERRABLE INITIALLY DEFERRED}
+	 * foreign-key constraints on child rows that reference the locked row; {@code FOR NO KEY UPDATE} does
+	 * not block those acquisitions, so it eliminates the deadlock between cost writers and concurrent
+	 * transactions that are committing FK-referencing child rows.
+	 *
+	 * <p>Use this strength for read-modify-write patterns on rows whose primary-key columns are never
+	 * changed by the modifier (e.g. M_Cost rows — cost writers update cost amounts, not the key).
+	 * Cost writers are still mutually exclusive: two concurrent {@code FOR NO KEY UPDATE} holders conflict
+	 * and serialize exactly as they would under {@code FOR UPDATE}.
+	 */
+	FOR_NO_KEY_UPDATE("FOR NO KEY UPDATE"),
+
+	/**
 	 * Appends {@code FOR UPDATE SKIP LOCKED}.
 	 * Like {@link #FOR_UPDATE} but rows already locked by another transaction are silently skipped
 	 * instead of causing the query to block. Useful for work-queue implementations.

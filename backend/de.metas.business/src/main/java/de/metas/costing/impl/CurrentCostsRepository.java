@@ -146,7 +146,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		return toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
 				.create()
-				.setForUpdate(ForUpdate.FOR_UPDATE)
+				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
 				.firstOnly();
 	}
 

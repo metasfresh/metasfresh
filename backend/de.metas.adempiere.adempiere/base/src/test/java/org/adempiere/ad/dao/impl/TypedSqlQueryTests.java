@@ -197,6 +197,21 @@ public class TypedSqlQueryTests
 		}
 
 		@Test
+		public void forNoKeyUpdate_emitsClauseAfterOrderBy()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE);
+
+			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+
+			assertThat(sql).contains("FOR NO KEY UPDATE");
+			assertThat(sql).doesNotContain("SKIP LOCKED");
+			// ORDER BY must appear before FOR NO KEY UPDATE
+			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR NO KEY UPDATE"));
+		}
+
+		@Test
 		public void forUpdateSkipLocked_emitsClause()
 		{
 			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);

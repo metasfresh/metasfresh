@@ -46,11 +46,17 @@ public interface ICurrentCostsRepository
 	/**
 	 * Returns the current cost record for the given segment, creating one if absent.
 	 *
-	 * <p>Acquires a PostgreSQL row lock ({@code SELECT ... FOR UPDATE}) on the existing row, held until transaction end.
-	 * The lock is effective only inside a transaction — without one the read behaves like a plain read
-	 * (and cannot participate in a deadlock).
-	 * This method should be the transaction's first read of the row; a prior plain read or a
-	 * FK-child insert before calling this method re-creates the lock-upgrade deadlock hazard.
+	 * <p>Acquires a PostgreSQL row lock ({@code SELECT ... FOR NO KEY UPDATE}) on the existing row,
+	 * held until transaction end.
+	 * {@code FOR NO KEY UPDATE} is compatible with {@code FOR KEY SHARE}, which PostgreSQL acquires
+	 * at commit time when validating {@code DEFERRABLE INITIALLY DEFERRED} foreign-key constraints on
+	 * child rows that reference this row — so concurrent transactions committing FK-referencing children
+	 * never deadlock against cost writers.  Cost writers are still mutually exclusive: two concurrent
+	 * holders of {@code FOR NO KEY UPDATE} conflict and serialize exactly as under {@code FOR UPDATE}.
+	 *
+	 * <p>The lock is effective only inside a transaction — without one the read behaves like a plain read.
+	 * This method should be the transaction's first read of the row; a prior plain read before calling
+	 * this method re-creates the lock-upgrade deadlock hazard.
 	 * If caching is ever added to the implementation, this path must bypass it.
 	 */
 	CurrentCost getOrCreateForUpdate(CostSegmentAndElement costSegmentAndElement);
