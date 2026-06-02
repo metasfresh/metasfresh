@@ -71,7 +71,7 @@ public class Carrier_ShipmentOrder_StepDef
 	 * {@code DeliveryOrderWorkpackageProcessor} (the AWB is the last thing the chain writes).
 	 */
 	@And("^after not more than (.*)s, Carrier_ShipmentOrder is found:$")
-	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			try
@@ -242,8 +242,9 @@ public class Carrier_ShipmentOrder_StepDef
 	}
 
 	/**
-	 * Items are matched by {@code ProductName} and optionally by {@code CountryOfOrigin} when supplied;
-	 * otherwise the order must have exactly one item.
+	 * Items are matched by {@code ProductName} and optionally by {@code QtyShipped} when supplied;
+	 * if neither is present the order must have exactly one item.
+	 * {@code CountryOfOrigin} is an assertion-only column — not used for matching.
 	 */
 	@And("validate Carrier_ShipmentOrder_Items:")
 	public void validateCarrierShipmentOrderItems(@NonNull final DataTable dataTable)
@@ -257,29 +258,33 @@ public class Carrier_ShipmentOrder_StepDef
 					.collect(Collectors.toList());
 
 			final Optional<String> productNameOpt = row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_ProductName);
-			final Optional<String> countryOfOriginOpt = row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_CountryOfOrigin);
+			final Optional<java.math.BigDecimal> qtyOpt = row.getAsOptionalBigDecimal(I_Carrier_ShipmentOrder_Item.COLUMNNAME_QtyShipped);
 
 			final DeliveryOrderItem item;
-			if (productNameOpt.isPresent())
+			if (productNameOpt.isPresent() || qtyOpt.isPresent())
 			{
-				final String expectedProductName = productNameOpt.get();
-				Stream<DeliveryOrderItem> filtered = allItems.stream()
-						.filter(it -> expectedProductName.equals(it.getProductName()));
-				if (countryOfOriginOpt.isPresent())
+				Stream<DeliveryOrderItem> filtered = allItems.stream();
+				if (productNameOpt.isPresent())
 				{
-					final String expectedCountryOfOrigin = countryOfOriginOpt.get();
-					filtered = filtered.filter(it -> expectedCountryOfOrigin.equals(it.getCountryOfOrigin()));
+					final String expectedProductName = productNameOpt.get();
+					filtered = filtered.filter(it -> expectedProductName.equals(it.getProductName()));
 				}
+				if (qtyOpt.isPresent())
+				{
+					final java.math.BigDecimal expectedQty = qtyOpt.get();
+					filtered = filtered.filter(it -> expectedQty.compareTo(it.getShippedQuantity().toBigDecimal()) == 0);
+				}
+				final String matchKey = productNameOpt.map(n -> "productName='" + n + "'").orElse("")
+						+ qtyOpt.map(q -> (productNameOpt.isPresent() ? ", " : "") + "qty=" + q).orElse("");
 				item = filtered.findFirst()
 						.orElseThrow(() -> new AssertionError(
-								"No delivery order item with productName='" + expectedProductName
-										+ (countryOfOriginOpt.map(c -> "', countryOfOrigin='" + c).orElse(""))
-										+ "' in Carrier_ShipmentOrder_ID=" + order.getId()));
+								"No delivery order item with " + matchKey
+										+ " in Carrier_ShipmentOrder_ID=" + order.getId()));
 			}
 			else
 			{
 				assertThat(allItems)
-						.as("Expected exactly one delivery order item in Carrier_ShipmentOrder_ID=%s (supply ProductName to disambiguate)", order.getId())
+						.as("Expected exactly one delivery order item in Carrier_ShipmentOrder_ID=%s (supply ProductName or QtyShipped to disambiguate)", order.getId())
 						.hasSize(1);
 				item = allItems.get(0);
 			}
