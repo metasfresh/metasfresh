@@ -12,8 +12,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -47,7 +50,6 @@ import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_lin
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
-import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobCreateTUFromGRAICommand;
 import de.metas.handlingunits.picking.job.service.commands.grai.PickingJobGraiTargetService;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
@@ -75,9 +77,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -114,7 +113,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final HUGraiService huGraiService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -624,52 +623,33 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * GRAI-scan picking entry point: creates one empty TU (resolved from the scanned GRAI), attaches the scanned
-	 * GRAI to it, and sets it as the line's existing-TU picking target — all in a single transaction.
-	 * Delegates to {@link PickingJobCreateTUFromGRAICommand}; see that command for the step-by-step flow and the
-	 * AD_Message keys carried by the thrown {@link AdempiereException}s.
+	 * GRAI-scan picking entry point (lazy path): resolves the TU type and capacity from the scanned GRAI,
+	 * builds a new-TU {@link TUPickingTarget} carrying the parsed GRAI, and stores it on the line.
+	 * No physical HU is created here; the real TU is materialised later at first-pick time by the
+	 * framework, and {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}
+	 * stamps the GRAI on it afterwards via {@link HUGraiService}.
 	 *
-	 * @param lineId       the picking-job line being picked; the command resolves the TU type/capacity per the line's product.
-	 * @param scannedGrai  the raw scanned GRAI barcode.
-	 * @param tuLocatorId  the locator the eagerly-created TU is placed at (see {@link #resolveTuLocatorId}).
+	 * @param lineId      the picking-job line being picked; used to resolve the line's product for capacity checks.
+	 * @param scannedGrai the raw scanned GRAI barcode.
 	 */
 	public PickingJob createTUFromGRAI(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobLineId lineId,
-			@NonNull final String scannedGrai,
-			@NonNull final LocatorId tuLocatorId)
+			@NonNull final String scannedGrai)
 	{
-		return PickingJobCreateTUFromGRAICommand.builder()
-				.pickingJobService(this)
-				.huService(huService)
-				.huGraiService(huGraiService)
-				.graiTargetService(graiTargetService)
-				//
-				.pickingJob(pickingJob)
-				.lineId(lineId)
-				.scannedGrai(scannedGrai)
-				.tuLocatorId(tuLocatorId)
-				//
-				.execute();
-	}
-
-	/**
-	 * Returns the locator at which the eagerly-created GRAI-scanned TU is placed;
-	 * uses the default locator of the warehouse associated with the line's shipment schedule.
-	 */
-	@NonNull
-	public LocatorId resolveTuLocatorId(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingJobLineId lineId)
-	{
-		// There is no warehouse/locator on the picking-job header, and picking steps (which carry a
-		// pick-from locator) may not exist yet when the worker scans the GRAI. The stable source
-		// available at scan time is the line's shipment-schedule warehouse — the same warehouse
-		// the normal pick flow uses (ShipmentScheduleInfo.getWarehouseId()).
+		final Optional<LUPickingTarget> luTargetOpt = pickingJob.getLuPickingTargetEffective(lineId);
 		final PickingJobLine line = pickingJob.getLineById(lineId);
-		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
-		final WarehouseId warehouseId = shipmentScheduleService.getById(shipmentScheduleId).getWarehouseId();
-		return warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+		final PickingJobGraiTargetService.GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
+				scannedGrai,
+				luTargetOpt,
+				line.getProductId());
+
+		final GRAI grai = resolved.getGrai();
+		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
+		final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(tuPIId);
+		final TUPickingTarget tuTarget = TUPickingTarget.ofPackingInstructions(tuPIId, tuPI.getName(), grai);
+
+		return setTUPickingTarget(pickingJob, lineId, tuTarget);
 	}
 
 	/**

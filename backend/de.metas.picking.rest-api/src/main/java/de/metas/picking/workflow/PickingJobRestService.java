@@ -56,7 +56,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.warehouse.LocatorId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -216,16 +215,16 @@ public class PickingJobRestService
 	}
 
 	/**
-	 * Processes the GRAI-scan TU-target assignment for the given picking-job line;
-	 * resolves the target locator from the line's shipment-schedule warehouse, then creates the TU.
+	 * Processes the GRAI-scan TU-target assignment for the given picking-job line.
+	 * Resolves the TU type/capacity from the scanned GRAI, builds a new-TU target carrying the
+	 * GRAI, and stores it on the line.  No physical HU is created here.
 	 */
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobLineId lineId,
 			@NonNull final String scannedGrai)
 	{
-		final LocatorId tuLocatorId = pickingJobService.resolveTuLocatorId(pickingJob, lineId);
-		return pickingJobService.createTUFromGRAI(pickingJob, lineId, scannedGrai, tuLocatorId);
+		return pickingJobService.createTUFromGRAI(pickingJob, lineId, scannedGrai);
 	}
 
 	public boolean isGraiScanEnabled(@NonNull final PickingJob pickingJob)
