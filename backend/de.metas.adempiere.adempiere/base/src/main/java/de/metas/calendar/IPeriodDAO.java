@@ -26,6 +26,7 @@ import de.metas.document.DocBaseType;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_PeriodControl;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Properties;
 
@@ -33,4 +34,5 @@ public interface IPeriodDAO extends ISingletonService
 {
 	Map<DocBaseType, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
 
+	LocalDate getEndDateById(int periodId);
 }

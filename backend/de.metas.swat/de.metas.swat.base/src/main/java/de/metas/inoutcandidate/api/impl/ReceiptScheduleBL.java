@@ -99,6 +99,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableList;
+import org.compiere.SpringContextHolder;
+
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
@@ -299,11 +302,17 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			@NonNull final IInOutProducer producer,
 			@NonNull final Iterator<I_M_ReceiptSchedule> receiptSchedules)
 	{
+		// Layer 3: API-entry guard — catches programmatic / non-process callers.
+		// Materialise to allow the guard to inspect all schedules before any receipt is created.
+		final ImmutableList<I_M_ReceiptSchedule> schedulesList = ImmutableList.copyOf(receiptSchedules);
+		SpringContextHolder.instance.getBean(ReceiptScheduleDeliveryStopGuard.class)
+				.assertNoneBlocked(schedulesList);
+
 		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult>createExecutor()
 				.setContext(ctx)
 				.setProcessor(producer)
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)
-				.process(receiptSchedules);
+				.process(schedulesList.iterator());
 	}
 
 	@Override
@@ -553,6 +562,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.anyMatch();
 	}
 
+	@Override
 	public void applyReceiptScheduleChanges(@NonNull final ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest)
 	{
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(applyReceiptScheduleChangesRequest.getReceiptScheduleId());

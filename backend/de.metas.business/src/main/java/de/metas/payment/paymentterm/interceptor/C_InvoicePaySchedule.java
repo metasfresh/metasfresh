@@ -25,7 +25,7 @@ package de.metas.payment.paymentterm.interceptor;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentschedule.service.InvoicePayScheduleService;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.ModelChangeType;

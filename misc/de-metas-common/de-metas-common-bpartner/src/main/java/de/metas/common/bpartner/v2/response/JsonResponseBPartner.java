@@ -36,6 +36,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
@@ -77,6 +78,7 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER_PAYMENTTERM = "customerPaymentTerm";
 	public static final String VENDOR_PAYMENTTERM = "vendorPaymentTerm";
 	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
+	public static final String EXTENDED_PROPS = "extendedProps";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -264,6 +266,13 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseIncoterms customerIncoterms;
 
+	@ApiModelProperty(position = 168,
+			value = "Values of custom REST-API columns (AD_Column.IsRestAPICustomColumn='Y') on C_BPartner.")
+	@JsonProperty(EXTENDED_PROPS)
+	@JsonInclude(Include.NON_NULL)
+	@Nullable
+	Map<String, Object> extendedProps;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -307,6 +316,7 @@ public class JsonResponseBPartner
 			@JsonProperty(CUSTOMER_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm customerPaymentTerm,
 			@JsonProperty(VENDOR_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm vendorPaymentTerm,
 			@JsonProperty(CUSTOMER_INCOTERMS) @Nullable final JsonResponseIncoterms customerIncoterms,
+			@JsonProperty(EXTENDED_PROPS) @Nullable final Map<String, Object> extendedProps,
 
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
@@ -357,6 +367,7 @@ public class JsonResponseBPartner
 		this.customerPaymentTerm = customerPaymentTerm;
 		this.vendorPaymentTerm = vendorPaymentTerm;
 		this.customerIncoterms = customerIncoterms;
+		this.extendedProps = extendedProps;
 
 		this.changeInfo = changeInfo;
 	}

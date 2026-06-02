@@ -39,11 +39,12 @@ import java.util.Optional;
 public interface IVATCodeDAO extends ISingletonService
 {
 	/**
-	 * Find matching {@link VATCode} for given context, .
+	 * Find matching VAT code for the given context.
 	 *
-	 * @return vat code or {@link Optional#empty()}; never returns null
+	 * @return matching response (carries the resolved {@link VATCode} + its
+	 * {@link VATCodeAmountType}) or {@link Optional#empty()}; never returns null
 	 */
-	Optional<VATCode> findVATCode(VATCodeMatchingRequest request);
+	Optional<VATCodeMatchingResponse> findVATCode(VATCodeMatchingRequest request);
 
 	@NonNull
 	VatCodeId getIdByCodeAndOrgId(@NonNull String code, @NonNull OrgId orgId);

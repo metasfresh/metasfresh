@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements I_M_Shipper_Mapping_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 774154654L;
+	private static final long serialVersionUID = -342521104L;
 
     /** Standard Constructor */
     public X_M_Shipper_Mapping_Config (final Properties ctx, final int M_Shipper_Mapping_Config_ID, @Nullable final String trxName)
@@ -179,6 +179,10 @@ public class X_M_Shipper_Mapping_Config extends org.compiere.model.PO implements
 	public static final String MAPPINGATTRIBUTEVALUE_PackageHeightCm = "PackageHeightCm";
 	/** PackageHeightMm = PackageHeightMm */
 	public static final String MAPPINGATTRIBUTEVALUE_PackageHeightMm = "PackageHeightMm";
+	/** ReceiverBPartnerAttention = ReceiverBPartnerAttention */
+	public static final String MAPPINGATTRIBUTEVALUE_ReceiverBPartnerAttention = "ReceiverBPartnerAttention";
+	/** SenderBPartnerAttention = SenderBPartnerAttention */
+	public static final String MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention = "SenderBPartnerAttention";
 	@Override
 	public void setMappingAttributeValue (final java.lang.String MappingAttributeValue)
 	{

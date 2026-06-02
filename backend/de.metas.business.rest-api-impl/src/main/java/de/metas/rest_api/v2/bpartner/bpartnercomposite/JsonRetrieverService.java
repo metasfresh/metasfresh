@@ -117,7 +117,10 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.TableRecordUtil;
@@ -244,6 +247,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
 			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
 			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
+			.put(BPartnerLocation.ATTENTION, JsonResponseLocation.ATTENTION)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
@@ -286,6 +290,7 @@ public class JsonRetrieverService
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final PaymentTermService paymentTermService;
 	private final IncotermsRepository incotermsRepository;
+	private final transient CustomColumnService customColumnService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -302,6 +307,7 @@ public class JsonRetrieverService
 			@NonNull final PaymentTermService paymentTermService,
 			@NonNull final IncotermsRepository incotermsRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final CustomColumnService customColumnService,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
@@ -313,6 +319,7 @@ public class JsonRetrieverService
 		this.paymentTermService = paymentTermService;
 		this.incotermsRepository = incotermsRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.customColumnService = customColumnService;
 		this.identifier = identifier;
 
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
@@ -418,6 +425,8 @@ public class JsonRetrieverService
 
 		final JsonResponseBPGroup jsonBPGroup = toJson(bpartner.getGroupId());
 
+		final de.metas.interfaces.I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.load(bpartner.getId(), de.metas.interfaces.I_C_BPartner.class);
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
@@ -447,6 +456,7 @@ public class JsonRetrieverService
 						.map(JSONPaymentRule::ofCode)
 						.orElse(null))
 				.internalName(bpartner.getInternalName())
+				.glnLookupLabel(bpartner.getGlnLookupLabel())
 				.vatId(bpartner.getVatId())
 				.eori(bpartner.getEori())
 				.eInvoiceBuyerReference(bpartner.getEInvoiceBuyerReference())
@@ -457,7 +467,20 @@ public class JsonRetrieverService
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
 				.debtorId(bpartner.getDebtorId())
+				.extendedProps(getExtendedPropsOrNull(bpartnerRecord))
 				.build();
+	}
+
+	@Nullable
+	private ImmutableMap<String, Object> getExtendedPropsOrNull(@NonNull final I_C_BPartner bpartnerRecord)
+	{
+		if (POJOWrapper.isHandled(bpartnerRecord))
+		{
+			return null;  // POJOWrapper-backed record (unit-test mode) — no custom columns
+		}
+		final ImmutableMap<String, Object> extProps =
+				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(bpartnerRecord)).toMap();
+		return extProps.isEmpty() ? null : extProps;
 	}
 
 	private static JsonChangeInfo createJsonChangeInfo(
@@ -556,6 +579,7 @@ public class JsonRetrieverService
 
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
+					.code(contact.getValue())
 					.email(contact.getEmail())
 					.firstName(contact.getFirstName())
 					.lastName(contact.getLastName())
@@ -635,6 +659,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
+					.attention(location.getAttention())
 					.vatId(VATIdentifier.toString(location.getVatTaxId()))
 					.build();
 		}

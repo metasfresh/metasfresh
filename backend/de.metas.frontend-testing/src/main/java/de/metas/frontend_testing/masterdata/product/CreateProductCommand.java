@@ -56,6 +56,7 @@ import org.eevolution.model.X_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -128,8 +129,11 @@ public class CreateProductCommand
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
-		productRecord.setProductType(ProductType.Item.getCode());
-		productRecord.setIsStocked(true);
+		final ProductType productType = resolveProductType(request.getType());
+		productRecord.setProductType(productType.getCode());
+		// Explicit request override wins; otherwise Items are stocked, non-items are not.
+		final Boolean explicitIsStocked = request.getIsStocked();
+		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked.booleanValue() : productType.isItem());
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
 		productRecord.setIsPurchased(true);
@@ -438,6 +442,31 @@ public class CreateProductCommand
 		}
 
 		saveRecord(lineRecord);
+	}
+
+	/**
+	 * Map the request's {@code type} field to a {@link ProductType}.
+	 * Accepts both the enum name ({@code "Item"}, {@code "Service"}, …) and the AD ref-list code
+	 * ({@code "I"}, {@code "S"}, …). Falls back to {@link ProductType#Item} when {@code null}/blank.
+	 */
+	private static ProductType resolveProductType(@Nullable final String requestType)
+	{
+		final String trimmed = StringUtils.trimBlankToNull(requestType);
+		if (trimmed == null)
+		{
+			return ProductType.Item;
+		}
+		// Try enum-name matching first (case-insensitive) — "Item", "Service", "Resource", …
+		for (final ProductType candidate : ProductType.values())
+		{
+			if (candidate.name().equalsIgnoreCase(trimmed))
+			{
+				return candidate;
+			}
+		}
+		// Fall back to the AD ref-list code ("I", "S", "R", …). ofCode throws when not found,
+		// which is the right behaviour for an invalid type — surface it to the caller.
+		return ProductType.ofCode(trimmed);
 	}
 
 	private void renamePreviousEAN13ProductCodes()

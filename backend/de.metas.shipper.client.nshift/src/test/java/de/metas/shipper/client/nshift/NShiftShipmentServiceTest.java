@@ -23,9 +23,9 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
@@ -36,8 +36,6 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
-import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
-import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
@@ -62,41 +60,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(SnapshotExtension.class)
 public class NShiftShipmentServiceTest
 {
-	private Expect expect;
-
-	// see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields ReferenceKind
-	private static final String REFERENCE_KIND_PICKUP_START = "108";
-	private static final String REFERENCE_KIND_PICKUP_END = "109";
-	private static final String REFERENCE_KIND_DELIVERY_DATE = "9";
-	private static final String REFERENCE_KIND_CUSTOMER_REFERENCE = "7";
-
-	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_1 = "129";
-	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_2 = "130";
-	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_3 = "131";
-	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_4 = "132";
-	private static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_5 = "133";
-	private static final String LINE_REFERENCE_KIND_CONTENTS = "23";
-
-	// see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields DetailGroupKind
-	private static final String DETAIL_GROUP_KEY_CUSTOMS_ARTICLE = "1";
-	private static final String DETAIL_GROUP_KEY_CUSTOMS_INFO = "2";
-
-	// see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields DetailKind
-	private static final String DETAIL_KIND_ARTICLE_NO = "1";
-	private static final String DETAIL_KIND_UNIT_VALUE = "2";
-	private static final String DETAIL_KIND_COUNTRY_OF_ORIGIN = "4";
-	private static final String DETAIL_KIND_QUANTITY = "5";
-	private static final String DETAIL_KIND_UNIT_WEIGHT = "6";
-	private static final String DETAIL_KIND_DESCRIPTION_OF_GOODS = "7";
-	private static final String DETAIL_KIND_UNIT_OF_MEASURE = "8";
-	private static final String DETAIL_KIND_TOTAL_VALUE = "10";
-	private static final String DETAIL_KIND_CUSTOMS_ARTICLE_CURRENCY = "17";
-	private static final String DETAIL_KIND_SHIPPER_EORI = "182";
-
 	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "123"); //nShift portal actorId
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
 	private static final String URL = System.getProperty("nshift.test.url", "https://demo.shipmentserver.com:8080");
+
+	@Autowired
+	@NonNull
+	private NShiftShipmentService nShiftShipmentService;
+
+	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
+	private Expect expect;
 
 	private static final JsonDeliveryRequest DELIVERY_REQUEST = JsonDeliveryRequest.builder()
 			.deliveryOrderId(1)
@@ -114,6 +88,7 @@ public class NShiftShipmentServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
+					.attention("Attention Sender Test")
 					.build())
 			.pickupContact(JsonContact.builder()
 					.name("Test Pickup Contact Name")
@@ -137,6 +112,7 @@ public class NShiftShipmentServiceTest
 					.street("Alecsandri")
 					.additionalAddressInfo("")
 					.houseNo("3")
+					.attention("Attention Test")
 					.build())
 			.deliveryContact(JsonContact.builder()
 					.name("Test Delivery Contact Name")
@@ -233,234 +209,8 @@ public class NShiftShipmentServiceTest
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY, "N")
 					.build())
-			.mappingConfigs(JsonMappingConfigList.ofList(ImmutableList.of(
-					JsonMappingConfig.builder()
-							.seqNo(10)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
-							.attributeKey(REFERENCE_KIND_PICKUP_START) // see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields ReferenceKind
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_START)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(20)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
-							.attributeKey(REFERENCE_KIND_PICKUP_END)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_END)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(30)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
-							.attributeKey(REFERENCE_KIND_DELIVERY_DATE)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_DELIVERY_DATE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(40)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
-							.attributeKey(REFERENCE_KIND_CUSTOMER_REFERENCE)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(50)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(60)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(70)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("RO")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(80)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("DE")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(90)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(100)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(110)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(120)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_QUANTITY)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPED_QUANTITY)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(130)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_UNIT_OF_MEASURE)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UOM_CODE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(140)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_DESCRIPTION_OF_GOODS)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(150)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_ARTICLE_NO)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(160)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_UNIT_VALUE)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(170)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_TOTAL_VALUE)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(180)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_CUSTOMS_ARTICLE_CURRENCY)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(190)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_COUNTRY_OF_ORIGIN)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(200)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_COUNTRY_OF_ORIGIN)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("DE")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(210)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_COUNTRY_OF_ORIGIN)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("RO")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(220)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_1)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(230)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_1)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("DE")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(240)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_1)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("RO")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(250)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_INFO)
-							.attributeKey(DETAIL_KIND_SHIPPER_EORI)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(260)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_INFO)
-							.attributeKey(DETAIL_KIND_SHIPPER_EORI)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("DE")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(270)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_INFO)
-							.attributeKey(DETAIL_KIND_SHIPPER_EORI)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE)
-							.mappingRule(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
-							.mappingRuleValue("RO")
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(280)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CONTENTS)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(290)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_2)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(300)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_3)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(310)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_4)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_VALUE)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(320)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
-							.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_5)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF)
-							.build(),
-					JsonMappingConfig.builder()
-							.seqNo(330)
-							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
-							.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
-							.attributeKey(DETAIL_KIND_UNIT_WEIGHT)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G)
-							.build()
-			)))
-
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
 			.build();
-
-	@Autowired
-	NShiftShipmentService nShiftShipmentService;
 
 	@Test
 	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")

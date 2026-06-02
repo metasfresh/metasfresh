@@ -44,8 +44,8 @@ Feature: nShift Shipment
       | Identifier | Value           | Name            | Name2                  | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | nshift_customer | nShift Customer | nShift Logistics Dept. | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | OPT.Address2 |
-      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2      |
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | Address2 | Attention  |
+      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2  | Attention Test |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -103,8 +103,8 @@ Feature: nShift Shipment
       | cs4        | nShift       |
 
   @from:cucumber
-@allure.label.epic:E0355_Transport_Planning_Extralogistik
-@allure.label.feature:F00355
+  @allure.label.epic:E0355_Transport_Planning_Extralogistik
+  @allure.label.feature:F00355
   Scenario: nShift Carrier Advise
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
@@ -137,6 +137,16 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss1        | so1_l1         | N             | cp1                | cgt1                  |
+    # Only automatic carrier advise (M_ShipmentSchedule_Advise with IsIncludeCarrierAdviseManual=true)
+    # creates allocation records. Manual advise (M_ShipmentSchedule_Advise_Manual) does not — so
+    # cp1 allocations are expected here (from the auto-advise response), but not cp2 ones.
+    Then Carrier_Product_GoodsType_Allocs are found:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    And Carrier_Product_Service_Allocs are found:
+      | Carrier_Product_ID | Carrier_Service_ID |
+      | cp1                | cs1                |
+      | cp1                | cs2                |
     And update shipment schedules
       | Identifier | M_Shipper_ID |
       | ss1        | null         |
@@ -205,15 +215,63 @@ Feature: nShift Shipment
       | Carrier_ShipmentOrder_ID | awb | TrackingURL | HasPdfLabel |
       | cso_do                   | awb | trackingUrl | true        |
     And validate Carrier_ShipmentOrder:
-      | Carrier_ShipmentOrder_ID | Shipper_Name1 | Shipper_CountryISO2Code | Receiver_Name1  | Receiver_Name2         | Receiver_StreetName1 | Receiver_StreetName2 | Receiver_StreetNumber | Receiver_ZipCode | Receiver_City | Receiver_CountryISO2Code | Receiver_ContactName    | Receiver_Phone   | Receiver_Email              |
-      | cso_do                   | metasfresh AG | DE                      | nShift Customer | nShift Logistics Dept. | street               | Floor 2              | 1                     | 12345            | city          | CH                       | nShift Customer Contact | +41 79 123 45 67 | contact@nshift-test.example |
+      | Carrier_ShipmentOrder_ID | Shipper_Name1 | Shipper_CountryISO2Code | Receiver_Name1  | Receiver_Name2         | Receiver_StreetName1 | Receiver_StreetName2 | Receiver_StreetNumber | Receiver_ZipCode | Receiver_City | Receiver_CountryISO2Code | Receiver_ContactName    | Receiver_Phone | Receiver_Email              |
+      | cso_do                   | metasfresh AG | DE                      | nShift Customer | nShift Logistics Dept. | street               | Floor 2              | 1                     | 12345            | city          | CH                       | nShift Customer Contact | +41791234567   | contact@nshift-test.example |
     # 10 PCE / 10 PCE-per-TU => 1 parcel; total weight = product.GrossWeight (2.1) × qty (10) = 21 kg.
     And validate Carrier_ShipmentOrder_Items:
       | Carrier_ShipmentOrder_ID | ProductName    | ArticleValue   | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
       | cso_do                   | nShift Product | nshift_product | 12345678            | 10         | 10    | 100        | 21              |
+    And validate the captured nShift advisor request:
+      | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        |
+      | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test       | nShift Customer Contact | +41791234567         | contact@nshift-test.example |
     And validate the captured nShift shipment request:
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | ParcelGrossWeightKg |
-      | cp1                | cgt1                  | cs1                | cs2                 | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | nShift Customer Contact | +41 79 123 45 67     | contact@nshift-test.example | 21                  |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | ParcelGrossWeightKg |
+      | cp1                | cgt1                  | cs1                | cs2                 | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test       | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 21                  |
+
+  Scenario: nShift Carrier Advise uses ExternalSystem-specific service level
+    Given metasfresh contains External System
+      | Name      | Value     |
+      | Shopware6 | Shopware6 |
+    And metasfresh contains M_Shipper_ServiceLevel_Configs:
+      | M_Shipper_ID | SeqNo | ServiceLevel | ExternalSystem.Value |
+      | nShift       | 10    | EXPRESS      | Shopware6            |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
+      | cp1                | cgt1                  | cs1                | cs2                 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.ExternalSystem.Value |
+      | so_sl1     | true    | customer      | 2025-04-01  | wh             | nShift       | Shopware6                |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_sl1_l1  | so_sl1     | product      | 10         |
+    When the order identified by so_sl1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_sl1     | so_sl1_l1      | N             | cp1                | cgt1                  |
+    Then the last nShift ship advisor request had shipperConfig serviceLevel "EXPRESS"
+
+  Scenario: nShift Carrier Advise falls back to default service level when no ExternalSystem matches
+    Given metasfresh contains External System
+      | Name      | Value     |
+      | Shopware6 | Shopware6 |
+    And metasfresh contains M_Shipper_ServiceLevel_Configs:
+      | M_Shipper_ID | SeqNo | ServiceLevel | ExternalSystem.Value |
+      | nShift       | 10    | EXPRESS      | Shopware6            |
+      | nShift       | 20    | FALLBACK     |                      |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
+      | cp1                | cgt1                  | cs1                | cs2                 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_sl2     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_sl2_l1  | so_sl2     | product      | 10         |
+    When the order identified by so_sl2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_sl2     | so_sl2_l1      | N             | cp1                | cgt1                  |
+    Then the last nShift ship advisor request had shipperConfig serviceLevel "FALLBACK"
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

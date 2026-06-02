@@ -111,6 +111,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_TransportDays;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
@@ -336,10 +337,17 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
 				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+		row.getAsOptionalInt(COLUMNNAME_PO_TransportDays).ifPresent(bPartnerRecord::setPO_TransportDays);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
 				.map(aggregationTable::getId)
 				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
+
+		// Delivery / order stop fields (gh#28631)
+		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
+				.ifPresent(bPartnerRecord::setDeliveryStopReason);
+		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(bPartnerRecord::setIsDeliveryStop);
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -423,6 +431,12 @@ public class C_BPartner_StepDef
 				.ifPresent(identifier -> bPartnerRecord.setEdiINVOIC_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
+
+		// Delivery / order stop fields (gh#28631) — allow toggling Y/N via "the following c_bpartner is changed"
+		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
+				.ifPresent(reason -> bPartnerRecord.setDeliveryStopReason(DataTableUtil.nullToken2Null(reason)));
+		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(bPartnerRecord::setIsDeliveryStop);
 
 		InterfaceWrapperHelper.save(bPartnerRecord);
 	}

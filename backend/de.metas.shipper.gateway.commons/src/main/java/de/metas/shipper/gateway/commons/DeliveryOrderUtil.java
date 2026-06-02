@@ -33,6 +33,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -85,6 +86,15 @@ public final class DeliveryOrderUtil
 				.bpartnerId(bpartner.getC_BPartner_ID());
 	}
 
+	public Address.AddressBuilder prepareAddressFromLocationBP(
+			@NonNull final I_C_Location location,
+			@NonNull final I_C_BPartner bpartner,
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
+		return prepareAddressFromLocationBP(location, bpartner)
+				.attention(StringUtils.trimBlankToNull(bpartnerLocation.getAttention()));
+	}
+
 	public CountryCode createShipperCountryCode(final CountryId countryId)
 	{
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -113,7 +123,8 @@ public final class DeliveryOrderUtil
 		final String name = CoalesceUtil.firstNotEmptyTrimmedNotNull(contactPersonName, bPartner.getName());
 
 		final String contactPersonPhoneNumber = contact != null ? contact.getPhone() : null;
-		final String phoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
+		final String rawPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(contactPersonPhoneNumber, bPLocation.getPhone(), bPLocation.getPhone2(), bPartner.getPhone2());
+		final String phoneNumber = rawPhoneNumber != null ? PhoneNumber.normalize(rawPhoneNumber) : null;
 
 		final String contactPersonMail = contact != null ? contact.getEmailAddress() : null;
 		final String emailAddress = CoalesceUtil.firstNotEmptyTrimmed(contactPersonMail, bPLocation.getEMail(), bPartner.getEMail());

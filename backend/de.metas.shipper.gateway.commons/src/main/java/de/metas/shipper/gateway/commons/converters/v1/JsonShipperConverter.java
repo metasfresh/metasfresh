@@ -176,6 +176,7 @@ public class JsonShipperConverter
 				.zipCode(address.getZipCode())
 				.city(address.getCity())
 				.bpartnerId(bpartnerId)
+				.attention(address.getAttention())
 				.build();
 	}
 
@@ -244,7 +245,7 @@ public class JsonShipperConverter
 	}
 
 	@NonNull
-	private JsonMappingConfigList toJsonMappingConfigList(@NonNull final ShipperMappingConfigList configs)
+	public JsonMappingConfigList toJsonMappingConfigList(@NonNull final ShipperMappingConfigList configs)
 	{
 		if (configs == ShipperMappingConfigList.EMPTY)
 		{

@@ -37,7 +37,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;

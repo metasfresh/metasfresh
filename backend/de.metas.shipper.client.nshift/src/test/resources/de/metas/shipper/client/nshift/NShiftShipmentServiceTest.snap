@@ -4,7 +4,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
       "ActorCSID": 123,
       "Addresses": [
         {
-          "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
+          "Attention": "Attention Sender Test metas GmbH senderDepartmentName senderCompanyName2",
           "City": "Bonn",
           "CountryCode": "DE",
           "Email": "noreply@metasfresh.com",
@@ -17,7 +17,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
           "Street2": ""
         },
         {
-          "Attention": "metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
+          "Attention": "Attention Test metas.ro SRL receiverDepartmentName Test Delivery Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",
@@ -221,6 +221,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
             {
               "Kind": 132,
               "Value": "Test Product"
+            },
+            {
+              "Kind": 134,
+              "Value": "10"
             }
           ],
           "Width": 200
@@ -258,6 +262,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
             {
               "Kind": 133,
               "Value": "Test Customs Tariff 2,Test Customs Tariff 3"
+            },
+            {
+              "Kind": 134,
+              "Value": "20"
             }
           ],
           "Width": 200
@@ -290,8 +298,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
     },
     "options": {
       "Labels": "PDF",
-      "TrackingURL": 1,
-      "ValidatePostCode": 1
+      "TrackingURL": 1
     }
   }
 ]

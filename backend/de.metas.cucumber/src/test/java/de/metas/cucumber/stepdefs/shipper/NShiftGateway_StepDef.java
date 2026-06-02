@@ -50,16 +50,19 @@ public class NShiftGateway_StepDef
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 
+	@Nullable private JsonDeliveryAdvisorRequest capturedAdvisorRequest = null;
+
 	/**
 	 * Holds the most recent {@link JsonDeliveryRequest} captured by the shipment service stub.
 	 * Reset to {@code null} each time {@link #stubShipmentServiceWithSuccess()} is called.
 	 */
-	@Nullable
-	private JsonDeliveryRequest capturedShipmentRequest = null;
+	@Nullable private JsonDeliveryRequest capturedShipmentRequest = null;
 
 	@Given("the nShift ship advisor service is stubbed to return a successful response based on the request")
 	public void stubShipAdvisorServiceWithDynamicSuccess(@NonNull final DataTable dataTable)
 	{
+		capturedAdvisorRequest = null;
+
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 		final CarrierProduct carrierProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
 		final CarrierGoodsType carrierGoodsType = carrierGoodsTypeTable.get(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
@@ -70,6 +73,7 @@ public class NShiftGateway_StepDef
 				.thenAnswer((Answer<JsonDeliveryAdvisorResponse>)invocation -> {
 
 					final JsonDeliveryAdvisorRequest actualRequest = invocation.getArgument(0);
+					capturedAdvisorRequest = actualRequest;
 
 					return JsonDeliveryAdvisorResponse.builder()
 							.requestId(actualRequest.getId())
@@ -98,6 +102,8 @@ public class NShiftGateway_StepDef
 	@Given("the nShift ship advisor service is stubbed to return an error response based on the request")
 	public void stubShipAdvisorServiceWithDynamicError()
 	{
+		capturedAdvisorRequest = null;
+
 		when(shipAdvisorServiceMock.advise(any(JsonDeliveryAdvisorRequest.class)))
 				.thenAnswer((Answer<JsonDeliveryAdvisorResponse>)invocation -> {
 
@@ -159,13 +165,13 @@ public class NShiftGateway_StepDef
 
 		// --- carrier product (shipperProduct.code) ---
 		final CarrierProduct expectedProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
-		softly.assertThat(capturedShipmentRequest.getShipperProduct().getCode())
+		softly.assertThat(capturedShipmentRequest.getShipperProduct() != null ? capturedShipmentRequest.getShipperProduct().getCode() : null)
 				.as("shipperProduct.code")
 				.isEqualTo(expectedProduct.getCode());
 
 		// --- goods type (goodsType.id) ---
 		final CarrierGoodsType expectedGoodsType = carrierGoodsTypeTable.get(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
-		softly.assertThat(capturedShipmentRequest.getGoodsType().getId())
+		softly.assertThat(capturedShipmentRequest.getGoodsType() != null ?capturedShipmentRequest.getGoodsType().getId() : null)
 				.as("goodsType.id")
 				.isEqualTo(expectedGoodsType.getExternalId());
 
@@ -237,6 +243,50 @@ public class NShiftGateway_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Asserts address and contact fields on the most-recently-captured {@link JsonDeliveryAdvisorRequest}.
+	 * All columns are optional. {@code Sender*} columns target the pickup address/contact;
+	 * {@code Receiver*} columns target the delivery address/contact.
+	 * Supported columns: {@code SenderCompanyName}, {@code SenderCountryCode}, {@code SenderAttention},
+	 * {@code ReceiverCompanyName}, {@code ReceiverCompanyName2}, {@code ReceiverStreet},
+	 * {@code ReceiverAdditionalAddressInfo}, {@code ReceiverHouseNo}, {@code ReceiverZip},
+	 * {@code ReceiverCity}, {@code ReceiverCountryCode}, {@code ReceiverAttention},
+	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail}.
+	 * <p>
+	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
+	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by
+	 * {@link de.metas.shipper.client.nshift.NShiftShipAdvisorService#buildRequest}, which is
+	 * verified by {@code NShiftShipAdvisorServiceTest}.
+	 */
+	@And("validate the captured nShift advisor request:")
+	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
+	{
+		assertThat(capturedAdvisorRequest)
+				.as("nShift ship advisor service was not called")
+				.isNotNull();
+
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final SoftAssertions softly = new SoftAssertions();
+
+		assertAddress(softly, capturedAdvisorRequest.getPickupAddress(), row, "Sender", "pickupAddress");
+		assertContact(softly, capturedAdvisorRequest.getPickupContact(), row, "Sender", "pickupContact");
+		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), row, "Receiver", "deliveryAddress");
+		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
+
+		softly.assertAll();
+	}
+
+	@And("the last nShift ship advisor request had shipperConfig serviceLevel {string}")
+	public void assertLastAdvisorRequestShipperConfigServiceLevel(@NonNull final String expectedServiceLevel)
+	{
+		assertThat(capturedAdvisorRequest)
+				.as("nShift ship advisor service was not called")
+				.isNotNull();
+		assertThat(capturedAdvisorRequest.getShipperConfig().getAdditionalProperty("ServiceLevel"))
+				.as("shipperConfig.ServiceLevel")
+				.isEqualTo(expectedServiceLevel);
+	}
+
 	private static void assertAddress(
 			@NonNull final SoftAssertions softly,
 			@Nullable final JsonAddress actual,
@@ -252,7 +302,8 @@ public class NShiftGateway_StepDef
 				|| row.getAsOptionalString(columnPrefix + "HouseNo").isPresent()
 				|| row.getAsOptionalString(columnPrefix + "Zip").isPresent()
 				|| row.getAsOptionalString(columnPrefix + "City").isPresent()
-				|| row.getAsOptionalString(columnPrefix + "CountryCode").isPresent();
+				|| row.getAsOptionalString(columnPrefix + "CountryCode").isPresent()
+				|| row.getAsOptionalString(columnPrefix + "Attention").isPresent();
 		if (!any)
 		{
 			return;
@@ -279,6 +330,8 @@ public class NShiftGateway_StepDef
 				.assertThat(actual.getCity()).as(label + ".city").isEqualTo(expected));
 		row.getAsOptionalString(columnPrefix + "CountryCode").ifPresent(expected -> softly
 				.assertThat(actual.getCountry()).as(label + ".country").isEqualTo(expected));
+		row.getAsOptionalString(columnPrefix + "Attention").ifPresent(expected -> softly
+				.assertThat(actual.getAttention()).as(label + ".attention").isEqualTo(expected));
 	}
 
 	private static void assertContact(

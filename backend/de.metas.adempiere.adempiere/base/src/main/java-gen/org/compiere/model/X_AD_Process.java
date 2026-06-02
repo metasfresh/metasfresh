@@ -525,12 +525,33 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** 
+	/**
+	 * OpenTarget AD_Reference_ID=542096
+	 */
+	public static final int OPENTARGET_AD_Reference_ID = 542096;
+	/** ModalOverlay = O */
+	public static final String OPENTARGET_ModalOverlay = "O";
+	/** NewBrowserTab = N */
+	public static final String OPENTARGET_NewBrowserTab = "N";
+
+	@Override
+	public void setOpenTarget (@Nullable final java.lang.String OpenTarget)
+	{
+		set_Value (COLUMNNAME_OpenTarget, OpenTarget);
+	}
+
+	@Override
+	public java.lang.String getOpenTarget()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OpenTarget);
+	}
+
+	/**
 	 * PostgrestResponseFormat AD_Reference_ID=541210
 	 * Reference name: PostgrestResponseFormat
 	 */

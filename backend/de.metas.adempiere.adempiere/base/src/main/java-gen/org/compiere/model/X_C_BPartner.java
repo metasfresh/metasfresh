@@ -2067,9 +2067,21 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public int getPO_PricingSystem_ID() 
+	public int getPO_PricingSystem_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_PO_PricingSystem_ID);
+	}
+
+	@Override
+	public void setPO_TransportDays (final int PO_TransportDays)
+	{
+		set_Value (COLUMNNAME_PO_TransportDays, PO_TransportDays);
+	}
+
+	@Override
+	public int getPO_TransportDays()
+	{
+		return get_ValueAsInt(COLUMNNAME_PO_TransportDays);
 	}
 
 	@Override

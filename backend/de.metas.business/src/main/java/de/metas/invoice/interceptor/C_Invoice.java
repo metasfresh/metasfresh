@@ -8,10 +8,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.due_date.InvoiceDueDateProviderService;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
@@ -43,6 +47,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
@@ -61,6 +66,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
+	/**
+	 * Error key for the readonly-after-Complete guard on IsPartialInvoice.
+	 */
+	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
+
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final InvoiceDueDateProviderService invoiceDueDateProviderService;
@@ -75,6 +85,91 @@ public class C_Invoice // 03771
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+	// ==========================================================================
+	// Default IsPartialInvoice from C_DocType on BEFORE_NEW
+	// ==========================================================================
+
+	/**
+	 * Defaults {@code IsPartialInvoice} on a new invoice from its document type.
+	 * <p>
+	 * The safe-default direction is Partial: forgetting to mark Final only strands prepay
+	 * (visible, recoverable); forgetting to mark Partial on the wrong default would silently
+	 * consume all prepay on the first invoice.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void defaultIsPartialInvoiceFromDocType_interceptor(@NonNull final I_C_Invoice invoice)
+	{
+		defaultIsPartialInvoiceFromDocType(invoice);
+	}
+
+	/**
+	 * Package-private instance helper — testable via a constructed {@link C_Invoice} interceptor.
+	 * Copies the doctype's {@code IsPartialInvoice} (Y / N / NULL = NA) to the invoice — see
+	 * {@link de.metas.invoice.IsPartialInvoice}. Leaves the field as NULL (= NA, legacy semantic)
+	 * when no doctype is set, or when the doctype's flag is itself NULL.
+	 *
+	 * <p>The 3-state nullable redesign (migration {@code 5801950}) means the absence of explicit
+	 * intent is the correct default — legacy behaviour was a hardcoded "safe default: Partial",
+	 * which masked the design intent and propagated spurious {@code 'Y'} values into all invoices
+	 * created without a matching doctype.
+	 *
+	 * <p>Skips the defaulting when the caller already set {@code IsPartialInvoice} explicitly
+	 * (detected via {@link InterfaceWrapperHelper#isValueChanged}). This lets callers — e.g.
+	 * the IC pipeline or Cucumber step defs — set a specific flag without it being silently
+	 * overwritten by the BEFORE_NEW interceptor.
+	 */
+	void defaultIsPartialInvoiceFromDocType(@NonNull final I_C_Invoice invoice)
+	{
+		// Skip if already explicitly set by the caller before the first save
+		if (InterfaceWrapperHelper.isValueChanged(invoice, org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice))
+		{
+			return;
+		}
+
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+		if (docTypeId != null)
+		{
+			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+			final IsPartialInvoice docTypeIntent = IsPartialInvoice.fromValue(docType.getIsPartialInvoice());
+			invoice.setIsPartialInvoice(docTypeIntent.toCode());
+		}
+		// else: no doctype → leave NULL (= NA = legacy behaviour in closePartiallyInvoiced_InvoiceCandidates)
+	}
+
+	// ==========================================================================
+	// IsPartialInvoice readonly after Complete
+	// ==========================================================================
+
+	/**
+	 * Rejects changes to {@code IsPartialInvoice} once the invoice is no longer in
+	 * Drafted ({@code DR}) or In-Progress ({@code IP}) state.
+	 * <p>
+	 * The field is editable while {@code DocStatus IN ('DR','IP')}; readonly otherwise.
+	 * Server-side guard complements the AD_Field ReadOnlyLogic that controls the UI.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			// FQ required: COLUMNNAME_IsPartialInvoice on org.compiere base, simple name shadowed by de.metas extension
+			ifColumnsChanged = org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+	public void rejectIsPartialInvoiceChangeAfterComplete_interceptor(@NonNull final I_C_Invoice invoice)
+	{
+		assertIsPartialInvoiceEditableForDocStatus(DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus()));
+	}
+
+	/**
+	 * Package-private static helper — testable without Spring context.
+	 * Throws {@link AdempiereException} if the given {@code docStatus} is not editable
+	 * (i.e., not {@code DR} or {@code IP}).
+	 */
+	static void assertIsPartialInvoiceEditableForDocStatus(@NonNull final DocStatus docStatus)
+	{
+		if (!docStatus.isDraftedOrInProgress())
+		{
+			throw new AdempiereException(MSG_IsPartialInvoiceReadOnlyAfterComplete)
+					.markAsUserValidationError();
+		}
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)

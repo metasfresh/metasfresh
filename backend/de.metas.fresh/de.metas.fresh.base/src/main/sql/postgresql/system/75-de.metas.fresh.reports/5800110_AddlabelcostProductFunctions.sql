@@ -82,11 +82,11 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invo
                 p_description             character varying(255),
                 invoice_description       character varying(1024),
                 cursymbol                 character varying(10),
+                IsDisplayProductCostLabel character(1),
                 PricePattern              text,
                 AmountPattern             text,
                 QtyPattern                text,
-                PriceQtyPattern           text,
-                IsDisplayProductCostLabel character(1)
+                PriceQtyPattern           text
             )
 AS
 $$
@@ -137,14 +137,14 @@ SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.Doc
        p.description                                                                AS p_description,
        i.description                                                                AS invoice_description,
        c.cursymbol,
-       report.getPricePatternForJasper(i.m_pricelist_id)                            AS PricePattern,
-       report.getAmountPatternForJasper(c.c_currency_id)                            AS AmountPattern,
-       report.getQtyPattern(uom.StdPrecision)                                       AS QtyPattern,
-       report.getQtyPattern(puom.StdPrecision)                                      AS PriceQtyPattern,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'ProductCostLabel') = 'N' THEN 'Y'
                                                                                        ELSE 'N'
-       END                                                                          AS IsDisplayProductCostLabel
+       END                                                                          AS IsDisplayProductCostLabel,
+       report.getPricePatternForJasper(i.m_pricelist_id)                            AS PricePattern,
+       report.getAmountPatternForJasper(c.c_currency_id)                            AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                                       AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                                      AS PriceQtyPattern
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
@@ -294,9 +294,9 @@ GROUP BY InOuts,
          p.description,
          i.description,
          c.cursymbol,
+         i.C_DocType_ID,
          i.m_pricelist_id,
-         c.c_currency_id,
-         i.C_DocType_ID
+         c.c_currency_id
 
 ORDER BY COALESCE(io1.DateFrom, io2.DateFrom),
          COALESCE(io1.DocNo, io2.DocNo),

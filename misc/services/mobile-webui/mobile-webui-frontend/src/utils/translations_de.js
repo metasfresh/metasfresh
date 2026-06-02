@@ -54,6 +54,9 @@ const translations = {
     workplace: 'Arbeitsplatz',
     workstation: 'Arbeitsstation',
     trolley: 'Wagen',
+    releaseTrolley: {
+      buttonCaption: 'Wagen freigeben',
+    },
   },
   login: {
     submitButton: 'Login',
@@ -152,6 +155,7 @@ const translations = {
       scanHU: 'Scan HU',
       scanProduct: 'Artikel scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
+      switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
       qrcode: {

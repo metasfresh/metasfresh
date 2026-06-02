@@ -116,6 +116,10 @@ public class JsonDeliveryRequest
 				return getShipperProduct() != null ? getShipperProduct().getCode() : null;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI:
 				return getShipperEORI();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION:
+				return getDeliveryAddress().getAttention();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
+				return getPickupAddress().getAttention();
 			default:
 				throw new IllegalArgumentException("Unknown attributeValue: " + attributeValue);
 		}

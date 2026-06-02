@@ -251,6 +251,75 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
+  @Id:S0467_030
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+  Scenario: INVOIC JSON export exposes Product_DepositType="RC" without space-padding (me03#29557 follow-up)
+    # Regression for the bug fixed by migration 5802960: M_Product.DepositType was originally CHAR(3),
+    # so the 2-char value 'RC' was stored and emitted as 'RC ' (space-padded). After the type change
+    # to VARCHAR(3) + RTRIM data fix the JSON must carry exactly "RC".
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier        | Value                       | Name                       | Description                       | DepositType |
+      | product_S0467_030 | depositTypeRCProductValue   | depositTypeRCProductName   | depositTypeRCProductDescription   | RC          |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S0467_030 | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier            | REST.Context             | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS0467_030 | salesInvoiceS0467_030_ID | customer1     | Ausgangsrechnung        | S0467_030  | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID          | M_Product_ID      | QtyInvoiced |
+      | salesInvoiceS0467_030 | product_S0467_030 | 1 PCE       |
+    And the invoice identified by salesInvoiceS0467_030 is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_030      | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@salesInvoiceS0467_030_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @salesInvoiceS0467_030_ID@,
+      "Invoice_DocumentNo": "S0467_030",
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Product_Name": "depositTypeRCProductName",
+          "Product_Supplier_ProductNo": "depositTypeRCProductValue",
+          "Product_DepositType": "RC"
+        }
+      ]
+    }
+  ]
+}
+    """
+
   @from:cucumber
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI

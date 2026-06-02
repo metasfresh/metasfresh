@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface IInvoiceDAO extends ISingletonService
@@ -140,6 +141,8 @@ public interface IInvoiceDAO extends ISingletonService
 	BigDecimal retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice);
+
+	List<I_C_InvoiceLine> retrieveLinesByInvoiceIds(Set<InvoiceId> invoiceIds);
 
 	/**
 	 * Retrieves the reversal line for the given invoice line and C_Invoice_ID, using the line's <code>C_InvoiceLine.Line</code> value.

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_OrderPaySchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 836619307L;
+	private static final long serialVersionUID = -514740049L;
 
     /** Standard Constructor */
     public X_C_OrderPaySchedule (final Properties ctx, final int C_OrderPaySchedule_ID, @Nullable final String trxName)
@@ -36,6 +36,19 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
+	public void setBaseAmt (final @Nullable BigDecimal BaseAmt)
+	{
+		set_Value (COLUMNNAME_BaseAmt, BaseAmt);
+	}
+
+	@Override
+	public BigDecimal getBaseAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BaseAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -48,6 +61,21 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	public int getC_Currency_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+	public void setC_Invoice_ID (final int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
+	}
+
+	@Override
+	public int getC_Invoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
 	}
 
 	@Override
@@ -117,23 +145,23 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public BigDecimal getDueAmt()
+	public BigDecimal getDueAmt() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DueAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setDueAmt_Actual (@javax.annotation.Nullable final BigDecimal DueAmt_Actual)
+	public void setDueAmt_Actual (final @Nullable BigDecimal DueAmt_Actual)
 	{
 		set_Value (COLUMNNAME_DueAmt_Actual, DueAmt_Actual);
 	}
 
 	@Override
-	@javax.annotation.Nullable
-	public BigDecimal getDueAmt_Actual()
+	public BigDecimal getDueAmt_Actual() 
 	{
-		return get_ValueAsBigDecimal(COLUMNNAME_DueAmt_Actual);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DueAmt_Actual);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -143,9 +171,36 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public java.sql.Timestamp getDueDate() 
+	public java.sql.Timestamp getDueDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setIsPaid (final boolean IsPaid)
+	{
+		set_Value (COLUMNNAME_IsPaid, Boolean.valueOf(IsPaid));
+	}
+
+	@Override
+	public boolean isPaid()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPaid);
+	}
+
+	@Override
+	public void setM_InOut_ID (final int M_InOut_ID)
+	{
+		if (M_InOut_ID < 1) 
+			set_Value (COLUMNNAME_M_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_InOut_ID, M_InOut_ID);
+	}
+
+	@Override
+	public int getM_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
@@ -172,7 +227,19 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 		return get_ValueAsInt(COLUMNNAME_Percent);
 	}
 
-	/** 
+	@Override
+	public void setReferenceDate (final @Nullable java.sql.Timestamp ReferenceDate)
+	{
+		set_Value (COLUMNNAME_ReferenceDate, ReferenceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getReferenceDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ReferenceDate);
+	}
+
+	/**
 	 * ReferenceDateType AD_Reference_ID=541989
 	 * Reference name: ReferenceDateType
 	 */

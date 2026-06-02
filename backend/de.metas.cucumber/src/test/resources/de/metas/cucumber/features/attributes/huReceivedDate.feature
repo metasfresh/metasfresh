@@ -91,6 +91,7 @@ Feature: HU_DateReceived attribute population
     Then M_HU_Attribute is validated
       | M_HU_ID | M_Attribute_ID.Value | ValueDate  |
       | hu      | HU_DateReceived      | 2025-04-01 |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
   @from:cucumber
   Scenario: HU_DateReceived populated with the inventory MovementDate when a new HU is created via inventory
