@@ -52,10 +52,10 @@ SELECT AD_Element_Link_Create_Missing_Field(780646);
 
 -- AD_UI_Element (group 553610 = main, seqNo=100, after Zolltarifnummer at seqNo=90)
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_UI_Element_ID,AD_Field_ID,AD_UI_ElementGroup_ID,
-                           Created,CreatedBy,EntityType,IsActive,IsAdvancedField,IsDisplayed,
+                           Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,
                            Name,SeqNo,Updated,UpdatedBy,WidgetSize)
 VALUES (0,0,651946 /*From ID Server*/,780646,553610,
-        TO_TIMESTAMP('2026-06-01 10:00:02','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','Y',
+        TO_TIMESTAMP('2026-06-01 10:00:02','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y',
         'Herkunftsland',100,TO_TIMESTAMP('2026-06-01 10:00:02','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'S');
 
 -- Propagate element translations to column and field

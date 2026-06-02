@@ -166,13 +166,13 @@ public class NShiftGateway_StepDef
 
 		// --- carrier product (shipperProduct.code) ---
 		final CarrierProduct expectedProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
-		softly.assertThat(Optional.ofNullable(capturedShipmentRequest.getShipperProduct()).map(JsonShipperProduct::getCode).orElse(null))
+		softly.assertThat(capturedShipmentRequest.getShipperProduct().getCode())
 				.as("shipperProduct.code")
 				.isEqualTo(expectedProduct.getCode());
 
 		// --- goods type (goodsType.id) ---
 		final CarrierGoodsType expectedGoodsType = carrierGoodsTypeTable.get(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
-		softly.assertThat(Optional.ofNullable(capturedShipmentRequest.getGoodsType()).map(JsonGoodsType::getId).orElse(null))
+		softly.assertThat(capturedShipmentRequest.getGoodsType().getId())
 				.as("goodsType.id")
 				.isEqualTo(expectedGoodsType.getExternalId());
 
