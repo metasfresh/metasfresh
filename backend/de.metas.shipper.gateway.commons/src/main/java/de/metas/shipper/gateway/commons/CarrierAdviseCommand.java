@@ -44,7 +44,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierService;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
@@ -66,6 +65,7 @@ import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -166,13 +166,11 @@ public class CarrierAdviseCommand
 						.build();
 			}
 
-
-
-
 			updateShipmentFromResponse(shipmentSchedule, response);
 		}
 		catch (final Exception e)
 		{
+			shipmentSchedule.setCarrierProductId(null);
 			shipmentSchedule.setCarrierAdviseErrorMessage(e.getMessage());
 			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.Failed);
 		}
