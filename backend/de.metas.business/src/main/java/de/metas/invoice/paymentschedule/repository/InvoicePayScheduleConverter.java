@@ -1,5 +1,7 @@
 package de.metas.invoice.paymentschedule.repository;
 
+import java.time.ZoneId;
+
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentschedule.InvoicePayScheduleLine;
 import de.metas.invoice.paymentschedule.InvoicePayScheduleLineId;
@@ -9,7 +11,10 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderAndPayScheduleId;
 import de.metas.order.paymentschedule.core.OrderPayScheduleId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PayScheduleId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_InvoicePaySchedule;
@@ -45,7 +50,8 @@ class InvoicePayScheduleConverter
 		record.setC_Invoice_ID(from.getInvoiceId().getRepoId());
 		record.setIsValid(from.isValid());
 
-		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
+		final ZoneId orgTimeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
+		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate(), orgTimeZone));
 		record.setDueAmt(from.getDueAmount().toBigDecimal());
 		record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId());
 
@@ -61,7 +67,8 @@ class InvoicePayScheduleConverter
 	{
 		record.setIsValid(from.isValid());
 
-		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
+		final ZoneId orgTimeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
+		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate(), orgTimeZone));
 		record.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		record.setDueAmt(from.getDueAmount().toBigDecimal());
 
