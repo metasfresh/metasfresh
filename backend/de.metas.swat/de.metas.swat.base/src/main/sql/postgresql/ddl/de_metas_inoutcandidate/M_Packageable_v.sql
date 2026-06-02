@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -183,7 +183,7 @@ FROM (SELECT
                  SELECT 1
                  FROM M_ShipmentSchedule_QtyPicked sqp
                  WHERE sqp.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
-                   AND sqp.IsActive  = 'Y'
+                   AND sqp.IsActive = 'Y'
                    AND sqp.Processed = 'N'
                    AND sqp.M_InOutLine_ID IS NULL))
         AND s.isclosed = 'N'
