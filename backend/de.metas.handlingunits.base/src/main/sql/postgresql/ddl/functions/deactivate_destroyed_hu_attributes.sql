@@ -25,7 +25,9 @@ AS $func$
 DECLARE
     v_deactivated integer;
 BEGIN
-    -- self-provisioning (idempotent)
+    -- self-provisioning (idempotent): schema + log table. The log table may already exist from an
+    -- earlier run that predated the deactivated_at column, so add it if missing (existing rows
+    -- backfill to now()).
     CREATE SCHEMA IF NOT EXISTS dlm;
     CREATE TABLE IF NOT EXISTS dlm.m_hu_attribute_deactivated (
         m_hu_attribute_id numeric(10,0) PRIMARY KEY,
