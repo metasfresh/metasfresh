@@ -25,10 +25,15 @@ package de.metas.cucumber.stepdefs.workpackage;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.*;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.olcand.C_OLCand_StepDefData;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -41,6 +46,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_Invoice;
 
 import java.util.Map;
 import java.util.Set;
@@ -53,21 +59,26 @@ public class C_Queue_WorkPackage_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	private static final String MAIL_WP_PROCESSOR_INTERNAL_NAME = "MailWorkpackageProcessor";
+
 	@NonNull private final C_Queue_Processor_StepDefData processorTable;
 	@NonNull private final C_Queue_WorkPackage_StepDefData workPackageTable;
 	@NonNull private final C_Queue_Element_StepDefData queueElementTable;
 	@NonNull private final C_OLCand_StepDefData candidateTable;
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
 	public C_Queue_WorkPackage_StepDef(
 			@NonNull final C_Queue_Processor_StepDefData processorTable,
 			@NonNull final C_Queue_WorkPackage_StepDefData workPackageTable,
 			@NonNull final C_Queue_Element_StepDefData queueElementTable,
-			@NonNull final C_OLCand_StepDefData candidateTable)
+			@NonNull final C_OLCand_StepDefData candidateTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.processorTable = processorTable;
 		this.workPackageTable = workPackageTable;
 		this.queueElementTable = queueElementTable;
 		this.candidateTable = candidateTable;
+		this.invoiceTable = invoiceTable;
 	}
 
 	@And("locate last C_Queue_WorkPackage by enqueued element")
@@ -210,5 +221,122 @@ public class C_Queue_WorkPackage_StepDef
 		};
 
 		StepDefUtil.tryAndWait(nrOfSeconds, 1000, noPendingOrRunningPackage);
+	}
+
+	/**
+	 * Polls until the {@code MailWorkpackageProcessor} workpackage for the given invoice's
+	 * {@link I_C_Doc_Outbound_Log_Line} reaches the expected state:
+	 * <ul>
+	 *   <li>{@code skipped} — held back by the notification-delay gate:
+	 *       {@code SkippedAt IS NOT NULL AND Processed = false AND IsError = false}</li>
+	 *   <li>{@code processed} — successfully sent: {@code Processed = true}</li>
+	 *   <li>{@code released} — passed the gate (either sent or attempted to send, possibly with an error):
+	 *       {@code Processed = true OR IsError = true}</li>
+	 * </ul>
+	 *
+	 * <p>The step navigates the chain:
+	 * {@code C_Invoice} → {@code C_Doc_Outbound_Log} (by table+record) →
+	 * {@code C_Doc_Outbound_Log_Line} → {@code C_Queue_Element} →
+	 * {@code C_Queue_WorkPackage} (filtered by {@code MailWorkpackageProcessor}).</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) invoice whose mail workpackage is checked<br>
+	 *   <b>ExpectedState</b> — (required) one of {@code skipped}, {@code processed}, or {@code released}<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 30s, MailWorkpackageProcessor workpackage for invoice is in state:
+	 *   | C_Invoice_ID | ExpectedState |
+	 *   | invoice_1    | skipped       |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, MailWorkpackageProcessor workpackage for invoice is in state:$")
+	public void assertMailWorkpackageState(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			try
+			{
+				assertMailWorkpackageStateForRow(timeoutSec, row);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	private void assertMailWorkpackageStateForRow(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_C_Invoice invoice = row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+		final int invoiceTableId = tableDAO.retrieveTableId(I_C_Invoice.Table_Name);
+		final String expectedState = row.getAsString("ExpectedState");
+
+		final I_C_Queue_PackageProcessor mailProcessor = queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+				.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_InternalName, MAIL_WP_PROCESSOR_INTERNAL_NAME)
+				.create()
+				.firstOnlyNotNull(I_C_Queue_PackageProcessor.class);
+
+		final Supplier<Boolean> condition = () -> {
+			final I_C_Doc_Outbound_Log docLog = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+					.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, invoiceTableId)
+					.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID())
+					.create()
+					.first(I_C_Doc_Outbound_Log.class);
+			if (docLog == null)
+			{
+				return false;
+			}
+
+			final I_C_Doc_Outbound_Log_Line docLogLine = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
+					.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_ID, docLog.getC_Doc_Outbound_Log_ID())
+					.create()
+					.first(I_C_Doc_Outbound_Log_Line.class);
+			if (docLogLine == null)
+			{
+				return false;
+			}
+
+			final I_C_Queue_WorkPackage workPackage = queryBL.createQueryBuilder(I_C_Queue_Element.class)
+					.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID,
+							tableDAO.retrieveTableId(I_C_Doc_Outbound_Log_Line.Table_Name))
+					.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, docLogLine.getC_Doc_Outbound_Log_Line_ID())
+					.andCollect(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, I_C_Queue_WorkPackage.class)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID,
+							mailProcessor.getC_Queue_PackageProcessor_ID())
+					.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Created)
+					.create()
+					.first(I_C_Queue_WorkPackage.class);
+			if (workPackage == null)
+			{
+				return false;
+			}
+
+			switch (expectedState)
+			{
+				case "skipped":
+					// WP was held back by the delay gate: SkippedAt is set, not yet processed or errored
+					return workPackage.getSkippedAt() != null && !workPackage.isProcessed() && !workPackage.isError();
+				case "processed":
+					return workPackage.isProcessed();
+				case "released":
+					// WP was NOT held back (or was released after skip) — it ran (successfully or errored for non-delay reasons)
+					// IsError=Y (e.g. Azure SDK missing) OR Processed=Y, but SkippedAt must NOT be the sole final state
+					return workPackage.isProcessed() || workPackage.isError();
+				default:
+					throw new AdempiereException("Unknown ExpectedState: " + expectedState
+							+ " — use 'skipped', 'processed', or 'released'");
+			}
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, condition);
+
+		// Re-read and assert clearly so the failure message is informative
+		final boolean satisfied = condition.get();
+		assertThat(satisfied)
+				.as("MailWorkpackageProcessor workpackage for C_Invoice_ID=%s did not reach state '%s' within %ss",
+						invoice.getC_Invoice_ID(), expectedState, timeoutSec)
+				.isTrue();
 	}
 }
