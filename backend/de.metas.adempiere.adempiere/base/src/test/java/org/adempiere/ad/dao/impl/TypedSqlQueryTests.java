@@ -187,13 +187,13 @@ public class TypedSqlQueryTests
 			query.setOrderBy("AD_Table_ID");
 			query.setForUpdate(ForUpdate.FOR_UPDATE);
 
-			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+			final String sql = query.buildSQL("SELECT *", null, null, true);
 
-			assertThat(sql).contains("ORDER BY AD_Table_ID");
-			assertThat(sql).contains("FOR UPDATE");
-			assertThat(sql).doesNotContain("SKIP LOCKED");
-			// ORDER BY must appear before FOR UPDATE
-			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR UPDATE"));
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR UPDATE");
 		}
 
 		@Test
@@ -203,13 +203,13 @@ public class TypedSqlQueryTests
 			query.setOrderBy("AD_Table_ID");
 			query.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE);
 
-			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+			final String sql = query.buildSQL("SELECT *", null, null, true);
 
-			assertThat(sql).contains("FOR NO KEY UPDATE");
-			assertThat(sql).doesNotContain("SKIP LOCKED");
-			assertThat(sql).contains("ORDER BY AD_Table_ID");
-			// ORDER BY must appear before FOR NO KEY UPDATE
-			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR NO KEY UPDATE"));
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR NO KEY UPDATE");
 		}
 
 		@Test
@@ -219,10 +219,13 @@ public class TypedSqlQueryTests
 			query.setOrderBy("AD_Table_ID");
 			query.setForUpdate(ForUpdate.FOR_UPDATE_SKIP_LOCKED);
 
-			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+			final String sql = query.buildSQL("SELECT *", null, null, true);
 
-			assertThat(sql).contains("FOR UPDATE SKIP LOCKED");
-			assertThat(sql.indexOf("ORDER BY")).isLessThan(sql.indexOf("FOR UPDATE SKIP LOCKED"));
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR UPDATE SKIP LOCKED");
 		}
 
 		@Test
@@ -232,9 +235,12 @@ public class TypedSqlQueryTests
 			query.setOrderBy("AD_Table_ID");
 			query.setForUpdate(ForUpdate.NONE);
 
-			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+			final String sql = query.buildSQL("SELECT *", null, null, true);
 
-			assertThat(sql).doesNotContain("FOR UPDATE");
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID");
 		}
 
 		@Test
@@ -244,9 +250,12 @@ public class TypedSqlQueryTests
 			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
 			query.setOrderBy("AD_Table_ID");
 
-			final String sql = query.buildSQL("avoidDBConnection", null, null, true);
+			final String sql = query.buildSQL("SELECT *", null, null, true);
 
-			assertThat(sql).doesNotContain("FOR UPDATE");
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID");
 		}
 
 		@Test
@@ -257,9 +266,9 @@ public class TypedSqlQueryTests
 			query.setForUpdate(ForUpdate.FOR_UPDATE);
 			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=2", ITrx.TRXNAME_None), true);
 
-			assertThatThrownBy(() -> query.buildSQL("avoidDBConnection", null, null, true))
+			assertThatThrownBy(() -> query.buildSQL("SELECT *", null, null, true))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("FOR UPDATE");
+					.hasMessageContaining("UNION");
 		}
 
 		@Test
@@ -268,9 +277,20 @@ public class TypedSqlQueryTests
 			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
 			query.setForUpdate(ForUpdate.FOR_UPDATE);
 
-			assertThatThrownBy(() -> query.buildSQL("avoidDBConnection", null, "TableName", true))
+			assertThatThrownBy(() -> query.buildSQL("SELECT *", null, "TableName", true))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("FOR UPDATE");
+					.hasMessageContaining("GROUP BY");
+		}
+
+		@Test
+		public void lockWithNonSelectClause_throwsAdempiereException()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+
+			assertThatThrownBy(() -> query.buildSQL("DELETE", null, null, true))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("SELECT");
 		}
 	}
 }

@@ -1249,10 +1249,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		// Append the row-locking clause (FOR UPDATE / FOR UPDATE SKIP LOCKED) after ORDER BY.
-		// PostgreSQL forbids FOR UPDATE with UNION or GROUP BY — fail fast with a clear message.
+		// Fail fast: locking clauses are only valid for SELECT statements, and PostgreSQL
+		// forbids them with UNION or GROUP BY.
 		final ForUpdate forUpdate = getForUpdate();
 		if (forUpdate != ForUpdate.NONE)
 		{
+			final String sel = selectClause != null ? selectClause.toString().replaceAll("^\\s+", "") : "";
+			if (!sel.isEmpty() && !sel.regionMatches(true, 0, "SELECT", 0, 6))
+			{
+				throw new AdempiereException("Locking clause (FOR UPDATE/...) is only valid for SELECT statements")
+						.appendParametersToMessage();
+			}
 			if (unions != null && !unions.isEmpty())
 			{
 				throw new AdempiereException("FOR UPDATE cannot be combined with UNION queries")

@@ -281,8 +281,6 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 			final IQuery<I_C_Queue_WorkPackage> query = queryOptional.get();
 
-			// Enable FOR UPDATE SKIP LOCKED on this query.
-			// POJOQuery (used in unit tests) accepts the call as an in-memory no-op, so no unit-test guard is needed.
 			query.setForUpdate(ForUpdate.FOR_UPDATE_SKIP_LOCKED);
 
 			// Set LockedAt timestamp immediately (rows are still locked via FOR UPDATE SKIP LOCKED)

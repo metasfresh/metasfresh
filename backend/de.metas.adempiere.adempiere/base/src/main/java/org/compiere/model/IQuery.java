@@ -387,21 +387,10 @@ public interface IQuery<T>
 	IQuery<T> setRequiredAccess(@Nullable Access access);
 
 	/**
-	 * Appends a PostgreSQL row-locking clause (e.g. {@code FOR UPDATE}) to the query.
-	 *
-	 * <p>The lock is held until the enclosing transaction ends (commit or rollback).
-	 * Without an active transaction the database applies the clause to each statement
-	 * individually (auto-commit mode), so the lock is released immediately — deadlocks
-	 * are impossible in that case but the locking intent is also not fulfilled.
-	 *
-	 * <p>To prevent lock-upgrade deadlocks, this query must be the transaction's
-	 * <em>first</em> read of the target row. Upgrading from a shared lock acquired
-	 * earlier in the same transaction to an exclusive lock is a well-known deadlock source.
-	 *
-	 * <p>Use {@link ForUpdate#NONE} (the default) to emit no locking clause.
+	 * Appends a row-locking clause to the query, locking matched rows until the transaction ends.
+	 * Use {@link ForUpdate#NONE} (the default) to emit no locking clause.
 	 *
 	 * @param forUpdate the desired locking mode; never {@code null}
-	 * @return this query instance (fluent API)
 	 */
 	IQuery<T> setForUpdate(@NonNull ForUpdate forUpdate);
 
