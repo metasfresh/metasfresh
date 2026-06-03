@@ -268,7 +268,7 @@ public class TypedSqlQueryTests
 
 			assertThatThrownBy(() -> query.buildSQL("SELECT *", null, null, true))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("UNION");
+					.hasMessage("FOR UPDATE cannot be combined with UNION queries");
 		}
 
 		@Test
@@ -279,7 +279,7 @@ public class TypedSqlQueryTests
 
 			assertThatThrownBy(() -> query.buildSQL("SELECT *", null, "TableName", true))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("GROUP BY");
+					.hasMessage("FOR UPDATE cannot be combined with GROUP BY");
 		}
 
 		@Test
@@ -290,7 +290,7 @@ public class TypedSqlQueryTests
 
 			assertThatThrownBy(() -> query.buildSQL("DELETE", null, null, true))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("SELECT");
+					.hasMessage("Locking clause (FOR UPDATE/...) is only valid for SELECT statements");
 		}
 	}
 }
