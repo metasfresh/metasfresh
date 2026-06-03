@@ -52,9 +52,10 @@ public class JsonTUPickingTarget
 	@Nullable HuId tuId;
 	@Nullable String tuQRCode;
 
-	//
-	// GRAI scan: when set (and no tuPIId/tuId), the server resolves the TU type from the scanned GRAI,
-	// creates the TU + attaches the GRAI, and sets it as the line's existing-TU target.
+	/**
+	 * GRAI scan: when set (and no {@code tuPIId}/{@code tuId}), the server resolves the TU type from the scanned GRAI,
+	 * creates the TU, attaches the GRAI, and sets it as the line's existing-TU target.
+	 */
 	@Nullable ScannedCode grai;
 
 	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
