@@ -6,7 +6,6 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
        io.documentno                                   AS "Shipment_DocumentNo",
        io.movementdate                                 AS "Shipment_Date",
        io.docstatus                                    AS "DocStatus",
-       (io.processed = 'Y')                           AS "Processed",
        dt.docbasetype                                  AS "DocType_Base",
        io.ExternalId                                   AS "ExternalId",
        io.updated::timestamp                           AS "Updated",
@@ -53,7 +52,9 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
                  LEFT JOIN m_product p ON p.m_product_id = iol.m_product_id
                  LEFT JOIN c_uom uom ON uom.c_uom_id = iol.c_uom_id
         WHERE iol.m_inout_id = io.m_inout_id
-          AND iol.isactive = 'Y')                      AS "Lines"
+          AND iol.isactive = 'Y')                      AS "Lines",
+
+       (io.processed = 'Y')                           AS "Processed"
 
 FROM m_inout io
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = io.C_DocType_ID
