@@ -25,7 +25,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
-import org.adempiere.ad.trx.api.impl.DeadlockRetryPolicy;
+import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,8 +57,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	/** see processIt0 — only used when the engine owns the transaction. */
-	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.defaults();
+	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.DEFAULT;
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
@@ -154,30 +153,21 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		};
 
-		// Engine owns the transaction when there is none to inherit: trxName is null/None,
-		// OR it is the ThreadInherited marker while NO actual thread transaction exists
-		// (trxManager.call then opens its own new transaction). Observed mis-classification:
-		// cucumber-loaded models carry the ThreadInherited marker with no active trx.
-		final boolean engineOwnsTrx = trxManager.isNull(trxName)
-				|| (ITrx.TRXNAME_ThreadInherited.equals(trxName) && !trxManager.hasThreadInheritedTrx());
-
-		final Boolean processed;
-		if (engineOwnsTrx)
-		{
-			// The engine owns the transaction (a new one is opened per attempt): on a DB deadlock the whole
-			// document action is rolled back, so re-running it is equivalent to the user re-triggering it.
-			// Why: a document reversal (holding DELETE row locks) can deadlock against a concurrent accounting
-			// posting whose deferred FK checks at COMMIT reference the deleted rows — not preventable by lock ordering.
-			processed = DEADLOCK_RETRY_POLICY.call(() -> trxManager.call(trxName, processCallable), document.getDocumentInfo());
-		}
-		else
-		{
-			// Caller owns the transaction: a deadlock has already aborted the caller's whole trx;
-			// retrying only this inner part would be incorrect -> propagate immediately.
-			processed = trxManager.call(trxName, processCallable);
-		}
+		// callIf: retry only when the engine owns the transaction (new trx per attempt);
+		// when the caller owns it a deadlock has already aborted their trx and retry would be wrong.
+		final Boolean processed = DEADLOCK_RETRY_POLICY.callIf(
+				isEngineOwnsTheTransaction(trxManager, trxName),
+				() -> trxManager.call(trxName, processCallable),
+				document.getDocumentInfo());
 
 		return processed != null && processed;
+	}
+
+	/** Returns true when the document engine owns the transaction, i.e. a fresh transaction is opened per attempt. */
+	private static boolean isEngineOwnsTheTransaction(@NonNull final ITrxManager trxManager, @Nullable final String trxName)
+	{
+		return trxManager.isNull(trxName)
+				|| (ITrx.TRXNAME_ThreadInherited.equals(trxName) && !trxManager.hasThreadInheritedTrx());
 	}
 
 	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception

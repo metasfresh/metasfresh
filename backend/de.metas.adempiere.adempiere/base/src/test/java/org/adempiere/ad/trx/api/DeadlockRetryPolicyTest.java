@@ -1,4 +1,4 @@
-package org.adempiere.ad.trx.api.impl;
+package org.adempiere.ad.trx.api;
 
 /*
  * #%L
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.adempiere.ad.trx.api.DeadlockRetryPolicy.PG_SQLSTATE_DEADLOCK_DETECTED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -45,7 +46,7 @@ class DeadlockRetryPolicyTest
 		void directDBDeadLockDetectedException()
 		{
 			final DBDeadLockDetectedException ex = new DBDeadLockDetectedException(
-					new SQLException("deadlock detected", "40P01"), /*connection=*/null);
+					new SQLException("deadlock detected", PG_SQLSTATE_DEADLOCK_DETECTED), /*connection=*/null);
 			assertThat(DeadlockRetryPolicy.isDeadlock(ex)).isTrue();
 		}
 
@@ -53,7 +54,7 @@ class DeadlockRetryPolicyTest
 		void wrappedInsideRuntimeException()
 		{
 			final DBDeadLockDetectedException deadlock = new DBDeadLockDetectedException(
-					new SQLException("deadlock detected", "40P01"), null);
+					new SQLException("deadlock detected", PG_SQLSTATE_DEADLOCK_DETECTED), null);
 			final RuntimeException wrapper = new RuntimeException("wrapper", deadlock);
 			assertThat(DeadlockRetryPolicy.isDeadlock(wrapper)).isTrue();
 		}
@@ -61,8 +62,7 @@ class DeadlockRetryPolicyTest
 		@Test
 		void sqlExceptionWithDeadlockSQLState()
 		{
-			// DBException.isDeadLockDetected walks the cause chain and checks SQLSTATE 40P01
-			final SQLException sqlEx = new SQLException("deadlock detected", "40P01");
+			final SQLException sqlEx = new SQLException("deadlock detected", PG_SQLSTATE_DEADLOCK_DETECTED);
 			assertThat(DeadlockRetryPolicy.isDeadlock(sqlEx)).isTrue();
 		}
 
@@ -95,7 +95,7 @@ class DeadlockRetryPolicyTest
 
 	private static DBDeadLockDetectedException deadlock()
 	{
-		return new DBDeadLockDetectedException(new SQLException("deadlock detected", "40P01"), null);
+		return new DBDeadLockDetectedException(new SQLException("deadlock detected", PG_SQLSTATE_DEADLOCK_DETECTED), null);
 	}
 
 	@Nested
@@ -192,8 +192,6 @@ class DeadlockRetryPolicyTest
 		@Test
 		void nullContext_retriesWithoutNPE()
 		{
-			// regression: unit-test documents have no document info -> context is null;
-			// the policy shall retry normally instead of failing the @NonNull guard
 			final AtomicInteger callCount = new AtomicInteger();
 			final String result = fastPolicy(3).call(() -> {
 				if (callCount.incrementAndGet() < 2)
@@ -201,7 +199,7 @@ class DeadlockRetryPolicyTest
 					throw deadlock();
 				}
 				return "ok";
-			}, null);
+			}, (Object[])null);
 			assertThat(result).isEqualTo("ok");
 			assertThat(callCount).hasValue(2);
 		}
@@ -244,6 +242,52 @@ class DeadlockRetryPolicyTest
 				throw nonDeadlock;
 			}, "ctx"))
 					.isSameAs(nonDeadlock);
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// callIf()
+	// -----------------------------------------------------------------------
+
+	@Nested
+	class CallIf
+	{
+		@Test
+		void conditionTrue_retriesOnDeadlock()
+		{
+			final AtomicInteger callCount = new AtomicInteger();
+			final String result = fastPolicy(3).callIf(true, () -> {
+				if (callCount.incrementAndGet() < 2)
+				{
+					throw deadlock();
+				}
+				return "ok";
+			}, "ctx");
+			assertThat(result).isEqualTo("ok");
+			assertThat(callCount).hasValue(2);
+		}
+
+		@Test
+		void conditionFalse_callsOnceWithoutRetry()
+		{
+			final AtomicInteger callCount = new AtomicInteger();
+			final DBDeadLockDetectedException ex = deadlock();
+
+			assertThatThrownBy(() -> fastPolicy(3).callIf(false, () -> {
+				callCount.incrementAndGet();
+				throw ex;
+			}, "ctx"))
+					.isSameAs(ex);
+
+			// no retry when condition is false
+			assertThat(callCount).hasValue(1);
+		}
+
+		@Test
+		void conditionFalse_returnsValueOnSuccess()
+		{
+			final String result = fastPolicy(3).callIf(false, () -> "direct", "ctx");
+			assertThat(result).isEqualTo("direct");
 		}
 	}
 }

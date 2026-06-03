@@ -1,4 +1,4 @@
-package org.adempiere.ad.trx.api.impl;
+package org.adempiere.ad.trx.api;
 
 /*
  * #%L
@@ -31,29 +31,33 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 /**
- * Retry policy that detects DB deadlocks and retries the given action up to {@code maxAttempts} times
- * before re-throwing the last exception. A fixed backoff sleep separates consecutive attempts.
- *
- * <p>Deadlock detection walks the cause chain looking for a {@link DBDeadLockDetectedException}
- * or an {@link SQLException} with PostgreSQL SQLSTATE {@code 40P01}.</p>
+ * Retries an action up to {@code maxAttempts} times on a DB deadlock, then re-throws.
+ * A fixed backoff sleep separates consecutive attempts.
  */
 public class DeadlockRetryPolicy
 {
 	private static final Logger logger = LogManager.getLogger(DeadlockRetryPolicy.class);
 
 	/** PostgreSQL SQLSTATE for "deadlock detected". */
-	private static final String PG_SQLSTATE_DEADLOCK_DETECTED = "40P01";
+	static final String PG_SQLSTATE_DEADLOCK_DETECTED = "40P01";
 
 	/** Maximum number of attempts (first attempt + retries). */
 	@VisibleForTesting
 	public static final int DEFAULT_MAX_ATTEMPTS = 3;
 
-	/** Milliseconds to sleep between attempts, mirroring WorkpackageProcessorTask's retry timeout. */
+	/** Milliseconds to sleep between attempts. */
 	@VisibleForTesting
 	public static final long DEFAULT_BACKOFF_MILLIS = 5_000L;
+
+	/** Cached default instance (immutable — all fields final, no mutators). */
+	public static final DeadlockRetryPolicy DEFAULT = DeadlockRetryPolicy.builder()
+			.maxAttempts(DEFAULT_MAX_ATTEMPTS)
+			.backoffMillis(DEFAULT_BACKOFF_MILLIS)
+			.build();
 
 	private final int maxAttempts;
 	private final long backoffMillis;
@@ -65,24 +69,14 @@ public class DeadlockRetryPolicy
 		this.backoffMillis = backoffMillis >= 0 ? backoffMillis : DEFAULT_BACKOFF_MILLIS; // 0 = no sleep (tests)
 	}
 
-	/** Creates the default policy (3 attempts, 5 s backoff). */
+	/** Returns the cached default policy (3 attempts, 5 s backoff). */
 	public static DeadlockRetryPolicy defaults()
 	{
-		return DeadlockRetryPolicy.builder()
-				.maxAttempts(DEFAULT_MAX_ATTEMPTS)
-				.backoffMillis(DEFAULT_BACKOFF_MILLIS)
-				.build();
+		return DEFAULT;
 	}
 
-	/**
-	 * Runs {@code action}; on {@link #isDeadlock(Throwable)} retries up to {@code maxAttempts - 1}
-	 * times after sleeping {@code backoffMillis}. After exhausting retries the last exception is
-	 * re-thrown as-is (preserving the original type and stack).
-	 *
-	 * @param action  the idempotent operation to execute
-	 * @param context an optional description used in log messages (e.g. the posting request)
-	 */
-	public void run(@NonNull final Runnable action, @Nullable final Object context)
+	/** Runs {@code action}; retries on deadlock up to {@code maxAttempts - 1} times. */
+	public void run(@NonNull final Runnable action, final Object... context)
 	{
 		call(() -> {
 			action.run();
@@ -90,19 +84,10 @@ public class DeadlockRetryPolicy
 		}, context);
 	}
 
-	/**
-	 * Calls {@code action}; on {@link #isDeadlock(Throwable)} retries up to {@code maxAttempts - 1}
-	 * times after sleeping {@code backoffMillis}. After exhausting retries the last exception is
-	 * re-thrown as-is (preserving the original type and stack).
-	 *
-	 * @param <T>     return type of the supplier
-	 * @param action  the idempotent operation to execute
-	 * @param context an optional description used in log messages (e.g. the posting request);
-	 *                may be null (unit-test documents have no document info) — log-only, never dereferenced
-	 * @return the value returned by {@code action} on a successful attempt
-	 */
-	public <T> T call(@NonNull final Supplier<T> action, @Nullable final Object context)
+	/** Calls {@code action}; retries on deadlock up to {@code maxAttempts - 1} times. */
+	public <T> T call(@NonNull final Supplier<T> action, final Object... context)
 	{
+		final String contextStr = context == null || context.length == 0 ? "" : Arrays.deepToString(context);
 		RuntimeException lastException = null;
 
 		for (int attempt = 1; attempt <= maxAttempts; attempt++)
@@ -120,8 +105,8 @@ public class DeadlockRetryPolicy
 
 				lastException = ex;
 				logger.warn(
-						"Deadlock detected on attempt {}/{} for {}; will retry after {} ms. Deadlock: {}",
-						attempt, maxAttempts, context, backoffMillis, ex.getMessage());
+						"Deadlock detected on attempt {}/{} for {}; will retry after {} ms",
+						attempt, maxAttempts, contextStr, backoffMillis, ex);
 
 				if (attempt < maxAttempts)
 				{
@@ -135,16 +120,26 @@ public class DeadlockRetryPolicy
 	}
 
 	/**
-	 * Returns {@code true} when the given throwable (or any of its causes) represents a
-	 * DB deadlock: a {@link DBDeadLockDetectedException} or an {@link SQLException} with
-	 * PostgreSQL SQLSTATE {@code 40P01} anywhere in the cause chain.
+	 * Calls {@code action} with deadlock retry if {@code condition} is true; otherwise calls it once.
+	 * The retry wraps the supplied action, which is expected to open its own transaction per attempt.
+	 */
+	public <T> T callIf(final boolean condition, @NonNull final Supplier<T> action, final Object... context)
+	{
+		if (condition)
+		{
+			return call(action, context);
+		}
+		return action.get();
+	}
+
+	/**
+	 * Returns {@code true} when the throwable (or any cause) is a DB deadlock:
+	 * a {@link DBDeadLockDetectedException} or {@link SQLException} with SQLSTATE {@code 40P01}.
+	 * Self-contained to avoid a DB.isPostgreSQL() dependency that fails in unit-test mode.
 	 */
 	@VisibleForTesting
 	public static boolean isDeadlock(@Nullable final Throwable ex)
 	{
-		// Deliberately self-contained (no DB.isPostgreSQL() dependency): that check requires a configured
-		// DB connection and is false in unit-test mode, where DBException.isDeadLockDetected would
-		// silently never match.
 		for (Throwable cause = ex; cause != null; cause = cause.getCause())
 		{
 			if (cause instanceof DBDeadLockDetectedException)
@@ -163,9 +158,13 @@ public class DeadlockRetryPolicy
 		return false;
 	}
 
-	/** Sleeps for {@code millis} ms; swallows {@link InterruptedException} and restores the flag. */
+	/** Sleeps for {@code millis} ms; restores the interrupt flag on {@link InterruptedException}. */
 	private static void sleepQuietly(final long millis)
 	{
+		if (millis <= 0)
+		{
+			return;
+		}
 		try
 		{
 			Thread.sleep(millis);
