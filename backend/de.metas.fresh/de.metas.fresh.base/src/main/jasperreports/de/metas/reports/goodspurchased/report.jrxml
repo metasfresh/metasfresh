@@ -14,6 +14,7 @@
 	<parameter name="DateFrom" class="java.util.Date"/>
 	<parameter name="DateTo" class="java.util.Date"/>
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT '';]]>
 	</queryString>
@@ -46,6 +47,9 @@
 				<subreportParameter name="M_Product_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="C_BP_Group_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/goodspurchased/report_title.jasper"]]></subreportExpression>
 			</subreport>
@@ -69,6 +73,9 @@
 				</subreportParameter>
 				<subreportParameter name="M_Product_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Product_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="C_BP_Group_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BP_Group_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/goodspurchased/report_details.jasper"]]></subreportExpression>
