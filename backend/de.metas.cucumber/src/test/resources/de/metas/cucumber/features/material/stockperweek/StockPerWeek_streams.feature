@@ -31,21 +31,23 @@ Feature: MD_Stock_PerWeek_V aggregates DEMAND/SHIPMENT and SUPPLY/PURCHASE candi
     # because the dispo engine is async and the test purpose is the view's bucketing logic.
     # In production these rows are created by the MaterialDispoService when a sales order
     # and a purchase order are completed.
-    And metasfresh initially has this MD_Candidate data
-      | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID        | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | demand_S25618_1 | DEMAND            | SHIPMENT                  | product_S25618_str1 | 2026-06-15T21:00:00Z | 5   | -5  | wh_S25618_str  |
-      | supply_S25618_1 | SUPPLY            | PURCHASE                  | product_S25618_str1 | 2026-06-08T21:00:00Z | 8   | 8   | wh_S25618_str  |
+    # Dates are relative to the current ISO week (WeekOffset=0 → this Monday) so the test
+    # remains stable on any run date.
+    And metasfresh initially has this MD_Candidate data relative to current week
+      | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID        | WeekOffset | DayWithinWeek | Qty | ATP | M_Warehouse_ID |
+      | demand_S25618_1 | DEMAND            | SHIPMENT                  | product_S25618_str1 | 2          | 1             | 5   | -5  | wh_S25618_str  |
+      | supply_S25618_1 | SUPPLY            | PURCHASE                  | product_S25618_str1 | 1          | 1             | 8   | 8   | wh_S25618_str  |
 
-    # Week +1 starting 2026-06-08: QtyExpectedShipments=0, QtyExpectedReceipts=8
-    # QtyATP=8: the STOCK candidate paired with the SUPPLY (Qty=8) is dated 2026-06-08T21:00:00Z,
-    # which is before the week-end (2026-06-15T00:00:00Z), so it is the latest STOCK and drives ATP.
+    # Week +1: QtyExpectedShipments=0, QtyExpectedReceipts=8
+    # QtyATP=8: the STOCK candidate paired with the SUPPLY (Qty=8) is dated in week+1,
+    # which is before the week+2 start, so it is the latest STOCK and drives ATP.
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekStartDate | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_str1 | wh_S25618_str  | 2026-06-08    | 0                    | 8                   | 8      |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S25618_str1 | wh_S25618_str  | 1          | 0                    | 8                   | 8      |
 
-    # Week +2 starting 2026-06-15: QtyExpectedShipments=5, QtyExpectedReceipts=0
-    # QtyATP=-5: the latest STOCK before 2026-06-22T00:00:00Z is the DEMAND-paired STOCK at
-    # 2026-06-15T21:00:00Z with Qty=ATP=-5 (demand consumes stock, making ATP negative).
+    # Week +2: QtyExpectedShipments=5, QtyExpectedReceipts=0
+    # QtyATP=-5: the latest STOCK before week+3 is the DEMAND-paired STOCK in week+2
+    # with Qty=ATP=-5 (demand consumes stock, making ATP negative).
     And after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekStartDate | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_str1 | wh_S25618_str  | 2026-06-15    | 5                    | 0                   | -5     |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S25618_str1 | wh_S25618_str  | 2          | 5                    | 0                   | -5     |
