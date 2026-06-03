@@ -1001,15 +1001,17 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 **Workflow**:
 1. REST login (authenticate + loginComplete via page.request — bypasses the UI login race)
-2. Navigate to invoice list (window 167), open the first accessible record via dblclick
-3. Open SubHeader → Advanced Edit modal (click path; Alt+E is unreliable when grid sub-tab has focus)
-4. Assert the DueDate input (`.panel-modal .form-field-DueDate input`) is disabled
-5. Assert force-clicking the input does not open the date-picker popup
+2. Create a customer via `Backend.createMasterdata()` (requires port 8282)
+3. Create a drafted sales invoice via the document REST API on window 167 (NEW → C_BPartner_ID → first C_DocTypeTarget_ID → first C_PaymentTerm_ID), polling `validStatus.valid === true` to confirm it persisted
+4. Navigate directly to the created invoice by id (no list view, no dependence on any seed record)
+5. Open SubHeader → Advanced Edit modal (click path; Alt+E is unreliable when grid sub-tab has focus)
+6. Assert the DueDate input (`.panel-modal .form-field-DueDate input`) is disabled
+7. Assert force-clicking the input does not open the date-picker popup
 
 **Key Validations**:
 - `AD_Field.IsReadOnly='Y'` on C_Invoice.DueDate renders as a disabled DatePicker input
 - Calendar popup stays closed on click (DatePicker no-ops when readonly)
-- Uses an existing accessible invoice record — no Backend API / port 8282 dependency
+- Seed-independent: creates its own customer + drafted invoice, so it passes on an empty invoice grid (e.g. customer CI seed DBs). **Requires port 8282** (App server) for `Backend.createMasterdata()`
 
 ## Test Architecture
 
