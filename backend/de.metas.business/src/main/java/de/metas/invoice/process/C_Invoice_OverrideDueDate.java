@@ -22,8 +22,10 @@
 
 package de.metas.invoice.process;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -33,24 +35,22 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.compiere.model.I_C_Invoice;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 
 public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final static String PARAM_OVERRIDE_DUE_DATE = "OverrideDueDate";
 	public static final AdMessageKey PAID_INVOICES_MESSAGE = AdMessageKey.of("Invoices_already_paid");
+	public static final AdMessageKey DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE = AdMessageKey.of("DueDateOverrideNotAllowed");
 	@Param(parameterName = PARAM_OVERRIDE_DUE_DATE, mandatory = true)
-	private Timestamp p_OverrideDueDate;
+	private LocalDate p_OverrideDueDate;
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -59,26 +59,28 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		final Collection<String> paidInvoiceDocNos = invoiceDAO.retrievePaidInvoiceDocNosForFilter(context.getQueryFilter(I_C_Invoice.class));
+
+		final IQueryFilter<I_C_Invoice> selectionFilter = context.getQueryFilter(I_C_Invoice.class);
+
+		final Collection<String> paidInvoiceDocNos = invoiceDAO.retrievePaidInvoiceDocNosForFilter(selectionFilter);
 		if (!paidInvoiceDocNos.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICES_MESSAGE, paidInvoiceDocNos));
 		}
+
+		final Collection<String> disallowedDocNos = invoiceDAO.retrieveDocNosWithPaymentTermIn(selectionFilter, paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(false));
+		if (!disallowedDocNos.isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DUE_DATE_OVERRIDE_NOT_ALLOWED_MESSAGE, disallowedDocNos));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryUpdater<I_C_Invoice> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice.class)
-				.addSetColumnValue(I_C_Invoice.COLUMNNAME_DueDate, p_OverrideDueDate);
-
-		final IQueryFilter<I_C_Invoice> filter = getProcessInfo().getQueryFilterOrElseFalse();
-		queryBL.createQueryBuilder(I_C_Invoice.class)
-				.addOnlyActiveRecordsFilter()
-				.addFilter(filter)
-				.create()
-				.update(queryUpdater);
+		invoiceDAO.setDueDateWherePaymentTermIn(getProcessInfo().getQueryFilterOrElseFalse(), paymentTermRepository.getPaymentTermIdsByIsAllowOverrideDueDate(true), p_OverrideDueDate);
 		return MSG_OK;
 	}
 
@@ -88,11 +90,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	{
 		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()))
 		{
-			return queryBL.createQueryBuilder(I_C_Invoice.class)
-					.addOnlyActiveRecordsFilter()
-					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
-					.create()
-					.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
+			return invoiceDAO.retrieveFirstDueDate(getProcessInfo().getQueryFilterOrElseFalse());
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

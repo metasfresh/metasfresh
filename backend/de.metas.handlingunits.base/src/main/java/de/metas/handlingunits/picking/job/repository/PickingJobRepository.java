@@ -38,10 +38,42 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Owns the picking-job aggregate persistence (M_Picking_Job header + its lines / steps / picked-HUs /
+ * HU-alternatives). Loading and saving of the aggregate is delegated to {@link PickingJobLoaderAndSaver}
+ * (and {@link PickingJobSaver} / {@link PickingJobCreateRepoHelper}); this class also exposes read-only
+ * existence / lookup queries over the same tables.
+ *
+ * Repository Tables: M_Picking_Job, M_Picking_Job_Line, M_Picking_Job_Step, M_Picking_Job_Step_HUAlternative, M_Picking_Job_Step_PickedHU, M_Picking_Job_HUAlternative
+ * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper
+ */
 @Repository
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
+	 * the given shipment schedule AND belongs to an in-progress (not voided/completed) picking job —
+	 * i.e. a picker is actively working on it.
+	 */
+	public boolean existsActivePickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addNotInArrayFilter(
+						I_M_Picking_Job.COLUMNNAME_DocStatus,
+						ImmutableList.of(PickingJobDocStatus.Voided.getCode(), PickingJobDocStatus.Completed.getCode()))
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, inProgressJobsQuery)
+				.create()
+				.anyMatch();
+	}
 
 	public PickingJob createNewAndGet(
 			@NonNull final PickingJobCreateRepoRequest request,
@@ -90,6 +122,7 @@ public class PickingJobRepository
 	{
 		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode());
 
 		pickerId.appendFilter(queryBuilder, I_M_Picking_Job.COLUMNNAME_Picking_User_ID);

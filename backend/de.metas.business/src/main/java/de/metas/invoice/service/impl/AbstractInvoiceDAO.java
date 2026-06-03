@@ -28,6 +28,7 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -41,6 +42,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
@@ -61,6 +63,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -81,6 +84,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
+ * DAO cluster for C_Invoice, C_InvoiceLine, C_InvoiceTax, C_LandedCost.
+ * Queries on other tables belong in their own DAO/Repo (e.g. C_PaymentTerm → IPaymentTermRepository).
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
  *
  * @author ts
@@ -699,16 +704,73 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return docBaseAndSubType.equals(targetDocType);
 	}
 
-	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
+	@Nullable
+	@Override
+	public LocalDate retrieveFirstDueDate(@NonNull final IQueryFilter<I_C_Invoice> filter)
 	{
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+		final Timestamp dueDate = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addFilter(filter)
+				.create()
+				.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
+		return TimeUtil.asLocalDate(dueDate);
+	}
+
+	@Override
+	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<I_C_Invoice> filter)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, true)
 				.addFilter(filter)
 				.setLimit(QueryLimit.TEN)
 				.create()
 				.stream()
-				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
+				.map(I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Collection<String> retrieveDocNosWithPaymentTermIn(
+			@NonNull final IQueryFilter<I_C_Invoice> filter,
+			@NonNull final Collection<PaymentTermId> paymentTermIds)
+	{
+		if (paymentTermIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
+				.addFilter(filter)
+				.setLimit(QueryLimit.TEN)
+				.create()
+				.stream()
+				.map(I_C_Invoice::getDocumentNo)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public int setDueDateWherePaymentTermIn(
+			@NonNull final IQueryFilter<I_C_Invoice> filter,
+			@NonNull final Collection<PaymentTermId> paymentTermIds,
+			@NonNull final LocalDate dueDate)
+	{
+		if (paymentTermIds.isEmpty())
+		{
+			return 0;
+		}
+
+		final IQueryUpdater<I_C_Invoice> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_C_Invoice.class)
+				.addSetColumnValue(I_C_Invoice.COLUMNNAME_DueDate, TimeUtil.asTimestamp(dueDate));
+
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addFilter(filter)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
+				.create()
+				.update(queryUpdater);
 	}
 }

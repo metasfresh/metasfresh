@@ -85,6 +85,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -577,6 +578,14 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+	@When("^the M_ShipmentSchedule identified by (.*) is deactivated$")
+	public void deactivate_M_ShipmentSchedule(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		schedule.setIsActive(false);
+		saveRecord(schedule);
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -683,10 +692,11 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	private void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
+	public void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(tableRow.getAsIdentifier());
 
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override).ifPresent(shipmentScheduleRecord::setQtyOrdered_Override);
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliver_Override);
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliverCatch_Override);
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override).ifPresent(shipmentScheduleRecord::setPreparationDate_Override);
