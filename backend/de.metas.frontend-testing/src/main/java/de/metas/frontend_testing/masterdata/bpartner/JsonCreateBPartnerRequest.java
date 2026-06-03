@@ -20,6 +20,14 @@ public class JsonCreateBPartnerRequest
 	@Nullable Map<String, Location> locations;
 
 	/**
+	 * Sets {@code C_BPartner.GRAIRequired}.
+	 * Valid codes (see {@link org.compiere.model.X_C_BPartner}):
+	 * {@code 'Y'}=Yes, {@code 'N'}=No, {@code 'D'}=YesWithDummyGRAIs.
+	 * If null, the business partner is left unchanged.
+	 */
+	@Nullable String graiRequired;
+
+	/**
 	 * Contacts (AD_User records) to create for this business partner.
 	 * Each contact is linked to the business partner via C_BPartner_ID.
 	 */

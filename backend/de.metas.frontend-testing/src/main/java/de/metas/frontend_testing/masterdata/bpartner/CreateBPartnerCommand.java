@@ -11,6 +11,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
@@ -114,6 +115,12 @@ public class CreateBPartnerCommand
 		bpartner.setIsCustomer(request.isCustomer());
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
+
+		final GRAIRequired graiRequired = GRAIRequired.ofNullableCode(StringUtils.trimBlankToNull(request.getGraiRequired()));
+		if (graiRequired != null)
+		{
+			bpartner.setGRAIRequired(graiRequired.getCode());
+		}
 
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())

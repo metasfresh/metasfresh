@@ -17,4 +17,10 @@ public class JsonPackingInstructionsResponse
 	String luName;
 	JsonTestId luPIItemTestId;
 	JsonTestId luPITestId;
+
+	/**
+	 * The generated scannable GRAI (canonical {@code companyPrefix.assetType.serial} format)
+	 * when GRAI mapping was requested; otherwise {@code null}.
+	 */
+	String grai;
 }

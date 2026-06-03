@@ -5,6 +5,7 @@ import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -14,6 +15,7 @@ import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -28,11 +30,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -85,6 +89,10 @@ public class CreatePackingInstructionsCommand
 			luPIItemTestId = null;
 		}
 
+		//
+		// GRAI mapping
+		final GRAI grai = request.isGraiMapping() ? createGRAIMapping(tu) : null;
+
 		context.putObject(identifier, PackingInstructions.builder()
 				.tuPI(tu.getPi())
 				.qtyCUsPerTU(request.getQtyCUsPerTU())
@@ -101,7 +109,60 @@ public class CreatePackingInstructionsCommand
 				.luPIItemTestId(luPIItemTestId)
 				.luPITestId(lu != null ? GenerateHUQRCodesActivityHandler.toPITestId(lu.getPiId()) : null)
 				//
+				.grai(grai != null ? grai.toCanonicalString() : null)
+				//
 				.build();
+	}
+
+	/**
+	 * Generates a random canonical GRAI whose (companyPrefix, assetType) does not collide with any existing
+	 * {@code M_HU_PI_GRAI} row, then inserts an {@code M_HU_PI_GRAI} row linking it to the given TU packing instruction.
+	 *
+	 * @return the generated GRAI (canonical {@code companyPrefix.assetType.serial} format).
+	 */
+	private GRAI createGRAIMapping(@NonNull final PIResult tu)
+	{
+		final GRAI grai = generateUniqueGRAI();
+
+		final I_M_HU_PI_GRAI record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
+		record.setM_HU_PI_ID(tu.getPiId().getRepoId());
+		record.setGRAI_CompanyPrefix(grai.getCompanyPrefix());
+		record.setGRAI_AssetType(grai.getAssetType());
+		record.setIsActive(true);
+		saveRecord(record);
+
+		logger.info("Created M_HU_PI_GRAI mapping {} -> M_HU_PI_ID={}", grai.toCanonicalString(), tu.getPiId().getRepoId());
+
+		return grai;
+	}
+
+	/**
+	 * Generates a random canonical GRAI ({@code companyPrefix.assetType.serial}) whose (companyPrefix, assetType)
+	 * pair does not already exist in {@code M_HU_PI_GRAI} (the global unique index is on those two columns).
+	 */
+	private GRAI generateUniqueGRAI()
+	{
+		final ThreadLocalRandom random = ThreadLocalRandom.current();
+		for (int attempt = 0; attempt < 100; attempt++)
+		{
+			// 7-digit company prefix + 5-digit asset type + numeric serial → also valid as a GS1 AI 8003 barcode (12-digit base).
+			final String companyPrefix = String.format("%07d", random.nextInt(0, 10_000_000));
+			final String assetType = String.format("%05d", random.nextInt(0, 100_000));
+			final String serial = String.format("%010d", random.nextLong(0, 10_000_000_000L));
+			final GRAI grai = GRAI.ofCanonicalString(companyPrefix + "." + assetType + "." + serial);
+
+			final boolean exists = queryBL.createQueryBuilder(I_M_HU_PI_GRAI.class)
+					.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_CompanyPrefix, companyPrefix)
+					.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_AssetType, assetType)
+					.create()
+					.anyMatch();
+			if (!exists)
+			{
+				return grai;
+			}
+		}
+
+		throw new AdempiereException("Failed to generate a unique GRAI after 100 attempts");
 	}
 
 	@Value
