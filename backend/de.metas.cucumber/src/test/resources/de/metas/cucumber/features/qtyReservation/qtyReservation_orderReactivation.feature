@@ -101,6 +101,14 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
       | Identifier  | Qty     | QtyDelivered | Processed |
       | reservation | 100 PCE | 0 PCE        | false     |
 
+    # Let the reversal's async processing settle before reactivating the order:
+    # drain the material queue and wait for the shipment schedule recompute/close to finish,
+    # so the order-reactivation interceptor does not race the not-yet-settled schedule.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
     # Customer reduces the order: reactivate, cut the line from 100 to 75 PCE, re-complete
     And the order identified by order is reactivated
     And update C_OrderLine:
