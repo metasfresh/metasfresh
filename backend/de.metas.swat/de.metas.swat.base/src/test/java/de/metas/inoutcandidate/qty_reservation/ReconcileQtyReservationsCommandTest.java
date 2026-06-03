@@ -138,6 +138,42 @@ class ReconcileQtyReservationsCommandTest
 		assertThat(ps.getQty()).isEqualByComparingTo(new BigDecimal("15"));
 	}
 
+	@Test
+	void doesNotTouchProcessedReservations()
+	{
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("50"));
+
+		// UNPROCESSED reservation: Qty=70, QtyTU=70, QtyDelivered=0, Processed=false
+		final I_M_QtyReservation unprocessed = createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("70"), new BigDecimal("70"));
+		final int unprocessedId = unprocessed.getM_QtyReservation_ID();
+
+		// PROCESSED reservation on the SAME line: Qty=30, QtyTU=30, QtyDelivered=30, Processed=true
+		final I_M_QtyReservation processed = createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("30"), new BigDecimal("30"));
+		processed.setQtyDelivered(new BigDecimal("30"));
+		processed.setProcessed(true);
+		InterfaceWrapperHelper.save(processed);
+		final int processedId = processed.getM_QtyReservation_ID();
+
+		service.reconcileToOrderedQty(orderId);
+
+		// reload from the embedded DB to catch any silent save by the command
+		final I_M_QtyReservation processedReloaded = InterfaceWrapperHelper.load(processedId, I_M_QtyReservation.class);
+		final I_M_QtyReservation unprocessedReloaded = InterfaceWrapperHelper.load(unprocessedId, I_M_QtyReservation.class);
+
+		// the PROCESSED reservation is UNCHANGED — Qty/QtyTU/QtyDelivered untouched and Processed not overwritten
+		assertThat(processedReloaded.getQty()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(processedReloaded.getQtyTU()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(processedReloaded.getQtyDelivered()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(processedReloaded.isProcessed()).isTrue();
+
+		// getActiveByOrderLineId() filters Processed=false, so only the unprocessed 70 is visible to the command.
+		// excess = 70 (total unprocessed reserved) - 50 (QtyOrdered) = 20; 70 -> 50.
+		// The processed 30 is intentionally excluded from the excess computation (not (70+30)-50).
+		assertThat(unprocessedReloaded.getQty()).isEqualByComparingTo(new BigDecimal("50"));
+		assertThat(unprocessedReloaded.getQtyTU()).isEqualByComparingTo(new BigDecimal("50"));
+	}
+
 	// --- helpers ---
 
 	private int createWarehouseId()
