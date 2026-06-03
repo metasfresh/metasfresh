@@ -109,7 +109,7 @@ public class CreatePackingInstructionsCommand
 				.luPIItemTestId(luPIItemTestId)
 				.luPITestId(lu != null ? GenerateHUQRCodesActivityHandler.toPITestId(lu.getPiId()) : null)
 				//
-				.grai(grai != null ? grai.toCanonicalString() : null)
+				.grai(grai)
 				//
 				.build();
 	}

@@ -116,7 +116,7 @@ public class CreateBPartnerCommand
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
-		final GRAIRequired graiRequired = GRAIRequired.ofNullableCode(StringUtils.trimBlankToNull(request.getGraiRequired()));
+		final GRAIRequired graiRequired = request.getGraiRequired();
 		if (graiRequired != null)
 		{
 			bpartner.setGRAIRequired(graiRequired.getCode());

@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.handlingunits.grai.GRAIRequired;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -21,11 +22,10 @@ public class JsonCreateBPartnerRequest
 
 	/**
 	 * Sets {@code C_BPartner.GRAIRequired}.
-	 * Valid codes (see {@link org.compiere.model.X_C_BPartner}):
-	 * {@code 'Y'}=Yes, {@code 'N'}=No, {@code 'D'}=YesWithDummyGRAIs.
+	 * (De)serialized by its code: {@code 'Y'}=Yes, {@code 'N'}=No, {@code 'D'}=YesWithDummyGRAIs.
 	 * If null, the business partner is left unchanged.
 	 */
-	@Nullable String graiRequired;
+	@Nullable GRAIRequired graiRequired;
 
 	/**
 	 * Contacts (AD_User records) to create for this business partner.
