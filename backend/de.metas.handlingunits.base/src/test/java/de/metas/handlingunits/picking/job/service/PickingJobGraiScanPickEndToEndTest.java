@@ -17,9 +17,15 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingJobStep;
+import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
+import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
@@ -202,6 +208,53 @@ class PickingJobGraiScanPickEndToEndTest
 		assertThat(reloadedTarget.getGrai())
 				.as("the scanned GRAI must survive save/reload (Current_PickTo_TU_GRAI)")
 				.isEqualTo(GRAI.parse(GRAI_CANONICAL));
+	}
+
+	/**
+	 * TC1 (scan→pick→validate seam): after scanning a valid GRAI (which stores a new-TU target carrying the GRAI) and
+	 * then <b>picking</b> the line, the scanned GRAI must end up on the materialised picked HU <b>at exactly the HU
+	 * the completion-time GRAI validator reads it from</b> — i.e. {@code PickingJobGRAIValidator} resolves
+	 * {@code line.getPickedHUIds()}, loads their GRAI snapshots via {@code PickingJobHUService#getGraiSnapshots} and
+	 * calls {@code assertAllGraisAssigned()}. This drives the real {@code PickingJobPickCommand#stampGraiIfPresent}
+	 * path end-to-end through {@link PickingJobService#processStepEvent} and asserts the validator's own check, closing
+	 * the gap the sibling stamp test below leaves (which stamps a hand-materialised TU rather than a picked one).
+	 * <p>
+	 * NOTE: the in-memory HU harness materialises the pick as a top-level real TU; it does <b>not</b> reproduce the
+	 * aggregate-TU-under-LU nesting that the full virtual-inventory document-interceptor chain produces on the running
+	 * stack, so this is not a substitute for the Playwright spec TC1 (which exercises that nesting).
+	 */
+	@Test
+	void scanGRAI_thenPick_graiIsStampedOnPickedHU_whereValidatorReadsIt()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI", helper.uomEach);
+		final HUPIItemProductId piipId = createGraiTuPI(productId, true); // GRAI-mapped TU PI WITH the GRAI slot
+		final HUInfo pickFromVHU = helper.createVHUInfo(productId, "100", "QR-VHU-GRAI");
+
+		PickingJob pickingJob = createTuPickingJob(productId, "100", piipId);
+		PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		assertThat(line.getPickingUnit()).as("line must be a TU pick").isEqualTo(PickingUnit.TU);
+
+		// Scan the GRAI: stores a new-TU target carrying the scanned GRAI.
+		pickingJob = helper.pickingJobService.createTUFromGRAI(pickingJob, line.getId(), ScannedCode.ofString(GRAI_CANONICAL));
+
+		// Pick the line: the framework materialises the TU and PickingJobPickCommand stamps the GRAI on it.
+		final PickingJobStepId stepId = CollectionUtils.singleElement(
+				pickingJob.streamSteps().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.pickingStepId(stepId)
+				.pickFromKey(PickingJobStepPickFromKey.MAIN)
+				.eventType(PickingJobStepEventType.PICK)
+				.qrCode(pickFromVHU.getQrCode().toScannedCode())
+				.qtyPicked(BigDecimal.ONE) // 1 TU (capacity 100 CUs/TU)
+				.qtyRejectedReasonCode(null)
+				.build());
+
+		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
+		line = CollectionUtils.singleElement(pickingJob.getLines());
+		assertThat(line.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
+		helper.huService.getGraiSnapshots(line.getPickedHUIds())
+				.assertAllGraisAssigned();
 	}
 
 	/**
