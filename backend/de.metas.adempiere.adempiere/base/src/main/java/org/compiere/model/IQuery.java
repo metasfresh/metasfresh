@@ -389,8 +389,6 @@ public interface IQuery<T>
 	/**
 	 * Appends a row-locking clause to the query, locking matched rows until the transaction ends.
 	 * Use {@link ForUpdate#NONE} (the default) to emit no locking clause.
-	 *
-	 * @param forUpdate the desired locking mode; never {@code null}
 	 */
 	IQuery<T> setForUpdate(@NonNull ForUpdate forUpdate);
 
