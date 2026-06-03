@@ -1,6 +1,7 @@
 package de.metas.handlingunits.grai;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -19,6 +20,24 @@ public class HUGraiService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final HUPIGraiRepository huPIGraiRepository;
+
+	public HUGraiService(@NonNull final HUPIGraiRepository huPIGraiRepository)
+	{
+		this.huPIGraiRepository = huPIGraiRepository;
+	}
+
+	/**
+	 * Returns the TU packing instruction configured for the given GRAI (matched by company-prefix and asset-type).
+	 *
+	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAINoMatchingTUType}
+	 *                            when no active GRAI-to-TU mapping exists for the given GRAI.
+	 */
+	@NonNull
+	public HuPackingInstructionsId resolveHuPackingInstructionsId(@NonNull final GRAI grai)
+	{
+		return huPIGraiRepository.resolveHuPackingInstructionsId(grai);
+	}
 
 	@NonNull
 	public ExplainedOptional<HUGraiSnapshot> getSnapshot(@NonNull final HuId huId)

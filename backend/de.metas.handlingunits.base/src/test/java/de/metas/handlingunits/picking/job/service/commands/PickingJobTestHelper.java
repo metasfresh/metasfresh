@@ -217,8 +217,7 @@ public class PickingJobTestHelper
 				huLabelService,
 				huReservationService,
 				inventoryService,
-				new HUGraiService(),
-				new HUPIGraiRepository());
+				new HUGraiService(new HUPIGraiRepository()));
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,

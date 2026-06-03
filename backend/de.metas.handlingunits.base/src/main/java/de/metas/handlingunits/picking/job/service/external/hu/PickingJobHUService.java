@@ -13,7 +13,6 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
@@ -84,7 +83,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -111,15 +109,13 @@ public class PickingJobHUService
 						HULabelService.newInstanceForUnitTesting(),
 						new HUReservationService(new HUReservationRepository()),
 						InventoryService.newInstanceForUnitTesting(),
-						new HUGraiService(),
-						new HUPIGraiRepository()));
+						new HUGraiService(new HUPIGraiRepository())));
 	}
 
 	private static final AdMessageKey MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE = AdMessageKey.of("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
 
-	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
@@ -133,7 +129,6 @@ public class PickingJobHUService
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
-	@NonNull private final HUPIGraiRepository huPIGraiRepository;
 
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
@@ -157,7 +152,7 @@ public class PickingJobHUService
 	@NonNull
 	public HuPackingInstructionsId resolveHuPackingInstructionsId(@NonNull final GRAI grai)
 	{
-		return huPIGraiRepository.resolveHuPackingInstructionsId(grai);
+		return huGraiService.resolveHuPackingInstructionsId(grai);
 	}
 
 	/**
@@ -265,20 +260,20 @@ public class PickingJobHUService
 
 	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsBL.getPI(id);}
 
-	public I_M_HU_PI getPackingInstructionById(@NonNull final HuPackingInstructionsId id) {return handlingUnitsDAO.getPackingInstructionById(id);}
+	public I_M_HU_PI getPackingInstructionById(@NonNull final HuPackingInstructionsId id) {return handlingUnitsBL.getPI(id);}
 
-	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsDAO.retrievePICurrentVersionId(piId);}
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsBL.retrievePICurrentVersionId(piId);}
 
-	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsDAO.retrievePICurrentVersion(piId);}
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsBL.retrievePICurrentVersion(piId);}
 
-	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version) {return handlingUnitsDAO.retrievePIItemMaterial(version);}
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version) {return handlingUnitsBL.retrievePIItemMaterial(version);}
 
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull final HuPackingInstructionsId piId,
 			@NonNull final HuPackingInstructionsId includedPIId,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsDAO.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+		return handlingUnitsBL.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
 	}
 
 	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(@NonNull final I_M_HU_PI_Item itemDef) {return huPIItemProductDAO.retrievePIMaterialItemProducts(itemDef);}
@@ -488,7 +483,7 @@ public class PickingJobHUService
 				.orElse(false);
 	}
 
-	private Optional<IHUProductStorage> getHUProductStorage(final @NotNull HuId huId, final @NotNull ProductId productId)
+	private Optional<IHUProductStorage> getHUProductStorage(final @NonNull HuId huId, final @NonNull ProductId productId)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 

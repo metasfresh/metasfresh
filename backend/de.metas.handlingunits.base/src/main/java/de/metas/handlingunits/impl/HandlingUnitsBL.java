@@ -1032,6 +1032,25 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPI(piVersion);
 	}
 
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsRepo.retrievePICurrentVersionId(piId);}
+
+	@NonNull
+	@Override
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsRepo.retrievePICurrentVersion(piId);}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version) {return handlingUnitsRepo.retrievePIItemMaterial(version);}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
