@@ -39,11 +39,14 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+
+import javax.annotation.Nullable;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -51,6 +54,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -61,6 +65,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * DAO cluster for C_Invoice, C_InvoiceLine, C_InvoiceTax, C_LandedCost.
+ * Queries on other tables belong in their own DAO/Repo (e.g. C_PaymentTerm → IPaymentTermRepository).
+ */
 public interface IInvoiceDAO extends ISingletonService
 {
 	void save(org.compiere.model.I_C_Invoice invoice);
@@ -203,5 +211,45 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 
-	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<I_C_Invoice> filter);
+
+	/**
+	 * Returns the DocumentNos of invoices matching {@code filter} whose payment term ID is in
+	 * {@code paymentTermIds}. Pass the set of IDs whose flag you want to match; the caller
+	 * is responsible for resolving which terms allow or disallow the override.
+	 * Returns an empty collection immediately when {@code paymentTermIds} is empty.
+	 *
+	 * @param filter         the query filter that describes the process selection
+	 * @param paymentTermIds the payment-term IDs to check against; an empty collection yields an empty result
+	 * @return up to {@link org.adempiere.ad.dao.QueryLimit#TEN} DocumentNos for display in the rejection message
+	 */
+	Collection<String> retrieveDocNosWithPaymentTermIn(
+			IQueryFilter<I_C_Invoice> filter,
+			Collection<PaymentTermId> paymentTermIds);
+
+	/**
+	 * Returns the first DueDate among all active invoices matching {@code filter},
+	 * or {@code null} when no matching invoice exists or none has a DueDate set.
+	 *
+	 * @param filter the query filter that describes the process selection
+	 * @return the DueDate of the first matching invoice, or {@code null}
+	 */
+	@Nullable
+	LocalDate retrieveFirstDueDate(IQueryFilter<I_C_Invoice> filter);
+
+	/**
+	 * Bulk-updates the {@code DueDate} column of all active invoices that match {@code filter}
+	 * <em>and</em> whose payment term ID is in {@code paymentTermIds}.
+	 * The caller is responsible for passing only the IDs whose flag allows the override.
+	 * Returns 0 immediately when {@code paymentTermIds} is empty.
+	 *
+	 * @param filter         the query filter that describes the process selection
+	 * @param paymentTermIds the payment-term IDs to update for; an empty collection yields 0 updates
+	 * @param dueDate        the new due date to set
+	 * @return number of invoice records updated
+	 */
+	int setDueDateWherePaymentTermIn(
+			IQueryFilter<I_C_Invoice> filter,
+			Collection<PaymentTermId> paymentTermIds,
+			LocalDate dueDate);
 }

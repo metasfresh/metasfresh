@@ -646,7 +646,7 @@ public final class AggregationEngine
 			return null;
 		}
 		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
-		if (paymentTermId != null && !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
+		if (paymentTermId == null || !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
 		{
 			return null;
 		}
