@@ -59,6 +59,7 @@ BEGIN
     )
     SELECT count(*) INTO v_deactivated FROM upd;
 
+    RAISE NOTICE 'dlm.deactivate_destroyed_hu_attributes: % attribute rows deactivated', v_deactivated;
     RETURN COALESCE(v_deactivated, 0);
 END;
 $func$;
