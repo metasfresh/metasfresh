@@ -13,6 +13,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -39,6 +40,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.ThreadLocalRandom;
@@ -49,9 +52,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CreatePackingInstructionsCommand
 {
 	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
+
+	/**
+	 * HU_TansferStrategy_JavaClass_ID used for the GRAI HU-attribute slot, matching the value set by the
+	 * migration {@code 5795460_add_GRAI_attr_to_PI_template.sql}. Only used as a defensive fallback when the
+	 * template GRAI {@code M_HU_PI_Attribute} row cannot be found (see {@link #assignGraiAttribute}).
+	 */
+	private static final int GRAI_TRANSFER_STRATEGY_JAVACLASS_ID = 540027;
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
@@ -168,13 +180,61 @@ public class CreatePackingInstructionsCommand
 		}
 
 		final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
+
+		//
+		// Robust approach: copy ALL columns from the GRAI M_HU_PI_Attribute declared on the TEMPLATE PI version
+		// (created by migration 5795460_add_GRAI_attr_to_PI_template.sql). This guarantees that every NOT-NULL
+		// column - notably HU_TansferStrategy_JavaClass_ID (note the misspelling) - is populated, so we never
+		// miss a mandatory column when the schema evolves.
+		final I_M_HU_PI_Attribute templateGraiAttribute = findTemplateGraiAttribute(graiAttributeId);
+		if (templateGraiAttribute != null)
+		{
+			InterfaceWrapperHelper.copy()
+					.setFrom(templateGraiAttribute)
+					.setTo(piAttribute)
+					.copy();
+		}
+		else
+		{
+			// Defensive fallback: the template row was not found (migration not applied yet?).
+			// Set at least the NOT-NULL columns so the INSERT satisfies all constraints.
+			logger.warn("GRAI M_HU_PI_Attribute not found on TEMPLATE PI version; falling back to explicit column values");
+			piAttribute.setHU_TansferStrategy_JavaClass_ID(GRAI_TRANSFER_STRATEGY_JAVACLASS_ID);
+			piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
+			piAttribute.setIsDisplayed(true);
+			piAttribute.setIsInstanceAttribute(true);
+			piAttribute.setIsMandatory(false);
+			piAttribute.setIsOnlyIfInProductAttributeSet(false);
+			piAttribute.setIsReadOnly(false);
+			piAttribute.setSeqNo(200);
+			piAttribute.setUseInASI(false);
+		}
+
+		// Always (re)set the discriminating columns - these must point at the NEW TU PI version, not the template.
 		piAttribute.setM_HU_PI_Version_ID(pivId.getRepoId());
 		piAttribute.setM_Attribute_ID(graiAttributeId.getRepoId());
-		piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
 		piAttribute.setIsActive(true);
 		saveRecord(piAttribute);
 
 		logger.info("Declared GRAI HU-attribute slot (M_Attribute_ID={}) on M_HU_PI_Version_ID={}", graiAttributeId, pivId);
+	}
+
+	/**
+	 * Looks up the GRAI {@code M_HU_PI_Attribute} row declared on the current version of the TEMPLATE packing
+	 * instruction ({@link HuPackingInstructionsId#TEMPLATE}). This is the row created by the migration script
+	 * {@code 5795460_add_GRAI_attr_to_PI_template.sql} and is used as the template to copy onto new TU PI versions.
+	 *
+	 * @return the template GRAI attribute row, or {@code null} if not present.
+	 */
+	@Nullable
+	private I_M_HU_PI_Attribute findTemplateGraiAttribute(@NonNull final AttributeId graiAttributeId)
+	{
+		final HuPackingInstructionsVersionId templatePivId = handlingUnitsDAO.retrievePICurrentVersionId(HuPackingInstructionsId.TEMPLATE);
+		return queryBL.createQueryBuilder(I_M_HU_PI_Attribute.class)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, templatePivId)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, graiAttributeId)
+				.create()
+				.firstOnlyOrNull(I_M_HU_PI_Attribute.class);
 	}
 
 	/**
