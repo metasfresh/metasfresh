@@ -13,7 +13,6 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { PickingTargetType } from '../../../constants/PickingTargetType';
 import { pickingJobOrLineLocation } from '../../../routes/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { useKeyboardBarcodeReader } from '../../../hooks/useKeyboardBarcodeReader';
 import { parseGraiFromRawInput } from '../../../utils/grai';
 import { toastError } from '../../../utils/toast';
 
@@ -103,7 +102,7 @@ NewTargets.propTypes = {
  * Accumulates distinct parsed GRAIs for GRAI_DEBOUNCE_MILLIS after the last
  * scan.  When the timer fires:
  *   - exactly one distinct GRAI → POST to the pick-target endpoint and navigate back
- *   - two or more distinct GRAIs → toast error (GRAIMultipleScanned), no list
+ *   - two or more distinct GRAIs → toast error (i18n key: activities.picking.graiScan.multipleScanned), no list
  * Identical repeated scans are deduplicated (count as one distinct value).
  */
 const useGraiScanner = ({ wfProcessId, lineId, dispatch, history }) => {
@@ -130,22 +129,23 @@ const useGraiScanner = ({ wfProcessId, lineId, dispatch, history }) => {
       .catch((axiosError) => toastError({ axiosError }));
   }, [wfProcessId, lineId, dispatch, history]);
 
-  const onGraiScanned = useCallback(
-    (rawString) => {
-      const grai = parseGraiFromRawInput(rawString);
-      if (!grai) return; // unparseable scans are ignored at this level; the scanner component handles beep/error
+  const fireDebouncedRef = useRef(fireDebounced);
+  useEffect(() => {
+    fireDebouncedRef.current = fireDebounced;
+  }, [fireDebounced]);
 
-      pendingGraisRef.current.add(grai);
+  const onGraiScanned = useCallback((rawString) => {
+    const grai = parseGraiFromRawInput(rawString);
+    if (!grai) return; // unparseable scans are ignored at this level; the scanner component handles beep/error
 
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(fireDebounced, GRAI_DEBOUNCE_MILLIS);
-    },
-    [fireDebounced]
-  );
+    pendingGraisRef.current.add(grai);
 
-  // Clean up timer on unmount
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => fireDebouncedRef.current(), GRAI_DEBOUNCE_MILLIS);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
@@ -168,23 +168,16 @@ const useGraiScanner = ({ wfProcessId, lineId, dispatch, history }) => {
  * No tap required — the scanner runs continuously from mount.
  */
 const GraiScanPanel = ({ onGraiScanned }) => {
-  const onBarcodeString = useCallback(
-    (barcodeString) => {
-      onGraiScanned(barcodeString);
+  const onResolvedResult = useCallback(
+    (resolvedResult) => {
+      onGraiScanned(resolvedResult.scannedBarcode);
     },
     [onGraiScanned]
   );
 
-  const onResolvedResult = useCallback(
-    (resolvedResult) => {
-      onBarcodeString(resolvedResult.scannedBarcode);
-    },
-    [onBarcodeString]
+  return (
+    <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} testId="grai-scan-input" />
   );
-
-  useKeyboardBarcodeReader({ onReadDone: onBarcodeString });
-
-  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />;
 };
 
 GraiScanPanel.propTypes = {
