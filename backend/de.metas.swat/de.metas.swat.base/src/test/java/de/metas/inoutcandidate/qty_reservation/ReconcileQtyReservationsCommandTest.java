@@ -4,6 +4,9 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -172,6 +175,95 @@ class ReconcileQtyReservationsCommandTest
 		// The processed 30 is intentionally excluded from the excess computation (not (70+30)-50).
 		assertThat(unprocessedReloaded.getQty()).isEqualByComparingTo(new BigDecimal("50"));
 		assertThat(unprocessedReloaded.getQtyTU()).isEqualByComparingTo(new BigDecimal("50"));
+	}
+
+	@Test
+	void shrinksCorrectly_whenReservationUomDiffersFromOrderLine()
+	{
+		// product stocking UOM is "Kg" (the order-line / qtyOrdered UOM).
+		// the reservation is held in a different UOM "Box", with conversion 1 Box = 5 Kg.
+		final I_C_UOM boxUom = BusinessTestHelper.createUOM("Box");
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(boxUom.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal("5"))
+				.build());
+
+		final OrderId orderId = createSalesOrder();
+		// QtyOrdered = 50 Kg
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("50"));
+
+		// reservation = 20 Box = 100 Kg → 50 Kg excess → must shrink to 10 Box (= 50 Kg)
+		final I_M_QtyReservation record = createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("20"), new BigDecimal("20"));
+		record.setC_UOM_ID(boxUom.getC_UOM_ID());
+		InterfaceWrapperHelper.save(record);
+
+		service.reconcileToOrderedQty(orderId);
+
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		assertThat(records).hasSize(1);
+		// shrunk to the order-line qty (50 Kg) expressed in the reservation's own UOM (10 Box)
+		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+	}
+
+	@Test
+	void setsProcessed_whenShrunkToDelivered()
+	{
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("40"));
+
+		// Qty=100, QtyDelivered=40, Processed=false → shrinks to 40, then Qty==QtyDelivered ⇒ Processed=true
+		final I_M_QtyReservation record = createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("100"), new BigDecimal("100"));
+		record.setQtyDelivered(new BigDecimal("40"));
+		record.setProcessed(false);
+		InterfaceWrapperHelper.save(record);
+		final int recordId = record.getM_QtyReservation_ID();
+
+		service.reconcileToOrderedQty(orderId);
+
+		final I_M_QtyReservation reloaded = InterfaceWrapperHelper.load(recordId, I_M_QtyReservation.class);
+		assertThat(reloaded.getQty()).isEqualByComparingTo(new BigDecimal("40"));
+		assertThat(reloaded.isProcessed()).isTrue();
+	}
+
+	@Test
+	void skipsLine_whenQtyOrderedIsZero()
+	{
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, BigDecimal.ZERO);
+
+		createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("10"), new BigDecimal("10"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		// QtyOrdered=0 → line is skipped (the `qtyOrdered.signum() <= 0` guard), reservation untouched
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		assertThat(records).hasSize(1);
+		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+	}
+
+	@Test
+	void reconcilesEachLineIndependently()
+	{
+		final OrderId orderId = createSalesOrder();
+
+		// lineA: over-reserved (80 reserved vs 50 ordered) → must shrink to 50
+		final OrderLineId lineA = createOrderLine(orderId, new BigDecimal("50"));
+		createReservationRecord(lineA, SupplyType.ON_HAND, new BigDecimal("80"), new BigDecimal("80"));
+
+		// lineB: exactly reserved (100 reserved vs 100 ordered) → must stay 100
+		final OrderLineId lineB = createOrderLine(orderId, new BigDecimal("100"));
+		createReservationRecord(lineB, SupplyType.ON_HAND, new BigDecimal("100"), new BigDecimal("100"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		final List<I_M_QtyReservation> recordsA = loadRecords(lineA);
+		assertThat(recordsA).hasSize(1);
+		assertThat(recordsA.get(0).getQty()).isEqualByComparingTo(new BigDecimal("50"));
+
+		final List<I_M_QtyReservation> recordsB = loadRecords(lineB);
+		assertThat(recordsB).hasSize(1);
+		assertThat(recordsB.get(0).getQty()).isEqualByComparingTo(new BigDecimal("100"));
 	}
 
 	// --- helpers ---

@@ -108,7 +108,8 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
       | orderLine                 | 75             | 75             |
     And the order identified by order is completed
 
-    # Reconcile assertion: the reservation is shrunk to the new ordered qty
+    # Reconcile assertion: the reservation is shrunk to the new ordered qty,
+    # not yet re-delivered (QtyDelivered back to 0, Processed=false)
     And validate M_QtyReservations:
-      | Identifier  | Qty    |
-      | reservation | 75 PCE |
+      | Identifier  | Qty    | QtyDelivered | Processed |
+      | reservation | 75 PCE | 0 PCE        | false     |

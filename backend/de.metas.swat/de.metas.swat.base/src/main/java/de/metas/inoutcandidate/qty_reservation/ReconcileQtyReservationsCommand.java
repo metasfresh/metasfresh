@@ -161,7 +161,18 @@ public class ReconcileQtyReservationsCommand
 				newQtyByReservationId.put(reservation.getId(), new NewQty(newQty, QtyTU.ofBigDecimal(newQtyTUBD)));
 				lineChanged = true;
 
-				excessInLineUOM = excessInLineUOM.subtract(reductionInLineUOM);
+				// Subtract the ACTUAL applied reduction, not the intended one. The row is written `newQtyBD`,
+				// which may differ from `rowQty - reductionInRowUOM` when the delivered-clamp kicks in or when a
+				// non-integer UOM round-trip shifts the value. Tracking the real reduction (converted back to the
+				// order-line UOM) keeps `excessInLineUOM` accurate and avoids a phantom residual across rows.
+				// In same-UOM scenarios the conversion is the identity, so this equals `reductionInLineUOM` exactly.
+				final BigDecimal actualReductionInRowUOM = rowQty.subtract(newQtyBD);
+				final BigDecimal actualReductionInLineUOM = uomConversionBL.convertQuantityTo(
+								reservation.getQty().toZero().add(actualReductionInRowUOM),
+								reservation.getProductId(),
+								qtyOrdered.getUomId())
+						.toBigDecimal();
+				excessInLineUOM = excessInLineUOM.subtract(actualReductionInLineUOM);
 			}
 
 			if (lineChanged)
@@ -213,6 +224,7 @@ public class ReconcileQtyReservationsCommand
 
 		final Map<QtyReservationId, Boolean> result = new HashMap<>();
 		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, ids)
 				.create()
 				.stream()
