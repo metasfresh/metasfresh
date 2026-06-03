@@ -228,6 +228,113 @@ Feature: nShift Shipment
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | ParcelGrossWeightKg |
       | cp1                | cgt1                  | cs1                | cs2                 | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test       | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 21                  |
 
+  @Id:S30196_TC1
+  Scenario: nShift Delivery Order exported via Historical Shipments JSON includes parcel tracking
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    # Test env has no AD_Printer_Config for the system user; auto-print would otherwise fail the WP.
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
+      | cp1                | cgt1                  | cs1                | cs2                 |
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    # The export process ANDs ExternalSystemCode ILIKE '%'; a shipment without an external system is excluded,
+    # so the order must carry an AD_InputDataSource + External System.
+    # Explicit Value+Name so reruns reuse the same AD_InputDataSource (upserts by Value) and don't
+    # collide on the AD_InputDataSource_InternalName unique index.
+    And metasfresh contains AD_InputDataSource:
+      | Identifier     | Value      | Name       | InternalName |
+      | dataSource_exp | nshift_exp | nshift_exp | nshift_exp   |
+    And metasfresh contains External System
+      | Name           | Value      |
+      | nShiftExport   | nshift_exp |
+    # Stable Name + EMail so reruns reuse the same AD_User and don't repoint it to a different bpartner —
+    # the composite FK c_order(c_bpartner_id, ad_user_id) would otherwise block the update.
+    And metasfresh contains AD_Users:
+      | Identifier         | Name                    | OPT.C_BPartner_ID.Identifier | OPT.EMail                    | OPT.Phone        |
+      | customerContact    | nShift Customer Contact | customer                     | contact@nshift-test.example  | +41 79 123 45 67 |
+    And metasfresh contains C_Orders:
+      | Identifier | REST.Context | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.AD_User_ID.Identifier | AD_InputDataSource_ID | ExternalSystem.Value |
+      | so_exp     | order_exp_ID | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact           | dataSource_exp        | nshift_exp           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_exp_l1  | so_exp     | product      | 10         |
+    When the order identified by so_exp is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_exp     | so_exp_l1      | N             | cp1                | cgt1                  |
+    And shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_exp                | inout_exp  |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | inout_exp  | transpOrder_exp            |
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier | M_InOut_ID |
+      | cso_exp    | inout_exp  |
+    And validate Carrier_ShipmentOrder_Parcels:
+      | Carrier_ShipmentOrder_ID | awb | TrackingURL | HasPdfLabel |
+      | cso_exp                  | awb | trackingUrl | true        |
+    # 10 PCE / 10 PCE-per-TU => 1 parcel; total weight = product.GrossWeight (2.1) × qty (10) = 21 kg.
+    And validate Carrier_ShipmentOrder_Items:
+      | Carrier_ShipmentOrder_ID | ProductName    | ArticleValue   | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
+      | cso_exp                  | nShift Product | nshift_product | 12345678            | 10         | 10    | 100        | 21              |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.M_InOut_ID | REST.Context.DocumentNo |
+      | ss_exp                | inout_exp  | shipment_exp_ID         | shipment_exp_DocumentNo |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_exp      | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Historical_Shipments_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "Order_ID",
+      "value": "@order_exp_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "Order_ID": @order_exp_ID@,
+    "Shipment_DocumentNo": "@shipment_exp_DocumentNo@",
+    "DocStatus": "CO",
+    "Lines": [
+      {
+        "LineNo": 10,
+        "ProductValue": "nshift_product",
+        "ProductName": "nShift Product",
+        "QtyEntered": 10,
+        "UOM": "Stk"
+      }
+    ],
+    "Parcels": [
+      {
+        "TrackingNumber": "awb",
+        "TrackingURL": "trackingUrl",
+        "Carrier": "nShift",
+        "Items": [
+          {
+            "ProductValue": "nshift_product",
+            "ProductName": "nShift Product",
+            "QtyShipped": 10,
+            "TotalWeightInKg": 21,
+            "CustomsTariffNumber": "12345678"
+          }
+        ]
+      }
+    ]
+  }
+]
+    """
+
   Scenario: nShift Carrier Advise uses ExternalSystem-specific service level
     Given metasfresh contains External System
       | Name      | Value     |

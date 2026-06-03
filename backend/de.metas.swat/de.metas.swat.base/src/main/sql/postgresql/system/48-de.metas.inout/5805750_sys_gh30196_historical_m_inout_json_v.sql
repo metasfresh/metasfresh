@@ -1,7 +1,12 @@
-DROP VIEW IF EXISTS historical_m_inout_json_v
+-- Source DDL: backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/ddl/views/historical_m_inout_json_v.sql
+-- gh30196: add carrier / parcel tracking infos ("Parcels" -> "Items") to the Historical Shipments JSON view.
+-- Tracking number (awb) and TrackingURL come from Carrier_ShipmentOrder_Parcel; carrier from M_Shipper.
+-- Parcels are matched to the shipment per-package via M_Package_ID (M_ShippingPackage <-> Carrier_ShipmentOrder_Parcel).
+
+DROP VIEW IF EXISTS historical_m_inout_json_v$new
 ;
 
-CREATE OR REPLACE VIEW historical_m_inout_json_v AS
+CREATE OR REPLACE VIEW historical_m_inout_json_v$new AS
 SELECT io.m_inout_id                                   AS "Shipment_ID",
        io.documentno                                   AS "Shipment_DocumentNo",
        io.movementdate                                 AS "Shipment_Date",
@@ -54,7 +59,7 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
         WHERE iol.m_inout_id = io.m_inout_id
           AND iol.isactive = 'Y')                      AS "Lines",
 
-       -- Carrier / parcel tracking infos.
+       -- Carrier / parcel tracking infos (gh30196).
        -- A shipment's physical packages are M_ShippingPackage rows (linked by M_InOut_ID).
        -- Each carrier parcel (Carrier_ShipmentOrder_Parcel) carries the same M_Package_ID,
        -- so we match per-package via M_Package_ID (precise; avoids the transport-level cartesian).
@@ -117,4 +122,15 @@ FROM m_inout io
          LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = io.externalsystem_id
 WHERE io.isactive = 'Y'
 ORDER BY io.movementdate DESC, io.updated DESC, io.m_inout_id DESC
+;
+
+SELECT db_alter_view(
+    'historical_m_inout_json_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('historical_m_inout_json_v$new'))
+)
+;
+
+DROP VIEW IF EXISTS historical_m_inout_json_v$new
 ;
