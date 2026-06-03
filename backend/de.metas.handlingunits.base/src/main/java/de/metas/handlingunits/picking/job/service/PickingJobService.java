@@ -640,7 +640,7 @@ public class PickingJobService implements PickingSlotListener
 
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
-		final I_M_HU_PI tuPI = huService.getPackingInstructionById(tuPIId);
+		final I_M_HU_PI tuPI = huService.getPI(tuPIId);
 
 		huService.assertTUTypeSupportsGraiAttribute(tuPIId, tuPI);
 
