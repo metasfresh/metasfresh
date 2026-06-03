@@ -1,3 +1,14 @@
+-- Migration: me03#29231 — EPCIS export emits one event per physical SSCC
+-- https://github.com/metasfresh/me03/issues/29231
+--
+-- Change: re-key "de.metas.edi".get_epcis_events_json_fn from per-M_InOut to per-physical-SSCC
+-- ownership. When two sales orders are picked onto ONE physical pallet (one shared LU = one SSCC,
+-- spanning two M_InOuts), the export now emits exactly ONE event for that SSCC instead of two:
+-- the OWNER shipment (lowest active CO/CL M_InOut sharing the LU) merges all crates of the pallet
+-- plus the desadvReferences[]/poReferences[] of BOTH source orders; a genuine sibling shipment
+-- (shares the LU but is not its owner) returns '{}'. Two DESADVs (one per order) is unchanged.
+-- Supersedes the per-M_InOut crate filter of 5804420 for the shared-pallet case.
+
 /*
  * #%L
  * de.metas.edi
