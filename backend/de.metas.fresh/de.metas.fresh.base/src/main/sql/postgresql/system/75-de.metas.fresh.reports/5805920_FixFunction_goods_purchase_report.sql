@@ -1,13 +1,12 @@
-DROP FUNCTION IF EXISTS report.goods_sales_report(
+DROP FUNCTION IF EXISTS report.goods_purchase_report(
     p_date_from         DATE,
     p_date_to           DATE,
     p_bpartner_id       NUMERIC,
-    p_bpartner_group_id NUMERIC,
     p_product_id        NUMERIC
 )
 ;
 
-CREATE OR REPLACE FUNCTION report.goods_sales_report(
+CREATE OR REPLACE FUNCTION report.goods_purchase_report(
     p_date_from         DATE,
     p_date_to           DATE,
     p_bpartner_id       NUMERIC DEFAULT NULL,
@@ -16,30 +15,30 @@ CREATE OR REPLACE FUNCTION report.goods_sales_report(
 )
     RETURNS TABLE
             (
-                partner_param           TEXT,
-                bp_group_param          TEXT,
-                product_param           TEXT,
-                ProductNo               VARCHAR, -- ArtNr
-                ProductName             VARCHAR, -- Bezeichnung
-                PackingInstruction      VARCHAR, -- Packvorschrift
-                customer_value          VARCHAR, -- Kunde Value
-                Customer                VARCHAR, -- Kunde
-                QtyTU                   NUMERIC, -- Menge
-                Weight                  NUMERIC, -- Gewicht
-                NetRevenue              NUMERIC, -- WWert
-                Discount                NUMERIC, -- Rabatte
-                Revenue                 NUMERIC, -- Erlös
-                ProductTotal_QtyTU      NUMERIC, -- Summe Artikel – Menge
-                ProductTotal_Weight     NUMERIC, -- Summe Artikel – Gewicht
-                ProductTotal_NetRevenue NUMERIC, -- Summe Artikel – WWert
-                ProductTotal_Discount   NUMERIC, -- Summe Artikel – Rabatte
-                ProductTotal_Revenue    NUMERIC, -- Summe Artikel – Erlös
-                GrandTotal_QtyTU        NUMERIC, -- Gesamtsumme – Menge       (per currency)
-                GrandTotal_Weight       NUMERIC, -- Gesamtsumme – Gewicht     (per currency)
-                GrandTotal_NetRevenue   NUMERIC, -- Gesamtsumme – WWert       (per currency)
-                GrandTotal_Discount     NUMERIC, -- Gesamtsumme – Rabatte     (per currency)
-                GrandTotal_Revenue      NUMERIC, -- Gesamtsumme – Erlös       (per currency)
-                currency                CHAR(3)
+                partner_param                 TEXT,
+                bp_group_param                TEXT,
+                product_param                 TEXT,
+                ProductNo                     VARCHAR, -- ArtNr
+                ProductName                   VARCHAR, -- Bezeichnung
+                PackingInstruction            VARCHAR, -- Packvorschrift
+                vendor_value                  VARCHAR, -- Lieferant Value
+                Vendor                        VARCHAR, -- Lieferant
+                QtyTU                         NUMERIC, -- Menge
+                Weight                        NUMERIC, -- Gewicht
+                NetPurchaseValue              NUMERIC, -- WWert
+                Discount                      NUMERIC, -- Rabatte
+                PurchaseValue                 NUMERIC, -- Einkaufswert
+                ProductTotal_QtyTU            NUMERIC, -- Summe Artikel – Menge
+                ProductTotal_Weight           NUMERIC, -- Summe Artikel – Gewicht
+                ProductTotal_NetPurchaseValue NUMERIC, -- Summe Artikel – WWert
+                ProductTotal_Discount         NUMERIC, -- Summe Artikel – Rabatte
+                ProductTotal_PurchaseValue    NUMERIC, -- Summe Artikel – Einkaufswert
+                GrandTotal_QtyTU              NUMERIC, -- Gesamtsumme – Menge       (per currency)
+                GrandTotal_Weight             NUMERIC, -- Gesamtsumme – Gewicht     (per currency)
+                GrandTotal_NetPurchaseValue   NUMERIC, -- Gesamtsumme – WWert       (per currency)
+                GrandTotal_Discount           NUMERIC, -- Gesamtsumme – Rabatte     (per currency)
+                GrandTotal_PurchaseValue      NUMERIC, -- Gesamtsumme – Einkaufswert (per currency)
+                currency                      CHAR(3)
             )
 AS
 $$
@@ -58,13 +57,13 @@ BEGIN
                                      AND pip.IsActive = 'Y'
                                    ORDER BY pip.M_HU_PI_Item_Product_ID
                                    LIMIT 1)                                                                                AS PackingInstruction,
-                                  bp.value                                                                                 AS customer_value,
-                                  bp.Name                                                                                  AS Customer,
+                                  bp.value                                                                                 AS vendor_value,
+                                  bp.Name                                                                                  AS Vendor,
                                   SUM(il.QtyEnteredTU)                                                                     AS QtyTU,
                                   SUM(il.QtyEntered * p.Weight)                                                            AS Weight,
-                                  SUM(ROUND((100 * il.linenetamt) / NULLIF(100 - COALESCE(il.discount, 0), 0), 2))         AS NetRevenue,
+                                  SUM(ROUND((100 * il.linenetamt) / NULLIF(100 - COALESCE(il.discount, 0), 0), 2))         AS NetPurchaseValue,
                                   SUM(ROUND(COALESCE(il.discount, 0) * ROUND((100 * il.linenetamt) / NULLIF(100 - COALESCE(il.discount, 0), 0), 2) / 100, 2)) AS Discount,
-                                  SUM(il.linenetamt)                                                                       AS Revenue,
+                                  SUM(il.linenetamt)                                                                       AS PurchaseValue,
                                   cu.iso_code                                                                              AS currency
                            FROM C_InvoiceLine il
                                     JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -73,7 +72,7 @@ BEGIN
                                     JOIN c_currency cu ON i.C_Currency_ID = cu.C_Currency_ID
                                     LEFT JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
                            WHERE i.DateInvoiced BETWEEN p_date_from AND p_date_to
-                             AND i.IsSOTrx = 'Y'
+                             AND i.IsSOTrx = 'N'
                              AND i.DocStatus IN ('CO', 'CL')
                              AND il.IsDescription = 'N'
                              AND (p_bpartner_id IS NULL OR bp.C_BPartner_ID = p_bpartner_id)
@@ -92,31 +91,31 @@ BEGIN
                base_data.ProductNo,
                base_data.ProductName,
                base_data.PackingInstruction,
-               base_data.customer_value,
-               base_data.Customer,
+               base_data.vendor_value,
+               base_data.Vendor,
                base_data.QtyTU,
                base_data.Weight,
-               base_data.NetRevenue,
+               base_data.NetPurchaseValue,
                base_data.Discount,
-               base_data.Revenue,
+               base_data.PurchaseValue,
                -- ProductTotal: per product + currency
-               SUM(base_data.QtyTU) OVER (PARTITION BY base_data.ProductNo, base_data.currency)      AS ProductTotal_QtyTU,
-               SUM(base_data.Weight) OVER (PARTITION BY base_data.ProductNo, base_data.currency)     AS ProductTotal_Weight,
-               SUM(base_data.NetRevenue) OVER (PARTITION BY base_data.ProductNo, base_data.currency) AS ProductTotal_NetRevenue,
-               SUM(base_data.Discount) OVER (PARTITION BY base_data.ProductNo, base_data.currency)   AS ProductTotal_Discount,
-               SUM(base_data.Revenue) OVER (PARTITION BY base_data.ProductNo, base_data.currency)    AS ProductTotal_Revenue,
+               SUM(base_data.QtyTU) OVER (PARTITION BY base_data.ProductNo, base_data.currency)              AS ProductTotal_QtyTU,
+               SUM(base_data.Weight) OVER (PARTITION BY base_data.ProductNo, base_data.currency)             AS ProductTotal_Weight,
+               SUM(base_data.NetPurchaseValue) OVER (PARTITION BY base_data.ProductNo, base_data.currency)   AS ProductTotal_NetPurchaseValue,
+               SUM(base_data.Discount) OVER (PARTITION BY base_data.ProductNo, base_data.currency)           AS ProductTotal_Discount,
+               SUM(base_data.PurchaseValue) OVER (PARTITION BY base_data.ProductNo, base_data.currency)      AS ProductTotal_PurchaseValue,
                -- GrandTotal: per currency only — never mix currencies!
-               SUM(base_data.QtyTU) OVER (PARTITION BY base_data.currency)                           AS GrandTotal_QtyTU,
-               SUM(base_data.Weight) OVER (PARTITION BY base_data.currency)                          AS GrandTotal_Weight,
-               SUM(base_data.NetRevenue) OVER (PARTITION BY base_data.currency)                      AS GrandTotal_NetRevenue,
-               SUM(base_data.Discount) OVER (PARTITION BY base_data.currency)                        AS GrandTotal_Discount,
-               SUM(base_data.Revenue) OVER (PARTITION BY base_data.currency)                         AS GrandTotal_Revenue,
+               SUM(base_data.QtyTU) OVER (PARTITION BY base_data.currency)                                   AS GrandTotal_QtyTU,
+               SUM(base_data.Weight) OVER (PARTITION BY base_data.currency)                                  AS GrandTotal_Weight,
+               SUM(base_data.NetPurchaseValue) OVER (PARTITION BY base_data.currency)                        AS GrandTotal_NetPurchaseValue,
+               SUM(base_data.Discount) OVER (PARTITION BY base_data.currency)                                AS GrandTotal_Discount,
+               SUM(base_data.PurchaseValue) OVER (PARTITION BY base_data.currency)                           AS GrandTotal_PurchaseValue,
                base_data.currency
         FROM base_data
         ORDER BY base_data.currency,
                  base_data.ProductNo,
-                 base_data.customer_value,
-                 base_data.Customer;
+                 base_data.vendor_value,
+                 base_data.Vendor;
 END;
 $$
     LANGUAGE plpgsql
