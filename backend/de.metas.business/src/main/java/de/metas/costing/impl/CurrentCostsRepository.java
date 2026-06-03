@@ -212,8 +212,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		else
 		{
 			// A freshly INSERTed row is transaction-exclusive; no lock needed on the create branch.
-			// Note: the concurrent-create race (two transactions both find no row and both INSERT)
-			// is pre-existing and out of scope for this change.
+			// Note: the concurrent-create race (two transactions both find no row and both INSERT) is not handled here.
 			return create(costSegmentAndElement);
 		}
 	}
