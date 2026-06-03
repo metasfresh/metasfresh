@@ -935,6 +935,22 @@ public class OrderBL implements IOrderBL
 
 	@Override
 	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip())
+		{
+			final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(
+					orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID());
+			if (dropShipLocationId != null)
+			{
+				return dropShipLocationId;
+			}
+		}
+		return BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID());
+	}
+
+	@Override
+	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
 	{
 		final BPartnerContactId contactIdOrNull = getBillToContactIdOrNull(order);
