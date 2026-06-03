@@ -118,10 +118,10 @@ SET IsTranslated='Y',
 WHERE AD_Process_ID=585488 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
--- JSONPath: add Processed filter and pagination
--- 2026-06-02
+-- JSONPath: add Processed filter (Limit+Offset were already present from prior migration)
+-- 2026-06-03
 UPDATE AD_Process
-SET JSONPath='historical_m_inout_json_v?and=(DataSource.ilike.@DataSource/%%@,Processed.is.@Processed/true@,or(Updated.gte.@UpdatedGE/9999-01-01T00:00:00@,ExternalId.eq.@ExternalId/-1@))&limit=@Limit/2000@&offset=@Offset/0@',
+SET JSONPath='historical_m_inout_json_v?and=(ExternalSystemCode.ilike.@ExternalSystemCode/%%@,Processed.is.@Processed/true@,or(Updated.gte.@UpdatedGE/9999-01-01T00:00:00@,ExternalId.eq.@ExternalId/-1@,Order_ID.eq.@Order_ID/-1@,BPartnerValue.eq.@BPartnerValue/-1@,DocType_Base.eq.@DocType_Base/-1@,Shipment_Date.gte.@ShipmentDateGE/9999-01-01T00:00:00@,and(BPartnerExternalSystemValue.eq.@BPartnerExternalSystemValue/-1@,BPartnerExternalReference.eq.@BPartnerExternalReference/-1@)))&limit=@Limit/2000@&offset=@Offset/0@',
     Updated=now(), UpdatedBy=100
 WHERE AD_Process_ID=585488
 ;
@@ -194,14 +194,6 @@ SET IsTranslated='Y',
     Help=E'Exportiert historische Rechnungen als JSON für externe Systeme.\n\nParameter:\n- UpdatedGE: Nur Datensätze zurückgeben, die seit diesem Zeitpunkt aktualisiert wurden. Standard: 9999-01-01 (alle)\n- ExternalId: Nur die Rechnung mit dieser externen ID zurückgeben. Standard: -1 (alle)\n- ExternalSystemCode: Nur Datensätze dieses externen Systems zurückgeben\n- Order_ID: Nur Rechnungen dieser Bestellung\n- BPartnerValue: Nur Rechnungen dieses Geschäftspartners (Suchschlüssel)\n- DateInvoicedGE: Nur Rechnungen ab diesem Rechnungsdatum\n- BPartnerExternalReference: Filter nach externer Referenz des Geschäftspartners\n- BPartnerExternalSystemValue: Filter nach Suchschlüssel des Geschäftspartners im externen System\n- DocType_Base: Filter nach Basis-Dokumenttyp\n- Limit: Maximale Anzahl zurückgegebener Datensätze. Standard und Maximum: 2000\n- Offset: Anzahl der zu überspringenden Datensätze (Paginierung). Standard: 0',
     Updated=now(), UpdatedBy=100
 WHERE AD_Process_ID=585485 AND AD_Language IN ('de_DE', 'de_CH')
-;
-
--- JSONPath: add Processed filter and pagination
--- 2026-06-02
-UPDATE AD_Process
-SET JSONPath='historical_invoices_json_v?and=(DataSource.ilike.@DataSource/%%@,or(Updated.gte.@UpdatedGE/9999-01-01T00:00:00@,ExternalId.eq.@ExternalId/-1@))&limit=@Limit/2000@&offset=@Offset/0@',
-    Updated=now(), UpdatedBy=100
-WHERE AD_Process_ID=585485
 ;
 
 -- ParameterName: Limit (SeqNo=100)
