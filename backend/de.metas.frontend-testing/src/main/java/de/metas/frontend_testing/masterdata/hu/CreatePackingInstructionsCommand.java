@@ -15,10 +15,12 @@ import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
@@ -26,6 +28,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,6 +52,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -133,7 +139,42 @@ public class CreatePackingInstructionsCommand
 
 		logger.info("Created M_HU_PI_GRAI mapping {} -> M_HU_PI_ID={}", grai.toCanonicalString(), tu.getPiId().getRepoId());
 
+		assignGraiAttribute(tu);
+
 		return grai;
+	}
+
+	/**
+	 * Declares the {@code GRAI} HU-attribute slot on the given TU packing-instruction version, so that HUs
+	 * materialised from this PI carry a writable GRAI slot where the scanned GRAI can be stored at pick time.
+	 * Without this slot, completion fails with {@code GRAI_COUNT_MISMATCH}.
+	 * <p>
+	 * Idempotent: if the slot is already present on the PI version, nothing is added.
+	 */
+	private void assignGraiAttribute(@NonNull final PIResult tu)
+	{
+		final AttributeId graiAttributeId = attributeDAO.getAttributeIdByCode(AttributeConstants.ATTR_GRAI);
+
+		final int pivRepoId = tu.getPivId().getRepoId();
+		final boolean alreadyPresent = queryBL.createQueryBuilder(I_M_HU_PI_Attribute.class)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, pivRepoId)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, graiAttributeId.getRepoId())
+				.create()
+				.anyMatch();
+		if (alreadyPresent)
+		{
+			logger.info("GRAI HU-attribute slot already present on M_HU_PI_Version_ID={}", pivRepoId);
+			return;
+		}
+
+		final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
+		piAttribute.setM_HU_PI_Version_ID(pivRepoId);
+		piAttribute.setM_Attribute_ID(graiAttributeId.getRepoId());
+		piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
+		piAttribute.setIsActive(true);
+		saveRecord(piAttribute);
+
+		logger.info("Declared GRAI HU-attribute slot (M_Attribute_ID={}) on M_HU_PI_Version_ID={}", graiAttributeId.getRepoId(), pivRepoId);
 	}
 
 	/**
