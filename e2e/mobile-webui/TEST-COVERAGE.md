@@ -6,7 +6,8 @@
 
 | Module | Covered | Total | % |
 |---|---|---|---|
-| Login / Home | 8 | 10 | 80% |
+| Login / Home | 8 | 11 | 73% |
+| Barcode Scanner Modes | 5 | 8 | 63% |
 | Picking | 44 | 47 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
@@ -39,8 +40,35 @@
 | Scan HU ID (M_HU_ID) from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan ExternalBarcode from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan workplace QR code from home screen → opens Workplace Manager, name and assigned status shown | `home_screen.spec.js` |
+| ❌ Generated HU QR code scan from home screen → navigates correctly | — |
 
-**4/4 — 100%**
+**4/5 — 80%**
+
+---
+
+## Barcode Scanner Modes
+
+### HTML state of #input-text
+
+| Scenario | Test |
+|---|---|
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+
+**1/1 — 100%**
+
+### Scan paths
+
+| Scenario | Test |
+|---|---|
+| Mode A — DataWedge IME: set input value + fire input/change + Enter keyup → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C1 — Keystroke scanner: keydown events on window, rate-based buffering → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C2 — Ctrl+V paste: clipboard mocked, keydown Ctrl+V on window → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C3 — Manual typing: fill visible editable input + Enter → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
+| ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
+| ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
+
+**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
 
 ---
 
