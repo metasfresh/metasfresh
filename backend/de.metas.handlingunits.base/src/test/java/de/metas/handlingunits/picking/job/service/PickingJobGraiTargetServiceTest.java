@@ -6,7 +6,6 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -61,7 +60,7 @@ class PickingJobGraiTargetServiceTest
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 
-		service = new PickingJobGraiTargetService(new HUPIGraiRepository(), PickingJobHUService.newInstanceForUnitTesting());
+		service = new PickingJobGraiTargetService(PickingJobHUService.newInstanceForUnitTesting());
 
 		// Create LU PI
 		luPI = huTestHelper.createHUDefinition("LU-PI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

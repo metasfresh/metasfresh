@@ -20,10 +20,13 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -56,6 +59,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -71,6 +75,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
@@ -104,8 +111,11 @@ public class PickingJobHUService
 						HULabelService.newInstanceForUnitTesting(),
 						new HUReservationService(new HUReservationRepository()),
 						InventoryService.newInstanceForUnitTesting(),
-						new HUGraiService()));
+						new HUGraiService(),
+						new HUPIGraiRepository()));
 	}
+
+	private static final AdMessageKey MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE = AdMessageKey.of("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
 
 	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -113,6 +123,8 @@ public class PickingJobHUService
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobProductService productService;
@@ -121,6 +133,7 @@ public class PickingJobHUService
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
+	@NonNull private final HUPIGraiRepository huPIGraiRepository;
 
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
@@ -134,6 +147,49 @@ public class PickingJobHUService
 	}
 
 	public void setGrais(@NonNull final HuId huId, @NonNull final GRAISet graiSet) {huGraiService.setGrais(huId, graiSet);}
+
+	/**
+	 * Returns the TU packing instruction configured for the given GRAI (matched by company-prefix and asset-type).
+	 *
+	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAINoMatchingTUType}
+	 *                            when no active GRAI-to-TU mapping exists for the given GRAI.
+	 */
+	@NonNull
+	public HuPackingInstructionsId resolveHuPackingInstructionsId(@NonNull final GRAI grai)
+	{
+		return huPIGraiRepository.resolveHuPackingInstructionsId(grai);
+	}
+
+	/**
+	 * Fail-loud guard for the GRAI-scan flow: the resolved TU type's <i>current</i> PI version must declare the
+	 * {@code GRAI} HU-attribute slot. Without it, a materialised TU built from this type has no slot to store the
+	 * scanned GRAI; the GRAI would be silently dropped and only surface as a confusing GRAI_COUNT_MISMATCH at pick
+	 * completion. Throwing here surfaces the misconfiguration immediately at scan time.
+	 *
+	 * @param tuPIId the resolved TU packing-instruction id.
+	 * @param tuPI   the resolved TU packing instruction (used only for the error message caption).
+	 * @throws AdempiereException (keyed {@code GRAIAttributeNotSupportedByTUType}) if the GRAI attribute is not
+	 *         defined in the system, or the TU type's current PI version does not declare the GRAI slot.
+	 */
+	public void assertTUTypeSupportsGraiAttribute(
+			@NonNull final HuPackingInstructionsId tuPIId,
+			@NonNull final I_M_HU_PI tuPI)
+	{
+		// Two ways the scanned GRAI cannot be honoured, both reported with the same message:
+		//  - the GRAI M_Attribute is not defined in this system at all (graiAttributeId == null), or
+		//  - it exists but this TU type's current PI version does not declare the slot.
+		final AttributeId graiAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_GRAI);
+		if (graiAttributeId != null)
+		{
+			final HuPackingInstructionsVersionId tuPIVersionId = retrievePICurrentVersionId(tuPIId);
+			if (huPIAttributesDAO.retrievePIAttributes(tuPIVersionId).hasActiveAttribute(graiAttributeId))
+			{
+				return;
+			}
+		}
+
+		throw new AdempiereException(MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE, tuPI.getName());
+	}
 
 	public IAutoCloseable temporarySetNewHContextForProcessing()
 	{

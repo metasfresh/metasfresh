@@ -5,7 +5,6 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -35,7 +34,6 @@ public class PickingJobGraiTargetService
 	private static final AdMessageKey MSG_TU_NOT_ALLOWED_ON_LU = AdMessageKey.of("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
 	private static final AdMessageKey MSG_NO_CAPACITY_FOR_PRODUCT = AdMessageKey.of("de.metas.handlingunits.picking.GRAINoCapacityForProduct");
 
-	@NonNull private final HUPIGraiRepository huPIGraiRepository;
 	@NonNull private final PickingJobHUService huService;
 
 	/**
@@ -56,7 +54,7 @@ public class PickingJobGraiTargetService
 			throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, scannedGrai.getAsString());
 		}
 
-		final HuPackingInstructionsId tuPIId = huPIGraiRepository.resolveHuPackingInstructionsId(grai);
+		final HuPackingInstructionsId tuPIId = huService.resolveHuPackingInstructionsId(grai);
 
 		if (luTarget != null)
 		{
