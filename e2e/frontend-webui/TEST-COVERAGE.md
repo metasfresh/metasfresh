@@ -992,6 +992,25 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 38. Invoice DueDate Read-Only (`invoice_dueDate_readonly.spec.js`)
+
+**Features Tested**:
+- F00765: Due Date Management
+
+**Epic**: E0340: Invoicing
+
+**Workflow**:
+1. REST login (authenticate + loginComplete via page.request — bypasses the UI login race)
+2. Navigate to invoice list (window 167), open the first accessible record via dblclick
+3. Open SubHeader → Advanced Edit modal (click path; Alt+E is unreliable when grid sub-tab has focus)
+4. Assert the DueDate input (`.panel-modal .form-field-DueDate input`) is disabled
+5. Assert force-clicking the input does not open the date-picker popup
+
+**Key Validations**:
+- `AD_Field.IsReadOnly='Y'` on C_Invoice.DueDate renders as a disabled DatePicker input
+- Calendar popup stays closed on click (DatePicker no-ops when readonly)
+- Uses an existing accessible invoice record — no Backend API / port 8282 dependency
+
 ## Test Architecture
 
 ### Page Objects
