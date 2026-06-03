@@ -34,7 +34,11 @@ SELECT invoic_v.c_invoice_id                       AS "Invoice_ID",
        invoic_v.GrandTotalWithSurchargeAmt         AS "Invoice_GrandTotalWithSurchargeAmt",
        invoic_v.updated::timestamp                 AS "Updated",
        invoic_v.ExternalId                         AS "ExternalId",
-       invoic_v.ExternalSystemCode                 AS "ExternalSystemCode",
+       -- ExternalSystemCode uses COALESCE(invoic_v.ExternalSystemCode,'') so invoices without an
+       -- external system return '' instead of NULL. The Historical_Invoices_JSON
+       -- process jsonpath filters with ExternalSystemCode.ilike.'%' by default;
+       -- NULL ILIKE '%' = NULL (false) would exclude those invoices.
+       COALESCE(invoic_v.ExternalSystemCode, '')::varchar(40) AS "ExternalSystemCode",
        COALESCE(invoic_v.DataSource, '')           AS "DataSource",
        invoic_v.DocStatus                          AS "DocStatus",
        edi_119_v.json_data                         AS "Partners",
