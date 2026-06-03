@@ -99,8 +99,8 @@ class MailWorkpackageProcessorDelayTest
 
 		final I_C_Queue_WorkPackage workpackage = InterfaceWrapperHelper.newInstance(I_C_Queue_WorkPackage.class);
 		InterfaceWrapperHelper.save(workpackage);
-		// Set Created to 31 seconds ago => elapsed >= 30_000ms timeout
-		InterfaceWrapperHelper.setValue(workpackage, I_C_Queue_WorkPackage.COLUMNNAME_Created, new Timestamp(nowMillis - 31_000L));
+		// Set Created to 61 seconds ago => elapsed >= 60_000ms timeout
+		InterfaceWrapperHelper.setValue(workpackage, I_C_Queue_WorkPackage.COLUMNNAME_Created, new Timestamp(nowMillis - 61_000L));
 
 		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
 

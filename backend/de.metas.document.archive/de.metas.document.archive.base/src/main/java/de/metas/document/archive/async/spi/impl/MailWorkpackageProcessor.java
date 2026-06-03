@@ -95,7 +95,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient DocOutboundNotificationDelayService notificationDelayService = SpringContextHolder.instance.getBean(DocOutboundNotificationDelayService.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
-	private static final int NOTIFICATION_DELAY_TIMEOUT_MILLIS = 30 * 1000;
+	private static final int NOTIFICATION_DELAY_TIMEOUT_MILLIS = 60 * 1000;
 	private static final int NOTIFICATION_DELAY_RETRY_MILLIS = 2 * 1000;
 
 	private static final AdMessageKey MSG_EmailSubject = AdMessageKey.of("MailWorkpackageProcessor.EmailSubject");
