@@ -23,8 +23,11 @@ package org.adempiere.ad.trx.api;
  */
 
 import org.adempiere.exceptions.DBDeadLockDetectedException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.adempiere.ad.trx.api.TrxCallable;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +38,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DeadlockRetryPolicyTest
 {
+	@BeforeEach
+	void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	// -----------------------------------------------------------------------
 	// isDeadlock detection
 	// -----------------------------------------------------------------------
@@ -246,48 +255,40 @@ class DeadlockRetryPolicyTest
 	}
 
 	// -----------------------------------------------------------------------
-	// callIf()
+	// wrapIf()
 	// -----------------------------------------------------------------------
 
 	@Nested
-	class CallIf
+	class WrapIf
 	{
 		@Test
-		void conditionTrue_retriesOnDeadlock()
+		void conditionFalse_returnsSameCallableInstance()
 		{
+			final TrxCallable<String> callable = () -> "direct";
+			final TrxCallable<String> wrapped = fastPolicy(3).wrapIf(false, callable, "ctx");
+			assertThat(wrapped).isSameAs(callable);
+		}
+
+		@Test
+		void conditionTrue_retriesOnDeadlock_succeedsOnSecondAttempt() throws Exception
+		{
+			// Services.get(ITrxManager.class) resolves to PlainTrxManager (via AdempiereTestHelper.init()),
+			// whose callInNewTrx runs the callable inline in a lightweight mocked transaction — the
+			// retry-on-deadlock logic is exercised end-to-end without a real DB.
 			final AtomicInteger callCount = new AtomicInteger();
-			final String result = fastPolicy(3).callIf(true, () -> {
+			final TrxCallable<String> callable = () -> {
 				if (callCount.incrementAndGet() < 2)
 				{
 					throw deadlock();
 				}
 				return "ok";
-			}, "ctx");
+			};
+
+			final TrxCallable<String> wrapped = fastPolicy(3).wrapIf(true, callable, "ctx");
+			final String result = wrapped.call();
+
 			assertThat(result).isEqualTo("ok");
 			assertThat(callCount).hasValue(2);
-		}
-
-		@Test
-		void conditionFalse_callsOnceWithoutRetry()
-		{
-			final AtomicInteger callCount = new AtomicInteger();
-			final DBDeadLockDetectedException ex = deadlock();
-
-			assertThatThrownBy(() -> fastPolicy(3).callIf(false, () -> {
-				callCount.incrementAndGet();
-				throw ex;
-			}, "ctx"))
-					.isSameAs(ex);
-
-			// no retry when condition is false
-			assertThat(callCount).hasValue(1);
-		}
-
-		@Test
-		void conditionFalse_returnsValueOnSuccess()
-		{
-			final String result = fastPolicy(3).callIf(false, () -> "direct", "ctx");
-			assertThat(result).isEqualTo("direct");
 		}
 	}
 }
