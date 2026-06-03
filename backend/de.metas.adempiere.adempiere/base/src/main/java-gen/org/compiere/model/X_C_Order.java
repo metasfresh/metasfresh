@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 761250792L;
+	private static final long serialVersionUID = -1228243017L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -698,6 +698,60 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
+	}
+
+	@Override
+	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
+	{
+		if (C_PromotionCode2_ID < 1) 
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
+	}
+
+	@Override
+	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
+	{
+		if (C_PromotionCode_ID < 1) 
+			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
 	}
 
 	@Override
@@ -1469,6 +1523,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setIsPreAdviceRequired (final boolean IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public boolean isPreAdviceRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPreAdviceRequired);
+	}
+
+	@Override
 	public void setIsPrinted (final boolean IsPrinted)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsPrinted, IsPrinted);
@@ -2003,57 +2069,14 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
+	public void setProcessStatusColor_ID (final int ProcessStatusColor_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
-	}
+		throw new IllegalArgumentException ("ProcessStatusColor_ID is virtual column");	}
 
 	@Override
-	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
+	public int getProcessStatusColor_ID() 
 	{
-		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
-	}
-
-	@Override
-	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
-	{
-		if (C_PromotionCode_ID < 1)
-			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
-		else
-			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
-	}
-
-	@Override
-	public int getC_PromotionCode_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
-	}
-
-	@Override
-	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
-	}
-
-	@Override
-	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
-	{
-		if (C_PromotionCode2_ID < 1)
-			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
-		else
-			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
-	}
-
-	@Override
-	public int getC_PromotionCode2_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
+		return get_ValueAsInt(COLUMNNAME_ProcessStatusColor_ID);
 	}
 
 	@Override

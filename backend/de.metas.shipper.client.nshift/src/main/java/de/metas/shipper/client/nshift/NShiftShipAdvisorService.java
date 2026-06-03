@@ -111,22 +111,6 @@ public class NShiftShipAdvisorService
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, valueProvider));
 
-		// incoterms are sent so carrier services can be provided via shipment rules based on it
-		if (deliveryAdvisorRequest.getIncotermsValue() != null)
-		{
-			dataBuilder.reference(JsonReference.builder()
-					.kind(63) // eSrkCustomField1 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-					.value(deliveryAdvisorRequest.getIncotermsValue())
-					.build());
-		}
-		if (deliveryAdvisorRequest.getExternalSystemValue() != null)
-		{
-			dataBuilder.reference(JsonReference.builder()
-					.kind(64) // eSrkCustomField2 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-					.value(deliveryAdvisorRequest.getExternalSystemValue())
-					.build());
-		}
-
 		final JsonDeliveryAdvisorRequestItem item = deliveryAdvisorRequest.getItem();
 		final Function<String, Optional<String>> lineValueProvider = NShiftUtil.withFallback(
 				item::getValue,

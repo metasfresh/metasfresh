@@ -55,6 +55,10 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION = "ReceiverBPartnerAttention";
 	public static final String ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION = "SenderBPartnerAttention";
 
+	public static final String ATTRIBUTE_VALUE_INCOTERMS_VALUE        = "IncotermsValue";
+	public static final String ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE  = "ExternalSystemValue";
+	public static final String ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED = "IsPreAdviceRequired";
+
 	// attributeValuesLine
 	public static final String ATTRIBUTE_VALUE_PARCEL_ID = "ParcelId";
 

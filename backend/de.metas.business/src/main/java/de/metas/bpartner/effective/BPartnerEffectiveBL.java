@@ -38,6 +38,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -100,12 +101,12 @@ public class BPartnerEffectiveBL
 	 */
 	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
 	{
-		return bpartnerDAO.getPurchaseTransportDays(bPartnerId);
+		return getById(bPartnerId).getPurchaseTransportDaysIfSet();
 	}
 
 	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
 	{
-		return getPurchaseTransportDaysIfSet(bPartnerId).orElse(0);
+		return getById(bPartnerId).getPurchaseTransportDays();
 	}
 
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
@@ -206,8 +207,15 @@ public class BPartnerEffectiveBL
 				I_C_BP_Group::getPO_IncotermLocation,
 				bPartnerBuilder::poIncoterms);
 
-		bPartnerBuilder.purchaseTransportDays(
-				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
+		bPartnerBuilder.purchaseTransportDays(bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(null));
+		bPartnerBuilder.shipperId(ShipperId.ofRepoIdOrNull(bPartnerRecord.getM_Shipper_ID()));
+
+		bPartnerBuilder.isPreAdviceRequired(Boolean.TRUE.equals(getEffectiveValue(
+				bPartnerRecord, bpGroup, bpParentGroup,
+				I_C_BPartner::getIsPreAdviceRequired,
+				I_C_BP_Group::getIsPreAdviceRequired,
+				(v) -> StringUtils.toBoolean(v, null),
+				() -> false)));
 
 		return bPartnerBuilder.build();
 	}
@@ -323,7 +331,6 @@ public class BPartnerEffectiveBL
 
 		incotermsConsumer.accept(incoterms.withLocationEffective(location));
 	}
-
 
 	@Nullable
 	private Incoterms getIncoterms(final int incotermsId)

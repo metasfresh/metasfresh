@@ -243,6 +243,11 @@ public class NShiftGateway_StepDef
 		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), row, "Receiver", "deliveryAddress");
 		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
 
+		row.getAsOptionalString("IsPreAdviceRequired").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getPreAdviceRequired())
+				.as("capturedAdvisorRequest.preAdviceRequired")
+				.isEqualTo(expected));
+
 		softly.assertAll();
 	}
 

@@ -529,6 +529,15 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return Check.assumeNotNull(
+				getBPartnerLocationByIdEvenInactive(bpartnerLocationId),
+				"BPartner location not found: {}", bpartnerLocationId);
+	}
+
+	@Override
 	@Nullable
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{

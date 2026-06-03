@@ -278,7 +278,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_BPInfo = "BPInfo";
 
 	/**
-	 * Set Geschäftspartner.
+	 * Set Business Partner.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -287,7 +287,7 @@ public interface I_C_BPartner
 	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
+	 * Get Business Partner.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -623,8 +623,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_ContactStatusInfoVendor = "ContactStatusInfoVendor";
 
 	/**
-	 * Set Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -633,8 +633,8 @@ public interface I_C_BPartner
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1317,7 +1317,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
 
 	/**
-	 * Set IncotermLocation.
+	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1327,7 +1327,7 @@ public interface I_C_BPartner
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
+	 * Get Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
@@ -1903,6 +1903,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsOneTime = "IsOneTime";
 
 	/**
+	 * Set Package Licensing Exempt.
+	 * Vendor is exempt from package licensing (pre-licensed)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPackageLicensingExempt (boolean IsPackageLicensingExempt);
+
+	/**
+	 * Get Package Licensing Exempt.
+	 * Vendor is exempt from package licensing (pre-licensed)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPackageLicensingExempt();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsPackageLicensingExempt = new ModelColumn<>(I_C_BPartner.class, "IsPackageLicensingExempt", null);
+	String COLUMNNAME_IsPackageLicensingExempt = "IsPackageLicensingExempt";
+
+	/**
 	 * Set PO Tax exempt.
 	 * Business partner is exempt from tax on purchases
 	 *
@@ -1924,6 +1947,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsPOTaxExempt = new ModelColumn<>(I_C_BPartner.class, "IsPOTaxExempt", null);
 	String COLUMNNAME_IsPOTaxExempt = "IsPOTaxExempt";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BPartner.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Prospect.
@@ -2058,8 +2102,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsShippingNotificationEmail = "IsShippingNotificationEmail";
 
 	/**
-	 * Set Zusammenfassungseintrag.
-	 * Dies ist ein Zusammenfassungseintrag
+	 * Set Summary Level.
+	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2068,8 +2112,8 @@ public interface I_C_BPartner
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
-	 * Dies ist ein Zusammenfassungseintrag
+	 * Get Summary Level.
+	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2508,8 +2552,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -2518,8 +2562,8 @@ public interface I_C_BPartner
 	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -2706,6 +2750,52 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Old_Value_Vendor = new ModelColumn<>(I_C_BPartner.class, "Old_Value_Vendor", null);
 	String COLUMNNAME_Old_Value_Vendor = "Old_Value_Vendor";
+
+	/**
+	 * Set Pkg. Lic. Exempt From.
+	 * Start date of vendor package licensing exemption
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackageLicensingExemptFrom (@Nullable java.sql.Timestamp PackageLicensingExemptFrom);
+
+	/**
+	 * Get Pkg. Lic. Exempt From.
+	 * Start date of vendor package licensing exemption
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPackageLicensingExemptFrom();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PackageLicensingExemptFrom = new ModelColumn<>(I_C_BPartner.class, "PackageLicensingExemptFrom", null);
+	String COLUMNNAME_PackageLicensingExemptFrom = "PackageLicensingExemptFrom";
+
+	/**
+	 * Set Pkg. Lic. Exempt To.
+	 * End date of vendor package licensing exemption
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackageLicensingExemptTo (@Nullable java.sql.Timestamp PackageLicensingExemptTo);
+
+	/**
+	 * Get Pkg. Lic. Exempt To.
+	 * End date of vendor package licensing exemption
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPackageLicensingExemptTo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PackageLicensingExemptTo = new ModelColumn<>(I_C_BPartner.class, "PackageLicensingExemptTo", null);
+	String COLUMNNAME_PackageLicensingExemptTo = "PackageLicensingExemptTo";
 
 	/**
 	 * Set Payment Rule.
@@ -2994,27 +3084,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_PricingSystem_ID = "PO_PricingSystem_ID";
 
 	/**
-	 * Set Purchase Transport Days.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPO_TransportDays (int PO_TransportDays);
-
-	/**
-	 * Get Purchase Transport Days.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPO_TransportDays();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_PO_TransportDays = new ModelColumn<>(I_C_BPartner.class, "PO_TransportDays", null);
-	String COLUMNNAME_PO_TransportDays = "PO_TransportDays";
-
-	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
@@ -3105,6 +3174,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PotentialLifeTimeValue = new ModelColumn<>(I_C_BPartner.class, "PotentialLifeTimeValue", null);
 	String COLUMNNAME_PotentialLifeTimeValue = "PotentialLifeTimeValue";
+
+	/**
+	 * Set Purchase Transport Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_TransportDays (int PO_TransportDays);
+
+	/**
+	 * Get Purchase Transport Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPO_TransportDays();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_TransportDays = new ModelColumn<>(I_C_BPartner.class, "PO_TransportDays", null);
+	String COLUMNNAME_PO_TransportDays = "PO_TransportDays";
 
 	/**
 	 * Set QMS Certificate.

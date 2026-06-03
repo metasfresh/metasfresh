@@ -1018,27 +1018,4 @@ public class BPartnerBL implements IBPartnerBL
 		return bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 	}
 
-	@Nullable
-	@Override
-	public ShipperId getEffectiveShipperId(@Nullable final BPartnerLocationId bPartnerDropShipLocationId,
-										   @NonNull final BPartnerLocationId bPartnerLocationId)
-	{
-		if (bPartnerDropShipLocationId != null)
-		{
-			return CoalesceUtil.coalesceSuppliers(
-					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerDropShipLocationId),
-					() -> bpartnersRepo.getShipperId(bPartnerDropShipLocationId.getBpartnerId()),
-					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerLocationId),
-					() -> bpartnersRepo.getShipperId(bPartnerLocationId.getBpartnerId())
-			);
-		}
-		else
-		{
-			return CoalesceUtil.coalesceSuppliers(
-					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerLocationId),
-					() -> bpartnersRepo.getShipperId(bPartnerLocationId.getBpartnerId())
-			);
-		}
-
-	}
 }

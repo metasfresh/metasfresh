@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -427547061L;
+	private static final long serialVersionUID = 734953832L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -1261,6 +1261,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsPackageLicensingExempt (final boolean IsPackageLicensingExempt)
+	{
+		set_Value (COLUMNNAME_IsPackageLicensingExempt, IsPackageLicensingExempt);
+	}
+
+	@Override
+	public boolean isPackageLicensingExempt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPackageLicensingExempt);
+	}
+
+	@Override
 	public void setIsPOTaxExempt (final boolean IsPOTaxExempt)
 	{
 		set_Value (COLUMNNAME_IsPOTaxExempt, IsPOTaxExempt);
@@ -1270,6 +1282,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isPOTaxExempt() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
+	}
+
+	/** 
+	 * IsPreAdviceRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPREADVICEREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPREADVICEREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISPREADVICEREQUIRED_No = "N";
+	@Override
+	public void setIsPreAdviceRequired (final @Nullable java.lang.String IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public java.lang.String getIsPreAdviceRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPreAdviceRequired);
 	}
 
 	@Override
@@ -1761,6 +1794,30 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsString(COLUMNNAME_Old_Value_Vendor);
 	}
 
+	@Override
+	public void setPackageLicensingExemptFrom (final @Nullable java.sql.Timestamp PackageLicensingExemptFrom)
+	{
+		set_Value (COLUMNNAME_PackageLicensingExemptFrom, PackageLicensingExemptFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getPackageLicensingExemptFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PackageLicensingExemptFrom);
+	}
+
+	@Override
+	public void setPackageLicensingExemptTo (final @Nullable java.sql.Timestamp PackageLicensingExemptTo)
+	{
+		set_Value (COLUMNNAME_PackageLicensingExemptTo, PackageLicensingExemptTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getPackageLicensingExemptTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PackageLicensingExemptTo);
+	}
+
 	/** 
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
@@ -2067,21 +2124,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public int getPO_PricingSystem_ID()
+	public int getPO_PricingSystem_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PO_PricingSystem_ID);
-	}
-
-	@Override
-	public void setPO_TransportDays (final int PO_TransportDays)
-	{
-		set_Value (COLUMNNAME_PO_TransportDays, PO_TransportDays);
-	}
-
-	@Override
-	public int getPO_TransportDays()
-	{
-		return get_ValueAsInt(COLUMNNAME_PO_TransportDays);
 	}
 
 	@Override
@@ -2130,6 +2175,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PotentialLifeTimeValue);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPO_TransportDays (final int PO_TransportDays)
+	{
+		set_Value (COLUMNNAME_PO_TransportDays, PO_TransportDays);
+	}
+
+	@Override
+	public int getPO_TransportDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PO_TransportDays);
 	}
 
 	@Override

@@ -86,6 +86,8 @@ import org.compiere.model.I_R_Request;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -131,6 +133,7 @@ public class InOutBL implements IInOutBL
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL = SpringContextHolder.instance.getBean(BPartnerAddressEffectiveBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -853,10 +856,7 @@ public class InOutBL implements IInOutBL
 	@Nullable
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		return bpartnerBL.getEffectiveShipperId(
-				BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
-				BPartnerLocationId.ofRepoId(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
-		);
+		return bpartnerAddressEffectiveBL.getDeliveryEffective(inout).getShipperId();
 	}
 
 	@Override

@@ -24,6 +24,7 @@ package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.incoterms.Incoterms;
+import de.metas.shipping.ShipperId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
@@ -34,23 +35,26 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Builder
 public class BPartnerEffective
 {
-	@NonNull @Getter BPartnerId id;
-	@Nullable PaymentTermId paymentTermId;
-	@Nullable PaymentTermId poPaymentTermId;
-	@Nullable PricingSystemId pricingSystemId;
-	@Nullable PricingSystemId poPricingSystemId;
-	@NonNull InvoiceRule invoiceRule;
-	@NonNull InvoiceRule poInvoiceRule;
-	@NonNull PaymentRule paymentRule;
-	@NonNull PaymentRule poPaymentRule;
-	@Nullable Incoterms incoterms;
-	@Nullable Incoterms poIncoterms;
-	boolean isAutoInvoice;
-	@Getter int purchaseTransportDays;
+	@NonNull @Getter private final BPartnerId id;
+	@Nullable private final PaymentTermId paymentTermId;
+	@Nullable private final PaymentTermId poPaymentTermId;
+	@Nullable private final PricingSystemId pricingSystemId;
+	@Nullable private final PricingSystemId poPricingSystemId;
+	@NonNull private final InvoiceRule invoiceRule;
+	@NonNull private final InvoiceRule poInvoiceRule;
+	@NonNull private final PaymentRule paymentRule;
+	@NonNull private final PaymentRule poPaymentRule;
+	@Nullable private final Incoterms incoterms;
+	@Nullable private final Incoterms poIncoterms;
+	private final boolean isAutoInvoice;
+	@Nullable private final Integer purchaseTransportDays;
+	@Getter private final boolean isPreAdviceRequired;
+	@Getter @Nullable private final ShipperId shipperId;
 
 	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final SOTrx soTrx)
@@ -85,5 +89,16 @@ public class BPartnerEffective
 	public Incoterms getIncoterms(@NonNull final SOTrx soTrx)
 	{
 		return soTrx.isSales() ? incoterms : poIncoterms;
+	}
+
+	@NonNull
+	public Optional<Integer> getPurchaseTransportDaysIfSet()
+	{
+		return Optional.ofNullable(purchaseTransportDays);
+	}
+
+	public int getPurchaseTransportDays()
+	{
+		return getPurchaseTransportDaysIfSet().orElse(0);
 	}
 }

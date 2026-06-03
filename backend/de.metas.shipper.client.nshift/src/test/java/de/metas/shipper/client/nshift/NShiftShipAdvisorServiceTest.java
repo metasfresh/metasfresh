@@ -110,6 +110,7 @@ public class NShiftShipAdvisorServiceTest
 			.customerReference("Customer reference")
 			.incotermsValue("incoterms")
 			.externalSystemValue("Other")
+			.preAdviceRequired("Y")
 			.item(JsonDeliveryAdvisorRequestItem.builder()
 					.numberOfItems(1)
 					.grossWeightKg(BigDecimal.TEN)

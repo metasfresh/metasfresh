@@ -222,10 +222,6 @@ public interface IBPartnerBL extends ISingletonService
 	@Nullable
 	PricingSystemId retrievePricingSystemIdOrNull(@NonNull BPartnerId bpartnerId, SOTrx soTrx);
 
-	@Nullable
-	ShipperId getEffectiveShipperId(@Nullable BPartnerLocationId bPartnerDropShipLocationId,
-									@NonNull BPartnerLocationId bPartnerLocationId);
-
 	@Value
 	@Builder
 	class RetrieveContactRequest

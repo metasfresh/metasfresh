@@ -444,6 +444,9 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
 				.map(promotionCodeTable::get)
 				.ifPresent(promoCode -> order.setC_PromotionCode_ID(promoCode.getC_PromotionCode_ID()));
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsPreAdviceRequired)
+				.ifPresent(order::setIsPreAdviceRequired);
+
 		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
 				.map(promotionCodeTable::get)
 				.ifPresent(promoCode -> order.setC_PromotionCode2_ID(promoCode.getC_PromotionCode_ID()));

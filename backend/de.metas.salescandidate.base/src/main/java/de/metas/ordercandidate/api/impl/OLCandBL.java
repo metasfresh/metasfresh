@@ -27,6 +27,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
@@ -113,13 +114,16 @@ public class OLCandBL implements IOLCandBL
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
+	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 
 	public OLCandBL(
 			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
+			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository,
+			@NonNull final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
+		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
 	}
 
 	@Override
@@ -300,10 +304,11 @@ public class OLCandBL implements IOLCandBL
 	{
 		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
 
-		final ShipperId locationShipperId = orderCandidateRecord == null ? null : bpartnerBL.getEffectiveShipperId(
-				effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
-						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord)
-		);
+		final ShipperId locationShipperId = orderCandidateRecord == null ? null
+				: bpartnerAddressEffectiveBL.getDeliveryEffective(
+						effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
+						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord))
+						.getShipperId();
 
 		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
 				: bPartnerOrderParams.getShipperId().orElse(null);
