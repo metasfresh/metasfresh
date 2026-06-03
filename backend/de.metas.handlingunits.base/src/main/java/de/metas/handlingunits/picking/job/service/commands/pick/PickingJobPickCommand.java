@@ -211,7 +211,11 @@ public class PickingJobPickCommand
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
-			if (tuPickingTarget != null)
+			// Allow the pick when the TU target is a new (GRAI-based) target — the physical TU will be
+			// materialised lazily by updatePickingTarget after the pick, and the GRAI stamped onto it.
+			// Block only when an EXISTING TU is set as the target (which would mean the user intends to
+			// pick into a specific pre-existing physical TU rather than having a new one materialised).
+			if (tuPickingTarget != null && !tuPickingTarget.isNewTU())
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()

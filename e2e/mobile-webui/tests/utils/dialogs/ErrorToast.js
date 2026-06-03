@@ -10,7 +10,9 @@ const containerElement = () => page.locator('.Toastify div[role="alert"].Toastif
 
 export const ErrorToast = {
     waitToPopup: (callback, timeout) => {
-        const toastLocator = containerElement();
+        // Use .first() to handle the case where multiple toasts are stacked
+        // (react-toastify can show multiple toasts with the same message).
+        const toastLocator = containerElement().first();
         return toastLocator.waitFor({ state: 'attached', ...{ timeout } })
             .then(async () => {
                 await callback?.(toastLocator);
@@ -18,7 +20,7 @@ export const ErrorToast = {
     },
 
     closePopup: async () => {
-        await page.locator('.Toastify__close-button--error').tap();
-        await containerElement().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.Toastify__close-button--error').first().tap();
+        await containerElement().first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     },
 }

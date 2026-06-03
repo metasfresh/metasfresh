@@ -7,7 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 10 | 80% |
-| Picking | 44 | 47 | 94% |
+| Picking | 51 | 54 | 94% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -148,6 +148,20 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
+
+### GRAI-scan picking (product aggregation)
+
+| Scenario | Test |
+|---|---|
+| Scan one GRAI → TU auto-created with GRAI attribute (TC1) | `picking/picking-grai-scan.spec.js` |
+| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error (TC2) | `picking/picking-grai-scan.spec.js` |
+| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error (TC3) | `picking/picking-grai-scan.spec.js` |
+| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list (TC4) | `picking/picking-grai-scan.spec.js` |
+| Unparseable barcode → scanner ignores it, stays live for valid scan (TC5) | `picking/picking-grai-scan.spec.js` |
+| Resolved TU has no capacity for product → GRAINoCapacityForProduct error (TC6) | `picking/picking-grai-scan.spec.js` |
+| BPartner GRAIRequired=No → no GRAI scanner shown (TC7) | `picking/picking-grai-scan.spec.js` |
+
+**7/7 — 100%**
 
 ---
 
