@@ -42,9 +42,22 @@ const createMasterdataWithHU = async ({ extraSysconfigs, showInputText, isInputT
     });
 };
 
-// Regression guard: all four HTML properties of #input-text must hold simultaneously for
-// DataWedge IME to work and for the virtual keyboard to stay suppressed.
-// Any single regression (e.g. readOnly added back, type changed to hidden) breaks DataWedge.
+// ⚠️ HARDWARE CONTRACT — DO NOT WEAKEN THIS TEST.
+// These four #input-text properties are required for the Zebra MC3300x DataWedge IME to inject
+// scans WITHOUT popping the virtual keyboard. They must ALL hold simultaneously — any single
+// regression (readOnly added back, type changed to hidden, inputMode dropped, input removed from
+// the DOM) silently breaks scanning on real hardware. This test guards the regression where
+// readOnly was swapped for inputMode="none" plus an unguarded focus(), which broke the device.
+//
+// IF THIS TEST FAILS after a change to BarcodeScannerComponent.jsx: the CODE broke the contract —
+// fix the code, do NOT relax or "update" these expected values to make the test pass. Any change to
+// these properties MUST be re-validated on a physical Zebra MC3300x (see e2e/mobile-webui/CLAUDE.md
+// → "Manual Hardware Test Rule"); automated tests CANNOT prove the on-device behaviour.
+//
+//   type=text       — required for Android InputConnection (type=hidden cannot receive focus)
+//   inputmode=none  — suppresses the virtual keyboard while keeping InputConnection alive
+//   readonly absent — readOnly kills InputConnection; DataWedge injection silently fails
+//   CSS-hidden      — input-text-offscreen, NOT removed from the DOM (type=hidden would break IME)
 // noinspection JSUnusedLocalSymbols
 test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden', async ({ page }) => {
     await allure.epic('E0295: Frontend MobileUI');

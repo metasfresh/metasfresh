@@ -279,6 +279,15 @@ const BarcodeScannerComponent = ({
           IME-compatible while remaining invisible to the user. (me03#28834) */}
       {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
           compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
+      {/* ⚠️ HARDWARE CONTRACT — Zebra MC3300x DataWedge IME. The exact combination below lets scans
+          inject WITHOUT popping the virtual keyboard:
+            • type="text"                    — Android InputConnection (type="hidden" cannot focus)
+            • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
+            • the focus useEffects above     — establish / recover the InputConnection on the device
+          Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
+          regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
+          CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
+          on a physical Zebra MC3300x (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
       {!isProcessing && (
         <input
           id="input-text"
