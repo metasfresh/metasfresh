@@ -97,7 +97,7 @@ const createMasterdataForGraiScan = async () => {
                 PI_MAIN: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
                 // TU on a different LU (LU_OTHER), not associable with the picking-target LU_MAIN
                 PI_NOTALLOWED: { lu: 'LU_OTHER', qtyTUsPerLU: 10, tu: 'TU_NOTALLOWED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
-                // TU associated with LU_MAIN but its PIIP for P1 will be deleted to remove capacity
+                // a second mapped TU on LU_MAIN, providing a distinct GRAI mapping with P1 capacity (the no-capacity scenario builds its own masterdata)
                 PI_NOCAPACITY: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_NOCAPACITY', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
             },
             handlingUnits: {
