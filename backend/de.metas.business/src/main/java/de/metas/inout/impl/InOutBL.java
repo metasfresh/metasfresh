@@ -128,12 +128,13 @@ public class InOutBL implements IInOutBL
 {
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
+	@NonNull private final SpringContextHolder.Lazy<BPartnerAddressEffectiveBL> bpartnerAddressEffectiveBL = SpringContextHolder.lazyBean(BPartnerAddressEffectiveBL.class);
+
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL = SpringContextHolder.instance.getBean(BPartnerAddressEffectiveBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -856,7 +857,7 @@ public class InOutBL implements IInOutBL
 	@Nullable
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		return bpartnerAddressEffectiveBL.getDeliveryEffective(inout).getShipperId();
+		return bpartnerAddressEffectiveBL.get().getDeliveryEffective(inout).getShipperId();
 	}
 
 	@Override

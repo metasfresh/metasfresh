@@ -24,7 +24,6 @@ package de.metas.bpartner.effective;
 
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.Value;
 
 import javax.annotation.Nullable;
