@@ -6,12 +6,14 @@
 --   AD_Element          584946   (MD_Stock_PerWeek_V — window-level element, required for AD_Window.AD_Element_ID NOT NULL)
 --   AD_Menu             542335   (menu entry)
 --   AD_UI_Section       547809
---   AD_UI_Column        549539, 549540
---   AD_UI_ElementGroup  555423 (main), 555424 (flags)
+--   AD_UI_Column        549539   (left column — single column layout)
+--   AD_UI_ElementGroup  555423   (main — holds the 6 data fields)
 --   AD_Field            780691 (WeekStartDate), 780692 (QtyExpectedShipments),
 --                       780693 (QtyExpectedReceipts), 780694 (QtyATP),
 --                       780695 (M_Product_ID), 780696 (M_Warehouse_ID)
 --   AD_UI_Element       651991-651996
+-- NOTE: AD_UI_Column 549540 and AD_UI_ElementGroup 555424 (empty right/flags column)
+--       were allocated but are NOT inserted — single-column layout is correct for this read-only view.
 
 -- AD_Element for the window itself (required: AD_Window.AD_Element_ID is NOT NULL)
 -- ColumnName matches the view's conceptual name; used for window/tab translation propagation
@@ -161,7 +163,7 @@ SELECT AD_Element_Link_Create_Missing_Tab(549289)
 ;
 
 -- ============================================================
--- New AD_Element for QtyATP label override (DE: "Verfügbar (ATP)", EN: "ATP")
+-- New AD_Element for QtyATP label override (DE: "Verfügbar (ATP)", EN: "Available (ATP)")
 -- ColumnName: StockPerWeek_ATP
 -- 2026-06-03T13:00:00Z
 INSERT INTO AD_Element
@@ -194,34 +196,40 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID)
 ;
 
--- en_US translation for ATP element
+-- en_US translation for ATP element: "Available (ATP)"
 -- 2026-06-03T13:00:00Z
 UPDATE AD_Element_Trl
-SET Name = 'ATP', PrintName = 'ATP', IsTranslated = 'Y',
+SET Name = 'Available (ATP)', PrintName = 'Available (ATP)', IsTranslated = 'Y',
     Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 584945 AND AD_Language = 'en_US'
 ;
 
 -- ============================================================
 -- Fields (one per column, all IsReadOnly='Y', IsDisplayed='Y')
--- Grid order: WeekStartDate(10), QtyExpectedShipments(20), QtyExpectedReceipts(30), QtyATP(40), M_Product_ID(50), M_Warehouse_ID(60)
+-- Grid order: M_Product_ID(10), M_Warehouse_ID(20), WeekStartDate(30),
+--             QtyExpectedShipments(40), QtyExpectedReceipts(50), QtyATP(60)
+-- IsSelectionColumn='Y' on M_Product_ID, M_Warehouse_ID, WeekStartDate
+-- IsRangeFilter='Y' on WeekStartDate; SortNo=1 on WeekStartDate (ascending default sort)
 
 -- Field: Bestand pro Woche -> Bestand pro Woche -> Wochenbeginn (KW)
 -- Column: MD_Stock_PerWeek_V.WeekStartDate (AD_Column_ID=592708, AD_Element_ID=584938)
+-- SeqNo=30 (grid position); SortNo=1 (default ascending sort); IsSelectionColumn+IsRangeFilter
 -- 2026-06-03T13:00:00Z
 INSERT INTO AD_Field
     (AD_Client_ID, AD_Org_ID, AD_Field_ID, AD_Tab_ID, AD_Column_ID,
      Created, CreatedBy, Updated, UpdatedBy,
      DisplayLength, EntityType, IsActive,
      IsDisplayed, IsDisplayedGrid, IsEncrypted,
-     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name)
+     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name,
+     SeqNo, SeqNoGrid, SortNo)
 VALUES
     (0, 0, 780691 /*From ID Server*/, 549289, 592708,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      29, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
-     'N', 'N', 'Y', 'N', 'Wochenbeginn (KW)')
+     'N', 'N', 'Y', 'N', 'Wochenbeginn (KW)',
+     30, 30, 1)
 ;
 
 -- 2026-06-03T13:00:00Z
@@ -249,6 +257,14 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780691
 SELECT AD_Element_Link_Create_Missing_Field(780691)
 ;
 
+-- IsSelectionColumn + IsRangeFilter on WeekStartDate column
+-- 2026-06-03T13:00:00Z
+UPDATE AD_Column
+SET IsSelectionColumn = 'Y', IsRangeFilter = 'Y',
+    Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Column_ID = 592708
+;
+
 -- Field: Bestand pro Woche -> Bestand pro Woche -> Erwartete Lieferungen
 -- Column: MD_Stock_PerWeek_V.QtyExpectedShipments (AD_Column_ID=592709, AD_Element_ID=584939)
 -- 2026-06-03T13:00:00Z
@@ -257,14 +273,16 @@ INSERT INTO AD_Field
      Created, CreatedBy, Updated, UpdatedBy,
      DisplayLength, EntityType, IsActive,
      IsDisplayed, IsDisplayedGrid, IsEncrypted,
-     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name)
+     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name,
+     SeqNo, SeqNoGrid)
 VALUES
     (0, 0, 780692 /*From ID Server*/, 549289, 592709,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      10, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
-     'N', 'N', 'Y', 'N', 'Erwartete Lieferungen')
+     'N', 'N', 'Y', 'N', 'Erwartete Lieferungen',
+     40, 40)
 ;
 
 -- 2026-06-03T13:00:00Z
@@ -300,14 +318,16 @@ INSERT INTO AD_Field
      Created, CreatedBy, Updated, UpdatedBy,
      DisplayLength, EntityType, IsActive,
      IsDisplayed, IsDisplayedGrid, IsEncrypted,
-     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name)
+     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name,
+     SeqNo, SeqNoGrid)
 VALUES
     (0, 0, 780693 /*From ID Server*/, 549289, 592710,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      10, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
-     'N', 'N', 'Y', 'N', 'Erwartete Wareneingänge')
+     'N', 'N', 'Y', 'N', 'Erwartete Wareneingänge',
+     50, 50)
 ;
 
 -- 2026-06-03T13:00:00Z
@@ -344,16 +364,19 @@ INSERT INTO AD_Field
      Created, CreatedBy, Updated, UpdatedBy,
      DisplayLength, EntityType, IsActive,
      IsDisplayed, IsDisplayedGrid, IsEncrypted,
-     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name)
+     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name,
+     SeqNo, SeqNoGrid)
 VALUES
     (0, 0, 780694 /*From ID Server*/, 549289, 592711, 584945 /*From ID Server*/,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      10, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
-     'N', 'N', 'Y', 'N', 'Verfügbar (ATP)')
+     'N', 'N', 'Y', 'N', 'Verfügbar (ATP)',
+     60, 60)
 ;
 
+-- AD_Field_Trl en_US for QtyATP: "Available (ATP)", IsTranslated='Y'
 -- 2026-06-03T13:00:00Z
 INSERT INTO AD_Field_Trl
     (AD_Language, AD_Field_ID, Description, Help, Name,
@@ -365,6 +388,14 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
   AND t.AD_Field_ID = 780694
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
+;
+
+-- Override en_US translation to "Available (ATP)"
+-- 2026-06-03T13:00:00Z
+UPDATE AD_Field_Trl
+SET Name = 'Available (ATP)', IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Field_ID = 780694 AND AD_Language = 'en_US'
 ;
 
 -- Use the label override element for field translation
@@ -388,14 +419,16 @@ INSERT INTO AD_Field
      Created, CreatedBy, Updated, UpdatedBy,
      DisplayLength, EntityType, IsActive,
      IsDisplayed, IsDisplayedGrid, IsEncrypted,
-     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name)
+     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name,
+     SeqNo, SeqNoGrid)
 VALUES
     (0, 0, 780695 /*From ID Server*/, 549289, 592706,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      22, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
-     'N', 'N', 'Y', 'N', 'Produkt')
+     'N', 'N', 'Y', 'N', 'Produkt',
+     10, 10)
 ;
 
 -- 2026-06-03T13:00:00Z
@@ -423,6 +456,14 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780695
 SELECT AD_Element_Link_Create_Missing_Field(780695)
 ;
 
+-- IsSelectionColumn on M_Product_ID column
+-- 2026-06-03T13:00:00Z
+UPDATE AD_Column
+SET IsSelectionColumn = 'Y',
+    Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Column_ID = 592706
+;
+
 -- Field: Bestand pro Woche -> Bestand pro Woche -> Lager
 -- Column: MD_Stock_PerWeek_V.M_Warehouse_ID (AD_Column_ID=592707, AD_Element_ID=459)
 -- 2026-06-03T13:00:00Z
@@ -431,14 +472,16 @@ INSERT INTO AD_Field
      Created, CreatedBy, Updated, UpdatedBy,
      DisplayLength, EntityType, IsActive,
      IsDisplayed, IsDisplayedGrid, IsEncrypted,
-     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name)
+     IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name,
+     SeqNo, SeqNoGrid)
 VALUES
     (0, 0, 780696 /*From ID Server*/, 549289, 592707,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      22, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
-     'N', 'N', 'Y', 'N', 'Lager')
+     'N', 'N', 'Y', 'N', 'Lager',
+     20, 20)
 ;
 
 -- 2026-06-03T13:00:00Z
@@ -466,8 +509,16 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780696
 SELECT AD_Element_Link_Create_Missing_Field(780696)
 ;
 
+-- IsSelectionColumn on M_Warehouse_ID column
+-- 2026-06-03T13:00:00Z
+UPDATE AD_Column
+SET IsSelectionColumn = 'Y',
+    Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Column_ID = 592707
+;
+
 -- ============================================================
--- UI Layout
+-- UI Layout — single-column layout (no right/flags column)
 
 -- UI Section: main
 -- 2026-06-03T13:00:00Z
@@ -495,7 +546,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_UI_Section_ID = t.AD_UI_Section_ID)
 ;
 
--- UI Columns (left=10, right=20)
+-- Single UI Column (left only — no right/flags column for this read-only view)
 -- 2026-06-03T13:00:00Z
 INSERT INTO AD_UI_Column
     (AD_Client_ID, AD_Org_ID, AD_UI_Column_ID, AD_UI_Section_ID,
@@ -505,17 +556,6 @@ VALUES
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      'Y', 10)
-;
-
--- 2026-06-03T13:00:00Z
-INSERT INTO AD_UI_Column
-    (AD_Client_ID, AD_Org_ID, AD_UI_Column_ID, AD_UI_Section_ID,
-     Created, CreatedBy, Updated, UpdatedBy, IsActive, SeqNo)
-VALUES
-    (0, 0, 549540 /*From ID Server*/, 547809,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Y', 20)
 ;
 
 -- UI ElementGroup: main (left column, primary style — holds the 6 data fields)
@@ -531,109 +571,11 @@ VALUES
      'Y', 'main', 10, 'primary')
 ;
 
--- UI ElementGroup: flags (right column — org/client)
--- 2026-06-03T13:00:00Z
-INSERT INTO AD_UI_ElementGroup
-    (AD_Client_ID, AD_Org_ID, AD_UI_ElementGroup_ID, AD_UI_Column_ID,
-     Created, CreatedBy, Updated, UpdatedBy,
-     IsActive, Name, SeqNo, UIStyle)
-VALUES
-    (0, 0, 555424 /*From ID Server*/, 549540,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Y', 'flags', 10, 'primary')
-;
-
 -- ============================================================
--- UI Elements (single-row detail: SeqNo 10-60; grid: SeqNoGrid 10-60)
-
--- UI Element: Bestand pro Woche -> Bestand pro Woche.Wochenbeginn (KW)
--- Column: MD_Stock_PerWeek_V.WeekStartDate (AD_Field_ID=780691)
--- 2026-06-03T13:00:00Z
-INSERT INTO AD_UI_Element
-    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
-     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
-     Created, CreatedBy, Updated, UpdatedBy,
-     IsActive, IsAdvancedField, IsAllowFiltering,
-     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
-     IsMultiLine, MultiLine_LinesCount,
-     Name, SeqNo, SeqNo_SideList, SeqNoGrid)
-VALUES
-    (0, 0, 651991 /*From ID Server*/, 555423,
-     549289, 780691, 'F',
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Y', 'N', 'N',
-     'Y', 'N', 'Y',
-     'N', 0,
-     'Wochenbeginn (KW)', 10, 0, 10)
-;
-
--- UI Element: Bestand pro Woche -> Bestand pro Woche.Erwartete Lieferungen
--- Column: MD_Stock_PerWeek_V.QtyExpectedShipments (AD_Field_ID=780692)
--- 2026-06-03T13:00:00Z
-INSERT INTO AD_UI_Element
-    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
-     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
-     Created, CreatedBy, Updated, UpdatedBy,
-     IsActive, IsAdvancedField, IsAllowFiltering,
-     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
-     IsMultiLine, MultiLine_LinesCount,
-     Name, SeqNo, SeqNo_SideList, SeqNoGrid)
-VALUES
-    (0, 0, 651992 /*From ID Server*/, 555423,
-     549289, 780692, 'F',
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Y', 'N', 'N',
-     'Y', 'N', 'Y',
-     'N', 0,
-     'Erwartete Lieferungen', 20, 0, 20)
-;
-
--- UI Element: Bestand pro Woche -> Bestand pro Woche.Erwartete Wareneingänge
--- Column: MD_Stock_PerWeek_V.QtyExpectedReceipts (AD_Field_ID=780693)
--- 2026-06-03T13:00:00Z
-INSERT INTO AD_UI_Element
-    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
-     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
-     Created, CreatedBy, Updated, UpdatedBy,
-     IsActive, IsAdvancedField, IsAllowFiltering,
-     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
-     IsMultiLine, MultiLine_LinesCount,
-     Name, SeqNo, SeqNo_SideList, SeqNoGrid)
-VALUES
-    (0, 0, 651993 /*From ID Server*/, 555423,
-     549289, 780693, 'F',
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Y', 'N', 'N',
-     'Y', 'N', 'Y',
-     'N', 0,
-     'Erwartete Wareneingänge', 30, 0, 30)
-;
-
--- UI Element: Bestand pro Woche -> Bestand pro Woche.Verfügbar (ATP)
--- Column: MD_Stock_PerWeek_V.QtyATP (AD_Field_ID=780694, AD_Name_ID=584945)
--- 2026-06-03T13:00:00Z
-INSERT INTO AD_UI_Element
-    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
-     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
-     Created, CreatedBy, Updated, UpdatedBy,
-     IsActive, IsAdvancedField, IsAllowFiltering,
-     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
-     IsMultiLine, MultiLine_LinesCount,
-     Name, SeqNo, SeqNo_SideList, SeqNoGrid)
-VALUES
-    (0, 0, 651994 /*From ID Server*/, 555423,
-     549289, 780694, 'F',
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Y', 'N', 'N',
-     'Y', 'N', 'Y',
-     'N', 0,
-     'Verfügbar (ATP)', 40, 0, 40)
-;
+-- UI Elements
+-- Grid order: M_Product_ID(10), M_Warehouse_ID(20), WeekStartDate(30),
+--             QtyExpectedShipments(40), QtyExpectedReceipts(50), QtyATP(60)
+-- WidgetSize='S' on WeekStartDate (651991) and 3 qty elements (651992-651994)
 
 -- UI Element: Bestand pro Woche -> Bestand pro Woche.Produkt
 -- Column: MD_Stock_PerWeek_V.M_Product_ID (AD_Field_ID=780695)
@@ -654,7 +596,7 @@ VALUES
      'Y', 'N', 'N',
      'Y', 'N', 'Y',
      'N', 0,
-     'Produkt', 50, 0, 50)
+     'Produkt', 10, 0, 10)
 ;
 
 -- UI Element: Bestand pro Woche -> Bestand pro Woche.Lager
@@ -676,7 +618,99 @@ VALUES
      'Y', 'N', 'N',
      'Y', 'N', 'Y',
      'N', 0,
-     'Lager', 60, 0, 60)
+     'Lager', 20, 0, 20)
+;
+
+-- UI Element: Bestand pro Woche -> Bestand pro Woche.Wochenbeginn (KW)
+-- Column: MD_Stock_PerWeek_V.WeekStartDate (AD_Field_ID=780691)
+-- WidgetSize='S' — date column
+-- 2026-06-03T13:00:00Z
+INSERT INTO AD_UI_Element
+    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
+     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
+     Created, CreatedBy, Updated, UpdatedBy,
+     IsActive, IsAdvancedField, IsAllowFiltering,
+     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
+     IsMultiLine, MultiLine_LinesCount,
+     Name, SeqNo, SeqNo_SideList, SeqNoGrid, WidgetSize)
+VALUES
+    (0, 0, 651991 /*From ID Server*/, 555423,
+     549289, 780691, 'F',
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     'Y', 'N', 'N',
+     'Y', 'N', 'Y',
+     'N', 0,
+     'Wochenbeginn (KW)', 30, 0, 30, 'S')
+;
+
+-- UI Element: Bestand pro Woche -> Bestand pro Woche.Erwartete Lieferungen
+-- Column: MD_Stock_PerWeek_V.QtyExpectedShipments (AD_Field_ID=780692)
+-- WidgetSize='S' — quantity column
+-- 2026-06-03T13:00:00Z
+INSERT INTO AD_UI_Element
+    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
+     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
+     Created, CreatedBy, Updated, UpdatedBy,
+     IsActive, IsAdvancedField, IsAllowFiltering,
+     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
+     IsMultiLine, MultiLine_LinesCount,
+     Name, SeqNo, SeqNo_SideList, SeqNoGrid, WidgetSize)
+VALUES
+    (0, 0, 651992 /*From ID Server*/, 555423,
+     549289, 780692, 'F',
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     'Y', 'N', 'N',
+     'Y', 'N', 'Y',
+     'N', 0,
+     'Erwartete Lieferungen', 40, 0, 40, 'S')
+;
+
+-- UI Element: Bestand pro Woche -> Bestand pro Woche.Erwartete Wareneingänge
+-- Column: MD_Stock_PerWeek_V.QtyExpectedReceipts (AD_Field_ID=780693)
+-- WidgetSize='S' — quantity column
+-- 2026-06-03T13:00:00Z
+INSERT INTO AD_UI_Element
+    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
+     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType,
+     Created, CreatedBy, Updated, UpdatedBy,
+     IsActive, IsAdvancedField, IsAllowFiltering,
+     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
+     IsMultiLine, MultiLine_LinesCount,
+     Name, SeqNo, SeqNo_SideList, SeqNoGrid, WidgetSize)
+VALUES
+    (0, 0, 651993 /*From ID Server*/, 555423,
+     549289, 780693, 'F',
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     'Y', 'N', 'N',
+     'Y', 'N', 'Y',
+     'N', 0,
+     'Erwartete Wareneingänge', 50, 0, 50, 'S')
+;
+
+-- UI Element: Bestand pro Woche -> Bestand pro Woche.Verfügbar (ATP)
+-- Column: MD_Stock_PerWeek_V.QtyATP (AD_Field_ID=780694, AD_Name_ID=584945)
+-- AD_Name_ID wired to override element 584945; WidgetSize='S' — quantity column
+-- 2026-06-03T13:00:00Z
+INSERT INTO AD_UI_Element
+    (AD_Client_ID, AD_Org_ID, AD_UI_Element_ID, AD_UI_ElementGroup_ID,
+     AD_Tab_ID, AD_Field_ID, AD_UI_ElementType, AD_Name_ID,
+     Created, CreatedBy, Updated, UpdatedBy,
+     IsActive, IsAdvancedField, IsAllowFiltering,
+     IsDisplayed, IsDisplayed_SideList, IsDisplayedGrid,
+     IsMultiLine, MultiLine_LinesCount,
+     Name, SeqNo, SeqNo_SideList, SeqNoGrid, WidgetSize)
+VALUES
+    (0, 0, 651994 /*From ID Server*/, 555423,
+     549289, 780694, 'F', 584945 /*From ID Server*/,
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     'Y', 'N', 'N',
+     'Y', 'N', 'Y',
+     'N', 0,
+     'Verfügbar (ATP)', 60, 0, 60, 'S')
 ;
 
 -- ============================================================
