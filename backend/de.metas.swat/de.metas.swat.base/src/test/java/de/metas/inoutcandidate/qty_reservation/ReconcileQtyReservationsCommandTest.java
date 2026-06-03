@@ -63,6 +63,25 @@ class ReconcileQtyReservationsCommandTest
 	}
 
 	@Test
+	void roundsQtyTU_up_whenPartiallyFilled()
+	{
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("71"));
+
+		// Qty=100 in 10 TUs (10 PCE per TU). Shrinking to 71 leaves 7.1 TU worth of CUs.
+		createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("100"), new BigDecimal("10"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		assertThat(records).hasSize(1);
+		// CU Qty is the exact reduced value
+		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("71"));
+		// QtyTU rounds UP: 10 * 71 / 100 = 7.1 TU -> CEILING = 8 (a partially-filled TU still occupies a whole TU)
+		assertThat(records.get(0).getQtyTU()).isEqualByComparingTo(new BigDecimal("8"));
+	}
+
+	@Test
 	void doesNotShrinkBelowDelivered()
 	{
 		final OrderId orderId = createSalesOrder();
