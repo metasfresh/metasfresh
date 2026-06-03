@@ -54,6 +54,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/** Step definitions for {@code C_Queue_WorkPackage} — locating, validating, and asserting the state of async workpackages. */
 public class C_Queue_WorkPackage_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -282,6 +283,7 @@ public class C_Queue_WorkPackage_StepDef
 			final I_C_Doc_Outbound_Log docLog = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 					.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, invoiceTableId)
 					.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID())
+					.orderByDescending(I_C_Doc_Outbound_Log.COLUMNNAME_Created)
 					.create()
 					.first(I_C_Doc_Outbound_Log.class);
 			if (docLog == null)
@@ -291,6 +293,7 @@ public class C_Queue_WorkPackage_StepDef
 
 			final I_C_Doc_Outbound_Log_Line docLogLine = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
 					.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_ID, docLog.getC_Doc_Outbound_Log_ID())
+					.orderByDescending(I_C_Doc_Outbound_Log_Line.COLUMNNAME_Created)
 					.create()
 					.first(I_C_Doc_Outbound_Log_Line.class);
 			if (docLogLine == null)

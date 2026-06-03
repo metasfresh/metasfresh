@@ -230,6 +230,8 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType |
       | outboundLog2                     | invoice2             | C_Invoice     | ARI             |
 
+  @from:cucumber
+  @ghActions:run_on_executor7
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config delayNotificationUntilShipmentConfirmedByCarrier
     And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder

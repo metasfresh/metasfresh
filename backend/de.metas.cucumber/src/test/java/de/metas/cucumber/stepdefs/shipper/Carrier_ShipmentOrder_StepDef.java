@@ -54,6 +54,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/** Step definitions for {@code Carrier_ShipmentOrder} — finding, validating, and updating carrier shipment orders and their parcels. */
 @RequiredArgsConstructor
 public class Carrier_ShipmentOrder_StepDef
 {
