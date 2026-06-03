@@ -88,7 +88,7 @@ class MailWorkpackageProcessorDelayTest
 	}
 
 	/**
-	 * Case B: workpackage was created 31 seconds ago (past 30s timeout)
+	 * Case B: workpackage was created 61 seconds ago (past 60s timeout)
 	 * => must NOT throw (sends anyway)
 	 */
 	@Test
