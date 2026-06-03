@@ -13,7 +13,6 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -55,7 +54,6 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
@@ -204,7 +202,7 @@ public class CreatePackingInstructionsCommand
 	@Nullable
 	private I_M_HU_PI_Attribute findTemplateGraiAttribute(@NonNull final AttributeId graiAttributeId)
 	{
-		final HuPackingInstructionsVersionId templatePivId = handlingUnitsDAO.retrievePICurrentVersionId(HuPackingInstructionsId.TEMPLATE);
+		final HuPackingInstructionsVersionId templatePivId = handlingUnitsBL.retrievePICurrentVersionId(HuPackingInstructionsId.TEMPLATE);
 		return queryBL.createQueryBuilder(I_M_HU_PI_Attribute.class)
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, templatePivId)
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, graiAttributeId)

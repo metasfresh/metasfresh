@@ -8,6 +8,7 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.springframework.stereotype.Service;
@@ -15,17 +16,13 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class HUGraiService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final HUPIGraiRepository huPIGraiRepository;
-
-	public HUGraiService(@NonNull final HUPIGraiRepository huPIGraiRepository)
-	{
-		this.huPIGraiRepository = huPIGraiRepository;
-	}
+	@NonNull private final HUPIGraiRepository huPIGraiRepository;
 
 	/**
 	 * Returns the TU packing instruction configured for the given GRAI (matched by company-prefix and asset-type).
