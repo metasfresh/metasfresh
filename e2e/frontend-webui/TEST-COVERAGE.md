@@ -1002,7 +1002,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 **Workflow**:
 1. REST login (authenticate + loginComplete via page.request — bypasses the UI login race)
 2. Create a customer via `Backend.createMasterdata()` (requires port 8282)
-3. Create a drafted sales invoice via the document REST API on window 167 (NEW → C_BPartner_ID → first C_DocTypeTarget_ID → first C_PaymentTerm_ID), polling `validStatus.valid === true` to confirm it persisted
+3. Create a drafted sales invoice via the document REST API on window 167 (NEW → C_BPartner_ID → first C_DocTypeTarget_ID → first C_PaymentTerm_ID), checking `validStatus.valid === true` to confirm it persisted
 4. Navigate directly to the created invoice by id (no list view, no dependence on any seed record)
 5. Open SubHeader → Advanced Edit modal (click path; Alt+E is unreliable when grid sub-tab has focus)
 6. Assert the DueDate input (`.panel-modal .form-field-DueDate input`) is disabled
