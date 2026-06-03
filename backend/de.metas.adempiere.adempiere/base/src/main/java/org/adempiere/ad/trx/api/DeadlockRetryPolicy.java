@@ -87,7 +87,6 @@ public class DeadlockRetryPolicy
 	/** Calls {@code action}; retries on deadlock up to {@code maxAttempts - 1} times. */
 	public <T> T call(@NonNull final Supplier<T> action, final Object... context)
 	{
-		final String contextStr = context == null || context.length == 0 ? "" : Arrays.deepToString(context);
 		RuntimeException lastException = null;
 
 		for (int attempt = 1; attempt <= maxAttempts; attempt++)
@@ -106,7 +105,7 @@ public class DeadlockRetryPolicy
 				lastException = ex;
 				logger.warn(
 						"Deadlock detected on attempt {}/{} for {}; will retry after {} ms",
-						attempt, maxAttempts, contextStr, backoffMillis, ex);
+						attempt, maxAttempts, contextToString(context), backoffMillis, ex);
 
 				if (attempt < maxAttempts)
 				{
@@ -117,6 +116,11 @@ public class DeadlockRetryPolicy
 
 		// All attempts exhausted — rethrow so the error path records it
 		throw lastException;
+	}
+
+	private static String contextToString(final Object... context)
+	{
+		return context == null || context.length == 0 ? "" : Arrays.deepToString(context);
 	}
 
 	/** Calls {@code action} with deadlock retry if {@code condition} is true; otherwise calls it once. */
