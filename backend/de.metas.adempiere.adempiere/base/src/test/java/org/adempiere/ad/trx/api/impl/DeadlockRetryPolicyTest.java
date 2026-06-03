@@ -190,6 +190,23 @@ class DeadlockRetryPolicyTest
 		}
 
 		@Test
+		void nullContext_retriesWithoutNPE()
+		{
+			// regression: unit-test documents have no document info -> context is null;
+			// the policy shall retry normally instead of failing the @NonNull guard
+			final AtomicInteger callCount = new AtomicInteger();
+			final String result = fastPolicy(3).call(() -> {
+				if (callCount.incrementAndGet() < 2)
+				{
+					throw deadlock();
+				}
+				return "ok";
+			}, null);
+			assertThat(result).isEqualTo("ok");
+			assertThat(callCount).hasValue(2);
+		}
+
+		@Test
 		void returnsValueAfterOneDeadlockRetry()
 		{
 			final AtomicInteger callCount = new AtomicInteger();

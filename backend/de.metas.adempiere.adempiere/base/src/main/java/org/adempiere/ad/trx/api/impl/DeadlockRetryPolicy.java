@@ -80,9 +80,9 @@ public class DeadlockRetryPolicy
 	 * re-thrown as-is (preserving the original type and stack).
 	 *
 	 * @param action  the idempotent operation to execute
-	 * @param context a description used in log messages (e.g. the posting request)
+	 * @param context an optional description used in log messages (e.g. the posting request)
 	 */
-	public void run(@NonNull final Runnable action, @NonNull final Object context)
+	public void run(@NonNull final Runnable action, @Nullable final Object context)
 	{
 		call(() -> {
 			action.run();
@@ -97,10 +97,11 @@ public class DeadlockRetryPolicy
 	 *
 	 * @param <T>     return type of the supplier
 	 * @param action  the idempotent operation to execute
-	 * @param context a description used in log messages (e.g. the posting request)
+	 * @param context an optional description used in log messages (e.g. the posting request);
+	 *                may be null (unit-test documents have no document info) — log-only, never dereferenced
 	 * @return the value returned by {@code action} on a successful attempt
 	 */
-	public <T> T call(@NonNull final Supplier<T> action, @NonNull final Object context)
+	public <T> T call(@NonNull final Supplier<T> action, @Nullable final Object context)
 	{
 		RuntimeException lastException = null;
 
