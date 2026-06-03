@@ -155,26 +155,26 @@ public class CreatePackingInstructionsCommand
 	{
 		final AttributeId graiAttributeId = attributeDAO.getAttributeIdByCode(AttributeConstants.ATTR_GRAI);
 
-		final int pivRepoId = tu.getPivId().getRepoId();
+		final HuPackingInstructionsVersionId pivId = tu.getPivId();
 		final boolean alreadyPresent = queryBL.createQueryBuilder(I_M_HU_PI_Attribute.class)
-				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, pivRepoId)
-				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, graiAttributeId.getRepoId())
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, pivId)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, graiAttributeId)
 				.create()
 				.anyMatch();
 		if (alreadyPresent)
 		{
-			logger.info("GRAI HU-attribute slot already present on M_HU_PI_Version_ID={}", pivRepoId);
+			logger.info("GRAI HU-attribute slot already present on M_HU_PI_Version_ID={}", pivId);
 			return;
 		}
 
 		final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
-		piAttribute.setM_HU_PI_Version_ID(pivRepoId);
+		piAttribute.setM_HU_PI_Version_ID(pivId.getRepoId());
 		piAttribute.setM_Attribute_ID(graiAttributeId.getRepoId());
 		piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
 		piAttribute.setIsActive(true);
 		saveRecord(piAttribute);
 
-		logger.info("Declared GRAI HU-attribute slot (M_Attribute_ID={}) on M_HU_PI_Version_ID={}", graiAttributeId.getRepoId(), pivRepoId);
+		logger.info("Declared GRAI HU-attribute slot (M_Attribute_ID={}) on M_HU_PI_Version_ID={}", graiAttributeId, pivId);
 	}
 
 	/**
