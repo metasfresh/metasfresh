@@ -354,6 +354,69 @@ public class EPCIS_JSON_Export_StepDef
 	}
 
 	/**
+	 * Asserts that the EPCIS JSON export function returned an empty object ({@code {}}) for the given
+	 * shipment. Used to verify the per-SSCC contract: the non-owner sibling of a shared-pallet pair
+	 * must return {@code {}} so the consumer (Eddyson) does not emit a duplicate picking/commissioning
+	 * event for the same physical SSCC.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) shipment expected to return {@code {}}
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170
+	 * </pre>
+	 */
+	@Then("^the EPCIS JSON export function returns empty object for M_InOut identified by (.*)$")
+	public void assertEpcisResultIsEmpty(@NonNull final String inoutIdentifier)
+	{
+		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final int inoutId = inout.getM_InOut_ID();
+		final String sql = "SELECT \"de.metas.edi\".get_epcis_events_json_fn(?)::text";
+		final String json = DB.getSQLValueStringEx(Trx.TRXNAME_None, sql, inoutId);
+
+		assertThat(json)
+				.as("EPCIS JSON for sibling M_InOut_ID=%d must be the empty object '{}'", inoutId)
+				.isNotNull();
+
+		try
+		{
+			final JsonNode result = objectMapper.readTree(json);
+			assertThat(result.size())
+					.as("EPCIS JSON for sibling M_InOut_ID=%d must be '{}' (empty object, size=0) but got: %s", inoutId, json)
+					.isEqualTo(0);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Failed to parse EPCIS JSON for M_InOut_ID=" + inoutId, e);
+		}
+	}
+
+	/**
+	 * Asserts the value of {@code "de.metas.edi".epcis_has_events(M_InOut_ID)} — the boolean predicate
+	 * for the scripted-adapter outbound-selection WHERE-clause. TRUE = the shipment would emit at least
+	 * one EPCIS event (owns a pallet/SSCC); FALSE = it must not be exported (sibling of a shared pallet,
+	 * or no pallets), so metasfresh never sends an empty EPCIS document.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS export-relevance for M_InOut identified by ioA_S29231_170 is true
+	 * </pre>
+	 */
+	@Then("^the EPCIS export-relevance for M_InOut identified by (.*) is (true|false)$")
+	public void assertEpcisHasEvents(@NonNull final String inoutIdentifier, final boolean expected)
+	{
+		final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+		final int inoutId = inout.getM_InOut_ID();
+		final String sql = "SELECT CASE WHEN \"de.metas.edi\".epcis_has_events(?) THEN 'Y' ELSE 'N' END";
+		final String actual = DB.getSQLValueStringEx(Trx.TRXNAME_None, sql, inoutId);
+
+		assertThat("Y".equals(actual))
+				.as("epcis_has_events(M_InOut_ID=%d): expected %s but DB returned raw '%s'", inoutId, expected, actual)
+				.isEqualTo(expected);
+	}
+
+	/**
 	 * Asserts that every crate (TU) in the pallet identified by SSCC18 has a dummy GRAI whose middle
 	 * segment contains the expected sanitized POReference string. Used to verify that the
 	 * {@code get_epcis_events_json_fn} derives the per-LU POReference from the source order rather
