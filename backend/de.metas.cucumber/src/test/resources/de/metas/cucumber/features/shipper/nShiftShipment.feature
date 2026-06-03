@@ -102,9 +102,6 @@ Feature: nShift Shipment
       | cs3        | nShift       |
       | cs4        | nShift       |
 
-  @from:cucumber
-  @allure.label.epic:E0355_Transport_Planning_Extralogistik
-  @allure.label.feature:F00355
   Scenario: nShift Carrier Advise
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
@@ -240,27 +237,17 @@ Feature: nShift Shipment
     # Test env has no AD_Printer_Config for the system user; auto-print would otherwise fail the WP.
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
     And the nShift ship advisor service is stubbed to return a successful response based on the request
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
-      | cp1                | cgt1                  | cs1                | cs2                 |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
     And the nShift shipment service is stubbed to return a successful shipment creation response
-    # The export process ANDs ExternalSystemCode ILIKE '%'; a shipment without an external system is excluded,
-    # so the order must carry an AD_InputDataSource + External System.
-    # Explicit Value+Name so reruns reuse the same AD_InputDataSource (upserts by Value) and don't
-    # collide on the AD_InputDataSource_InternalName unique index.
-    And metasfresh contains AD_InputDataSource:
-      | Identifier     | Value      | Name       | InternalName |
-      | dataSource_exp | nshift_exp | nshift_exp | nshift_exp   |
-    And metasfresh contains External System
-      | Name           | Value      |
-      | nShiftExport   | nshift_exp |
     # Stable Name + EMail so reruns reuse the same AD_User and don't repoint it to a different bpartner —
     # the composite FK c_order(c_bpartner_id, ad_user_id) would otherwise block the update.
     And metasfresh contains AD_Users:
-      | Identifier         | Name                    | OPT.C_BPartner_ID.Identifier | OPT.EMail                    | OPT.Phone        |
-      | customerContact    | nShift Customer Contact | customer                     | contact@nshift-test.example  | +41 79 123 45 67 |
+      | Identifier      | Name                    | C_BPartner_ID | EMail                       | Phone            |
+      | customerContact | nShift Customer Contact | customer      | contact@nshift-test.example | +41 79 123 45 67 |
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.AD_User_ID.Identifier | AD_InputDataSource_ID | ExternalSystem.Value |
-      | so_exp     | order_exp_ID | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact           | dataSource_exp        | nshift_exp           |
+      | Identifier | REST.Context | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      |
+      | so_exp     | order_exp_ID | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_exp_l1  | so_exp     | product      | 10         |
@@ -278,8 +265,8 @@ Feature: nShift Shipment
       | Identifier | M_InOut_ID |
       | cso_exp    | inout_exp  |
     And validate Carrier_ShipmentOrder_Parcels:
-      | Carrier_ShipmentOrder_ID | awb | TrackingURL | HasPdfLabel |
-      | cso_exp                  | awb | trackingUrl | true        |
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+      | cso_exp                  | awb1 | trackingUrl1 | true        |
     # 10 PCE / 10 PCE-per-TU => 1 parcel; total weight = product.GrossWeight (2.1) × qty (10) = 21 kg.
     And validate Carrier_ShipmentOrder_Items:
       | Carrier_ShipmentOrder_ID | ProductName    | ArticleValue   | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
@@ -323,8 +310,8 @@ Feature: nShift Shipment
     ],
     "Parcels": [
       {
-        "TrackingNumber": "awb",
-        "TrackingURL": "trackingUrl",
+        "TrackingNumber": "awb1",
+        "TrackingURL": "trackingUrl1",
         "Carrier": "nShift",
         "Items": [
           {
@@ -341,10 +328,6 @@ Feature: nShift Shipment
 ]
     """
 
-  @from:cucumber
-  @allure.label.epic:E0355_Transport_Planning_Extralogistik
-  @allure.label.feature:F00355
-  @ghActions:run_on_executor7
   Scenario: nShift Carrier Advise uses ExternalSystem-specific service level
     Given metasfresh contains External System
       | Name      | Value     |
@@ -367,10 +350,6 @@ Feature: nShift Shipment
       | ss_sl1     | so_sl1_l1      | N             | cp1                | cgt1                  |
     Then the last nShift ship advisor request had shipperConfig serviceLevel "EXPRESS"
 
-  @from:cucumber
-  @allure.label.epic:E0355_Transport_Planning_Extralogistik
-  @allure.label.feature:F00355
-  @ghActions:run_on_executor7
   Scenario: nShift Carrier Advise falls back to default service level when no ExternalSystem matches
     Given metasfresh contains External System
       | Name      | Value     |
@@ -394,9 +373,6 @@ Feature: nShift Shipment
       | ss_sl2     | so_sl2_l1      | N             | cp1                | cgt1                  |
     Then the last nShift ship advisor request had shipperConfig serviceLevel "FALLBACK"
 
-  @from:cucumber
-  @allure.label.epic:E0355_Transport_Planning_Extralogistik
-  @allure.label.feature:F00355
   @Id:S0355_DeliveryOrder_110
   Scenario: nShift Delivery Order - Country of Origin split into two parcels
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
@@ -515,9 +491,6 @@ Feature: nShift Shipment
       | nShift Product 2 | DE              | 3               | 5         | 15         | 3.6             | 12345678      |
 
 
-  @from:cucumber
-  @allure.label.epic:E0355_Transport_Planning_Extralogistik
-  @allure.label.feature:F00355
   @Id:S0355_DeliveryOrder_120
   Scenario: nShift Delivery Order - Country of Origin split, CU directly picked onto LU without TU
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder

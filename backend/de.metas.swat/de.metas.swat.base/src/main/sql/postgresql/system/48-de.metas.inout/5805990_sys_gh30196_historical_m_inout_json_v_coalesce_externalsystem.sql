@@ -1,10 +1,10 @@
--- ExternalSystemCode uses COALESCE(esystem.value,'') so shipments without an
--- external system return '' instead of NULL. The Historical_Shipments_JSON
--- process jsonpath filters with ExternalSystemCode.ilike.'%' by default;
--- NULL ILIKE '%' = NULL (false) would exclude those shipments.
-
-DROP VIEW IF EXISTS historical_m_inout_json_v
-;
+-- historical_m_inout_json_v: COALESCE ExternalSystemCode to '' so shipments
+-- without an external system return '' instead of NULL.
+-- The Historical_Shipments_JSON process jsonpath default-filters with
+-- ExternalSystemCode.ilike.'%'; NULL ILIKE '%' = NULL (false), so shipments
+-- without an external system were excluded. With COALESCE(esystem.value,''),
+-- '' ILIKE '%' = true and all shipments are returned when no ExternalSystemCode
+-- is specified.
 
 CREATE OR REPLACE VIEW historical_m_inout_json_v AS
 SELECT io.m_inout_id                                   AS "Shipment_ID",
@@ -59,12 +59,6 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
         WHERE iol.m_inout_id = io.m_inout_id
           AND iol.isactive = 'Y')                      AS "Lines",
 
-       -- Carrier / parcel tracking infos.
-       -- A shipment's physical packages are M_ShippingPackage rows (linked by M_InOut_ID).
-       -- Each carrier parcel (Carrier_ShipmentOrder_Parcel) carries the same M_Package_ID,
-       -- so we match per-package via M_Package_ID (precise; avoids the transport-level cartesian).
-       -- Tracking number (awb) and TrackingURL live on the parcel; the carrier (Versender)
-       -- comes from M_Shipper via the parcel's Carrier_ShipmentOrder.
        (SELECT JSONB_AGG(JSONB_BUILD_OBJECT(
                                  'M_Package_ID', par.m_package_id,
                                  'TrackingNumber', par.awb,
