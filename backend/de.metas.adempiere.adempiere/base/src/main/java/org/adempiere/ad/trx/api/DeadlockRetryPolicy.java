@@ -119,10 +119,7 @@ public class DeadlockRetryPolicy
 		throw lastException;
 	}
 
-	/**
-	 * Calls {@code action} with deadlock retry if {@code condition} is true; otherwise calls it once.
-	 * The retry wraps the supplied action, which is expected to open its own transaction per attempt.
-	 */
+	/** Calls {@code action} with deadlock retry if {@code condition} is true; otherwise calls it once. */
 	public <T> T callIf(final boolean condition, @NonNull final Supplier<T> action, final Object... context)
 	{
 		if (condition)
