@@ -51,6 +51,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -226,6 +227,17 @@ public class PackagingDAO implements IPackagingDAO
 		if (query.getExcludeShipmentScheduleIds() != null && !query.getExcludeShipmentScheduleIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
+		}
+
+		//
+		// Exclude schedules fully covered by a draft shipment (QtyToDeliver<=0 AND IsPickQtyOnDraftShipment='Y').
+		if (query.isExcludeFullyOnDraftShipment())
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsPickQtyOnDraftShipment, false)
+			);
 		}
 
 		// Filter: Handover Location
