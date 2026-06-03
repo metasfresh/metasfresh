@@ -12,7 +12,9 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiService;
@@ -77,6 +79,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -114,6 +119,10 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+	private static final AdMessageKey MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE = AdMessageKey.of("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -647,9 +656,38 @@ public class PickingJobService implements PickingSlotListener
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
 		final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(tuPIId);
+
+		assertTUTypeSupportsGRAIAttribute(tuPIId, tuPI);
+
 		final TUPickingTarget tuTarget = TUPickingTarget.ofPackingInstructions(tuPIId, tuPI.getName(), grai);
 
 		return setTUPickingTarget(pickingJob, lineId, tuTarget);
+	}
+
+	/**
+	 * Fail-loud guard for the GRAI-scan flow: the resolved TU type's <i>current</i> PI version must declare the
+	 * {@code GRAI} HU-attribute slot. Without it, a materialised TU built from this type has no slot to store the
+	 * scanned GRAI; the GRAI would be silently dropped and only surface as a confusing GRAI_COUNT_MISMATCH at pick
+	 * completion. Throwing here surfaces the misconfiguration immediately at scan time.
+	 */
+	private void assertTUTypeSupportsGRAIAttribute(
+			@NonNull final HuPackingInstructionsId tuPIId,
+			@NonNull final I_M_HU_PI tuPI)
+	{
+		// Two ways the scanned GRAI cannot be honoured, both reported with the same message:
+		//  - the GRAI M_Attribute is not defined in this system at all (graiAttributeId == null), or
+		//  - it exists but this TU type's current PI version does not declare the slot.
+		final AttributeId graiAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_GRAI);
+		if (graiAttributeId != null)
+		{
+			final HuPackingInstructionsVersionId tuPIVersionId = handlingUnitsDAO.retrievePICurrentVersionId(tuPIId);
+			if (huPIAttributesDAO.retrievePIAttributes(tuPIVersionId).hasActiveAttribute(graiAttributeId))
+			{
+				return;
+			}
+		}
+
+		throw new AdempiereException(MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE, tuPI.getName());
 	}
 
 	/**

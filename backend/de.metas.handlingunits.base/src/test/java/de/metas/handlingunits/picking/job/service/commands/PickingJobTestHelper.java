@@ -154,6 +154,9 @@ public class PickingJobTestHelper
 	public final PickingSlotId pickingSlotId;
 	public final Workplace workplace;
 
+	/** Exposes the single internal {@link HUTestHelper} so tests share ONE AdempiereTestHelper context (a second instance would re-init and wipe the master data created here, e.g. the locator). */
+	public HUTestHelper getHuTestHelper() {return huTestHelper;}
+
 	public PickingJobTestHelper()
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
