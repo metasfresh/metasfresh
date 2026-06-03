@@ -85,21 +85,6 @@ public class EDIBPartnerConfigRepository
 				.orElseThrow(() -> new AdempiereException("No active EDIBPartnerConfig found for BPartnerLocationId " + bPartnerLocationId));
 	}
 
-	// BPartnerId-based API (transitional)
-
-	@Nullable
-	public EDIBPartnerConfig getByIdOrNull(@NonNull final BPartnerId bPartnerId)
-	{
-		return getEDIBPartnerConfigMap().getDefaultByPartner(bPartnerId);
-	}
-
-	@NonNull
-	public EDIBPartnerConfig getById(@NonNull final BPartnerId bPartnerId)
-	{
-		return Optional.ofNullable(getEDIBPartnerConfigMap().getDefaultByPartner(bPartnerId))
-				.orElseThrow(() -> new AdempiereException("No active EDIBPartnerConfig found for BPartnerId " + bPartnerId.getRepoId()));
-	}
-
 	//
 	// --- internal ---
 
@@ -179,12 +164,6 @@ public class EDIBPartnerConfigRepository
 		{
 			final EDIBPartnerConfig exact = byLocation.get(bpl);
 			return exact != null ? exact : defaultByPartner.get(bpl.getBpartnerId());
-		}
-
-		@Nullable
-		EDIBPartnerConfig getDefaultByPartner(@NonNull final BPartnerId bPartnerId)
-		{
-			return defaultByPartner.get(bPartnerId);
 		}
 	}
 }
