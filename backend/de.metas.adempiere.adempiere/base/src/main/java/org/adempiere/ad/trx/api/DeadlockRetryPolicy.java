@@ -48,11 +48,11 @@ public class DeadlockRetryPolicy
 
 	/** Maximum number of attempts (first attempt + retries). */
 	@VisibleForTesting
-	public static final int DEFAULT_MAX_ATTEMPTS = 3;
+	static final int DEFAULT_MAX_ATTEMPTS = 3;
 
 	/** Milliseconds to sleep between attempts. */
 	@VisibleForTesting
-	public static final long DEFAULT_BACKOFF_MILLIS = 5_000L;
+	static final long DEFAULT_BACKOFF_MILLIS = 5_000L;
 
 	/** Cached default instance (immutable — all fields final, no mutators). */
 	public static final DeadlockRetryPolicy DEFAULT = DeadlockRetryPolicy.builder()
@@ -154,7 +154,7 @@ public class DeadlockRetryPolicy
 	 * Self-contained to avoid a DB.isPostgreSQL() dependency that fails in unit-test mode.
 	 */
 	@VisibleForTesting
-	public static boolean isDeadlock(@Nullable final Throwable ex)
+	static boolean isDeadlock(@Nullable final Throwable ex)
 	{
 		for (Throwable cause = ex; cause != null; cause = cause.getCause())
 		{
