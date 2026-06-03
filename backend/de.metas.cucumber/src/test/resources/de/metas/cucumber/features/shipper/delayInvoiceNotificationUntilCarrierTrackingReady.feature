@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00280
 @ghActions:run_on_executor7
 Feature: Invoice notification email is delayed until carrier tracking URLs are present
   As a logistics operator,
