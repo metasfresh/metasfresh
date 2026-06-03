@@ -21,7 +21,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
@@ -52,13 +51,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CreatePackingInstructionsCommand
 {
 	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
-
-	/**
-	 * HU_TansferStrategy_JavaClass_ID used for the GRAI HU-attribute slot, matching the value set by the
-	 * migration {@code 5795460_add_GRAI_attr_to_PI_template.sql}. Only used as a defensive fallback when the
-	 * template GRAI {@code M_HU_PI_Attribute} row cannot be found (see {@link #assignGraiAttribute}).
-	 */
-	private static final int GRAI_TRANSFER_STRATEGY_JAVACLASS_ID = 540027;
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -181,34 +173,17 @@ public class CreatePackingInstructionsCommand
 
 		final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
 
-		//
-		// Robust approach: copy ALL columns from the GRAI M_HU_PI_Attribute declared on the TEMPLATE PI version
-		// (created by migration 5795460_add_GRAI_attr_to_PI_template.sql). This guarantees that every NOT-NULL
-		// column - notably HU_TansferStrategy_JavaClass_ID (note the misspelling) - is populated, so we never
-		// miss a mandatory column when the schema evolves.
+		// Copy ALL columns from the template GRAI M_HU_PI_Attribute so every NOT-NULL column is populated (see findTemplateGraiAttribute).
 		final I_M_HU_PI_Attribute templateGraiAttribute = findTemplateGraiAttribute(graiAttributeId);
-		if (templateGraiAttribute != null)
+		if (templateGraiAttribute == null)
 		{
-			InterfaceWrapperHelper.copy()
-					.setFrom(templateGraiAttribute)
-					.setTo(piAttribute)
-					.copy();
+			throw new AdempiereException("No GRAI M_HU_PI_Attribute found on the TEMPLATE PI version"
+					+ "; expected it to be created by migration 5795460_add_GRAI_attr_to_PI_template.sql (M_Attribute_ID=" + graiAttributeId + ")");
 		}
-		else
-		{
-			// Defensive fallback: the template row was not found (migration not applied yet?).
-			// Set at least the NOT-NULL columns so the INSERT satisfies all constraints.
-			logger.warn("GRAI M_HU_PI_Attribute not found on TEMPLATE PI version; falling back to explicit column values");
-			piAttribute.setHU_TansferStrategy_JavaClass_ID(GRAI_TRANSFER_STRATEGY_JAVACLASS_ID);
-			piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
-			piAttribute.setIsDisplayed(true);
-			piAttribute.setIsInstanceAttribute(true);
-			piAttribute.setIsMandatory(false);
-			piAttribute.setIsOnlyIfInProductAttributeSet(false);
-			piAttribute.setIsReadOnly(false);
-			piAttribute.setSeqNo(200);
-			piAttribute.setUseInASI(false);
-		}
+		InterfaceWrapperHelper.copy()
+				.setFrom(templateGraiAttribute)
+				.setTo(piAttribute)
+				.copy();
 
 		// Always (re)set the discriminating columns - these must point at the NEW TU PI version, not the template.
 		piAttribute.setM_HU_PI_Version_ID(pivId.getRepoId());
