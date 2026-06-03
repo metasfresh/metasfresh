@@ -9,7 +9,11 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
        dt.docbasetype                                  AS "DocType_Base",
        io.ExternalId                                   AS "ExternalId",
        io.updated::timestamp                           AS "Updated",
-       esystem.value                                   AS "ExternalSystemCode",
+       -- ExternalSystemCode uses COALESCE(esystem.value,'') so shipments without an
+       -- external system return '' instead of NULL. The Historical_Shipments_JSON
+       -- process jsonpath filters with ExternalSystemCode.ilike.'%' by default;
+       -- NULL ILIKE '%' = NULL (false) would exclude those shipments.
+       COALESCE(esystem.value, '')::varchar(40)        AS "ExternalSystemCode",
        (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
@@ -54,9 +58,6 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
         WHERE iol.m_inout_id = io.m_inout_id
           AND iol.isactive = 'Y')                      AS "Lines",
 
-       (io.processed = 'Y')                           AS "Processed"
-          AND iol.isactive = 'Y')                      AS "Lines",
-
        -- Carrier / parcel tracking infos.
        -- A shipment's physical packages are M_ShippingPackage rows (linked by M_InOut_ID).
        -- Each carrier parcel (Carrier_ShipmentOrder_Parcel) carries the same M_Package_ID,
@@ -93,7 +94,9 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
                  JOIN carrier_shipmentorder cso
                       ON cso.carrier_shipmentorder_id = par.carrier_shipmentorder_id
                  LEFT JOIN m_shipper shp ON shp.m_shipper_id = cso.m_shipper_id
-        WHERE sp.m_inout_id = io.m_inout_id)           AS "Parcels"
+        WHERE sp.m_inout_id = io.m_inout_id)           AS "Parcels",
+
+       (io.processed = 'Y')                           AS "Processed"
 
 FROM m_inout io
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = io.C_DocType_ID
