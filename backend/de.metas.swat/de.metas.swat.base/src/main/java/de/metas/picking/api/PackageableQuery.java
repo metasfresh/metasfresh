@@ -83,6 +83,13 @@ public class PackageableQuery
 	 */
 	@Builder.Default boolean excludeLockedForProcessing = false; // false by default to be backward-compatibile
 
+	/**
+	 * Excludes records whose whole remaining quantity is already bound to a (draft) shipment, i.e.
+	 * {@code QtyToDeliver <= 0} AND there is at least one not-yet-processed picked qty linked to a shipment line
+	 * ({@code M_Packageable_V.IsPickQtyOnDraftShipment = 'Y'}). Such records have nothing left to pick.
+	 */
+	@Builder.Default boolean excludeFullyOnDraftShipment = false; // false by default to be backward-compatible
+
 	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
 
