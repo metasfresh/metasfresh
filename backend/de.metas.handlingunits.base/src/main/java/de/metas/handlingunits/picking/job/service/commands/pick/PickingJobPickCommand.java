@@ -10,7 +10,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
-import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -119,7 +118,6 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUService huService;
-	@NonNull private final HUGraiService huGraiService;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
@@ -158,7 +156,6 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
-			final @NonNull HUGraiService huGraiService,
 			//
 			final @NonNull PickingJob pickingJob,
 			//
@@ -188,7 +185,6 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
-		this.huGraiService = huGraiService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
@@ -211,10 +207,7 @@ public class PickingJobPickCommand
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
-			// Allow the pick when the TU target is a new (GRAI-based) target — the physical TU will be
-			// materialised lazily by updatePickingTarget after the pick, and the GRAI stamped onto it.
-			// Block only when an EXISTING TU is set as the target (which would mean the user intends to
-			// pick into a specific pre-existing physical TU rather than having a new one materialised).
+			// Block picking into a pre-existing physical TU; a new (GRAI-based) target is materialised lazily after the pick.
 			if (tuPickingTarget != null && !tuPickingTarget.isNewTU())
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
@@ -523,7 +516,7 @@ public class PickingJobPickCommand
 		if (grai != null)
 		{
 			// Must be called inside the pick transaction so the attribute write commits together with the pick.
-			huGraiService.setGrais(newTuId, GRAISet.of(grai));
+			huService.setGrais(newTuId, GRAISet.of(grai));
 		}
 	}
 

@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.model.I_M_HU;
@@ -14,10 +11,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,10 +36,7 @@ public class PickingJobGraiTargetService
 	private static final AdMessageKey MSG_NO_CAPACITY_FOR_PRODUCT = AdMessageKey.of("de.metas.handlingunits.picking.GRAINoCapacityForProduct");
 
 	@NonNull private final HUPIGraiRepository huPIGraiRepository;
-
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final PickingJobHUService huService;
 
 	/**
 	 * Parses the scanned GRAI, resolves the TU type, checks it against the effective LU target (if any)
@@ -93,7 +87,7 @@ public class PickingJobGraiTargetService
 		// NOTE: bpartnerId=null intentionally — only generic (no-partner) M_HU_PI_Items are matched.
 		// Partner-specific inclusions (C_BPartner_ID != null) are not considered here because
 		// GRAI mapping is configured at the general M_HU_PI level, and generic inclusions cover the expected case.
-		final boolean allowed = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, /* bpartnerId= */ null).isPresent();
+		final boolean allowed = huService.retrieveFirstPIItem(luPIId, tuPIId, /* bpartnerId= */ null).isPresent();
 
 		if (!allowed)
 		{
@@ -112,10 +106,10 @@ public class PickingJobGraiTargetService
 			@NonNull final HuPackingInstructionsId tuPIId,
 			@NonNull final ProductId productId)
 	{
-		final I_M_HU_PI_Version tuPIVersion = handlingUnitsDAO.retrievePICurrentVersion(tuPIId);
-		final I_M_HU_PI_Item miItem = handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion);
+		final I_M_HU_PI_Version tuPIVersion = huService.retrievePICurrentVersion(tuPIId);
+		final I_M_HU_PI_Item miItem = huService.retrievePIItemMaterial(tuPIVersion);
 
-		final List<I_M_HU_PI_Item_Product> allPiips = piipDAO.retrievePIMaterialItemProducts(miItem);
+		final List<I_M_HU_PI_Item_Product> allPiips = huService.retrievePIMaterialItemProducts(miItem);
 
 		final ImmutableList<I_M_HU_PI_Item_Product> matching = allPiips.stream()
 				.filter(piip -> piip.isAllowAnyProduct() || ProductId.ofRepoId(piip.getM_Product_ID()).equals(productId))
@@ -145,8 +139,8 @@ public class PickingJobGraiTargetService
 		else
 		{
 			final HuId luId = luTarget.getLuIdNotNull();
-			final I_M_HU lu = handlingUnitsDAO.getById(luId);
-			return handlingUnitsBL.getPackingInstructionsId(lu);
+			final I_M_HU lu = huService.getById(luId);
+			return huService.getPackingInstructionsId(lu);
 		}
 	}
 }

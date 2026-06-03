@@ -14,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -60,7 +61,7 @@ class PickingJobGraiTargetServiceTest
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 
-		service = new PickingJobGraiTargetService(new HUPIGraiRepository());
+		service = new PickingJobGraiTargetService(new HUPIGraiRepository(), PickingJobHUService.newInstanceForUnitTesting());
 
 		// Create LU PI
 		luPI = huTestHelper.createHUDefinition("LU-PI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

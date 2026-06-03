@@ -244,8 +244,7 @@ public class PickingJobTestHelper
 				configService,
 				pickingJobScheduleService,
 				huService,
-				new HUGraiService(),
-				new PickingJobGraiTargetService(new HUPIGraiRepository())
+				new PickingJobGraiTargetService(new HUPIGraiRepository(), huService)
 		);
 
 		huTracer = new HUTracerInstance()

@@ -13,7 +13,6 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
@@ -115,10 +114,8 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
-	@NonNull private final HUGraiService huGraiService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -395,8 +392,7 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.huService(huService)
-				.huGraiService(huGraiService);
+				.huService(huService);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)
@@ -655,7 +651,7 @@ public class PickingJobService implements PickingSlotListener
 
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
-		final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(tuPIId);
+		final I_M_HU_PI tuPI = huService.getPackingInstructionById(tuPIId);
 
 		assertTUTypeSupportsGRAIAttribute(tuPIId, tuPI);
 
@@ -680,7 +676,7 @@ public class PickingJobService implements PickingSlotListener
 		final AttributeId graiAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_GRAI);
 		if (graiAttributeId != null)
 		{
-			final HuPackingInstructionsVersionId tuPIVersionId = handlingUnitsDAO.retrievePICurrentVersionId(tuPIId);
+			final HuPackingInstructionsVersionId tuPIVersionId = huService.retrievePICurrentVersionId(tuPIId);
 			if (huPIAttributesDAO.retrievePIAttributes(tuPIVersionId).hasActiveAttribute(graiAttributeId))
 			{
 				return;

@@ -9,9 +9,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
@@ -19,13 +21,16 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -46,6 +51,7 @@ import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -57,6 +63,9 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +75,8 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -79,8 +90,26 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PickingJobHUService
 {
+	public static PickingJobHUService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				PickingJobHUService.class,
+				() -> new PickingJobHUService(
+						MobileUIPickingUserProfileService.newInstanceForUnitTesting(),
+						new PickingJobWarehouseService(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository())),
+						PickingJobProductService.newInstanceForUnitTesting(),
+						HUQRCodesService.newInstanceForUnitTesting(),
+						HULabelService.newInstanceForUnitTesting(),
+						new HUReservationService(new HUReservationRepository()),
+						InventoryService.newInstanceForUnitTesting(),
+						new HUGraiService()));
+	}
+
 	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
@@ -103,6 +132,8 @@ public class PickingJobHUService
 	{
 		huGraiService.generateMissingGRAIs(snapshots, nextGraiProvider);
 	}
+
+	public void setGrais(@NonNull final HuId huId, @NonNull final GRAISet graiSet) {huGraiService.setGrais(huId, graiSet);}
 
 	public IAutoCloseable temporarySetNewHContextForProcessing()
 	{
@@ -177,6 +208,26 @@ public class PickingJobHUService
 	public HuPackingInstructionsIdAndCaption getEffectivePackingInstructionsIdAndCaption(@NonNull final I_M_HU hu) {return handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(hu);}
 
 	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsBL.getPI(id);}
+
+	public I_M_HU_PI getPackingInstructionById(@NonNull final HuPackingInstructionsId id) {return handlingUnitsDAO.getPackingInstructionById(id);}
+
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsDAO.retrievePICurrentVersionId(piId);}
+
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsDAO.retrievePICurrentVersion(piId);}
+
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version) {return handlingUnitsDAO.retrievePIItemMaterial(version);}
+
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsDAO.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
+	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(@NonNull final I_M_HU_PI_Item itemDef) {return huPIItemProductDAO.retrievePIMaterialItemProducts(itemDef);}
+
+	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final I_M_HU hu) {return handlingUnitsBL.getPackingInstructionsId(hu);}
 
 	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
 			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
