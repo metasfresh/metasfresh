@@ -11,7 +11,7 @@ UPDATE AD_Column
 SET    IsIdentifier = 'Y',
        SeqNo        = 10,
        Updated      = TO_TIMESTAMP('2026-06-02 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy    = 0
+       UpdatedBy    = 100
 WHERE  AD_Column_ID = 592691;
 
 -- ============================================================
@@ -21,7 +21,7 @@ UPDATE AD_Column
 SET    IsIdentifier = 'Y',
        SeqNo        = 20,
        Updated      = TO_TIMESTAMP('2026-06-02 12:00:10', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy    = 0
+       UpdatedBy    = 100
 WHERE  AD_Column_ID = 592692;
 
 -- ============================================================
@@ -30,7 +30,7 @@ WHERE  AD_Column_ID = 592692;
 UPDATE AD_Column
 SET    IsSelectionColumn = 'Y',
        Updated           = TO_TIMESTAMP('2026-06-02 12:00:20', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy         = 0
+       UpdatedBy         = 100
 WHERE  AD_Column_ID IN (592690, 592691, 592692);
 
 -- ============================================================
@@ -39,13 +39,13 @@ WHERE  AD_Column_ID IN (592690, 592691, 592692);
 UPDATE AD_Field
 SET    SortNo    = 1,
        Updated   = TO_TIMESTAMP('2026-06-02 12:00:30', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy = 0
+       UpdatedBy = 100
 WHERE  AD_Field_ID = 780648;  -- GRAI_CompanyPrefix
 
 UPDATE AD_Field
 SET    SortNo    = 2,
        Updated   = TO_TIMESTAMP('2026-06-02 12:00:31', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy = 0
+       UpdatedBy = 100
 WHERE  AD_Field_ID = 780649;  -- GRAI_AssetType
 
 -- ============================================================
@@ -54,7 +54,7 @@ WHERE  AD_Field_ID = 780649;  -- GRAI_AssetType
 UPDATE AD_Tab
 SET    IsSingleRow = 'N',
        Updated     = TO_TIMESTAMP('2026-06-02 12:00:40', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy   = 0
+       UpdatedBy   = 100
 WHERE  AD_Tab_ID = 549285;
 
 -- ============================================================
@@ -63,7 +63,7 @@ WHERE  AD_Tab_ID = 549285;
 UPDATE AD_UI_Element
 SET    WidgetSize = 'S',
        Updated    = TO_TIMESTAMP('2026-06-02 12:00:50', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy  = 0
+       UpdatedBy  = 100
 WHERE  AD_UI_Element_ID IN (651948, 651949);  -- GRAI_CompanyPrefix, GRAI_AssetType
 
 -- ============================================================
@@ -72,5 +72,5 @@ WHERE  AD_UI_Element_ID IN (651948, 651949);  -- GRAI_CompanyPrefix, GRAI_AssetT
 UPDATE AD_UI_ElementGroup
 SET    Name      = 'org',
        Updated   = TO_TIMESTAMP('2026-06-02 12:01:00', 'YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy = 0
+       UpdatedBy = 100
 WHERE  AD_UI_ElementGroup_ID = 555414;
