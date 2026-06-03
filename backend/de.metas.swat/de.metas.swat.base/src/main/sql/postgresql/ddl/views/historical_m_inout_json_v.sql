@@ -1,8 +1,3 @@
--- ExternalSystemCode uses COALESCE(esystem.value,'') so shipments without an
--- external system return '' instead of NULL. The Historical_Shipments_JSON
--- process jsonpath filters with ExternalSystemCode.ilike.'%' by default;
--- NULL ILIKE '%' = NULL (false) would exclude those shipments.
-
 DROP VIEW IF EXISTS historical_m_inout_json_v
 ;
 
@@ -14,7 +9,7 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
        dt.docbasetype                                  AS "DocType_Base",
        io.ExternalId                                   AS "ExternalId",
        io.updated::timestamp                           AS "Updated",
-       COALESCE(esystem.value, '')::varchar(40)        AS "ExternalSystemCode", -- '' when no external system so ILIKE '%' matches all
+       esystem.value                                   AS "ExternalSystemCode",
        (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
