@@ -110,6 +110,20 @@ public class QtyReservationRepository
 	}
 
 	/**
+	 * Persists only the {@code Qty} field of the given reservation back to the database.
+	 * Used by {@code shrinkToFitOpenQty} to reduce a reservation's quantity in-place.
+	 */
+	public void saveReservationQty(@NonNull final QtyReservation reservation)
+	{
+		final I_M_QtyReservation record = queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, reservation.getId())
+				.create()
+				.firstOnlyNotNull();
+		record.setQty(reservation.getQty().toBigDecimal());
+		saveRecord(record);
+	}
+
+	/**
 	 * Returns all active, unprocessed reservations for the given order line.
 	 * Used by the HU picker to honor each reservation's attributes when picking on-the-fly.
 	 */

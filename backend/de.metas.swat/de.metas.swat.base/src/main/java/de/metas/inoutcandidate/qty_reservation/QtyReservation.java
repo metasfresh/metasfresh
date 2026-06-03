@@ -38,6 +38,12 @@ public class QtyReservation
 	}
 
 	@NonNull
+	public QtyReservation withQty(@NonNull final Quantity newQty)
+	{
+		return toBuilder().qty(newQty).build();
+	}
+
+	@NonNull
 	public Quantity getEffectiveQty()
 	{
 		return qty.subtract(qtyDelivered).toZeroIfNegative();
