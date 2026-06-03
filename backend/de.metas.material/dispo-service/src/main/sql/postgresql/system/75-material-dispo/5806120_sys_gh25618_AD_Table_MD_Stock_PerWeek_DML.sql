@@ -1,4 +1,4 @@
--- 2026-06-03
+﻿-- 2026-06-03
 -- gh#25618 — Bestand pro Woche / Stock per week
 -- Register MD_Stock_PerWeek_V as IsView='Y' AD_Table with 6 columns.
 --
@@ -32,7 +32,9 @@ INSERT INTO AD_Table
      IsView, IsDeleteable, IsHighVolume, IsSecurityEnabled, IsChangeLog, IsAutocomplete,
      ImportTable, ReplicationType, CopyColumnsFromTable, ACTriggerLength, LoadSeq)
 VALUES
-    (542612, 0, 0, 'Y', now(), 100, now(), 100,
+    (542612 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'MD Stock PerWeek V', 'MD_Stock_PerWeek_V', '3', 'de.metas.material.dispo',
      'Y', 'N', 'N', 'N', 'N', 'N',
      'N', 'L', 'N', 0, 0)
@@ -59,23 +61,31 @@ INSERT INTO AD_Element
     (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
      ColumnName, Name, PrintName, EntityType)
 VALUES
-    (584938, 0, 0, 'Y', now(), 100, now(), 100,
+    (584938 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:01:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:01:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'WeekStartDate', 'Wochenbeginn (KW)', 'Wochenbeginn (KW)', 'de.metas.material.dispo')
 ;
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:01:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:01:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Element_ID=584938
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 -- de_DE / de_CH
-UPDATE AD_Element_Trl SET Name='Wochenbeginn (KW)', PrintName='Wochenbeginn (KW)', IsTranslated='Y'
+UPDATE AD_Element_Trl
+SET Name='Wochenbeginn (KW)', PrintName='Wochenbeginn (KW)', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-03 12:01:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584938 AND AD_Language IN ('de_DE','de_CH')
 ;
 -- en_US
-UPDATE AD_Element_Trl SET Name='Week start', PrintName='Week start', IsTranslated='Y'
+UPDATE AD_Element_Trl
+SET Name='Week start', PrintName='Week start', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-03 12:01:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584938 AND AD_Language='en_US'
 ;
 
@@ -84,21 +94,29 @@ INSERT INTO AD_Element
     (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
      ColumnName, Name, PrintName, EntityType)
 VALUES
-    (584939, 0, 0, 'Y', now(), 100, now(), 100,
+    (584939 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:02:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:02:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'QtyExpectedShipments', 'Erwartete Lieferungen', 'Erwartete Lieferungen', 'de.metas.material.dispo')
 ;
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:02:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:02:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Element_ID=584939
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
-UPDATE AD_Element_Trl SET Name='Erwartete Lieferungen', PrintName='Erwartete Lieferungen', IsTranslated='Y'
+UPDATE AD_Element_Trl
+SET Name='Erwartete Lieferungen', PrintName='Erwartete Lieferungen', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-03 12:02:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584939 AND AD_Language IN ('de_DE','de_CH')
 ;
-UPDATE AD_Element_Trl SET Name='Expected shipments', PrintName='Expected shipments', IsTranslated='Y'
+UPDATE AD_Element_Trl
+SET Name='Expected shipments', PrintName='Expected shipments', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-03 12:02:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584939 AND AD_Language='en_US'
 ;
 
@@ -107,21 +125,29 @@ INSERT INTO AD_Element
     (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
      ColumnName, Name, PrintName, EntityType)
 VALUES
-    (584940, 0, 0, 'Y', now(), 100, now(), 100,
+    (584940 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:03:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:03:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'QtyExpectedReceipts', 'Erwartete Wareneingänge', 'Erwartete Wareneingänge', 'de.metas.material.dispo')
 ;
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:03:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:03:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Element_ID=584940
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
-UPDATE AD_Element_Trl SET Name='Erwartete Wareneingänge', PrintName='Erwartete Wareneingänge', IsTranslated='Y'
+UPDATE AD_Element_Trl
+SET Name='Erwartete Wareneingänge', PrintName='Erwartete Wareneingänge', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-03 12:03:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584940 AND AD_Language IN ('de_DE','de_CH')
 ;
-UPDATE AD_Element_Trl SET Name='Expected receipts', PrintName='Expected receipts', IsTranslated='Y'
+UPDATE AD_Element_Trl
+SET Name='Expected receipts', PrintName='Expected receipts', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-03 12:03:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584940 AND AD_Language='en_US'
 ;
 
@@ -131,8 +157,11 @@ WHERE AD_Element_ID=584940 AND AD_Language='en_US'
 
 -- ============================================================
 -- 3. AD_Column — one per view column
---    View tables: IsKey='N', IsUpdateable='N', IsAlwaysUpdateable='N', IsMandatory='N'
---    (the view has no PK and data is not editable)
+--    View tables: IsKey='N', IsUpdateable='N', IsAlwaysUpdateable='N'
+--    M_Product_ID and M_Warehouse_ID are non-null in the view => IsMandatory='Y'.
+--    WeekStartDate is non-null in the view => IsMandatory='Y'.
+--    Qty columns can be NULL (COALESCE default 0 in SELECT, but no DB NOT NULL) => IsMandatory='N'.
+--    PersonalDataCategory='NP' for all 6 columns (technical/aggregated stock data).
 -- ============================================================
 
 -- 3a. M_Product_ID  (AD_Reference_ID=30 Search, reuse element 454)
@@ -141,17 +170,23 @@ INSERT INTO AD_Column
      AD_Table_ID, AD_Element_ID, AD_Reference_ID,
      ColumnName, Name, EntityType,
      FieldLength, IsKey, IsParent, IsMandatory, IsUpdateable, IsAlwaysUpdateable,
-     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version)
+     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version,
+     PersonalDataCategory)
 VALUES
-    (592706, 0, 0, 'Y', now(), 100, now(), 100,
+    (592706 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:10:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:10:00','YYYY-MM-DD HH24:MI:SS'), 100,
      542612, 454, 30,
      'M_Product_ID', 'Produkt', 'de.metas.material.dispo',
      10, 'N', 'N', 'Y', 'N', 'N',
-     'N', 'N', 'N', 'N', 0)
+     'N', 'N', 'N', 'N', 0,
+     'NP')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:10:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:10:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Column_ID=592706
@@ -165,17 +200,23 @@ INSERT INTO AD_Column
      AD_Table_ID, AD_Element_ID, AD_Reference_ID,
      ColumnName, Name, EntityType,
      FieldLength, IsKey, IsParent, IsMandatory, IsUpdateable, IsAlwaysUpdateable,
-     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version)
+     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version,
+     PersonalDataCategory)
 VALUES
-    (592707, 0, 0, 'Y', now(), 100, now(), 100,
+    (592707 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:11:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:11:00','YYYY-MM-DD HH24:MI:SS'), 100,
      542612, 459, 30,
      'M_Warehouse_ID', 'Lager', 'de.metas.material.dispo',
      10, 'N', 'N', 'Y', 'N', 'N',
-     'N', 'N', 'N', 'N', 0)
+     'N', 'N', 'N', 'N', 0,
+     'NP')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:11:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:11:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Column_ID=592707
@@ -184,22 +225,29 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(459);
 
 -- 3c. WeekStartDate  (AD_Reference_ID=15 Date, new element 584938)
+--     IsMandatory='Y': non-null in the view (generated by generate_series, always a date).
 INSERT INTO AD_Column
     (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
      AD_Table_ID, AD_Element_ID, AD_Reference_ID,
      ColumnName, Name, EntityType,
      FieldLength, IsKey, IsParent, IsMandatory, IsUpdateable, IsAlwaysUpdateable,
-     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version)
+     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version,
+     PersonalDataCategory)
 VALUES
-    (592708, 0, 0, 'Y', now(), 100, now(), 100,
+    (592708 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:12:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:12:00','YYYY-MM-DD HH24:MI:SS'), 100,
      542612, 584938, 15,
      'WeekStartDate', 'Wochenbeginn (KW)', 'de.metas.material.dispo',
-     29, 'N', 'N', 'N', 'N', 'N',
-     'N', 'N', 'N', 'N', 0)
+     29, 'N', 'N', 'Y', 'N', 'N',
+     'N', 'N', 'N', 'N', 0,
+     'NP')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:12:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:12:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Column_ID=592708
@@ -213,17 +261,23 @@ INSERT INTO AD_Column
      AD_Table_ID, AD_Element_ID, AD_Reference_ID,
      ColumnName, Name, EntityType,
      FieldLength, IsKey, IsParent, IsMandatory, IsUpdateable, IsAlwaysUpdateable,
-     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version)
+     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version,
+     PersonalDataCategory)
 VALUES
-    (592709, 0, 0, 'Y', now(), 100, now(), 100,
+    (592709 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:13:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:13:00','YYYY-MM-DD HH24:MI:SS'), 100,
      542612, 584939, 29,
      'QtyExpectedShipments', 'Erwartete Lieferungen', 'de.metas.material.dispo',
      131089, 'N', 'N', 'N', 'N', 'N',
-     'N', 'N', 'N', 'N', 0)
+     'N', 'N', 'N', 'N', 0,
+     'NP')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:13:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:13:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Column_ID=592709
@@ -237,17 +291,23 @@ INSERT INTO AD_Column
      AD_Table_ID, AD_Element_ID, AD_Reference_ID,
      ColumnName, Name, EntityType,
      FieldLength, IsKey, IsParent, IsMandatory, IsUpdateable, IsAlwaysUpdateable,
-     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version)
+     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version,
+     PersonalDataCategory)
 VALUES
-    (592710, 0, 0, 'Y', now(), 100, now(), 100,
+    (592710 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:14:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:14:00','YYYY-MM-DD HH24:MI:SS'), 100,
      542612, 584940, 29,
      'QtyExpectedReceipts', 'Erwartete Wareneingänge', 'de.metas.material.dispo',
      131089, 'N', 'N', 'N', 'N', 'N',
-     'N', 'N', 'N', 'N', 0)
+     'N', 'N', 'N', 'N', 0,
+     'NP')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:14:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:14:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Column_ID=592710
@@ -263,17 +323,23 @@ INSERT INTO AD_Column
      AD_Table_ID, AD_Element_ID, AD_Reference_ID,
      ColumnName, Name, EntityType,
      FieldLength, IsKey, IsParent, IsMandatory, IsUpdateable, IsAlwaysUpdateable,
-     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version)
+     IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version,
+     PersonalDataCategory)
 VALUES
-    (592711, 0, 0, 'Y', now(), 100, now(), 100,
+    (592711 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-03 12:15:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 12:15:00','YYYY-MM-DD HH24:MI:SS'), 100,
      542612, 584821, 29,
      'QtyATP', 'Verfügbare Menge', 'de.metas.material.dispo',
      131089, 'N', 'N', 'N', 'N', 'N',
-     'N', 'N', 'N', 'N', 0)
+     'N', 'N', 'N', 'N', 0,
+     'NP')
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
-SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-03 12:15:01','YYYY-MM-DD HH24:MI:SS'), t.CreatedBy,
+       TO_TIMESTAMP('2026-06-03 12:15:01','YYYY-MM-DD HH24:MI:SS'), t.UpdatedBy
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
   AND t.AD_Column_ID=592711

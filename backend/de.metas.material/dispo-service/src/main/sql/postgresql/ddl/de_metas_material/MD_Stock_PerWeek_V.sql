@@ -1,4 +1,4 @@
--- View MD_Stock_PerWeek_V (me03 25618 / F19100 — "Stock per week").
+﻿-- View MD_Stock_PerWeek_V (me03 25618 / F19100 — "Stock per week").
 --
 -- Derives, per product x warehouse x ISO calendar week (Monday-anchored), the material
 -- outlook straight from the dispo engine's MD_Candidate timeline:
@@ -40,7 +40,7 @@ pw AS (
 weeks AS (
   SELECT pw.M_Product_ID,
          pw.M_Warehouse_ID,
-         (date_trunc('week', now())::date + (g.w * 7)) AS WeekStartDate
+         (date_trunc('week', current_date)::date + (g.w * 7)) AS WeekStartDate
     FROM pw
    CROSS JOIN horizon h
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
@@ -59,7 +59,7 @@ SELECT
                 AND c.MD_Candidate_Type = 'DEMAND'
                 AND c.MD_Candidate_BusinessCase = 'SHIPMENT'
                 AND GREATEST(date_trunc('week', c.DateProjected)::date,
-                             date_trunc('week', now())::date) = w.WeekStartDate ), 0)
+                             date_trunc('week', current_date)::date) = w.WeekStartDate ), 0)
     AS QtyExpectedShipments,
   -- expected receipts: SUPPLY/PURCHASE in this week (overdue rolled into current week)
   COALESCE(( SELECT SUM(c.Qty)
@@ -71,7 +71,7 @@ SELECT
                 AND c.MD_Candidate_Type = 'SUPPLY'
                 AND c.MD_Candidate_BusinessCase = 'PURCHASE'
                 AND GREATEST(date_trunc('week', c.DateProjected)::date,
-                             date_trunc('week', now())::date) = w.WeekStartDate ), 0)
+                             date_trunc('week', current_date)::date) = w.WeekStartDate ), 0)
     AS QtyExpectedReceipts,
   -- ATP at week-end: latest STOCK candidate at/before the end of this week, per
   -- attribute/customer subgroup, then summed.
@@ -83,7 +83,7 @@ SELECT
                          AND c.M_Product_ID  = w.M_Product_ID
                          AND c.M_Warehouse_ID = w.M_Warehouse_ID
                          AND c.MD_Candidate_Type = 'STOCK'
-                         AND c.DateProjected < (w.WeekStartDate + 7)
+                         AND c.DateProjected < (w.WeekStartDate + 7)::timestamptz
                        ORDER BY c.StorageAttributesKey, c.C_BPartner_Customer_ID,
                                 c.DateProjected DESC, c.SeqNo DESC
                     ) latest ), 0)

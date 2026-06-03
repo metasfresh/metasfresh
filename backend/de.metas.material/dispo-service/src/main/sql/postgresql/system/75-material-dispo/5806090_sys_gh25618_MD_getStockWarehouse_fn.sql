@@ -1,4 +1,4 @@
--- Source DDL: backend/de.metas.material/dispo-service/src/main/sql/postgresql/ddl/de_metas_material/MD_getStockWarehouse.sql
+﻿-- Source DDL: backend/de.metas.material/dispo-service/src/main/sql/postgresql/ddl/de_metas_material/MD_getStockWarehouse.sql
 -- IDs allocated from idserver.metas.de on 2026-06-03:
 --   AD_MigrationScript sequence: 5806090 (filename prefix)
 --
@@ -16,6 +16,7 @@
 
 CREATE OR REPLACE FUNCTION MD_getStockWarehouse(p_M_Warehouse_ID numeric)
 RETURNS numeric AS $$
+  -- Resolve packing WH to its stocking source; return input unchanged otherwise.
   SELECT COALESCE(
     ( SELECT ndl.M_WarehouseSource_ID
         FROM M_Warehouse w
