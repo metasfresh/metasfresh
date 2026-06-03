@@ -58,6 +58,9 @@ public class ReconcileQtyReservationsCommand
 	 * One-directional (only reduces, never grows). A row's {@code Qty} is never shrunk below that row's
 	 * already-delivered qty ({@code QtyDelivered}). All comparison/subtraction arithmetic is performed in the
 	 * order-line UOM; per-row reductions are converted back to each reservation's own UOM before being applied.
+	 * <p>
+	 * The CU {@code Qty} keeps the exact reduced value; the integer {@code QtyTU} is rounded UP — a
+	 * partially-filled TU still occupies a whole TU.
 	 *
 	 * @return the order-line IDs whose reservations were actually modified (empty if nothing changed)
 	 */
@@ -152,10 +155,11 @@ public class ReconcileQtyReservationsCommand
 				// clamp: never shrink below already-delivered qty
 				final BigDecimal newQtyBD = rowQty.subtract(reductionInRowUOM).max(rowQtyDelivered);
 
+				// QtyTU is rounded UP — a partially-filled TU still occupies a whole TU.
 				final BigDecimal rowQtyTU = reservation.getQtyTU().toBigDecimal();
 				final BigDecimal newQtyTUBD = rowQtyTU
 						.multiply(newQtyBD)
-						.divide(rowQty, 0, RoundingMode.HALF_UP);
+						.divide(rowQty, 0, RoundingMode.CEILING);
 
 				final Quantity newQty = reservation.getQty().toZero().add(newQtyBD);
 				newQtyByReservationId.put(reservation.getId(), new NewQty(newQty, QtyTU.ofBigDecimal(newQtyTUBD)));
