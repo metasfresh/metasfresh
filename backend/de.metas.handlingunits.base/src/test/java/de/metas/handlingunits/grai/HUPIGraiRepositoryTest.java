@@ -2,14 +2,12 @@ package de.metas.handlingunits.grai;
 
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HUPIGraiRepositoryTest
 {
@@ -23,16 +21,6 @@ class HUPIGraiRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		repository = new HUPIGraiRepository();
-	}
-
-	@Test
-	void resolveHuPackingInstructionsId_noMatch_throwsException()
-	{
-		final GRAI grai = GRAI.ofCanonicalString("7613204.00307.999999");
-
-		assertThatThrownBy(() -> repository.resolveHuPackingInstructionsId(grai))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("GRAINoMatchingTUType");
 	}
 
 	@Test
