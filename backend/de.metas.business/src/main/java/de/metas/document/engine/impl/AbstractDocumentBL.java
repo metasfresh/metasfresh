@@ -153,17 +153,22 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		};
 
-		// wrapIf: retry only when the engine owns the transaction (each retry uses a fresh trx);
-		// when the caller owns it a deadlock has already aborted their trx and retry would be wrong.
-		final Boolean processed = trxManager.call(trxName, DEADLOCK_RETRY_POLICY.wrapIf(
-				isEngineOwnsTheTransaction(trxName),
-				processCallable,
-				document.getDocumentInfo()));
+		final Boolean processed;
+		if (isEngineOwnsTheTransaction(trxName))
+		{
+			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
+			processed = DEADLOCK_RETRY_POLICY.call(
+					() -> trxManager.call(trxName, processCallable),
+					document.getDocumentInfo());
+		}
+		else
+		{
+			processed = trxManager.call(trxName, processCallable);
+		}
 
 		return processed != null && processed;
 	}
 
-	/** Returns true when the document engine owns the transaction, i.e. a fresh transaction is opened per attempt. */
 	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)
 	{
 		return trxManager.isNull(trxName)

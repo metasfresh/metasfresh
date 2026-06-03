@@ -24,7 +24,6 @@ package org.adempiere.ad.trx.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
@@ -122,30 +121,6 @@ public class DeadlockRetryPolicy
 	private static String contextToString(final Object... context)
 	{
 		return context == null || context.length == 0 ? "" : Arrays.deepToString(context);
-	}
-
-	/**
-	 * Returns a {@link TrxCallable} that applies the deadlock-retry policy when {@code condition} is true,
-	 * or returns {@code callable} unchanged when false.
-	 *
-	 * <p>When {@code condition} is true the returned wrapper runs each attempt in a <em>fresh</em> transaction
-	 * via {@link ITrxManager#callInNewTrx(TrxCallable)}.  This is the legitimate exception to the
-	 * "prefer runInThreadInheritedTrx" rule: a deadlock <em>aborts</em> the current transaction, so any
-	 * subsequent statement in it would fail with "current transaction is aborted"; each retry therefore
-	 * <strong>must</strong> run in an isolated, newly-opened transaction.
-	 *
-	 * @param condition if {@code true} the deadlock-retry wrapper is applied; if {@code false} {@code callable} is returned as-is
-	 * @param callable  the work to protect
-	 * @param context   diagnostic context passed to the retry logger
-	 * @return a {@link TrxCallable} — either the original or a retry-wrapped one
-	 */
-	public <T> TrxCallable<T> wrapIf(final boolean condition, @NonNull final TrxCallable<T> callable, final Object... context)
-	{
-		if (!condition)
-		{
-			return callable;
-		}
-		return () -> call(() -> Services.get(ITrxManager.class).callInNewTrx(callable), context);
 	}
 
 	/**
