@@ -1,28 +1,20 @@
 /**
- * Playwright E2E — GRAI-scan picking (GRAI barcode → new-TU creation + GRAI attribute stamp)
+ * Playwright E2E — GRAI-scan picking.
  *
- * Covers REQUIREMENTS §5 test scenarios TC1–TC7:
- *   TC1  Scan one valid GRAI → auto-create the correct TU + GRAI attribute attached
- *   TC2  Scanned GRAI has no M_HU_PI_GRAI mapping → error GRAINoMatchingTUType
- *   TC3  Resolved TU type not allowed on the picking-target LU → error GRAITUNotAllowedOnLU
- *   TC4  Two distinct GRAIs in one debounce window → error GRAIMultipleScanned, no list
- *   TC5  Unparseable barcode → scanner ignores it and stays live
- *   TC6  Resolved TU type has no M_HU_PI_Item_Product for the line's product → error GRAINoCapacityForProduct
- *   TC7  BPartner GRAIRequired=No → no GRAI scanner shown
+ * Scanning a GRAI barcode on the pick-target TU screen resolves the TU type via its
+ * M_HU_PI_GRAI mapping, auto-creates that TU, and stamps the GRAI as an HU attribute.
  *
- * Spec file size rule: ≤ 8 tests per new spec file (TC1–TC7 = 7 tests here). ✓
+ * GRAI canonical format (see de.metas.handlingunits.grai.GRAI):
+ *   "{companyPrefix}.{assetType}.{serial}"  — companyPrefix is 7 chars.
  *
- * GRAI format: canonical dot-separated form accepted directly by parseGraiFromRawInput:
- *   "{companyPrefix}.{assetType}.{serial}"
- *   Company prefix 7613204, asset type 00307 → maps to TU_MAPPED (TC1 happy path)
- *   Company prefix 7613204, asset type 00308 → unmapped (TC2)
- *   Company prefix 7613205, asset type 00307 → maps to TU_NOTALLOWED (TC3)
- *   Company prefix 7613206, asset type 00307 → maps to TU_NOCAPACITY (TC6)
- *
- * GRAIRequired DB codes (X_C_BPartner):  'Y' = Yes,  'N' = No,  'D' = YesWithDummyGRAIs
+ * All masterdata (GRAIRequired on the bpartner, the M_HU_PI_GRAI mappings) is created
+ * via the Backend masterdata API:
+ *   - bpartners.<id>.graiRequired: 'Y' | 'N' | 'D'  (Yes / No / YesWithDummyGRAIs)
+ *   - packingInstructions.<id>.graiMapping: true  → the API generates a unique scannable
+ *     GRAI, inserts its M_HU_PI_GRAI mapping for that TU PI, and returns it as
+ *     masterdata.packingInstructions.<id>.grai
  */
 
-import { execSync } from 'child_process';
 import { test } from '../../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
@@ -33,95 +25,49 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
-import { SelectPickTargetLUScreen } from '../../utils/screens/picking/SelectPickTargetLUScreen';
 import { SelectPickTargetTUScreen } from '../../utils/screens/picking/SelectPickTargetTUScreen';
 import { PickingGraiScanPanel } from '../../utils/screens/picking/PickingGraiScanPanel';
 import { expectErrorToast } from '../../utils/common';
 
-// ─── GRAI test constants ───────────────────────────────────────────────────────
-
-/** Canonical GRAI for TC1 — maps to TU_MAPPED; allowed on LU; has capacity for P1 */
-const GRAI_MAPPED = '7613204.00307.testserial001';
-
-/** Canonical GRAI with no M_HU_PI_GRAI row (TC2) */
-const GRAI_UNMAPPED = '7613204.00308.testserial002';
-
-/** Canonical GRAI for TC3 — maps to TU_NOTALLOWED (not associable with the picking-target LU) */
-const GRAI_TU_NOT_ON_LU = '7613205.00307.testserial003';
-
-/** Second distinct GRAI for TC4 (two-GRAI debounce error; same prefix/type as MAPPED) */
-const GRAI_MAPPED_B = '7613204.00307.testserial004';
-
-/** Completely unparseable string for TC5 */
+/** Completely unparseable barcode (not GRAI canonical, not GS1 AI 8003) */
 const BARCODE_UNPARSEABLE = 'NOT-A-GRAI-BARCODE-12345';
 
-/** Canonical GRAI for TC6 — maps to TU_NOCAPACITY (associated with LU but no PIIP for P1) */
-const GRAI_NO_CAPACITY = '7613206.00307.testserial006';
-
-// ─── DB setup helpers ──────────────────────────────────────────────────────────
-
 /**
- * Execute a SQL statement against the mfstack test DB via docker exec.
- * The mfstack-db-1 container runs the E2E test database.
+ * Build a valid-format canonical GRAI ("{companyPrefix}.{assetType}.{serial}") whose
+ * (companyPrefix, assetType) pair has NO M_HU_PI_GRAI mapping.
+ *
+ * The mapping key is (companyPrefix, assetType) — serial is ignored. We take a mapped
+ * GRAI, keep its companyPrefix, and replace the assetType with one that does not match
+ * any of the mapped pairs, yielding a parseable-but-unmapped GRAI.
+ *
+ * @param {string} mappedGrai  – a canonical GRAI returned by the masterdata API
+ * @param {string[]} mappedAssetTypes  – every assetType that DOES have a mapping
  */
-const execSql = (sql) => {
-    execSync(
-        `docker exec mfstack-db-1 psql -U metasfresh -d metasfresh -c ${JSON.stringify(sql)}`,
-        { stdio: 'pipe' }
-    );
+const buildUnmappedGrai = (mappedGrai, mappedAssetTypes) => {
+    const [companyPrefix] = mappedGrai.split('.');
+    let assetType = '99999';
+    while (mappedAssetTypes.includes(assetType)) {
+        // decrement until we find an assetType not used by any mapping (5-digit, zero-padded)
+        assetType = String(parseInt(assetType, 10) - 1).padStart(5, '0');
+    }
+    return `${companyPrefix}.${assetType}.unmappedserial`;
 };
 
-/**
- * Set C_BPartner.GRAIRequired for the BPartner by its numeric ID.
- *
- * @param {number} bpartnerId  – from masterdata.bpartners.BP1.id
- * @param {'Y'|'N'|'D'} code  – DB code: Y=Yes, N=No, D=YesWithDummyGRAIs
- */
-const setGraiRequired = (bpartnerId, code) => {
-    execSql(`UPDATE C_BPartner SET GRAIRequired = '${code}' WHERE C_BPartner_ID = ${bpartnerId}`);
-};
+/** assetType part of a canonical GRAI */
+const assetTypeOf = (grai) => grai.split('.')[1];
 
 /**
- * Insert (or replace) an M_HU_PI_GRAI mapping row linking a (companyPrefix, assetType) pair
- * to a TU M_HU_PI_ID. Uses ON CONFLICT DO UPDATE to always point to the freshly-created PI.
+ * Creates the standard masterdata for the mapped-TU scenarios.
  *
- * @param {{ companyPrefix: string, assetType: string, tuPiId: number }} params
- */
-const insertHuPiGrai = ({ companyPrefix, assetType, tuPiId }) => {
-    execSql(
-        `INSERT INTO M_HU_PI_GRAI (M_HU_PI_GRAI_ID, M_HU_PI_ID, GRAI_CompanyPrefix, GRAI_AssetType, ` +
-        `AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy) ` +
-        `VALUES (nextval('M_HU_PI_GRAI_SEQ'), ${tuPiId}, '${companyPrefix}', '${assetType}', ` +
-        `(SELECT AD_Client_ID FROM M_HU_PI WHERE M_HU_PI_ID = ${tuPiId}), ` +
-        `(SELECT AD_Org_ID FROM M_HU_PI WHERE M_HU_PI_ID = ${tuPiId}), ` +
-        `'Y', now(), 100, now(), 100) ` +
-        `ON CONFLICT (GRAI_CompanyPrefix, GRAI_AssetType) DO UPDATE ` +
-        `SET M_HU_PI_ID = EXCLUDED.M_HU_PI_ID, Updated = now(), UpdatedBy = 100`
-    );
-};
-
-/**
- * Clean up M_HU_PI_GRAI rows inserted by this spec.
- * Uses the well-known company prefix values used only in this spec.
- */
-const cleanupHuPiGrais = () => {
-    execSql(`DELETE FROM M_HU_PI_GRAI WHERE GRAI_CompanyPrefix IN ('7613204', '7613205', '7613206')`);
-};
-
-// ─── Shared masterdata factory ─────────────────────────────────────────────────
-
-/**
- * Creates the standard masterdata for TC1–TC6.
+ * Three packing instruction sets, each with its own generated GRAI mapping:
+ *   PI_MAIN       — LU_MAIN + TU_MAPPED (capacity for P1) → happy path / no-mapping / multiple / unparseable
+ *   PI_NOTALLOWED — LU_OTHER + TU_NOTALLOWED (different LU) → TU-not-allowed-on-LU
+ *   PI_NOCAPACITY — LU_MAIN + TU_NOCAPACITY → no-capacity (its PIIP is removed below)
  *
- * Three packing instruction sets:
- *   PI_MAIN      — LU_MAIN + TU_MAPPED (capacity for P1) → used for TC1/TC2/TC4/TC5
- *   PI_NOTALLOWED — LU_OTHER + TU_NOTALLOWED (different LU) → used for TC3
- *   PI_NOCAPACITY — LU_MAIN + TU_NOCAPACITY (will have its PIIP deleted) → used for TC6
- *
- * After creation, sets BP1.GRAIRequired='Y' and inserts three M_HU_PI_GRAI rows.
+ * The bpartner has GRAIRequired='Y' so the GRAI scanner is enabled.
  */
 const createMasterdataForGraiScan = async () => {
-    const masterdata = await Backend.createMasterdata({
+    return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
@@ -140,19 +86,19 @@ const createMasterdataForGraiScan = async () => {
                     allowCompletingPartialPickingJob: false,
                 },
             },
-            bpartners: { BP1: {} },
+            bpartners: { BP1: { graiRequired: 'Y' } },
             warehouses: { wh: {} },
             pickingSlots: { slot1: {} },
             products: {
                 P1: { prices: [{ price: 1 }] },
             },
             packingInstructions: {
-                // TC1/TC2/TC4/TC5 — the "good" PI: TU_MAPPED allowed on LU_MAIN with capacity
-                PI_MAIN: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4 },
-                // TC3 — TU on a different LU (LU_OTHER), not associable with the picking-target LU_MAIN
-                PI_NOTALLOWED: { lu: 'LU_OTHER', qtyTUsPerLU: 10, tu: 'TU_NOTALLOWED', product: 'P1', qtyCUsPerTU: 4 },
-                // TC6 — TU associated with LU_MAIN but PIIP for P1 will be deleted
-                PI_NOCAPACITY: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_NOCAPACITY', product: 'P1', qtyCUsPerTU: 4 },
+                // happy path / no-mapping / multiple / unparseable — TU_MAPPED allowed on LU_MAIN with capacity
+                PI_MAIN: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                // TU on a different LU (LU_OTHER), not associable with the picking-target LU_MAIN
+                PI_NOTALLOWED: { lu: 'LU_OTHER', qtyTUsPerLU: 10, tu: 'TU_NOTALLOWED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                // TU associated with LU_MAIN but its PIIP for P1 will be deleted to remove capacity
+                PI_NOCAPACITY: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_NOCAPACITY', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
             },
             handlingUnits: {
                 HU1: { product: 'P1', warehouse: 'wh', qty: 100 },
@@ -167,21 +113,6 @@ const createMasterdataForGraiScan = async () => {
             },
         },
     });
-
-    // Activate GRAIRequired on BP1
-    setGraiRequired(masterdata.bpartners.BP1.id, 'Y');
-
-    // tuPITestId is returned as e.g. "pi-3001629" — extract the numeric M_HU_PI_ID
-    const parsePiId = (testId) => parseInt(testId.replace(/^pi-/, ''), 10);
-    const tuMappedPiId = parsePiId(masterdata.packingInstructions.PI_MAIN.tuPITestId);
-    const tuNotAllowedPiId = parsePiId(masterdata.packingInstructions.PI_NOTALLOWED.tuPITestId);
-    const tuNocapacityPiId = parsePiId(masterdata.packingInstructions.PI_NOCAPACITY.tuPITestId);
-
-    insertHuPiGrai({ companyPrefix: '7613204', assetType: '00307', tuPiId: tuMappedPiId });
-    insertHuPiGrai({ companyPrefix: '7613205', assetType: '00307', tuPiId: tuNotAllowedPiId });
-    insertHuPiGrai({ companyPrefix: '7613206', assetType: '00307', tuPiId: tuNocapacityPiId });
-
-    return masterdata;
 };
 
 /**
@@ -221,6 +152,7 @@ test('TC1 — Scan one GRAI → TU created with GRAI attribute', async ({ page }
     await allure.severity('critical');
 
     const masterdata = await createMasterdataForGraiScan();
+    const graiMapped = masterdata.packingInstructions.PI_MAIN.grai;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -235,7 +167,7 @@ test('TC1 — Scan one GRAI → TU created with GRAI attribute', async ({ page }
     await PickingGraiScanPanel.expectScannerVisible();
 
     // Scan one valid GRAI — debounce fires, REST sets the TU target, navigates back to PickLineScreen
-    await PickingGraiScanPanel.scanGrai({ graiString: GRAI_MAPPED });
+    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
     await PickingJobLineScreen.waitForScreen();
 
     // Pick the HU from the line scan screen.
@@ -266,12 +198,10 @@ test('TC1 — Scan one GRAI → TU created with GRAI attribute', async ({ page }
         },
         hus: {
             tu1: {
-                attributes: { GRAI: GRAI_MAPPED },
+                attributes: { GRAI: graiMapped },
             },
         },
     });
-
-    cleanupHuPiGrais();
 });
 
 // ─── TC2 — Scanned GRAI has no mapping → GRAINoMatchingTUType error ───────────
@@ -285,6 +215,14 @@ test('TC2 — Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType 
 
     const masterdata = await createMasterdataForGraiScan();
 
+    // A valid-format GRAI whose (companyPrefix, assetType) pair matches none of the created mappings.
+    const mappedAssetTypes = [
+        assetTypeOf(masterdata.packingInstructions.PI_MAIN.grai),
+        assetTypeOf(masterdata.packingInstructions.PI_NOTALLOWED.grai),
+        assetTypeOf(masterdata.packingInstructions.PI_NOCAPACITY.grai),
+    ];
+    const graiUnmapped = buildUnmappedGrai(masterdata.packingInstructions.PI_MAIN.grai, mappedAssetTypes);
+
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
@@ -295,15 +233,13 @@ test('TC2 — Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType 
     await navigateToTUTargetScreen(masterdata);
     await PickingGraiScanPanel.expectScannerVisible();
 
-    // GRAI_UNMAPPED (prefix 7613204, type 00308) has no M_HU_PI_GRAI row.
+    // graiUnmapped has no M_HU_PI_GRAI row.
     // The debounce fires ~1500ms after the scan; keep the race alive until the error toast appears.
     await expectErrorToast('GRAINoMatchingTUType error', async () => {
-        await PickingGraiScanPanel.scanGrai({ graiString: GRAI_UNMAPPED });
+        await PickingGraiScanPanel.scanGrai({ graiString: graiUnmapped });
         // waitForScreen uses .first() to tolerate 2 simultaneous #SelectPickTargetScreen elements
         await SelectPickTargetTUScreen.waitForScreen();
     });
-
-    cleanupHuPiGrais();
 });
 
 // ─── TC3 — Resolved TU not allowed on the picking-target LU → error ───────────
@@ -316,6 +252,7 @@ test('TC3 — Resolved TU type not allowed on picking-target LU → GRAITUNotAll
     await allure.severity('critical');
 
     const masterdata = await createMasterdataForGraiScan();
+    const graiNotOnLU = masterdata.packingInstructions.PI_NOTALLOWED.grai;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -327,13 +264,11 @@ test('TC3 — Resolved TU type not allowed on picking-target LU → GRAITUNotAll
     await navigateToTUTargetScreen(masterdata);
     await PickingGraiScanPanel.expectScannerVisible();
 
-    // GRAI_TU_NOT_ON_LU resolves to TU_NOTALLOWED, which is only on LU_OTHER (not LU_MAIN)
+    // graiNotOnLU resolves to TU_NOTALLOWED, which is only on LU_OTHER (not LU_MAIN)
     await expectErrorToast('GRAITUNotAllowedOnLU error', async () => {
-        await PickingGraiScanPanel.scanGrai({ graiString: GRAI_TU_NOT_ON_LU });
+        await PickingGraiScanPanel.scanGrai({ graiString: graiNotOnLU });
         await SelectPickTargetTUScreen.waitForScreen();
     });
-
-    cleanupHuPiGrais();
 });
 
 // ─── TC4 — Two distinct GRAIs → GRAIMultipleScanned error, no list ─────────────
@@ -346,6 +281,9 @@ test('TC4 — Two distinct GRAIs in debounce window → GRAIMultipleScanned erro
     await allure.severity('critical');
 
     const masterdata = await createMasterdataForGraiScan();
+    // Two distinct mapped GRAIs (PI_MAIN and PI_NOCAPACITY are both on LU_MAIN; either resolves)
+    const graiA = masterdata.packingInstructions.PI_MAIN.grai;
+    const graiB = masterdata.packingInstructions.PI_NOCAPACITY.grai;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -360,16 +298,14 @@ test('TC4 — Two distinct GRAIs in debounce window → GRAIMultipleScanned erro
     // Scan two distinct GRAIs back-to-back before the 1500ms debounce fires.
     // The assertion between scans gives the keyboard hook's interval flush time to process
     // each code individually so they don't concatenate in the buffer.
-    await PickingGraiScanPanel.scanGrai({ graiString: GRAI_MAPPED });
+    await PickingGraiScanPanel.scanGrai({ graiString: graiA });
     await PickingGraiScanPanel.expectScannerVisible(); // flush gap assertion
-    await PickingGraiScanPanel.scanGrai({ graiString: GRAI_MAPPED_B });
+    await PickingGraiScanPanel.scanGrai({ graiString: graiB });
 
     // After the debounce timer fires with 2 distinct GRAIs → error toast
     await expectErrorToast('GRAIMultipleScanned error', async () => {
         await SelectPickTargetTUScreen.waitForScreen();
     });
-
-    cleanupHuPiGrais();
 });
 
 // ─── TC5 — Unparseable barcode → scanner ignores it and stays live ─────────────
@@ -382,6 +318,7 @@ test('TC5 — Unparseable barcode → scanner ignores it, stays live for valid s
     await allure.severity('normal');
 
     const masterdata = await createMasterdataForGraiScan();
+    const graiMapped = masterdata.packingInstructions.PI_MAIN.grai;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -401,10 +338,8 @@ test('TC5 — Unparseable barcode → scanner ignores it, stays live for valid s
     await PickingGraiScanPanel.expectScannerVisible();
 
     // Follow-up: a valid GRAI scan still works (scanner is live) — navigates back to PickLineScreen
-    await PickingGraiScanPanel.scanGrai({ graiString: GRAI_MAPPED });
+    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
     await PickingJobLineScreen.waitForScreen();
-
-    cleanupHuPiGrais();
 });
 
 // ─── TC6 — Resolved TU has no capacity for the product → error ───────────────
@@ -416,18 +351,51 @@ test('TC6 — Resolved TU has no capacity for line product → GRAINoCapacityFor
     await allure.story('GRAI scan picking — TC6 no capacity');
     await allure.severity('critical');
 
-    const masterdata = await createMasterdataForGraiScan();
-
-    // The masterdata API creates a M_HU_PI_Item_Product for P1 on TU_NOCAPACITY.
-    // Delete it to simulate the "no capacity" scenario.
-    const tuNocapacityPiId = parseInt(masterdata.packingInstructions.PI_NOCAPACITY.tuPITestId.replace(/^pi-/, ''), 10);
-    execSql(
-        `DELETE FROM M_HU_PI_Item_Product piip ` +
-        `USING M_HU_PI_Item item ` +
-        `WHERE piip.M_HU_PI_Item_ID = item.M_HU_PI_Item_ID ` +
-        `AND item.M_HU_PI_Version_ID = ` +
-        `  (SELECT M_HU_PI_Version_ID FROM M_HU_PI_Version WHERE M_HU_PI_ID = ${tuNocapacityPiId} AND IsCurrent = 'Y')`
-    );
+    // PI_NOCAPACITY's TU has a M_HU_PI_Item_Product only for P2 (not the line's product P1),
+    // so when its GRAI resolves the TU there is no capacity row for P1 → the no-capacity error.
+    // It is still associable with LU_MAIN (same LU as the good PI).
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'product',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    shipOnCloseLU: false,
+                    pickTo: ['LU_TU'],
+                    allowCompletingPartialPickingJob: false,
+                },
+            },
+            bpartners: { BP1: { graiRequired: 'Y' } },
+            warehouses: { wh: {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                P1: { prices: [{ price: 1 }] },
+                P2: { prices: [{ price: 1 }] },
+            },
+            packingInstructions: {
+                // The "good" PI so the LU target + line are pickable and the GRAI scanner is reachable
+                PI_MAIN: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                // TU on LU_MAIN whose only capacity row is for P2 → no M_HU_PI_Item_Product for the line product P1
+                PI_NOCAPACITY: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_NOCAPACITY', product: 'P2', qtyCUsPerTU: 4, graiMapping: true },
+            },
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh', qty: 100 },
+            },
+            salesOrders: {
+                SO1: {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU_MAPPED' }],
+                },
+            },
+        },
+    });
+    const graiNoCapacity = masterdata.packingInstructions.PI_NOCAPACITY.grai;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -439,14 +407,12 @@ test('TC6 — Resolved TU has no capacity for line product → GRAINoCapacityFor
     await navigateToTUTargetScreen(masterdata);
     await PickingGraiScanPanel.expectScannerVisible();
 
-    // GRAI_NO_CAPACITY resolves to TU_NOCAPACITY which is allowed on LU_MAIN
+    // graiNoCapacity resolves to TU_NOCAPACITY which is allowed on LU_MAIN
     // but has no M_HU_PI_Item_Product for P1
     await expectErrorToast('GRAINoCapacityForProduct error', async () => {
-        await PickingGraiScanPanel.scanGrai({ graiString: GRAI_NO_CAPACITY });
+        await PickingGraiScanPanel.scanGrai({ graiString: graiNoCapacity });
         await SelectPickTargetTUScreen.waitForScreen();
     });
-
-    cleanupHuPiGrais();
 });
 
 // ─── TC7 — GRAIRequired=No → no scanner shown ────────────────────────────────
@@ -473,7 +439,7 @@ test('TC7 — BPartner GRAIRequired=No → no GRAI scanner on pick-target screen
                     allowCompletingPartialPickingJob: false,
                 },
             },
-            bpartners: { BP_NOGRAI: {} },
+            bpartners: { BP_NOGRAI: { graiRequired: 'N' } },
             warehouses: { wh: {} },
             pickingSlots: { slot1: {} },
             products: {
@@ -495,9 +461,6 @@ test('TC7 — BPartner GRAIRequired=No → no GRAI scanner on pick-target screen
             },
         },
     });
-
-    // Ensure GRAIRequired=No (the default; explicit for test clarity)
-    setGraiRequired(masterdata.bpartners.BP_NOGRAI.id, 'N');
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
