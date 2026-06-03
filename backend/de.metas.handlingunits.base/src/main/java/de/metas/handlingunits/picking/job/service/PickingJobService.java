@@ -16,7 +16,6 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
-import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -632,7 +631,7 @@ public class PickingJobService implements PickingSlotListener
 	 * builds a new-TU {@link TUPickingTarget} carrying the parsed GRAI, and stores it on the line.
 	 * No physical HU is created here; the real TU is materialised later at first-pick time by the
 	 * framework, and {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}
-	 * stamps the GRAI on it afterwards via {@link HUGraiService}.
+	 * stamps the GRAI on it afterwards via {@link PickingJobHUService#setGrais}.
 	 *
 	 * @param lineId      the picking-job line being picked; used to resolve the line's product for capacity checks.
 	 * @param scannedGrai the raw scanned GRAI barcode.
