@@ -1,21 +1,14 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
+import { Backend } from '../utils/Backend';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 
-/**
- * Playwright spec: C_Invoice.DueDate (Datum Fälligkeit) is rendered READ-ONLY.
- *
- * Validates the UI counterpart of migration 5805840 which sets
- * AD_Field.IsReadOnly='Y' for AD_Field_ID=712526 (DueDate in tab 263, window 167).
- *
- * The field lives in tab "Rechnung" (AD_Tab_ID=263) of window "Rechnung" (167).
- * The frontend renders Date widgets via DatePicker whose inputProps.disabled is
- * set to true when the field's data.readonly===true (WidgetRenderer.js line 171).
- * The resulting <input> therefore carries the HTML disabled attribute.
- *
- */
+// C_Invoice.DueDate (AD_Field_ID=712526, AD_Tab_ID=263, AD_Window_ID=167) carries
+// AD_Field.IsReadOnly='Y' unconditionally (migration 5805840), so any C_Invoice opened in
+// window 167 — drafted is enough — exercises the read-only render. The spec creates its own
+// customer + drafted invoice and navigates by id (seed-independent).
 
 test.describe('Invoice DueDate read-only', () => {
   test('Datum Faelligkeit is read-only on invoice window (de_DE)', async ({ page }) => {
@@ -28,111 +21,117 @@ test.describe('Invoice DueDate read-only', () => {
 
 ### Test scenario
 
-Verifies that the field **Datum Fälligkeit** (C_Invoice.DueDate, AD_Field_ID=712526)
-in tab "Rechnung" of window "Rechnung" (AD_Window_ID=167) is rendered non-editable
-by the WebUI after migration 5805840 set AD_Field.IsReadOnly='Y'.
+Verifies that the field **Datum Fälligkeit** (C_Invoice.DueDate) in tab "Rechnung"
+of window "Rechnung" (AD_Window_ID=167) is rendered non-editable by the WebUI.
 
 ### Assertion mechanism
 
-The metasfresh frontend renders Date widgets via the DatePicker component. When
-the field carries readonly=true in the API response, WidgetRenderer passes
-inputProps.disabled=true to DatePicker, which propagates it as the HTML disabled
-attribute on the underlying <input> element. The test:
+The frontend renders Date widgets via DatePicker. When the field is readonly the
+WidgetRenderer passes inputProps.disabled=true, which surfaces as the HTML disabled
+attribute on the underlying <input>. The test:
 
-1. Logs in as metasfresh/metasfresh (WebUI role).
-2. Navigates to the invoice list (window 167) and opens the first available record.
-3. Locates the DueDate widget wrapper via .form-field-DueDate.
-4. Asserts the inner <input> carries the disabled attribute (toBeDisabled()).
-5. Also asserts the calendar does NOT open on click (readonly guard in DatePicker).
-
-### Related artefacts
-
-- Migration: 5805840_sys_gh29412_C_Invoice_DueDate_readonly.sql
-- AD_Field_ID: 712526  AD_Tab_ID: 263  AD_Window_ID: 167
+1. Creates its own customer and a drafted C_Invoice via REST (seed-independent).
+2. Logs in as the WebUI role and navigates to the invoice by id.
+3. Opens Advanced Edit and asserts the DueDate input is disabled and its calendar stays closed.
     `);
 
-    test.setTimeout(180000); // 3 minutes — page load can be slow on first navigation
+    test.setTimeout(180000);
 
-    // STEP 1: REST login (bypasses AlreadyLoggedInException race on UI login form).
+    const WEBAPI = (process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api').replace(/\/rest\/api$/, '');
+    const REST = `${WEBAPI}/rest/api`;
+
+    // REST login avoids the AlreadyLoggedInException race on the UI login form.
     await test.step('Authenticate via REST (WebUI role)', async () => {
-      const WEBAPI = (process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api').replace(/\/rest\/api$/, '');
-
-      // Step A: check if there's already a valid session (avoids 500 on loginComplete)
-      const sessionResp = await page.request.get(`${WEBAPI}/rest/api/userSession`).catch(() => null);
+      const sessionResp = await page.request.get(`${REST}/userSession`).catch(() => null);
       const sessionBody = sessionResp ? await sessionResp.json().catch(() => ({})) : {};
 
       if (sessionBody.loggedIn) {
-        console.log(`[STEP 1] Session already active as ${sessionBody.username} (${sessionBody.rolename}) — skipping login`);
+        console.log(`[STEP 0] Session already active as ${sessionBody.username} (${sessionBody.rolename})`);
       } else {
-        // Step B: authenticate
-        const authResp = await page.request.post(`${WEBAPI}/rest/api/login/authenticate`, {
+        const authResp = await page.request.post(`${REST}/login/authenticate`, {
           data: { username: 'metasfresh', password: 'metasfresh' },
         });
         const authBody = await authResp.json().catch(() => ({}));
-        console.log('[STEP 1] authenticate loginComplete:', authBody.loginComplete);
+        console.log('[STEP 0] authenticate loginComplete:', authBody.loginComplete);
 
-        // Step C: if role selection needed, pick the first available role (WebUI role)
         if (authBody.loginComplete === false && authBody.roles && authBody.roles.length > 0) {
           const webUiRole = authBody.roles[0];
-          await page.request.post(`${WEBAPI}/rest/api/login/loginComplete`, {
-            data: webUiRole,
-          });
-          console.log('[STEP 1] loginComplete sent for role:', webUiRole.caption);
+          await page.request.post(`${REST}/login/loginComplete`, { data: webUiRole });
+          console.log('[STEP 0] loginComplete sent for role:', webUiRole.caption);
         }
       }
-
-      // Step D: navigate to the invoice list URL so the SPA session is
-      // initialised. We use the login page first (it loads faster since it
-      // doesn't need auth) and then navigate to the window.
-      await page.goto(`${FRONTEND_BASE_URL}/login`, { timeout: 120000 });
-      // The SPA should redirect away from /login because we're already logged in
-      // (session cookie set by REST calls above). Wait for the redirect.
-      await page
-        .waitForURL((url) => !url.toString().includes('/login'), { timeout: SLOW_ACTION_TIMEOUT })
-        .catch(async () => {
-          // Not redirected — navigate manually to the invoice list
-          await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_INVOICE_WINDOW_ID}`, { timeout: 120000 });
-        });
-      await page
-        .locator('.app-content, .document-list-wrapper, .document-list, .login-container')
-        .first()
-        .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      console.log('[STEP 1] SPA loaded, URL:', page.url());
     });
 
-    // STEP 2: Open the first accessible invoice record (already on list from Step 1).
+    let bpartnerId;
+    await test.step('Create a customer via masterdata', async () => {
+      const masterdata = await Backend.createMasterdata({
+        request: {
+          login: { user: { language: 'de_DE' } },
+          bpartners: {
+            CUSTOMER1: { isCustomer: true, isVendor: false, isSoPriceList: true, name: 'DueDateCustomer' },
+          },
+        },
+      });
+
+      bpartnerId = masterdata.bpartners.CUSTOMER1.id;
+      expect(bpartnerId).toBeTruthy();
+      console.log(`[STEP 1] Created customer C_BPartner_ID=${bpartnerId}`);
+    });
+
+    // A New record + BPartner (cascades pricelist/currency/location) + doctype + payment term
+    // is enough to persist a drafted C_Invoice. Window 167 is the Sales Invoice window, so every
+    // C_DocTypeTarget_ID option is a sales invoice; ids come from the dropdowns to stay DB-agnostic.
     let invoiceRecordId;
-    await test.step('Open first invoice record from list', async () => {
-      // List was loaded during Step 1 navigation — just wait for it to settle
-      await page
-        .locator('.document-list-wrapper, .document-list')
-        .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+    await test.step('Create a drafted sales invoice via document API', async () => {
+      // { data: [] } is the WebUI JSON-patch payload that allocates a fresh NEW document (no field changes yet).
+      const newResp = await page.request.patch(`${REST}/window/${SALES_INVOICE_WINDOW_ID}/NEW`, { data: [] });
+      const newBody = await newResp.json();
+      invoiceRecordId = (newBody.documents || [newBody])[0].id;
+      console.log(`[STEP 2] New invoice document ${invoiceRecordId}`);
 
-      await page
-        .locator('.rotating')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
+      const patch = (changes) =>
+        page.request.patch(`${REST}/window/${SALES_INVOICE_WINDOW_ID}/${invoiceRecordId}`, { data: changes });
 
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      const firstDropdownKey = async (field) => {
+        const resp = await page.request.get(
+          `${REST}/window/${SALES_INVOICE_WINDOW_ID}/${invoiceRecordId}/field/${field}/dropdown`
+        );
+        const values = (await resp.json()).values || [];
+        return values.length ? values[0].key : null;
+      };
 
-      // dblclick first row to open record detail
-      const firstRow = page.locator('table tbody tr').first();
-      await firstRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await firstRow.dblclick();
+      await patch([{ op: 'replace', path: 'C_BPartner_ID', value: Number(bpartnerId) }]);
 
-      const windowUrlPattern = new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/\\d+`);
-      await page.waitForURL(
-        (url) => windowUrlPattern.test(url.toString()),
-        { timeout: SLOW_ACTION_TIMEOUT }
-      );
-      const recordUrlPattern = new RegExp(`/window/${SALES_INVOICE_WINDOW_ID}/(\\d+)`);
-      const urlMatch = page.url().match(recordUrlPattern);
-      invoiceRecordId = urlMatch ? urlMatch[1] : 'unknown';
+      const docTypeKey = await firstDropdownKey('C_DocTypeTarget_ID');
+      expect(docTypeKey).toBeTruthy(); // empty C_DocTypeTarget dropdown = unusable setup; fail fast rather than patch id 0
+      await patch([{ op: 'replace', path: 'C_DocTypeTarget_ID', value: Number(docTypeKey) }]);
 
-      // Wait for document header panel
+      // An empty patch round-trips the document so the server recomputes and returns its validStatus.
+      const reloaded = await (await patch([])).json();
+      let valid = (reloaded.documents || [reloaded])[0].validStatus;
+      if (!valid || valid.valid !== true) {
+        const paymentTermKey = await firstDropdownKey('C_PaymentTerm_ID');
+        expect(paymentTermKey).toBeTruthy(); // no payment term available to make the record valid = unusable setup
+        const afterPT = await (await patch([{ op: 'replace', path: 'C_PaymentTerm_ID', value: Number(paymentTermKey) }])).json();
+        valid = (afterPT.documents || [afterPT])[0].validStatus;
+      }
+
+      expect(valid && valid.valid).toBe(true);
+      console.log(`[STEP 2] Drafted invoice ${invoiceRecordId} is valid and persisted`);
+    });
+
+    await test.step('Open the created invoice record by ID', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_INVOICE_WINDOW_ID}/${invoiceRecordId}`, {
+        timeout: 120000,
+      });
+
+      // The REST session cookie should keep the SPA logged in; if it still bounced us back to
+      // /login the record never renders — surface that here instead of as a downstream timeout.
+      await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: SLOW_ACTION_TIMEOUT });
+
       await page
         .locator('.header-wrapper, .window-wrapper')
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
       await page
         .locator('.rotating, .panel-spaced-lg')
@@ -140,103 +139,76 @@ attribute on the underlying <input> element. The test:
         .catch(() => {});
 
       await page.waitForTimeout(500);
-      console.log(`[STEP 2] Invoice record ${invoiceRecordId} loaded`);
+      console.log(`[STEP 3] Invoice record ${invoiceRecordId} loaded`);
     });
 
-    // STEP 3: Click the document header to shift focus away from the sub-tab grid
-    // (after dblclick-open, grid has focus; Alt+E would open LINE Advanced Edit instead).
-    await test.step('Focus main document header (scope Alt+E to document)', async () => {
-      // The DocumentNo field is always present in the main form and is disabled
-      // (read-only on completed invoices) — safe to click without side-effects.
+    // Click the document header so Alt+E / Advanced Edit targets the document, not the line grid.
+    await test.step('Focus main document header', async () => {
       const docNoInput = page.locator('.form-field-DocumentNo input').first();
       const hasDocNo = await docNoInput.isVisible().catch(() => false);
       if (hasDocNo) {
         await docNoInput.click({ force: true });
         await page.waitForTimeout(300);
-        console.log('[STEP 3] Clicked DocumentNo to focus main document');
+        console.log('[STEP 4] Clicked DocumentNo to focus main document');
       } else {
-        // Fallback: click the header section wrapper
         const headerSection = page.locator('.header-breadcrumb-dropdown, .document-list-header').first();
         if (await headerSection.isVisible().catch(() => false)) {
           await headerSection.click({ force: true });
           await page.waitForTimeout(300);
         }
-        console.log('[STEP 3] Header focus established via fallback');
+        console.log('[STEP 4] Header focus established via fallback');
       }
     });
 
-    // STEP 4: Open the Advanced Edit modal via SubHeader UI button.
-    // DueDate (AD_UI_Element 615817) lives in the advanced-edit section; SubHeader path
-    // is preferred over Alt+E because keyboard focus after programmatic navigation is unreliable.
+    // SubHeader is preferred over Alt+E because keyboard focus after programmatic navigation is unreliable.
     await test.step('Open Advanced Edit modal via SubHeader', async () => {
-      // Open the SubHeader panel (the "more" / three-dot button)
       const moreButton = page.locator('.meta-icon-more');
       await moreButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await moreButton.click();
 
-      // Wait for the SubHeader container to be open
       await page
         .locator('.subheader-container')
         .first()
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      console.log('[STEP 4] SubHeader opened');
+      console.log('[STEP 5] SubHeader opened');
 
-      // Click the Advanced Edit button in the SubHeader.
-      // SubHeader.js renders MenuItem with id="subheaderNav_{simplifiedCaption}"
-      // and class="subheader-item". The edit icon is <i class="meta-icon-edit"/>.
-      // We target the subheader-item that contains the meta-icon-edit icon.
       const advEditItem = page.locator('.subheader-item:has(.meta-icon-edit)').first();
       await advEditItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await advEditItem.click();
 
-      // Wait for the modal panel to appear and DueDate field to be rendered
       await page
         .locator('.panel-modal')
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await page
         .locator('.panel-modal .form-field-DueDate')
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      console.log('[STEP 4] Advanced Edit modal opened');
+      console.log('[STEP 5] Advanced Edit modal opened');
     });
 
-    // STEP 5: Locate DueDate widget and assert it is disabled.
     await test.step('Assert DueDate field is rendered read-only (disabled)', async () => {
-      // The RawWidget wrapper gets class "form-field-DueDate" (from widgetFieldsName).
-      // Inside it, the DatePicker renders <input class="form-control"> with disabled
-      // when inputProps.disabled=true (which WidgetRenderer sets to readonly).
-      // The field is scoped inside the Advanced Edit modal.
       const dueDateWrapper = page.locator('.panel-modal .form-field-DueDate');
-
-      // The wrapper must exist in the modal
       await dueDateWrapper.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      console.log('[STEP 5] .form-field-DueDate wrapper found in Advanced Edit modal');
+      console.log('[STEP 6] .form-field-DueDate wrapper found in Advanced Edit modal');
 
-      // The input inside the DatePicker carries the disabled attribute
       const dueDateInput = dueDateWrapper.locator('input').first();
       await dueDateInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      // PRIMARY ASSERTION: input must be disabled
       await expect(dueDateInput).toBeDisabled({ timeout: SLOW_ACTION_TIMEOUT });
-      console.log('[STEP 5] DueDate input is disabled [PASS]');
+      console.log('[STEP 6] DueDate input is disabled [PASS]');
 
-      // SECONDARY ASSERTION: clicking does NOT open the calendar popup
-      // DatePicker.openCalendarIfEditable() is a no-op when isReadonly()==true.
+      // A readonly DatePicker is a no-op on click — the calendar must stay closed.
       await dueDateInput.click({ force: true }).catch(() => {});
       await page.waitForTimeout(500);
 
-      // Scope popup check inside the modal to avoid false positives from other widgets
       const calendarPopup = page.locator('.panel-modal .rdtPicker, .panel-modal .rdtOpen');
       const calendarVisible = await calendarPopup.first().isVisible().catch(() => false);
       expect(calendarVisible).toBe(false);
-      console.log('[STEP 5] Calendar popup did NOT open on click [PASS]');
+      console.log('[STEP 6] Calendar popup did NOT open on click [PASS]');
 
-      // Screenshot for the Allure report
       const screenshot = await page.screenshot();
       allure.attachment('DueDate field (read-only)', screenshot, 'image/png');
     });
 
-    console.log(
-      `[DONE] Invoice ${invoiceRecordId}: DueDate (Datum Faelligkeit) is rendered read-only — PASS`
-    );
+    console.log(`[DONE] Invoice ${invoiceRecordId}: DueDate (Datum Faelligkeit) is rendered read-only — PASS`);
   });
 });

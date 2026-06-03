@@ -51,21 +51,19 @@ BEGIN
 
                                   p.Value                                                                                  AS ProductNo,
                                   p.Name                                                                                   AS ProductName,
-                                  COALESCE(
-                                          (SELECT pip.Name
-                                           FROM M_HU_PI_Item_Product pip
-                                                    JOIN M_HU_PI_Item pii ON pip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
-                                           WHERE pip.M_Product_ID = p.M_Product_ID
-                                             AND pip.IsActive = 'Y'
-                                           LIMIT 1),
-                                          ''
-                                  )                                                                                        AS PackingInstruction,
+                                  (SELECT pip.Name
+                                   FROM M_HU_PI_Item_Product pip
+                                            JOIN M_HU_PI_Item pii ON pip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
+                                   WHERE pip.M_Product_ID = p.M_Product_ID
+                                     AND pip.IsActive = 'Y'
+                                   ORDER BY pip.M_HU_PI_Item_Product_ID
+                                   LIMIT 1)                                                                                AS PackingInstruction,
                                   bp.value                                                                                 AS customer_value,
                                   bp.Name                                                                                  AS Customer,
                                   SUM(il.QtyEnteredTU)                                                                     AS QtyTU,
                                   SUM(il.QtyEntered * p.Weight)                                                            AS Weight,
-                                  SUM(ROUND((100 * il.linenetamt) / (100 - il.discount), 2))                               AS NetRevenue,
-                                  SUM(ROUND(il.discount * ROUND((100 * il.linenetamt) / (100 - il.discount), 2) / 100, 2)) AS Discount,
+                                  SUM(ROUND((100 * il.linenetamt) / NULLIF(100 - COALESCE(il.discount, 0), 0), 2))         AS NetRevenue,
+                                  SUM(ROUND(COALESCE(il.discount, 0) * ROUND((100 * il.linenetamt) / NULLIF(100 - COALESCE(il.discount, 0), 0), 2) / 100, 2)) AS Discount,
                                   SUM(il.linenetamt)                                                                       AS Revenue,
                                   cu.iso_code                                                                              AS currency
                            FROM C_InvoiceLine il

@@ -55,6 +55,45 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
           AND iol.isactive = 'Y')                      AS "Lines",
 
        (io.processed = 'Y')                           AS "Processed"
+          AND iol.isactive = 'Y')                      AS "Lines",
+
+       -- Carrier / parcel tracking infos.
+       -- A shipment's physical packages are M_ShippingPackage rows (linked by M_InOut_ID).
+       -- Each carrier parcel (Carrier_ShipmentOrder_Parcel) carries the same M_Package_ID,
+       -- so we match per-package via M_Package_ID (precise; avoids the transport-level cartesian).
+       -- Tracking number (awb) and TrackingURL live on the parcel; the carrier (Versender)
+       -- comes from M_Shipper via the parcel's Carrier_ShipmentOrder.
+       (SELECT JSONB_AGG(JSONB_BUILD_OBJECT(
+                                 'M_Package_ID', par.m_package_id,
+                                 'TrackingNumber', par.awb,
+                                 'TrackingURL', par.trackingurl,
+                                 'Carrier', shp.name,
+                                 'CarrierCode', shp.value,
+                                 'WeightInKg', par.weightinkg,
+                                 'LengthInCm', par.lengthincm,
+                                 'WidthInCm', par.widthincm,
+                                 'HeightInCm', par.heightincm,
+                                 'PackageDescription', par.packagedescription,
+                                 'Items', (SELECT JSONB_AGG(JSONB_BUILD_OBJECT(
+                                                             'ProductValue', it.articlevalue,
+                                                             'ProductName', it.productname,
+                                                             'QtyShipped', it.qtyshipped,
+                                                             'UOM', uom.uomsymbol,
+                                                             'TotalWeightInKg', it.totalweightinkg,
+                                                             'CustomsTariffNumber', it.customstariffnumber
+                                                         ) ORDER BY it.carrier_shipmentorder_item_id)
+                                           FROM carrier_shipmentorder_item it
+                                                    LEFT JOIN c_uom uom ON uom.c_uom_id = it.c_uom_id
+                                           WHERE it.carrier_shipmentorder_parcel_id = par.carrier_shipmentorder_parcel_id
+                                             AND it.isactive = 'Y')
+                             ) ORDER BY par.carrier_shipmentorder_parcel_id)
+        FROM m_shippingpackage sp
+                 JOIN carrier_shipmentorder_parcel par
+                      ON par.m_package_id = sp.m_package_id AND par.isactive = 'Y'
+                 JOIN carrier_shipmentorder cso
+                      ON cso.carrier_shipmentorder_id = par.carrier_shipmentorder_id
+                 LEFT JOIN m_shipper shp ON shp.m_shipper_id = cso.m_shipper_id
+        WHERE sp.m_inout_id = io.m_inout_id)           AS "Parcels"
 
 FROM m_inout io
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = io.C_DocType_ID
