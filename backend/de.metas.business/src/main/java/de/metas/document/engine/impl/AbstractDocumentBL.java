@@ -59,6 +59,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.DEFAULT;
 
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
@@ -118,8 +120,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 							   @NonNull final String action,
 							   final boolean throwExIfNotSuccess)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
 		final TrxCallable<Boolean> processCallable = new TrxCallable<Boolean>()
@@ -166,7 +166,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	/** Returns true when the document engine owns the transaction, i.e. a fresh transaction is opened per attempt. */
 	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		return trxManager.isNull(trxName)
 				|| (ITrx.TRXNAME_ThreadInherited.equals(trxName) && !trxManager.hasThreadInheritedTrx());
 	}
