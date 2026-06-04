@@ -62,7 +62,7 @@ public class ReconcileQtyReservationsCommand
 	 * <p>
 	 * The CU {@code Qty} keeps the exact reduced value; the integer {@code QtyTU} is rounded UP — a
 	 * partially-filled TU still occupies a whole TU.
-	 *
+	 * <p>
 	 * Reservation rows whose final Qty is zero — pre-existing phantoms (a row reserving 0 CU) and rows shrunk
 	 * fully to zero — are deleted rather than kept.
 	 *
