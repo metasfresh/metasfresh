@@ -1,4 +1,4 @@
--- gh26820: virtual column M_InOut.TrackingURL — carrier tracking link(s) for the shipment.
+-- virtual column M_InOut.TrackingURL — carrier tracking link(s) for the shipment.
 -- Nullable (no coalesce); the ' - ' display fallback belongs to the email-body rendering.
 -- Reuses existing AD_Element_ID=2127 (ColumnName 'TrackingURL').
 INSERT INTO AD_Column (

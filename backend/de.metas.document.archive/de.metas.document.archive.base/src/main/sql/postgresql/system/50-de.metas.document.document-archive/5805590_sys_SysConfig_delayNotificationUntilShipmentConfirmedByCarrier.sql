@@ -1,4 +1,4 @@
--- gh26820: on-switch for delaying document notifications (invoice email) until the
+-- on-switch for delaying document notifications (invoice email) until the
 -- shipment carrier has returned its tracking URL(s). Default 'N' (vanilla unchanged);
 -- set 'Y' per customer instance. Read by InvoiceNotificationDelayHandler.
 INSERT INTO AD_SysConfig (

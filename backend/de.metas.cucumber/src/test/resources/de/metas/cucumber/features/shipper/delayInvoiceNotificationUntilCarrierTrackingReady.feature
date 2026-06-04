@@ -114,7 +114,6 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | cs2        | nShift       |
 
   @from:cucumber
-  @Id:S26820_TC1
   Scenario: Invoice mail workpackage is skipped while TrackingURL is absent, then released once TrackingURL is set
 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
@@ -179,7 +178,6 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | outboundLog                      | invoice              | C_Invoice     | ARI             |
 
   @from:cucumber
-  @Id:S26820_TC2
   Scenario: Invoice mail workpackage is sent immediately when TrackingURL is already present
 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request

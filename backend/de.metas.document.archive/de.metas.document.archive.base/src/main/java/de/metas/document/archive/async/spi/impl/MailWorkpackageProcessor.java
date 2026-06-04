@@ -143,13 +143,13 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final long elapsedMillis = SystemTime.millis() - workpackage.getCreated().getTime();
 		if (elapsedMillis >= NOTIFICATION_DELAY_TIMEOUT_MILLIS)
 		{
-			Loggables.get().addLog("gh26820: notification delay timeout ({}ms) reached for C_Queue_WorkPackage_ID={}; sending anyway",
+			Loggables.get().addLog("Notification delay timeout ({}ms) reached for C_Queue_WorkPackage_ID={}; sending anyway",
 					NOTIFICATION_DELAY_TIMEOUT_MILLIS, workpackage.getC_Queue_WorkPackage_ID());
 			return;
 		}
 
 		throw WorkpackageSkipRequestException.createWithTimeout(
-				"gh26820: waiting for shipment tracking URL(s) before sending notification", NOTIFICATION_DELAY_RETRY_MILLIS);
+				"Waiting for shipment tracking URL(s) before sending notification", NOTIFICATION_DELAY_RETRY_MILLIS);
 	}
 
 	private void sendEMail(
