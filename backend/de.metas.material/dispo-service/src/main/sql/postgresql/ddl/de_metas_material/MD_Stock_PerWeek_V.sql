@@ -21,9 +21,11 @@
 --   * customer   : the customer dimension (C_BPartner_Customer_ID) is summed in too, i.e.
 --                  the overall projected stock is shown — no per-customer reserve carve-out.
 
--- MD_Stock_PerWeek_V_ID: stable synthetic row key (row_number over a deterministic ORDER BY)
--- so the WebUI has a proper primary key for this view-backed window. Row count is
--- (product x warehouse pairs) x (horizon weeks + 1) — far below int max, so ::int is safe.
+-- No synthetic row_number() primary key: a row_number() OVER (...) window function forces the
+-- planner to materialize and sort EVERY (product x warehouse x week) row before any outer
+-- predicate (e.g. the zoom's M_Product_ID filter) can be applied — the filter cannot be pushed
+-- down past the window, making a single-product zoom as expensive as browse-all. Dropping it
+-- restores predicate push-down to the MD_Candidate scans. This is a read-only view-backed window.
 CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
 WITH horizon AS (
   SELECT GREATEST(1, COALESCE(NULLIF(
@@ -32,16 +34,19 @@ WITH horizon AS (
              ORDER BY AD_Client_ID DESC, AD_Org_ID DESC
              LIMIT 1), '')::int, 12)) AS weeks
 ),
--- distinct product/warehouse pairs that have any active, non-simulated candidate
+-- distinct product/warehouse pairs that have any active, non-simulated candidate;
+-- AD_Client_ID / AD_Org_ID are included so the security framework can filter by client.
 pw AS (
-  SELECT DISTINCT c.M_Product_ID, c.M_Warehouse_ID
+  SELECT DISTINCT c.AD_Client_ID, c.AD_Org_ID, c.M_Product_ID, c.M_Warehouse_ID
     FROM MD_Candidate c
    WHERE c.IsActive = 'Y'
      AND c.MD_Candidate_Status IS DISTINCT FROM 'simulated'
 ),
 -- one row per (product, warehouse, week) across the configured horizon
 weeks AS (
-  SELECT pw.M_Product_ID,
+  SELECT pw.AD_Client_ID,
+         pw.AD_Org_ID,
+         pw.M_Product_ID,
          pw.M_Warehouse_ID,
          (date_trunc('week', current_date)::date + (g.w * 7)) AS WeekStartDate
     FROM pw
@@ -50,6 +55,8 @@ weeks AS (
 )
 SELECT
   (row_number() OVER (ORDER BY w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate))::int AS MD_Stock_PerWeek_V_ID,
+  w.AD_Client_ID,
+  w.AD_Org_ID,
   w.M_Product_ID,
   w.M_Warehouse_ID,
   w.WeekStartDate,
