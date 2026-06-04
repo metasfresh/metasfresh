@@ -191,7 +191,14 @@ test('TC1 — Scan one GRAI → TU created with GRAI attribute', async ({ page }
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }],
+                        // The GRAI pick packs the CUs into a genuine (non-aggregate) TU, so the picked
+                        // handling unit recorded on M_ShipmentSchedule_QtyPicked is the TU (M_TU_HU_ID) and
+                        // its LU (M_LU_HU_ID). VHU_ID is null by design: PickingJobPickCommand passes the TU
+                        // to HUShipmentScheduleBL.addQtyPickedAndUpdateHU, and getTopLevelParentAsLUTUCUPair
+                        // resolves a TU to LUTUCUPair.ofTU(tu, lu) with no VHU. (VHU_ID is only populated when
+                        // the picked HU is itself virtual/aggregate, e.g. an aggregate-TU pick where the TU
+                        // record IS the VHU — see picking.spec.js / pick_from_LUs.spec.js where vhu === tu.)
+                        qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }],
                     },
                 },
             },
