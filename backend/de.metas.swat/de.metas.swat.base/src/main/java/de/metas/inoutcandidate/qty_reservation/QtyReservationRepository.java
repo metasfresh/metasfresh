@@ -16,6 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -130,6 +132,31 @@ public class QtyReservationRepository
 						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
 				.create()
 				.delete();
+	}
+
+	/**
+	 * For the given reservation IDs, returns whether each is a PLANNED_SUPPLY reservation (vs ON_HAND).
+	 * Used to order reservations PS-before-OH when trimming, since {@link QtyReservation} does not expose SupplyType.
+	 */
+	@NonNull
+	public Map<QtyReservationId, Boolean> getIsPlannedSupplyByIds(@NonNull final Set<QtyReservationId> ids)
+	{
+		final Map<QtyReservationId, Boolean> result = new HashMap<>();
+		if (ids.isEmpty())
+		{
+			return result;
+		}
+
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
+						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
+				.create()
+				.stream()
+				.forEach(record -> result.put(
+						QtyReservationId.ofRepoId(record.getM_QtyReservation_ID()),
+						SupplyType.ofCode(record.getSupplyType()).isPlannedSupply()));
+		return result;
 	}
 
 	/**

@@ -14,8 +14,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_QtyReservation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -39,7 +37,6 @@ public class ReconcileQtyReservationsCommand
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final QtyReservationRepository qtyReservationRepository;
 	@NonNull private final OrderId orderId;
@@ -238,12 +235,15 @@ public class ReconcileQtyReservationsCommand
 	 * Returns the reservations ordered PLANNED_SUPPLY first, then ON_HAND;
 	 * within each group ordered by reservation id for determinism.
 	 * <p>
-	 * The {@link QtyReservation} domain object does not expose SupplyType, so it is
-	 * read directly from the {@code M_QtyReservation} records here.
+	 * The {@link QtyReservation} domain object does not expose SupplyType, so the PS/OH flag
+	 * is resolved through {@link QtyReservationRepository#getIsPlannedSupplyByIds(Set)}.
 	 */
 	private List<QtyReservation> sortPlannedSupplyBeforeOnHand(@NonNull final List<QtyReservation> reservations)
 	{
-		final Map<QtyReservationId, Boolean> isPlannedSupplyById = loadIsPlannedSupplyById(reservations);
+		final Set<QtyReservationId> ids = reservations.stream()
+				.map(QtyReservation::getId)
+				.collect(ImmutableSet.toImmutableSet());
+		final Map<QtyReservationId, Boolean> isPlannedSupplyById = qtyReservationRepository.getIsPlannedSupplyByIds(ids);
 
 		return reservations.stream()
 				.sorted(Comparator
@@ -251,24 +251,6 @@ public class ReconcileQtyReservationsCommand
 						.comparing((QtyReservation r) -> !isPlannedSupplyById.getOrDefault(r.getId(), Boolean.FALSE))
 						.thenComparing(r -> r.getId().getRepoId()))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	private Map<QtyReservationId, Boolean> loadIsPlannedSupplyById(@NonNull final List<QtyReservation> reservations)
-	{
-		final Set<Integer> ids = reservations.stream()
-				.map(r -> r.getId().getRepoId())
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Map<QtyReservationId, Boolean> result = new HashMap<>();
-		queryBL.createQueryBuilder(I_M_QtyReservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, ids)
-				.create()
-				.stream()
-				.forEach(record -> result.put(
-						QtyReservationId.ofRepoId(record.getM_QtyReservation_ID()),
-						SupplyType.ofCode(record.getSupplyType()).isPlannedSupply()));
-		return result;
 	}
 
 	@Value
