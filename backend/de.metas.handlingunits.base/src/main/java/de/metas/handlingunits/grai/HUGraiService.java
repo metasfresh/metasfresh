@@ -103,6 +103,8 @@ public class HUGraiService
 				.getAttributeStorage(hu);
 		attributeStorage.setSaveOnChange(true);
 
+		// Defense-in-depth: the scan-time guard assertTUTypeSupportsGraiAttribute already failed loud
+		// if the TU type has no GRAI slot, so in the valid pick flow this branch is always taken.
 		if (attributeStorage.hasAttribute(AttributeConstants.ATTR_GRAI))
 		{
 			attributeStorage.setValue(
