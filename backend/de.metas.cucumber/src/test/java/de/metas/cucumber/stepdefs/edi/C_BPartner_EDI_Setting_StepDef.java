@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -30,10 +31,13 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.edi.api.EDISendingMode;
 import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -41,7 +45,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import javax.annotation.Nullable;
 
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_C_BPartner_ID;
-import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_C_BPartner_EDI_Setting_ID;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_C_BPartner_Location_ID;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_EdiDESADVDefaultItemCapacity;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID;
@@ -63,6 +66,8 @@ public class C_BPartner_EDI_Setting_StepDef
 	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	@NonNull private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	@NonNull private final C_BPartner_EDI_Setting_StepDefData ediSettingTable;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Creates {@link I_C_BPartner_EDI_Setting} rows.
@@ -97,17 +102,51 @@ public class C_BPartner_EDI_Setting_StepDef
 
 	private void createEdiSetting(@NonNull final DataTableRow row)
 	{
-		final I_C_BPartner bPartner = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bPartnerTable);
-
-		final I_C_BPartner_EDI_Setting record = InterfaceWrapperHelper.newInstance(I_C_BPartner_EDI_Setting.class);
-		record.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		// Fix B: accept raw repo-IDs as well as registered step-def identifiers
+		final I_C_BPartner bPartner = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID)
+				.lookupOrLoadById(bPartnerTable, id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_C_BPartner.class));
+		final int bPartnerId = bPartner.getC_BPartner_ID();
 
 		final @Nullable StepDefDataIdentifier locationIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID).orElse(null);
+		final @Nullable Integer locationId;
 		if (locationIdentifier != null)
 		{
-			final I_C_BPartner_Location location = locationIdentifier.lookupNotNullIn(bPartnerLocationTable);
-			record.setC_BPartner_Location_ID(location.getC_BPartner_Location_ID());
+			final I_C_BPartner_Location location = locationIdentifier.lookupOrLoadById(
+					bPartnerLocationTable,
+					id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_C_BPartner_Location.class));
+			locationId = location != null ? location.getC_BPartner_Location_ID() : null;
 		}
+		else
+		{
+			locationId = null;
+		}
+
+		// Fix A: upsert — find existing row for (C_BPartner_ID, C_BPartner_Location_ID) to stay idempotent
+		// across Background re-runs and pre-existing partner rows.
+		final I_C_BPartner_EDI_Setting record = CoalesceUtil.coalesceSuppliers(
+				() -> {
+					final IQueryBuilder<I_C_BPartner_EDI_Setting> qb = queryBL
+							.createQueryBuilder(I_C_BPartner_EDI_Setting.class)
+							.addEqualsFilter(COLUMNNAME_C_BPartner_ID, bPartnerId);
+					if (locationId != null)
+					{
+						qb.addEqualsFilter(COLUMNNAME_C_BPartner_Location_ID, locationId);
+					}
+					else
+					{
+						qb.addEqualsFilter(COLUMNNAME_C_BPartner_Location_ID, null);
+					}
+					return qb.create().firstOnlyOrNull(I_C_BPartner_EDI_Setting.class);
+				},
+				() -> {
+					final I_C_BPartner_EDI_Setting newRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_EDI_Setting.class);
+					newRecord.setC_BPartner_ID(bPartnerId);
+					if (locationId != null)
+					{
+						newRecord.setC_BPartner_Location_ID(locationId);
+					}
+					return newRecord;
+				});
 
 		record.setIsEdiDesadvRecipient(row.getAsOptionalBoolean(COLUMNNAME_IsEdiDesadvRecipient).orElseFalse());
 		row.getAsOptionalString(COLUMNNAME_EdiDesadvRecipientGLN).ifPresent(record::setEdiDesadvRecipientGLN);
