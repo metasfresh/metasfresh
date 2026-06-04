@@ -269,68 +269,99 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y')
 
 -- ============================================================
 -- Parameter descriptions
+-- Main record (base language DE) = German; en_US Trl = English
 -- ============================================================
 
 -- 2026-06-03
-UPDATE AD_Process_Para SET Description='Maximum number of records to return. Default and maximum: 2000', Updated=now(), UpdatedBy=100
+-- Limit
+UPDATE AD_Process_Para SET Description='Maximale Anzahl zurückgegebener Datensätze. Standard und Maximum: 2000', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543239, 543242);
 
-UPDATE AD_Process_Para SET Description='Number of records to skip for pagination. Default: 0', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (543240, 543243);
+UPDATE AD_Process_Para_Trl SET Description='Maximum number of records to return. Default and maximum: 2000', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543239, 543242) AND AD_Language='en_US';
 
--- Existing parameters with null descriptions
-UPDATE AD_Process_Para SET Description='External ID of the record. Default: -1 (return all)', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (542970, 542967);
-
-UPDATE AD_Process_Para SET Description='Return only records for this order', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (543062, 543067);
-
-UPDATE AD_Process_Para SET Description='Search key of the business partner', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (543065, 543068);
-
-UPDATE AD_Process_Para SET Description='Return only shipments with movement date on or after this date', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID=543066;
-
-UPDATE AD_Process_Para SET Description='Return only invoices with invoice date on or after this date', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID=543069;
-
-UPDATE AD_Process_Para SET Description='External reference of the business partner in the external system', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (543070, 543072);
-
-UPDATE AD_Process_Para SET Description='Search key of the business partner in the external system', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (543071, 543073);
-
-UPDATE AD_Process_Para SET Description='Base document type filter', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID IN (543074, 543075);
-
--- German translations (de_DE, de_CH) for Limit and Offset
--- 2026-06-03
 UPDATE AD_Process_Para_Trl SET Description='Maximale Anzahl zurückgegebener Datensätze. Standard und Maximum: 2000', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543239, 543242) AND AD_Language IN ('de_DE', 'de_CH');
+
+-- Offset
+UPDATE AD_Process_Para SET Description='Anzahl der zu überspringenden Datensätze für Paginierung. Standard: 0', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543240, 543243);
+
+UPDATE AD_Process_Para_Trl SET Description='Number of records to skip for pagination. Default: 0', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543240, 543243) AND AD_Language='en_US';
 
 UPDATE AD_Process_Para_Trl SET Description='Anzahl der zu überspringenden Datensätze für Paginierung. Standard: 0', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543240, 543243) AND AD_Language IN ('de_DE', 'de_CH');
 
+-- Existing parameters: German on main record, English on en_US Trl
+UPDATE AD_Process_Para SET Description='Externe ID des Datensatzes. Standard: -1 (alle zurückgeben)', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (542970, 542967);
+
+UPDATE AD_Process_Para_Trl SET Description='External ID of the record. Default: -1 (return all)', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (542970, 542967) AND AD_Language='en_US';
+
 UPDATE AD_Process_Para_Trl SET Description='Externe ID des Datensatzes. Standard: -1 (alle zurückgeben)', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (542970, 542967) AND AD_Language IN ('de_DE', 'de_CH');
+
+UPDATE AD_Process_Para SET Description='Nur Datensätze dieser Bestellung zurückgeben', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543062, 543067);
+
+UPDATE AD_Process_Para_Trl SET Description='Return only records for this order', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543062, 543067) AND AD_Language='en_US';
 
 UPDATE AD_Process_Para_Trl SET Description='Nur Datensätze dieser Bestellung zurückgeben', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543062, 543067) AND AD_Language IN ('de_DE', 'de_CH');
 
+UPDATE AD_Process_Para SET Description='Suchschlüssel des Geschäftspartners', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543065, 543068);
+
+UPDATE AD_Process_Para_Trl SET Description='Search key of the business partner', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543065, 543068) AND AD_Language='en_US';
+
 UPDATE AD_Process_Para_Trl SET Description='Suchschlüssel des Geschäftspartners', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543065, 543068) AND AD_Language IN ('de_DE', 'de_CH');
+
+UPDATE AD_Process_Para SET Description='Nur Lieferscheine ab diesem Bewegungsdatum zurückgeben', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID=543066;
+
+UPDATE AD_Process_Para_Trl SET Description='Return only shipments with movement date on or after this date', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID=543066 AND AD_Language='en_US';
 
 UPDATE AD_Process_Para_Trl SET Description='Nur Lieferscheine ab diesem Bewegungsdatum zurückgeben', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID=543066 AND AD_Language IN ('de_DE', 'de_CH');
 
+UPDATE AD_Process_Para SET Description='Nur Rechnungen ab diesem Rechnungsdatum zurückgeben', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID=543069;
+
+UPDATE AD_Process_Para_Trl SET Description='Return only invoices with invoice date on or after this date', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID=543069 AND AD_Language='en_US';
+
 UPDATE AD_Process_Para_Trl SET Description='Nur Rechnungen ab diesem Rechnungsdatum zurückgeben', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID=543069 AND AD_Language IN ('de_DE', 'de_CH');
+
+UPDATE AD_Process_Para SET Description='Externe Referenz des Geschäftspartners im externen System', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543070, 543072);
+
+UPDATE AD_Process_Para_Trl SET Description='External reference of the business partner in the external system', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543070, 543072) AND AD_Language='en_US';
 
 UPDATE AD_Process_Para_Trl SET Description='Externe Referenz des Geschäftspartners im externen System', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543070, 543072) AND AD_Language IN ('de_DE', 'de_CH');
 
+UPDATE AD_Process_Para SET Description='Suchschlüssel des Geschäftspartners im externen System', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543071, 543073);
+
+UPDATE AD_Process_Para_Trl SET Description='Search key of the business partner in the external system', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543071, 543073) AND AD_Language='en_US';
+
 UPDATE AD_Process_Para_Trl SET Description='Suchschlüssel des Geschäftspartners im externen System', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543071, 543073) AND AD_Language IN ('de_DE', 'de_CH');
+
+UPDATE AD_Process_Para SET Description='Basis-Dokumenttyp-Filter', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543074, 543075);
+
+UPDATE AD_Process_Para_Trl SET Description='Base document type filter', IsTranslated='Y', Updated=now(), UpdatedBy=100
+WHERE AD_Process_Para_ID IN (543074, 543075) AND AD_Language='en_US';
 
 UPDATE AD_Process_Para_Trl SET Description='Basis-Dokumenttyp-Filter', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID IN (543074, 543075) AND AD_Language IN ('de_DE', 'de_CH');
