@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -255,7 +254,8 @@ class ReconcileQtyReservationsCommandTest
 
 		service.reconcileToOrderedQty(orderId);
 
-		// QtyOrdered=0 → line is skipped (the `qtyOrdered.signum() <= 0` guard), reservation untouched
+		// QtyOrdered=0 → no over-reservation shrink runs; the reservation has positive Qty (10) so the
+		// zero-phantom scan finds nothing to delete → reservation untouched
 		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records).hasSize(1);
 		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
@@ -288,7 +288,7 @@ class ReconcileQtyReservationsCommandTest
 	@Test
 	void deletesPreExistingZeroQtyReservation_keepingReservedTuCorrect()
 	{
-		// Customer scenario (me03 #29261): a planned-supply reservation was minted with Qty(CU)=0 but QtyTU=3
+		// Scenario: a planned-supply reservation was minted with Qty(CU)=0 but QtyTU=3
 		// (planned supply has no on-hand stock, so computeQtyCUToReserve returns 0). On re-completion the line
 		// was reduced to 77, so the OH row (110/10) shrinks to 77/7. The phantom PS row (0/3) must be DELETED,
 		// otherwise the reserved QtyTU total stays 10 (7+3) instead of 7.

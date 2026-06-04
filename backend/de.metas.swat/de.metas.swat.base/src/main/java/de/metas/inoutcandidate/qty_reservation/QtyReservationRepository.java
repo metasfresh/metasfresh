@@ -24,6 +24,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository for loading {@link QtyReservation} domain objects from the {@code M_QtyReservation} table.
+ * <p>
+ * Repository Tables: M_QtyReservation
+ * Repository Cluster: QtyReservationRepository (sole owner)
  */
 @Repository
 public class QtyReservationRepository
@@ -121,6 +124,7 @@ public class QtyReservationRepository
 			return;
 		}
 
+		// IDs come from getActiveByOrderLineId (IsActive=Y, Processed=false), so no further filter is needed here.
 		queryBL.createQueryBuilder(I_M_QtyReservation.class)
 				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
 						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))

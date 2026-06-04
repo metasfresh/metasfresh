@@ -63,7 +63,11 @@ public class ReconcileQtyReservationsCommand
 	 * The CU {@code Qty} keeps the exact reduced value; the integer {@code QtyTU} is rounded UP — a
 	 * partially-filled TU still occupies a whole TU.
 	 *
-	 * @return the order-line IDs whose reservations were actually modified (empty if nothing changed)
+	 * Reservation rows whose final Qty is zero — pre-existing phantoms (a row reserving 0 CU) and rows shrunk
+	 * fully to zero — are deleted rather than kept.
+	 *
+	 * @return the order-line IDs whose reservations were actually modified — shrunk and/or had a zero-Qty row
+	 * deleted (empty if nothing changed)
 	 */
 	public ImmutableSet<OrderLineId> execute()
 	{
