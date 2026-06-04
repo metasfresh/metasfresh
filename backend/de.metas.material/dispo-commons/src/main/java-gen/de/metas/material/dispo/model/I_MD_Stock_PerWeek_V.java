@@ -18,25 +18,38 @@ public interface I_MD_Stock_PerWeek_V
 
 
 	/**
-	 * Set Stock per week.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMD_Stock_PerWeek_V_ID (int MD_Stock_PerWeek_V_ID);
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Get Stock per week.
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getMD_Stock_PerWeek_V_ID();
+	void setAD_Org_ID (int AD_Org_ID);
 
-	ModelColumn<I_MD_Stock_PerWeek_V, Object> COLUMN_MD_Stock_PerWeek_V_ID = new ModelColumn<>(I_MD_Stock_PerWeek_V.class, "MD_Stock_PerWeek_V_ID", null);
-	String COLUMNNAME_MD_Stock_PerWeek_V_ID = "MD_Stock_PerWeek_V_ID";
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Product.
