@@ -221,6 +221,59 @@ public class InvoiceNotificationDelayHandlerTest
 		assertThat(handler.shouldDelaySending(g.log)).isTrue();
 	}
 
+	@Test
+	public void gatewayAndNonGatewayShipments_delaysForTheGatewayOne()
+	{
+		setSysConfig(true);
+		// One invoice with TWO invoice lines, each linked to a DIFFERENT inout:
+		//   Shipment B (non-gateway): shipper has no ShipperGateway → must be skipped via continue.
+		//   Shipment A (gateway):     shipper has gateway "nshift", package present but no tracking URL → pending.
+		// Expected: shouldDelaySending returns true because shipment A forces a delay,
+		// and the no-gateway shipment B is correctly skipped (not causing an early return or error).
+
+		// Build the base invoice graph with the gateway shipper (shipment A).
+		final I_M_Shipper gatewayShipper = createShipper("nshift");
+		final GraphResult g = buildInvoiceGraph(gatewayShipper);
+
+		// Add shipment B (no gateway) as a second inout linked to the same invoice.
+		final I_M_Shipper nonGatewayShipper = createShipper(null);
+		addShipmentLineToInvoice(g.log.getRecord_ID(), nonGatewayShipper);
+
+		// Shipment A has a package but no tracking URL yet → still pending.
+		addPackageWithParcel(g.inOutId, null);
+
+		assertThat(handler.shouldDelaySending(g.log)).isTrue();
+	}
+
+	/**
+	 * Attach a second shipment (inout + inoutLine + invoiceLine) to an existing invoice,
+	 * allowing a single invoice to span multiple shipments with different shippers.
+	 *
+	 * @param invoiceId  the {@code C_Invoice_ID} of the already-saved invoice
+	 * @param shipper    the shipper to assign to the new inout (null = no shipper)
+	 * @return the new {@code M_InOut_ID}
+	 */
+	private int addShipmentLineToInvoice(final int invoiceId, final I_M_Shipper shipper)
+	{
+		final I_M_InOut inOut = newInstance(I_M_InOut.class);
+		if (shipper != null)
+		{
+			inOut.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		}
+		save(inOut);
+
+		final I_M_InOutLine inOutLine = newInstance(I_M_InOutLine.class);
+		inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
+		save(inOutLine);
+
+		final I_C_InvoiceLine invoiceLine = newInstance(I_C_InvoiceLine.class);
+		invoiceLine.setC_Invoice_ID(invoiceId);
+		invoiceLine.setM_InOutLine_ID(inOutLine.getM_InOutLine_ID());
+		save(invoiceLine);
+
+		return inOut.getM_InOut_ID();
+	}
+
 	// ------------------------------------------------------------------
 	// Helper DTO
 	// ------------------------------------------------------------------
