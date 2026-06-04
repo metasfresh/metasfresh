@@ -7,7 +7,6 @@ import PickProductsScanScreen from '../containers/activities/picking/PickProduct
 import { toUrl } from '../utils';
 import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
 import { ReopenLUScreen } from '../containers/activities/picking/ReopenLUScreen';
-import { PickingTargetType } from '../constants/PickingTargetType';
 import { appLaunchersLocation } from './launchers';
 import { APPLICATION_ID_Picking } from '../apps/picking';
 
@@ -104,22 +103,19 @@ export const pickingRoutes = [
     Component: ReopenLUScreen,
   },
   {
+    // The :type placeholder matches both 'lu' and 'tu' pick-target URLs.
+    // NOTE: do NOT add a second route hard-coding type=TU here. The routes in routesArray
+    // are rendered as sibling <Route exact> elements (no enclosing <Switch> in ApplicationRoot),
+    // so react-router renders EVERY matching route. A literal-'tu' route would match the same
+    // URL as this :type route, mounting SelectPickTargetScreen (and its live GRAI scanner) twice
+    // for every TU target — which surfaced as a duplicate GRAI error toast
+    // (https://github.com/metasfresh/me03/issues/29853).
     path: selectPickingTargetScreenLocation({
       applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
       type: ':type',
-    }),
-    Component: SelectPickTargetScreen,
-  },
-  {
-    path: selectPickingTargetScreenLocation({
-      applicationId: ':applicationId',
-      wfProcessId: ':workflowId',
-      activityId: ':activityId',
-      lineId: ':lineId',
-      type: PickingTargetType.TU,
     }),
     Component: SelectPickTargetScreen,
   },
