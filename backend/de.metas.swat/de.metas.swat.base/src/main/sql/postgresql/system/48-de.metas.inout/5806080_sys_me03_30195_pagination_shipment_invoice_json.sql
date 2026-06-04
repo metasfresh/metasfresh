@@ -20,6 +20,7 @@ WHERE AD_Process_ID=585488
 UPDATE AD_Process_Trl
 SET IsTranslated='Y',
     Description='Exports historical shipments as JSON for external systems',
+    Help=E'Exports historical shipments as JSON for external systems.\n\nParameters:\n- UpdatedGE: Return only records updated since this timestamp. Default: 9999-01-01 (all)\n- ExternalId: Return only the shipment with this external ID. Default: -1 (all)\n- ExternalSystemCode: Return only records from this external system\n- Order_ID: Return only shipments for this order\n- BPartnerValue: Return only shipments for this business partner (search key)\n- ShipmentDateGE: Return only shipments with movement date on or after this date\n- BPartnerExternalReference: Filter by external reference of the business partner\n- BPartnerExternalSystemValue: Filter by search key of the business partner in the external system\n- DocType_Base: Base document type filter\n- Limit: Maximum number of records to return. Default and maximum: 2000\n- Offset: Number of records to skip for pagination. Default: 0',
     Updated=now(), UpdatedBy=100
 WHERE AD_Process_ID=585488 AND AD_Language='en_US'
 ;
@@ -76,6 +77,7 @@ WHERE AD_Process_ID=585485
 UPDATE AD_Process_Trl
 SET IsTranslated='Y',
     Description='Exports historical invoices as JSON for external systems',
+    Help=E'Exports historical invoices as JSON for external systems.\n\nParameters:\n- UpdatedGE: Return only records updated since this timestamp. Default: 9999-01-01 (all)\n- ExternalId: Return only the invoice with this external ID. Default: -1 (all)\n- ExternalSystemCode: Return only records from this external system\n- Order_ID: Return only invoices for this order\n- BPartnerValue: Return only invoices for this business partner (search key)\n- DateInvoicedGE: Return only invoices with invoice date on or after this date\n- BPartnerExternalReference: Filter by external reference of the business partner\n- BPartnerExternalSystemValue: Filter by search key of the business partner in the external system\n- DocType_Base: Base document type filter\n- Limit: Maximum number of records to return. Default and maximum: 2000\n- Offset: Number of records to skip for pagination. Default: 0',
     Updated=now(), UpdatedBy=100
 WHERE AD_Process_ID=585485 AND AD_Language='en_US'
 ;
