@@ -72,8 +72,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Param(parameterName = "IsShipToday", mandatory = true)
 	private boolean isShipToday; // introduced in task #2940
 
-	// Hidden process param (default N): when on, on-the-fly picking packs CUs into TUs (PackingInstructions),
-	// instead of creating bare CUs ("No Packing Item"). Required for TU-based re-reservation after reversal.
+	// Hidden param (DisplayLogic '1=0', default N); opted in per instance via DefaultValue.
 	@Param(parameterName = "IsOnTheFlyPickToPackingInstructions")
 	private boolean isOnTheFlyPickToPackingInstructions;
 

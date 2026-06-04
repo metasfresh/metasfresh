@@ -16,14 +16,14 @@
 
 -- 2026-06-04T10:00:00.000Z
 -- AD_Element (German base name; English via AD_Element_Trl)
-INSERT INTO AD_Element (AD_Element_ID,AD_Client_ID,AD_Org_ID,ColumnName,EntityType,Name,PrintName,Created,CreatedBy,Updated,UpdatedBy,IsActive)
-VALUES (584950 /*From ID Server*/,0,0,'IsOnTheFlyPickToPackingInstructions','de.metas.handlingunits','Im Lauf in Packvorschrift kommissionieren','Im Lauf in Packvorschrift kommissionieren',TO_TIMESTAMP('2026-06-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-06-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y')
+INSERT INTO AD_Element (AD_Element_ID,AD_Client_ID,AD_Org_ID,ColumnName,EntityType,Name,PrintName,Description,Help,Created,CreatedBy,Updated,UpdatedBy,IsActive)
+VALUES (584950 /*From ID Server*/,0,0,'IsOnTheFlyPickToPackingInstructions','de.metas.handlingunits','Im Lauf in Packvorschrift kommissionieren','Im Lauf in Packvorschrift kommissionieren','Wenn aktiviert, kommissioniert die fliegende Kommissionierung in Transporteinheiten (gemäß Packvorschrift) statt loser CUs.','Wenn aktiviert, kommissioniert die fliegende Kommissionierung in Transporteinheiten (gemäß Packvorschrift) statt loser CUs.',TO_TIMESTAMP('2026-06-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-06-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y')
 ;
 
 -- 2026-06-04T10:00:01.000Z
 -- AD_Element_Trl skeleton rows for all system languages (copies German base text)
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
-SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Name,PrintName,Description,Help, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.Name,t.PrintName,t.Description,t.Help, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Element_ID=584950
 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
@@ -36,8 +36,8 @@ WHERE AD_Language='en_US' AND AD_Element_ID=584950
 ;
 
 -- 2026-06-04T10:00:13.000Z
--- Mark German rows as translated (same as base)
-UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-04 10:00:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+-- German is the base language → de_DE/de_CH rows are NOT translations: IsTranslated='N'
+UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2026-06-04 10:00:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
 WHERE AD_Language IN ('de_DE','de_CH') AND AD_Element_ID=584950
 ;
 
