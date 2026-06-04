@@ -69,7 +69,7 @@ public class JsonTUPickingTarget
 				.isDefault(target.isDefaultPacking())
 				.tuId(target.getTuId())
 				.tuQRCode(target.getTuQRCode() != null ? target.getTuQRCode().toGlobalQRCodeString() : null)
-				.grai(grai != null ? ScannedCode.ofString(grai.toCanonicalString()) : null)
+				.grai(grai != null ? grai.toScannedCode() : null)
 				.build();
 	}
 

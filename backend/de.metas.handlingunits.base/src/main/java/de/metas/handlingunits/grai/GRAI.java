@@ -2,6 +2,7 @@ package de.metas.handlingunits.grai;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
@@ -145,6 +146,12 @@ public class GRAI implements Comparable<GRAI>
 	public String toCanonicalString()
 	{
 		return canonicalValue;
+	}
+
+	@NonNull
+	public ScannedCode toScannedCode()
+	{
+		return ScannedCode.ofString(canonicalValue);
 	}
 
 	@Override
