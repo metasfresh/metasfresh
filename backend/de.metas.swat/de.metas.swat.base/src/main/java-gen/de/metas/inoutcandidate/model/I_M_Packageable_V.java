@@ -369,7 +369,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -378,7 +378,7 @@ public interface I_M_Packageable_V
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -589,8 +589,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
 
 	/**
-	 * Set Picking After Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 * Set Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -599,8 +599,8 @@ public interface I_M_Packageable_V
 	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
 
 	/**
-	 * Get Picking After Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 * Get Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -610,6 +610,27 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsFixedPreparationDate = new ModelColumn<>(I_M_Packageable_V.class, "IsFixedPreparationDate", null);
 	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
+
+	/**
+	 * Set Picked qty on draft shipment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickQtyOnDraftShipment (boolean IsPickQtyOnDraftShipment);
+
+	/**
+	 * Get Picked qty on draft shipment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickQtyOnDraftShipment();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsPickQtyOnDraftShipment = new ModelColumn<>(I_M_Packageable_V.class, "IsPickQtyOnDraftShipment", null);
+	String COLUMNNAME_IsPickQtyOnDraftShipment = "IsPickQtyOnDraftShipment";
 
 	/**
 	 * Set Line Net Amount.
