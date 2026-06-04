@@ -22,6 +22,7 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -47,12 +48,17 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {
 	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
 
 	I_M_HU_PI_Item_Product getRecordById(HUPIItemProductId id);
+
+	List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(I_M_HU_PI_Item itemDef);
+
+	List<I_M_HU_PI_Item_Product> retrieveForProducts(@NonNull Set<ProductId> productIdSet, @Nullable BPartnerId partnerId);
 
 	List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(I_M_HU_PI_Version version, I_M_Product product);
 

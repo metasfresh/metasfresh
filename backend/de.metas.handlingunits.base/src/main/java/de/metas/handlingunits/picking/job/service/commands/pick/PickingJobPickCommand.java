@@ -8,6 +8,8 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -205,7 +207,8 @@ public class PickingJobPickCommand
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
-			if (tuPickingTarget != null)
+			// Block picking into a pre-existing physical TU; a new (GRAI-based) target is materialised lazily after the pick.
+			if (tuPickingTarget != null && !tuPickingTarget.isNewTU())
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()
@@ -485,17 +488,35 @@ public class PickingJobPickCommand
 			{
 				if (result.isSingleTopLevelTUOnly())
 				{
-					setPickingTUTarget(result.getSingleTopLevelTU());
+					final TU tu = result.getSingleTopLevelTU();
+					stampGraiIfPresent(tuPickingTarget, tu.getId());
+					setPickingTUTarget(tu);
 				}
 				else if (result.isSingleLU())
 				{
 					final LU lu = result.getSingleLU();
 					if (lu.getTus().isSingleTU())
 					{
-						setPickingTUTarget(lu.getTus().getSingleTU());
+						final TU tu = lu.getTus().getSingleTU();
+						stampGraiIfPresent(tuPickingTarget, tu.getId());
+						setPickingTUTarget(tu);
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Stamps the GRAI carried by a new-TU picking target onto the physical TU that the framework just materialized,
+	 * so the operator-scanned GRAI ends up on the real HU. No-op when the source target carries no GRAI.
+	 */
+	private void stampGraiIfPresent(@NonNull final TUPickingTarget sourceTarget, @NonNull final HuId newTuId)
+	{
+		final GRAI grai = sourceTarget.getGrai();
+		if (grai != null)
+		{
+			// Must be called inside the pick transaction so the attribute write commits together with the pick.
+			huService.setGrais(newTuId, GRAISet.of(grai));
 		}
 	}
 

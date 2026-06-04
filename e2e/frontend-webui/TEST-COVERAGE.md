@@ -992,6 +992,41 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 38. GRAI to Packing Instruction Mapping (`hu-pi-grai-mapping.spec.js`)
+
+**Features Tested**:
+- F00230: MobileUI Picking (GRAI scan-picking — desktop mapping window)
+
+**Epic**: E0105: Picking
+
+**Window**: GRAI to Packing Instruction Mapping (542157), table `M_HU_PI_GRAI`
+
+**Workflow**:
+1. Provision a prerequisite M_HU_PI (TU packing instruction) via the Backend
+   masterdata API (`packingInstructions`) — the response returns the unique PI name
+2. Login, navigate to window 542157
+3. Create a new record (Alt+N): select the M_HU_PI (List widget) by its name,
+   enter GRAI_CompanyPrefix + GRAI_AssetType (Text widgets), save
+4. Verify the record persisted (WebAPI: validStatus.valid, saveStatus.saved) and read
+   back the raw GRAI_CompanyPrefix / GRAI_AssetType / M_HU_PI_ID values
+5. Create a SECOND record with the SAME (GRAI_CompanyPrefix, GRAI_AssetType)
+6. Verify the save is rejected by the global unique index
+   `M_HU_PI_GRAI_CompanyPrefix_AssetType_UIdx` (WebAPI saveStatus: error=true,
+   saved=false, presentInDatabase=false, reason names the index)
+
+**Key Validations**:
+- M_HU_PI_GRAI mapping creation via the dedicated WebUI window
+- Persistence verified language-independently via the WebAPI (raw field values)
+- The domain invariant "one GRAI resolves to exactly one TU type": a duplicate
+  (CompanyPrefix, AssetType) is rejected by the unique index through the UI
+
+**Components Tested**: ListWidget, TextWidget, WidgetCommon, WebAPIValidation utility
+
+**Prerequisite data**: M_HU_PI provisioned through the Backend masterdata
+`packingInstructions` command (never via the DB)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
