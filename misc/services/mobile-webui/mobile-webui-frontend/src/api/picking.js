@@ -8,16 +8,18 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
   const isTU = type === PickingTargetType.TU;
-  const { isPending: isTargetsLoading, data: targets } = useQuery({
+  const { isPending: isTargetsLoading, data: responseData } = useQuery({
     queryKey: [wfProcessId, lineId, type],
-    queryFn: () => {
-      return getAvailablePickingTargets({ wfProcessId, lineId }).then((data) => (isTU ? data.tuTargets : data.targets));
-    },
+    queryFn: () => getAvailablePickingTargets({ wfProcessId, lineId }),
   });
+
+  const targets = responseData ? (isTU ? responseData.tuTargets : responseData.targets) : undefined;
+  const graiScanEnabled = isTU ? responseData?.graiScanEnabled ?? false : false;
 
   return {
     isTargetsLoading,
     targets,
+    graiScanEnabled,
     setPickingTarget: ({ target }) => {
       return isTU
         ? setTUPickingTarget({ wfProcessId, lineId, target })
@@ -41,6 +43,12 @@ export const setLUPickingTarget = ({ wfProcessId, lineId, target }) => {
 const setTUPickingTarget = ({ wfProcessId, lineId, target }) => {
   return axios
     .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), target)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const setTUPickingTargetFromGrai = ({ wfProcessId, lineId, graiString }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), { grai: graiString })
     .then((response) => unboxAxiosResponse(response));
 };
 
