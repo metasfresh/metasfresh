@@ -1,8 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- me03#30198: Add Description, Help and parameter descriptions to Available_For_Sales_JSON.
--- Limit (542992) and Offset (542993) params already exist; this migration adds text and
--- sets Limit as mandatory (with default 2000) so it appears pre-filled in the process dialog.
+-- Limit (542992) and Offset (542993) params already exist; this migration adds text only.
 
 -- ============================================================
 -- Available_For_Sales_JSON (AD_Process_ID=585498)
