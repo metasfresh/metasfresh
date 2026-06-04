@@ -45,6 +45,7 @@ test.describe('Stock per week (Bestand pro Woche) — order-line zoom', () => {
   test('Zoom from a sales-order line opens the read-only weekly-stock grid with rows', async ({ page }) => {
     allure.epic('E0155: Material Disposition');
     allure.tag('F19100: Stock per week');
+    allure.tag('F19100');
     allure.story('Order-line zoom → Bestand pro Woche (read-only weekly grid)');
     allure.severity('critical');
     allure.description(`

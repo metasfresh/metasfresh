@@ -26,9 +26,8 @@
 -- expression — unlike row_number() OVER (...), it does NOT force the planner to materialise every
 -- row before outer predicates are applied, so a single-product zoom (WHERE M_Product_ID = @x@)
 -- is as cheap as ~94k planner cost (vs. ~1.05M with the row_number regression).
--- 31-bit via bit(31) cast is guaranteed positive without needing ABS(); 32-bit would require ABS().
--- Skill canonical form (metasfresh-db § "Synthetic Primary Keys for SQL Views") uses
--- ABS + bit(32); both produce positive ints. We use bit(31) per task spec for clarity.
+-- Canonical metasfresh-db pattern: ABS(('x'||SUBSTR(MD5(...),1,10))::bit(32)::int).
+-- 10 hex digits → ~4 billion values; collision probability negligible below ~77k distinct combos.
 CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
 WITH horizon AS (
   SELECT GREATEST(1, COALESCE(NULLIF(
@@ -57,10 +56,10 @@ weeks AS (
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
 )
 SELECT
-  ('x' || SUBSTR(MD5(CONCAT_WS('#',
+  ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
                                w.M_Product_ID::text,
                                w.M_Warehouse_ID::text,
-                               w.WeekStartDate::text)), 1, 7))::bit(31)::int
+                               w.WeekStartDate::text)), 1, 10))::bit(32)::int))
            AS MD_Stock_PerWeek_V_ID,
   w.AD_Client_ID,
   w.AD_Org_ID,

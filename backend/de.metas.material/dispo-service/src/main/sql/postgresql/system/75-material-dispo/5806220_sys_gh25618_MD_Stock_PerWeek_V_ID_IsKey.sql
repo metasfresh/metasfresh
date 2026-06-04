@@ -85,9 +85,10 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584948);
 
 -- ============================================================
--- 3. Repoint AD_Ref_Table.AD_Key for reference 542100 to the new integer key column.
---    Previously pointed to 592708 (WeekStartDate — Date type), which caused the
---    relation-type count supplier to fail because it requires an integer column.
+-- 3. Defensive/idempotent re-affirm of AD_Ref_Table.AD_Key = 592715 for reference 542100.
+--    Migration 5806160 already INSERTs AD_Key=592715 (MD_Stock_PerWeek_V_ID) on a fresh DB,
+--    so this UPDATE is a no-op there. It exists to guarantee correctness on any DB where an
+--    earlier intermediate state may have set a different key value. Harmless to run multiple times.
 -- ============================================================
 UPDATE AD_Ref_Table
 SET    AD_Key = 592715 /*MD_Stock_PerWeek_V_ID*/,

@@ -9,11 +9,13 @@
 -- Full semantics documented in the ddl-mirror file above.
 --
 -- Push-down-friendly synthetic primary key: MD_Stock_PerWeek_V_ID is a deterministic
--- hash of (M_Product_ID, M_Warehouse_ID, WeekStartDate) as a 31-bit integer.
--- Uses ('x' || SUBSTR(MD5(CONCAT_WS('#', ...)), 1, 7))::bit(31)::int — a per-row
--- scalar expression.  Unlike row_number() OVER (...) this does NOT force the planner
--- to materialise every row before outer predicates are applied, so a single-product
--- zoom stays at ~94k planner cost instead of ~1.05M.
+-- hash of (M_Product_ID, M_Warehouse_ID, WeekStartDate) as a 32-bit integer.
+-- Uses ABS(('x' || SUBSTR(MD5(CONCAT_WS('#', ...)), 1, 10))::bit(32)::int) — the
+-- canonical metasfresh-db pattern (10 hex digits → ~4 billion values; collision
+-- probability negligible below ~77k distinct product/warehouse/week combos).
+-- Unlike row_number() OVER (...) this does NOT force the planner to materialise every
+-- row before outer predicates are applied, so a single-product zoom stays at ~94k
+-- planner cost instead of ~1.05M.
 
 DROP VIEW IF EXISTS MD_Stock_PerWeek_V$new;
 
@@ -42,10 +44,10 @@ weeks AS (
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
 )
 SELECT
-  ('x' || SUBSTR(MD5(CONCAT_WS('#',
+  ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
                                w.M_Product_ID::text,
                                w.M_Warehouse_ID::text,
-                               w.WeekStartDate::text)), 1, 7))::bit(31)::int
+                               w.WeekStartDate::text)), 1, 10))::bit(32)::int))
            AS MD_Stock_PerWeek_V_ID,
   w.AD_Client_ID,
   w.AD_Org_ID,
