@@ -37,9 +37,9 @@ Feature: EDI DESADV export via External System
     And metasfresh contains C_BPartners without locations:
       | Identifier | Value               | Name               | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | desadvReceiverValue | desadvReceiverName | Y          | N        | pricingSystem      |
-    And the following c_bpartner is changed
-      | Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID |
-      | customer1  | true                 | 1234567890            | E                    | externalSystemConfig_1             |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | Identifier                     |
+      | customer1     | true                 | 1234567890            | E                    | externalSystemConfig_1             | edi_setting_desadv_extSys_cust1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |

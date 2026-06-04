@@ -26,9 +26,9 @@ Feature: EDI DESADV export via postgREST
     And metasfresh contains C_BPartners without locations:
       | Identifier | Value               | Name               | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | desadvReceiverValue | desadvReceiverName | Y          | N        | pricingSystem      |
-    And the following c_bpartner is changed
-      | Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | customer1  | true                 | 1234567890            |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                    |
+      | customer1     | true                 | 1234567890            | edi_setting_postgrest_cust1_1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
@@ -987,9 +987,9 @@ Feature: EDI DESADV export via postgREST
     And metasfresh contains C_BPartners:
       | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S29231_100   | Y          | ps_S29231_100      | 9900000290010 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_100  | true                 | 9900000290010         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | bp_S29231_100 | true                 | 9900000290010         | edi_setting_S29231_100_bp   |
 
     # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE (for pA) or 5 PCE (for pB)
     And metasfresh contains M_HU_PI:
@@ -1168,9 +1168,9 @@ Feature: EDI DESADV export via postgREST
     And metasfresh contains C_BPartners:
       | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S29231_110   | Y          | ps_S29231_110      | 9900000291100 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_110  | true                 | 9900000291100         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S29231_110 | true                 | 9900000291100         | edi_setting_S29231_110_bp |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID          |
@@ -1290,9 +1290,9 @@ Feature: EDI DESADV export via postgREST
     And metasfresh contains C_BPartners:
       | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S29231_160   | Y          | ps_S29231_160      | 9900000291600 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID  | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_160  | true                 | 9900000291600         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S29231_160 | true                 | 9900000291600         | edi_setting_S29231_160_bp |
 
     # HU packing: LU holds up to 20 TUs, each TU holds 10 PCE
     And metasfresh contains M_HU_PI:
