@@ -85,14 +85,30 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N'
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584948);
 
 -- ============================================================
--- 3. Defensive/idempotent re-affirm of AD_Ref_Table.AD_Key = 592715 for reference 542100.
---    Migration 5806160 already INSERTs AD_Key=592715 (MD_Stock_PerWeek_V_ID) on a fresh DB,
---    so this UPDATE is a no-op there. It exists to guarantee correctness on any DB where an
---    earlier intermediate state may have set a different key value. Harmless to run multiple times.
+-- 3. AD_Ref_Table for the target reference (AD_Reference_ID=542100).
+--    Placed here — after the AD_Column 592715 INSERT above — so that the FK
+--    ad_column_reftable_id (AD_Key → AD_Column) is satisfied on fresh apply.
+--    (Migration 5806160 holds the AD_Reference + AD_RelationType; it intentionally
+--    omits the AD_Ref_Table INSERT to preserve correct fresh-apply order.)
+--   Table:         MD_Stock_PerWeek_V  (AD_Table_ID=542612)
+--   Window:        Bestand pro Woche   (AD_Window_ID=542159)
+--   Key column:    MD_Stock_PerWeek_V_ID (AD_Column_ID=592715, AD_Reference_ID=13)
+--   OrderByClause: WeekStartDate
+--   WhereClause:   filters by product + resolved storage warehouse + week anchor from DatePromised
 -- ============================================================
-UPDATE AD_Ref_Table
-SET    AD_Key = 592715 /*MD_Stock_PerWeek_V_ID*/,
-       Updated = TO_TIMESTAMP('2026-06-04 14:02:00','YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy = 100
-WHERE  AD_Reference_ID = 542100
+INSERT INTO AD_Ref_Table
+    (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, AD_Window_ID,
+     Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, OrderByClause,
+     ShowInactiveValues, Updated, UpdatedBy, WhereClause)
+VALUES
+    (0, 592715 /*MD_Stock_PerWeek_V_ID — int key; AD_Reference_ID=13*/, 0, 542100, 542612, 542159,
+     TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.material.dispo', 'Y', 'N', 'WeekStartDate',
+     'N', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
+     'M_Product_ID = @M_Product_ID@
+AND M_Warehouse_ID = MD_getStockWarehouse( (SELECT o.M_Warehouse_ID FROM C_Order o WHERE o.C_Order_ID = @C_Order_ID/0@) )
+AND WeekStartDate >= date_trunc(''week'', COALESCE(NULLIF(NULLIF(regexp_replace(''@DatePromised@'', ''\[[^\]]*\]'', '''', ''g''),''null''),'''')::timestamptz, now()))::date')
+ON CONFLICT (AD_Reference_ID) DO UPDATE
+    SET AD_Key      = EXCLUDED.AD_Key,
+        Updated     = EXCLUDED.Updated,
+        UpdatedBy   = EXCLUDED.UpdatedBy
 ;

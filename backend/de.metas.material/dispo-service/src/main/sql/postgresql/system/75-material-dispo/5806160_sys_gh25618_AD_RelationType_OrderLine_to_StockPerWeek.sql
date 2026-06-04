@@ -36,25 +36,10 @@ SET Name='RelType C_OrderLine->MD_Stock_PerWeek_V (target)', IsTranslated='Y',
 WHERE AD_Reference_ID=542100 AND AD_Language='en_US'
 ;
 
--- 2026-06-04
--- AD_Ref_Table for the target reference:
---   Table:        MD_Stock_PerWeek_V (AD_Table_ID=542612)
---   Window:       Bestand pro Woche  (AD_Window_ID=542159)
---   Key column:   WeekStartDate      (AD_Column_ID=592708)
---   WhereClause:  filters by product + resolved storage warehouse + week anchor from DatePromised
---   OrderByClause: WeekStartDate
-INSERT INTO AD_Ref_Table
-    (AD_Client_ID, AD_Key, AD_Org_ID, AD_Reference_ID, AD_Table_ID, AD_Window_ID,
-     Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, OrderByClause,
-     ShowInactiveValues, Updated, UpdatedBy, WhereClause)
-VALUES
-    (0, 592715 /*MD_Stock_PerWeek_V_ID — int key; AD_Reference_ID=13*/, 0, 542100, 542612, 542159,
-     TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.material.dispo', 'Y', 'N', 'WeekStartDate',
-     'N', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
-     'M_Product_ID = @M_Product_ID@
-AND M_Warehouse_ID = MD_getStockWarehouse( (SELECT o.M_Warehouse_ID FROM C_Order o WHERE o.C_Order_ID = @C_Order_ID/0@) )
-AND WeekStartDate >= date_trunc(''week'', COALESCE(NULLIF(NULLIF(regexp_replace(''@DatePromised@'', ''\[[^\]]*\]'', '''', ''g''),''null''),'''')::timestamptz, now()))::date')
-;
+-- NOTE: AD_Ref_Table for reference 542100 is intentionally NOT inserted here.
+-- AD_Ref_Table.AD_Key references AD_Column 592715 (MD_Stock_PerWeek_V_ID), which is
+-- created in migration 5806220. The INSERT lives there (after the AD_Column INSERT)
+-- so that fresh-apply order satisfies the FK constraint ad_column_reftable_id.
 
 -- 2026-06-04
 -- AD_RelationType: zoom from C_OrderLine (source=271) to MD_Stock_PerWeek_V (target=542100)

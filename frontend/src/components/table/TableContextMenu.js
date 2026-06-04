@@ -300,7 +300,11 @@ class TableContextMenu extends Component {
             key={`reference_${reference.id}`}
             caption={reference.caption}
             icon="meta-icon-share"
-            dataCy={reference.internalName ? `reference-${reference.internalName}` : undefined}
+            dataCy={
+              reference.internalName
+                ? `reference-${reference.internalName}`
+                : undefined
+            }
             onClick={() => {
               this.handleReferenceClick(
                 reference.targetWindowId,
