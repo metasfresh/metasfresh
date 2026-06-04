@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -255,7 +254,8 @@ class ReconcileQtyReservationsCommandTest
 
 		service.reconcileToOrderedQty(orderId);
 
-		// QtyOrdered=0 → line is skipped (the `qtyOrdered.signum() <= 0` guard), reservation untouched
+		// QtyOrdered=0 → no over-reservation shrink runs; the reservation has positive Qty (10) so the
+		// zero-phantom scan finds nothing to delete → reservation untouched
 		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records).hasSize(1);
 		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
@@ -283,6 +283,70 @@ class ReconcileQtyReservationsCommandTest
 		final List<I_M_QtyReservation> recordsB = loadRecords(lineB);
 		assertThat(recordsB).hasSize(1);
 		assertThat(recordsB.get(0).getQty()).isEqualByComparingTo(new BigDecimal("100"));
+	}
+
+	@Test
+	void deletesPreExistingZeroQtyReservation_keepingReservedTuCorrect()
+	{
+		// Scenario: a planned-supply reservation was minted with Qty(CU)=0 but QtyTU=3
+		// (planned supply has no on-hand stock, so computeQtyCUToReserve returns 0). On re-completion the line
+		// was reduced to 77, so the OH row (110/10) shrinks to 77/7. The phantom PS row (0/3) must be DELETED,
+		// otherwise the reserved QtyTU total stays 10 (7+3) instead of 7.
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("77"));
+
+		createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("110"), new BigDecimal("10"));
+		createReservationRecord(orderLineId, SupplyType.PLANNED_SUPPLY, BigDecimal.ZERO, new BigDecimal("3"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		// phantom PS row deleted; only the shrunk OH row remains
+		assertThat(records).hasSize(1);
+		assertThat(records.get(0).getSupplyType()).isEqualTo(SupplyType.ON_HAND.getCode());
+		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("77"));
+		assertThat(records.get(0).getQtyTU()).isEqualByComparingTo(new BigDecimal("7"));
+
+		// reserved QtyTU total is 7, not 10
+		final BigDecimal totalTU = records.stream()
+				.map(I_M_QtyReservation::getQtyTU)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		assertThat(totalTU).isEqualByComparingTo(new BigDecimal("7"));
+	}
+
+	@Test
+	void deletesReservation_whenShrunkToZero()
+	{
+		// Multi-reservation line reduced below the OH portion: PS (40) is fully removed (shrunk to 0) and
+		// must be DELETED, not left as a Qty=0 row. OH (60) is kept and equals the reduced QtyOrdered.
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("60"));
+
+		createReservationRecord(orderLineId, SupplyType.ON_HAND, new BigDecimal("60"), new BigDecimal("60"));
+		createReservationRecord(orderLineId, SupplyType.PLANNED_SUPPLY, new BigDecimal("40"), new BigDecimal("40"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		assertThat(records).hasSize(1);
+		assertThat(records.get(0).getSupplyType()).isEqualTo(SupplyType.ON_HAND.getCode());
+		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("60"));
+	}
+
+	@Test
+	void deletesPhantomFromCancelledLine_whenQtyOrderedIsZero()
+	{
+		// The phantom scan runs BEFORE the over-reservation guard, so a zero-Qty row on a cancelled
+		// (QtyOrdered=0) line is still deleted even though that line has no shrink to perform.
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, BigDecimal.ZERO);
+
+		createReservationRecord(orderLineId, SupplyType.PLANNED_SUPPLY, BigDecimal.ZERO, new BigDecimal("3"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		// phantom deleted; nothing left on the line
+		assertThat(loadRecords(orderLineId)).isEmpty();
 	}
 
 	// --- helpers ---
