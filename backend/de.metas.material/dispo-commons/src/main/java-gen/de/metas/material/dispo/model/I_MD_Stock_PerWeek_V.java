@@ -18,6 +18,27 @@ public interface I_MD_Stock_PerWeek_V
 
 
 	/**
+	 * Set Stock per week.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Stock_PerWeek_V_ID (int MD_Stock_PerWeek_V_ID);
+
+	/**
+	 * Get Stock per week.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Stock_PerWeek_V_ID();
+
+	ModelColumn<I_MD_Stock_PerWeek_V, Object> COLUMN_MD_Stock_PerWeek_V_ID = new ModelColumn<>(I_MD_Stock_PerWeek_V.class, "MD_Stock_PerWeek_V_ID", null);
+	String COLUMNNAME_MD_Stock_PerWeek_V_ID = "MD_Stock_PerWeek_V_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *

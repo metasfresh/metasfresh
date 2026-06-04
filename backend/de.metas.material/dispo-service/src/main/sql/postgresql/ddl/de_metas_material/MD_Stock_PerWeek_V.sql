@@ -21,6 +21,9 @@
 --   * customer   : the customer dimension (C_BPartner_Customer_ID) is summed in too, i.e.
 --                  the overall projected stock is shown — no per-customer reserve carve-out.
 
+-- MD_Stock_PerWeek_V_ID: stable synthetic row key (row_number over a deterministic ORDER BY)
+-- so the WebUI has a proper primary key for this view-backed window. Row count is
+-- (product x warehouse pairs) x (horizon weeks + 1) — far below int max, so ::int is safe.
 CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
 WITH horizon AS (
   SELECT GREATEST(1, COALESCE(NULLIF(
@@ -46,6 +49,7 @@ weeks AS (
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
 )
 SELECT
+  (row_number() OVER (ORDER BY w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate))::int AS MD_Stock_PerWeek_V_ID,
   w.M_Product_ID,
   w.M_Warehouse_ID,
   w.WeekStartDate,

@@ -4,9 +4,13 @@
 --   AD_MigrationScript sequence: 5806110 (filename prefix)
 --
 -- Per-product weekly stock view over MD_Candidate. Columns:
---   M_Product_ID, M_Warehouse_ID, WeekStartDate,
+--   MD_Stock_PerWeek_V_ID (synthetic row key), M_Product_ID, M_Warehouse_ID, WeekStartDate,
 --   QtyExpectedShipments, QtyExpectedReceipts, QtyATP
 -- Full semantics documented in the ddl-mirror file above.
+--
+-- MD_Stock_PerWeek_V_ID is a stable synthetic primary key (row_number over a deterministic
+-- ORDER BY) so the WebUI has a proper row key for this view-backed window. The row count is
+-- (product x warehouse pairs) x (horizon weeks + 1) — far below int max, so ::int is safe.
 
 DROP VIEW IF EXISTS MD_Stock_PerWeek_V$new;
 
@@ -33,6 +37,7 @@ weeks AS (
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
 )
 SELECT
+  (row_number() OVER (ORDER BY w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate))::int AS MD_Stock_PerWeek_V_ID,
   w.M_Product_ID,
   w.M_Warehouse_ID,
   w.WeekStartDate,
