@@ -33,13 +33,6 @@ SET IsTranslated='Y',
 WHERE AD_Process_ID=585498 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
--- Make Limit mandatory (pre-filled with default 2000, matching the #30195 treatment)
--- 2026-06-04
-UPDATE AD_Process_Para
-SET IsMandatory='Y', Updated=now(), UpdatedBy=100
-WHERE AD_Process_Para_ID=542992
-;
-
 -- ============================================================
 -- Parameter descriptions
 -- Main record (base language DE) = German; en_US Trl = English
