@@ -8,13 +8,12 @@
 --   QtyExpectedShipments, QtyExpectedReceipts, QtyATP
 -- Full semantics documented in the ddl-mirror file above.
 --
--- No synthetic row_number() primary key: a row_number() OVER (...) window function forces the
--- planner to materialize and sort EVERY (product x warehouse x week) row before any outer
--- predicate (e.g. the zoom's M_Product_ID = @id@ filter) can be applied — the filter cannot be
--- pushed down past the window. That made a single-product zoom as expensive as browse-all
--- (~1.05M planner cost on the seed DB). Dropping the synthetic key restores predicate
--- push-down: the WHERE M_Product_ID = ... filter reaches the MD_Candidate scans directly.
--- This is a read-only view-backed window, so it works keyless.
+-- Push-down-friendly synthetic primary key: MD_Stock_PerWeek_V_ID is a deterministic
+-- hash of (M_Product_ID, M_Warehouse_ID, WeekStartDate) as a 31-bit integer.
+-- Uses ('x' || SUBSTR(MD5(CONCAT_WS('#', ...)), 1, 7))::bit(31)::int — a per-row
+-- scalar expression.  Unlike row_number() OVER (...) this does NOT force the planner
+-- to materialise every row before outer predicates are applied, so a single-product
+-- zoom stays at ~94k planner cost instead of ~1.05M.
 
 DROP VIEW IF EXISTS MD_Stock_PerWeek_V$new;
 
@@ -43,6 +42,11 @@ weeks AS (
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
 )
 SELECT
+  ('x' || SUBSTR(MD5(CONCAT_WS('#',
+                               w.M_Product_ID::text,
+                               w.M_Warehouse_ID::text,
+                               w.WeekStartDate::text)), 1, 7))::bit(31)::int
+           AS MD_Stock_PerWeek_V_ID,
   w.AD_Client_ID,
   w.AD_Org_ID,
   w.M_Product_ID,

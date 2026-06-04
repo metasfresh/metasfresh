@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_Stock_PerWeek_V extends org.compiere.model.PO implements I_MD_Stock_PerWeek_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1386846925L;
+	private static final long serialVersionUID = -1948295841L;
 
     /** Standard Constructor */
     public X_MD_Stock_PerWeek_V (final Properties ctx, final int MD_Stock_PerWeek_V_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_MD_Stock_PerWeek_V extends org.compiere.model.PO implements I_MD_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setMD_Stock_PerWeek_V_ID (final int MD_Stock_PerWeek_V_ID)
+	{
+		if (MD_Stock_PerWeek_V_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Stock_PerWeek_V_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Stock_PerWeek_V_ID, MD_Stock_PerWeek_V_ID);
+	}
+
+	@Override
+	public int getMD_Stock_PerWeek_V_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Stock_PerWeek_V_ID);
 	}
 
 	@Override

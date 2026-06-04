@@ -21,11 +21,14 @@
 --   * customer   : the customer dimension (C_BPartner_Customer_ID) is summed in too, i.e.
 --                  the overall projected stock is shown — no per-customer reserve carve-out.
 
--- No synthetic row_number() primary key: a row_number() OVER (...) window function forces the
--- planner to materialize and sort EVERY (product x warehouse x week) row before any outer
--- predicate (e.g. the zoom's M_Product_ID filter) can be applied — the filter cannot be pushed
--- down past the window, making a single-product zoom as expensive as browse-all. Dropping it
--- restores predicate push-down to the MD_Candidate scans. This is a read-only view-backed window.
+-- Push-down-friendly synthetic primary key: a deterministic hash of (M_Product_ID, M_Warehouse_ID,
+-- WeekStartDate) encoded as a 32-bit integer via MD5 truncation. This is a per-row scalar
+-- expression — unlike row_number() OVER (...), it does NOT force the planner to materialise every
+-- row before outer predicates are applied, so a single-product zoom (WHERE M_Product_ID = @x@)
+-- is as cheap as ~94k planner cost (vs. ~1.05M with the row_number regression).
+-- 31-bit via bit(31) cast is guaranteed positive without needing ABS(); 32-bit would require ABS().
+-- Skill canonical form (metasfresh-db § "Synthetic Primary Keys for SQL Views") uses
+-- ABS + bit(32); both produce positive ints. We use bit(31) per task spec for clarity.
 CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
 WITH horizon AS (
   SELECT GREATEST(1, COALESCE(NULLIF(
@@ -54,7 +57,11 @@ weeks AS (
    CROSS JOIN generate_series(0, h.weeks) AS g(w)
 )
 SELECT
-  (row_number() OVER (ORDER BY w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate))::int AS MD_Stock_PerWeek_V_ID,
+  ('x' || SUBSTR(MD5(CONCAT_WS('#',
+                               w.M_Product_ID::text,
+                               w.M_Warehouse_ID::text,
+                               w.WeekStartDate::text)), 1, 7))::bit(31)::int
+           AS MD_Stock_PerWeek_V_ID,
   w.AD_Client_ID,
   w.AD_Org_ID,
   w.M_Product_ID,

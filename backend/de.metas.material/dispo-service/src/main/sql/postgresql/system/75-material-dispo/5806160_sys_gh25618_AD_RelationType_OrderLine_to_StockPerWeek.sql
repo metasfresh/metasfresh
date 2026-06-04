@@ -5,7 +5,8 @@
 -- Source AD_Reference: 271 ("C_OrderLine SO", ValidationType='T', AD_Table_ID=260)
 -- Target AD_Table_ID:  542612 (MD_Stock_PerWeek_V)
 -- Target AD_Window_ID: 542159 (Bestand pro Woche)
--- Target AD_Key:       592708 (WeekStartDate column)
+-- Target AD_Key:       592715 (MD_Stock_PerWeek_V_ID — int synthetic key, AD_Reference_ID=13)
+--                      (allocated from idserver.metas.de on 2026-06-04)
 
 -- 2026-06-04
 -- Target AD_Reference for MD_Stock_PerWeek_V
@@ -47,12 +48,12 @@ INSERT INTO AD_Ref_Table
      Created, CreatedBy, EntityType, IsActive, IsValueDisplayed, OrderByClause,
      ShowInactiveValues, Updated, UpdatedBy, WhereClause)
 VALUES
-    (0, 592708, 0, 542100, 542612, 542159,
+    (0, 592715 /*MD_Stock_PerWeek_V_ID — int key; AD_Reference_ID=13*/, 0, 542100, 542612, 542159,
      TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.material.dispo', 'Y', 'N', 'WeekStartDate',
      'N', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'M_Product_ID = @M_Product_ID@
 AND M_Warehouse_ID = MD_getStockWarehouse( (SELECT o.M_Warehouse_ID FROM C_Order o WHERE o.C_Order_ID = @C_Order_ID/0@) )
-AND WeekStartDate >= date_trunc(''week'', COALESCE(NULLIF(NULLIF(''@DatePromised@'',''null''),'''')::date, now()::date))::date')
+AND WeekStartDate >= date_trunc(''week'', COALESCE(NULLIF(NULLIF(regexp_replace(''@DatePromised@'', ''\[[^\]]*\]'', '''', ''g''),''null''),'''')::timestamptz, now()))::date')
 ;
 
 -- 2026-06-04
