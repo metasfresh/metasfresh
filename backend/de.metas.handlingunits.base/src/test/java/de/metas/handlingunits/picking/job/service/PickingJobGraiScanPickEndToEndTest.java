@@ -39,8 +39,11 @@ import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -272,8 +275,17 @@ class PickingJobGraiScanPickEndToEndTest
 		final HuPackingInstructionsId tuPIId = helper.huService.resolveHuPackingInstructionsId(grai);
 
 		// Materialise a real TU of the resolved type and stamp the scanned GRAI on it.
+		// Mirror the production stamp contract exactly: PickingJobPickCommand#execute wraps the pick in a
+		// thread-inherited trx (callInThreadInheritedTrx) and the stamp at PickingJobPickCommand#stampGraiIfPresent
+		// runs inside huService.temporarySetNewHContextForProcessing(). The facade's setGrais routes the write through
+		// that ambient context with setSaveOnChange(true), so it flushes on the trx commit.
 		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("100", productId));
-		helper.huService.setGrais(tuId, GRAISet.of(grai));
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			try (final IAutoCloseable ignored = helper.huService.temporarySetNewHContextForProcessing())
+			{
+				helper.huService.setGrais(tuId, GRAISet.of(grai));
+			}
+		});
 
 		final HUGraiSnapshot snapshot = CollectionUtils.singleElement(
 				ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(tuId))));

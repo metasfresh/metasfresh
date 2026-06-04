@@ -139,7 +139,12 @@ public class PickingJobHUService
 		huGraiService.generateMissingGRAIs(snapshots, nextGraiProvider);
 	}
 
-	public void setGrais(@NonNull final HuId huId, @NonNull final GRAISet graiSet) {huGraiService.setGrais(huId, graiSet);}
+	/**
+	 * Stamps the scanned GRAI onto the freshly-materialised pick TU. Routed through the ambient pick HU context so the
+	 * attribute write commits with the pick transaction (see {@link HUGraiService#setGraisInAmbientContext}). MUST be
+	 * called inside the pick transaction (pick HU context set in {@link HUContextHolder}).
+	 */
+	public void setGrais(@NonNull final HuId huId, @NonNull final GRAISet graiSet) {huGraiService.setGraisInAmbientContext(huId, graiSet);}
 
 	/**
 	 * Returns the TU packing instruction configured for the given GRAI (matched by company-prefix and asset-type).
