@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 53 | 56 | 95% |
+| Picking | 54 | 57 | 95% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -190,8 +190,9 @@
 | Unparseable barcode → scanner ignores it, stays live for valid scan (TC5) | `picking/picking-grai-scan.spec.js` |
 | Resolved TU has no capacity for product → GRAINoCapacityForProduct error (TC6) | `picking/picking-grai-scan.spec.js` |
 | BPartner GRAIRequired=No → no GRAI scanner shown (TC7) | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete (TC9) | `picking/picking-grai-scan.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ---
 

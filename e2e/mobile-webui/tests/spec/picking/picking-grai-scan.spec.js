@@ -142,6 +142,90 @@ const navigateToTUTargetScreen = async (masterdata) => {
     await PickingJobLineScreen.clickTUTargetButton();
 };
 
+/**
+ * Masterdata for the TOP-LEVEL-TU GRAI scenario (TC9) — exercises branch (a)
+ * (`PickingJobPickCommand.updatePickingTarget` → `result.isSingleTopLevelTUOnly()`),
+ * the one runtime-unverified GRAI stamp branch.
+ *
+ * The single key difference from {@link createMasterdataForGraiScan} is the pick-target
+ * structure: {@code pickTo: ['TU']} ONLY, and the GRAI-mapped TU PI carries **no LU**
+ * (PI_TU_TOPLEVEL has no `lu`). Per the frontend eligibility rule
+ * (isCurrentTargetEligibleForLine_TU): with a `'TU'` pick-to structure the line is
+ * eligible iff NO LU target is set — so this scenario can NEVER route through an LU.
+ * That forces the pick to materialise as a genuine top-level TU (branch (a)), not the
+ * TU-under-LU shape that TC1 covers (branch (b)).
+ *
+ * The bpartner keeps GRAIRequired='Y' so the GRAI scanner is enabled.
+ */
+const createMasterdataForTopLevelTUGraiScan = async () => {
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'product',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    shipOnCloseLU: false,
+                    // 'TU' ONLY → the line is eligible iff NO LU target is set (top-level-TU path).
+                    // There is no 'LU_TU' option, so an LU target can never make the line eligible:
+                    // every pick on this job is a top-level TU → branch (a).
+                    pickTo: ['TU'],
+                    allowCompletingPartialPickingJob: false,
+                },
+            },
+            bpartners: { BP1: { graiRequired: 'Y' } },
+            warehouses: { wh: {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                P1: { prices: [{ price: 1 }] },
+            },
+            packingInstructions: {
+                // GRAI-mapped TU PI with NO lu → a genuine top-level TU when materialised.
+                PI_TU_TOPLEVEL: { tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+            },
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh', qty: 100 },
+            },
+            salesOrders: {
+                SO1: {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU_MAPPED' }],
+                },
+            },
+        },
+    });
+};
+
+/**
+ * Navigate to the LINE-LEVEL pick-target TU screen WITHOUT setting any LU target.
+ *
+ * This is the top-level-TU counterpart of {@link navigateToTUTargetScreen}. With the
+ * {@code pickTo: ['TU']} config (see {@link createMasterdataForTopLevelTUGraiScan}) the
+ * line button is enabled even though no LU is set — the 'TU' pick-to structure makes the
+ * line eligible precisely when there is NO LU target. We therefore open the line detail
+ * directly (no setTargetLU step) so the GRAI scan endpoint gets a lineId and the pick
+ * materialises as a top-level TU (branch (a)).
+ *
+ * Precondition: PickingJobScreen is showing.
+ * Postcondition: SelectPickTargetTUScreen is showing.
+ */
+const navigateToTopLevelTUTargetScreen = async (masterdata) => {
+    // 1. Scan picking slot → stays on PickingJobScreen with product aggregation
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    // 2. NO setTargetLU — with pickTo:['TU'] the line is eligible only while no LU is set.
+    // 3. Click line 1 (enabled via the 'TU' structure). PickLineScreen has lineId in the URL.
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
+    // 4. Click TU target button from the line screen. lineId is in the URL so the GRAI scan
+    //    REST endpoint receives it.
+    await PickingJobLineScreen.clickTUTargetButton();
+};
+
 // ─── TC1 — Scan one GRAI → TU created, GRAI attribute attached ────────────────
 
 // noinspection JSUnusedLocalSymbols
@@ -488,4 +572,97 @@ test('TC7 — BPartner GRAIRequired=No → no GRAI scanner on pick-target screen
 
     // No GRAI scanner must be present — graiScanEnabled=false for GRAIRequired=No
     await PickingGraiScanPanel.expectScannerNotVisible();
+});
+
+// ─── TC9 — Scan one GRAI into a TOP-LEVEL TU (no LU) → branch (a) ──────────────
+//
+// This is the top-level-TU counterpart of TC1. TC1 sets an LU target first, so its
+// pick materialises as a TU-under-LU (PickingJobPickCommand.updatePickingTarget branch
+// (b): result.isSingleLU() && singleTU). TC9 uses a pickTo:['TU'] config with a
+// GRAI-mapped TU PI that has NO LU, and sets NO LU target — so the pick materialises as
+// a genuine top-level TU (branch (a): result.isSingleTopLevelTUOnly()). Both branches
+// route the scanned GRAI through huService.setGrais → setGraisInAmbientContext (the
+// ambient-context flush fix). Branch (a) was previously only "covered" by an in-memory
+// JUnit test whose non-buffering DAO cannot detect the flush bug — TC9 closes that gap
+// by proving, end-to-end against the full stack, that the GRAI lands on the top-level TU.
+
+// noinspection JSUnusedLocalSymbols
+test('TC9 — Scan one GRAI into top-level TU (no LU) → TU created with GRAI attribute', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — TC9 top-level TU (no LU)');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForTopLevelTUGraiScan();
+    const graiMapped = masterdata.packingInstructions.PI_TU_TOPLEVEL.grai;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1 });
+
+    // Reach the line-level TU target screen WITHOUT an LU target (top-level-TU path).
+    await navigateToTopLevelTUTargetScreen(masterdata);
+
+    // GRAI scanner must be visible (graiScanEnabled=true for GRAIRequired=Yes)
+    await PickingGraiScanPanel.expectScannerVisible();
+
+    // Scan one valid GRAI — debounce fires, REST sets the top-level TU target, navigates back.
+    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
+    await PickingJobLineScreen.waitForScreen();
+
+    // Pick the HU from the line scan screen (same flow as TC1).
+    await PickingJobLineScreen.clickScanButton();
+    await PickLineScanScreen.waitForScreen();
+    await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU1.qrCode);
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '1' });
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.goBack();
+
+    // Before complete: the picked HU is a genuine TOP-LEVEL TU (no LU) — qtyLUs=0, lu='-'.
+    // This shape is impossible for TC1 (TU-under-LU always carries an LU), so it proves the
+    // pick went through branch (a) (isSingleTopLevelTUOnly), not branch (b).
+    await Backend.expect({
+        title: 'TC9: before complete — picked HU is a top-level TU (no LU)',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            // GRAI landed on the top-level TU at pick time (branch (a) flush worked).
+            tu1: { huStatus: 'S', storages: { P1: '4 PCE' }, attributes: { GRAI: graiMapped } },
+        },
+    });
+
+    // Complete must succeed (no GRAI_COUNT_MISMATCH) — the GRAI attribute is present.
+    await PickingJobScreen.complete();
+
+    // After complete: the picked HU stays a genuine TOP-LEVEL TU (qtyLUs=0, lu='-') — its PI
+    // has no LU so completion does not wrap it into one. It is processed onto the shipment line,
+    // and the GRAI attribute is still on the TU — proving the pick-time stamp (branch (a))
+    // persisted through completion.
+    await Backend.expect({
+        title: 'TC9: after complete — top-level TU still carries the GRAI attribute',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: true, shipmentLineId: 'shipmentLineId1' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            tu1: {
+                attributes: { GRAI: graiMapped },
+            },
+        },
+    });
 });
