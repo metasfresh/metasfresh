@@ -231,7 +231,7 @@ Feature: nShift Shipment
       | productName    | shippedQuantity | unitPrice | totalValue | totalWeightInKg | customsTariff |
       | nShift Product | 10              | 10        | 100        | 21              | 12345678      |
 
-  @Id:S30196_TC1
+  @Id:S0355_DeliveryOrder_TC1
   Scenario: nShift Delivery Order exported via Historical Shipments JSON includes parcel tracking
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     # Test env has no AD_Printer_Config for the system user; auto-print would otherwise fail the WP.
@@ -374,7 +374,7 @@ Feature: nShift Shipment
     Then the last nShift ship advisor request had shipperConfig serviceLevel "FALLBACK"
 
   @Id:S0355_DeliveryOrder_110
-  Scenario: nShift Delivery Order - Country of Origin split into two parcels
+  Scenario: nShift Delivery Order - mixed-origin LU produces 1 parcel with per-COO content lines
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
     And contains M_Shippers
@@ -418,24 +418,29 @@ Feature: nShift Shipment
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
       | product2_TU_8CU         | huPiItemTU      | product2     | 8   | 2021-01-01 |
-    # Stock: 7 IT + 13 DE of product, 5 IT + 3 DE of product2, packing material
+    # Stock: 7 IT + 13 DE of product (13 DE exceeds TU capacity → 2 TUs), 5 IT + 3 DE of product2.
+    # All 5 TUs aggregated onto one mixed LU → 1 package → 1 parcel with 4 COO content lines.
     And metasfresh contains M_Inventories:
       | M_Inventory_ID | MovementDate | M_Warehouse_ID |
       | inv_coo        | 2022-12-12   | wh_coo         |
     And metasfresh contains M_InventoriesLines:
-      | Identifier    | M_Inventory_ID | M_Product_ID    | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID |
-      | inv_coo_l_it  | inv_coo        | product         | 0       | 7        | PCE          | asi_IT                    |
-      | inv_coo_l_de  | inv_coo        | product         | 0       | 13       | PCE          | asi_DE                    |
-      | inv_coo_l_pm  | inv_coo        | packing_product | 0       | 100      | PCE          |                           |
-      | inv_coo_l_it2 | inv_coo        | product2        | 0       | 5        | PCE          | asi_IT                    |
-      | inv_coo_l_de2 | inv_coo        | product2        | 0       | 3        | PCE          | asi_DE                    |
+      | Identifier    | M_Inventory_ID | M_Product_ID    | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_coo_l_it  | inv_coo        | product         | 0       | 7        | PCE          | asi_IT                    | product_TU_10CU         |
+      | inv_coo_l_de  | inv_coo        | product         | 0       | 13       | PCE          | asi_DE                    | product_TU_10CU         |
+      | inv_coo_l_pm  | inv_coo        | packing_product | 0       | 100      | PCE          |                           |                         |
+      | inv_coo_l_it2 | inv_coo        | product2        | 0       | 5        | PCE          | asi_IT                    | product2_TU_8CU         |
+      | inv_coo_l_de2 | inv_coo        | product2        | 0       | 3        | PCE          | asi_DE                    | product2_TU_8CU         |
     When the inventory identified by inv_coo is completed
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID    |
-      | inv_coo_l_it       | hu_coo_it  |
-      | inv_coo_l_de       | hu_coo_de  |
-      | inv_coo_l_it2      | hu_coo_it2 |
-      | inv_coo_l_de2      | hu_coo_de2 |
+      | M_InventoryLine_ID | M_HU_ID     |
+      | inv_coo_l_it       | tu_coo_it   |
+      | inv_coo_l_de       | tu_coo_de_1 |
+      | inv_coo_l_de       | tu_coo_de_2 |
+      | inv_coo_l_it2      | tu_coo_it2  |
+      | inv_coo_l_de2      | tu_coo_de2  |
+    And aggregate TUs to new LU
+      | sourceTUs                                                   | newLUs       |
+      | tu_coo_it, tu_coo_de_1, tu_coo_de_2, tu_coo_it2, tu_coo_de2 | lu_coo_mixed |
     And metasfresh contains AD_Users:
       | Identifier          | Name                     | C_BPartner_ID | EMail                        | Phone            |
       | customerContact_coo | nShift Customer Contact2 | customer      | contact2@nshift-test.example | +41 79 123 45 68 |
@@ -452,49 +457,62 @@ Feature: nShift Shipment
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss_coo     | so_coo_l1      | N             | cp_coo1            | cgt_coo1              |
       | ss_coo2    | so_coo_l2      | N             | cp_coo1            | cgt_coo1              |
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID      | M_ShipmentSchedule_ID | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | lu_coo_mixed | ss_coo                | 20        | IP     | P          | ?              |
+      | lu_coo_mixed | ss_coo2               | 8         | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID      | M_ShipmentSchedule_ID |
+      | lu_coo_mixed | ss_coo, ss_coo2       |
     And shipment is generated for the following shipment schedule
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss_coo, ss_coo2       | inout_coo  |
+    # Verify 4 separate InOutLines — one per product×COO batch, driven by per-TU M_HU_Attribute COO values
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | MovementQty | M_AttributeSetInstance_ID |
+      | inout_coo  | product      | 7           | asi_IT                    |
+      | inout_coo  | product      | 13          | asi_DE                    |
+      | inout_coo  | product2     | 5           | asi_IT                    |
+      | inout_coo  | product2     | 3           | asi_DE                    |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID | M_ShipperTransportation_ID |
       | inout_coo  | transpOrder_coo            |
     And after not more than 60s, Carrier_ShipmentOrder is found:
       | Identifier | M_InOut_ID |
       | cso_coo    | inout_coo  |
-    And validate Carrier_ShipmentOrder_Parcels:
-      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
-      | cso_coo                  | awb1 | trackingUrl1 | true        |
-      | cso_coo                  | awb2 | trackingUrl2 | true        |
-      | cso_coo                  | awb3 | trackingUrl3 | true        |
-      | cso_coo                  | awb4 | trackingUrl4 | true        |
-    # Four items — one VHU per country per product (4 VHUs → 4 parcels in VHU-direct packing)
-    And validate Carrier_ShipmentOrder_Items:
-      | Carrier_ShipmentOrder_ID | ProductName      | CountryOfOrigin | QtyShipped | Price | TotalPrice | TotalWeightInKg | CustomsTariffNumber |
-      | cso_coo                  | nShift Product   | IT              | 7          | 10    | 70         | 14.7            | 12345678            |
-      | cso_coo                  | nShift Product   | DE              | 13         | 10    | 130        | 27.3            | 12345678            |
-      | cso_coo                  | nShift Product 2 | IT              | 5          | 5     | 25         | 6.0             | 12345678            |
-      | cso_coo                  | nShift Product 2 | DE              | 3          | 5     | 15         | 3.6             | 12345678            |
+    # nShift request — high level → parcel → content detail
     And validate the captured nShift shipment request:
       | Carrier_Product_ID | Carrier_Goods_Type_ID | NumParcels |
-      | cp_coo1            | cgt_coo1              | 4          |
+      | cp_coo1            | cgt_coo1              | 1          |
     And validate the captured nShift shipment request parcels:
       | grossWeightKg |
-      | 14.7          |
-      | 27.3          |
-      | 6.0           |
-      | 3.6           |
+      | 51.6          |
     And validate the captured nShift shipment request contents:
       | productName      | countryOfOrigin | shippedQuantity | unitPrice | totalValue | totalWeightInKg | customsTariff |
       | nShift Product   | IT              | 7               | 10        | 70         | 14.7            | 12345678      |
       | nShift Product   | DE              | 13              | 10        | 130        | 27.3            | 12345678      |
       | nShift Product 2 | IT              | 5               | 5         | 25         | 6.0             | 12345678      |
       | nShift Product 2 | DE              | 3               | 5         | 15         | 3.6             | 12345678      |
+    # Carrier_ShipmentOrder in DB — parcels (AWB/tracking) → items
+    # Mixed LU: 1 physical package → 1 parcel with 4 content lines, total weight 51.6 kg
+    And validate Carrier_ShipmentOrder_Parcels:
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+      | cso_coo                  | awb1 | trackingUrl1 | true        |
+    And validate Carrier_ShipmentOrder_Items:
+      | Carrier_ShipmentOrder_ID | ProductName      | CountryOfOrigin | QtyShipped | Price | TotalPrice | TotalWeightInKg | CustomsTariffNumber |
+      | cso_coo                  | nShift Product   | IT              | 7          | 10    | 70         | 14.7            | 12345678            |
+      | cso_coo                  | nShift Product   | DE              | 13         | 10    | 130        | 27.3            | 12345678            |
+      | cso_coo                  | nShift Product 2 | IT              | 5          | 5     | 25         | 6.0             | 12345678            |
+      | cso_coo                  | nShift Product 2 | DE              | 3          | 5     | 15         | 3.6             | 12345678            |
 
 
   @Id:S0355_DeliveryOrder_120
-  Scenario: nShift Delivery Order - Country of Origin split, CU directly picked onto LU without TU
+  Scenario: nShift Delivery Order - Country of Origin from mixed TUs (3 batches in one, 1 in another)
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
     # Reuse test shipper from S0355_DeliveryOrder_110 (nShift_coo_test already idempotent)
     And contains M_Shippers
       | Identifier      | Value           | Name            | OPT.ShipperGateway |
@@ -511,30 +529,32 @@ Feature: nShift Shipment
     And metasfresh contains M_Shipper_Mapping_Configs:
       | M_Shipper_ID    | SeqNo | MappingAttributeType | MappingGroupKey | MappingAttributeKey | MappingAttributeValue |
       | nShift_coo_test | 170   | LineDetailGroup      | 1               | 4                   | CountryOfOrigin       |
-    # Reuse wh_coo warehouse (created idempotently)
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID |
       | wh_coo         |
-    # LU PI that holds CUs directly (MI item type — no TU intermediate)
-    And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID   |
-      | LU_cu_direct |
-    And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID   | M_HU_PI_ID   | HU_UnitType | IsCurrent |
-      | LU_cu_direct_Version | LU_cu_direct | LU          | Y         |
-    And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID | M_HU_PI_Version_ID   | Qty | ItemType | OPT.M_HU_PackingMaterial_ID.Identifier |
-      | huPiItem_LU_cu  | LU_cu_direct_Version | 200 | MI       | pm                                     |
+    And metasfresh contains M_PickingSlot:
+      | Identifier      | PickingSlot | IsDynamic |
+      | pickingSlot_coo | 300         | Y         |
     And metasfresh contains M_Products:
       | Identifier | Value    | Name             | WeightNet | WeightGross | M_CustomsTariff_ID |
       | product2   | product2 | nShift Product 2 | 1 KGM     | 1.2 KGM     | ct                 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv                    | product2     | 5.0      | PCE      |
+    # TU PI without LU parent so picked TUs stay top-level (no LU wrapping during transportation)
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID    |
+      | TU_without_lu |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID    | M_HU_PI_ID    | HU_UnitType | IsCurrent |
+      | TU_without_lu_Version | TU_without_lu | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID        | M_HU_PI_Version_ID    | Qty | ItemType |
+      | huPiItem_TU_without_lu | TU_without_lu_Version |     | MI       |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
-      | product_LU_cu_200CU     | huPiItem_LU_cu  | product      | 200 | 2021-01-01 |
-      | product2_LU_cu_200CU    | huPiItem_LU_cu  | product2     | 200 | 2021-01-01 |
+      | M_HU_PI_Item_Product_ID    | M_HU_PI_Item_ID        | M_Product_ID | Qty | ValidFrom  |
+      | product_TU_without_lu_10CU | huPiItem_TU_without_lu | product      | 10  | 2021-01-01 |
+      | product2_TU_without_lu_8CU | huPiItem_TU_without_lu | product2     | 8   | 2021-01-01 |
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | cp_coo1            | cgt_coo1              |
@@ -547,77 +567,88 @@ Feature: nShift Shipment
     """
     {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "DE"}]}
     """
-    # product: 80 IT + 120 DE = 200 PCE, each batch < LU capacity 200 → 1 LU per country
-    # product2: 16 IT + 24 DE = 40 PCE, each batch < LU capacity 200 → 1 LU per country
+    # 4 CU batches received as TUs. TU_without_lu PI has no LU parent so TUs stay top-level during shipping.
     And metasfresh contains M_Inventories:
       | M_Inventory_ID | MovementDate | M_Warehouse_ID |
-      | inv_coo_lu     | 2022-12-12   | wh_coo         |
+      | inv_coo_tu     | 2022-12-12   | wh_coo         |
     And metasfresh contains M_InventoriesLines:
-      | Identifier       | M_Inventory_ID | M_Product_ID    | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID |
-      | inv_coo_lu_l_it  | inv_coo_lu     | product         | 0       | 80       | PCE          | asi_IT_120                |
-      | inv_coo_lu_l_de  | inv_coo_lu     | product         | 0       | 120      | PCE          | asi_DE_120                |
-      | inv_coo_lu_l_pm  | inv_coo_lu     | packing_product | 0       | 100      | PCE          |                           |
-      | inv_coo_lu_l_it2 | inv_coo_lu     | product2        | 0       | 16       | PCE          | asi_IT_120                |
-      | inv_coo_lu_l_de2 | inv_coo_lu     | product2        | 0       | 24       | PCE          | asi_DE_120                |
-    When the inventory identified by inv_coo_lu is completed
+      | Identifier       | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID    |
+      | inv_coo_tu_l_it  | inv_coo_tu     | product      | 0       | 6        | PCE          | asi_IT_120                | product_TU_without_lu_10CU |
+      | inv_coo_tu_l_de  | inv_coo_tu     | product      | 0       | 9        | PCE          | asi_DE_120                | product_TU_without_lu_10CU |
+      | inv_coo_tu_l_it2 | inv_coo_tu     | product2     | 0       | 4        | PCE          | asi_IT_120                | product2_TU_without_lu_8CU |
+      | inv_coo_tu_l_de2 | inv_coo_tu     | product2     | 0       | 3        | PCE          | asi_DE_120                | product2_TU_without_lu_8CU |
+    When the inventory identified by inv_coo_tu is completed
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID | M_HU_ID       |
-      | inv_coo_lu_l_it    | hu_coo_lu_it  |
-      | inv_coo_lu_l_de    | hu_coo_lu_de  |
-      | inv_coo_lu_l_it2   | hu_coo_lu_it2 |
-      | inv_coo_lu_l_de2   | hu_coo_lu_de2 |
+      | inv_coo_tu_l_it    | cu_coo_tu_it  |
+      | inv_coo_tu_l_de    | cu_coo_tu_de  |
+      | inv_coo_tu_l_it2   | cu_coo_tu_it2 |
+      | inv_coo_tu_l_de2   | cu_coo_tu_de2 |
     And metasfresh contains AD_Users:
       | Identifier         | Name                     | C_BPartner_ID | EMail                        | Phone            |
-      | customerContact_lu | nShift Customer Contact3 | customer      | contact3@nshift-test.example | +41 79 123 45 69 |
+      | customerContact_tu | nShift Customer Contact3 | customer      | contact3@nshift-test.example | +41 79 123 45 69 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID    | AD_User_ID         |
-      | so_coo_lu  | true    | customer      | 2025-04-01  | wh_coo         | nShift_coo_test | customerContact_lu |
+      | so_coo_tu  | true    | customer      | 2025-04-01  | wh_coo         | nShift_coo_test | customerContact_tu |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_coo_lu_l1 | so_coo_lu  | product      | 200        |
-      | so_coo_lu_l2 | so_coo_lu  | product2     | 40         |
-    When the order identified by so_coo_lu is completed
+      | so_coo_tu_l1 | so_coo_tu  | product      | 15         |
+      | so_coo_tu_l2 | so_coo_tu  | product2     | 7          |
+    When the order identified by so_coo_tu is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_coo_lu  | so_coo_lu_l1   | N             | cp_coo1            | cgt_coo1              |
-      | ss_coo_lu2 | so_coo_lu_l2   | N             | cp_coo1            | cgt_coo1              |
-    And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID   |
-      | ss_coo_lu, ss_coo_lu2 | inout_coo_lu |
+      | ss_coo_tu  | so_coo_tu_l1   | N             | cp_coo1            | cgt_coo1              |
+      | ss_coo_tu2 | so_coo_tu_l2   | N             | cp_coo1            | cgt_coo1              |
+    # Mobile picking: set new TU as target, pick 3 batches into it, then new TU for the 4th batch
+    When start picking job for sales order identified by so_coo_tu
+    And scan picking slot identified by pickingSlot_coo
+    And set picking target as new TU identified by TU_without_lu
+    And pick lines
+      | PickingLine.byProduct | PickFromHU    | QtyPicked |
+      | product               | cu_coo_tu_it  | 6         |
+      | product               | cu_coo_tu_de  | 9         |
+      | product2              | cu_coo_tu_it2 | 4         |
+    And set picking target as new TU identified by TU_without_lu
+    And pick lines
+      | PickingLine.byProduct | PickFromHU    | QtyPicked |
+      | product2              | cu_coo_tu_de2 | 3         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID   | OPT.DocStatus |
+      | ss_coo_tu             | inout_coo_tu | CO            |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID   | M_ShipperTransportation_ID |
-      | inout_coo_lu | transpOrder_coo_lu         |
+      | inout_coo_tu | transpOrder_coo_tu         |
     And after not more than 60s, Carrier_ShipmentOrder is found:
       | Identifier | M_InOut_ID   |
-      | cso_coo_lu | inout_coo_lu |
-    # LU1: 80 IT product → 1 parcel; LU2: 120 DE product → 1 parcel; LU3: 16 IT product2 → 1 parcel; LU4: 24 DE product2 → 1 parcel
-    And validate Carrier_ShipmentOrder_Items:
-      | Carrier_ShipmentOrder_ID | ProductName      | CountryOfOrigin | QtyShipped | Price | TotalPrice | TotalWeightInKg | CustomsTariffNumber |
-      | cso_coo_lu               | nShift Product   | IT              | 80         | 10    | 800        | 168             | 12345678            |
-      | cso_coo_lu               | nShift Product   | DE              | 120        | 10    | 1200       | 252             | 12345678            |
-      | cso_coo_lu               | nShift Product 2 | IT              | 16         | 5     | 80         | 19.2            | 12345678            |
-      | cso_coo_lu               | nShift Product 2 | DE              | 24         | 5     | 120        | 28.8            | 12345678            |
+      | cso_coo_tu | inout_coo_tu |
+    # nShift request — high level → parcel → content detail
+    # TU1 (3 batches): product IT, product DE, product2 IT → 3 content lines
+    # TU2 (1 batch):   product2 DE                         → 1 content line
     And validate the captured nShift shipment request:
       | Carrier_Product_ID | Carrier_Goods_Type_ID | NumParcels |
-      | cp_coo1            | cgt_coo1              | 4          |
-    And validate Carrier_ShipmentOrder_Parcels:
-      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
-      | cso_coo_lu               | awb1 | trackingUrl1 | true        |
-      | cso_coo_lu               | awb2 | trackingUrl2 | true        |
-      | cso_coo_lu               | awb3 | trackingUrl3 | true        |
-      | cso_coo_lu               | awb4 | trackingUrl4 | true        |
+      | cp_coo1            | cgt_coo1              | 2          |
     And validate the captured nShift shipment request parcels:
       | grossWeightKg |
-      | 168           |
-      | 252           |
-      | 19.2          |
-      | 28.8          |
+      | 36.3          |
+      | 3.6           |
     And validate the captured nShift shipment request contents:
       | productName      | countryOfOrigin | shippedQuantity | unitPrice | totalValue | totalWeightInKg | customsTariff |
-      | nShift Product   | IT              | 80              | 10        | 800        | 168             | 12345678      |
-      | nShift Product   | DE              | 120             | 10        | 1200       | 252             | 12345678      |
-      | nShift Product 2 | IT              | 16              | 5         | 80         | 19.2            | 12345678      |
-      | nShift Product 2 | DE              | 24              | 5         | 120        | 28.8            | 12345678      |
+      | nShift Product   | IT              | 6               | 10        | 60         | 12.6            | 12345678      |
+      | nShift Product   | DE              | 9               | 10        | 90         | 18.9            | 12345678      |
+      | nShift Product 2 | IT              | 4               | 5         | 20         | 4.8             | 12345678      |
+      | nShift Product 2 | DE              | 3               | 5         | 15         | 3.6             | 12345678      |
+    # Carrier_ShipmentOrder in DB — parcels (AWB/tracking) → items
+    And validate Carrier_ShipmentOrder_Parcels:
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+      | cso_coo_tu               | awb1 | trackingUrl1 | true        |
+      | cso_coo_tu               | awb2 | trackingUrl2 | true        |
+    And validate Carrier_ShipmentOrder_Items:
+      | Carrier_ShipmentOrder_ID | ProductName      | CountryOfOrigin | QtyShipped | Price | TotalPrice | TotalWeightInKg | CustomsTariffNumber |
+      | cso_coo_tu               | nShift Product   | IT              | 6          | 10    | 60         | 12.6            | 12345678            |
+      | cso_coo_tu               | nShift Product   | DE              | 9          | 10    | 90         | 18.9            | 12345678            |
+      | cso_coo_tu               | nShift Product 2 | IT              | 4          | 5     | 20         | 4.8             | 12345678            |
+      | cso_coo_tu               | nShift Product 2 | DE              | 3          | 5     | 15         | 3.6             | 12345678            |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

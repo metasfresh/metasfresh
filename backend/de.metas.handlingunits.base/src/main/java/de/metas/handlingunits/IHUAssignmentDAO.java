@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import org.adempiere.ad.table.api.AdTableId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -256,4 +257,5 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * and the assignment references the given table.
 	 */
 	List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(@NonNull ImmutableSet<HuId> huIds, @NonNull AdTableId adTableId);
+
 }

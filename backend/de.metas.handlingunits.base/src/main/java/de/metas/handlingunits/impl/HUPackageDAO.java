@@ -28,6 +28,7 @@ import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.inout.InOutId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,7 +37,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
 import java.util.Collection;
@@ -56,16 +56,6 @@ public class HUPackageDAO implements IHUPackageDAO
 		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class, mpackage)
 				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID()))
-				.create()
-				.list(I_M_Package_HU.class);
-	}
-
-	@Override
-	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final ImmutableSet<PackageId> packageIds)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_Package_HU.class)
-				.addInArrayFilter(I_M_Package_HU.COLUMN_M_Package_ID, packageIds)
 				.create()
 				.list(I_M_Package_HU.class);
 	}
@@ -149,12 +139,10 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<I_M_Package> retrievePackagesForShipment(final I_M_InOut shipment)
+	public List<I_M_Package> retrievePackagesForShipment(@NonNull final InOutId inOutId)
 	{
-		Check.assumeNotNull(shipment, "shipment not null");
-
-		return queryBL.createQueryBuilder(I_M_Package.class, shipment)
-				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+		return queryBL.createQueryBuilder(I_M_Package.class)
+				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
 				.create()
 				.list(I_M_Package.class);
 	}

@@ -1032,7 +1032,9 @@ public class M_ShipmentSchedule_StepDef
 
 	private void logWorkPackageProgressForShipmentSchedule(@NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).orElse(null);
+		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.map(id -> id.toCommaSeparatedList().get(0)) // support comma-separated; use first for logging context
+				.orElse(null);
 		if (shipmentScheduleIdentifier == null)
 		{
 			logger.info("No shipment schedule identifier present --> Cannot log work package progress!");

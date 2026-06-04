@@ -14,8 +14,9 @@ INSERT INTO M_HU_PI_Attribute
      PropagationType, HU_TansferStrategy_JavaClass_ID, SeqNo,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (540148, 0, 0,
+    (540148 /*From ID Server*/, 0, 0,
      101, 1000001,
      'Y', 'Y', 'N', 'N', 'Y', 'Y',
      'NONE', 540027, 60,
-     NOW(), 100, NOW(), 100);
+     TO_TIMESTAMP('2026-06-04 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-04 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100);

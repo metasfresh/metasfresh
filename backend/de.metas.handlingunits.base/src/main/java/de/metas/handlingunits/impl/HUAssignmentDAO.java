@@ -540,24 +540,29 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.list();
 	}
 
-	@Override
-	public List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
-			@NonNull final ImmutableSet<HuId> huIds,
-			@NonNull final AdTableId adTableId)
-	{
-		return queryBL.createQueryBuilder(I_M_HU_Assignment.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
-				.create()
-				.list();
-	}
-
 	private void addIfNotZero(final Set<Integer> alreadySeenHuIds, final int id)
 	{
 		if (id > 0)
 		{
 			alreadySeenHuIds.add(id);
 		}
+	}
+
+	@Override
+	public List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
+			@NonNull final ImmutableSet<HuId> huIds,
+			@NonNull final AdTableId adTableId)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds.stream().map(HuId::getRepoId).collect(ImmutableSet.toImmutableSet()))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.list(I_M_HU_Assignment.class);
 	}
 }

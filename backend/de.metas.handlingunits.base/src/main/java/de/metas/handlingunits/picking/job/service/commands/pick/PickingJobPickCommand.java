@@ -8,7 +8,13 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.compiere.model.I_M_Attribute;
+
+import java.util.Objects;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.LUExtractTUsRequest;
@@ -109,6 +115,7 @@ public class PickingJobPickCommand
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
@@ -679,7 +686,6 @@ public class PickingJobPickCommand
 		if (qtyToPickCUs.isZero() && !isPickWholeTU)
 		{
 			throw new AdempiereException("qtyToPickCUs shall not be zero if isPickWholeTU is false");
-			// return ImmutableList.of();
 		}
 
 		final PickingJobStep step = getStep();
@@ -784,7 +790,42 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
-		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
+		// The destination TU may contain VHUs from multiple batches packed into it (e.g. different
+		// attribute values per batch). Find the VHU whose attributes match the source HU so that
+		// VHU_ID in QtyPicked reflects the correct per-batch attributes for InOutLine generation.
+		final I_M_HU vhu = findMatchingVHUInTU(tu.toHU(), getHuIdToBePicked());
+		addShipmentScheduleQtyPicked(vhu != null ? vhu : tu.toHU(), qtyPicked);
+	}
+
+	@Nullable
+	private I_M_HU findMatchingVHUInTU(@NonNull final I_M_HU destinationTU, @NonNull final HuId pickFromHUId)
+	{
+		final IMutableHUContext huCtx = HUContextHolder.getCurrent();
+		final IHUStorageFactory huStorageFactory = huCtx.getHUStorageFactory();
+		final ProductId productId = getProductId();
+
+		final I_M_HU pickFromHU = handlingUnitsDAO.getById(pickFromHUId);
+		final IAttributeStorage pickFromAttributes =
+				huCtx.getHUAttributeStorageFactory().getAttributeStorage(pickFromHU);
+
+		return handlingUnitsDAO.retrieveIncludedHUs(destinationTU)
+				.stream()
+				.filter(h -> huService.isVirtual(h))
+				.filter(h -> huStorageFactory.getStorage(h).getQuantity(productId).map(q -> !q.isZero()).orElse(false))
+				.filter(h -> {
+					final IAttributeStorage destAttrs =
+							huCtx.getHUAttributeStorageFactory().getAttributeStorage(h);
+					return pickFromAttributes.getAttributes().stream()
+							.filter(I_M_Attribute::isStorageRelevant)
+							.allMatch(attr -> {
+								final AttributeCode code = AttributeCode.ofString(attr.getValue());
+								return Objects.equals(
+										pickFromAttributes.getValueAsString(code),
+										destAttrs.hasAttribute(code) ? destAttrs.getValueAsString(code) : null);
+							});
+				})
+				.findFirst()
+				.orElse(null);
 	}
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TUPart cu, @NonNull final Quantity qtyPicked)
