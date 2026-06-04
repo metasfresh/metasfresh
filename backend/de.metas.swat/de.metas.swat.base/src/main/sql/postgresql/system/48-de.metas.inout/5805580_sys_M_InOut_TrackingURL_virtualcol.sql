@@ -11,7 +11,7 @@ INSERT INTO AD_Column (
 ) VALUES (
   0,592668 /*From ID Server*/,2127,0,10,(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOut'),
   'N','TrackingURL',
-  '(SELECT lp.TrackingURL FROM M_ShippingPackage p JOIN Carrier_ShipmentOrder cso ON cso.M_ShipperTransportation_ID = p.M_ShipperTransportation_ID JOIN Carrier_ShipmentOrder_Parcel lp ON lp.Carrier_ShipmentOrder_ID = cso.Carrier_ShipmentOrder_ID WHERE p.M_InOut_ID = M_InOut.M_InOut_ID AND p.IsActive=''Y'' AND cso.IsActive=''Y'' AND lp.IsActive=''Y'' ORDER BY lp.Carrier_ShipmentOrder_Parcel_ID LIMIT 1)',
+  '(SELECT lp.TrackingURL FROM M_ShippingPackage p JOIN Carrier_ShipmentOrder cso ON cso.M_ShipperTransportation_ID = p.M_ShipperTransportation_ID JOIN Carrier_ShipmentOrder_Parcel lp ON lp.Carrier_ShipmentOrder_ID = cso.Carrier_ShipmentOrder_ID WHERE p.M_InOut_ID = @JoinTableNameOrAliasIncludingDot@M_InOut_ID AND p.IsActive=''Y'' AND cso.IsActive=''Y'' AND lp.IsActive=''Y'' ORDER BY lp.Carrier_ShipmentOrder_Parcel_ID LIMIT 1)',
   TO_TIMESTAMP('2026-06-01 12:00:00','YYYY-MM-DD HH24:MI:SS'),100,'N','D',2000,
   'Y','N','N','N','N','N',
   'N','N','N','N','N','N',
