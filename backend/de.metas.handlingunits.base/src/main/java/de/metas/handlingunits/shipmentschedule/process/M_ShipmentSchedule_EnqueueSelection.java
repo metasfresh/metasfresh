@@ -72,6 +72,11 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Param(parameterName = "IsShipToday", mandatory = true)
 	private boolean isShipToday; // introduced in task #2940
 
+	// Hidden process param (default N): when on, on-the-fly picking packs CUs into TUs (PackingInstructions),
+	// instead of creating bare CUs ("No Packing Item"). Required for TU-based re-reservation after reversal.
+	@Param(parameterName = "IsOnTheFlyPickToPackingInstructions")
+	private boolean isOnTheFlyPickToPackingInstructions;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -99,6 +104,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 				.quantityType(quantityType)
 				.completeShipments(isCompleteShipments)
 				.isShipmentDateToday(isShipToday)
+				.onTheFlyPickToPackingInstructions(isOnTheFlyPickToPackingInstructions)
 				.build();
 
 		final Result result = ShipmentScheduleEnqueuer.newInstance(getCtx(), getTrxName())
