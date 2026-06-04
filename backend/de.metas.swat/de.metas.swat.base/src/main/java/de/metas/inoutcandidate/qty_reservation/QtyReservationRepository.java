@@ -110,6 +110,25 @@ public class QtyReservationRepository
 	}
 
 	/**
+	 * Physically deletes the given reservation rows by ID (same delete mechanism as
+	 * {@link #deleteReservation(DeleteQtyReservationRequest)}, but targeted at specific rows
+	 * to avoid removing sibling reservations sharing the same supply-type bucket).
+	 */
+	public void deleteByIds(@NonNull final Set<QtyReservationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
+						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
+				.create()
+				.delete();
+	}
+
+	/**
 	 * Returns all active, unprocessed reservations for the given order line.
 	 * Used by the HU picker to honor each reservation's attributes when picking on-the-fly.
 	 */
