@@ -114,7 +114,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailedForMatchInv(request);
 
@@ -150,7 +150,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		final InOutLineId receipLineId = request.getDocumentRef().getId(InOutLineId.class);
 		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
@@ -186,7 +186,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 
@@ -202,7 +202,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
@@ -305,7 +305,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		@Nullable final CostAmount explicitCostPrice = request.getExplicitCostPrice();
 
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
@@ -401,7 +401,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
 		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
 
-		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCostForUpdate(outboundSegmentAndElement);
 		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
 		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity outboundQty = utils.convertToUOM(
@@ -461,7 +461,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			utils.saveCurrentCost(outboundCurrentCosts);
 
 			// Inbound cost
-			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			final CurrentCost inboundCurrentCosts = utils.getCurrentCostForUpdate(inboundSegmentAndElement);
 			final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
 			inboundResult = utils.createCostDetailRecordWithChangedCosts(
 					inboundCostDetailRequest,
@@ -490,7 +490,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
 
 		final InvoiceId invoiceId = matchInv.getInvoiceId();
 		final boolean isReversal = invoiceBL.isReversal(invoiceId);
@@ -599,7 +599,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
-		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request.getCostSegmentAndElement());
 
 		final CostAmount negateAmount = request.getAmt().negate();
 		if (isInboundTrx)

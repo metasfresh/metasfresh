@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -128,8 +129,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	@Nullable
 	private List<SqlQueryUnion<T>> unions;
-
-	private boolean forUpdateSkipLocked = false;
 
 	protected TypedSqlQuery(
 			@NonNull final Properties ctx,
@@ -278,20 +277,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public TypedSqlQuery<T> setOrderBy(final IQueryOrderBy orderBy)
 	{
 		this.queryOrderBy = orderBy;
-		return this;
-	}
-
-	/**
-	 * Enable PostgreSQL FOR UPDATE SKIP LOCKED clause for optimized concurrent row locking.
-	 * When enabled, the query will lock returned rows and automatically skip rows that are already locked by other transactions.
-	 * This is useful for work queue implementations where multiple processors poll concurrently.
-	 *
-	 * @param forUpdateSkipLocked true to add FOR UPDATE SKIP LOCKED to the query
-	 * @return this query instance for method chaining
-	 */
-	public TypedSqlQuery<T> setForUpdateSkipLocked(final boolean forUpdateSkipLocked)
-	{
-		this.forUpdateSkipLocked = forUpdateSkipLocked;
 		return this;
 	}
 
@@ -1263,11 +1248,29 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
-		// Add FOR UPDATE SKIP LOCKED clause if enabled
-		// This must come after ORDER BY but before LIMIT
-		if (forUpdateSkipLocked)
+		// Append the row-locking clause (FOR UPDATE / FOR UPDATE SKIP LOCKED) after ORDER BY.
+		// Fail fast: locking clauses are only valid for SELECT statements, and PostgreSQL
+		// forbids them with UNION or GROUP BY.
+		final ForUpdate forUpdate = getForUpdate();
+		if (forUpdate != ForUpdate.NONE)
 		{
-			sqlBuffer.append("\n FOR UPDATE SKIP LOCKED");
+			final String sel = selectClause != null ? selectClause.toString().replaceAll("^\\s+", "") : "";
+			if (!sel.isEmpty() && !sel.regionMatches(true, 0, "SELECT", 0, 6))
+			{
+				throw new AdempiereException("Locking clause (FOR UPDATE/...) is only valid for SELECT statements")
+						.appendParametersToMessage();
+			}
+			if (unions != null && !unions.isEmpty())
+			{
+				throw new AdempiereException("FOR UPDATE cannot be combined with UNION queries")
+						.appendParametersToMessage();
+			}
+			if (groupByClause != null && groupByClause.length() > 0)
+			{
+				throw new AdempiereException("FOR UPDATE cannot be combined with GROUP BY")
+						.appendParametersToMessage();
+			}
+			sqlBuffer.append("\n ").append(forUpdate.getSqlClause());
 		}
 
 		String sql = sqlBuffer.toString();

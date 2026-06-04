@@ -72,7 +72,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		if (costCollectorType.isMaterialReceipt())
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isCoOrByProductReceipt())
@@ -81,13 +81,13 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			final CostDetailCreateRequest requestEffective = request.withQty(request.getQty().negate());
 			
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(requestEffective);
+			currentCost = utils.getCurrentCostForUpdate(requestEffective);
 			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCost(request);
+			currentCost = utils.getCurrentCostForUpdate(request);
 			result = createComponentIssue(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isActivityControl())

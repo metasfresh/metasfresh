@@ -6,8 +6,9 @@
 
 | Module | Covered | Total | % |
 |---|---|---|---|
-| Login / Home | 8 | 10 | 80% |
-| Picking | 44 | 47 | 94% |
+| Login / Home | 8 | 11 | 73% |
+| Barcode Scanner Modes | 5 | 8 | 63% |
+| Picking | 46 | 49 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -39,8 +40,35 @@
 | Scan HU ID (M_HU_ID) from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan ExternalBarcode from home screen → navigates to HU Manager, qty shown | `home_screen.spec.js` |
 | Scan workplace QR code from home screen → opens Workplace Manager, name and assigned status shown | `home_screen.spec.js` |
+| ❌ Generated HU QR code scan from home screen → navigates correctly | — |
 
-**4/4 — 100%**
+**4/5 — 80%**
+
+---
+
+## Barcode Scanner Modes
+
+### HTML state of #input-text
+
+| Scenario | Test |
+|---|---|
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+
+**1/1 — 100%**
+
+### Scan paths
+
+| Scenario | Test |
+|---|---|
+| Mode A — DataWedge IME: set input value + fire input/change + Enter keyup → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C1 — Keystroke scanner: keydown events on window, rate-based buffering → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C2 — Ctrl+V paste: clipboard mocked, keydown Ctrl+V on window → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| Mode C3 — Manual typing: fill visible editable input + Enter → barcode forwarded | `barcode_scanner_modes.spec.js` |
+| ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
+| ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
+| ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
+
+**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
 
 ---
 
@@ -135,8 +163,10 @@
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
+| DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
+| DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 
-**5/5 — 100%**
+**7/7 — 100%**
 
 ### Product-based picking
 

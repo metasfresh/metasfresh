@@ -2,41 +2,41 @@ DROP VIEW IF EXISTS historical_m_inout_json_v
 ;
 
 CREATE OR REPLACE VIEW historical_m_inout_json_v AS
-SELECT io.m_inout_id                                   AS "Shipment_ID",
-       io.documentno                                   AS "Shipment_DocumentNo",
-       io.movementdate                                 AS "Shipment_Date",
-       io.docstatus                                    AS "DocStatus",
-       dt.docbasetype                                  AS "DocType_Base",
-       io.ExternalId                                   AS "ExternalId",
-       io.updated::timestamp                           AS "Updated",
-       esystem.value                                   AS "ExternalSystemCode",
+SELECT io.m_inout_id                                      AS "Shipment_ID",
+       io.documentno                                      AS "Shipment_DocumentNo",
+       io.movementdate                                    AS "Shipment_Date",
+       io.docstatus                                       AS "DocStatus",
+       dt.docbasetype                                     AS "DocType_Base",
+       io.ExternalId                                      AS "ExternalId",
+       io.updated::timestamp                              AS "Updated",
+       COALESCE(esystem.value, '')::character varying(40) AS "ExternalSystemCode",
        (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
                 ELSE ''
-        END)                                           AS "DataSource",
-       o.c_order_id                                    AS "Order_ID",
-       o.dateordered                                   AS "Order_Date",
-       o.datepromised                                  AS "Order_DatePromised",
-       COALESCE(o.poreference, io.poreference)         AS "Order_POReference",
-       o.edi_desadv_id                                 AS "DESADV_ID",
-       COALESCE(o.deliveryviarule, io.deliveryviarule) AS "DeliveryViaRule",
-       partner.value                                   AS "BPartnerValue",
-       bPartnerExternalReference.externalreference     AS "BPartnerExternalReference",
-       bPartnerExternalSystem.value                    AS "BPartnerExternalSystemValue",
+        END)                                              AS "DataSource",
+       o.c_order_id                                       AS "Order_ID",
+       o.dateordered                                      AS "Order_Date",
+       o.datepromised                                     AS "Order_DatePromised",
+       COALESCE(o.poreference, io.poreference)            AS "Order_POReference",
+       o.edi_desadv_id                                    AS "DESADV_ID",
+       COALESCE(o.deliveryviarule, io.deliveryviarule)    AS "DeliveryViaRule",
+       partner.value                                      AS "BPartnerValue",
+       bPartnerExternalReference.externalreference        AS "BPartnerExternalReference",
+       bPartnerExternalSystem.value                       AS "BPartnerExternalSystemValue",
 
-       bp_supplier.bpartner_json                       AS "Supplier",
-       bpl_supplier.bpartner_location_json             AS "Supplier_Location",
-       bp_buyer.bpartner_json                          AS "Buyer",
-       bpl_buyer.bpartner_location_json                AS "Buyer_Location",
-       bp_bill.bpartner_json                           AS "Invoicee",
-       bpl_bill.bpartner_location_json                 AS "Invoicee_Location",
-       bp_handover.bpartner_json                       AS "DeliveryParty",
-       bpl_handover.bpartner_location_json             AS "DeliveryParty_Location",
-       bp_dropship.bpartner_json                       AS "UltimateConsignee",
-       bpl_dropship.bpartner_location_json             AS "UltimateConsignee_Location",
+       bp_supplier.bpartner_json                          AS "Supplier",
+       bpl_supplier.bpartner_location_json                AS "Supplier_Location",
+       bp_buyer.bpartner_json                             AS "Buyer",
+       bpl_buyer.bpartner_location_json                   AS "Buyer_Location",
+       bp_bill.bpartner_json                              AS "Invoicee",
+       bpl_bill.bpartner_location_json                    AS "Invoicee_Location",
+       bp_handover.bpartner_json                          AS "DeliveryParty",
+       bpl_handover.bpartner_location_json                AS "DeliveryParty_Location",
+       bp_dropship.bpartner_json                          AS "UltimateConsignee",
+       bpl_dropship.bpartner_location_json                AS "UltimateConsignee_Location",
 
-       curr.currency_json                              AS "Currency",
+       curr.currency_json                                 AS "Currency",
 
        (SELECT JSONB_AGG(JSONB_BUILD_OBJECT(
                                  'LineNo', iol.line,
@@ -47,12 +47,12 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
                                  'QtyEntered', iol.qtyentered,
                                  'UOM', uom.uomsymbol,
                                  'ExternalId', iol.externalid
-                             ) ORDER BY iol.line)
+                         ) ORDER BY iol.line)
         FROM m_inoutline iol
                  LEFT JOIN m_product p ON p.m_product_id = iol.m_product_id
                  LEFT JOIN c_uom uom ON uom.c_uom_id = iol.c_uom_id
         WHERE iol.m_inout_id = io.m_inout_id
-          AND iol.isactive = 'Y')                      AS "Lines",
+          AND iol.isactive = 'Y')                         AS "Lines",
 
        -- Carrier / parcel tracking infos.
        -- A shipment's physical packages are M_ShippingPackage rows (linked by M_InOut_ID).
@@ -72,25 +72,25 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
                                  'HeightInCm', par.heightincm,
                                  'PackageDescription', par.packagedescription,
                                  'Items', (SELECT JSONB_AGG(JSONB_BUILD_OBJECT(
-                                                             'ProductValue', it.articlevalue,
-                                                             'ProductName', it.productname,
-                                                             'QtyShipped', it.qtyshipped,
-                                                             'UOM', uom.uomsymbol,
-                                                             'TotalWeightInKg', it.totalweightinkg,
-                                                             'CustomsTariffNumber', it.customstariffnumber
-                                                         ) ORDER BY it.carrier_shipmentorder_item_id)
+                                                                    'ProductValue', it.articlevalue,
+                                                                    'ProductName', it.productname,
+                                                                    'QtyShipped', it.qtyshipped,
+                                                                    'UOM', uom.uomsymbol,
+                                                                    'TotalWeightInKg', it.totalweightinkg,
+                                                                    'CustomsTariffNumber', it.customstariffnumber
+                                                            ) ORDER BY it.carrier_shipmentorder_item_id)
                                            FROM carrier_shipmentorder_item it
                                                     LEFT JOIN c_uom uom ON uom.c_uom_id = it.c_uom_id
                                            WHERE it.carrier_shipmentorder_parcel_id = par.carrier_shipmentorder_parcel_id
                                              AND it.isactive = 'Y')
-                             ) ORDER BY par.carrier_shipmentorder_parcel_id)
+                         ) ORDER BY par.carrier_shipmentorder_parcel_id)
         FROM m_shippingpackage sp
                  JOIN carrier_shipmentorder_parcel par
                       ON par.m_package_id = sp.m_package_id AND par.isactive = 'Y'
                  JOIN carrier_shipmentorder cso
                       ON cso.carrier_shipmentorder_id = par.carrier_shipmentorder_id
                  LEFT JOIN m_shipper shp ON shp.m_shipper_id = cso.m_shipper_id
-        WHERE sp.m_inout_id = io.m_inout_id)           AS "Parcels"
+        WHERE sp.m_inout_id = io.m_inout_id)              AS "Parcels"
 
 FROM m_inout io
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = io.C_DocType_ID
@@ -116,5 +116,6 @@ FROM m_inout io
          LEFT JOIN json_object.bpartner_location_object_v bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
          LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = io.externalsystem_id
 WHERE io.isactive = 'Y'
-ORDER BY io.movementdate DESC, io.updated DESC, io.m_inout_id DESC
+  AND io.processed = 'Y' /*only output items where movementdate won't change */
+ORDER BY io.movementdate, io.m_inout_id
 ;
