@@ -90,10 +90,10 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
 ;
 
 -- en_US translation
--- 2026-06-03T13:00:00Z
+-- 2026-06-03T13:00:02Z
 UPDATE AD_Window_Trl
 SET Name = 'Stock per week', IsTranslated = 'Y',
-    Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+    Updated = TO_TIMESTAMP('2026-06-03 13:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Window_ID = 542159 AND AD_Language = 'en_US'
 ;
 
@@ -124,8 +124,8 @@ INSERT INTO AD_Tab
      InternalName, MaxQueryRecords, Name, Processing, SeqNo, TabLevel)
 VALUES
     (0, 0, 549289 /*From ID Server*/, 542159, 542612, 584946 /*From ID Server*/,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
      'de.metas.material.dispo', 'Y', 'N', 'Y',
      'Y', 'N', 'N', 'N',
      'N', 'Y', 'Y', 'N',
@@ -202,6 +202,11 @@ UPDATE AD_Element_Trl
 SET Name = 'Available (ATP)', PrintName = 'Available (ATP)', IsTranslated = 'Y',
     Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 584945 AND AD_Language = 'en_US'
+;
+
+-- Cascade translation update to all AD_* tables that reference this element
+-- 2026-06-03T13:00:00Z
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584945)
 ;
 
 -- ============================================================
@@ -358,7 +363,9 @@ SELECT AD_Element_Link_Create_Missing_Field(780693)
 -- Field: Bestand pro Woche -> Bestand pro Woche -> Verfügbar (ATP)
 -- Column: MD_Stock_PerWeek_V.QtyATP (AD_Column_ID=592711, AD_Element_ID=584821)
 -- AD_Name_ID = 584945 (StockPerWeek_ATP element — label override)
--- 2026-06-03T13:00:00Z
+-- Timestamp 13:00:01 so field_trl.updated differs from element_trl.updated (13:00:00),
+-- ensuring update_FieldTranslation_From_AD_Name_Element guard (f_trl.updated <> e_trl.updated) passes.
+-- 2026-06-03T13:00:01Z
 INSERT INTO AD_Field
     (AD_Client_ID, AD_Org_ID, AD_Field_ID, AD_Tab_ID, AD_Column_ID, AD_Name_ID,
      Created, CreatedBy, Updated, UpdatedBy,
@@ -368,8 +375,8 @@ INSERT INTO AD_Field
      SeqNo, SeqNoGrid)
 VALUES
     (0, 0, 780694 /*From ID Server*/, 549289, 592711, 584945 /*From ID Server*/,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     TO_TIMESTAMP('2026-06-03 13:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
      10, 'de.metas.material.dispo', 'Y',
      'Y', 'Y', 'N',
      'N', 'N', 'Y', 'N', 'Verfügbar (ATP)',
@@ -377,7 +384,7 @@ VALUES
 ;
 
 -- AD_Field_Trl en_US for QtyATP: "Available (ATP)", IsTranslated='Y'
--- 2026-06-03T13:00:00Z
+-- 2026-06-03T13:00:01Z
 INSERT INTO AD_Field_Trl
     (AD_Language, AD_Field_ID, Description, Help, Name,
      IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -391,15 +398,15 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
 ;
 
 -- Override en_US translation to "Available (ATP)"
--- 2026-06-03T13:00:00Z
+-- 2026-06-03T13:00:01Z
 UPDATE AD_Field_Trl
 SET Name = 'Available (ATP)', IsTranslated = 'Y',
-    Updated = TO_TIMESTAMP('2026-06-03 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+    Updated = TO_TIMESTAMP('2026-06-03 13:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Field_ID = 780694 AND AD_Language = 'en_US'
 ;
 
 -- Use the label override element for field translation
--- 2026-06-03T13:00:00Z
+-- 2026-06-03T13:00:01Z
 SELECT update_FieldTranslation_From_AD_Name_Element(584945)
 ;
 

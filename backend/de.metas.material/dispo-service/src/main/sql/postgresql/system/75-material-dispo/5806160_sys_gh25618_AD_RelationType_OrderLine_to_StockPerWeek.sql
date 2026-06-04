@@ -12,7 +12,7 @@
 INSERT INTO AD_Reference
     (AD_Client_ID, AD_Org_ID, AD_Reference_ID, Created, CreatedBy, EntityType, IsActive, IsOrderByValue, Name, Updated, UpdatedBy, ValidationType)
 VALUES
-    (0, 0, 542100 /*From ID Server*/, TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.material.dispo', 'Y', 'N', 'RelType C_OrderLine->MD_Stock_PerWeek_V (target)', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'T')
+    (0, 0, 542100 /*From ID Server*/, TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.material.dispo', 'Y', 'N', 'RelType C_OrderLine->MD_Stock_PerWeek_V (Ziel)', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'T')
 ;
 
 -- 2026-06-04
@@ -25,6 +25,14 @@ WHERE l.IsActive = 'Y'
   AND (l.IsSystemLanguage = 'Y')
   AND t.AD_Reference_ID = 542100
   AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Reference_ID = t.AD_Reference_ID)
+;
+
+-- en_US translation for target reference: "RelType C_OrderLine->MD_Stock_PerWeek_V (target)"
+-- 2026-06-04
+UPDATE AD_Reference_Trl
+SET Name='RelType C_OrderLine->MD_Stock_PerWeek_V (target)', IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Reference_ID=542100 AND AD_Language='en_US'
 ;
 
 -- 2026-06-04
@@ -44,21 +52,21 @@ VALUES
      'N', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
      'M_Product_ID = @M_Product_ID@
 AND M_Warehouse_ID = MD_getStockWarehouse( (SELECT o.M_Warehouse_ID FROM C_Order o WHERE o.C_Order_ID = @C_Order_ID/0@) )
-AND WeekStartDate >= date_trunc(''week'', COALESCE(@DatePromised@, now()))::date')
+AND WeekStartDate >= date_trunc(''week'', COALESCE(NULLIF(NULLIF(''@DatePromised@'',''null''),'''')::date, now()::date))::date')
 ;
 
 -- 2026-06-04
--- AD_RelationType: directed zoom from C_OrderLine (source=271) to MD_Stock_PerWeek_V (target=542100)
+-- AD_RelationType: zoom from C_OrderLine (source=271) to MD_Stock_PerWeek_V (target=542100)
 --   Source ref 271: "C_OrderLine SO" — ValidationType=T, AD_Table_ID=260 (C_OrderLine), no WhereClause
---   IsDirected=Y: zoom is one-way (from order line to stock view)
+--   IsDirected omitted (legacy column not in I_AD_RelationType model; DB default='N')
 --   Role_Source: label shown on the C_OrderLine side (DE: "Auftrag", EN: "Order")
 --   Role_Target: label shown on the stock-per-week side (DE: "Bestand pro Woche" / EN: "Stock per week")
 INSERT INTO AD_RelationType
     (AD_Client_ID, AD_Org_ID, AD_Reference_Source_ID, AD_Reference_Target_ID, AD_RelationType_ID,
      Created, CreatedBy, EntityType, InternalName, IsActive, IsTableRecordIdTarget,
-     Name, Role_Source, Role_Target, Updated, UpdatedBy, IsDirected)
+     Name, Role_Source, Role_Target, Updated, UpdatedBy)
 VALUES
     (0, 0, 271, 542100, 540499 /*From ID Server*/,
      TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'de.metas.material.dispo', 'C_OrderLine_MD_Stock_PerWeek', 'Y', 'N',
-     'C_OrderLine -> MD_Stock_PerWeek_V', 'Auftrag', 'Bestand pro Woche', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'Y')
+     'C_OrderLine -> MD_Stock_PerWeek_V', 'Auftrag', 'Bestand pro Woche', TO_TIMESTAMP('2026-06-04 00:00:00','YYYY-MM-DD HH24:MI:SS'), 100)
 ;
