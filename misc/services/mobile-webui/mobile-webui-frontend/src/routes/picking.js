@@ -7,7 +7,6 @@ import PickProductsScanScreen from '../containers/activities/picking/PickProduct
 import { toUrl } from '../utils';
 import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
 import { ReopenLUScreen } from '../containers/activities/picking/ReopenLUScreen';
-import { PickingTargetType } from '../constants/PickingTargetType';
 import { appLaunchersLocation } from './launchers';
 import { APPLICATION_ID_Picking } from '../apps/picking';
 
@@ -104,22 +103,14 @@ export const pickingRoutes = [
     Component: ReopenLUScreen,
   },
   {
+    // Exactly one route may match a given URL: routes render as siblings without a <Switch>,
+    // so a duplicate (e.g. a literal-'tu' route beside this :type one) would double-mount the screen.
     path: selectPickingTargetScreenLocation({
       applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
       type: ':type',
-    }),
-    Component: SelectPickTargetScreen,
-  },
-  {
-    path: selectPickingTargetScreenLocation({
-      applicationId: ':applicationId',
-      wfProcessId: ':workflowId',
-      activityId: ':activityId',
-      lineId: ':lineId',
-      type: PickingTargetType.TU,
     }),
     Component: SelectPickTargetScreen,
   },

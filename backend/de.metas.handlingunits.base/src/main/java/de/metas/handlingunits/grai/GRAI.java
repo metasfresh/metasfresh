@@ -2,6 +2,7 @@ package de.metas.handlingunits.grai;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
@@ -118,6 +119,24 @@ public class GRAI implements Comparable<GRAI>
 		return new GRAI(companyPrefix + "." + assetType + "." + serial);
 	}
 
+	/**
+	 * @return the GS1 company prefix part of the canonical {@code companyPrefix.assetType.serial} value.
+	 */
+	@NonNull
+	public String getCompanyPrefix()
+	{
+		return canonicalValue.substring(0, canonicalValue.indexOf('.'));
+	}
+
+	/**
+	 * @return the asset-type part of the canonical {@code companyPrefix.assetType.serial} value.
+	 */
+	@NonNull
+	public String getAssetType()
+	{
+		return canonicalValue.substring(canonicalValue.indexOf('.') + 1, canonicalValue.lastIndexOf('.'));
+	}
+
 	@Override
 	@Deprecated
 	public String toString() {return toCanonicalString();}
@@ -127,6 +146,12 @@ public class GRAI implements Comparable<GRAI>
 	public String toCanonicalString()
 	{
 		return canonicalValue;
+	}
+
+	@NonNull
+	public ScannedCode toScannedCode()
+	{
+		return ScannedCode.ofString(canonicalValue);
 	}
 
 	@Override
