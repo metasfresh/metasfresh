@@ -90,9 +90,7 @@ SELECT io.m_inout_id                                      AS "Shipment_ID",
                  JOIN carrier_shipmentorder cso
                       ON cso.carrier_shipmentorder_id = par.carrier_shipmentorder_id
                  LEFT JOIN m_shipper shp ON shp.m_shipper_id = cso.m_shipper_id
-        WHERE sp.m_inout_id = io.m_inout_id)              AS "Parcels",
-
-       (io.processed = 'Y')                              AS "Processed"
+        WHERE sp.m_inout_id = io.m_inout_id)              AS "Parcels"
 
 FROM m_inout io
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = io.C_DocType_ID
@@ -118,5 +116,6 @@ FROM m_inout io
          LEFT JOIN json_object.bpartner_location_object_v bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
          LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = io.externalsystem_id
 WHERE io.isactive = 'Y'
-ORDER BY io.movementdate DESC, io.updated DESC, io.m_inout_id DESC
+  AND io.processed = 'Y' /*only output items where movementdate won't change */
+ORDER BY io.movementdate, io.m_inout_id
 ;
