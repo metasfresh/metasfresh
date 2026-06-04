@@ -1,7 +1,8 @@
 -- Run mode: SWING_CLIENT
 
 -- me03#30198: Add Description, Help and parameter descriptions to Available_For_Sales_JSON.
--- Limit (542992) and Offset (542993) params already exist; this migration adds text only.
+-- Limit (542992) and Offset (542993) params already exist; this migration adds text and
+-- sets Limit as mandatory (with default 2000) so it appears pre-filled in the process dialog.
 
 -- ============================================================
 -- Available_For_Sales_JSON (AD_Process_ID=585498)
@@ -58,7 +59,7 @@ UPDATE AD_Process_Para_Trl SET Description='Suchschlüssel des Lagers', IsTransl
 WHERE AD_Process_Para_ID=543002 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- Limit (542992)
-UPDATE AD_Process_Para SET Description='Maximale Anzahl zurückgegebener Datensätze. Standard und Maximum: 2000', Updated=now(), UpdatedBy=100
+UPDATE AD_Process_Para SET IsMandatory='Y', DefaultValue='2000', Description='Maximale Anzahl zurückgegebener Datensätze. Standard und Maximum: 2000', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID=542992;
 
 UPDATE AD_Process_Para_Trl SET Description='Maximum number of records to return. Default and maximum: 2000', IsTranslated='Y', Updated=now(), UpdatedBy=100
@@ -78,13 +79,13 @@ UPDATE AD_Process_Para_Trl SET Description='Anzahl der zu überspringenden Daten
 WHERE AD_Process_Para_ID=542993 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- ProductValue (543029)
-UPDATE AD_Process_Para SET Description='Produktschlüssel', Updated=now(), UpdatedBy=100
+UPDATE AD_Process_Para SET Description='Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID=543029;
 
-UPDATE AD_Process_Para_Trl SET Description='Product identifier', IsTranslated='Y', Updated=now(), UpdatedBy=100
+UPDATE AD_Process_Para_Trl SET Description='Product identifier; "val-<search key>", "ext-<external ID>" or internal M_Product_ID', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID=543029 AND AD_Language='en_US';
 
-UPDATE AD_Process_Para_Trl SET Description='Produktschlüssel', IsTranslated='Y', Updated=now(), UpdatedBy=100
+UPDATE AD_Process_Para_Trl SET Description='Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID', IsTranslated='Y', Updated=now(), UpdatedBy=100
 WHERE AD_Process_Para_ID=543029 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- ProductExternalReference (543030)
