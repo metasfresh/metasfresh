@@ -333,6 +333,22 @@ class ReconcileQtyReservationsCommandTest
 		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("60"));
 	}
 
+	@Test
+	void deletesPhantomFromCancelledLine_whenQtyOrderedIsZero()
+	{
+		// The phantom scan runs BEFORE the over-reservation guard, so a zero-Qty row on a cancelled
+		// (QtyOrdered=0) line is still deleted even though that line has no shrink to perform.
+		final OrderId orderId = createSalesOrder();
+		final OrderLineId orderLineId = createOrderLine(orderId, BigDecimal.ZERO);
+
+		createReservationRecord(orderLineId, SupplyType.PLANNED_SUPPLY, BigDecimal.ZERO, new BigDecimal("3"));
+
+		service.reconcileToOrderedQty(orderId);
+
+		// phantom deleted; nothing left on the line
+		assertThat(loadRecords(orderLineId)).isEmpty();
+	}
+
 	// --- helpers ---
 
 	private int createWarehouseId()
