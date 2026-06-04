@@ -12,10 +12,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_U
                            Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
 VALUES (0, 7802600, 0, 548506, 553740,
         6519990 /*From ID Server*/, 'F',
-        now(), 100, 'Y',
+        TO_TIMESTAMP('2026-06-04 10:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'Y',
         'N', 'N', 'Y', 'N',
         'N', 'N', 0,
         'Array-Fan-Out', 20, 0, 0,
-        now(), 100)
+        TO_TIMESTAMP('2026-06-04 10:00:00','YYYY-MM-DD HH24:MI:SS'), 100)
 ON CONFLICT (AD_UI_Element_ID) DO NOTHING
 ;
