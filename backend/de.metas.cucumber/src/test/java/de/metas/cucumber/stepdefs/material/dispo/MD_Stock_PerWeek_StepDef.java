@@ -53,6 +53,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Step definitions for asserting the {@code MD_Stock_PerWeek_V} weekly aggregation view.
  *
@@ -187,7 +189,7 @@ public class MD_Stock_PerWeek_StepDef
 					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, mainRecord.getMD_Candidate_ID())
 					.create()
 					.count();
-			org.assertj.core.api.Assertions.assertThat(candidateCount)
+			assertThat(candidateCount)
 					.as("Seeded MD_Candidate for identifier=%s must exist in DB", row.getAsString("Identifier"))
 					.isEqualTo(1);
 		});
