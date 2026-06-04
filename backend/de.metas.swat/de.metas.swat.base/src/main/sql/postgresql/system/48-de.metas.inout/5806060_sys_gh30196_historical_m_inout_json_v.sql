@@ -1,7 +1,15 @@
-DROP VIEW IF EXISTS historical_m_inout_json_v
+-- Source DDL: backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/ddl/views/historical_m_inout_json_v.sql
+-- gh30196: make the Historical Shipments JSON export usable for non-external-system shipments.
+--   * ExternalSystemCode -> COALESCE(esystem.value, '')::varchar(40): never NULL, so the process's
+--     mandatory "ExternalSystemCode ILIKE '%'" clause is always-true again (it was turned exclusionary
+--     when #21515 swapped the original never-null DataSource wrapper for the null-able ExternalSystemCode).
+--   * WHERE io.processed = 'Y': only export processed shipments (drafts may still change/disappear).
+--   * ORDER BY io.movementdate, io.m_inout_id.
+
+DROP VIEW IF EXISTS historical_m_inout_json_v$new
 ;
 
-CREATE OR REPLACE VIEW historical_m_inout_json_v AS
+CREATE OR REPLACE VIEW historical_m_inout_json_v$new AS
 SELECT io.m_inout_id                                      AS "Shipment_ID",
        io.documentno                                      AS "Shipment_DocumentNo",
        io.movementdate                                    AS "Shipment_Date",
@@ -90,9 +98,7 @@ SELECT io.m_inout_id                                      AS "Shipment_ID",
                  JOIN carrier_shipmentorder cso
                       ON cso.carrier_shipmentorder_id = par.carrier_shipmentorder_id
                  LEFT JOIN m_shipper shp ON shp.m_shipper_id = cso.m_shipper_id
-        WHERE sp.m_inout_id = io.m_inout_id)              AS "Parcels",
-
-       (io.processed = 'Y')                              AS "Processed"
+        WHERE sp.m_inout_id = io.m_inout_id)              AS "Parcels"
 
 FROM m_inout io
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = io.C_DocType_ID
@@ -118,5 +124,17 @@ FROM m_inout io
          LEFT JOIN json_object.bpartner_location_object_v bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
          LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = io.externalsystem_id
 WHERE io.isactive = 'Y'
-ORDER BY io.movementdate DESC, io.updated DESC, io.m_inout_id DESC
+  AND io.processed = 'Y' /*only output items where movementdate won't change */
+ORDER BY io.movementdate, io.m_inout_id
+;
+
+SELECT db_alter_view(
+    'historical_m_inout_json_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('historical_m_inout_json_v$new'))
+)
+;
+
+DROP VIEW IF EXISTS historical_m_inout_json_v$new
 ;

@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.shipment;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -64,10 +65,14 @@ public class ShipmentCreateCommand
 		// 2. Prepare candidates and generate the shipment
 		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = request.getQuantityType() != null
+				? M_ShipmentSchedule_QuantityTypeToUse.ofCode(request.getQuantityType())
+				: M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER;
+
 		final List<ShipmentScheduleWithHU> candidates = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
 						.schedules(ShipmentScheduleAndJobSchedulesCollection.ofShipmentSchedules(shipmentSchedules))
-						.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.quantityTypeToUse(quantityTypeToUse)
 						.build());
 
 		if (candidates.isEmpty())
@@ -75,8 +80,12 @@ public class ShipmentCreateCommand
 			throw new AdempiereException("No candidates found for shipment schedules of order " + orderId);
 		}
 
+		// complete defaults to true (preserving the pre-existing behaviour: completed shipment).
+		// complete=false leaves the M_InOut as a DRAFT (DocStatus='DR', Processed='N').
+		final boolean complete = CoalesceUtil.coalesce(request.getComplete(), Boolean.TRUE);
+
 		final InOutGenerateResult result = huShipmentScheduleBL.createInOutProducerFromShipmentSchedule()
-				.setProcessShipments(true)
+				.setProcessShipments(complete)
 				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY)
 				.createShipments(candidates);
 
