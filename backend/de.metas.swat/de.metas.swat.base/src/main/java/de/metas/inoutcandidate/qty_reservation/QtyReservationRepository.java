@@ -16,6 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -24,6 +26,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository for loading {@link QtyReservation} domain objects from the {@code M_QtyReservation} table.
+ * <p>
+ * Repository Tables: M_QtyReservation
+ * Repository Cluster: QtyReservationRepository (sole owner)
  */
 @Repository
 public class QtyReservationRepository
@@ -107,6 +112,51 @@ public class QtyReservationRepository
 	{
 		final int deleteCount = toSqlQuery(request).create().delete();
 		return deleteCount > 0;
+	}
+
+	/**
+	 * Physically deletes the given reservation rows by ID (same delete mechanism as
+	 * {@link #deleteReservation(DeleteQtyReservationRequest)}, but targeted at specific rows
+	 * to avoid removing sibling reservations sharing the same supply-type bucket).
+	 */
+	public void deleteByIds(@NonNull final Set<QtyReservationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		// IDs come from getActiveByOrderLineId (IsActive=Y, Processed=false), so no further filter is needed here.
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
+						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
+				.create()
+				.delete();
+	}
+
+	/**
+	 * For the given reservation IDs, returns whether each is a PLANNED_SUPPLY reservation (vs ON_HAND).
+	 * Used to order reservations PS-before-OH when trimming, since {@link QtyReservation} does not expose SupplyType.
+	 */
+	@NonNull
+	public Map<QtyReservationId, Boolean> getIsPlannedSupplyByIds(@NonNull final Set<QtyReservationId> ids)
+	{
+		final Map<QtyReservationId, Boolean> result = new HashMap<>();
+		if (ids.isEmpty())
+		{
+			return result;
+		}
+
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID,
+						ids.stream().map(QtyReservationId::getRepoId).collect(ImmutableList.toImmutableList()))
+				.create()
+				.stream()
+				.forEach(record -> result.put(
+						QtyReservationId.ofRepoId(record.getM_QtyReservation_ID()),
+						SupplyType.ofCode(record.getSupplyType()).isPlannedSupply()));
+		return result;
 	}
 
 	/**
