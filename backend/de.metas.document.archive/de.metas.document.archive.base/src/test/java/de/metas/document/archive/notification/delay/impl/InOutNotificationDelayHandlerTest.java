@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * TDD tests for {@link InOutNotificationDelayHandler}.
  *
- * <p>Verifies that the handler bases its readiness check on the shipper gateway + shipping
- * packages + tracking URLs of the shipment ({@code M_InOut}) carried by the doc-outbound log,
- * rather than Carrier_Advising_Status.</p>
+ * <p>Verifies that the handler bases its readiness check on {@code M_InOut.IsSOTrx} plus the
+ * shipper gateway + shipping packages + tracking URLs of the shipment ({@code M_InOut}) carried
+ * by the doc-outbound log.</p>
  */
 public class InOutNotificationDelayHandlerTest
 {

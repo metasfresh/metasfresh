@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
  *       non-blank {@code TrackingURL}. Any missing URL — or any package/order/parcel gap in the
  *       chain — causes a <em>delay</em>.</li>
  * </ol>
- * When the shipment satisfies condition 3, the notification is released (returns {@code false}).</p>
+ * When none of the above conditions causes a delay, the notification is released (returns {@code false}).</p>
  */
 @Component
 public class InOutNotificationDelayHandler implements DocOutboundNotificationDelayHandler
