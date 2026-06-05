@@ -22,21 +22,23 @@
 -- migrated partner the coalesce falls through to the default row and returns the original value
 -- (behaviour preserved); a location-specific row, when present, takes precedence (feature intent).
 --
+-- Host-table columns are referenced via @JoinTableNameOrAliasIncludingDot@ (the WebUI aliases the
+-- host table as "master" in grids); the new-table alias "s" stays literal.
 -- All four are virtual columns (no physical backing) — only AD_Column.ColumnSQL changes; no DDL.
 
 -- M_ShipmentSchedule.IsEdiDesadvRecipient (keyed on C_Bpartner_ID + C_BPartner_Location_ID)
 UPDATE AD_Column SET ColumnSQL =
 '(SELECT COALESCE(
     (SELECT s.IsEdiDesadvRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = M_ShipmentSchedule.C_Bpartner_ID
-         AND s.C_BPartner_Location_ID = M_ShipmentSchedule.C_BPartner_Location_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@C_Bpartner_ID
+         AND s.C_BPartner_Location_ID = @JoinTableNameOrAliasIncludingDot@C_BPartner_Location_ID
          AND s.IsActive = ''Y'' LIMIT 1),
     (SELECT s.IsEdiDesadvRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = M_ShipmentSchedule.C_Bpartner_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@C_Bpartner_ID
          AND s.C_BPartner_Location_ID IS NULL
          AND s.IsActive = ''Y'' LIMIT 1),
     ''N''))',
-Updated = now(), UpdatedBy = 100
+Updated = TO_TIMESTAMP('2026-06-05 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'M_ShipmentSchedule')
   AND ColumnName = 'IsEdiDesadvRecipient'
 ;
@@ -45,15 +47,15 @@ WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'M_Shipm
 UPDATE AD_Column SET ColumnSQL =
 '(SELECT COALESCE(
     (SELECT s.IsEdiInvoicRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = C_Order.Bill_BPartner_ID
-         AND s.C_BPartner_Location_ID = C_Order.Bill_Location_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@Bill_BPartner_ID
+         AND s.C_BPartner_Location_ID = @JoinTableNameOrAliasIncludingDot@Bill_Location_ID
          AND s.IsActive = ''Y'' LIMIT 1),
     (SELECT s.IsEdiInvoicRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = C_Order.Bill_BPartner_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@Bill_BPartner_ID
          AND s.C_BPartner_Location_ID IS NULL
          AND s.IsActive = ''Y'' LIMIT 1),
     ''N''))',
-Updated = now(), UpdatedBy = 100
+Updated = TO_TIMESTAMP('2026-06-05 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order')
   AND ColumnName = 'IsEdiInvoicRecipient'
 ;
@@ -62,15 +64,15 @@ WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order
 UPDATE AD_Column SET ColumnSQL =
 '(SELECT COALESCE(
     (SELECT s.IsEdiInvoicRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = C_Invoice.C_BPartner_ID
-         AND s.C_BPartner_Location_ID = C_Invoice.C_BPartner_Location_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@C_BPartner_ID
+         AND s.C_BPartner_Location_ID = @JoinTableNameOrAliasIncludingDot@C_BPartner_Location_ID
          AND s.IsActive = ''Y'' LIMIT 1),
     (SELECT s.IsEdiInvoicRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = C_Invoice.C_BPartner_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@C_BPartner_ID
          AND s.C_BPartner_Location_ID IS NULL
          AND s.IsActive = ''Y'' LIMIT 1),
     ''N''))',
-Updated = now(), UpdatedBy = 100
+Updated = TO_TIMESTAMP('2026-06-05 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
   AND ColumnName = 'IsEdiInvoicRecipient'
 ;
@@ -79,15 +81,15 @@ WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoi
 UPDATE AD_Column SET ColumnSQL =
 '(SELECT COALESCE(
     (SELECT s.IsEdiInvoicRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = C_Invoice_Candidate.Bill_BPartner_ID
-         AND s.C_BPartner_Location_ID = C_Invoice_Candidate.Bill_Location_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@Bill_BPartner_ID
+         AND s.C_BPartner_Location_ID = @JoinTableNameOrAliasIncludingDot@Bill_Location_ID
          AND s.IsActive = ''Y'' LIMIT 1),
     (SELECT s.IsEdiInvoicRecipient FROM C_BPartner_EDI_Setting s
-       WHERE s.C_BPartner_ID = C_Invoice_Candidate.Bill_BPartner_ID
+       WHERE s.C_BPartner_ID = @JoinTableNameOrAliasIncludingDot@Bill_BPartner_ID
          AND s.C_BPartner_Location_ID IS NULL
          AND s.IsActive = ''Y'' LIMIT 1),
     ''N''))',
-Updated = now(), UpdatedBy = 100
+Updated = TO_TIMESTAMP('2026-06-05 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice_Candidate')
   AND ColumnName = 'IsEdiInvoicRecipient'
 ;
