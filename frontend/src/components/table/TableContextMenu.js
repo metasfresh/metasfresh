@@ -300,6 +300,11 @@ class TableContextMenu extends Component {
             key={`reference_${reference.id}`}
             caption={reference.caption}
             icon="meta-icon-share"
+            dataCy={
+              reference.internalName
+                ? `reference-${reference.internalName}`
+                : undefined
+            }
             onClick={() => {
               this.handleReferenceClick(
                 reference.targetWindowId,
@@ -342,6 +347,7 @@ const ContextMenuItem = ({
   shortcut,
   onClick,
   pending = false,
+  dataCy,
 }) => {
   return (
     <div
@@ -349,6 +355,7 @@ const ContextMenuItem = ({
         'context-menu-item-pending': pending,
       })}
       onClick={!pending ? onClick : null}
+      data-cy={dataCy}
     >
       {icon && <i className={icon} />}
       {` ${caption}`}
@@ -363,6 +370,7 @@ ContextMenuItem.propTypes = {
   shortcut: PropTypes.string,
   onClick: PropTypes.func.isRequired,
   pending: PropTypes.bool,
+  dataCy: PropTypes.string,
 };
 
 export default connect()(TableContextMenu);
