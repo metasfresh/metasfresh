@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1543849737L;
+	private static final long serialVersionUID = -893759826L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -731,6 +731,21 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final @Nullable BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -1277,6 +1292,17 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setTrackingURL (final @Nullable java.lang.String TrackingURL)
+	{
+		throw new IllegalArgumentException ("TrackingURL is virtual column");	}
+
+	@Override
+	public java.lang.String getTrackingURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_TrackingURL);
+	}
+
+	@Override
 	public org.compiere.model.I_C_ElementValue getUser1()
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
@@ -1354,20 +1380,5 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setExternalSystem_ID (final int ExternalSystem_ID)
-	{
-		if (ExternalSystem_ID < 1)
-			set_Value (COLUMNNAME_ExternalSystem_ID, null);
-		else
-			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
-	}
-
-	@Override
-	public int getExternalSystem_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }
