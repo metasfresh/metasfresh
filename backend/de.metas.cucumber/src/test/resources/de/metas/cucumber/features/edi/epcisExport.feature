@@ -42,9 +42,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_EPCIS_010 | Y          | ps_EPCIS_010       | 9900000600010 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_EPCIS_010  | true                 | 9900000600010         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier               |
+      | bp_EPCIS_010  | true                 | 9900000600010         | edi_setting_EPCIS_010_bp |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
@@ -197,9 +197,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_EPCIS_030 | Y          | ps_EPCIS_030       | 9900000600030 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_EPCIS_030  | true                 | 9900000600030         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier               |
+      | bp_EPCIS_030  | true                 | 9900000600030         | edi_setting_EPCIS_030_bp |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
@@ -283,9 +283,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartners:
       | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S29231_130   | Y          | ps_S29231_130      | 9900000291300 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID   | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_130   | true                 | 9900000291300         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | bp_S29231_130 | true                 | 9900000291300         | edi_setting_S29231_130_bp   |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID  | M_Product_ID  |
@@ -522,9 +522,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
       | bpLoc_S29231_170 | 2900000291700 | bp_S29231_170 | true                | true         |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_170 | true                 | 9900000291700         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S29231_170 | true                 | 9900000291700         | edi_setting_S29231_170_bp |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |

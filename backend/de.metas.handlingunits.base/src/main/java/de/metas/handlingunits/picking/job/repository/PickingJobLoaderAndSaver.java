@@ -11,6 +11,7 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -524,7 +525,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+			final GRAI grai = GRAI.ofNullableCanonicalString(record.getCurrent_PickTo_TU_GRAI());
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption, grai);
 		}
 		else
 		{

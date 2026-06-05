@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
@@ -119,17 +119,17 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			//
 			// Export & enlist feedback
 			final List<Exception> exportFeedback = new ArrayList<>();
-			final BPartnerId bPartnerId = export.getBPartnerId();
+			final BPartnerLocationId bpLocationId = export.getBPartnerLocationId();
 			final EDIType ediType = export.getEDIType();
-			if(ediType.isDesadv() && edibPartnerConfigService.isDESADVReplicationInterfaceRecipient(bPartnerId))
+			if(ediType.isDesadv() && edibPartnerConfigService.isDESADVReplicationInterfaceRecipient(bpLocationId))
 			{
 				Loggables.addLog("Exporting ediDocumentNo={} via Replication Interface", ediDocument.getDocumentNo());
 				exportFeedback.addAll(export.doExport());
 			}
-			else if(ediType.isDesadv() && edibPartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId))
+			else if(ediType.isDesadv() && edibPartnerConfigService.isDESADVExternalSystemRecipient(bpLocationId))
 			{
 				Loggables.addLog("Exporting ediDocumentNo={} via External System", ediDocument.getDocumentNo());
-				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getDESADVExternalSystemParentConfigId(bPartnerId);
+				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getDESADVExternalSystemParentConfigId(bpLocationId);
 
 				// in the case of externalSystem we want to always send 1 per inout, independent of SYS_CONFIG_OneDesadvPerShipment
 				final String tableName = getTableName(ediDocument);
@@ -179,16 +179,16 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				}
 
 			}
-			else if (ediType.isInvoic() && edibPartnerConfigService.isINVOICReplicationInterfaceRecipient(bPartnerId))
+			else if (ediType.isInvoic() && edibPartnerConfigService.isINVOICReplicationInterfaceRecipient(bpLocationId))
 			{
 				Loggables.addLog("Exporting ediDocumentNo={} via Replication Interface", ediDocument.getDocumentNo());
 				exportFeedback.addAll(export.doExport());
 			}
-			else if (ediType.isInvoic() && edibPartnerConfigService.isINVOICExternalSystemRecipient(bPartnerId))
+			else if (ediType.isInvoic() && edibPartnerConfigService.isINVOICExternalSystemRecipient(bpLocationId))
 			{
 				Loggables.addLog("Exporting ediDocumentNo={} via External System", ediDocument.getDocumentNo());
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(ediDocument, I_C_Invoice.class);
-				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getINVOICExternalSystemParentConfigId(bPartnerId);
+				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getINVOICExternalSystemParentConfigId(bpLocationId);
 				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID());
 				InterfaceWrapperHelper.refresh(invoice);
 				if(result.getPInstanceId() != null)

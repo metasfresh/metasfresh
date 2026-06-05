@@ -78,6 +78,17 @@ FROM (SELECT
           s.IsDisplayed,
           COALESCE(s.PreparationDate_Override, s.PreparationDate)                 AS PreparationDate,
           s.ShipmentAllocation_BestBefore_Policy,
+          -- 'Y' if there is at least one not-yet-processed picked qty already bound to a (draft) shipment line:
+          (CASE
+               WHEN EXISTS (SELECT 1
+                            FROM M_ShipmentSchedule_QtyPicked sqp
+                            WHERE sqp.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
+                              AND sqp.IsActive = 'Y'
+                              AND sqp.Processed = 'N'
+                              AND sqp.M_InOutLine_ID IS NOT NULL)
+                   THEN 'Y'
+                   ELSE 'N'
+           END)                                                                   AS IsPickQtyOnDraftShipment,
 
           --
           -- Product & ASI
@@ -189,7 +200,7 @@ SELECT db_alter_view(
                'm_packageable_v',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE views.table_name = 'm_packageable_v$new')
+                WHERE lower(views.table_name) = lower('m_packageable_v$new'))
        )
 ;
 

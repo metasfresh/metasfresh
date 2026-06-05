@@ -35,8 +35,11 @@ Feature: EDI_cctop_invoic_v export format
 
   # Test Kunde 1
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID     | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  | OPT.EdiInvoicRecipientGLN  | OPT.IsEdiInvoicRecipient | OPT.DeliveryRule |
-      | 2156425                  | name2     | bPartnerVaTaxID | true                     | bPartnerDesadvRecipientGLN | bPartnerInvoicRecipientGLN | true                     | F                |
+      | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID     | OPT.DeliveryRule |
+      | 2156425                  | name2     | bPartnerVaTaxID | F                |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | IsEdiInvoicRecipient | EdiInvoicRecipientGLN      | Identifier             |
+      | 2156425       | true                 | bPartnerDesadvRecipientGLN | true                 | bPartnerInvoicRecipientGLN | edi_setting_export_sc1 |
 
   # metasfresh AG
     And the following c_bpartner is changed
@@ -149,8 +152,8 @@ Feature: EDI_cctop_invoic_v export format
 
     #  Test Kunde 1
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID | OPT.EdiDesadvRecipientGLN | OPT.EdiInvoicRecipientGLN | OPT.IsEdiInvoicRecipient | OPT.DeliveryRule |
-      | 2156425                  | null      | null        | null                      | null                      | false                    | null             |
+      | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID | OPT.DeliveryRule |
+      | 2156425                  | null      | null        | null             |
 
     #  metasfresh AG
     And the following c_bpartner is changed
@@ -173,8 +176,11 @@ Feature: EDI_cctop_invoic_v export format
 
     # Test Kunde 1
     Given the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN | OPT.DeliveryRule |
-      | 2156425                  | true                     | 1234567890123             | F                |
+      | C_BPartner_ID.Identifier | OPT.DeliveryRule |
+      | 2156425                  | F                |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier             |
+      | 2156425       | true                 | 1234567890123         | edi_setting_export_sc2 |
 
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.GLN       |
@@ -246,8 +252,8 @@ Feature: EDI_cctop_invoic_v export format
 
      #  Test Kunde 1
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN | OPT.DeliveryRule |
-      | 2156425                  | false                    | null                      | null             |
+      | C_BPartner_ID.Identifier | OPT.DeliveryRule |
+      | 2156425                  | null             |
 
 
   @from:cucumber
@@ -284,8 +290,11 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_150     | Y          | ps_150             | 1234567890123 |
     And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | DeliveryRule |
-      | bp_150        | true                 | 1234567890123         | F            |
+      | C_BPartner_ID | DeliveryRule |
+      | bp_150        | F            |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier           |
+      | bp_150        | true                 | 1234567890123         | edi_setting_S150_bp1 |
 
     And load EXP_Processor_Type
       | EXP_Processor_Type_ID.Identifier | Value    |
