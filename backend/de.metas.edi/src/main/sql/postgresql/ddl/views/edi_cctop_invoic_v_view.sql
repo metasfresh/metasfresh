@@ -52,7 +52,8 @@ SELECT i.C_Invoice_ID                                                           
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END     AS Shipment_DocumentNo
      , taxAndSurchage.TotalVAT
      , taxAndSurchage.TotalTaxBaseAmt
-     , COALESCE(rbp.EdiInvoicRecipientGLN, rl.GLN)                                                          AS ReceiverGLN
+     -- EdiInvoicRecipientGLN moved to C_BPartner_EDI_Setting; coalesce exact-location then partner-default
+     , COALESCE(edi_setting_loc.EdiInvoicRecipientGLN, edi_setting_def.EdiInvoicRecipientGLN, rl.GLN)      AS ReceiverGLN
      , rl.C_BPartner_Location_ID
      , (SELECT DISTINCT ON (REGEXP_REPLACE(sl.GLN, '\s+$', '')) REGEXP_REPLACE(sl.GLN, '\s+$', '') AS GLN
         FROM C_BPartner_Location sl
@@ -109,7 +110,15 @@ FROM C_Invoice i
                                AND io.DocStatus IN ('CO', 'CL')
                              ORDER BY inv.c_invoice_id NULLS LAST, io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
-         LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
+         -- EDI setting: coalesce exact-location row then partner-default for EdiInvoicRecipientGLN
+         LEFT JOIN c_bpartner_edi_setting edi_setting_loc
+              ON edi_setting_loc.c_bpartner_id = i.C_BPartner_ID
+             AND edi_setting_loc.c_bpartner_location_id = i.C_BPartner_Location_ID
+             AND edi_setting_loc.isactive = 'Y'
+         LEFT JOIN c_bpartner_edi_setting edi_setting_def
+              ON edi_setting_def.c_bpartner_id = i.C_BPartner_ID
+             AND edi_setting_def.c_bpartner_location_id IS NULL
+             AND edi_setting_def.isactive = 'Y'
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID
          LEFT JOIN C_Location l ON l.C_Location_ID = rl.C_Location_ID
          LEFT JOIN C_Currency c ON c.C_Currency_ID = i.C_Currency_ID

@@ -38,11 +38,9 @@ import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
-import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
-import de.metas.edi.api.EDISendingMode;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
@@ -89,7 +87,6 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
@@ -102,7 +99,6 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IncotermLocation;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsTaxExempt;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
@@ -131,7 +127,6 @@ public class C_BPartner_StepDef
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
-	@NonNull private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -296,12 +291,6 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 		}
 
-		final boolean isEdiDesadvRecipient = row.getAsOptionalBoolean(COLUMNNAME_IsEdiDesadvRecipient).orElseFalse();
-		final boolean isEdiInvoicRecipient = row.getAsOptionalBoolean(COLUMNNAME_IsEdiInvoicRecipient).orElseFalse();
-
-		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
-		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
-
 		final String companyName = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CompanyName).orElse(null);
 		if (EmptyUtil.isNotBlank(companyName))
 		{
@@ -406,21 +395,6 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId)));
-
-		bPartnerRecord.setIsEdiDesadvRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient).orElseFalse());
-
-		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN).ifPresent(ediDesadvRecipientGLN -> bPartnerRecord.setEdiDesadvRecipientGLN(DataTableUtil.nullToken2Null(ediDesadvRecipientGLN)));
-		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN).ifPresent(ediInvoicRecipientGLN -> bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN)));
-
-		bPartnerRecord.setIsEdiInvoicRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient).orElseFalse());
-
-		bPartnerRecord.setEdiDESADVSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADVSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
-		bPartnerRecord.setEdiINVOICSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOICSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
-
-		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID)
-				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
-		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID)
-				.ifPresent(identifier -> bPartnerRecord.setEdiINVOIC_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
 
