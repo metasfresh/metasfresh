@@ -10,9 +10,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
-import org.compiere.model.I_M_Attribute;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.LUExtractTUsRequest;
@@ -92,7 +89,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -789,40 +785,10 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
-		// The destination TU may contain VHUs from multiple batches (e.g. different COO per batch).
-		// Find the VHU whose storage-relevant attributes match the source HU so that VHU_ID in
-		// M_ShipmentSchedule_QtyPicked reflects the correct per-batch attributes for InOutLine
-		// ASI generation. If no matching VHU is found, fall back to the destination TU itself.
-		final I_M_HU vhu = findMatchingVHUInTU(tu.toHU(), getHuIdToBePicked());
-		addShipmentScheduleQtyPicked(vhu != null ? vhu : tu.toHU(), qtyPicked);
-	}
-
-	@Nullable
-	private I_M_HU findMatchingVHUInTU(@NonNull final I_M_HU destinationTU, @NonNull final HuId pickFromHUId)
-	{
-		final IMutableHUContext huCtx = HUContextHolder.getCurrent();
-		final IHUStorageFactory huStorageFactory = huCtx.getHUStorageFactory();
-		final ProductId productId = getProductId();
-
-		final I_M_HU pickFromHU = handlingUnitsDAO.getById(pickFromHUId);
-		final IAttributeStorage pickFromAttributes =
-				huCtx.getHUAttributeStorageFactory().getAttributeStorage(pickFromHU);
-
-		return handlingUnitsDAO.retrieveIncludedHUs(destinationTU)
-				.stream()
-				.filter(h -> huService.isVirtual(h))
-				.filter(h -> huStorageFactory.getStorage(h).getQuantity(productId).map(q -> !q.isZero()).orElse(false))
-				.filter(h -> {
-					final IAttributeStorage destAttrs =
-							huCtx.getHUAttributeStorageFactory().getAttributeStorage(h);
-					return pickFromAttributes.getAttributes().stream()
-							.filter(I_M_Attribute::isStorageRelevant)
-							.allMatch(attr -> Objects.equals(
-									pickFromAttributes.getValue(attr),
-									destAttrs.hasAttribute(attr) ? destAttrs.getValue(attr) : null));
-				})
-				.findFirst()
-				.orElse(null);
+		// Record the destination TU. When it contains multiple VHUs with different UseInASI
+		// attributes (e.g. COO), IHUShipmentScheduleBL.createCandidatesForQtyPicked expands it
+		// into per-VHU candidates at shipment generation time → correct InOutLine split.
+		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
 	}
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TUPart cu, @NonNull final Quantity qtyPicked)

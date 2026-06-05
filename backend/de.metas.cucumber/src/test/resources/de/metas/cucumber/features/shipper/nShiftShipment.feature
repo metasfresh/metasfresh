@@ -663,10 +663,7 @@ Feature: nShift Shipment
   # Pick: mobile picking picks FROM tu_mixed_130 (non-virtual TU with VHU_IT + VHU_DE inside).
   #   Gap: findMatchingVHUInTU finds no prior VHU in the empty destination TU
   #        → falls back to destination TU as VHU_ID → single ASI → no COO split.
-  # Fix direction: when source is non-virtual TU with mixed VHUs, create one
-  #   M_ShipmentSchedule_QtyPicked per child VHU instead of one per TU pick.
   @from:cucumber
-  @ignore
   @Id:S0355_DeliveryOrder_130
   Scenario: nShift COO — pre-packed mixed-origin TU produces per-COO InOutLines when picked
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
@@ -752,7 +749,6 @@ Feature: nShift Shipment
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID    | DocStatus |
       | ss_coo_130            | inout_coo_130 | CO        |
-    # FIXME: expected 2 InOutLines split by COO — currently 1 InOutLine (no COO split)
     And validate the created shipment lines
       | M_InOut_ID    | M_Product_ID | MovementQty | M_AttributeSetInstance_ID |
       | inout_coo_130 | product      | 6           | asi_IT_130                |

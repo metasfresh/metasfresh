@@ -22,7 +22,10 @@ VALUES
      'KeepExistingValueAttributeSplitterStrategy',
      'de.metas.handlingunits.attribute.strategy.impl.KeepExistingValueAttributeSplitterStrategy');
 
+SELECT backup_table('m_hu_pi_attribute', '_gh30044_coo_splitter');
 UPDATE M_HU_PI_Attribute
-SET    SplitterStrategy_JavaClass_ID = 540101
+SET    SplitterStrategy_JavaClass_ID = 540101,
+       Updated    = TO_TIMESTAMP('2026-06-04 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy  = 99
 WHERE  M_Attribute_ID  = 1000001
   AND  PropagationType = 'TOPD';
