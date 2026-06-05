@@ -623,20 +623,27 @@ public class PickingJobService implements PickingSlotListener
 	 * framework, and {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}
 	 * stamps the GRAI on it afterwards via {@link PickingJobHUService#setGrais}.
 	 *
-	 * @param lineId      the picking-job line being picked; used to resolve the line's product for capacity checks.
+	 * @param lineId      the picking-job line being picked; used to resolve the line's product for capacity checks
+	 *                    and the effective LU target for the TU-allowed-on-LU check.
+	 *                    {@code null} → header-level (no-line) scan: both the per-product capacity check and the
+	 *                    TU-allowed-on-LU check are skipped (they are per-line validations re-applied per-line at
+	 *                    pick time); the TU target is stored at job level.
 	 * @param scannedGrai the raw scanned GRAI barcode.
 	 */
 	public PickingJob createTUFromGRAI(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingJobLineId lineId,
+			@Nullable final PickingJobLineId lineId,
 			@NonNull final ScannedCode scannedGrai)
 	{
-		final Optional<LUPickingTarget> luTargetOpt = pickingJob.getLuPickingTargetEffective(lineId);
-		final PickingJobLine line = pickingJob.getLineById(lineId);
+		// Header-level (lineId == null) scan: resolve the TU type from the GRAI only.
+		// The per-product capacity check (needs a line product) and the TU-allowed-on-LU check (a per-line
+		// validation) are both skipped here and re-applied per-line at pick time, so the LU target is not passed.
+		final LUPickingTarget luTarget = (lineId != null) ? pickingJob.getLuPickingTargetEffective(lineId).orElse(null) : null;
+		final ProductId lineProductId = (lineId != null) ? pickingJob.getLineById(lineId).getProductId() : null;
 		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
 				scannedGrai,
-				luTargetOpt.orElse(null),
-				line.getProductId());
+				luTarget,
+				lineProductId);
 
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
