@@ -58,7 +58,7 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 		return ShipmentScheduleId.ofRepoId(event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_shipmentScheduleId, -1));
 	}
 
-	private static ClientAndOrgId extractClientAndOrgId(final @NonNull Event event)
+	private static @NonNull ClientAndOrgId extractClientAndOrgId(final @NonNull Event event)
 	{
 		final int adClientId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Client_ID, -1);
 		final int adOrgId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Org_ID, -1);

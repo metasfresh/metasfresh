@@ -426,8 +426,8 @@ public class WarehouseBL implements IWarehouseBL
 		{
 			return false;
 		}
-		
-		if(warehouse.isAutoDistributionOrder())
+
+		if (warehouse.isAutoDistributionOrder())
 		{
 			return true;
 		}
