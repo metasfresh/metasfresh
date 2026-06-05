@@ -2,12 +2,13 @@
 @allure.label.epic:E0280_Document_and_Email_Management
 @allure.label.feature:F00280
 @ghActions:run_on_executor7
-Feature: Invoice notification email is delayed until carrier tracking URLs are present
+Feature: Shipment notification email is delayed until carrier tracking URLs are present
   As a logistics operator,
-  I want invoice notification emails to be held back until the carrier has confirmed
+  I want the shipment notification email to be held back until the carrier has confirmed
   the shipment by providing a tracking URL,
-  so that customers always receive the tracking link together with their invoice.
-  The gate is controlled by SysConfig delayNotificationUntilShipmentConfirmedByCarrier.
+  so that customers always receive the tracking link with their shipment notification.
+  The gate is controlled by SysConfig delayNotificationUntilShipmentConfirmedByCarrier and
+  applies only to customer shipments (M_InOut.IsSOTrx='Y').
 
   Background:
     Given infrastructure and metasfresh are running
@@ -21,7 +22,7 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
     And update C_Doc_Outbound_Config IsAutoSendDocument:
       | TableName | IsAutoSendDocument |
-      | C_Invoice | true               |
+      | M_InOut   | true               |
     And load M_Shipper:
       | Identifier | Name   |
       | nShift     | nShift |
@@ -95,13 +96,12 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | Identifier | Value               | Name                | IsVendor | IsCustomer | M_PricingSystem_ID | OPT.InvoiceRule |
       | customer   | notifdelay_customer | NotifDelay Customer | N        | Y          | ps                 | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | GLN           | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City   | Address1 | OPT.EMail             |
-      | customerLocation | 8888801111110 | customer      | CH           | Y               | Y               | 12345  | Zurich | Main St. | invoice@notiftest.com |
-    # Stable Name + EMail so reruns reuse the same AD_User.
-    # IsBillToContact_Default=true + IsInvoiceEmailEnabled=Y lets the invoice recipient lookup find this contact.
+      | Identifier       | GLN           | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City   | Address1 | OPT.EMail              |
+      | customerLocation | 8888801111110 | customer      | CH           | Y               | Y               | 12345  | Zurich | Main St. | shipment@notiftest.com |
+    # Stable Name + EMail so reruns reuse the same AD_User; ship-to contact so the shipment recipient lookup finds it.
     And metasfresh contains AD_Users:
-      | Identifier      | Name                     | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.EMail             | OPT.IsBillToContact_Default | OPT.IsInvoiceEmailEnabled |
-      | customerContact | NotifDelay Customer User | customer                     | customerLocation                      | invoice@notiftest.com | true                        | Y                         |
+      | Identifier      | Name                     | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.EMail              | OPT.IsShipToContact_Default |
+      | customerContact | NotifDelay Customer User | customer                     | customerLocation                      | shipment@notiftest.com | true                        |
     And metasfresh contains Carrier_Products:
       | Identifier | M_Shipper_ID |
       | cp1        | nShift       |
@@ -114,7 +114,7 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | cs2        | nShift       |
 
   @from:cucumber
-  Scenario: Invoice mail workpackage is skipped while TrackingURL is absent, then released once TrackingURL is set
+  Scenario: Shipment mail workpackage is skipped while TrackingURL is absent, then released once TrackingURL is set
 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
@@ -143,23 +143,11 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | Carrier_ShipmentOrder_ID | TrackingURL |
       | cso                      | null        |
 
-    # ── invoice candidate → invoice ──────────────────────────────────────────
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-    And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic                                | so_l1                     | 10           |
-    When process invoice candidates
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic                                |
-    Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic                                | invoice                 |
-
-    # ── assert: mail WP is held because TrackingURL is still blank ────────────
+    # ── assert: shipment mail WP is held because TrackingURL is still blank ────
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
-    Then after not more than 30s, MailWorkpackageProcessor workpackage for invoice is in state:
-      | C_Invoice_ID | ExpectedState |
-      | invoice      | skipped       |
+    Then after not more than 30s, MailWorkpackageProcessor workpackage for document is in state:
+      | Record_ID | ExpectedState |
+      | shipment  | skipped       |
 
     # ── set TrackingURL to release the gate ───────────────────────────────────
     And update Carrier_ShipmentOrder_Parcel TrackingURL:
@@ -168,17 +156,17 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
     # "released" = the WP ran past the delay gate (either processed or attempted to send);
     # we do not assert actual SMTP delivery here — that depends on the test infra mail config
-    Then after not more than 60s, MailWorkpackageProcessor workpackage for invoice is in state:
-      | C_Invoice_ID | ExpectedState |
-      | invoice      | released      |
+    Then after not more than 60s, MailWorkpackageProcessor workpackage for document is in state:
+      | Record_ID | ExpectedState |
+      | shipment  | released      |
 
-    # ── assert outbound log was produced ─────────────────────────────────────
+    # ── assert outbound log was produced for the shipment ─────────────────────
     And after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType |
-      | outboundLog                      | invoice              | C_Invoice     | ARI             |
+      | outboundLog                      | shipment             | M_InOut       | MMS             |
 
   @from:cucumber
-  Scenario: Invoice mail workpackage is sent immediately when TrackingURL is already present
+  Scenario: Shipment mail workpackage is sent immediately when TrackingURL is already present
 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
@@ -207,28 +195,16 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
       | Carrier_ShipmentOrder_ID | awb | TrackingURL |
       | cso2                     | awb | trackingUrl |
 
-    # ── invoice candidate → invoice ──────────────────────────────────────────
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-    And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic2                               | so2_l1                    | 10           |
-    When process invoice candidates
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic2                               |
-    Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic2                               | invoice2                |
-
-    # ── assert: mail WP was NOT skipped — goes straight to sending ───────────
+    # ── assert: shipment mail WP was NOT held — goes straight past the gate ────
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
-    Then after not more than 60s, MailWorkpackageProcessor workpackage for invoice is in state:
-      | C_Invoice_ID | ExpectedState |
-      | invoice2     | released      |
+    Then after not more than 60s, MailWorkpackageProcessor workpackage for document is in state:
+      | Record_ID | ExpectedState |
+      | shipment2 | released      |
 
-    # ── assert outbound log was produced ─────────────────────────────────────
+    # ── assert outbound log was produced for the shipment ─────────────────────
     And after not more than 60s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType |
-      | outboundLog2                     | invoice2             | C_Invoice     | ARI             |
+      | outboundLog2                     | shipment2            | M_InOut       | MMS             |
 
   @from:cucumber
   @ghActions:run_on_executor7
@@ -240,4 +216,4 @@ Feature: Invoice notification email is delayed until carrier tracking URLs are p
     And set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
     And update C_Doc_Outbound_Config IsAutoSendDocument:
       | TableName | IsAutoSendDocument |
-      | C_Invoice | false              |
+      | M_InOut   | false              |
