@@ -1,4 +1,4 @@
--- gh30044: Show IsOnlyIfInProductAttributeSet in the M_HU_PI_Attribute grid
+﻿-- gh30044: Show IsOnlyIfInProductAttributeSet in the M_HU_PI_Attribute grid
 --          (window 540344, tab Merkmale) and fix PI 100/101 COO + weight entries.
 --
 -- Root cause: PI 100 (TU template) had IsOnlyIfInProductAttributeSet=Y for COO,
@@ -35,7 +35,7 @@ UPDATE AD_Element_Trl
 SET    Name         = 'Nur wenn in Produkt-Merkmalgruppe',
        PrintName   = 'Nur wenn in Merkmalgruppe',
        Description = 'Merkmal nur anzeigen, wenn es in der Merkmalgruppe des Produktes enthalten ist. Nur wirksam wenn Anzeigen gesetzt ist.',
-       IsTranslated = 'Y',
+       IsTranslated = 'N',
        Updated     = TO_TIMESTAMP('2026-06-05 00:00:10', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy   = 100
 WHERE  AD_Element_ID = 544096 AND AD_Language IN ('de_DE', 'de_CH');
@@ -64,33 +64,33 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(544096);
 -- 1b. German translations for untranslated elements used in tab 540825
 UPDATE AD_Element_Trl
 SET    Name = 'Anzeigen', PrintName = 'Anzeigen',
-       IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-06-05 00:00:13', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+       IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-06-05 00:00:13', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 368 AND AD_Language IN ('de_DE', 'de_CH');  -- IsDisplayed
 
 UPDATE AD_Element_Trl
 SET    Name = 'Weitergabetyp', PrintName = 'Weitergabetyp',
-       IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-06-05 00:00:14', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+       IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-06-05 00:00:14', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 542193 AND AD_Language IN ('de_DE', 'de_CH');  -- PropagationType
 
 UPDATE AD_Element_Trl
 SET    Name = 'Aggregierungsstrategie', PrintName = 'Aggregierungsstrategie',
-       IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-06-05 00:00:15', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+       IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-06-05 00:00:15', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 542198 AND AD_Language IN ('de_DE', 'de_CH');  -- AggregationStrategy_JavaClass_ID
 
 UPDATE AD_Element_Trl
 SET    Name = 'Splitter-Strategie', PrintName = 'Splitter-Strategie',
-       IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-06-05 00:00:16', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+       IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-06-05 00:00:16', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 542199 AND AD_Language IN ('de_DE', 'de_CH');  -- SplitterStrategy_JavaClass_ID
 
 
 UPDATE AD_Element_Trl
 SET    Name = 'Transferstrategie', PrintName = 'Transferstrategie',
-       IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-06-05 00:00:17', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+       IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-06-05 00:00:17', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 542463 AND AD_Language IN ('de_DE', 'de_CH');  -- HU_TansferStrategy_JavaClass_ID
 
 UPDATE AD_Element_Trl
 SET    Name = 'In Merkmalausprägung verwenden', PrintName = 'In Merkmalausprägung',
-       IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-06-05 00:00:18', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+       IsTranslated = 'N', Updated = TO_TIMESTAMP('2026-06-05 00:00:18', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE  AD_Element_ID = 542574 AND AD_Language IN ('de_DE', 'de_CH');  -- UseInASI
 
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(368);
@@ -119,8 +119,8 @@ UPDATE AD_UI_Element SET SeqNoGrid = 140, Updated = TO_TIMESTAMP('2026-06-05 00:
 UPDATE AD_UI_Element SET SeqNoGrid = 150, Updated = TO_TIMESTAMP('2026-06-05 00:00:20', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100 WHERE AD_UI_Element_ID = 544333; -- AD_Org_ID
 
 -- 3. Fix IsOnlyIfInProductAttributeSet:
---    PI 100 (TU template): COO was Y — inconsistent with PI 101 (VHU) which has N.
---    PI 101 (VHU): WeightGross and WeightTare were Y — inconsistent with PI 100 (TU template)
+--    PI 100 (TU template): COO was Y -- inconsistent with PI 101 (VHU) which has N.
+--    PI 101 (VHU): WeightGross and WeightTare were Y -- inconsistent with PI 100 (TU template)
 --    which has both as N.  Weight is universally relevant for logistics regardless of product
 --    attribute set, so all three should be N across both PI versions.
 SELECT backup_table('m_hu_pi_attribute', '_gh30044_coo_isonly');
