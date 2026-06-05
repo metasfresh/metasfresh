@@ -36,7 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers the precedence rule of {@link WarehouseBL#isIgnoreInMaterialDispo(WarehouseId)}:
- * an explicit {@code MRP_Exclude} value (Y/N) wins over {@code IsDropShipWarehouse};
+ * {@code IsAutoDistributionOrder=Y} always returns {@code true} (highest priority);
+ * otherwise an explicit {@code MRP_Exclude} value (Y/N) wins over {@code IsDropShipWarehouse};
  * a null/empty {@code MRP_Exclude} falls back to {@code IsDropShipWarehouse}.
  */
 class WarehouseBLTest
@@ -102,11 +103,35 @@ class WarehouseBLTest
 		assertThat(warehouseBL.isIgnoreInMaterialDispo(id)).isFalse();
 	}
 
+	@Test
+	void isAutoDistributionOrderY_returnsTrue()
+	{
+		final WarehouseId id = createWarehouse(null, false, true);
+		assertThat(warehouseBL.isIgnoreInMaterialDispo(id)).isTrue();
+	}
+
+	/**
+	 * Guard against a future "regression-fix" that drops the auto-distribution-order guard:
+	 * {@code IsAutoDistributionOrder=Y} MUST win even when {@code MRP_Exclude=N} and {@code IsDropShipWarehouse=N}.
+	 */
+	@Test
+	void isAutoDistributionOrderY_mrpExcludeN_isDropShipN_returnsTrue_guardCase()
+	{
+		final WarehouseId id = createWarehouse("N", false, true);
+		assertThat(warehouseBL.isIgnoreInMaterialDispo(id)).isTrue();
+	}
+
 	private WarehouseId createWarehouse(@Nullable final String mrpExclude, final boolean isDropShipWarehouse)
+	{
+		return createWarehouse(mrpExclude, isDropShipWarehouse, false);
+	}
+
+	private WarehouseId createWarehouse(@Nullable final String mrpExclude, final boolean isDropShipWarehouse, final boolean isAutoDistributionOrder)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
 		warehouse.setMRP_Exclude(mrpExclude);
 		warehouse.setIsDropShipWarehouse(isDropShipWarehouse);
+		warehouse.setIsAutoDistributionOrder(isAutoDistributionOrder);
 		InterfaceWrapperHelper.saveRecord(warehouse);
 		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
