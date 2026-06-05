@@ -37,9 +37,9 @@ public class InOutNotificationDelayHandler implements DocOutboundNotificationDel
 {
 	public static final String SYSCONFIG_DelayUntilCarrierConfirmed = "delayNotificationUntilShipmentConfirmedByCarrier";
 
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@Override
 	public String getTableName()
@@ -79,7 +79,11 @@ public class InOutNotificationDelayHandler implements DocOutboundNotificationDel
 			return false; // shipper has no gateway configured → no tracking link expected
 		}
 
-		// carrier-tracked shipment: hold until the tracking link the email will render is available
-		return Check.isBlank(inOut.getTrackingURL());
+		// carrier-tracked shipment: hold until the tracking link the email will render is available.
+		// getTrackingURL() is the @Deprecated lazy virtual-column accessor — intentional here: one read
+		// per notification check (not a loop), and it is exactly the value the email body renders.
+		@SuppressWarnings("deprecation")
+		final String trackingURL = inOut.getTrackingURL();
+		return Check.isBlank(trackingURL);
 	}
 }
