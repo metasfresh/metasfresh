@@ -965,16 +965,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 
 		// Case 2: whole-TU-pick — the QtyPicked covers the entire TU content (one pick for all VHUs).
-		// Guard: if the picked qty does not equal the grand total of all VHUs, this QtyPicked covers
+		// Guard: if the picked qty does not equal the total qty across all VHU storages, this QtyPicked covers
 		// only part of the TU and another QtyPicked record covers the rest — fall back to a single
 		// default candidate so each QtyPicked is not independently inflated by the full group sums.
-		// The zero Quantity is derived from any VHU in the map — ImmutableListMultimap never
-		// stores an empty list for a key, and isEmpty() was checked above so at least one entry is present.
-		final Quantity zeroInPickedUOM = storagesByFingerprint.values().iterator().next().getQty().toZero();
-		final Quantity grandTotal = storagesByFingerprint.values().stream()
-				.map(IHUProductStorage::getQty)
-				.reduce(zeroInPickedUOM, Quantity::add);
-		if (grandTotal.getAsBigDecimal().compareTo(pickedQtyBD) != 0)
+		// BigDecimal arithmetic is safe here: UOM consistency is guaranteed (same product → same stocking UOM).
+		final BigDecimal totalVHUQtyBD = storagesByFingerprint.values().stream()
+				.map(productStorage -> productStorage.getQty().getAsBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		if (totalVHUQtyBD.compareTo(pickedQtyBD) != 0)
 		{
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
@@ -984,11 +982,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			final List<IHUProductStorage> group = storagesByFingerprint.get(fingerprint);
 			final IHUProductStorage representative = group.get(0);
-			final Quantity groupQty = group.stream()
+			final Quantity groupStorageQty = group.stream()
 					.map(IHUProductStorage::getQty)
 					.reduce(representative.getQty().toZero(), Quantity::add);
 			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
-					qtyPicked, huContext, representative.getM_HU(), groupQty, qtyTypeToUse));
+					qtyPicked, huContext, representative.getM_HU(), groupStorageQty, qtyTypeToUse));
 		}
 		return result.build();
 	}
@@ -1031,11 +1029,13 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final IHUStorageFactory storageFactory,
 			@NonNull final IAttributeStorageFactory attrFactory)
 	{
+		final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
+		if (productStorage == null || productStorage.isEmpty())
+		{
+			return Stream.empty();
+		}
 		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory);
-		return storageFactory.getStorage(vhu).getProductStorages().stream()
-				.filter(productStorage -> productId.equals(productStorage.getProductId()))
-				.filter(productStorage -> !productStorage.isEmpty())
-				.map(productStorage -> Maps.immutableEntry(fingerprint, productStorage));
+		return Stream.of(Maps.immutableEntry(fingerprint, productStorage));
 	}
 
 	private static AttributesKey computeUseInASIFingerprint(
