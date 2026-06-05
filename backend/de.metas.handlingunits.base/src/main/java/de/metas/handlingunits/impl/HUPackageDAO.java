@@ -61,6 +61,17 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
+	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final PackageId packageId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, packageId)
+				.create()
+				.list(I_M_Package_HU.class);
+	}
+
+	@Override
 	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final Set<HuId> huIds)
 	{
 		return queryBL

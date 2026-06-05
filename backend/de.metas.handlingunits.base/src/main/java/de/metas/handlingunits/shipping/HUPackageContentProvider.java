@@ -35,17 +35,14 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * HU-aware implementation of {@link IPackageContentProvider}.
  *
  * Restricts package content items to InOutLines assigned to the package's HU(s) via
- * M_Package_HU → M_HU_Assignment. Safeguard: when the InOut has only one package,
- * no filtering is applied to preserve existing behaviour.
+ * M_Package_HU → M_HU_Assignment. Returns an empty set (= no filter) when the package
+ * has no HU links recorded in M_Package_HU.
  */
 @Service
 public class HUPackageContentProvider implements IPackageContentProvider
@@ -58,22 +55,7 @@ public class HUPackageContentProvider implements IPackageContentProvider
 			@NonNull final PackageId packageId,
 			@NonNull final InOutId inOutId)
 	{
-		final List<I_M_Package> packages = huPackageDAO.retrievePackagesForShipment(inOutId);
-		if (packages.size() <= 1)
-		{
-			return ImmutableSet.of();
-		}
-
-		final I_M_Package pkg = packages.stream()
-				.filter(p -> PackageId.equals(PackageId.ofRepoId(p.getM_Package_ID()), packageId))
-				.findFirst()
-				.orElse(null);
-		if (pkg == null)
-		{
-			return ImmutableSet.of();
-		}
-
-		final ImmutableSet<HuId> packageHuIds = huPackageDAO.retrievePackageHUs(pkg)
+		final ImmutableSet<HuId> packageHuIds = huPackageDAO.retrievePackageHUs(packageId)
 				.stream()
 				.map(I_M_Package_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)

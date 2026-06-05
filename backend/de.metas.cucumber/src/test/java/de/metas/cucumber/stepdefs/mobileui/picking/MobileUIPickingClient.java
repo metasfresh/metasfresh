@@ -110,7 +110,14 @@ public class MobileUIPickingClient
 		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
 		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
 		return pickingJob.getLuPickingTarget(null);
+	}
 
+	public Optional<TUPickingTarget> getTUPickingTarget(@NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+		return pickingJob.getTuPickingTarget(null);
 	}
 
 	public JsonWFProcess pickLine(JsonPickingStepEvent request)

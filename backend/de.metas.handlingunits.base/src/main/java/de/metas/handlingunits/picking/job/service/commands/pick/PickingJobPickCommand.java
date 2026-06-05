@@ -11,10 +11,8 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import org.adempiere.mm.attributes.AttributeCode;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import org.compiere.model.I_M_Attribute;
-
-import java.util.Objects;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.LUExtractTUsRequest;
@@ -94,6 +92,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -790,9 +789,10 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
-		// The destination TU may contain VHUs from multiple batches packed into it (e.g. different
-		// attribute values per batch). Find the VHU whose attributes match the source HU so that
-		// VHU_ID in QtyPicked reflects the correct per-batch attributes for InOutLine generation.
+		// The destination TU may contain VHUs from multiple batches (e.g. different COO per batch).
+		// Find the VHU whose storage-relevant attributes match the source HU so that VHU_ID in
+		// M_ShipmentSchedule_QtyPicked reflects the correct per-batch attributes for InOutLine
+		// ASI generation. If no matching VHU is found, fall back to the destination TU itself.
 		final I_M_HU vhu = findMatchingVHUInTU(tu.toHU(), getHuIdToBePicked());
 		addShipmentScheduleQtyPicked(vhu != null ? vhu : tu.toHU(), qtyPicked);
 	}
@@ -817,12 +817,9 @@ public class PickingJobPickCommand
 							huCtx.getHUAttributeStorageFactory().getAttributeStorage(h);
 					return pickFromAttributes.getAttributes().stream()
 							.filter(I_M_Attribute::isStorageRelevant)
-							.allMatch(attr -> {
-								final AttributeCode code = AttributeCode.ofString(attr.getValue());
-								return Objects.equals(
-										pickFromAttributes.getValueAsString(code),
-										destAttrs.hasAttribute(code) ? destAttrs.getValueAsString(code) : null);
-							});
+							.allMatch(attr -> Objects.equals(
+									pickFromAttributes.getValue(attr),
+									destAttrs.hasAttribute(attr) ? destAttrs.getValue(attr) : null));
 				})
 				.findFirst()
 				.orElse(null);

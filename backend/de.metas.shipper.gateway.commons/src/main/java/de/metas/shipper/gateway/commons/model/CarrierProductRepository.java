@@ -74,7 +74,7 @@ public class CarrierProductRepository
 				queryBL.createQueryBuilder(I_Carrier_Product.class)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_M_Shipper_ID, shipperId)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_ExternalId, code)
-						.firstOptional()
+						.firstOnlyOptional()
 						.map(CarrierProductRepository::fromProductRecord)
 						.orElse(null));
 	}

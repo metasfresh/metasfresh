@@ -614,8 +614,14 @@ Feature: nShift Shipment
       | product2              | cu_coo_tu_de2 | 3         |
     And complete picking job
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID   | OPT.DocStatus |
-      | ss_coo_tu             | inout_coo_tu | CO            |
+      | M_ShipmentSchedule_ID | M_InOut_ID   | DocStatus |
+      | ss_coo_tu             | inout_coo_tu | CO        |
+    And validate the created shipment lines
+      | M_InOut_ID   | M_Product_ID | MovementQty | M_AttributeSetInstance_ID |
+      | inout_coo_tu | product      | 6           | asi_IT_120                |
+      | inout_coo_tu | product      | 9           | asi_DE_120                |
+      | inout_coo_tu | product2     | 4           | asi_IT_120                |
+      | inout_coo_tu | product2     | 3           | asi_DE_120                |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID   | M_ShipperTransportation_ID |
       | inout_coo_tu | transpOrder_coo_tu         |
@@ -649,6 +655,131 @@ Feature: nShift Shipment
       | cso_coo_tu               | nShift Product   | DE              | 9          | 10    | 90         | 18.9            | 12345678            |
       | cso_coo_tu               | nShift Product 2 | IT              | 4          | 5     | 20         | 4.8             | 12345678            |
       | cso_coo_tu               | nShift Product 2 | DE              | 3          | 5     | 15         | 3.6             | 12345678            |
+
+  # GAP: picking a pre-packed TU that already contains VHUs with different COO values.
+  #
+  # Setup: inventory creates two TUs (each with one VHU). cuToNewTUs packs the IT CU into
+  #   tu_mixed_130. moveCU packs the DE CU into the same tu_mixed_130 — creating a mixed TU.
+  # Pick: mobile picking picks FROM tu_mixed_130 (non-virtual TU with VHU_IT + VHU_DE inside).
+  #   Gap: findMatchingVHUInTU finds no prior VHU in the empty destination TU
+  #        → falls back to destination TU as VHU_ID → single ASI → no COO split.
+  # Fix direction: when source is non-virtual TU with mixed VHUs, create one
+  #   M_ShipmentSchedule_QtyPicked per child VHU instead of one per TU pick.
+  @from:cucumber
+  @ignore
+  @Id:S0355_DeliveryOrder_130
+  Scenario: nShift COO — pre-packed mixed-origin TU produces per-COO InOutLines when picked
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    # Reuse nShift_coo_test shipper and carrier products from scenario 120
+    And contains M_Shippers
+      | Identifier      | Value           | Name            | OPT.ShipperGateway |
+      | nShift_coo_test | nshift_coo_test | nShift COO Test | nshift             |
+    And metasfresh contains Carrier_Configs:
+      | M_Shipper_ID    |
+      | nShift_coo_test |
+    And metasfresh contains Carrier_Products:
+      | Identifier | M_Shipper_ID    |
+      | cp_coo1    | nShift_coo_test |
+    And metasfresh contains Carrier_Goods_Types:
+      | Identifier | M_Shipper_ID    |
+      | cgt_coo1   | nShift_coo_test |
+    And metasfresh contains M_Shipper_Mapping_Configs:
+      | M_Shipper_ID    | SeqNo | MappingAttributeType | MappingGroupKey | MappingAttributeKey | MappingAttributeValue |
+      | nShift_coo_test | 170   | LineDetailGroup      | 1               | 4                   | CountryOfOrigin       |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp_coo1            | cgt_coo1              |
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh_coo_130     |
+    And metasfresh contains M_PickingSlot:
+      | Identifier      | PickingSlot | IsDynamic | M_Warehouse_ID |
+      | pickingSlot_130 | 500         | Y         | wh_coo_130     |
+    And metasfresh contains AD_Users:
+      | Identifier          | Name                      | C_BPartner_ID | EMail                        | Phone            |
+      | customerContact_130 | nShift Customer Contact 4 | customer      | contact4@nshift-test.example | +41 79 123 45 71 |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_IT_130":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "IT"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_DE_130":
+    """
+    {"attributeInstances": [{"attributeCode": "1000001", "valueStr": "DE"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_coo_130    | 2022-12-12   | wh_coo_130     |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier       | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID |
+      | inv_coo_130_l_it | inv_coo_130    | product      | 0       | 6        | PCE          | asi_IT_130                |
+      | inv_coo_130_l_de | inv_coo_130    | product      | 0       | 9        | PCE          | asi_DE_130                |
+    When the inventory identified by inv_coo_130 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID   |
+      | inv_coo_130_l_it   | cu_130_it |
+      | inv_coo_130_l_de   | cu_130_de |
+    # Pack cu_130_it into a new TU (tu_mixed_130), then move cu_130_de into the same TU.
+    # Result: tu_mixed_130 is a non-virtual TU with VHU_IT (6 PCE, COO=IT) + VHU_DE (9 PCE, COO=DE).
+    And transform CU to new TUs
+      | sourceCU  | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs |
+      | cu_130_it | 6     | product_TU_10CU         | tu_mixed_130   |
+    And move CU to existing TU
+      | sourceCU  | targetTU     | qty |
+      | cu_130_de | tu_mixed_130 | 9   |
+    And metasfresh contains C_Orders:
+      | Identifier  | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID    | AD_User_ID          |
+      | so_coo_130  | true    | customer      | 2025-04-01  | wh_coo_130     | nShift_coo_test | customerContact_130 |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_coo_130_l1 | so_coo_130 | product      | 15         |
+    When the order identified by so_coo_130 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_coo_130 | so_coo_130_l1  | N             | cp_coo1            | cgt_coo1              |
+    # Pick FROM tu_mixed_130 — the gap manifests here: non-virtual TU with mixed VHUs
+    When start picking job for sales order identified by so_coo_130
+    And scan picking slot identified by pickingSlot_130
+    And set picking target as new TU identified by TU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | tu_mixed_130 | 15        |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    | DocStatus |
+      | ss_coo_130            | inout_coo_130 | CO        |
+    # FIXME: expected 2 InOutLines split by COO — currently 1 InOutLine (no COO split)
+    And validate the created shipment lines
+      | M_InOut_ID    | M_Product_ID | MovementQty | M_AttributeSetInstance_ID |
+      | inout_coo_130 | product      | 6           | asi_IT_130                |
+      | inout_coo_130 | product      | 9           | asi_DE_130                |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID    | M_ShipperTransportation_ID |
+      | inout_coo_130 | transpOrder_coo_130        |
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier  | M_InOut_ID    |
+      | cso_coo_130 | inout_coo_130 |
+    And validate the captured nShift shipment request:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | NumParcels |
+      | cp_coo1            | cgt_coo1              | 1          |
+    And validate the captured nShift shipment request parcels:
+      | grossWeightKg |
+      | 31.5          |
+    And validate the captured nShift shipment request contents:
+      | productName    | countryOfOrigin | shippedQuantity | unitPrice | totalValue | totalWeightInKg | customsTariff |
+      | nShift Product | IT              | 6               | 10        | 60         | 12.6            | 12345678      |
+      | nShift Product | DE              | 9               | 10        | 90         | 18.9            | 12345678      |
+    And validate Carrier_ShipmentOrder_Parcels:
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+      | cso_coo_130              | awb1 | trackingUrl1 | true        |
+    And validate Carrier_ShipmentOrder_Items:
+      | Carrier_ShipmentOrder_ID | ProductName    | CountryOfOrigin | QtyShipped | Price | TotalPrice | TotalWeightInKg | CustomsTariffNumber |
+      | cso_coo_130              | nShift Product | IT              | 6          | 10    | 60         | 12.6            | 12345678            |
+      | cso_coo_130              | nShift Product | DE              | 9          | 10    | 90         | 18.9            | 12345678            |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

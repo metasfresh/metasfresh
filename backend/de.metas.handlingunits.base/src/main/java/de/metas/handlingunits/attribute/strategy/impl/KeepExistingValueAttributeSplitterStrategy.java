@@ -26,6 +26,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitRequest;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitResult;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
+import de.metas.util.Check;
 import lombok.NoArgsConstructor;
 
 /**
@@ -45,10 +46,7 @@ public final class KeepExistingValueAttributeSplitterStrategy implements IAttrib
 		final IAttributeStorage childStorage = request.getAttributeStorageCurrent();
 		final Object childValue = childStorage.getValue(request.getM_Attribute());
 
-		final boolean childIsEmpty = childValue == null
-				|| (childValue instanceof String && ((String)childValue).isEmpty());
-
-		final Object splitValue = childIsEmpty
+		final Object splitValue = Check.isEmpty(childValue)
 				? request.getValueToSplit()  // child has no value yet — propagate from parent
 				: childValue;                // child already has a value — keep it
 

@@ -91,6 +91,7 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -465,6 +466,17 @@ public class M_HU_StepDef
 	 *                   If given, then there need to be as many CU-identifiers as there are TU-identifiers.</li>
 	 *                   </ul>
 	 */
+	@And("move CU to existing TU")
+	public void moveCUtoExistingTU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> huTrxBL.process(huContext -> {
+			final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupNotNullIn(huTable);
+			final I_M_HU targetTU = row.getAsIdentifier("targetTU").lookupNotNullIn(huTable);
+			final Quantity qty = row.getAsQuantity("qty", "UOM.X12DE355", X12DE355.EACH, uomDAO::getByX12DE355);
+			HUTransformService.newInstance(huContext).cuToExistingTU(sourceCU, qty, targetTU);
+		}));
+	}
+
 	@And("transform CU to new TUs")
 	public void transformCUtoNewTUs(@NonNull final DataTable dataTable)
 	{

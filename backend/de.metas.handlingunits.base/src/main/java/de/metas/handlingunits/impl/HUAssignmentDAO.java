@@ -560,7 +560,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds.stream().map(HuId::getRepoId).collect(ImmutableSet.toImmutableSet()))
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				.create()
 				.list(I_M_HU_Assignment.class);

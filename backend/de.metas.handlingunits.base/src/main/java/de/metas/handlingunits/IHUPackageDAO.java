@@ -40,6 +40,8 @@ public interface IHUPackageDAO extends ISingletonService
 
 	List<I_M_Package_HU> retrievePackageHUs(org.compiere.model.I_M_Package mpackage);
 
+	List<I_M_Package_HU> retrievePackageHUs(@NonNull PackageId packageId);
+
 
 	List<I_M_Package_HU> retrievePackageHUs(Set<HuId> huIds);
 
@@ -77,6 +79,7 @@ public interface IHUPackageDAO extends ISingletonService
 	 * Retrieve all packages that are assigned to a given shipment.
 	 */
 	List<I_M_Package> retrievePackagesForShipment(@NonNull InOutId inOutId);
+
 
 	Collection<PackageId> retainPackageIdsWithHUs(Collection<PackageId> packageIds);
 
