@@ -295,6 +295,53 @@ class PickingJobGraiScanPickEndToEndTest
 	}
 
 	/**
+	 * Header-level (no-line) GRAI scan: scanning a GRAI against the JOB/HEADER-level TU pick-target
+	 * (i.e. {@code lineId == null}) must resolve the TU type from the scanned GRAI and store a
+	 * <b>job-level</b> new-TU {@link TUPickingTarget} that carries both the resolved TU PI (the
+	 * GRAI-mapped type X) and the parsed GRAI.
+	 * <p>
+	 * Mirrors TC1's masterdata ({@link #createGraiTuPI}) but drives the header path: a job-level LU
+	 * picking target is set with {@code lineId == null}, then {@link PickingJobService#createTUFromGRAI}
+	 * is invoked with {@code lineId == null} and the result read back via {@code getTuPickingTarget(null)}.
+	 * <p>
+	 * <b>RED:</b> on the current code {@link PickingJobService#createTUFromGRAI} declares
+	 * {@code @NonNull PickingJobLineId lineId}, so passing {@code null} throws a Lombok-generated
+	 * {@link NullPointerException} before any header-level logic runs. The later fix makes
+	 * {@code lineId} {@code @Nullable} and skips the per-product capacity check at header level.
+	 */
+	@Test
+	void setTUPickingTargetFromGRAI_atHeaderLevel_setsJobLevelTuTargetCarryingGrai()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI", helper.uomEach);
+		final HUPIItemProductId piipId = createGraiTuPI(productId, true); // GRAI-mapped TU PI WITH the GRAI slot
+		helper.createVHUInfo(productId, "100", "QR-VHU-GRAI");
+
+		PickingJob pickingJob = createTuPickingJob(productId, "100", piipId);
+
+		// Set a JOB/HEADER-level LU picking target (lineId == null), mirroring TC3's setLUPickingTarget
+		// but at header level.
+		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-GRAI-HDR", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID());
+		pickingJob = helper.pickingJobService.setLUPickingTarget(pickingJob, /*lineId*/ null,
+				LUPickingTarget.ofPackingInstructions(luPIId, "LU-GRAI-HDR"));
+
+		// Scan the GRAI at HEADER level (lineId == null): resolves the TU type and stores a job-level new-TU target.
+		pickingJob = helper.pickingJobService.createTUFromGRAI(pickingJob, /*lineId*/ null, ScannedCode.ofString(GRAI_CANONICAL));
+
+		// The job-level TU target must carry the resolved TU PI (type X) AND the parsed GRAI.
+		final HuPackingInstructionsId expectedTuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
+		final TUPickingTarget jobLevelTarget = pickingJob.getTuPickingTarget(/*lineId*/ null).orElse(null);
+		assertThat(jobLevelTarget).as("job-level TU target after header-level GRAI scan").isNotNull();
+		assertThat(jobLevelTarget.isNewTU()).as("header-level GRAI scan must produce a new-TU target").isTrue();
+		assertThat(jobLevelTarget.getTuPIIdNotNull())
+				.as("the job-level new-TU target must carry the resolved TU PI (type X)")
+				.isEqualTo(expectedTuPIId);
+		assertThat(jobLevelTarget.getGrai())
+				.as("the job-level new-TU target must carry the scanned GRAI")
+				.isEqualTo(GRAI.parse(GRAI_CANONICAL));
+	}
+
+	/**
 	 * TC2: scanning a GRAI with no active GRAI-to-TU mapping must fail loud with {@code GRAINoMatchingTUType}.
 	 */
 	@Test
