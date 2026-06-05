@@ -1,5 +1,4 @@
 -- 2026-06-05T00:00:00Z
--- me03#30066 — Set AD_Val_Rule_ID=131 on C_BPartner_EDI_Setting.C_BPartner_Location_ID
 -- Restricts the location lookup to active, non-ephemeral ShipTo/HandoverLocation locations
 -- belonging to the selected BPartner (AD_Val_Rule_ID=167 "C_BPartner_Loc Ship To").
 -- AD_Column_ID=592679, AD_Table_ID=542610 (C_BPartner_EDI_Setting)
