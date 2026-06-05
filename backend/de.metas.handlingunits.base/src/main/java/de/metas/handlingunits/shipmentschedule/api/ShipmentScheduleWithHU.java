@@ -230,7 +230,7 @@ public class ShipmentScheduleWithHU
 	}
 
 	/** Creates a single candidate with an explicit VHU and qty override. Used by the expansion logic in {@link IHUShipmentScheduleBL}. */
-	static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU vhu,
