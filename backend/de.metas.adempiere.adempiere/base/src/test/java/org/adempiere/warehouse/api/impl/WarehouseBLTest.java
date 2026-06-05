@@ -36,7 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers the precedence rule of {@link WarehouseBL#isIgnoreInMaterialDispo(WarehouseId)}:
- * an explicit {@code MRP_Exclude} value (Y/N) wins over {@code IsDropShipWarehouse};
+ * {@code IsAutoDistributionOrder=Y} always returns {@code true} (highest priority);
+ * otherwise an explicit {@code MRP_Exclude} value (Y/N) wins over {@code IsDropShipWarehouse};
  * a null/empty {@code MRP_Exclude} falls back to {@code IsDropShipWarehouse}.
  */
 class WarehouseBLTest
