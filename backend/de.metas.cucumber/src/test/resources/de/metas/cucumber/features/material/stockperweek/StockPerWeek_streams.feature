@@ -35,7 +35,7 @@ Feature: MD_Stock_PerWeek_V aggregates DEMAND/SHIPMENT and SUPPLY/PURCHASE candi
     # remains stable on any run date.
     And metasfresh initially has this MD_Candidate data relative to current week
       | Identifier      | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID        | WeekOffset | DayWithinWeek | Qty | ATP | M_Warehouse_ID |
-      | demand_S25618_1 | DEMAND            | SHIPMENT                  | product_S25618_str1 | 2          | 1             | 5   | -5  | wh_S25618_str  |
+      | demand_S25618_1 | DEMAND            | SHIPMENT                  | product_S25618_str1 | 2          | 1             | 5   | 3   | wh_S25618_str  |
       | supply_S25618_1 | SUPPLY            | PURCHASE                  | product_S25618_str1 | 1          | 1             | 8   | 8   | wh_S25618_str  |
 
     # Week +1: QtyExpectedShipments=0, QtyExpectedReceipts=8
@@ -46,8 +46,9 @@ Feature: MD_Stock_PerWeek_V aggregates DEMAND/SHIPMENT and SUPPLY/PURCHASE candi
       | product_S25618_str1 | wh_S25618_str  | 1          | 0                    | 8                   | 8      |
 
     # Week +2: QtyExpectedShipments=5, QtyExpectedReceipts=0
-    # QtyATP=-5: the latest STOCK before week+3 is the DEMAND-paired STOCK in week+2
-    # with Qty=ATP=-5 (demand consumes stock, making ATP negative).
+    # QtyATP=3: the latest STOCK before week+3 is the DEMAND-paired STOCK in week+2. It carries
+    # the cumulative projected balance 8 - 5 = 3 (the +8 receipt from week+1 minus the 5 shipment
+    # in week+2) — ATP is the running stock balance, NOT the shipment qty in isolation.
     And after not more than 10s, MD_Stock_PerWeek_V contains:
       | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_str1 | wh_S25618_str  | 2          | 5                    | 0                   | -5     |
+      | product_S25618_str1 | wh_S25618_str  | 2          | 5                    | 0                   | 3      |
