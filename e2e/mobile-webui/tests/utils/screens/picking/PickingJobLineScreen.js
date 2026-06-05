@@ -4,6 +4,7 @@ import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobStepScreen } from "./PickingJobStepScreen";
 import { GetQuantityDialog } from "./GetQuantityDialog";
 import { ManufacturingJobScreen } from "../manufacturing/ManufacturingJobScreen";
+import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { expect } from "@playwright/test";
 
 const NAME = "PickingJobLineScreen";
@@ -33,6 +34,20 @@ export const PickingJobLineScreen = {
     clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index} button`, async () => {
         await page.locator(`#step-${index}-button`).tap();
         await PickingJobStepScreen.waitForScreen();
+    }),
+
+    clickLUTargetButton: async () => await test.step(`${NAME} - Click LU target button`, async () => {
+        await page.getByTestId('targetLU-button').tap();
+        await SelectPickTargetLUScreen.waitForScreen();
+    }),
+
+    clickTUTargetButton: async () => await test.step(`${NAME} - Click TU target button`, async () => {
+        await page.getByTestId('targetTU-button').tap();
+        // Use first() to avoid strict-mode errors — a previous SelectPickTargetScreen
+        // (from LU target selection) may still be transitioning out of the DOM when the
+        // new one (for TU) is already mounted.
+        await page.locator('#SelectPickTargetScreen').first().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

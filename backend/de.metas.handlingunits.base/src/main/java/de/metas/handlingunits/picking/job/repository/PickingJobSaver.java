@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -404,6 +405,8 @@ public class PickingJobSaver
 			record.setCurrent_PickTo_TU_QRCode(currentTUPickingTarget != null && currentTUPickingTarget.getTuQRCode() != null
 					? currentTUPickingTarget.getTuQRCode().toGlobalQRCodeString()
 					: null);
+			final GRAI grai = currentTUPickingTarget != null ? currentTUPickingTarget.getGrai() : null;
+			record.setCurrent_PickTo_TU_GRAI(grai != null ? grai.toCanonicalString() : null);
 		}
 	}
 

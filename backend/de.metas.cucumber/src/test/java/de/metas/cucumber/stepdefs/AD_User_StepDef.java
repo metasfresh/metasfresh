@@ -198,6 +198,12 @@ public class AD_User_StepDef
 			userRecord.setNotificationType(notificationType);
 		}
 
+		final String isInvoiceEmailEnabled = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + I_AD_User.COLUMNNAME_IsInvoiceEmailEnabled);
+		if (isInvoiceEmailEnabled != null)
+		{
+			userRecord.setIsInvoiceEmailEnabled(DataTableUtil.nullToken2Null(isInvoiceEmailEnabled));
+		}
+
 		InterfaceWrapperHelper.saveRecord(userRecord);
 
 		final Integer roleId = DataTableUtil.extractIntegerOrNullForColumnName(tableRowMap, "OPT.Role_ID");

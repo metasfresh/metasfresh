@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.inout.InOutId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -53,6 +54,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/** Step definitions for {@code Carrier_ShipmentOrder} — finding, validating, and updating carrier shipment orders and their parcels. */
 @RequiredArgsConstructor
 public class Carrier_ShipmentOrder_StepDef
 {
@@ -263,6 +265,57 @@ public class Carrier_ShipmentOrder_StepDef
 			row.getAsOptionalBigDecimal(I_Carrier_ShipmentOrder_Item.COLUMNNAME_TotalWeightInKg).ifPresent(expected -> softly
 					.assertThat(item.getTotalWeightInKg()).as("totalWeightInKg").isEqualByComparingTo(expected));
 			softly.assertAll();
+		});
+	}
+
+	/**
+	 * Sets (or clears) the {@code TrackingURL} on all {@link I_Carrier_ShipmentOrder_Parcel} rows
+	 * that belong to the given {@link I_Carrier_ShipmentOrder}.
+	 *
+	 * <p>In production the carrier gateway writes the TrackingURL; this step simulates that
+	 * callback so the notification-delay gate can be released in tests without a live gateway.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_ShipmentOrder_ID</b> — (required, identifier-ref) carrier shipment order whose parcels are updated<br>
+	 *   <b>TrackingURL</b> — (required, null-allowed) URL to set; use {@code null} to clear<br>
+	 * @cucumber.depends StepDefData: Carrier_ShipmentOrder_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update Carrier_ShipmentOrder_Parcel TrackingURL:
+	 *   | Carrier_ShipmentOrder_ID | TrackingURL                    |
+	 *   | cso_1                    | https://track.example.com/p123 |
+	 * </pre>
+	 */
+	@And("update Carrier_ShipmentOrder_Parcel TrackingURL:")
+	public void updateCarrierShipmentOrderParcelTrackingURL(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final DeliveryOrder order = carrierShipmentOrderTable.get(
+					row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_ShipmentOrder_ID));
+
+			final String trackingURLRaw = row.getAsOptionalString(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_TrackingURL)
+					.orElse(null);
+			// "null" token (literal string "null" or dash) maps to Java null → clears the TrackingURL in the DB
+			final String trackingURL = de.metas.cucumber.stepdefs.DataTableUtil.nullToken2Null(trackingURLRaw);
+
+			final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryBL
+					.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+					.addEqualsFilter(
+							I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID,
+							order.getId().getRepoId())
+					.create()
+					.list();
+
+			assertThat(parcels)
+					.as("Parcels for Carrier_ShipmentOrder_ID=%s", order.getId())
+					.isNotEmpty();
+
+			for (final I_Carrier_ShipmentOrder_Parcel parcel : parcels)
+			{
+				parcel.setTrackingURL(trackingURL);
+				InterfaceWrapperHelper.save(parcel);
+			}
 		});
 	}
 }

@@ -138,10 +138,18 @@ const BarcodeScannerComponent = ({
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
       // console.log('onReadDone', barcode);
-      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
+      // Clear the input BEFORE calling validateScannedBarcodeAndForward.
+      // validateScannedBarcodeAndForward calls setProcessing(true), which in React 17 legacy
+      // mode (outside a React event handler) triggers a synchronous re-render that unmounts
+      // the input ({!isProcessing && <input/>}) and nulls inputTextRef.current.  If we clear
+      // after the call, inputTextRef.current is already null and the clear is silently skipped.
+      // The un-cleared input value then reaches handleInputTextKeyPress via the keyup event
+      // that follows the Enter keydown, causing a second validateScannedBarcodeAndForward
+      // invocation and a duplicate error toast.
       if (inputTextRef?.current) {
         inputTextRef.current.value = '';
       }
+      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
     },
     onReadInProgress: (barcode) => {
       // console.log('onReadInProgress', barcode);
