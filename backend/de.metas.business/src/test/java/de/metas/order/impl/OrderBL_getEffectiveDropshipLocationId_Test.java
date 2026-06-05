@@ -58,12 +58,26 @@ class OrderBL_getEffectiveDropshipLocationId_Test
 	}
 
 	@Test
-	void givenNonDropShipOrder_whenGetEffectiveDropshipLocationId_thenReturnBPartnerLocation()
+	void givenDropShipValuesSetButFlagOff_whenGetEffectiveDropshipLocationId_thenReturnDropshipLocation()
 	{
+		// IsDropShip is irrelevant: when DropShip_* are set they are the ultimate consignee, regardless of the flag.
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 		order.setIsDropShip(false);
 		order.setDropShip_BPartner_ID(100);
 		order.setDropShip_Location_ID(200);
+		order.setC_BPartner_ID(10);
+		order.setC_BPartner_Location_ID(20);
+
+		final BPartnerLocationId result = orderBL.getEffectiveDropshipLocationId(order);
+
+		assertThat(result).isEqualTo(BPartnerLocationId.ofRepoId(100, 200));
+	}
+
+	@Test
+	void givenNoDropShipValues_whenGetEffectiveDropshipLocationId_thenReturnBPartnerLocation()
+	{
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setIsDropShip(false);
 		order.setC_BPartner_ID(10);
 		order.setC_BPartner_Location_ID(20);
 

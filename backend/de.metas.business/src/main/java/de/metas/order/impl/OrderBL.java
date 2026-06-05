@@ -937,16 +937,11 @@ public class OrderBL implements IOrderBL
 	@NonNull
 	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isDropShip())
-		{
-			final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(
-					orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID());
-			if (dropShipLocationId != null)
-			{
-				return dropShipLocationId;
-			}
-		}
-		return BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID());
+		// The ultimate consignee (UC): DropShip_BPartner_ID + DropShip_Location_ID if set, else the order's own C_BPartner location.
+		// IsDropShip is irrelevant here — the presence of the DropShip_* values alone decides (matches InOutBL/DesadvBL).
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID()));
 	}
 
 	@Override
