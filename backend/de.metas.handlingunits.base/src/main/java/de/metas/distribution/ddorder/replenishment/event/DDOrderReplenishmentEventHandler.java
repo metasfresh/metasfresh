@@ -42,10 +42,10 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 	@Override
 	public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 	{
-		final ShipmentScheduleId scheduleId = extractShipmentScheduleId(event);
-
 		try (final IAutoCloseable ignored = switchCtx(event))
 		{
+			final ShipmentScheduleId scheduleId = extractShipmentScheduleId(event);
+
 			eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 					.handlerClass(DDOrderReplenishmentEventHandler.class)
 					.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId)))
@@ -74,13 +74,9 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 
 	private IAutoCloseable switchCtx(final @NonNull Event event)
 	{
-		return switchCtx(extractClientAndOrgId(event));
-	}
-
-	private IAutoCloseable switchCtx(@NonNull final ClientAndOrgId clientAndOrgId)
-	{
 		final Properties ctx = Env.newTemporaryCtx();
-		Env.setClientAndOrgId(ctx, clientAndOrgId);
+		Env.setClientAndOrgId(ctx, extractClientAndOrgId(event));
 		return Env.switchContext(ctx);
 	}
+
 }
