@@ -1,6 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerContactId;
@@ -39,10 +41,15 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
@@ -69,7 +76,6 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -96,7 +102,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -157,7 +162,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
@@ -920,59 +924,78 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = create(qtyPicked.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(qtyPicked.getM_ShipmentSchedule().getM_Product_ID());
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
 
-		final List<I_M_HU> childVHUs = handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
-				.stream()
-				.filter(handlingUnitsBL::isVirtual)
-				.filter(h -> storageFactory.getStorage(h).getQuantity(productId).map(q -> !q.isZero()).orElse(false))
-				.collect(ImmutableList.toImmutableList());
+		// One pass: for each child VHU, load product storage and attribute fingerprint together.
+		// Filter by product so VHUs carrying a different product in the same TU are excluded.
+		// UOM consistency is guaranteed: qtyPicked links to one M_ShipmentSchedule which has one
+		// M_Product_ID and therefore one stocking UOM; all filtered storages carry that same product
+		// and are in the same UOM — no conversion needed.
+		final Map<AttributesKey, List<IHUProductStorage>> storagesByFingerprint =
+				handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
+						.stream()
+						.filter(handlingUnitsBL::isVirtual)
+						.flatMap(h -> storageFactory.getStorage(h).getProductStorages().stream()
+								.filter(s -> productId.equals(s.getProductId()))
+								.filter(s -> !s.getQty().isZero())
+								.map(s -> Maps.immutableEntry(computeUseInASIFingerprint(h, attrFactory), s)))
+						.collect(Collectors.groupingBy(Map.Entry::getKey,
+								Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
-		if (childVHUs.size() <= 1)
+		if (storagesByFingerprint.isEmpty())
 		{
+			// No VHUs found for this product — nothing to expand, use default candidate.
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
 
-		final BigDecimal pickedQtyBD = qtyPicked.getQtyPicked();
-
-		// Case 1: exact qty match → one specific child VHU
-		final I_M_HU singleMatchVHU = childVHUs.stream()
-				.filter(h -> storageFactory.getStorage(h).getQuantity(productId)
-						.map(q -> q.getAsBigDecimal().compareTo(pickedQtyBD) == 0)
-						.orElse(false))
+		// Case 1: find the VHU whose qty exactly matches QtyPicked — one candidate using that VHU.
+		// Using the specific VHU as override ensures its UseInASI attributes (e.g. COO) are read
+		// from the VHU itself rather than from the destination TU, which may carry a mixed/null COO.
+		final IHUProductStorage exactMatchStorage = storagesByFingerprint.values().stream()
+				.flatMap(Collection::stream)
+				.filter(s -> {
+					final Quantity vhuQty = s.getQty();
+					// UOM is consistent (same product → same stocking UOM), so wrap the raw BigDecimal
+					// in a Quantity with the VHU's UOM for a proper value+UOM comparison.
+					final Quantity pickedQty = vhuQty.toZero().add(qtyPicked.getQtyPicked());
+					return vhuQty.qtyAndUomCompareToEquals(pickedQty);
+				})
 				.findFirst()
 				.orElse(null);
-		if (singleMatchVHU != null)
+		if (exactMatchStorage != null)
 		{
-			final Quantity qty = Quantity.of(pickedQtyBD, storageFactory.getStorage(singleMatchVHU)
-					.getQuantity(productId).map(Quantity::getUOM)
-					.orElseGet(() -> uomDAO.getById(UomId.ofRepoId(shipmentSchedule.getC_UOM_ID()))));
-			return ImmutableList.of(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(qtyPicked, huContext, singleMatchVHU, qty, qtyTypeToUse));
+			return ImmutableList.of(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
+					qtyPicked, huContext, exactMatchStorage.getM_HU(), exactMatchStorage.getQty(), qtyTypeToUse));
 		}
 
-		// Case 2: whole-TU-pick — group child VHUs by UseInASI fingerprint, one candidate per group
-		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
-		final Map<String, List<I_M_HU>> vhusByFingerprint = childVHUs.stream()
-				.collect(Collectors.groupingBy(h -> computeUseInASIFingerprint(h, attrFactory)));
-		if (vhusByFingerprint.size() <= 1)
+		// Case 2: whole-TU-pick — the QtyPicked covers the entire TU content (one pick for all VHUs).
+		// Guard: if the picked qty does not equal the grand total of all VHUs, this QtyPicked covers
+		// only part of the TU and another QtyPicked record covers the rest — fall back to a single
+		// default candidate so each QtyPicked is not independently inflated by the full group sums.
+		// The zero Quantity is derived from any VHU in the map — Collectors.groupingBy never produces
+		// an empty-list value, and size > 1 guarantees at least one group is present.
+		final Quantity zeroInPickedUOM = storagesByFingerprint.values().iterator().next().get(0).getQty().toZero();
+		final Quantity grandTotal = storagesByFingerprint.values().stream()
+				.flatMap(Collection::stream)
+				.map(IHUProductStorage::getQty)
+				.reduce(zeroInPickedUOM, Quantity::add);
+		final Quantity pickedQtyAsQuantity = zeroInPickedUOM.add(qtyPicked.getQtyPicked());
+		if (!grandTotal.qtyAndUomCompareToEquals(pickedQtyAsQuantity))
 		{
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-		for (final List<I_M_HU> group : vhusByFingerprint.values())
+		for (final List<IHUProductStorage> group : storagesByFingerprint.values())
 		{
-			final I_M_HU representativeVHU = group.get(0);
-			final BigDecimal groupQtyBD = group.stream()
-					.map(h -> storageFactory.getStorage(h).getQuantity(productId)
-							.map(q -> q.getAsBigDecimal()).orElse(BigDecimal.ZERO))
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			final Quantity groupQty = Quantity.of(groupQtyBD, storageFactory.getStorage(representativeVHU)
-					.getQuantity(productId).map(Quantity::getUOM)
-					.orElseGet(() -> uomDAO.getById(UomId.ofRepoId(shipmentSchedule.getC_UOM_ID()))));
-			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(qtyPicked, huContext, representativeVHU, groupQty, qtyTypeToUse));
+			final IHUProductStorage representative = group.get(0);
+			final Quantity groupQty = group.stream()
+					.map(IHUProductStorage::getQty)
+					.reduce(representative.getQty().toZero(), Quantity::add);
+			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
+					qtyPicked, huContext, representative.getM_HU(), groupQty, qtyTypeToUse));
 		}
 		return result.build();
 	}
@@ -1009,16 +1032,36 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return result;
 	}
 
-	private static String computeUseInASIFingerprint(
+	private static AttributesKey computeUseInASIFingerprint(
 			@NonNull final I_M_HU vhu,
 			@NonNull final IAttributeStorageFactory factory)
 	{
-		final IAttributeStorage storage = factory.getAttributeStorage(vhu);
-		return storage.getAttributeValues().stream()
-				.filter(IAttributeValue::isUseInASI)
-				.filter(av -> !av.isEmpty())
-				.sorted(Comparator.comparingInt(av -> av.getM_Attribute().getM_Attribute_ID()))
-				.map(av -> av.getM_Attribute().getValue() + "=" + av.getValue())
-				.collect(Collectors.joining(","));
+		// IAttributeStorage does not implement getAttributeValueIdOrNull, so we cannot use
+		// AttributesKeys.createAttributesKeyFromAttributeSet here — list attributes (e.g. COO)
+		// would be silently dropped. Instead, we build the key directly from IAttributeValue,
+		// using the value string for all attribute types (consistent for grouping purposes).
+		final ImmutableSet<AttributesKeyPart> parts = factory.getAttributeStorage(vhu)
+				.getAttributeValues()
+				.stream()
+				.filter(av -> av.isUseInASI() && !av.isEmpty())
+				.map(av -> {
+					final AttributeId attributeId = AttributeId.ofRepoId(av.getM_Attribute().getM_Attribute_ID());
+					if (AttributeValueType.ofCode(av.getAttributeValueType()).isNumber())
+					{
+						// Use BigDecimal-specific part so scale-differences like 3.0 vs 3.00 are normalized
+						final BigDecimal value = av.getValueAsBigDecimal();
+						return value != null && value.signum() != 0
+								? AttributesKeyPart.ofNumberAttribute(attributeId, value)
+								: null;
+					}
+					// String, List and Date attributes all carry their value via getValueAsString()
+					final String valueStr = av.getValueAsString();
+					return Check.isNotBlank(valueStr)
+							? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
+							: null;
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		return parts.isEmpty() ? AttributesKey.NONE : AttributesKey.ofParts(parts);
 	}
 }

@@ -783,9 +783,7 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
-		// Record the destination TU. When it contains multiple VHUs with different UseInASI
-		// attributes (e.g. COO), IHUShipmentScheduleBL.createCandidatesForQtyPicked expands it
-		// into per-VHU candidates at shipment generation time → correct InOutLine split.
+		// Record the destination TU; createCandidatesForQtyPicked expands it into per-VHU COO candidates at shipment generation time.
 		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
 	}
 

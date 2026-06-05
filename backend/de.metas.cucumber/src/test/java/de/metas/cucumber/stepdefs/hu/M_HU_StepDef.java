@@ -459,12 +459,14 @@ public class M_HU_StepDef
 	}
 
 	/**
-	 * @param dataTable: <ul>
-	 *                   <li>OPT.resultedNewTUs: comma-separated identifiers of the TUs that are expected when the given quantity is transferred using the given packing-instruction.<br>
-	 *                   If given, then the stepdef expects one identifier for each TU that resulted from the transfer.</li>
-	 *                   <li>OPT.resultedNewCUs: comma-separated identifiers of the CUs that are expected from the transfer.<br>
-	 *                   If given, then there need to be as many CU-identifiers as there are TU-identifiers.</li>
-	 *                   </ul>
+	 * Moves a quantity from a source CU into an existing target TU.
+	 *
+	 * <ul>
+	 *   <li><b>sourceCU</b>: identifier of the source CU</li>
+	 *   <li><b>targetTU</b>: identifier of the target TU</li>
+	 *   <li><b>qty</b>: quantity to move</li>
+	 *   <li><b>OPT.UOM.X12DE355</b>: unit of measure X12 code; defaults to PCE</li>
+	 * </ul>
 	 */
 	@And("move CU to existing TU")
 	public void moveCUtoExistingTU(@NonNull final DataTable dataTable)
@@ -477,6 +479,14 @@ public class M_HU_StepDef
 		}));
 	}
 
+	/**
+	 * @param dataTable: <ul>
+	 *                   <li>OPT.resultedNewTUs: comma-separated identifiers of the TUs that are expected when the given quantity is transferred using the given packing-instruction.<br>
+	 *                   If given, then the stepdef expects one identifier for each TU that resulted from the transfer.</li>
+	 *                   <li>OPT.resultedNewCUs: comma-separated identifiers of the CUs that are expected from the transfer.<br>
+	 *                   If given, then there need to be as many CU-identifiers as there are TU-identifiers.</li>
+	 *                   </ul>
+	 */
 	@And("transform CU to new TUs")
 	public void transformCUtoNewTUs(@NonNull final DataTable dataTable)
 	{
