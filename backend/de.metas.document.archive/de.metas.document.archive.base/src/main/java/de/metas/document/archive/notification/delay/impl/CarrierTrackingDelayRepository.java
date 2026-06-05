@@ -13,6 +13,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository Tables: M_ShippingPackage, Carrier_ShipmentOrder, Carrier_ShipmentOrder_Parcel
+ * <p>Read-only; traverses the carrier tracking chain of a shipment ({@code M_InOut}) to decide
+ * whether tracking is still pending (no packages yet, or any parcel lacks a {@code TrackingURL}).
+ */
 @Repository
 public class CarrierTrackingDelayRepository
 {
