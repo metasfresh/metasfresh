@@ -221,9 +221,10 @@ public class PickingJobRestService
 	 * GRAI, and stores it on the line (or at job/header level when {@code lineId == null}).
 	 * No physical HU is created here.
 	 *
-	 * @param lineId the picking-job line; {@code null} → header-level (no-line) scan: the per-product capacity
-	 *               and TU-allowed-on-LU checks are skipped (re-applied per-line at pick time) and the target is
-	 *               stored at job level.
+	 * @param lineId the picking-job line; {@code null} → header-level (no-line) scan: ONLY the per-product
+	 *               capacity check is skipped (no single line product at header level; capacity resolves
+	 *               per-line at pick time). The TU-allowed-on-LU check STILL runs against the job-level LU.
+	 *               The TU target is stored at job level.
 	 */
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,

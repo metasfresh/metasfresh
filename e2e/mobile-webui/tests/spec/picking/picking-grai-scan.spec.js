@@ -116,13 +116,12 @@ const createMasterdataForGraiScan = async () => {
 };
 
 /**
- * Navigate to the pick-target TU screen for the first line (line index 1).
+ * Navigate to the pick-target TU screen for the first line (per-line path, carries a lineId).
  *
- * The GRAI scan REST endpoint requires a lineId query parameter.  The job-level
- * TU button (PickProductsActivity → SelectCurrentLUTUButtons without a lineId)
- * does NOT supply a lineId and the backend rejects the call.  We must open the
- * line detail first (PickLineScreen, which carries the lineId in its URL) and
- * click the TU button from there.
+ * We open the line detail first (PickLineScreen, which carries the lineId in its URL) and
+ * click the TU button from there, so the GRAI scan REST endpoint receives a lineId.
+ * The job-level (no-lineId) path is covered by {@link navigateToJobLevelTUTargetScreen}
+ * (TC-H1…TC-H8).
  *
  * Precondition: PickingJobScreen is showing.
  * Postcondition: SelectPickTargetTUScreen is showing.
@@ -234,7 +233,8 @@ const navigateToTopLevelTUTargetScreen = async (masterdata) => {
  * On a GRAI-required customer the backend now supports a GRAI scan here: it resolves the TU
  * type, runs the TU-allowed-on-LU check against the JOB-LEVEL LU, skips the per-product
  * capacity check, sets a job-level TU target carrying the GRAI, and stamps the GRAI on the
- * shipped HU at pick time. (Previously this 500'd — see me03 29853 follow-up.) The GRAI
+ * shipped HU at pick time. (Previously this path returned HTTP 500 because the GRAI-scan
+ * endpoint required a lineId; the backend now supports header-level / no-line scans.) The GRAI
  * scanner is therefore offered at job level too.
  *
  * Precondition: PickingJobScreen is showing.
@@ -252,9 +252,8 @@ const navigateToJobLevelTUTargetScreen = async (masterdata, { lu } = {}) => {
 
 // ─── TC-H1 — Job-level (no line) TU target on GRAI customer → scanner visible ──
 //
-// me03 https://github.com/metasfresh/me03/issues/29853 follow-up. Header-level GRAI support:
-// on a GRAI-required customer the GRAI scanner is offered on the JOB/HEADER-level TU
-// pick-target (lineId=null). AC-H1.
+// Header-level GRAI support: on a GRAI-required customer the GRAI scanner is offered on the
+// JOB/HEADER-level TU pick-target (lineId=null). AC-H1.
 
 // noinspection JSUnusedLocalSymbols
 test('TC-H1 — Job-level TU target (no line) on GRAI customer → GRAI scanner visible', async ({ page }) => {
