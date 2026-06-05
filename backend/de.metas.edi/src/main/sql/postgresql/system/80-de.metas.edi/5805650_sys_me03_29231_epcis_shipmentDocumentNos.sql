@@ -190,7 +190,7 @@ BEGIN
                             -- unique across partial deliveries.
                             -- DISTINCT: two orders on ONE M_InOut collapse to one delivery note; two M_InOuts
                             -- sharing the SSCC yield two.
-                            jsonb_agg(DISTINCT mio.documentno) AS shipment_documentnos
+                            jsonb_agg(DISTINCT mio.documentno ORDER BY mio.documentno) AS shipment_documentnos
                      FROM edi_desadv_m_inout link
                      JOIN edi_desadv da ON da.edi_desadv_id = link.edi_desadv_id
                      JOIN m_inout mio ON mio.m_inout_id = link.m_inout_id
