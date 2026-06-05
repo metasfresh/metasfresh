@@ -1,10 +1,8 @@
-package de.metas.edi.model;
-
 /*
  * #%L
- * de.metas.edi
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +20,18 @@ package de.metas.edi.model;
  * #L%
  */
 
-public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartner
+package de.metas.cucumber.stepdefs.edi;
+
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
+
+/**
+ * Stores created {@link I_C_BPartner_EDI_Setting} records by identifier alias for cross-step references.
+ */
+public class C_BPartner_EDI_Setting_StepDefData extends StepDefData<I_C_BPartner_EDI_Setting>
 {
-	/**
-	 * EDISendingMode AD_Reference_ID=542047
-	 * Reference name: EDISendingMode
-	 */
-	int EDISendingMode_AD_Reference_ID = 542047;
-	/**
-	 * ReplicationInterface = R
-	 */
-	String EDISendingMode_ReplicationInterface = "R";
-	/**
-	 * ExternalSystem = E
-	 */
-	String EDISendingMode_ExternalSystem = "E";
+	public C_BPartner_EDI_Setting_StepDefData()
+	{
+		super(I_C_BPartner_EDI_Setting.class);
+	}
 }

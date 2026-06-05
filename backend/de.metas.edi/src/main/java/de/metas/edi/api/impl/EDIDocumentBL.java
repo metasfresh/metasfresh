@@ -26,18 +26,17 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.EDIBPartnerConfig;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
 import de.metas.edi.exception.EDIMissingDependencyException;
-import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
@@ -47,11 +46,13 @@ import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
 import de.metas.edi.process.export.impl.EDI_DESADV_InOut_Export;
+import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -98,6 +99,7 @@ public class EDIDocumentBL
 
 	@NonNull private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
 	@NonNull private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -121,13 +123,17 @@ public class EDIDocumentBL
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inOut))
 		{
+			// Use the effective dropship location so that status-setting is consistent
+			// with the export/processor path (which also resolves DropShip_Location_ID first).
+			final BPartnerLocationId effectiveBpl = inOutBL.getEffectiveDropshipLocationId(inOut);
+
 			if (huInOutBL.isCustomerReturn(inOut))
 			{
 				// no EDI for customer return (for the time being)
-				return updateEdiExportStatus(inOut, EDIType.DESADV, false);
+				return updateEdiExportStatus(inOut, EDIType.DESADV, false, effectiveBpl);
 			}
 
-			if (!updateEdiExportStatus(inOut, EDIType.DESADV, true))
+			if (!updateEdiExportStatus(inOut, EDIType.DESADV, true, effectiveBpl))
 			{
 				return false;
 			}
@@ -155,7 +161,10 @@ public class EDIDocumentBL
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
-			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true))
+			// Invoices have no dropship concept — use the raw location directly.
+			final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+
+			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true, bpl))
 			{
 				return;
 			}
@@ -179,7 +188,8 @@ public class EDIDocumentBL
 
 	private boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document,
 										 @NonNull final EDIType ediType,
-										 final boolean isDocumentEligibleForEDI)
+										 final boolean isDocumentEligibleForEDI,
+										 @NonNull final BPartnerLocationId bPartnerLocationId)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -217,11 +227,11 @@ public class EDIDocumentBL
 		final boolean isBPartnerEDIConfigEnabled;
 		if (ediType.isDesadv())
 		{
-			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiDesadvRecipient(BPartnerId.ofRepoId(document.getC_BPartner_ID()));
+			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiDesadvRecipient(bPartnerLocationId);
 		}
 		else if (ediType.isInvoic())
 		{
-			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiInvoicRecipient(BPartnerId.ofRepoId(document.getC_BPartner_ID()));
+			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiInvoicRecipient(bPartnerLocationId);
 		}
 		else
 		{
@@ -250,16 +260,17 @@ public class EDIDocumentBL
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		final List<Exception> feedback = new ArrayList<>();
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
-		final boolean isEdiInvoicRecipient = ediBpartnerConfigService.isEdiInvoicRecipient(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+		final BPartnerLocationId invoiceBPartnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		final boolean isEdiInvoicRecipient = ediBpartnerConfigService.isEdiInvoicRecipient(invoiceBPartnerLocationId);
 		if (!isEdiInvoicRecipient && !ediExportStatus.isInvalid())
 		{
 			loggable.addLog("isValidInvoice - C_Invoice_ID={} has isBPartnerEDIConfigEnabled=false, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(), ediExportStatus.name());
 			return feedback;
 		}
 
-		feedback.addAll(isValidPartner(invoice.getC_BPartner(), EDIType.INVOIC));
+		feedback.addAll(isValidPartner(invoice.getC_BPartner(), invoiceBPartnerLocationId, EDIType.INVOIC));
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(invoiceBPartnerLocationId);
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference
@@ -335,9 +346,10 @@ public class EDIDocumentBL
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentOrder", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
 
-		feedback.addAll(isValidPartner(shipment.getC_BPartner(), EDIType.DESADV));
+		final BPartnerLocationId shipmentBPartnerLocationId = BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID());
+		feedback.addAll(isValidPartner(shipment.getC_BPartner(), shipmentBPartnerLocationId, EDIType.DESADV));
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(shipmentBPartnerLocationId);
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		return feedback;
@@ -362,30 +374,32 @@ public class EDIDocumentBL
 		return feedback;
 	}
 
-	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner)
+	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner,
+										  @NonNull final BPartnerLocationId bPartnerLocationId)
 	{
-		return isValidPartner(bpartner, null);
+		return isValidPartner(bpartner, bPartnerLocationId, null);
 	}
 
 	private List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner,
-										  @Nullable final EDIType ediType)
+										   @NonNull final BPartnerLocationId bPartnerLocationId,
+										   @Nullable final EDIType ediType)
 	{
 		final List<Exception> feedback = new ArrayList<>();
 		final List<String> missingFields = new ArrayList<>();
 
-		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
+		final EDIBPartnerConfig ediConfig = ediBpartnerConfigService.getByIdOrNull(bPartnerLocationId);
 		final boolean isBPartnerEDIConfigEnabled;
 		if (ediType == null)
 		{
-			isBPartnerEDIConfigEnabled = ediPartner.isEdiDesadvRecipient() || ediPartner.isEdiInvoicRecipient();
+			isBPartnerEDIConfigEnabled = ediConfig != null && (ediConfig.isEdiDesadvRecipient() || ediConfig.isEdiInvoicRecipient());
 		}
 		else if (ediType.isDesadv())
 		{
-			isBPartnerEDIConfigEnabled = ediPartner.isEdiDesadvRecipient();
+			isBPartnerEDIConfigEnabled = ediConfig != null && ediConfig.isEdiDesadvRecipient();
 		}
 		else if (ediType.isInvoic())
 		{
-			isBPartnerEDIConfigEnabled = ediPartner.isEdiInvoicRecipient();
+			isBPartnerEDIConfigEnabled = ediConfig != null && ediConfig.isEdiInvoicRecipient();
 		}
 		else
 		{
@@ -394,16 +408,16 @@ public class EDIDocumentBL
 
 		if (!isBPartnerEDIConfigEnabled)
 		{
-			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), MSG_Partner_ValidateIsEDIRecipient_Error)));
+			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(bpartner), MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (ediPartner.isEdiDesadvRecipient() && Check.isBlank(ediPartner.getEdiDesadvRecipientGLN()))
+		if (ediConfig != null && ediConfig.isEdiDesadvRecipient() && Check.isBlank(ediConfig.getEdiDesadvRecipientGLN()))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
+			missingFields.add(I_C_BPartner_EDI_Setting.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
-		if (ediPartner.isEdiInvoicRecipient() && Check.isBlank(ediPartner.getEdiInvoicRecipientGLN()))
+		if (ediConfig != null && ediConfig.isEdiInvoicRecipient() && Check.isBlank(ediConfig.getEdiInvoicRecipientGLN()))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
+			missingFields.add(I_C_BPartner_EDI_Setting.COLUMNNAME_EdiInvoicRecipientGLN);
 		}
 
 		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
