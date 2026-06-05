@@ -8,7 +8,10 @@ SELECT io.m_inout_id,
        d.edi_desadv_id AS edi_desadv_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
-               'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
+               -- EdiDesadvRecipientGLN moved to C_BPartner_EDI_Setting; resolve via coalesce:
+               -- 1) exact location row (C_BPartner_ID + C_BPartner_Location_ID)
+               -- 2) partner-default row (C_BPartner_ID, no location)
+               'TechnicalRecipientGLN', COALESCE(edi_setting_loc.edidesadvrecipientgln, edi_setting_def.edidesadvrecipientgln),
                'TechnicalSenderGLN', (SELECT REGEXP_REPLACE(sl.gln::text, '\s+$'::text, ''::text)
                                       FROM c_bpartner_location sl
                                       WHERE sl.c_bpartner_id = org.org_bpartner_id
@@ -49,14 +52,22 @@ SELECT io.m_inout_id,
                'DatePromised', o.datepromised)
        ) as embedded_json
                          FROM m_inout io
-                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id 
+                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
                          -- Enumerate DESADVs via edi_desadv_m_inout junction.
                          -- View emits one row per (m_inout_id, edi_desadv_id) pair.
                          JOIN edi_desadv_m_inout link
                               ON link.m_inout_id = io.m_inout_id AND link.isactive = 'Y'
                          JOIN edi_desadv d
                               ON d.edi_desadv_id = link.edi_desadv_id
-                         JOIN c_bpartner buyer ON d.c_bpartner_id = buyer.c_bpartner_id
+                         -- EDI setting: coalesce exact-location row → partner-default row for GLN resolution
+                         LEFT JOIN c_bpartner_edi_setting edi_setting_loc
+                              ON edi_setting_loc.c_bpartner_id = d.c_bpartner_id
+                             AND edi_setting_loc.c_bpartner_location_id = d.c_bpartner_location_id
+                             AND edi_setting_loc.isactive = 'Y'
+                         LEFT JOIN c_bpartner_edi_setting edi_setting_def
+                              ON edi_setting_def.c_bpartner_id = d.c_bpartner_id
+                             AND edi_setting_def.c_bpartner_location_id IS NULL
+                             AND edi_setting_def.isactive = 'Y'
     -- Joins for other lookup objects
                          LEFT JOIN "de.metas.edi".edi_currency_object_v curr ON curr.c_currency_id = d.c_currency_id
                          LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_buyer ON bp_buyer.c_bpartner_id = d.c_bpartner_id

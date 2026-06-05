@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvId;
@@ -1040,6 +1041,14 @@ public class DesadvBL
 	}
 
 	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_EDI_Desadv desadv)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(desadv.getDropShip_BPartner_ID(), desadv.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(desadv.getC_BPartner_ID(), desadv.getC_BPartner_Location_ID()));
+	}
+
+	@NonNull
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
 		return desadvDAO.retrieveAllInOuts(desadv);
@@ -1069,8 +1078,8 @@ public class DesadvBL
 			return true;
 		}
 
-		final BPartnerId bPartnerId = getEffectiveDropshipPartnerId(desadv);
-		return ediBpartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId);
+		final BPartnerLocationId bpl = getEffectiveDropshipLocationId(desadv);
+		return ediBpartnerConfigService.isDESADVExternalSystemRecipient(bpl);
 
 	}
 
