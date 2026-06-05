@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -933,7 +934,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// UOM consistency is guaranteed: qtyPicked links to one M_ShipmentSchedule which has one
 		// M_Product_ID and therefore one stocking UOM; all filtered storages carry that same product
 		// and are in the same UOM — no conversion needed.
-		final Map<AttributesKey, List<IHUProductStorage>> storagesByFingerprint =
+		final ImmutableListMultimap<AttributesKey, IHUProductStorage> storagesByFingerprint =
 				handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
 						.stream()
 						.filter(handlingUnitsBL::isVirtual)
@@ -941,8 +942,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 								.filter(s -> productId.equals(s.getProductId()))
 								.filter(s -> !s.getQty().isZero())
 								.map(s -> Maps.immutableEntry(computeUseInASIFingerprint(h, attrFactory), s)))
-						.collect(Collectors.groupingBy(Map.Entry::getKey,
-								Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+						.collect(ImmutableListMultimap.toImmutableListMultimap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (storagesByFingerprint.isEmpty())
 		{
@@ -953,15 +953,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Case 1: find the VHU whose qty exactly matches QtyPicked — one candidate using that VHU.
 		// Using the specific VHU as override ensures its UseInASI attributes (e.g. COO) are read
 		// from the VHU itself rather than from the destination TU, which may carry a mixed/null COO.
+		// UOM is consistent (same product → same stocking UOM), so BigDecimal comparison is safe.
+		final BigDecimal pickedQtyBD = qtyPicked.getQtyPicked();
 		final IHUProductStorage exactMatchStorage = storagesByFingerprint.values().stream()
-				.flatMap(Collection::stream)
-				.filter(s -> {
-					final Quantity vhuQty = s.getQty();
-					// UOM is consistent (same product → same stocking UOM), so wrap the raw BigDecimal
-					// in a Quantity with the VHU's UOM for a proper value+UOM comparison.
-					final Quantity pickedQty = vhuQty.toZero().add(qtyPicked.getQtyPicked());
-					return vhuQty.qtyAndUomCompareToEquals(pickedQty);
-				})
+				.filter(s -> s.getQty().getAsBigDecimal().compareTo(pickedQtyBD) == 0)
 				.findFirst()
 				.orElse(null);
 		if (exactMatchStorage != null)
@@ -976,20 +971,19 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// default candidate so each QtyPicked is not independently inflated by the full group sums.
 		// The zero Quantity is derived from any VHU in the map — Collectors.groupingBy never produces
 		// an empty-list value, and size > 1 guarantees at least one group is present.
-		final Quantity zeroInPickedUOM = storagesByFingerprint.values().iterator().next().get(0).getQty().toZero();
+		final Quantity zeroInPickedUOM = storagesByFingerprint.values().iterator().next().getQty().toZero();
 		final Quantity grandTotal = storagesByFingerprint.values().stream()
-				.flatMap(Collection::stream)
 				.map(IHUProductStorage::getQty)
 				.reduce(zeroInPickedUOM, Quantity::add);
-		final Quantity pickedQtyAsQuantity = zeroInPickedUOM.add(qtyPicked.getQtyPicked());
-		if (!grandTotal.qtyAndUomCompareToEquals(pickedQtyAsQuantity))
+		if (grandTotal.getAsBigDecimal().compareTo(pickedQtyBD) != 0)
 		{
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-		for (final List<IHUProductStorage> group : storagesByFingerprint.values())
+		for (final AttributesKey fingerprint : storagesByFingerprint.keySet())
 		{
+			final List<IHUProductStorage> group = storagesByFingerprint.get(fingerprint);
 			final IHUProductStorage representative = group.get(0);
 			final Quantity groupQty = group.stream()
 					.map(IHUProductStorage::getQty)
@@ -1044,24 +1038,28 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.getAttributeValues()
 				.stream()
 				.filter(av -> av.isUseInASI() && !av.isEmpty())
-				.map(av -> {
-					final AttributeId attributeId = AttributeId.ofRepoId(av.getM_Attribute().getM_Attribute_ID());
-					if (AttributeValueType.ofCode(av.getAttributeValueType()).isNumber())
-					{
-						// Use BigDecimal-specific part so scale-differences like 3.0 vs 3.00 are normalized
-						final BigDecimal value = av.getValueAsBigDecimal();
-						return value != null && value.signum() != 0
-								? AttributesKeyPart.ofNumberAttribute(attributeId, value)
-								: null;
-					}
-					// String, List and Date attributes all carry their value via getValueAsString()
-					final String valueStr = av.getValueAsString();
-					return Check.isNotBlank(valueStr)
-							? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
-							: null;
-				})
+				.map(HUShipmentScheduleBL::toAttributesKeyPart)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		return parts.isEmpty() ? AttributesKey.NONE : AttributesKey.ofParts(parts);
+	}
+
+	@Nullable
+	private static AttributesKeyPart toAttributesKeyPart(@NonNull final IAttributeValue av)
+	{
+		final AttributeId attributeId = AttributeId.ofRepoId(av.getM_Attribute().getM_Attribute_ID());
+		if (AttributeValueType.ofCode(av.getAttributeValueType()).isNumber())
+		{
+			// Use BigDecimal-specific part so scale-differences like 3.0 vs 3.00 are normalized
+			final BigDecimal value = av.getValueAsBigDecimal();
+			return value != null && value.signum() != 0
+					? AttributesKeyPart.ofNumberAttribute(attributeId, value)
+					: null;
+		}
+		// String, List and Date attributes all carry their value via getValueAsString()
+		final String valueStr = av.getValueAsString();
+		return Check.isNotBlank(valueStr)
+				? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
+				: null;
 	}
 }
