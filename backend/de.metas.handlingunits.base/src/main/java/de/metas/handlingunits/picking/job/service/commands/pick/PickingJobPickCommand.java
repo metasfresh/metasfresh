@@ -8,7 +8,6 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -110,7 +109,6 @@ public class PickingJobPickCommand
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
