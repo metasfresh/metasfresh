@@ -426,6 +426,11 @@ public class WarehouseBL implements IWarehouseBL
 		{
 			return false;
 		}
+		
+		if(warehouse.isAutoDistributionOrder())
+		{
+			return true;
+		}
 
 		final Boolean mrpExclude = StringUtils.toBooleanOrNull(warehouse.getMRP_Exclude());
 		return mrpExclude != null ? mrpExclude : warehouse.isDropShipWarehouse();
