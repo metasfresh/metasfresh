@@ -10,9 +10,11 @@ import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentSe
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -43,12 +45,16 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(event.getPropertyAsInt(
 				DDOrderReplenishmentEventPublisher.PROPERTY_shipmentScheduleId, -1));
 
-		// This handler runs on an EventBus pool thread where Env has no AD_Client_ID/AD_Org_ID.
-		// Restore the originating AD context (carried in the event) so downstream model creation
-		// (e.g. newInstance(I_DD_Order.class)) inherits the right client/org instead of AD_Client_ID=0.
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(
-				event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Client_ID, -1),
-				event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Org_ID, -1));
+		// EventBus pool threads carry no Env client — restore it; see docs/coding-rules/event-bus.md
+		final int adClientId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Client_ID, -1);
+		final int adOrgId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Org_ID, -1);
+		if (adClientId <= 0 || adOrgId < 0)
+		{
+			throw new AdempiereException(StringUtils.formatMessage(
+					"DD_Order replenishment event is missing AD_Client_ID/AD_Org_ID (old publisher?): clientId={0}, orgId={1}",
+					adClientId, adOrgId));
+		}
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId);
 
 		try (final IAutoCloseable ignored = switchCtx(clientAndOrgId))
 		{
