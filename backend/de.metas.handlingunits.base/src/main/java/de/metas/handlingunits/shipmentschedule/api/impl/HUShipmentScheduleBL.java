@@ -109,6 +109,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -929,7 +930,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
 
-		// One pass: for each child VHU, load product storage and attribute fingerprint together.
+		// One pass: for each child VHU compute its UseInASI fingerprint once, then emit one
+		// (fingerprint, productStorage) entry per non-empty product storage of that VHU.
 		// Filter by product so VHUs carrying a different product in the same TU are excluded.
 		// UOM consistency is guaranteed: qtyPicked links to one M_ShipmentSchedule which has one
 		// M_Product_ID and therefore one stocking UOM; all filtered storages carry that same product
@@ -938,10 +940,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				handlingUnitsDAO.retrieveIncludedHUs(huToInspect)
 						.stream()
 						.filter(handlingUnitsBL::isVirtual)
-						.flatMap(h -> storageFactory.getStorage(h).getProductStorages().stream()
-								.filter(s -> productId.equals(s.getProductId()))
-								.filter(s -> !s.getQty().isZero())
-								.map(s -> Maps.immutableEntry(computeUseInASIFingerprint(h, attrFactory), s)))
+						.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory))
 						.collect(ImmutableListMultimap.toImmutableListMultimap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (storagesByFingerprint.isEmpty())
@@ -1024,6 +1023,19 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 		result.sort(new ShipmentScheduleWithHUComparator());
 		return result;
+	}
+
+	private static Stream<Map.Entry<AttributesKey, IHUProductStorage>> groupProductStoragesByFingerprint(
+			@NonNull final I_M_HU vhu,
+			@NonNull final ProductId productId,
+			@NonNull final IHUStorageFactory storageFactory,
+			@NonNull final IAttributeStorageFactory attrFactory)
+	{
+		final AttributesKey fingerprint = computeUseInASIFingerprint(vhu, attrFactory);
+		return storageFactory.getStorage(vhu).getProductStorages().stream()
+				.filter(productStorage -> productId.equals(productStorage.getProductId()))
+				.filter(productStorage -> !productStorage.isEmpty())
+				.map(productStorage -> Maps.immutableEntry(fingerprint, productStorage));
 	}
 
 	private static AttributesKey computeUseInASIFingerprint(
