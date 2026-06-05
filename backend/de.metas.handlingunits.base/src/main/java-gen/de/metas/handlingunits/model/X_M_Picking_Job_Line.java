@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1300941424L;
+	private static final long serialVersionUID = 2036402452L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -165,6 +165,18 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public java.lang.String getCurrent_PickTo_LU_QRCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_Current_PickTo_LU_QRCode);
+	}
+
+	@Override
+	public void setCurrent_PickTo_TU_GRAI (final @Nullable java.lang.String Current_PickTo_TU_GRAI)
+	{
+		set_Value (COLUMNNAME_Current_PickTo_TU_GRAI, Current_PickTo_TU_GRAI);
+	}
+
+	@Override
+	public java.lang.String getCurrent_PickTo_TU_GRAI() 
+	{
+		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_GRAI);
 	}
 
 	@Override

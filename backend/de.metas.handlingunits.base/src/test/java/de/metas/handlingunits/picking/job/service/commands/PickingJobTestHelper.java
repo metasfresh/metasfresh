@@ -17,6 +17,8 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -152,6 +154,9 @@ public class PickingJobTestHelper
 	public final PickingSlotId pickingSlotId;
 	public final Workplace workplace;
 
+	/** Exposes the single internal {@link HUTestHelper} so tests share ONE AdempiereTestHelper context (a second instance would re-init and wipe the master data created here, e.g. the locator). */
+	public HUTestHelper getHuTestHelper() {return huTestHelper;}
+
 	public PickingJobTestHelper()
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
@@ -212,7 +217,7 @@ public class PickingJobTestHelper
 				huLabelService,
 				huReservationService,
 				inventoryService,
-				new HUGraiService());
+				new HUGraiService(new HUPIGraiRepository()));
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,
@@ -238,7 +243,8 @@ public class PickingJobTestHelper
 				PickingShipmentService.newInstanceForUnitTesting(),
 				configService,
 				pickingJobScheduleService,
-				huService
+				huService,
+				new PickingJobGraiTargetService(huService)
 		);
 
 		huTracer = new HUTracerInstance()
