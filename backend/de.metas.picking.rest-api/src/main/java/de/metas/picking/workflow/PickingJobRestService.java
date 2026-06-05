@@ -216,13 +216,18 @@ public class PickingJobRestService
 	}
 
 	/**
-	 * Processes the GRAI-scan TU-target assignment for the given picking-job line.
+	 * Processes the GRAI-scan TU-target assignment.
 	 * Resolves the TU type/capacity from the scanned GRAI, builds a new-TU target carrying the
-	 * GRAI, and stores it on the line. No physical HU is created here.
+	 * GRAI, and stores it on the line (or at job/header level when {@code lineId == null}).
+	 * No physical HU is created here.
+	 *
+	 * @param lineId the picking-job line; {@code null} → header-level (no-line) scan: the per-product capacity
+	 *               and TU-allowed-on-LU checks are skipped (re-applied per-line at pick time) and the target is
+	 *               stored at job level.
 	 */
 	public PickingJob setTUPickingTargetFromGRAI(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingJobLineId lineId,
+			@Nullable final PickingJobLineId lineId,
 			@NonNull final ScannedCode scannedGrai)
 	{
 		return pickingJobService.createTUFromGRAI(pickingJob, lineId, scannedGrai);

@@ -25,7 +25,6 @@ package de.metas.picking.rest_api;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
-import de.metas.common.util.Check;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
@@ -142,8 +141,8 @@ public class PickingRestController
 		if (jsonTarget != null && jsonTarget.getGrai() != null)
 		{
 			// GRAI-scan flow: delegate to the mobile application to resolve + create the TU.
-			final PickingJobLineId lineIdNotNull = Check.assumeNotNull(lineId, "lineId must be set for the GRAI-scan picking flow");
-			wfProcess = pickingMobileApplication.setTUPickingTargetFromGRAI(wfProcessId, lineIdNotNull, jsonTarget.getGrai(), getLoggedUserId());
+			// lineId may be null for a header-level (no-line) scan.
+			wfProcess = pickingMobileApplication.setTUPickingTargetFromGRAI(wfProcessId, lineId, jsonTarget.getGrai(), getLoggedUserId());
 		}
 		else
 		{
