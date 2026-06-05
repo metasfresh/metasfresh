@@ -318,9 +318,12 @@ class PickingJobGraiScanPickEndToEndTest
 
 		PickingJob pickingJob = createTuPickingJob(productId, "100", piipId);
 
-		// Set a JOB/HEADER-level LU picking target (lineId == null), mirroring TC3's setLUPickingTarget
-		// but at header level.
+		// Set a JOB/HEADER-level LU picking target (lineId == null) on an LU PI that DOES INCLUDE the GRAI TU
+		// type, so the (always-on) TU-allowed-on-LU check at header level passes (AC-H3) and the scan succeeds.
+		final HuPackingInstructionsId graiTuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
+		final I_M_HU_PI graiTuPI = InterfaceWrapperHelper.load(graiTuPIId.getRepoId(), I_M_HU_PI.class);
 		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-GRAI-HDR", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		huTestHelper.createHU_PI_Item_IncludedHU(luPI, graiTuPI, new BigDecimal("10")); // LU now includes the GRAI TU type
 		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID());
 		pickingJob = helper.pickingJobService.setLUPickingTarget(pickingJob, /*lineId*/ null,
 				LUPickingTarget.ofPackingInstructions(luPIId, "LU-GRAI-HDR"));
@@ -339,6 +342,33 @@ class PickingJobGraiScanPickEndToEndTest
 		assertThat(jobLevelTarget.getGrai())
 				.as("the job-level new-TU target must carry the scanned GRAI")
 				.isEqualTo(GRAI.parse(GRAI_CANONICAL));
+	}
+
+	/**
+	 * AC-H3 at header level: a resolved TU type NOT associable to the JOB-LEVEL LU target must fail loud with
+	 * {@code GRAITUNotAllowedOnLU} — the TU-allowed-on-LU check is NOT skipped at header level (only the
+	 * per-product capacity check is). Mirrors TC3 but with the LU target set at job/header level (lineId == null).
+	 */
+	@Test
+	void setTUPickingTargetFromGRAI_atHeaderLevel_tuNotAllowedOnJobLu_throwsTUNotAllowedOnLU()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-GRAI", helper.uomEach);
+		final HUPIItemProductId piipId = createGraiTuPI(productId, true);
+		helper.createVHUInfo(productId, "100", "QR-VHU-GRAI");
+
+		// An LU PI that does NOT include the GRAI TU PI, set at JOB/HEADER level (lineId == null).
+		final I_M_HU_PI unrelatedLuPI = huTestHelper.createHUDefinition("LU-NO-GRAI-TU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		final HuPackingInstructionsId unrelatedLuPIId = HuPackingInstructionsId.ofRepoId(unrelatedLuPI.getM_HU_PI_ID());
+
+		PickingJob pickingJob = createTuPickingJob(productId, "100", piipId);
+		pickingJob = helper.pickingJobService.setLUPickingTarget(pickingJob, /*lineId*/ null,
+				LUPickingTarget.ofPackingInstructions(unrelatedLuPIId, "LU-NO-GRAI-TU"));
+
+		final PickingJob pickingJobForLambda = pickingJob;
+		assertThatThrownBy(() -> helper.pickingJobService.createTUFromGRAI(pickingJobForLambda, /*lineId*/ null, ScannedCode.ofString(GRAI_CANONICAL)))
+				.as("header-level GRAI scan whose TU type is not includable on the job-level LU target must fail loud")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
 	}
 
 	/**
