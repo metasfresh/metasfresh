@@ -969,8 +969,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Guard: if the picked qty does not equal the grand total of all VHUs, this QtyPicked covers
 		// only part of the TU and another QtyPicked record covers the rest — fall back to a single
 		// default candidate so each QtyPicked is not independently inflated by the full group sums.
-		// The zero Quantity is derived from any VHU in the map — Collectors.groupingBy never produces
-		// an empty-list value, and size > 1 guarantees at least one group is present.
+		// The zero Quantity is derived from any VHU in the map — ImmutableListMultimap never
+		// stores an empty list for a key, and isEmpty() was checked above so at least one entry is present.
 		final Quantity zeroInPickedUOM = storagesByFingerprint.values().iterator().next().getQty().toZero();
 		final Quantity grandTotal = storagesByFingerprint.values().stream()
 				.map(IHUProductStorage::getQty)
