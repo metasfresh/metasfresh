@@ -7,6 +7,7 @@ import de.metas.inout.InOutId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
@@ -14,38 +15,31 @@ import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Component;
 
 /**
- * Delays the shipment ({@code M_InOut}) notification email until carrier tracking URLs are
- * available for the shipment — controlled by SysConfig {@link #SYSCONFIG_DelayUntilCarrierConfirmed}.
+ * Delays the shipment ({@code M_InOut}) notification email until the carrier tracking link is
+ * available — controlled by SysConfig {@link #SYSCONFIG_DelayUntilCarrierConfirmed}.
  *
  * <p>The notification handled here is the shipment's own doc-outbound notification: the
- * {@code C_Doc_Outbound_Log.Record_ID} is the {@code M_InOut_ID}. The readiness check:
+ * {@code C_Doc_Outbound_Log.Record_ID} is the {@code M_InOut_ID}. The gate releases as soon as the
+ * shipment has a tracking link to render — i.e. the {@code M_InOut.TrackingURL} virtual column (the
+ * <em>same</em> value the email body renders) is non-blank. The check:
  * <ol>
- *   <li>If the {@code M_InOut} is not a customer shipment ({@code IsSOTrx='N'}, e.g. a vendor
- *       receipt) it carries no customer tracking-link notification — <em>send</em>.</li>
- *   <li>If the shipment's shipper has no configured gateway ({@code M_Shipper.ShipperGateway} is
- *       blank) no carrier tracking is expected — <em>send</em>.</li>
- *   <li>If a gateway is configured but no {@code M_ShippingPackage} rows exist for the shipment
- *       yet, the carrier has not been invoked — <em>delay</em>.</li>
- *   <li>If packages exist, every reachable {@code Carrier_ShipmentOrder_Parcel} must carry a
- *       non-blank {@code TrackingURL}. Any missing URL — or any package/order/parcel gap in the
- *       chain — causes a <em>delay</em>.</li>
+ *   <li>only customer shipments ({@code IsSOTrx='Y'}) — vendor receipts carry no customer notification;</li>
+ *   <li>only shipments whose shipper has a configured gateway ({@code M_Shipper.ShipperGateway}) —
+ *       without a carrier gateway no tracking link is ever expected, so don't hold;</li>
+ *   <li>then delay while {@code M_InOut.TrackingURL} is still blank (carrier hasn't returned tracking yet).</li>
  * </ol>
- * When none of the above conditions causes a delay, the notification is released (returns {@code false}).</p>
+ * Releasing on the first available tracking link (rather than requiring every parcel to be tracked)
+ * keeps the gate aligned with what the email actually renders and avoids holding the mail for the
+ * full timeout when an individual parcel never receives a tracking number.</p>
  */
 @Component
 public class InOutNotificationDelayHandler implements DocOutboundNotificationDelayHandler
 {
 	public static final String SYSCONFIG_DelayUntilCarrierConfirmed = "delayNotificationUntilShipmentConfirmedByCarrier";
 
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
-	private final CarrierTrackingDelayRepository carrierTrackingDelayRepository;
-
-	public InOutNotificationDelayHandler(@NonNull final CarrierTrackingDelayRepository carrierTrackingDelayRepository)
-	{
-		this.carrierTrackingDelayRepository = carrierTrackingDelayRepository;
-	}
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@Override
 	public String getTableName()
@@ -71,7 +65,7 @@ public class InOutNotificationDelayHandler implements DocOutboundNotificationDel
 		final I_M_InOut inOut = inOutDAO.getById(inOutId);
 		if (!inOut.isSOTrx())
 		{
-			return false; // only customer shipments carry a tracking-link notification; vendor receipts (IsSOTrx='N') do not
+			return false; // vendor receipts carry no customer tracking-link notification
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(inOut.getM_Shipper_ID());
@@ -82,9 +76,14 @@ public class InOutNotificationDelayHandler implements DocOutboundNotificationDel
 
 		if (!shipperDAO.getShipperGatewayId(shipperId).isPresent())
 		{
-			return false; // shipper has no gateway configured → no tracking expected
+			return false; // shipper has no gateway configured → no tracking link expected
 		}
 
-		return carrierTrackingDelayRepository.isCarrierTrackingPending(inOutId);
+		// carrier-tracked shipment: hold until the tracking link the email will render is available.
+		// getTrackingURL() is the @Deprecated lazy virtual-column accessor — intentional here: one read
+		// per notification check (not a loop), and it is exactly the value the email body renders.
+		@SuppressWarnings("deprecation")
+		final String trackingURL = inOut.getTrackingURL();
+		return Check.isBlank(trackingURL);
 	}
 }
