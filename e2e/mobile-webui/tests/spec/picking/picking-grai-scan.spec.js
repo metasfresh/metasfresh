@@ -226,6 +226,199 @@ const navigateToTopLevelTUTargetScreen = async (masterdata) => {
     await PickingJobLineScreen.clickTUTargetButton();
 };
 
+/**
+ * Navigate to the JOB-LEVEL (header) pick-target TU screen — the path that has NO line in
+ * context (lineId=null). The job-level TU button (PickProductsActivity →
+ * SelectCurrentLUTUButtons, no lineId) opens SelectPickTargetTUScreen with no lineId in the URL.
+ *
+ * On a GRAI-required customer the backend now supports a GRAI scan here: it resolves the TU
+ * type, runs the TU-allowed-on-LU check against the JOB-LEVEL LU, skips the per-product
+ * capacity check, sets a job-level TU target carrying the GRAI, and stamps the GRAI on the
+ * shipped HU at pick time. (Previously this 500'd — see me03 29853 follow-up.) The GRAI
+ * scanner is therefore offered at job level too.
+ *
+ * Precondition: PickingJobScreen is showing.
+ * Postcondition: SelectPickTargetTUScreen (job-level) is showing.
+ */
+const navigateToJobLevelTUTargetScreen = async (masterdata, { lu } = {}) => {
+    // 1. Scan picking slot → stays on PickingJobScreen with product aggregation
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    // 2. Set LU target at job level (the job-level TU button is enabled once an LU is set)
+    await PickingJobScreen.setTargetLU({ lu: lu ?? masterdata.packingInstructions.PI_MAIN.luName });
+    // 3. Click the JOB-LEVEL TU target button WITHOUT opening any line — no lineId in the URL.
+    await PickingJobScreen.clickTUTargetButton();
+    await SelectPickTargetTUScreen.waitForScreen();
+};
+
+// ─── TC-H1 — Job-level (no line) TU target on GRAI customer → scanner visible ──
+//
+// me03 https://github.com/metasfresh/me03/issues/29853 follow-up. Header-level GRAI support:
+// on a GRAI-required customer the GRAI scanner is offered on the JOB/HEADER-level TU
+// pick-target (lineId=null). AC-H1.
+
+// noinspection JSUnusedLocalSymbols
+test('TC-H1 — Job-level TU target (no line) on GRAI customer → GRAI scanner visible', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — TC-H1 header scanner visible (lineId=null)');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForGraiScan();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ index: 1 });
+
+    // Reach the JOB-LEVEL TU target screen (no line in context → lineId=null).
+    await navigateToJobLevelTUTargetScreen(masterdata);
+
+    // The GRAI scanner must be present at job level for a GRAIRequired=Yes customer.
+    await PickingGraiScanPanel.expectScannerVisible();
+});
+
+// ─── TC-H2 — Header scan → job-level TU + GRAI on the shipped HU ───────────────
+//
+// At the job-level target, scan a mapped GRAI: the new TU target is created (no 500). Then
+// complete the pick + ship, and assert the scanned GRAI is present as the GRAI M_HU_Attribute
+// on the SHIPPED HU. AC-H2 + AC-H6.
+
+// noinspection JSUnusedLocalSymbols
+test('TC-H2 — Header GRAI scan → job-level TU created, GRAI on shipped HU', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — TC-H2 header scan → shipped-HU GRAI');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForGraiScan();
+    const graiMapped = masterdata.packingInstructions.PI_MAIN.grai;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1 });
+
+    // Reach the JOB-LEVEL TU target screen (no line in context → lineId=null).
+    await navigateToJobLevelTUTargetScreen(masterdata);
+    await PickingGraiScanPanel.expectScannerVisible();
+
+    // Scan one valid GRAI at job level — the new job-level TU target is created (no 500),
+    // debounce fires, REST sets the target, navigates back to the job screen.
+    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
+    await PickingJobScreen.waitForScreen();
+
+    // Pick the line into the job-level TU target.
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.clickScanButton();
+    await PickLineScanScreen.waitForScreen();
+    await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU1.qrCode);
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '1' });
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.goBack();
+
+    // Complete + ship.
+    await PickingJobScreen.complete();
+
+    // Verify: the SHIPPED HU (the TU packed by the header GRAI scan) carries the scanned GRAI
+    // as its GRAI M_HU_Attribute. Same TU-under-LU shape as TC1 (an LU target was set), so the
+    // shipped/processed picked HU is the TU (tu1) under its LU (lu1).
+    await Backend.expect({
+        title: 'TC-H2: header-scanned GRAI present on the shipped HU',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            // The shipped TU carries the GRAI stamped at pick time by the header-level scan (AC-H6).
+            tu1: {
+                attributes: { GRAI: graiMapped },
+            },
+        },
+    });
+});
+
+// ─── TC-H3 — Header scan, TU not allowed on the job LU → error ────────────────
+//
+// The TU-allowed-on-LU check runs against the JOB-LEVEL LU even with no line in context. Scan
+// a GRAI whose resolved TU type is not associable with the job LU → GRAITUNotAllowedOnLU error,
+// no TU created. AC-H3.
+
+// noinspection JSUnusedLocalSymbols
+test('TC-H3 — Header GRAI scan, TU not allowed on job LU → GRAITUNotAllowedOnLU error', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — TC-H3 header scan TU not on job LU');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForGraiScan();
+    // PI_NOTALLOWED's GRAI resolves to TU_NOTALLOWED, which is only on LU_OTHER — NOT the
+    // job-level LU (LU_MAIN). The TU-allowed-on-LU check against the job LU must reject it.
+    const graiNotOnLU = masterdata.packingInstructions.PI_NOTALLOWED.grai;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ index: 1 });
+
+    // Job-level target with LU_MAIN as the job LU.
+    await navigateToJobLevelTUTargetScreen(masterdata);
+    await PickingGraiScanPanel.expectScannerVisible();
+
+    // graiNotOnLU resolves to TU_NOTALLOWED (only on LU_OTHER, not the job LU LU_MAIN) → error, no TU created.
+    await expectErrorToast('GRAITUNotAllowedOnLU error', async () => {
+        await PickingGraiScanPanel.scanGrai({ graiString: graiNotOnLU });
+        await SelectPickTargetTUScreen.waitForScreen();
+    });
+});
+
+// ─── TC-H8 — Non-GRAI header target still works (nullable-lineId regression) ───
+//
+// At the job-level TU target, use the manual per-type button (no scan) → a TU target is set
+// normally. Regression guard for the new nullable-lineId path. AC-H8.
+
+// noinspection JSUnusedLocalSymbols
+test('TC-H8 — Job-level non-GRAI TU target (manual button, no scan) still works', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — TC-H8 non-GRAI header target regression');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForGraiScan();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ index: 1 });
+
+    // Reach the JOB-LEVEL TU target screen (no line in context → lineId=null).
+    await navigateToJobLevelTUTargetScreen(masterdata);
+    // The scanner is offered (GRAIRequired=Yes) but we deliberately do NOT scan.
+    await PickingGraiScanPanel.expectScannerVisible();
+
+    // Use the manual per-type button instead — pick TU_MAPPED. The TU target must be set
+    // normally via the nullable-lineId job-level path, returning to the job screen.
+    await SelectPickTargetTUScreen.clickTUButton({ tu: masterdata.packingInstructions.PI_MAIN.tuName });
+    await PickingJobScreen.waitForScreen();
+
+    // The job-level TU target is now set: the line button is enabled, so the pick can proceed.
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
+});
+
 // ─── TC1 — Scan one GRAI → TU created, GRAI attribute attached ────────────────
 
 // noinspection JSUnusedLocalSymbols
