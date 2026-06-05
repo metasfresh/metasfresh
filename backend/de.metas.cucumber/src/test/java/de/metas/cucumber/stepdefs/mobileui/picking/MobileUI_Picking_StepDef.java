@@ -18,6 +18,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
@@ -75,8 +76,8 @@ public class MobileUI_Picking_StepDef
 		final JsonWFProcess wfProcess = mobileUIPickingClient.startJobBySalesDocumentNo(salesOrder.getDocumentNo());
 		context.setWfProcess(wfProcess);
 		context.setScheduleIds(queryBL
-				.createQueryBuilder(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)
-				.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, salesOrder.getC_Order_ID())
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, salesOrder.getC_Order_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(ShipmentScheduleId::ofRepoId));
