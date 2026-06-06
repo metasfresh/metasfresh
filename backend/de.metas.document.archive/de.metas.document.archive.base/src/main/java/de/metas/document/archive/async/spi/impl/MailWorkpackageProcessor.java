@@ -37,7 +37,9 @@ import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -93,9 +95,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient DocOutBoundRecipientService docOutBoundRecipientService = SpringContextHolder.instance.getBean(DocOutBoundRecipientService.class);
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient DocOutboundNotificationDelayService notificationDelayService = SpringContextHolder.instance.getBean(DocOutboundNotificationDelayService.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
-	private static final int NOTIFICATION_DELAY_TIMEOUT_MILLIS = 60 * 1000;
+	/** Max time (ms) to hold a mail notification waiting for readiness (e.g. carrier tracking URL); 0 = never delay. Replaces the former hardcoded 60s cap + boolean switch. */
+	private static final String SYSCONFIG_MailNotificationMaxDelayMillis = "mailNotificationMaxDelayMillis";
 	private static final int NOTIFICATION_DELAY_RETRY_MILLIS = 2 * 1000;
 
 	private static final AdMessageKey MSG_EmailSubject = AdMessageKey.of("MailWorkpackageProcessor.EmailSubject");
@@ -105,7 +109,9 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	public Result processWorkPackage(final @NonNull I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final List<I_C_Doc_Outbound_Log_Line> logLines = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log_Line.class);
-		assertNotificationReadyOrSkip(notificationDelayService, workpackage, logLines);
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(workpackage.getAD_Client_ID(), workpackage.getAD_Org_ID());
+		final int maxDelayMillis = sysConfigBL.getIntValue(SYSCONFIG_MailNotificationMaxDelayMillis, 0, clientAndOrgId);
+		assertNotificationReadyOrSkip(notificationDelayService, workpackage, logLines, maxDelayMillis);
 		for (final I_C_Doc_Outbound_Log_Line logLine : logLines)
 		{
 			final I_AD_Archive archive = logLine.getAD_Archive();
@@ -130,8 +136,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	static void assertNotificationReadyOrSkip(
 			@NonNull final DocOutboundNotificationDelayService notificationDelayService,
 			@NonNull final I_C_Queue_WorkPackage workpackage,
-			@NonNull final List<I_C_Doc_Outbound_Log_Line> logLines)
+			@NonNull final List<I_C_Doc_Outbound_Log_Line> logLines,
+			final int maxDelayMillis)
 	{
+		if (maxDelayMillis <= 0)
+		{
+			return; // feature off (SysConfig mailNotificationMaxDelayMillis=0): never delay
+		}
+
 		final boolean anyNeedsDelay = logLines.stream()
 				.map(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log)
 				.anyMatch(notificationDelayService::shouldDelaySending);
@@ -141,10 +153,10 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		final long elapsedMillis = SystemTime.millis() - workpackage.getCreated().getTime();
-		if (elapsedMillis >= NOTIFICATION_DELAY_TIMEOUT_MILLIS)
+		if (elapsedMillis >= maxDelayMillis)
 		{
-			Loggables.get().addLog("Notification delay timeout ({}ms) reached for C_Queue_WorkPackage_ID={}; sending anyway",
-					NOTIFICATION_DELAY_TIMEOUT_MILLIS, workpackage.getC_Queue_WorkPackage_ID());
+			Loggables.get().addLog("Notification max delay ({}ms) reached for C_Queue_WorkPackage_ID={}; sending anyway",
+					maxDelayMillis, workpackage.getC_Queue_WorkPackage_ID());
 			return;
 		}
 

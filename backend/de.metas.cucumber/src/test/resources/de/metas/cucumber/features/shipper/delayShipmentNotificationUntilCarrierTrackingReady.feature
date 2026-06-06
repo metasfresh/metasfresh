@@ -7,8 +7,8 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
   I want the shipment notification email to be held back until the carrier has confirmed
   the shipment by providing a tracking URL,
   so that customers always receive the tracking link with their shipment notification.
-  The gate is controlled by SysConfig delayNotificationUntilShipmentConfirmedByCarrier and
-  applies only to customer shipments (M_InOut.IsSOTrx='Y').
+  The gate is controlled by SysConfig mailNotificationMaxDelayMillis (0 = off; >0 = max wait in ms)
+  and applies only to customer shipments (M_InOut.IsSOTrx='Y').
 
   Background:
     Given infrastructure and metasfresh are running
@@ -16,7 +16,7 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
     And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
     And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
-    And set sys config boolean value true for sys config delayNotificationUntilShipmentConfirmedByCarrier
+    And set sys config int value 60000 for sys config mailNotificationMaxDelayMillis
     And set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     # printLabels would need a printer config; keep it off so the WP succeeds without one
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
@@ -209,7 +209,7 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
   @from:cucumber
   @ghActions:run_on_executor7
   Scenario: reset settings to default
-    Given set sys config boolean value false for sys config delayNotificationUntilShipmentConfirmedByCarrier
+    Given set sys config int value 0 for sys config mailNotificationMaxDelayMillis
     And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value true for sys config de.metas.shipper.gateway.printLabels.enabled
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION

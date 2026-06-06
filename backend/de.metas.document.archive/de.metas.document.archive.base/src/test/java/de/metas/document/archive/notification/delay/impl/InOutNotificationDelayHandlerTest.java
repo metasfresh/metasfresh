@@ -3,7 +3,6 @@ package de.metas.document.archive.notification.delay.impl;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +13,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for {@link InOutNotificationDelayHandler}.
+ * Tests for {@link InOutNotificationDelayHandler} — the pure readiness check.
  *
- * <p>The handler holds the shipment notification while the shipment's {@code M_InOut.TrackingURL}
- * virtual column is still blank — but only for customer shipments ({@code IsSOTrx='Y'}) whose
- * shipper has a configured gateway. Receipts, non-gateway shipments, and a present tracking URL all
- * release immediately. Here the virtual column is exercised directly via {@code setTrackingURL}
- * (POJO test layer; production computes it from the carrier parcels via the lazy {@code ColumnSQL}).</p>
+ * <p>The handler holds the shipment notification while `M_InOut.TrackingURL` is still blank, but only
+ * for customer shipments ({@code IsSOTrx='Y'}) whose shipper has a configured gateway. Receipts,
+ * non-gateway shipments, and a present tracking URL all report "ready" (no delay). The on/off + max
+ * wait time live in the mail processor (SysConfig {@code mailNotificationMaxDelayMillis}), not here.
+ * The virtual column is exercised directly via {@code setTrackingURL} (POJO test layer).</p>
  */
 public class InOutNotificationDelayHandlerTest
 {
@@ -31,15 +30,6 @@ public class InOutNotificationDelayHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 		handler = new InOutNotificationDelayHandler();
-	}
-
-	private void setSysConfig(final boolean enabled)
-	{
-		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(InOutNotificationDelayHandler.SYSCONFIG_DelayUntilCarrierConfirmed);
-		sysConfig.setValue(enabled ? "Y" : "N");
-		sysConfig.setConfigurationLevel("S");
-		save(sysConfig);
 	}
 
 	/**
@@ -61,7 +51,7 @@ public class InOutNotificationDelayHandlerTest
 	 *
 	 * @param shipper     shipper to assign (null = no shipper)
 	 * @param soTrx       {@code true} = customer shipment; {@code false} = vendor receipt
-	 * @param trackingURL value of the {@code M_InOut.TrackingURL} virtual column (null = blank = carrier not yet confirmed)
+	 * @param trackingURL value of the {@code M_InOut.TrackingURL} virtual column (null = blank)
 	 */
 	private I_C_Doc_Outbound_Log buildLog(final I_M_Shipper shipper, final boolean soTrx, final String trackingURL)
 	{
@@ -85,51 +75,38 @@ public class InOutNotificationDelayHandlerTest
 	}
 
 	@Test
-	public void sysConfigOff_neverDelays()
-	{
-		setSysConfig(false);
-		// gateway shipper + blank tracking URL would otherwise delay, but the SysConfig is off
-		assertThat(handler.shouldDelaySending(buildLog(createShipper("nshift"), true, null))).isFalse();
-	}
-
-	@Test
 	public void gatewayShipper_noTrackingUrl_delays()
 	{
-		setSysConfig(true);
-		// carrier-tracked customer shipment, tracking link not yet available → delay
+		// carrier-tracked customer shipment, tracking link not yet available → not ready (delay)
 		assertThat(handler.shouldDelaySending(buildLog(createShipper("nshift"), true, null))).isTrue();
 	}
 
 	@Test
 	public void gatewayShipper_withTrackingUrl_doesNotDelay()
 	{
-		setSysConfig(true);
-		// tracking link present (the value the email will render) → release
+		// tracking link present (the value the email will render) → ready
 		assertThat(handler.shouldDelaySending(buildLog(createShipper("nshift"), true, "https://track/x"))).isFalse();
 	}
 
 	@Test
 	public void noGatewayShipper_doesNotDelay()
 	{
-		setSysConfig(true);
-		// shipper has no gateway → no tracking link ever expected → never held
+		// shipper has no gateway → no tracking link ever expected → ready
 		assertThat(handler.shouldDelaySending(buildLog(createShipper(null), true, null))).isFalse();
 	}
 
 	@Test
 	public void noShipperOnInOut_doesNotDelay()
 	{
-		setSysConfig(true);
-		// shipment has no shipper → not carrier-relevant → never held
+		// shipment has no shipper → not carrier-relevant → ready
 		assertThat(handler.shouldDelaySending(buildLog(null, true, null))).isFalse();
 	}
 
 	@Test
 	public void receiptInOut_doesNotDelay()
 	{
-		setSysConfig(true);
-		// vendor receipt (IsSOTrx='N') with a gateway shipper + blank tracking URL would otherwise
-		// delay, but receipts carry no customer tracking-link notification → never held
+		// vendor receipt (IsSOTrx='N') with a gateway shipper + blank tracking URL → ready (receipts
+		// carry no customer tracking-link notification)
 		assertThat(handler.shouldDelaySending(buildLog(createShipper("nshift"), false, null))).isFalse();
 	}
 }
