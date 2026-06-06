@@ -618,7 +618,8 @@ public class PickingJobService implements PickingSlotListener
 
 	/**
 	 * GRAI-scan picking entry point (lazy path): resolves the TU type and capacity from the scanned GRAI,
-	 * builds a new-TU {@link TUPickingTarget} carrying the parsed GRAI, and stores it on the line.
+	 * builds a new-TU {@link TUPickingTarget} carrying the parsed GRAI, and stores it on the line or at
+	 * job/header level (when {@code lineId == null}).
 	 * No physical HU is created here; the real TU is materialised later at first-pick time by the
 	 * framework, and {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}
 	 * stamps the GRAI on it afterwards via {@link PickingJobHUService#setGrais}.
@@ -626,8 +627,8 @@ public class PickingJobService implements PickingSlotListener
 	 * @param lineId      the picking-job line being picked; used to resolve the line's product for capacity checks
 	 *                    and the effective LU target for the TU-allowed-on-LU check.
 	 *                    {@code null} → header-level (no-line) scan: ONLY the per-product capacity check is skipped
-	 *                    (there is no single line product at header level). The TU-allowed-on-LU check STILL runs
-	 *                    against the job-level LU target (AC-H3), since {@link PickingJob#getLuPickingTargetEffective}
+	 *                    (there is no single line product at header level). The TU-allowed-on-LU check still runs
+	 *                    against the job-level LU target, since {@link PickingJob#getLuPickingTargetEffective}
 	 *                    returns the job-level target when {@code lineId == null}; the TU target is stored at job level.
 	 * @param scannedGrai the raw scanned GRAI barcode.
 	 */
@@ -638,8 +639,8 @@ public class PickingJobService implements PickingSlotListener
 	{
 		// Resolve the TU type from the GRAI, validated against the effective LU target (line-level if set, else
 		// job-level). At header level (lineId == null) the effective LU target is the job-level one, so the
-		// TU-allowed-on-LU check (AC-H3) still runs; ONLY the per-product capacity check is skipped, because there
-		// is no single line product at header level (AC-H4).
+		// TU-allowed-on-LU check still runs; ONLY the per-product capacity check is skipped, because there
+		// is no single line product at header level.
 		final LUPickingTarget luTarget = pickingJob.getLuPickingTargetEffective(lineId).orElse(null);
 		final ProductId lineProductId = (lineId != null) ? pickingJob.getLineById(lineId).getProductId() : null;
 		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(

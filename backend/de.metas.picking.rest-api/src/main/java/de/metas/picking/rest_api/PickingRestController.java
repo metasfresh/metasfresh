@@ -141,7 +141,6 @@ public class PickingRestController
 		if (jsonTarget != null && jsonTarget.getGrai() != null)
 		{
 			// GRAI-scan flow: delegate to the mobile application to resolve + create the TU.
-			// lineId may be null for a header-level (no-line) scan.
 			wfProcess = pickingMobileApplication.setTUPickingTargetFromGRAI(wfProcessId, lineId, jsonTarget.getGrai(), getLoggedUserId());
 		}
 		else

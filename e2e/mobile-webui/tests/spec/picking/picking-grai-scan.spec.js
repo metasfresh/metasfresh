@@ -120,7 +120,7 @@ const createMasterdataForGraiScan = async () => {
  *
  * We open the line detail first (PickLineScreen, which carries the lineId in its URL) and
  * click the TU button from there, so the GRAI scan REST endpoint receives a lineId.
- * The job-level (no-lineId) path is covered by {@link navigateToJobLevelTUTargetScreen}
+ * The job-level (no-lineId) path is covered by `navigateToJobLevelTUTargetScreen`
  * (TC-H1…TC-H8).
  *
  * Precondition: PickingJobScreen is showing.
