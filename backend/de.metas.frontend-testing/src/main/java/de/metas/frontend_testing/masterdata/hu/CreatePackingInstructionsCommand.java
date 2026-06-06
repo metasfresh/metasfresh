@@ -198,7 +198,17 @@ public class CreatePackingInstructionsCommand
 
 		record.setM_Product_ID(productId.getRepoId());
 		record.setM_HU_PI_Item_ID(tuPIItemId.getRepoId());
-		record.setQty(request.getQtyCUsPerTUNotNull());
+		final BigDecimal qtyCUsPerTU = request.getQtyCUsPerTU();
+		if (qtyCUsPerTU != null)
+		{
+			record.setIsInfiniteCapacity(false);
+			record.setQty(qtyCUsPerTU);
+		}
+		else
+		{
+			record.setIsInfiniteCapacity(true);
+			record.setQty(BigDecimal.ZERO);
+		}
 		record.setC_UOM_ID(uomId.getRepoId());
 		record.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
 		record.setEAN_TU(request.getTu_ean() != null ? request.getTu_ean().getAsString() : null);

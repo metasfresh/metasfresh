@@ -57,6 +57,14 @@ import lombok.NonNull;
  */
 
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
+/**
+ * Deferred SQL default value expression for WebUI document fields.
+ * The SQL template (with {@code @Variable@} placeholders) is compiled at descriptor build time
+ * and evaluated at document render time using the live document context.
+ *
+ * @see DB#resolveSqlDefaultValue(String) for the immediate-execution variant
+ * used by print option descriptors and other non-document contexts
+ */
 public final class SqlDefaultValueExpression<V> implements IExpression<V>
 {
 	public static <V> SqlDefaultValueExpression<?> of(

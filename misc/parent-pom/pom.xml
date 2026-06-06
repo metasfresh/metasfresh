@@ -804,6 +804,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                             <directory>src/main/jasperreports</directory>
                                             <excludes>
                                                 <exclude>**/*.jrxml</exclude>
+                                                <exclude>**/*.md</exclude>
                                             </excludes>
                                         </resource>
                                     </resources>

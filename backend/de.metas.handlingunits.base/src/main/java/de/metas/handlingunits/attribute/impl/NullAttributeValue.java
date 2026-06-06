@@ -52,7 +52,7 @@ public final class NullAttributeValue implements IAttributeValue
 {
 	public static final NullAttributeValue instance = new NullAttributeValue();
 
-	public static final boolean isNull(final IAttributeValue attributeValue)
+	public static boolean isNull(final IAttributeValue attributeValue)
 	{
 		return attributeValue == null || attributeValue == instance;
 	}
@@ -189,19 +189,19 @@ public final class NullAttributeValue implements IAttributeValue
 	@Override
 	public IAttributeAggregationStrategy retrieveAggregationStrategy()
 	{
-		return NullAggregationStrategy.instance;
+		return NullAggregationStrategy.newInstance();
 	}
 
 	@Override
 	public IAttributeSplitterStrategy retrieveSplitterStrategy()
 	{
-		return NullSplitterStrategy.instance;
+		return NullSplitterStrategy.newInstance();
 	}
 
 	@Override
 	public IHUAttributeTransferStrategy retrieveTransferStrategy()
 	{
-		return SkipHUAttributeTransferStrategy.instance;
+		return SkipHUAttributeTransferStrategy.newInstance();
 	}
 
 	@Override
