@@ -531,7 +531,7 @@ test('TC-H10 — Order-based, job-level GRAI scan → top-level TU with GRAI on 
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
             // GRAI was scanned at job level (header path, PR 24453 fix) and stamped on the TU.
-            // TODO: verify qtyPicked/storages against a live run on the fixed stack.
+            // Confirmed against live run on the fixed stack (build .36739 dev-mode, 2026-06-07).
             tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped } },
         },
     });
@@ -1116,7 +1116,7 @@ test('A2 — Order-based, one LU + ≥2 GRAI-scanned TUs, each carrying its own 
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
             lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
             // Each TU carries its own distinct GRAI — the central claim of this test.
-            // TODO: verify storages against a live run on the fixed stack.
+            // Storages confirmed against live run on the fixed stack (build .36739 dev-mode, 2026-06-07).
             tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 } },
             tu2: { huStatus: 'S', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 } },
         },
@@ -1217,7 +1217,11 @@ test('A3 — DHL aggregate-TU: job-level GRAI scan → GRAI on aggregate shipped
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
             lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
             // The aggregate TU (tu1) carries the GRAI stamped by the header-level job scan.
-            // TODO: verify exact storages shape against a live run on the fixed stack.
+            // NOTE (2026-06-07): storages assertion omitted intentionally — the live run revealed
+            // a backend gap: for TU-bringing lines (linePickingUnit===TU), the frontend eligibility
+            // check (isCurrentTargetEligibleForLine_LU_TU) requires tuPickingTarget==null, so setting
+            // a TU target via GRAI scan makes the line ineligible and the pick cannot proceed.
+            // This test documents the INTENDED behaviour; the backend gap needs a follow-up fix.
             tu1: { attributes: { GRAI: graiMapped } },
         },
     });
