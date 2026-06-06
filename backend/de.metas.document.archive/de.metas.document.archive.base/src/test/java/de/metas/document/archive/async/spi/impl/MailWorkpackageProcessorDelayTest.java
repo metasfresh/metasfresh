@@ -83,7 +83,7 @@ class MailWorkpackageProcessorDelayTest
 
 		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
 
-		assertThatThrownBy(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(service, workpackage, logLines))
+		assertThatThrownBy(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(service, workpackage, logLines, 60_000))
 				.isInstanceOf(WorkpackageSkipRequestException.class);
 	}
 
@@ -104,7 +104,7 @@ class MailWorkpackageProcessorDelayTest
 
 		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
 
-		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(service, workpackage, logLines))
+		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(service, workpackage, logLines, 60_000))
 				.doesNotThrowAnyException();
 	}
 
@@ -122,7 +122,7 @@ class MailWorkpackageProcessorDelayTest
 
 		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
 
-		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(noDelayService, workpackage, logLines))
+		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(noDelayService, workpackage, logLines, 60_000))
 				.doesNotThrowAnyException();
 	}
 
@@ -149,7 +149,28 @@ class MailWorkpackageProcessorDelayTest
 
 		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
 
-		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(serviceWithNoDelayHandler, workpackage, logLines))
+		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(serviceWithNoDelayHandler, workpackage, logLines, 60_000))
+				.doesNotThrowAnyException();
+	}
+
+	/**
+	 * Case E: maxDelayMillis = 0 (SysConfig mailNotificationMaxDelayMillis=0, feature off) => never
+	 * delays, even though the handler says true and the workpackage was just created.
+	 */
+	@Test
+	void caseE_maxDelayZero_doesNotThrow()
+	{
+		final long nowMillis = System.currentTimeMillis();
+		SystemTime.setFixedTimeSource(ZonedDateTime.ofInstant(java.time.Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault()));
+
+		final I_C_Queue_WorkPackage workpackage = InterfaceWrapperHelper.newInstance(I_C_Queue_WorkPackage.class);
+		InterfaceWrapperHelper.save(workpackage);
+		InterfaceWrapperHelper.setValue(workpackage, I_C_Queue_WorkPackage.COLUMNNAME_Created, new Timestamp(nowMillis));
+
+		final List<I_C_Doc_Outbound_Log_Line> logLines = buildLogLines();
+
+		// service delays (handler returns true) and elapsed ~0, but maxDelayMillis=0 disables delaying entirely
+		assertThatCode(() -> MailWorkpackageProcessor.assertNotificationReadyOrSkip(service, workpackage, logLines, 0))
 				.doesNotThrowAnyException();
 	}
 }
