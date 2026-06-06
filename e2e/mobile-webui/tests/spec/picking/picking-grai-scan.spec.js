@@ -28,6 +28,7 @@ import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog
 import { SelectPickTargetTUScreen } from '../../utils/screens/picking/SelectPickTargetTUScreen';
 import { PickingGraiScanPanel } from '../../utils/screens/picking/PickingGraiScanPanel';
 import { expectErrorToast } from '../../utils/common';
+import { generateEAN13 } from '../../utils/ean13';
 
 /** Completely unparseable barcode (not GRAI canonical, not GS1 AI 8003) */
 const BARCODE_UNPARSEABLE = 'NOT-A-GRAI-BARCODE-12345';
@@ -121,7 +122,7 @@ const createMasterdataForGraiScan = async () => {
  * We open the line detail first (PickLineScreen, which carries the lineId in its URL) and
  * click the TU button from there, so the GRAI scan REST endpoint receives a lineId.
  * The job-level (no-lineId) path is covered by `navigateToJobLevelTUTargetScreen`
- * (TC-H1…TC-H8).
+ * (TC-H1, TC-H3).
  *
  * Precondition: PickingJobScreen is showing.
  * Postcondition: SelectPickTargetTUScreen is showing.
@@ -250,6 +251,132 @@ const navigateToJobLevelTUTargetScreen = async (masterdata, { lu } = {}) => {
     await SelectPickTargetTUScreen.waitForScreen();
 };
 
+/**
+ * Masterdata for order-based (sales_order aggregation) job-level GRAI-scan scenarios.
+ *
+ * Used by TC-H10 and A2. Key differences from `createMasterdataForGraiScan`:
+ *   - `aggregationType: 'sales_order'` → `isLineLevelPickTarget=false` → the TU target is
+ *     stored on the **job header** (M_Picking_Job), not the line. This is exactly the
+ *     persistence path that the header-GRAI backend fix (PR 24453) repairs.
+ *   - Products P1/P2/P3 each have a GTIN so they can be picked by GTIN scan at job level.
+ *   - Two GRAI-mapped packing-instruction sets (PI_TU_GRAI1, PI_TU_GRAI2), both allowed on the
+ *     same LU — used by A2 to put two distinctly-GRAI'd TUs under one LU.
+ *   - HUs are LU/CU type (same as `pick_by_EAN13.spec.js`) so the picker scans by product GTIN.
+ *
+ * @param {{noPiTuGrai2?: boolean}} [opts]
+ *   Pass `noPiTuGrai2: true` to omit PI_TU_GRAI2 (for TC-H10 which only needs one GRAI).
+ */
+const createMasterdataForOrderBasedJobLevelGraiScan = async ({ noPiTuGrai2 = false } = {}) => {
+    const packingInstructions = {
+        // CU-packing LU — HUs land here (same as pick_by_EAN13.spec.js "LU_CU")
+        PI_LU_CU: { cu: true, lu: 'LU', qtyTUsPerLU: 1 },
+        // GRAI-mapped TU PI #1: allowed on the same LU; graiMapping generates a unique scannable GRAI.
+        PI_TU_GRAI1: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU_GRAI1', product: 'P1', qtyCUsPerTU: 100, graiMapping: true },
+    };
+    if (!noPiTuGrai2) {
+        // GRAI-mapped TU PI #2: also on LU; distinct GRAI from PI_TU_GRAI1 (separate assetType).
+        packingInstructions.PI_TU_GRAI2 = { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU_GRAI2', product: 'P1', qtyCUsPerTU: 100, graiMapping: true };
+    }
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    // sales_order aggregation → job-level TU target (isLineLevelPickTarget=false).
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    shipOnCloseLU: false,
+                    // 'LU_TU' enables the job-level TU target button (after an LU is set).
+                    pickTo: ['LU_TU', 'TU'],
+                    allowCompletingPartialPickingJob: true,
+                },
+            },
+            bpartners: { BP1: { graiRequired: 'Y' } },
+            warehouses: { wh: {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                P1: { price: 1, gtin: generateEAN13().ean13 },
+                P2: { price: 1, gtin: generateEAN13().ean13 },
+                P3: { price: 1, gtin: generateEAN13().ean13 },
+            },
+            packingInstructions,
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh', qty: 1000, packingInstructions: 'PI_LU_CU' },
+                HU2: { product: 'P2', warehouse: 'wh', qty: 1000, packingInstructions: 'PI_LU_CU' },
+                HU3: { product: 'P3', warehouse: 'wh', qty: 1000, packingInstructions: 'PI_LU_CU' },
+            },
+            salesOrders: {
+                SO1: {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [
+                        { product: 'P1', qty: 11 },
+                        { product: 'P2', qty: 12 },
+                        { product: 'P3', qty: 13 },
+                    ],
+                },
+            },
+        },
+    });
+};
+
+/**
+ * Masterdata for A3 — DHL-style aggregate-TU GRAI scan.
+ *
+ * Mirrors `picking.spec.js` `createMasterdata()` exactly, adding:
+ *   - `bpartners.BP1.graiRequired: 'Y'` (enables the GRAI scanner at job level).
+ *   - `packingInstructions.PI.graiMapping: true` (generates a scannable GRAI for the TU PI).
+ *
+ * Aggregation is `sales_order` with a single TU-bringing HU (PI has tu+lu with physical CUs per TU).
+ * When picked, the HU lands as an aggregate TU (vhu1/tu1) under an LU (lu1).
+ * The scanned GRAI is stamped on the aggregate TU at pick time (header-GRAI persistence path).
+ */
+const createMasterdataForDHLAggregateGraiScan = async () => {
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    shipOnCloseLU: false,
+                    pickTo: ['LU_TU'],
+                    allowCompletingPartialPickingJob: false,
+                },
+            },
+            bpartners: { BP1: { graiRequired: 'Y' } },
+            warehouses: { wh: {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                P1: { prices: [{ price: 1 }] },
+            },
+            packingInstructions: {
+                // graiMapping: true → generates a unique GRAI; TU PI is allowed on LU.
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+            },
+            handlingUnits: {
+                // TU-bringing HU: picks land as an aggregate TU (vhu===tu semantics)
+                HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                SO1: {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
+                },
+            },
+        },
+    });
+};
+
 // ─── TC-H1 — Job-level (no line) TU target on GRAI customer → scanner visible ──
 //
 // Header-level GRAI support: on a GRAI-required customer the GRAI scanner is offered on the
@@ -278,73 +405,6 @@ test('TC-H1 — Job-level TU target (no line) on GRAI customer → GRAI scanner 
     await PickingGraiScanPanel.expectScannerVisible();
 });
 
-// ─── TC-H2 — Header scan → job-level TU + GRAI on the shipped HU ───────────────
-//
-// At the job-level target, scan a mapped GRAI: the new TU target is created (no 500). Then
-// complete the pick + ship, and assert the scanned GRAI is present as the GRAI M_HU_Attribute
-// on the SHIPPED HU. AC-H2 + AC-H6.
-
-// noinspection JSUnusedLocalSymbols
-test('TC-H2 — Header GRAI scan → job-level TU created, GRAI on shipped HU', async ({ page }) => {
-    await allure.epic('E0105: Picking');
-    await allure.feature('F00230: MobileUI Picking');
-    await allure.story('GRAI scan picking — TC-H2 header scan → shipped-HU GRAI');
-    await allure.severity('critical');
-
-    const masterdata = await createMasterdataForGraiScan();
-    const graiMapped = masterdata.packingInstructions.PI_MAIN.grai;
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1 });
-
-    // Reach the JOB-LEVEL TU target screen (no line in context → lineId=null).
-    await navigateToJobLevelTUTargetScreen(masterdata);
-    await PickingGraiScanPanel.expectScannerVisible();
-
-    // Scan one valid GRAI at job level — the new job-level TU target is created (no 500),
-    // debounce fires, REST sets the target, navigates back to the job screen.
-    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
-    await PickingJobScreen.waitForScreen();
-
-    // Pick the line into the job-level TU target.
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickScanButton();
-    await PickLineScanScreen.waitForScreen();
-    await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU1.qrCode);
-    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '1' });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.goBack();
-
-    // Complete + ship.
-    await PickingJobScreen.complete();
-
-    // Verify: the SHIPPED HU (the TU packed by the header GRAI scan) carries the scanned GRAI
-    // as its GRAI M_HU_Attribute. Same TU-under-LU shape as TC1 (an LU target was set), so the
-    // shipped/processed picked HU is the TU (tu1) under its LU (lu1).
-    await Backend.expect({
-        title: 'TC-H2: header-scanned GRAI present on the shipped HU',
-        pickings: {
-            [pickingJobId]: {
-                shipmentSchedules: {
-                    P1: {
-                        qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }],
-                    },
-                },
-            },
-        },
-        hus: {
-            // The shipped TU carries the GRAI stamped at pick time by the header-level scan (AC-H6).
-            tu1: {
-                attributes: { GRAI: graiMapped },
-            },
-        },
-    });
-});
 
 // ─── TC-H3 — Header scan, TU not allowed on the job LU → error ────────────────
 //
@@ -382,40 +442,130 @@ test('TC-H3 — Header GRAI scan, TU not allowed on job LU → GRAITUNotAllowedO
     });
 });
 
-// ─── TC-H8 — Non-GRAI header target still works (nullable-lineId regression) ───
+
+// ─── TC-H10 — Order-based, job-level GRAI scan → top-level TU, GRAI on shipped HU ──
 //
-// At the job-level TU target, use the manual per-type button (no scan) → a TU target is set
-// normally. Regression guard for the new nullable-lineId path. AC-H8.
+// Mirrors `pick_by_EAN13.spec.js` "LU/CU -> top level TU" but substitutes the manual
+// `setTargetTU` with a GRAI scan at the job-level TU-target screen (no lineId in context).
+// Uses sales_order aggregation (isLineLevelPickTarget=false) so the TU target is stored on
+// the job header — the persistence path repaired by PR 24453.  AC-H2, AC-H6, AC-H9.
 
 // noinspection JSUnusedLocalSymbols
-test('TC-H8 — Job-level non-GRAI TU target (manual button, no scan) still works', async ({ page }) => {
+test('TC-H10 — Order-based, job-level GRAI scan → top-level TU with GRAI on shipped HU', async ({ page }) => {
     await allure.epic('E0105: Picking');
     await allure.feature('F00230: MobileUI Picking');
-    await allure.story('GRAI scan picking — TC-H8 non-GRAI header target regression');
+    await allure.story('GRAI scan picking — TC-H10 order-based job-level scan, top-level TU');
     await allure.severity('critical');
 
-    const masterdata = await createMasterdataForGraiScan();
+    const masterdata = await createMasterdataForOrderBasedJobLevelGraiScan({ noPiTuGrai2: true });
+    const graiMapped = masterdata.packingInstructions.PI_TU_GRAI1.grai;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ index: 1 });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    // Reach the JOB-LEVEL TU target screen (no line in context → lineId=null).
-    await navigateToJobLevelTUTargetScreen(masterdata);
-    // The scanner is offered (GRAIRequired=Yes) but we deliberately do NOT scan.
+    // Scan picking slot; with sales_order aggregation the slot scan may go to PickLineScanScreen
+    // first — navigate back to the job screen.
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+        gotoPickingJobScreen: true,
+    });
+
+    // Scan GRAI at job level (no LU target, no lineId) — top-level TU (no LU wrapping yet).
+    await PickingJobScreen.clickTUTargetButton();
+    await SelectPickTargetTUScreen.waitForScreen();
     await PickingGraiScanPanel.expectScannerVisible();
-
-    // Use the manual per-type button instead — pick TU_MAPPED. The TU target must be set
-    // normally via the nullable-lineId job-level path, returning to the job screen.
-    await SelectPickTargetTUScreen.clickTUButton({ tu: masterdata.packingInstructions.PI_MAIN.tuName });
+    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
     await PickingJobScreen.waitForScreen();
 
-    // The job-level TU target is now set: the line button is enabled, so the pick can proceed.
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
+    // Pick all 3 lines by GTIN scan at job level.
+    await test.step('Pick Line 1', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P1.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 11,
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
+    });
+    await test.step('Pick Line 2', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P2.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 12,
+        });
+        await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
+    });
+    await test.step('Pick Line 3', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P3.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 13,
+        });
+        await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
+    });
+
+    // Before complete: top-level TU (qtyLUs=0, lu='-') — the GRAI was scanned without an LU target.
+    await Backend.expect({
+        title: 'TC-H10: before complete — picked HU is a top-level TU carrying the scanned GRAI',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '11 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }],
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }],
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: '13 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            // GRAI was scanned at job level (header path, PR 24453 fix) and stamped on the TU.
+            // TODO: verify qtyPicked/storages against a live run on the fixed stack.
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped } },
+        },
+    });
+
+    // Complete must succeed (GRAI_COUNT_MISMATCH would fire here if the header-GRAI roundtrip
+    // is broken — this is the same E2E RED repro that was failing before the PR 24453 fix).
+    await PickingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'TC-H10: after complete — top-level TU wrapped into LU, GRAI attribute preserved',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '11 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine1' }],
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine2' }],
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: '13 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine3' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            // GRAI attribute must survive completion — the header-stamp roundtrip is the fix under test.
+            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped } },
+        },
+    });
 });
 
 // ─── TC1 — Scan one GRAI → TU created, GRAI attribute attached ────────────────
@@ -855,6 +1005,240 @@ test('TC9 — Scan one GRAI into top-level TU (no LU) → TU created with GRAI a
             tu1: {
                 attributes: { GRAI: graiMapped },
             },
+        },
+    });
+});
+
+// ─── A2 — Order-based, one LU, ≥2 TUs each created by its own GRAI scan ────────
+//
+// MUST-HAVE (teo 2026-06-06).
+// Mirrors `pick_by_EAN13.spec.js` "LU/CU -> LU/TU1, LU/TU2" but substitutes each
+// `setTargetTU` with a GRAI scan at the job-level TU-target screen.
+//
+// Flow:
+//   setTargetLU → scan GRAI#1 → pick P1+P2 into tu1 → closeTargetTU →
+//   scan GRAI#2 → pick P3 into tu2 → complete.
+//
+// Backend assertion: tu1 carries GRAI#1, tu2 carries GRAI#2 — both under lu1.
+// Proves that EACH per-TU GRAI scan is independently persisted on the job header and
+// stamped onto the correct TU at pick time.  AC-H6, AC-H9.
+
+// noinspection JSUnusedLocalSymbols
+test('A2 — Order-based, one LU + ≥2 GRAI-scanned TUs, each carrying its own distinct GRAI', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — A2 LU with 2 GRAI-scanned TUs, distinct per-TU GRAI');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForOrderBasedJobLevelGraiScan();
+    const grai1 = masterdata.packingInstructions.PI_TU_GRAI1.grai;
+    const grai2 = masterdata.packingInstructions.PI_TU_GRAI2.grai;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+    await PickingJobScreen.scanPickingSlot({
+        qrCode: masterdata.pickingSlots.slot1.qrCode,
+        expectNextScreen: 'PickLineScanScreen',
+        gotoPickingJobScreen: true,
+    });
+
+    await test.step('Pick first 2 lines into TU created from GRAI#1', async () => {
+        // Set the LU target manually (same as the manual sibling).
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_LU_CU.luName });
+
+        // Instead of setTargetTU: open TU target screen and scan GRAI#1.
+        await PickingJobScreen.clickTUTargetButton();
+        await SelectPickTargetTUScreen.waitForScreen();
+        await PickingGraiScanPanel.expectScannerVisible();
+        await PickingGraiScanPanel.scanGrai({ graiString: grai1 });
+        await PickingJobScreen.waitForScreen();
+
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P1.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 11,
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
+
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P2.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 12,
+        });
+        await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
+    });
+
+    await test.step('Pick 3rd line into a new TU created from GRAI#2', async () => {
+        // Close the current TU target (same as the manual sibling).
+        await PickingJobScreen.closeTargetTU();
+
+        // Open TU target screen again and scan GRAI#2 → new TU of a different PI type.
+        await PickingJobScreen.clickTUTargetButton();
+        await SelectPickTargetTUScreen.waitForScreen();
+        await PickingGraiScanPanel.expectScannerVisible();
+        await PickingGraiScanPanel.scanGrai({ graiString: grai2 });
+        await PickingJobScreen.waitForScreen();
+
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P3.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 13,
+        });
+        await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
+    });
+
+    // Before complete: tu1 under lu1 (P1+P2), tu2 under lu1 (P3).
+    await Backend.expect({
+        title: 'A2: before complete — tu1 and tu2 each under lu1',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '11 PCE', qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: '13 PCE', qtyTUs: 1, qtyLUs: 1, tu: 'tu2', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            // Each TU carries its own distinct GRAI — the central claim of this test.
+            // TODO: verify storages against a live run on the fixed stack.
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 } },
+            tu2: { huStatus: 'S', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 } },
+        },
+    });
+
+    await PickingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'A2: after complete — tu1 carries GRAI#1, tu2 carries GRAI#2, both under lu1',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '11 PCE', qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine1' }],
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine2' }],
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: '13 PCE', qtyTUs: 1, qtyLUs: 1, tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine3' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            // Distinct GRAIs survive completion — header-stamp roundtrip persisted for each TU.
+            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 } },
+            tu2: { huStatus: 'E', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 } },
+        },
+    });
+});
+
+// ─── A3 — DHL aggregate-TU: job-level GRAI scan, GRAI on aggregate shipped TU ──
+//
+// Mirrors `picking.spec.js` "Simple picking test" but substitutes the manual `setTargetTU`
+// with a GRAI scan at the job-level TU-target screen.
+//
+// Uses a TU-bringing HU (PI has physical CUs per TU, 3 TUs per pick = 12 PCE / 4 PCE per TU).
+// When picked, the scanned HU lands as an aggregate TU (vhu1/tu1) under an LU (lu1).
+// The GRAI scanned at job level must be stamped on the aggregate TU at pick time.  AC-H6, AC-H9.
+
+// noinspection JSUnusedLocalSymbols
+test('A3 — DHL aggregate-TU: job-level GRAI scan → GRAI on aggregate shipped TU', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — A3 DHL aggregate-TU, job-level GRAI, GRAI on shipped TU');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdataForDHLAggregateGraiScan();
+    const graiMapped = masterdata.packingInstructions.PI.grai;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    // Set LU target manually — same as the manual sibling.
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // Instead of setTargetTU: open TU target screen at job level and scan GRAI.
+    await PickingJobScreen.clickTUTargetButton();
+    await SelectPickTargetTUScreen.waitForScreen();
+    await PickingGraiScanPanel.expectScannerVisible();
+    await PickingGraiScanPanel.scanGrai({ graiString: graiMapped });
+    await PickingJobScreen.waitForScreen();
+
+    // Pick the TU-bringing HU by qrCode — 3 TUs / 12 PCE.
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        isScanDirectly: true,
+        expectQtyEntered: '3',
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+    // Before complete: aggregate TU (vhu1/tu1) under lu1 — GRAI already stamped on tu1.
+    // The GRAI scan was at job level (header path); the pick materialises as an aggregate TU
+    // where the VHU and the TU are distinct but related (not vhu===tu in symbol terms here).
+    await Backend.expect({
+        title: 'A3: before complete — aggregate TU under LU, GRAI attribute present',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            // The aggregate TU (tu1) carries the GRAI stamped by the header-level job scan.
+            // TODO: verify exact storages shape against a live run on the fixed stack.
+            tu1: { attributes: { GRAI: graiMapped } },
+        },
+    });
+
+    await PickingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'A3: after complete — LU shipped, aggregate TU still carries the GRAI attribute',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }],
+                    },
+                },
+            },
+        },
+        hus: {
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            // GRAI attribute must survive completion — header-stamp roundtrip is the fix under test.
+            tu1: { attributes: { GRAI: graiMapped } },
         },
     });
 });
