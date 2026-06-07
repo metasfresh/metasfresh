@@ -3,12 +3,14 @@ package de.metas.order.paymentschedule.core.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.order.paymentschedule.core.OrderPayScheduleLineContext;
 import de.metas.order.paymentschedule.core.OrderSchedulingContext;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 
 @Builder
 class OrderPayScheduleCreateCommand
@@ -28,6 +30,14 @@ class OrderPayScheduleCreateCommand
 		if (!context.isComplexPaymentTerm())
 		{
 			return; // Nothing to schedule
+		}
+
+		final PaymentTerm paymentTerm = context.getPaymentTerm();
+		if (!paymentTerm.isValid())
+		{
+			throw new AdempiereException("Cannot spread payment schedules for payment term "
+					+ paymentTerm.getId().getRepoId() + "/" + paymentTerm.getValue() + " (" + paymentTerm.getName() + ")"
+					+ ": breaks must sum to 100% but " + paymentTerm.getValid().getReasonAsString());
 		}
 
 		orderPayScheduleService.create(
