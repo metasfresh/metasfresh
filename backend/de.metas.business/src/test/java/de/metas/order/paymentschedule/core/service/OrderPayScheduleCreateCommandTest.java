@@ -42,6 +42,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -113,8 +114,8 @@ class OrderPayScheduleCreateCommandTest
 
 		// Sanity: confirm the term is in the expected "complex-but-invalid" state.
 		// These verify the RED precondition — if they fail, the test setup is wrong.
-		org.assertj.core.api.Assertions.assertThat(invalidTerm.isComplex()).as("isComplex").isTrue();
-		org.assertj.core.api.Assertions.assertThat(invalidTerm.isValid()).as("isValid").isFalse();
+		assertThat(invalidTerm.isComplex()).as("isComplex").isTrue();
+		assertThat(invalidTerm.isValid()).as("isValid").isFalse();
 
 		// --- Build the scheduling context (grandTotal = 10000) ---
 		final OrderSchedulingContext context = OrderSchedulingContext.builder()
