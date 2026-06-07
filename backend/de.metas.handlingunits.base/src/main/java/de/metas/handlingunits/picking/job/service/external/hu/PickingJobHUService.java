@@ -118,6 +118,21 @@ public class PickingJobHUService
 
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds) {return handlingUnitsBL.getByIds(huIds);}
 
+	/**
+	 * Returns all non-empty product storages on the given HU (e.g. an LU).
+	 * Used by mass-printing to enumerate which self-packed products are on the scanned LU.
+	 */
+	@NonNull
+	public List<IHUProductStorage> getProductStorages(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		return storageFactory.getStorage(hu).getProductStorages()
+				.stream()
+				.filter(s -> !s.getQty().isZero())
+				.collect(java.util.stream.Collectors.toList());
+	}
+
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo) {return handlingUnitsBL.getFirstHuIdByExternalLotNo(externalLotNo);}
 
 	public Optional<HuId> getFirstHUIdByQRCodeAttribute(
