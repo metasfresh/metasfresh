@@ -55,6 +55,28 @@ public class MobileUIPickingUserProfile_StepDef
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	private final MobileUIPickingUserProfileService profileService = SpringContextHolder.instance.getBean(MobileUIPickingUserProfileService.class);
 
+	/**
+	 * Sets or updates fields on the (default) mobile UI picking profile in-memory (single-row DataTable).
+	 *
+	 * <p>All columns are optional; supply any subset:
+	 * <ul>
+	 *   <li>{@code IsAllowPickingAnyHU} — boolean</li>
+	 *   <li>{@code CreateShipmentPolicy} — policy code/name: DO_NOT_CREATE / CREATE_DRAFT / CREATE_AND_COMPLETE / CREATE_COMPLETE_CLOSE</li>
+	 *   <li>{@code IsAlwaysSplitHUsEnabled} — boolean</li>
+	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
+	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>
+	 *   <li>{@code IsMassPrinting} — boolean</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And set mobile UI picking profile
+	 *   | IsMassPrinting | CreateShipmentPolicy |
+	 *   | Y              | CREATE_DRAFT         |
+	 * </pre>
+	 *
+	 * @see #setPerCustomerShipmentPolicy(DataTable) for per-customer policy overrides
+	 */
 	@And("set mobile UI picking profile")
 	public void updateProfile(@NonNull final DataTable dataTable)
 	{
