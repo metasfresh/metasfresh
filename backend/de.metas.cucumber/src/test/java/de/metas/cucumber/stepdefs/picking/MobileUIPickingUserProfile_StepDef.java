@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.picking;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -52,9 +53,12 @@ public class MobileUIPickingUserProfile_StepDef
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isAllowCompletingPartialPickingJob);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsCatchWeightTUPickingEnabled).ifPresent(defaultPickingJobOptionsBuilder::isCatchWeightTUPickingEnabled);
 
-			return profile.toBuilder()
-					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
-					.build();
+			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder profileBuilder = profile.toBuilder()
+					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());
+
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsMassPrinting).ifPresent(profileBuilder::isMassPrinting);
+
+			return profileBuilder.build();
 		});
 
 		logger.info("Profile updated: {}", profileService.getProfile());
