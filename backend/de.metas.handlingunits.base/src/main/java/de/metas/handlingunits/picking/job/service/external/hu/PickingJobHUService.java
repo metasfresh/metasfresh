@@ -213,6 +213,53 @@ public class PickingJobHUService
 		return huPIItemProductDAO.retrieveForProducts(productIdSet, partnerId);
 	}
 
+	/**
+	 * Collects the box HUs at or below each of the given HUs — i.e. the lowest-level product-holding HUs
+	 * (the VHUs that carry the actual product storage). Descends the HU hierarchy so that, regardless of
+	 * whether a packed box is materialised as a standalone TU, a TU nested under a target LU, or an
+	 * aggregate HU, the mass-printing result reports exactly one HU per packed box.
+	 */
+	public ImmutableSet<HuId> getBoxTransportUnitIds(@NonNull final Collection<HuId> huIds)
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		for (final HuId huId : huIds)
+		{
+			collectBoxHUs(handlingUnitsBL.getById(huId), result);
+		}
+		return result.build();
+	}
+
+	private void collectBoxHUs(@NonNull final I_M_HU hu, @NonNull final ImmutableSet.Builder<HuId> result)
+	{
+		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(hu);
+		if (includedHUs.isEmpty())
+		{
+			// Leaf HU: the actual product-holding unit (one per box).
+			result.add(HuId.ofRepoId(hu.getM_HU_ID()));
+			return;
+		}
+		for (final I_M_HU includedHU : includedHUs)
+		{
+			collectBoxHUs(includedHU, result);
+		}
+	}
+
+	/**
+	 * Resolves the single-unit (1 CU per TU) box packing-instructions item-product for a self-packed product —
+	 * i.e. the product's own "ships as its own package" PI. Used by the mass-printing flow to pack one TU per unit.
+	 *
+	 * @return the matching {@link HUPIItemProductId}, or empty when the product has no such finite 1-CU-per-TU PI
+	 */
+	public Optional<HUPIItemProductId> getSelfPackedBoxPIItemProductId(@NonNull final ProductId productId)
+	{
+		return getPIItemProducts(ImmutableSet.of(productId), null).stream()
+				.map(record -> getPackingInfo(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())))
+				.filter(HUPIItemProduct::isFiniteTU)
+				.filter(packingInfo -> packingInfo.getQtyCUsPerTU().toBigDecimal().compareTo(java.math.BigDecimal.ONE) == 0)
+				.map(HUPIItemProduct::getId)
+				.findFirst();
+	}
+
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);

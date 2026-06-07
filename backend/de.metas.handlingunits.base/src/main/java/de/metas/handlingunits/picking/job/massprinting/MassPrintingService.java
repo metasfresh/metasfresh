@@ -186,6 +186,12 @@ public class MassPrintingService
 					.build();
 		}
 
+		// Force one HU per box: pack each unit into its own TU by overriding the selected schedules'
+		// pack-to PI with the self-packed product's own 1-CU-per-TU box PI. The picking job's line then
+		// picks as TU (finite 1-CU capacity), so the allocation engine fans the pick into one TU per unit.
+		huService.getSelfPackedBoxPIItemProductId(productId).ifPresent(
+				boxPIItemProductId -> shipmentScheduleService.setPackToHUPIItemProductOverride(selectedScheduleIds, boxPIItemProductId));
+
 		// Create PRODUCT picking job restricted to selected schedules
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedScheduleIds);
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
@@ -199,11 +205,15 @@ public class MassPrintingService
 		// Obtain scanned LU's QR code to use as pick-from reference
 		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
 
-		// Pick each line from the scanned LU
+		// Pick each line from the scanned LU.
+		// When the line picks as TU (because we overrode the pack-to PI to the 1-CU box PI above),
+		// PickingJobPickCommand interprets the event's qtyPicked as a TU count; for a CU line it is a CU qty.
 		final List<PickingJobStepEvent> pickEvents = new ArrayList<>();
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
-			final BigDecimal qtyToPick = line.getQtyToPick().toBigDecimal();
+			final BigDecimal qtyToPick = line.getPickingUnit().isTU()
+					? line.getQtyToPickTUs().toBigDecimal()
+					: line.getQtyToPick().toBigDecimal();
 			pickEvents.add(PickingJobStepEvent.builder()
 					.pickingLineId(line.getId())
 					.eventType(PickingJobStepEventType.PICK)
@@ -214,6 +224,8 @@ public class MassPrintingService
 		}
 
 		final PickingJob pickedJob = pickingJobService.processStepEvents(pickingJob, pickEvents);
+		// Resolve the actual box TUs (descend any target LU): one HU per packed box.
+		final ImmutableSet<HuId> packedHUIds = huService.getBoxTransportUnitIds(pickedJob.getAllPickedHuIds());
 		pickingJobService.complete(pickedJob);
 
 		final int unitsLeftOnLU = unitsOnLUInt - boxesToPack;
@@ -223,6 +235,7 @@ public class MassPrintingService
 		return ProductResult.builder()
 				.productId(productId)
 				.boxesPacked(boxesToPack)
+				.packedHUIds(packedHUIds)
 				.labelsPrinted(0)
 				.labelPrintFailures(0)
 				.unitsLeftOnLU(unitsLeftOnLU)

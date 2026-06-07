@@ -1,6 +1,8 @@
 package de.metas.handlingunits.picking.job.massprinting;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,6 +30,9 @@ public class MassPrintingResult
 
 		/** Number of boxes packed (one box = one picked unit). */
 		int boxesPacked;
+
+		/** The box HUs produced (one HU per box); size must equal {@link #boxesPacked}. */
+		@NonNull @Singular ImmutableSet<HuId> packedHUIds;
 
 		/** Number of labels printed successfully. */
 		int labelsPrinted;

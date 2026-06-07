@@ -132,3 +132,7 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
     Then mass-printing result is
       | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
       | 3           | 0                 | 0                              |
+    # One HU per box (Task 2.4): 3 box HUs, each a transport unit holding exactly 1 unit
+    And mass-printing produced box HUs
+      | boxHUCount | qtyPerBoxHU |
+      | 3          | 1           |
