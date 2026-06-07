@@ -470,6 +470,6 @@ Feature: Mass Printing Labels (F00230.21)
       | LU            | Picker             |
       | onlyNonSelfLU | massPrintingPicker |
     Then mass-printing result has no product results
-    Then mass-printing skipped non-self-packed products:
+    And mass-printing skipped non-self-packed products:
       | skippedProduct       |
       | nonSelfPackedPrdOnly |
