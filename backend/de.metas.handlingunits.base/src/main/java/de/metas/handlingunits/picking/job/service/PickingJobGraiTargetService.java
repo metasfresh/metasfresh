@@ -39,14 +39,19 @@ public class PickingJobGraiTargetService
 	/**
 	 * Parses the scanned GRAI, resolves the TU type, checks it against the effective LU target (if any)
 	 * and resolves the capacity for the line's product. Creates no HU.
+	 * <p>
+	 * At header level (no line product, i.e. {@code lineProductId == null}) the per-product capacity check is
+	 * skipped; the real capacity is resolved per-line at pick time. The LU-association check
+	 * ({@link #assertTuAllowedOnLu}) still runs when {@code luTarget != null}.
 	 *
-	 * @param luTarget the effective LU picking target; {@code null} → the TU-LU check is skipped
+	 * @param luTarget      the effective LU picking target; {@code null} → the TU-LU check is skipped
+	 * @param lineProductId the line's product; {@code null} → header-level scan, the capacity check is skipped
 	 */
 	@NonNull
 	public GraiTuResolution resolveTuTypeAndCapacity(
 			@NonNull final ScannedCode scannedGrai,
 			@Nullable final LUPickingTarget luTarget,
-			@NonNull final ProductId lineProductId)
+			@Nullable final ProductId lineProductId)
 	{
 		final GRAI grai = GRAI.parse(scannedGrai.getAsString());
 		if (grai == null)
@@ -61,7 +66,7 @@ public class PickingJobGraiTargetService
 			assertTuAllowedOnLu(tuPIId, luTarget);
 		}
 
-		final HUPIItemProductId huPIItemProductId = resolveCapacity(tuPIId, lineProductId);
+		final HUPIItemProductId huPIItemProductId = (lineProductId != null) ? resolveCapacity(tuPIId, lineProductId) : null;
 
 		return GraiTuResolution.builder()
 				.grai(grai)

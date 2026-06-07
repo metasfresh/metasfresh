@@ -371,7 +371,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+			final GRAI grai = GRAI.ofNullableCanonicalString(record.getCurrent_PickTo_TU_GRAI());
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption, grai);
 		}
 		else
 		{
