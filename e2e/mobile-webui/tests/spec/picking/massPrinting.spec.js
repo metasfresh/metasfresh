@@ -138,6 +138,7 @@ test('Mass printing — scan LU with leftover units when demand is smaller than 
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 2 });
+    await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobScreen.waitForScreen();
