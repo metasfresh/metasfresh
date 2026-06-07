@@ -44,6 +44,7 @@ public class MobileUIPickingUserProfile
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
 			.isAllowPickingAnyCustomer(true)
+			.isMassPrinting(false)
 			.defaultPickingJobOptions(PickingJobOptions.builder()
 					.aggregationType(PickingJobAggregationType.DEFAULT)
 					.allowedPickToStructures(AllowedPickToStructures.DEFAULT)

@@ -51,6 +51,11 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: MobileUI_UserProfile_Picking, MobileUI_UserProfile_Picking_BPartner,
+ *     MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
+ * Repository Cluster: MobileUIPickingUserProfileRepository
+ */
 @Repository
 public class MobileUIPickingUserProfileRepository
 {
