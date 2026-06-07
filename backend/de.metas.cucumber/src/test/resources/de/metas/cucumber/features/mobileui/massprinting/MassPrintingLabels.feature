@@ -28,8 +28,8 @@ Feature: Mass Printing Labels (F00230.21)
     # picking workflows) and resolve a no-longer-valid workplace. Isolating it on this dedicated user
     # keeps the leak contained to this feature's own picker.
     And metasfresh contains AD_Users:
-      | Identifier         | Name               | OPT.Login          |
-      | massPrintingPicker | massPrintingPicker | massPrintingPicker |
+      | Identifier         | Name               | OPT.Login          | OPT.Role_ID |
+      | massPrintingPicker | massPrintingPicker | massPrintingPicker | 540024      |
 
     # ── Workplace with a picking slot, assigned to the dedicated picker (mirrors the operator being
     #    logged in at a Mass-Printing workplace; the programmatic PRODUCT job auto-allocates this slot) ──
@@ -473,3 +473,41 @@ Feature: Mass Printing Labels (F00230.21)
     And mass-printing skipped non-self-packed products:
       | skippedProduct       |
       | nonSelfPackedPrdOnly |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: REST endpoint — scan LU, assert HTTP 200 and boxesPacked in response
+    # Single-unit order for the self-packed product; LU has 3 units, 1 order → 1 box packed, 2 leftover.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO_rest    | true    | customer                 | 2026-06-01  | 2026-06-02          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO_rest               | OL_rest    | selfPackedPrd           | 1          |
+    And the order identified by SO_rest is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS_rest    | OL_rest                   | N             |
+
+    # Generate a QR code for the LU and store it under the HUQRCode identifier 'lu_qr'.
+    # The HUQRCode column stores the HUQRCode object in HUQRCode_StepDefData;
+    # the REST scan step retrieves it directly — no HTTP/JSON interpolation of the QR string.
+    And generate QR Codes for HUs
+      | M_HU_ID.Identifier | HUQRCode |
+      | lu                 | lu_qr    |
+
+    # Authenticate as the dedicated picker (has the WebUI role from Background).
+    # This sets Env.getLoggedUserId() to the massPrintingPicker user,
+    # which the controller reads as the picker identity.
+    And the existing user with login 'massPrintingPicker' receives a random a API token for the existing role with name 'WebUI'
+
+    # Call PickingRestController.massPrintingScan directly (Spring bean, no HTTP layer).
+    # Using the Spring bean avoids JSON-escaping issues: the QR code string contains
+    # '#' and '"' characters that break @variable@ substitution in HTTP payloads.
+    When mass-printing REST scans LU
+      | HUQRCode |
+      | lu_qr    |
+    Then mass-printing REST result is
+      | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | 1           | 2                 | 0                              |

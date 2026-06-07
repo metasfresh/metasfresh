@@ -26,6 +26,9 @@ import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingScanRequest;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingService;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
@@ -38,6 +41,8 @@ import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingResult;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingScanRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
@@ -89,6 +94,7 @@ public class PickingRestController
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final MassPrintingService massPrintingService;
 
 	private void assertApplicationAccess()
 	{
@@ -304,6 +310,43 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
+	}
+
+	/**
+	 * Mass-printing scan: scan an LU and automatically pack all self-packed products.
+	 *
+	 * <p>For each {@code IsSelfPacked} product on the scanned LU that has open demand, the backend:
+	 * <ol>
+	 *   <li>Selects open shipment schedules FIFO by preparation date, capped at units on LU.</li>
+	 *   <li>Creates a PRODUCT picking job restricted to those schedules.</li>
+	 *   <li>Picks each schedule from the scanned LU (one box per unit via 1-CU-per-TU packTo PI).</li>
+	 *   <li>Completes the picking job (generating shipments per customer {@code CreateShipmentPolicy}).</li>
+	 *   <li>Prints one HU label per packed box (best-effort, after transaction commit).</li>
+	 * </ol>
+	 *
+	 * <p>The picker identity is resolved from the REST authentication context; no {@code pickerId} is
+	 * accepted in the request body.  There is no workflow process ID — the server orchestrates the
+	 * full operation in a single call with no step-by-step interaction.
+	 *
+	 * @param request body carrying the scanned LU QR code
+	 * @return per-product result summary (boxes packed, labels, leftovers)
+	 */
+	@PostMapping("/massPrinting/scan")
+	public @NonNull JsonMassPrintingResult massPrintingScan(@RequestBody @NonNull final JsonMassPrintingScanRequest request)
+	{
+		assertApplicationAccess();
+
+		final ScannedCode scannedCode = ScannedCode.ofString(request.getScannedCode());
+		final HUQRCode luQRCode = toHUQRCode(scannedCode);
+		final HuId luId = huQRCodesService.getHuIdByQRCode(luQRCode);
+
+		final MassPrintingResult result = massPrintingService.scan(
+				MassPrintingScanRequest.builder()
+						.luId(luId)
+						.pickerId(getLoggedUserId())
+						.build());
+
+		return JsonMassPrintingResult.of(result);
 	}
 
 	@PostMapping("/job/{wfProcessId}/pickAll")

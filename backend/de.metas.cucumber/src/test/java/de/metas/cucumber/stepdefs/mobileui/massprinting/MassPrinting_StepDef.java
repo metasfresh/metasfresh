@@ -4,6 +4,7 @@ import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.hu.HUQRCode_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -12,8 +13,12 @@ import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult.ProductResult;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingScanRequest;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingService;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.picking.rest_api.PickingRestController;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingResult;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingScanRequest;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -46,13 +51,19 @@ public class MassPrinting_StepDef
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final HUQRCode_StepDefData huQRCodeStorage;
 
 	@NonNull private final MassPrintingService massPrintingService = SpringContextHolder.instance.getBean(MassPrintingService.class);
+	@NonNull private final PickingRestController pickingRestController = SpringContextHolder.instance.getBean(PickingRestController.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	/** Populated by the scan step; consumed by assertion steps. */
 	@Nullable
 	private MassPrintingResult lastResult;
+
+	/** Populated by the REST scan step; consumed by JSON assertion steps. */
+	@Nullable
+	private JsonMassPrintingResult lastJsonResult;
 
 	/**
 	 * Invokes the mass-printing scan for an LU, executed as a given picker user.
@@ -88,6 +99,87 @@ public class MassPrinting_StepDef
 						.luId(luId)
 						.pickerId(pickerId)
 						.build());
+	}
+
+	/**
+	 * Calls {@link PickingRestController#massPrintingScan} directly via Spring bean (bypassing
+	 * the HTTP layer) for an LU identified by a previously generated HU QR code.
+	 *
+	 * <p>The picker is the currently authenticated user (set by the preceding
+	 * {@code the existing user with login '…' receives a random a API token} step, which calls
+	 * {@code Env.setLoggedUserId}). This mirrors the production code-path exactly:
+	 * {@code PickingRestController.massPrintingScan} reads the picker from {@code Env.getLoggedUserId()}.
+	 *
+	 * <p>The direct call avoids JSON serialisation/deserialisation of the QR code string, which
+	 * contains {@code #} and {@code "} characters that break the HTTP {@code @variable@}
+	 * interpolation approach.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code HUQRCode} — identifier of the HU QR code (stored by
+	 *       {@code generate QR Codes for HUs} using the {@code HUQRCode} column)</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When mass-printing REST scans LU
+	 *   | HUQRCode |
+	 *   | lu_qr    |
+	 * </pre>
+	 */
+	@When("mass-printing REST scans LU")
+	public void massPrintingRESTScansLU(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final HUQRCode huQRCode = row.getAsIdentifier("HUQRCode").lookupIn(huQRCodeStorage);
+		final String scannedCode = huQRCode.toGlobalQRCodeString();
+
+		final JsonMassPrintingScanRequest request = JsonMassPrintingScanRequest.builder()
+				.scannedCode(scannedCode)
+				.build();
+
+		lastJsonResult = pickingRestController.massPrintingScan(request);
+	}
+
+	/**
+	 * Asserts per-product fields returned by {@link PickingRestController#massPrintingScan}.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code boxesPacked} — expected boxes packed for the first product result</li>
+	 * </ul>
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.unitsLeftOnLU} — expected leftover units on the LU</li>
+	 *   <li>{@code OPT.unitsOfOpenDemandRemaining} — expected remaining open demand</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then mass-printing REST result is
+	 *   | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+	 *   | 1           | 2                 | 0                              |
+	 * </pre>
+	 */
+	@Then("mass-printing REST result is")
+	public void massPrintingRESTResultIs(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastJsonResult).as("mass-printing REST result shall be present").isNotNull();
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+
+		assertThat(lastJsonResult.getProductResults()).as("productResults").isNotEmpty();
+		final de.metas.picking.rest_api.json.massprinting.JsonMassPrintingProductResult productResult
+				= lastJsonResult.getProductResults().get(0);
+
+		final int expectedBoxesPacked = row.getAsInt("boxesPacked");
+		assertThat(productResult.getBoxesPacked()).as("boxesPacked").isEqualTo(expectedBoxesPacked);
+
+		row.getAsOptionalInt("unitsLeftOnLU")
+				.ifPresent(expected -> assertThat(productResult.getUnitsLeftOnLU())
+						.as("unitsLeftOnLU").isEqualTo(expected));
+		row.getAsOptionalInt("unitsOfOpenDemandRemaining")
+				.ifPresent(expected -> assertThat(productResult.getUnitsOfOpenDemandRemaining())
+						.as("unitsOfOpenDemandRemaining").isEqualTo(expected));
 	}
 
 	/**
