@@ -33,7 +33,6 @@ import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
@@ -108,11 +107,9 @@ class OrderPayScheduleCreateCommandTest
 				.build();
 
 		final OrderPayScheduleService orderPayScheduleService = mock(OrderPayScheduleService.class);
-		final PaymentTermService paymentTermService = mock(PaymentTermService.class);
 
 		final OrderPayScheduleCreateCommand command = OrderPayScheduleCreateCommand.builder()
 				.orderPayScheduleService(orderPayScheduleService)
-				.paymentTermService(paymentTermService)
 				.context(context)
 				.build();
 

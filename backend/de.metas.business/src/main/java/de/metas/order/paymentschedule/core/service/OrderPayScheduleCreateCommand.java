@@ -5,7 +5,6 @@ import de.metas.order.paymentschedule.core.OrderPayScheduleLineContext;
 import de.metas.order.paymentschedule.core.OrderSchedulingContext;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
-import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -17,7 +16,6 @@ class OrderPayScheduleCreateCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
-	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final OrderSchedulingContext context;
 
 	public void execute()
@@ -43,7 +41,7 @@ class OrderPayScheduleCreateCommand
 		orderPayScheduleService.create(
 				OrderPayScheduleCreateRequest.builder()
 						.orderId(context.getOrderId())
-						.lines(context.getPaymentTerm().getSortedBreaks()
+						.lines(paymentTerm.getSortedBreaks()
 								.stream()
 								.map(this::toOrderPayScheduleCreateRequestLine)
 								.collect(ImmutableList.toImmutableList()))
