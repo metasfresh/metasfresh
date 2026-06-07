@@ -70,9 +70,12 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         allure.story('Schema-driven bundle expansion + Ohne Berechnung in SO and Invoice PDFs');
         allure.severity('critical');
 
-        // Generous timeout: masterdata build + 2 long async waits (shipment schedule, invoice candidate processor)
-        // + 2 PDF downloads.
-        test.setTimeout(360000); // 6 minutes
+        // Generous timeout: masterdata build + several long async waits (shipment schedule,
+        // invoice candidate processor) + PDF downloads. The async document pipelines are
+        // markedly slower on disk-pressured single-runner customer CI (e.g. dt204
+        // deep_tundra_uat, mf15#4193), so the overall budget and the per-step Alt+6 polls
+        // below are sized for that worst case (they finish in 1-2 attempts on a healthy env).
+        test.setTimeout(600000); // 10 minutes
 
         // ============================================================
         // Step 1: Build all masterdata via the frontend-testing REST API.
@@ -212,13 +215,20 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
         // ============================================================
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
 
-        await SalesOrderPage.openRelatedShipmentCandidate({ maxRetries: 15, retryDelay: 3000 });
+        // 90s budget + F5 refresh between attempts: on dt204 the shipment-schedule reference
+        // is created async and routinely misses a 45s no-refresh poll (mf15#4193). refreshOnRetry
+        // forces a fresh document+references fetch each attempt (the proven pattern from
+        // document-references.spec.js) rather than re-reading a stale client-cached SSE set.
+        await SalesOrderPage.openRelatedShipmentCandidate({ maxRetries: 30, retryDelay: 3000, refreshOnRetry: true });
         await ShipmentSchedulePage.expectVisible();
         await ShipmentSchedulePage.createShipment();
         console.log('[F00127.1] Shipment created');
 
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${soId}`);
-        await SalesOrderPage.openRelatedInvoiceCandidate(5000);
+        // NOTE: pass an options object — a bare number (5000) was silently ignored by the
+        // destructured signature and fell back to the 5×2s=10s default. Give it the same
+        // hardened budget + refresh as the shipment-schedule step.
+        await SalesOrderPage.openRelatedInvoiceCandidate({ maxRetries: 30, retryDelay: 3000, refreshOnRetry: true });
         await InvoiceCandidatePage.expectVisibleForSalesOrder();
         await InvoiceCandidatePage.createInvoiceForSalesOrder();
         console.log('[F00127.1] Invoice created from candidates');
@@ -302,7 +312,7 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
             .catch(() => {});
 
         // Long retry budget: invoice-candidate processor is slower than the SO→shipment-schedule pipeline.
-        await SalesOrderPage.openRelatedInvoice({ maxRetries: 30, retryDelay: 3000 });
+        await SalesOrderPage.openRelatedInvoice({ maxRetries: 30, retryDelay: 3000, refreshOnRetry: true });
         await InvoicePage.expectVisible();
 
         const invoiceDocNo = await InvoicePage.getDocumentNo();
@@ -372,7 +382,7 @@ test.describe('Compensation Group bundle (F00127.1)', () => {
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
             .catch(() => {});
 
-        await SalesOrderPage.openRelatedShipment({ maxRetries: 20, retryDelay: 3000 });
+        await SalesOrderPage.openRelatedShipment({ maxRetries: 30, retryDelay: 3000, refreshOnRetry: true });
         await ShipmentPage.expectVisible();
 
         const shipmentDocNo = await ShipmentPage.getDocumentNo();

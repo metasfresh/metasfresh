@@ -370,6 +370,8 @@ public class PickingJobSaver
 			final TUPickingTarget tuPickingTarget = from.getTuPickingTarget().orElse(null);
 			record.setM_TU_HU_PI_ID(HuPackingInstructionsId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuPIId() : null));
 			record.setM_TU_HU_ID(HuId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuId() : null));
+			final GRAI grai = tuPickingTarget != null ? tuPickingTarget.getGrai() : null;
+			record.setCurrent_PickTo_TU_GRAI(grai != null ? grai.toCanonicalString() : null);
 		}
 	}
 

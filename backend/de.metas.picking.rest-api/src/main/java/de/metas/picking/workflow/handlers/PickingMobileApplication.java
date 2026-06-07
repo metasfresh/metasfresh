@@ -588,7 +588,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	public WFProcess setTUPickingTargetFromGRAI(
 			@NonNull final WFProcessId wfProcessId,
-			@NonNull final PickingJobLineId lineId,
+			@Nullable final PickingJobLineId lineId,
 			@NonNull final ScannedCode scannedGrai,
 			@NonNull final UserId callerId)
 	{

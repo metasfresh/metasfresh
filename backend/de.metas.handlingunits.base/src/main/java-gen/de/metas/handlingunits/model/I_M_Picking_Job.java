@@ -110,10 +110,6 @@ public interface I_M_Picking_Job
 	 */
 	int getC_Order_ID();
 
-	@Nullable org.compiere.model.I_C_Order getC_Order();
-
-	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
-
 	ModelColumn<I_M_Picking_Job, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Picking_Job.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
@@ -143,7 +139,28 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Shipmentdate.
+	 * Set Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_GRAI (@Nullable java.lang.String Current_PickTo_TU_GRAI);
+
+	/**
+	 * Get Current Pick To TU GRAI.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_TU_GRAI();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_Current_PickTo_TU_GRAI = new ModelColumn<>(I_M_Picking_Job.class, "Current_PickTo_TU_GRAI", null);
+	String COLUMNNAME_Current_PickTo_TU_GRAI = "Current_PickTo_TU_GRAI";
+
+	/**
+	 * Set Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -152,7 +169,7 @@ public interface I_M_Picking_Job
 	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Shipmentdate.
+	 * Get Delivery Date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -309,10 +326,6 @@ public interface I_M_Picking_Job
 	 */
 	int getM_LU_HU_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_HU getM_LU_HU();
-
-	void setM_LU_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_LU_HU);
-
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_M_LU_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_LU_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
 
@@ -333,10 +346,6 @@ public interface I_M_Picking_Job
 	 * <br>Virtual Column: false
 	 */
 	int getM_LU_HU_PI_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI();
-
-	void setM_LU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI);
 
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_LU_HU_PI_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_LU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
@@ -403,10 +412,6 @@ public interface I_M_Picking_Job
 	 */
 	int getM_TU_HU_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_HU getM_TU_HU();
-
-	void setM_TU_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_TU_HU);
-
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_M_TU_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_TU_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
 
@@ -428,10 +433,6 @@ public interface I_M_Picking_Job
 	 */
 	int getM_TU_HU_PI_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI();
-
-	void setM_TU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI);
-
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_TU_HU_PI_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_TU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_M_TU_HU_PI_ID = "M_TU_HU_PI_ID";
 
@@ -452,10 +453,6 @@ public interface I_M_Picking_Job
 	 * <br>Virtual Column: false
 	 */
 	int getPickFrom_HU_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
-
-	void setPickFrom_HU(@Nullable de.metas.handlingunits.model.I_M_HU PickFrom_HU);
 
 	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
