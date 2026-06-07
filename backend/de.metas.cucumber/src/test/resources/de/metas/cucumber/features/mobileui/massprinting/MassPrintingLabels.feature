@@ -21,6 +21,21 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
       | IsAllowPickingAnyHU | IsMassPrinting | CreateShipmentPolicy |
       | Y                   | Y              | DO_NOT_CREATE        |
 
+    # ── Workplace with a picking slot, assigned to the picker (mirrors the operator being logged in
+    #    at a Mass-Printing workplace; the programmatic PRODUCT job auto-allocates this slot) ──
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouse      | StdWarehouse |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot | IsDynamic |
+      | pickingSlot | 200         | Y         |
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID | M_PickingSlot_ID |
+      | workplace  | warehouse      | pickingSlot      |
+    And assign C_Workplace to user
+      | C_Workplace_ID | AD_User_ID.Login |
+      | workplace      | metasfresh       |
+
     # ── Packing instructions: a self-packed product box PI (1 CU per TU = 1 unit = 1 box) ──
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
