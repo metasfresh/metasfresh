@@ -29,6 +29,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderSchedulingContext;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -47,23 +48,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 /**
- * TDD RED test for AC2: a complex-but-invalid payment term (breaks sum ≠ 100%)
- * must FAIL LOUD instead of silently spreading a wrong DueAmt.
+ * Verifies that {@link OrderPayScheduleCreateCommand} fails loudly when given a
+ * complex-but-invalid payment term (breaks sum ≠ 100%), rather than silently producing
+ * a wrong {@code DueAmt}.
  *
- * <p>Design note: the test is placed in the SAME package as {@link OrderPayScheduleCreateCommand}
- * (package-private class) so we can construct it via its {@code @Builder}.
- * {@link AdempiereTestHelper#init()} registers the {@code PlainTrxManager}, which lets
- * {@link OrderPayScheduleCreateCommand#execute()} run synchronously so exceptions propagate
- * back to the caller.
- *
- * <p>RED condition: today {@code execute0()} guards on {@code isComplexPaymentTerm()} but NOT
- * on {@code paymentTerm.isValid()}.  A single-break (LC 30%) term is {@code isComplex=true}
- * but {@code isValid=false} (30% ≠ 100%).  The command spreads it anyway, calling
- * {@code orderPayScheduleService.create(...)} with {@code DueAmt = 10000} (the sole break
- * absorbs the full remainder).  No exception is raised, so the test assertion
- * {@code assertThatThrownBy(...).isInstanceOf(AdempiereException.class)} FAILS RED.
- *
- * @see <a href="https://github.com/metasfresh/me03/issues/30080">me03 #30080</a>
+ * <p>The test class lives in the same package as {@link OrderPayScheduleCreateCommand}
+ * (package-private) so it can construct it via its {@code @Builder}.
  */
 class OrderPayScheduleCreateCommandTest
 {
@@ -80,20 +70,14 @@ class OrderPayScheduleCreateCommandTest
 	}
 
 	/**
-	 * AC2 RED: a complex-but-invalid payment term (single LC 30% break, breaks sum = 30% ≠ 100%)
+	 * A complex-but-invalid payment term (single LC 30% break, breaks sum = 30% ≠ 100%)
 	 * must cause {@link OrderPayScheduleCreateCommand#execute()} to throw a clear
-	 * {@link AdempiereException} naming the invalid term — instead of silently writing
-	 * a wrong DueAmt of 10000.
-	 *
-	 * <p>Today this test FAILS RED because {@code execute0()} does not check
-	 * {@code paymentTerm.isValid()} and proceeds to spread, calling
-	 * {@code orderPayScheduleService.create(...)} without any exception.
+	 * {@link AdempiereException} naming the invalid term — not silently write a wrong DueAmt.
 	 */
 	@Test
 	void invalidComplexTerm_failsLoud()
 	{
-		// --- Build a complex-but-invalid PaymentTerm: single LC break at 30% ---
-		// isComplex=true (has ≥1 break), isValid=false (30% ≠ 100%)
+		// Complex-but-invalid: single LC break at 30% — isComplex=true, isValid=false (30% ≠ 100%)
 		final PaymentTermBreak lcBreak = PaymentTermBreak.builder()
 				.id(LC_BREAK_ID)
 				.referenceDateType(ReferenceDateType.LetterOfCreditDate)
@@ -105,19 +89,17 @@ class OrderPayScheduleCreateCommandTest
 		final PaymentTerm invalidTerm = PaymentTerm.builder()
 				.id(PT_ID)
 				.clientId(ClientId.SYSTEM)
-				.orgId(de.metas.organization.OrgId.ANY)
+				.orgId(OrgId.ANY)
 				.value("pt_lc_invalid")
 				.name("pt_lc (invalid — LC 30% only, OD break missing)")
 				.breaks(ImmutableList.of(lcBreak))   // single break → isValid=false (30% ≠ 100%)
 				.paySchedules(ImmutableList.of())
 				.build();
 
-		// Sanity: confirm the term is in the expected "complex-but-invalid" state.
-		// These verify the RED precondition — if they fail, the test setup is wrong.
+		// Precondition: confirm the term is in the expected "complex-but-invalid" state.
 		assertThat(invalidTerm.isComplex()).as("isComplex").isTrue();
 		assertThat(invalidTerm.isValid()).as("isValid").isFalse();
 
-		// --- Build the scheduling context (grandTotal = 10000) ---
 		final OrderSchedulingContext context = OrderSchedulingContext.builder()
 				.orderId(ORDER_ID)
 				.grandTotal(Money.of("10000.00", EUR))
@@ -125,22 +107,15 @@ class OrderPayScheduleCreateCommandTest
 				.paymentTerm(invalidTerm)
 				.build();
 
-		// --- Mock the service — create() must never be reached ---
 		final OrderPayScheduleService orderPayScheduleService = mock(OrderPayScheduleService.class);
 		final PaymentTermService paymentTermService = mock(PaymentTermService.class);
 
-		// --- Build the command (package-private @Builder, accessible from this package) ---
 		final OrderPayScheduleCreateCommand command = OrderPayScheduleCreateCommand.builder()
 				.orderPayScheduleService(orderPayScheduleService)
 				.paymentTermService(paymentTermService)
 				.context(context)
 				.build();
 
-		// --- RED assertion: must throw before spreading the invalid term ---
-		// Today: execute0() skips the isValid check → calls create() with DueAmt=10000 → no exception
-		// → assertThatThrownBy receives no throwable → TEST FAILS RED (no exception was thrown).
-		// GREEN (Task 3): add `if (!paymentTerm.isValid()) throw new AdempiereException(...)` guard
-		// in execute0() → exception propagates through PlainTrxManager → test passes GREEN.
 		assertThatThrownBy(command::execute)
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("pt_lc_invalid");
