@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult.ProductResult;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -17,6 +18,7 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
@@ -53,8 +55,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MassPrintingService
 {
+	/**
+	 * Thrown when the picker's profile does not have mass-printing enabled.
+	 * Prevents any pick, shipment, or label action for a caller whose profile flag is off,
+	 * ensuring the server enforces the same constraint as the frontend trigger guard.
+	 */
+	static final AdMessageKey MSG_MASS_PRINTING_NOT_ENABLED = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled");
+
 	private static final Logger logger = LogManager.getLogger(MassPrintingService.class);
 
+	@NonNull private final MobileUIPickingUserProfileService profileService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
@@ -65,6 +75,10 @@ public class MassPrintingService
 	/**
 	 * Scan the LU and for each self-packed product on it:
 	 * <ol>
+	 *   <li>Guard: reject immediately if the picker's profile does not have mass-printing enabled
+	 *       ({@code IsMassPrinting=N}). Prevents any pick, shipment, or label action for callers
+	 *       whose profile disables the feature — the frontend hides the trigger when off, but the
+	 *       server enforces the same constraint for all callers.</li>
 	 *   <li>Select open shipment schedules FIFO by preparation date, capped at units on LU.</li>
 	 *   <li>Create a PRODUCT picking job restricted to those schedules.</li>
 	 *   <li>Pick each schedule from the scanned LU (one box per unit via 1-CU-per-TU packTo PI).</li>
@@ -74,10 +88,16 @@ public class MassPrintingService
 	 *
 	 * @param request scan request carrying the LU id and the picker's user id
 	 * @return per-product result summary (boxes packed, labels printed, leftovers)
+	 * @throws AdempiereException with {@link #MSG_MASS_PRINTING_NOT_ENABLED} when the profile flag is off
 	 */
 	@NonNull
 	public MassPrintingResult scan(@NonNull final MassPrintingScanRequest request)
 	{
+		if (!profileService.getProfile().isMassPrinting())
+		{
+			throw new AdempiereException(MSG_MASS_PRINTING_NOT_ENABLED);
+		}
+
 		final HuId luId = request.getLuId();
 
 		final List<IHUProductStorage> productStorages = huService.getProductStorages(luId);
