@@ -161,7 +161,7 @@ public class OrderPayScheduleService
 		// Load the payment term fresh from the committed DB state (in the completion transaction), NOT from
 		// the process-wide cache: that shared snapshot can be stale/partial under concurrency (a reader
 		// populating it between two break INSERTs caches only some breaks), which would make spreadByBreaks
-		// give the sole/last break the full amount. See me03 #30080.
+		// give the sole/last break the full amount.
 		final PaymentTerm paymentTerm = paymentTermService.getByIdInTrx(paymentTermId);
 		if (!paymentTerm.isComplex())
 		{

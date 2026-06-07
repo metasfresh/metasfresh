@@ -47,7 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Deterministic reproduction for me03 #30080 (AC1 / AC3).
+ * Deterministic reproduction of the stale payment-term cache defect (de-flake split-payment).
  *
  * <p>The split-payment cucumber family flakes because pay-schedule creation reads the payment term
  * through the process-wide {@link PaymentTermRepository} cache (a single all-or-nothing snapshot of every

@@ -55,7 +55,7 @@ public class PaymentTermService
 	/**
 	 * Loads the payment term together with its breaks fresh from the committed DB state, in the current
 	 * (thread-inherited) transaction, bypassing the process-wide cache. Use this where a complete,
-	 * consistent break set is required (e.g. pay-schedule creation). See me03 #30080.
+	 * consistent break set is required (e.g. pay-schedule creation).
 	 */
 	@NonNull
 	public PaymentTerm getByIdInTrx(@NonNull final PaymentTermId paymentTermId)
