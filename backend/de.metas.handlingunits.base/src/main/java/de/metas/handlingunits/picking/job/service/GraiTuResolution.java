@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /**
  * The parsed GRAI together with its resolved TU packing-instruction and capacity.
  */
@@ -16,5 +18,5 @@ public class GraiTuResolution
 {
 	@NonNull GRAI grai;
 	@NonNull HuPackingInstructionsId tuPIId;
-	@NonNull HUPIItemProductId huPIItemProductId;
+	@Nullable HUPIItemProductId huPIItemProductId;
 }
