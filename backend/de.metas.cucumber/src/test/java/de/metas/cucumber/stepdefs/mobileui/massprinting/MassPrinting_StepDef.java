@@ -35,6 +35,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -65,6 +67,10 @@ public class MassPrinting_StepDef
 	/** Populated by the REST scan step; consumed by JSON assertion steps. */
 	@Nullable
 	private JsonMassPrintingResult lastJsonResult;
+
+	/** Populated by the error-expecting scan step; consumed by the rejection-assertion step. */
+	@Nullable
+	private AdempiereException lastScanError;
 
 	/**
 	 * Invokes the mass-printing scan for an LU, executed as a given picker user.
@@ -100,6 +106,74 @@ public class MassPrinting_StepDef
 						.luId(luId)
 						.pickerId(pickerId)
 						.build());
+	}
+
+	/**
+	 * Invokes the mass-printing scan for an LU but <em>expects it to fail</em> with an
+	 * {@link AdempiereException}. The thrown exception is captured in {@link #lastScanError}
+	 * for subsequent assertion via {@link #massPrintingScanRejectedWithErrorContaining(String)}.
+	 *
+	 * <p>Use this step when the picking profile has mass-printing disabled ({@code IsMassPrinting=N})
+	 * to verify that the server guard fires and no work is performed.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code LU} — identifier of the LU to scan</li>
+	 *   <li>{@code Picker} — identifier of the picker {@code AD_User}</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When mass-printing scans LU and expects error
+	 *   | LU | Picker             |
+	 *   | lu | massPrintingPicker |
+	 * </pre>
+	 */
+	@When("mass-printing scans LU and expects error")
+	public void massPrintingScansLUAndExpectsError(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final HuId luId = huTable.getId(row.getAsIdentifier("LU"));
+		final UserId pickerId = userTable.getId(row.getAsIdentifier("Picker"));
+
+		lastScanError = null;
+		try
+		{
+			massPrintingService.scan(
+					MassPrintingScanRequest.builder()
+							.luId(luId)
+							.pickerId(pickerId)
+							.build());
+		}
+		catch (final AdempiereException e)
+		{
+			lastScanError = e;
+		}
+	}
+
+	/**
+	 * Asserts that the most recent error-expecting scan was rejected with an
+	 * {@link AdempiereException} whose AD message key contains the given substring.
+	 *
+	 * <p>Must follow a {@link #massPrintingScansLUAndExpectsError(DataTable)} step.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then mass-printing scan was rejected with error containing "MassPrintingNotEnabled"
+	 * </pre>
+	 *
+	 * @param errorSubstring substring expected to appear in {@link AdempiereException#getErrorCode()} of the thrown exception
+	 *                       (which is set to the {@code AD_Message.Value} when the exception is constructed via {@link de.metas.i18n.AdMessageKey})
+	 */
+	@Then("mass-printing scan was rejected with error containing {string}")
+	public void massPrintingScanRejectedWithErrorContaining(@NonNull final String errorSubstring)
+	{
+		assertThat(lastScanError)
+				.as("scan must have thrown an AdempiereException — did you use the 'and expects error' step variant?")
+				.isNotNull();
+		assertThat(lastScanError.getErrorCode())
+				.as("error code of the rejection must contain the expected substring")
+				.contains(errorSubstring);
 	}
 
 	/**

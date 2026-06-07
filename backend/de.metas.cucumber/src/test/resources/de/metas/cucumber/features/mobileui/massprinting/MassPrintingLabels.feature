@@ -511,3 +511,32 @@ Feature: Mass Printing Labels (F00230.21)
     Then mass-printing REST result is
       | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
       | 1           | 2                 | 0                              |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: Off-mode guard — scan rejected when mass-printing is disabled in the picking profile
+    # Background enables IsMassPrinting=Y; this scenario flips it to N before scanning.
+    # The scan must be rejected with a typed error; no boxes must be packed and no
+    # shipment must be created. This enforces the server-side contract: a client that
+    # somehow invokes the endpoint while the profile flag is off must not get any work done.
+    And set mobile UI picking profile
+      | IsMassPrinting |
+      | N              |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO_off     | true    | customer                 | 2026-06-01  | 2026-06-02          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO_off                | OL_off     | selfPackedPrd           | 1          |
+    And the order identified by SO_off is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS_off     | OL_off                    | N             |
+
+    When mass-printing scans LU and expects error
+      | LU | Picker             |
+      | lu | massPrintingPicker |
+    Then mass-printing scan was rejected with error containing "MassPrintingNotEnabled"
+    And validate no M_InOut found for C_Order identified by SO_off
