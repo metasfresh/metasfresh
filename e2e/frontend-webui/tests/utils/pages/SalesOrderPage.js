@@ -425,13 +425,16 @@ export class SalesOrderPage {
    * @param {Object} options - Configuration options
    * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
    * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedShipmentCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+  static async openRelatedShipmentCandidate({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
     await openRelatedDocument({
       dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT_SCHEDULE,
       stepName: 'SalesOrderPage - Open related shipment candidate (Alt+6)',
       maxRetries,
       retryDelay,
+      refreshOnRetry,
       navigateToDetail: false, // Opens as list view
     });
   }
@@ -442,13 +445,16 @@ export class SalesOrderPage {
    * @param {Object} options - Configuration options
    * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
    * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedShipment({ maxRetries = 5, retryDelay = 2000 } = {}) {
+  static async openRelatedShipment({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
     await openRelatedDocument({
       dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT,
       stepName: 'SalesOrderPage - Open related shipment (Alt+6)',
       maxRetries,
       retryDelay,
+      refreshOnRetry,
       navigateToDetail: false, // Stay on list view - test will call ShipmentPage.openDetailView() explicitly
     });
   }
@@ -459,13 +465,16 @@ export class SalesOrderPage {
    * @param {Object} options - Configuration options
    * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
    * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
     await openRelatedDocument({
       dataCy: REFERENCE_DATA_CY.SO_TO_INVOICE_CANDIDATES,
       stepName: 'SalesOrderPage - Open related invoice candidate (Alt+6)',
       maxRetries,
       retryDelay,
+      refreshOnRetry,
       navigateToDetail: false, // Opens as list view
     });
   }
@@ -558,13 +567,16 @@ export class SalesOrderPage {
    * @param {Object} options - Configuration options
    * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
    * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
+   * @param {boolean} options.refreshOnRetry - Reload the page (F5) before each retry so a
+   *   slowly/asynchronously created reference is re-fetched (default: false)
    */
-  static async openRelatedInvoice({ maxRetries = 5, retryDelay = 2000 } = {}) {
+  static async openRelatedInvoice({ maxRetries = 5, retryDelay = 2000, refreshOnRetry = false } = {}) {
     await openRelatedDocument({
       dataCy: REFERENCE_DATA_CY.SO_TO_CUSTOMER_INVOICE,
       stepName: 'SalesOrderPage - Open related invoice (Alt+6)',
       maxRetries,
       retryDelay,
+      refreshOnRetry,
       navigateToDetail: false, // Stay on list view - test will call InvoicePage.openDetailView() explicitly
     });
   }
