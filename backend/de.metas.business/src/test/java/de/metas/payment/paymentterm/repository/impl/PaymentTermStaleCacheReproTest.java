@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <ul>
  *     <li>the cached {@code getById} keeps returning the stale {@code [LC]}-only term (LC DueAmt = 10000),</li>
  *     <li>the fix's {@code getByIdInTrx} (a fresh in-trx load that {@code OrderPayScheduleService.extractContext}
- *         now uses) reads the committed DB and returns both breaks (LC DueAmt = 3000).</li>
+ *         now uses) reads the DB in the current transaction and returns both breaks (LC DueAmt = 3000).</li>
  * </ul>
  * Asserting LC DueAmt = 3000 on the {@code getByIdInTrx} path is the RED→GREEN gate: before the fix
  * {@code extractContext} used {@code getById} and would see 10000; after the fix it uses {@code getByIdInTrx}
@@ -111,8 +111,8 @@ public class PaymentTermStaleCacheReproTest
 		final Money staleLcDueAmt = lcDueAmt(stale);
 		assertThat(staleLcDueAmt).as("stale cached term mis-spreads LC to the full total").isEqualTo(Money.of("10000.00", EUR));
 
-		// 4b. FIXED PATH (what extractContext uses AFTER the fix): a fresh in-trx load reads the committed DB,
-		//     sees BOTH breaks, and spreadByBreaks gives LC its 30% share → LC DueAmt = 3000.
+		// 4b. FIXED PATH (what extractContext uses AFTER the fix): a fresh in-trx load reads the DB in the
+		//     current transaction, sees BOTH breaks, and spreadByBreaks gives LC its 30% share → LC DueAmt = 3000.
 		final PaymentTerm fresh = repo.getByIdInTrx(ptId);
 		assertThat(fresh.getSortedBreaks()).as("fresh in-trx load sees both breaks").hasSize(2);
 		final Money freshLcDueAmt = lcDueAmt(fresh);
