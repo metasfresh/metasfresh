@@ -477,7 +477,7 @@ Feature: Mass Printing Labels (F00230.21)
   @from:cucumber
   @allure.label.epic:E0105_Picking
   @allure.label.feature:F00230_MobileUI_Picking
-  Scenario: REST endpoint — scan LU, assert HTTP 200 and boxesPacked in response
+  Scenario: REST endpoint — scan LU, assert boxesPacked in the response
     # Single-unit order for the self-packed product; LU has 3 units, 1 order → 1 box packed, 2 leftover.
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |

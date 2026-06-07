@@ -135,11 +135,10 @@ public class MassPrinting_StepDef
 		final HUQRCode huQRCode = row.getAsIdentifier("HUQRCode").lookupIn(huQRCodeStorage);
 		final String scannedCode = huQRCode.toGlobalQRCodeString();
 
-		final JsonMassPrintingScanRequest request = JsonMassPrintingScanRequest.builder()
-				.scannedCode(scannedCode)
-				.build();
-
-		lastJsonResult = pickingRestController.massPrintingScan(request);
+		lastJsonResult = pickingRestController.massPrintingScan(
+				JsonMassPrintingScanRequest.builder()
+						.scannedCode(scannedCode)
+						.build());
 	}
 
 	/**

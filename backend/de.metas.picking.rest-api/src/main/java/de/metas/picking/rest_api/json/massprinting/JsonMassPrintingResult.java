@@ -2,6 +2,7 @@ package de.metas.picking.rest_api.json.massprinting;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -52,7 +53,7 @@ public class JsonMassPrintingResult
 				.collect(ImmutableList.toImmutableList());
 
 		final List<Integer> skippedIds = result.getSkippedNonSelfPackedProductIds().stream()
-				.map(id -> id.getRepoId())
+				.map(ProductId::getRepoId)
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonMassPrintingResult.builder()
