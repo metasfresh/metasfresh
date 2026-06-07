@@ -145,9 +145,9 @@ public class MassPrintingService
 			final int unitsOnLUInt)
 	{
 		// FIFO selection of open shipment schedules, capped at units on LU.
-		// Per AC-4: fully fill each order before moving to the next; if the last selected order's
-		// demand exceeds remaining LU capacity, that order is partially filled (AC-6) — pick only
-		// the remaining capacity, and its unmet demand stays open.
+		// Fully fill each order before moving to the next; if the last selected order's demand
+		// exceeds remaining LU capacity, that order is partially filled — pick only the remaining
+		// capacity, and its unmet demand stays open.
 		final PackageableQuery query = PackageableQuery.builder()
 				.productId(productId)
 				.warehouseId(warehouseId)
