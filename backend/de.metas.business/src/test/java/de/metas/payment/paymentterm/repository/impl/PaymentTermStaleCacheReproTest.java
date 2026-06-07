@@ -38,9 +38,7 @@ import org.compiere.model.X_C_PaymentTerm_Break;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -165,25 +163,25 @@ public class PaymentTermStaleCacheReproTest
 	 * Flips IsActive=Y on the LIVE stored record in {@link POJOLookupMap}, bypassing
 	 * {@code saveRecord()} (which would trigger a {@code CacheMgt.reset} and evict the poisoned snapshot).
 	 * This is the test-only seam that reproduces "DB has both breaks, but the shared cache is stale".
+	 *
+	 * <p>Uses the {@code POJOLookupMap.setCopyOnSave(false)} public seam to obtain the LIVE stored instance
+	 * (instead of the usual defensive copy) so the {@code IsActive} mutation is visible to later reads
+	 * without a {@code saveRecord}/cache-reset. The previous flag is restored in a finally block.
 	 */
 	private void activateInStoreWithoutCacheReset(final I_C_PaymentTerm_Break breakRecord)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
+		final boolean copyOnSavePrevious = db.isCopyOnSave();
 		try
 		{
-			final Field cachedObjectsField = POJOLookupMap.class.getDeclaredField("cachedObjects");
-			cachedObjectsField.setAccessible(true);
-			@SuppressWarnings("unchecked")
-			final Map<String, Map<Integer, Object>> cachedObjects =
-					(Map<String, Map<Integer, Object>>)cachedObjectsField.get(db);
-
-			final Map<Integer, Object> breakRecords = cachedObjects.get(I_C_PaymentTerm_Break.Table_Name);
-			final Object liveRecord = breakRecords.get(breakRecord.getC_PaymentTerm_Break_ID());
-			InterfaceWrapperHelper.setValue(liveRecord, I_C_PaymentTerm_Break.COLUMNNAME_IsActive, true);
+			db.setCopyOnSave(false); // hand back the live stored record, not a copy
+			final I_C_PaymentTerm_Break liveRecord = InterfaceWrapperHelper.load(
+					breakRecord.getC_PaymentTerm_Break_ID(), I_C_PaymentTerm_Break.class);
+			liveRecord.setIsActive(true);
 		}
-		catch (final ReflectiveOperationException e)
+		finally
 		{
-			throw new RuntimeException("Failed to activate break record in-store without cache reset", e);
+			db.setCopyOnSave(copyOnSavePrevious);
 		}
 	}
 }
