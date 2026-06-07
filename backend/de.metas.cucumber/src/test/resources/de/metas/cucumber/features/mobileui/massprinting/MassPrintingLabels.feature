@@ -52,7 +52,7 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
 
     # ── Self-packed product: 1 unit per box ──
     And metasfresh contains M_Products:
-      | Identifier   | X12DE355 | OPT.IsSelfPacked |
+      | Identifier    | X12DE355 | OPT.IsSelfPacked |
       | selfPackedPrd | PCE      | Y                |
 
     And metasfresh contains M_HU_PI_Item_Product:
@@ -84,14 +84,14 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
     # ── Physical stock: create an LU with 3 units of selfPackedPrd ──
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inventory                 | 2026-06-01   | 540008         |
+      | inventory                 | 2026-06-01   | warehouse      |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | invLine                       | selfPackedPrd           | 0       | 100      | PCE          |
     And complete inventory with inventoryIdentifier 'inventory'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID  |
-      | invLine            | stockCU  |
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLine            | stockCU |
 
     And transform CU to new LU
       | sourceCU | newLU | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -104,7 +104,7 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
   @from:cucumber
   @allure.label.epic:E0105_Picking
   @allure.label.feature:F00230_MobileUI_Picking
-  Scenario: 2.1-RED Scan LU with self-packed product and open demand — service invocation (RED phase)
+  Scenario: Scan LU with self-packed product and open demand — FIFO allocation and one box per unit
     # Three single-unit orders => 3 open shipment schedules for selfPackedPrd
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
@@ -125,14 +125,47 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
       | SS2        | OL2                       | N             |
       | SS3        | OL3                       | N             |
 
-    # Invoke mass-printing — expects service to pack 3 boxes (RED: throws UnsupportedOperationException)
+    # Invoke mass-printing — LU has 3 units, 3 single-unit orders → 3 boxes packed, nothing leftover
     When mass-printing scans LU
       | LU |
       | lu |
     Then mass-printing result is
       | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
       | 3           | 0                 | 0                              |
-    # One HU per box (Task 2.4): 3 box HUs, each a transport unit holding exactly 1 unit
+    # Each packed unit produces its own leaf product-holding HU carrying exactly 1 unit
+    And mass-printing produced box HUs
+      | boxHUCount | qtyPerBoxHU |
+      | 3          | 1           |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: FIFO partial fill — last order partially filled when LU capacity is exhausted
+    # Two orders each demanding 2 units, but LU has only 3 units (not 4).
+    # Expected: SO1 fully filled (2 boxes), SO2 partially filled (1 box), 1 unit of SO2 demand stays open.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO_A       | true    | customer                 | 2026-06-01  | 2026-06-02          |
+      | SO_B       | true    | customer                 | 2026-06-01  | 2026-06-03          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO_A                  | OL_A       | selfPackedPrd           | 2          |
+      | SO_B                  | OL_B       | selfPackedPrd           | 2          |
+    And the order identified by SO_A is completed
+    And the order identified by SO_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS_A       | OL_A                      | N             |
+      | SS_B       | OL_B                      | N             |
+
+    # LU has 3 units; SO_A needs 2 (fully filled), SO_B needs 2 but only 1 unit remains (partially filled).
+    When mass-printing scans LU
+      | LU |
+      | lu |
+    Then mass-printing result is
+      | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | 3           | 0                 | 1                              |
+    # 3 box HUs: 2 for SO_A + 1 for SO_B; each holds exactly 1 unit
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
       | 3          | 1           |

@@ -52,6 +52,7 @@ import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
@@ -68,9 +69,11 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -80,6 +83,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PickingJobHUService
 {
+	private static final Logger logger = LogManager.getLogger(PickingJobHUService.class);
+
 	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
@@ -214,17 +219,19 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * Collects the box HUs at or below each of the given HUs — i.e. the lowest-level product-holding HUs
-	 * (the VHUs that carry the actual product storage). Descends the HU hierarchy so that, regardless of
-	 * whether a packed box is materialised as a standalone TU, a TU nested under a target LU, or an
-	 * aggregate HU, the mass-printing result reports exactly one HU per packed box.
+	 * Collects the packed box HUs at or below each of the given HUs — i.e. the lowest-level
+	 * product-holding HUs (the VHUs that carry the actual product storage). Descends the HU hierarchy
+	 * so that, regardless of whether a packed box is materialised as a standalone TU, a TU nested under
+	 * a target LU, or an aggregate HU, the mass-printing result reports exactly one HU per packed box.
 	 */
-	public ImmutableSet<HuId> getBoxTransportUnitIds(@NonNull final Collection<HuId> huIds)
+	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
 	{
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
-		for (final HuId huId : huIds)
+		// Batch-load all top-level HUs to avoid N+1 queries.
+		final List<I_M_HU> topLevelHUs = getByIds(huIds);
+		for (final I_M_HU hu : topLevelHUs)
 		{
-			collectBoxHUs(handlingUnitsBL.getById(huId), result);
+			collectBoxHUs(hu, result);
 		}
 		return result.build();
 	}
@@ -255,7 +262,7 @@ public class PickingJobHUService
 		return getPIItemProducts(ImmutableSet.of(productId), null).stream()
 				.map(record -> getPackingInfo(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())))
 				.filter(HUPIItemProduct::isFiniteTU)
-				.filter(packingInfo -> packingInfo.getQtyCUsPerTU().toBigDecimal().compareTo(java.math.BigDecimal.ONE) == 0)
+				.filter(packingInfo -> packingInfo.getQtyCUsPerTU().toBigDecimal().compareTo(BigDecimal.ONE) == 0)
 				.map(HUPIItemProduct::getId)
 				.findFirst();
 	}

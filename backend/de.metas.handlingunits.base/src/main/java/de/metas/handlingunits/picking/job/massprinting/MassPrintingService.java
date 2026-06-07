@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.massprinting;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult.ProductResult;
@@ -17,12 +18,13 @@ import de.metas.handlingunits.picking.job.service.external.shipmentschedule.Pick
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.logging.LogManager;
+import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
-import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -35,16 +37,15 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Optional;
 
 /**
  * Orchestration service for the mass-printing flow:
  * Scan LU → enumerate self-packed products → per-product FIFO selection →
  * create+pick+complete PRODUCT picking job → print one HU label per box.
- *
- * Per me03 https://github.com/metasfresh/me03/issues/29942 (F00230.21 "Mass Printing Labels").
  */
 @Service
 @RequiredArgsConstructor
@@ -146,7 +147,10 @@ public class MassPrintingService
 			@NonNull final ProductId productId,
 			final int unitsOnLUInt)
 	{
-		// FIFO selection of open shipment schedules, capped at units on LU
+		// FIFO selection of open shipment schedules, capped at units on LU.
+		// Per AC-4: fully fill each order before moving to the next; if the last selected order's
+		// demand exceeds remaining LU capacity, that order is partially filled (AC-6) — pick only
+		// the remaining capacity, and its unmet demand stays open.
 		final PackageableQuery query = PackageableQuery.builder()
 				.productId(productId)
 				.warehouseId(warehouseId)
@@ -154,26 +158,36 @@ public class MassPrintingService
 				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
 				.build();
 
-		final List<ShipmentScheduleId> selectedScheduleIds = new ArrayList<>();
-		final AtomicInteger demandRemaining = new AtomicInteger(0);
-		final AtomicInteger unitsAllocated = new AtomicInteger(0);
+		// Maps each selected schedule to the qty to actually pick from it (may be < full demand for the last order).
+		final Map<ShipmentScheduleId, Integer> selectedScheduleQtys = new LinkedHashMap<>();
+		int totalDemand = 0;
+		int capacityRemaining = unitsOnLUInt;
 
-		shipmentScheduleService.stream(query).forEach(packageable -> {
-			final int qtyToPick = packageable.getQtyToPick().toBigDecimal().intValue();
-			if (qtyToPick <= 0)
+		for (final Packageable packageable : (Iterable<Packageable>) shipmentScheduleService.stream(query)::iterator)
+		{
+			final int scheduleDemand = packageable.getQtyToPick().toBigDecimal().intValue();
+			if (scheduleDemand <= 0)
 			{
-				return;
+				continue;
 			}
 
-			demandRemaining.addAndGet(qtyToPick);
-			if (unitsAllocated.get() < unitsOnLUInt)
-			{
-				selectedScheduleIds.add(packageable.getShipmentScheduleId());
-				unitsAllocated.addAndGet(qtyToPick);
-			}
-		});
+			totalDemand += scheduleDemand;
 
-		final int boxesToPack = Math.min(unitsAllocated.get(), unitsOnLUInt);
+			if (capacityRemaining <= 0)
+			{
+				// LU is fully allocated; this schedule stays entirely open — include its demand in total but don't pick it.
+				continue;
+			}
+
+			// Pick the minimum of full demand and remaining capacity (partial fill on the last order).
+			final int qtyToPickFromThisSchedule = Math.min(scheduleDemand, capacityRemaining);
+			selectedScheduleQtys.put(packageable.getShipmentScheduleId(), qtyToPickFromThisSchedule);
+			capacityRemaining -= qtyToPickFromThisSchedule;
+		}
+
+		final List<ShipmentScheduleId> selectedScheduleIds = new ArrayList<>(selectedScheduleQtys.keySet());
+		final int boxesToPack = unitsOnLUInt - capacityRemaining;
+
 		if (selectedScheduleIds.isEmpty() || boxesToPack <= 0)
 		{
 			return ProductResult.builder()
@@ -182,15 +196,22 @@ public class MassPrintingService
 					.labelsPrinted(0)
 					.labelPrintFailures(0)
 					.unitsLeftOnLU(unitsOnLUInt)
-					.unitsOfOpenDemandRemaining(demandRemaining.get())
+					.unitsOfOpenDemandRemaining(totalDemand)
 					.build();
 		}
 
 		// Force one HU per box: pack each unit into its own TU by overriding the selected schedules'
 		// pack-to PI with the self-packed product's own 1-CU-per-TU box PI. The picking job's line then
 		// picks as TU (finite 1-CU capacity), so the allocation engine fans the pick into one TU per unit.
-		huService.getSelfPackedBoxPIItemProductId(productId).ifPresent(
-				boxPIItemProductId -> shipmentScheduleService.setPackToHUPIItemProductOverride(selectedScheduleIds, boxPIItemProductId));
+		final Optional<HUPIItemProductId> boxPIItemProductIdOpt = huService.getSelfPackedBoxPIItemProductId(productId);
+		if (boxPIItemProductIdOpt.isPresent())
+		{
+			shipmentScheduleService.setPackToHUPIItemProductOverride(selectedScheduleIds, boxPIItemProductIdOpt.get());
+		}
+		else
+		{
+			logger.warn("IsSelfPacked product {} has no 1-CU-per-TU PI configured; one-box-per-unit cannot be enforced", productId);
+		}
 
 		// Create PRODUCT picking job restricted to selected schedules
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedScheduleIds);
@@ -205,15 +226,29 @@ public class MassPrintingService
 		// Obtain scanned LU's QR code to use as pick-from reference
 		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
 
-		// Pick each line from the scanned LU.
-		// When the line picks as TU (because we overrode the pack-to PI to the 1-CU box PI above),
-		// PickingJobPickCommand interprets the event's qtyPicked as a TU count; for a CU line it is a CU qty.
+		// Pick each line from the scanned LU using the capped qty determined above.
+		// For a TU line (1-CU-per-TU box PI override applied), qtyPicked is the TU count;
+		// for a CU line it is the CU qty.  Either way the value equals the schedule-specific
+		// capped qty so the last partially-filled order is not over-picked.
 		final List<PickingJobStepEvent> pickEvents = new ArrayList<>();
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
-			final BigDecimal qtyToPick = line.getPickingUnit().isTU()
-					? line.getQtyToPickTUs().toBigDecimal()
-					: line.getQtyToPick().toBigDecimal();
+			// Resolve the shipment schedule this line was created for; fall back to full line qty
+			// when the mapping is absent (should not happen for PRODUCT-aggregation jobs).
+			final ShipmentScheduleId ssId = line.getScheduleId().getShipmentScheduleId();
+			final int cappedQty = ssId != null ? selectedScheduleQtys.getOrDefault(ssId, 0) : 0;
+			final BigDecimal qtyToPick;
+			if (cappedQty > 0)
+			{
+				qtyToPick = BigDecimal.valueOf(cappedQty);
+			}
+			else
+			{
+				// Fallback: use line's own qty (should not occur in normal flow)
+				qtyToPick = line.getPickingUnit().isTU()
+						? line.getQtyToPickTUs().toBigDecimal()
+						: line.getQtyToPick().toBigDecimal();
+			}
 			pickEvents.add(PickingJobStepEvent.builder()
 					.pickingLineId(line.getId())
 					.eventType(PickingJobStepEventType.PICK)
@@ -224,12 +259,12 @@ public class MassPrintingService
 		}
 
 		final PickingJob pickedJob = pickingJobService.processStepEvents(pickingJob, pickEvents);
-		// Resolve the actual box TUs (descend any target LU): one HU per packed box.
-		final ImmutableSet<HuId> packedHUIds = huService.getBoxTransportUnitIds(pickedJob.getAllPickedHuIds());
+		// Resolve the actual box HUs (descend any target LU): one HU per packed box.
+		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedJob.getAllPickedHuIds());
 		pickingJobService.complete(pickedJob);
 
-		final int unitsLeftOnLU = unitsOnLUInt - boxesToPack;
-		final int openDemandRemaining = Math.max(0, demandRemaining.get() - boxesToPack);
+		final int unitsLeftOnLU = capacityRemaining;
+		final int openDemandRemaining = Math.max(0, totalDemand - boxesToPack);
 
 		// Labels printed after commit (best-effort) — done outside this trx block
 		return ProductResult.builder()

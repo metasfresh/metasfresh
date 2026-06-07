@@ -15,6 +15,7 @@ import de.metas.order.OrderPickingType;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import de.metas.workplace.Workplace;
@@ -34,6 +35,35 @@ import org.compiere.model.I_C_Workplace_Carrier_Product;
 import org.compiere.model.I_C_Workplace_Product;
 import org.compiere.model.I_C_Workplace_ProductCategory;
 
+/**
+ * Step definitions for creating and managing {@code C_Workplace} records in Cucumber scenarios.
+ *
+ * <p>Provides steps to:
+ * <ul>
+ *   <li>Create workplaces (including picking slots, product/category/carrier restrictions, external systems)</li>
+ *   <li>Assign workplaces to users (mirroring a picker being logged in at a workplace)</li>
+ *   <li>Deactivate all workplace records (setup/teardown)</li>
+ * </ul>
+ *
+ * <p>Required DataTable columns for {@code metasfresh contains C_Workplaces}:
+ * <ul>
+ *   <li>{@code Identifier} — local reference for later steps</li>
+ *   <li>{@code M_Warehouse_ID} — warehouse identifier loaded via {@code load M_Warehouse}</li>
+ * </ul>
+ * <p>Optional columns: {@code M_PickingSlot_ID}, {@code MaxPickingJobs}, {@code SeqNo},
+ * {@code OrderPickingType}, {@code M_Product_ID}, {@code M_Product_Category_ID},
+ * {@code Carrier_Product_ID}, {@code ExternalSystem.Value}.
+ *
+ * <p>Example:
+ * <pre>
+ * And metasfresh contains C_Workplaces
+ *   | Identifier | M_Warehouse_ID | M_PickingSlot_ID |
+ *   | workplace  | warehouse      | pickingSlot      |
+ * And assign C_Workplace to user
+ *   | C_Workplace_ID | AD_User_ID.Login |
+ *   | workplace      | metasfresh       |
+ * </pre>
+ */
 @RequiredArgsConstructor
 public class C_Workplace_StepDef
 {
@@ -118,7 +148,7 @@ public class C_Workplace_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final WorkplaceId workplaceId = row.getAsIdentifier(I_C_Workplace.COLUMNNAME_C_Workplace_ID).lookupNotNullIdIn(workplaceTable);
 			final String login = row.getAsString("AD_User_ID.Login");
-			final UserId userId = Services.get(de.metas.user.api.IUserDAO.class).retrieveUserIdByLogin(login);
+			final UserId userId = Services.get(IUserDAO.class).retrieveUserIdByLogin(login);
 			workplaceService.assignWorkplace(userId, workplaceId);
 		});
 	}
