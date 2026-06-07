@@ -169,3 +169,177 @@ Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/2994
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
       | 3          | 1           |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: Shipment policy CREATE_DRAFT — scan creates a draft shipment per packed order
+    # Background sets policy to DO_NOT_CREATE; override it here to CREATE_DRAFT.
+    And set mobile UI picking profile
+      | CreateShipmentPolicy |
+      | CREATE_DRAFT         |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO         | true    | customer                 | 2026-06-01  | 2026-06-02          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | OL         | selfPackedPrd           | 1          |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS         | OL                        | N             |
+
+    When mass-printing scans LU
+      | LU |
+      | lu |
+    Then mass-printing result is
+      | boxesPacked | OPT.unitsLeftOnLU |
+      | 1           | 2                 |
+    And mass-printing produced box HUs
+      | boxHUCount | qtyPerBoxHU |
+      | 1          | 1           |
+
+    # Shipment generated in draft — async WP processor creates it; poll until it appears.
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | SS                               | shipment              |
+    And validate M_In_Out status
+      | M_InOut_ID | DocStatus |
+      | shipment   | DR        |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: Shipment policy CREATE_AND_COMPLETE — scan creates and completes a shipment per packed order
+    # Background sets policy to DO_NOT_CREATE; override it here to CREATE_AND_COMPLETE.
+    And set mobile UI picking profile
+      | CreateShipmentPolicy |
+      | CREATE_AND_COMPLETE  |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO         | true    | customer                 | 2026-06-01  | 2026-06-02          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | OL         | selfPackedPrd           | 1          |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS         | OL                        | N             |
+
+    When mass-printing scans LU
+      | LU |
+      | lu |
+    Then mass-printing result is
+      | boxesPacked | OPT.unitsLeftOnLU |
+      | 1           | 2                 |
+    And mass-printing produced box HUs
+      | boxHUCount | qtyPerBoxHU |
+      | 1          | 1           |
+
+    # Shipment generated and completed — poll until it appears in CO status.
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | SS                               | shipment              |
+    And validate M_In_Out status
+      | M_InOut_ID | DocStatus |
+      | shipment   | CO        |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: Shipment policy CREATE_COMPLETE_CLOSE — scan creates a completed shipment and closes the schedule
+    # Background sets policy to DO_NOT_CREATE; override it here to CREATE_COMPLETE_CLOSE.
+    And set mobile UI picking profile
+      | CreateShipmentPolicy    |
+      | CREATE_COMPLETE_CLOSE   |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO         | true    | customer                 | 2026-06-01  | 2026-06-02          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO                    | OL         | selfPackedPrd           | 1          |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS         | OL                        | N             |
+
+    When mass-printing scans LU
+      | LU |
+      | lu |
+    Then mass-printing result is
+      | boxesPacked | OPT.unitsLeftOnLU |
+      | 1           | 2                 |
+    And mass-printing produced box HUs
+      | boxHUCount | qtyPerBoxHU |
+      | 1          | 1           |
+
+    # Shipment generated and completed; schedule also closed.
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | SS                               | shipment              |
+    And validate M_In_Out status
+      | M_InOut_ID | DocStatus |
+      | shipment   | CO        |
+    And the shipment-schedule is closed
+      | M_ShipmentSchedule_ID.Identifier |
+      | SS                               |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: Mixed-customer scan — each customer's shipment follows its own policy within one scan
+    # Two customers with different policies on one scan.
+    # customer (from Background) → keeps default DO_NOT_CREATE (no shipment).
+    # customer2 → CREATE_DRAFT (shipment in draft).
+    # LU has 3 units: 1 unit goes to customer, 1 unit goes to customer2, 1 unit leftover.
+
+    # Set up second customer with its own pricing.
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Name      | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer2  | customer2 | N            | Y              | PS                            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | customer2Location | 9876500000001 | customer2                | true                | true         |
+
+    # Per-customer policy: customer2 → CREATE_DRAFT; customer keeps profile default (DO_NOT_CREATE).
+    And set per-customer mobile UI shipment policy:
+      | C_BPartner_ID | CreateShipmentPolicy |
+      | customer2     | CREATE_DRAFT         |
+
+    # One single-unit order per customer (FIFO: customer gets prep date 2026-06-02, customer2 gets 2026-06-03).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO_c1      | true    | customer                 | 2026-06-01  | 2026-06-02          |
+      | SO_c2      | true    | customer2                | 2026-06-01  | 2026-06-03          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO_c1                 | OL_c1      | selfPackedPrd           | 1          |
+      | SO_c2                 | OL_c2      | selfPackedPrd           | 1          |
+    And the order identified by SO_c1 is completed
+    And the order identified by SO_c2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS_c1      | OL_c1                     | N             |
+      | SS_c2      | OL_c2                     | N             |
+
+    # Scan: 2 units packed (1 per customer), 1 unit leftover on LU.
+    When mass-printing scans LU
+      | LU |
+      | lu |
+    Then mass-printing result is
+      | boxesPacked | OPT.unitsLeftOnLU |
+      | 2           | 1                 |
+
+    # customer (DO_NOT_CREATE): no M_InOut created for its order.
+    And validate no M_InOut found for C_Order identified by SO_c1
+
+    # customer2 (CREATE_DRAFT): shipment created in draft.
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | SS_c2                            | shipment_c2           |
+    And validate M_In_Out status
+      | M_InOut_ID  | DocStatus |
+      | shipment_c2 | DR        |
