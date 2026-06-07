@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.mobileui.massprinting;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -25,6 +26,8 @@ import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,6 +45,7 @@ public class MassPrinting_StepDef
 {
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Product_StepDefData productTable;
 
 	@NonNull private final MassPrintingService massPrintingService = SpringContextHolder.instance.getBean(MassPrintingService.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -167,6 +171,58 @@ public class MassPrinting_StepDef
 			final BigDecimal qty = productStorage.getQtyInStockingUOM().toBigDecimal();
 			assertThat(qty).as("storage qty in box HU %s", huId).isEqualByComparingTo(expectedQtyPerBoxHU);
 		}
+	}
+
+	/**
+	 * Asserts that the scan produced no product results (i.e., nothing was packed).
+	 *
+	 * <p>Use this step when the scanned LU has no self-packed products with open demand, so the
+	 * expectation is that the result contains an empty {@code productResults} list. The complementary
+	 * step {@code mass-printing skipped non-self-packed products:} can be used in the same scenario to
+	 * additionally assert which products were present on the LU but skipped.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then mass-printing result has no product results
+	 * </pre>
+	 */
+	@Then("mass-printing result has no product results")
+	public void massPrintingResultHasNoProductResults()
+	{
+		assertThat(lastResult).as("mass-printing result shall be present").isNotNull();
+		assertThat(lastResult.getProductResults()).as("product results shall be empty (nothing was packed)").isEmpty();
+	}
+
+	/**
+	 * Asserts that the listed products were skipped during the scan because they are not
+	 * {@code IsSelfPacked}.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code skippedProduct} — identifier of the {@code M_Product} (created via {@code
+	 *       metasfresh contains M_Products:}) that is expected in the skipped list</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then mass-printing skipped non-self-packed products:
+	 *   | skippedProduct    |
+	 *   | nonSelfPackedPrd  |
+	 * </pre>
+	 */
+	@Then("mass-printing skipped non-self-packed products:")
+	public void massPrintingSkippedNonSelfPackedProducts(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastResult).as("mass-printing result shall be present").isNotNull();
+
+		final List<ProductId> expectedSkippedIds = DataTableRows.of(dataTable)
+				.stream()
+				.map(row -> productTable.getId(row.getAsIdentifier("skippedProduct")))
+				.collect(Collectors.toList());
+
+		assertThat(lastResult.getSkippedNonSelfPackedProductIds())
+				.as("skippedNonSelfPackedProductIds")
+				.containsExactlyInAnyOrderElementsOf(expectedSkippedIds);
 	}
 
 	private void assertProductResult(

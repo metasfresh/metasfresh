@@ -361,3 +361,115 @@ Feature: Mass Printing Labels (F00230.21)
     And validate M_In_Out status
       | M_InOut_ID  | DocStatus |
       | shipment_c2 | DR        |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: Multi-product LU — self-packed product packed, non-self-packed product skipped
+    # The scanned LU holds two products: one IsSelfPacked=Y and one IsSelfPacked=N.
+    # Only the self-packed product must be packed (1 box); the non-self-packed product must appear
+    # in the skipped list and not be picked.
+
+    # ── Non-self-packed product: no IsSelfPacked flag (defaults to N) ──
+    And metasfresh contains M_Products:
+      | Identifier       | X12DE355 |
+      | nonSelfPackedPrd | PCE      |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | boxPI_x2                           | boxPI_mi                   | nonSelfPackedPrd        | 1   | 2000-01-01 |
+
+    # Stock the non-self-packed product (2 units so the transform has enough to work with)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | invNonSelf                | 2026-06-01   | warehouse      |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | invNonSelf                | invLineNonSelf                | nonSelfPackedPrd        | 0       | 2        | PCE          |
+    And complete inventory with inventoryIdentifier 'invNonSelf'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID           |
+      | invLineNonSelf     | nonSelfPackedStock |
+
+    # Create one TU from each product, then aggregate them onto a single mixed LU
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | stockCU             | 1     | boxPI_x1                           | selfPackedTU                  |
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | nonSelfPackedStock  | 1     | boxPI_x2                           | nonSelfPackedTU               |
+    And aggregate TUs to new LU
+      | sourceTUs                    | newLUs  |
+      | selfPackedTU,nonSelfPackedTU | mixedLU |
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | mixedLU | A        |
+
+    # One single-unit order for the self-packed product — provides the open demand that triggers packing
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate |
+      | SO_mix     | true    | customer                 | 2026-06-01  | 2026-06-02          |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered |
+      | SO_mix                | OL_mix     | selfPackedPrd           | 1          |
+    And the order identified by SO_mix is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | SS_mix     | OL_mix                    | N             |
+
+    # Scan: selfPackedPrd → 1 box packed; nonSelfPackedPrd → skipped
+    When mass-printing scans LU
+      | LU      | Picker             |
+      | mixedLU | massPrintingPicker |
+    Then mass-printing result is
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | 1           | 1                      | 0                 | 0                              |
+    And mass-printing produced box HUs
+      | boxHUCount | qtyPerBoxHU |
+      | 1          | 1           |
+    Then mass-printing skipped non-self-packed products:
+      | skippedProduct   |
+      | nonSelfPackedPrd |
+
+  @from:cucumber
+  @allure.label.epic:E0105_Picking
+  @allure.label.feature:F00230_MobileUI_Picking
+  Scenario: LU holds only a non-self-packed product — nothing packed, product reported as skipped
+    # The scanned LU holds only a product with IsSelfPacked=N.
+    # The result must have no packed boxes and must list the product as skipped,
+    # providing the informative feedback mandated by AC-3.
+
+    # ── Non-self-packed product ──
+    And metasfresh contains M_Products:
+      | Identifier           | X12DE355 |
+      | nonSelfPackedPrdOnly | PCE      |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier  | Qty | ValidFrom  |
+      | boxPI_x3                           | boxPI_mi                   | nonSelfPackedPrdOnly     | 1   | 2000-01-01 |
+
+    # Stock it and place it on its own LU
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | invOnlyNonSelf            | 2026-06-01   | warehouse      |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier  | QtyBook | QtyCount | UOM.X12DE355 |
+      | invOnlyNonSelf            | invLineOnlyNonSelf            | nonSelfPackedPrdOnly     | 0       | 2        | PCE          |
+    And complete inventory with inventoryIdentifier 'invOnlyNonSelf'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID    | M_HU_ID             |
+      | invLineOnlyNonSelf    | nonSelfPackedOnlyCU |
+
+    And transform CU to new LU
+      | sourceCU            | newLU         | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | nonSelfPackedOnlyCU | onlyNonSelfLU | boxPI    | 1           | 1           |
+    And M_HU are validated:
+      | M_HU_ID       | HUStatus |
+      | onlyNonSelfLU | A        |
+
+    # Scan: no self-packed product → nothing packed, product skipped
+    When mass-printing scans LU
+      | LU            | Picker             |
+      | onlyNonSelfLU | massPrintingPicker |
+    Then mass-printing result has no product results
+    Then mass-printing skipped non-self-packed products:
+      | skippedProduct       |
+      | nonSelfPackedPrdOnly |
