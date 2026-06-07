@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 46 | 49 | 94% |
+| Picking | 48 | 51 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -136,6 +136,15 @@
 | Pick entire LU — LU qty less than ordered qty (partial fulfillment) | `picking/pick_from_LUs.spec.js` |
 
 **3/3 — 100%**
+
+### Order-based picking — mass printing
+
+| Scenario | Test |
+|---|---|
+| Mass-printing scan of an LU → one box and one label per unit packed for open demand | `picking/massPrinting.spec.js` |
+| Mass-printing scan of an LU → leftover units stay on the LU when demand is smaller than the LU | `picking/massPrinting.spec.js` |
+
+**2/2 — 100%**
 
 ### Order-based picking — catch-weight
 
