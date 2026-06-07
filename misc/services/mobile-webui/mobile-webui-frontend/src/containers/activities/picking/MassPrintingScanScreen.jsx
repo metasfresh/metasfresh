@@ -5,7 +5,8 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { trl } from '../../../utils/translations';
-import { toastError } from '../../../utils/toast';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
+import * as uiTrace from '../../../utils/ui_trace';
 import { postMassPrintingScan } from '../../../api/picking';
 
 const MassPrintingScanScreen = () => {
@@ -16,11 +17,28 @@ const MassPrintingScanScreen = () => {
   });
 
   const [result, setResult] = useState(null);
+  const [networkErrorMessage, setNetworkErrorMessage] = useState(null);
 
   const onResolvedResult = ({ scannedBarcode }) => {
+    setNetworkErrorMessage(null);
     postMassPrintingScan({ scannedCode: scannedBarcode })
       .then((data) => setResult(data))
-      .catch((axiosError) => toastError({ axiosError }));
+      .catch((axiosError) => {
+        const isNetworkFailure = !axiosError?.response;
+        const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
+        uiTrace.trace({
+          eventName: 'massPrintingScanFailed',
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          isNetworkFailure,
+          message,
+        });
+        if (isNetworkFailure) {
+          setNetworkErrorMessage(message);
+        } else {
+          toastError({ axiosError });
+        }
+      });
   };
 
   const onDone = () => {
@@ -35,7 +53,16 @@ const MassPrintingScanScreen = () => {
     );
   }
 
-  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} />;
+  return (
+    <>
+      {networkErrorMessage && (
+        <p className="has-text-danger mt-3" data-testid="mass-printing-network-error">
+          {networkErrorMessage}
+        </p>
+      )}
+      <BarcodeScannerComponent onResolvedResult={onResolvedResult} />
+    </>
+  );
 };
 
 //
