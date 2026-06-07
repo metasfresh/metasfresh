@@ -1,50 +1,63 @@
 package de.metas.frontend_testing.masterdata.sysconfig;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
-import org.adempiere.service.ClientId;
+import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
+/**
+ * Resets the barcode-scanner sysconfigs to their defaults, then applies the per-test overrides.
+ * <p>
+ * Resetting first means no test inherits another test's leaked scanner state (e.g. a leaked
+ * {@code isInputTextReadonly='N'} that would make every later spec's scanner editable). All writes
+ * go through {@link ISysConfigBL#setValueAtConfigLevel(String, String)}, which targets the
+ * (client,org) matching each sysconfig's declared {@code ConfigurationLevel} so the
+ * {@code AD_SysConfig} interceptor does not reject them.
+ */
 @Builder
 public class SysconfigCommand
 {
+	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.of(
+			"mobileui.frontend.barcodeScanner.showInputText", "Y",
+			"mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y");
+
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@Nullable private final Map<String, String> sysconfigs;
 
 	/**
-	 * Sets the given sysconfigs and returns the previous values.
-	 *
-	 * @return map from sysconfig name to its previous value (null if it didn't exist before)
+	 * @return map from sysconfig name to its previous (effective) value, captured before any write
 	 */
 	public ImmutableMap<String, String> execute()
 	{
-		if (sysconfigs == null || sysconfigs.isEmpty())
+		// capture previous EFFECTIVE values for every name we will touch (defaults + overrides), BEFORE writing
+		final LinkedHashSet<String> names = new LinkedHashSet<>(SCANNER_SYSCONFIG_DEFAULTS.keySet());
+		if (sysconfigs != null)
 		{
-			return ImmutableMap.of();
+			names.addAll(sysconfigs.keySet());
+		}
+		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
+		for (final String name : names)
+		{
+			final String prev = sysConfigBL.getValue(name);
+			if (prev != null)
+			{
+				previousValues.put(name, prev);
+			}
 		}
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final int adClientId = ClientId.METASFRESH.getRepoId();
-		final int adOrgId = OrgId.MAIN.getRepoId();
+		// reset scanner sysconfigs to defaults (so no test inherits another test's leaked scanner state)
+		SCANNER_SYSCONFIG_DEFAULTS.forEach(sysConfigBL::setValueAtConfigLevel);
 
-		final ImmutableMap.Builder<String, String> previousValues = ImmutableMap.builder();
-
-		for (final Map.Entry<String, String> entry : sysconfigs.entrySet())
+		// apply per-test overrides
+		if (sysconfigs != null)
 		{
-			final String name = entry.getKey();
-			final String newValue = entry.getValue();
-
-			final String previousValue = sysConfigBL.getValue(name, null, adClientId, adOrgId);
-			if (previousValue != null)
-			{
-				previousValues.put(name, previousValue);
-			}
-
-			sysConfigBL.setValue(name, newValue, ClientId.METASFRESH, OrgId.MAIN);
+			sysconfigs.forEach(sysConfigBL::setValueAtConfigLevel);
 		}
 
 		return previousValues.build();

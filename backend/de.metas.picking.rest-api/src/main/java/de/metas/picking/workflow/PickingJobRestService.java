@@ -52,6 +52,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -212,6 +213,30 @@ public class PickingJobRestService
 			@Nullable final TUPickingTarget target)
 	{
 		return pickingJobService.setTUPickingTarget(pickingJob, lineId, target);
+	}
+
+	/**
+	 * Processes the GRAI-scan TU-target assignment.
+	 * Resolves the TU type/capacity from the scanned GRAI, builds a new-TU target carrying the
+	 * GRAI, and stores it on the line (or at job/header level when {@code lineId == null}).
+	 * No physical HU is created here.
+	 *
+	 * @param lineId the picking-job line; {@code null} → header-level (no-line) scan: ONLY the per-product
+	 *               capacity check is skipped (no single line product at header level; capacity resolves
+	 *               per-line at pick time). The TU-allowed-on-LU check STILL runs against the job-level LU.
+	 *               The TU target is stored at job level.
+	 */
+	public PickingJob setTUPickingTargetFromGRAI(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedGrai)
+	{
+		return pickingJobService.createTUFromGRAI(pickingJob, lineId, scannedGrai);
+	}
+
+	public boolean isGraiScanEnabled(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.isGraiScanEnabled(pickingJob.getCustomerId());
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(

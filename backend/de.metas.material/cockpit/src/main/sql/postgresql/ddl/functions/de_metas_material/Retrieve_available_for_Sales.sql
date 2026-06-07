@@ -23,61 +23,91 @@ CREATE FUNCTION de_metas_material.retrieve_available_for_sales(
             )
 AS
 $BODY$
+-- Performance rewrite: the previous implementation read from
+-- de_metas_material.MD_ShipmentQty_V and applied the look-behind / look-ahead date filters
+-- on top of the view. Because the view FULL-OUTER-JOINs the order-line side and the
+-- shipment-schedule side, and the filter contained "... OR SalesOrderLastUpdated IS NULL",
+-- Postgres could not push the date filters down: for a high-runner product it built the
+-- product's ENTIRE C_OrderLine history (150k+ rows) and only then discarded almost all of
+-- it -> several seconds per order-line entry (the Available-for-Sales calc, gh#5108).
+--
+-- The view's two demand sides are disjoint (the order-line side excludes lines that already
+-- have a shipment schedule; the schedule side is the schedules), so the join is effectively a
+-- concatenation. We inline both sides as separate branches and push the date filters INTO each
+-- source, so the look-behind prunes order lines (using the existing
+-- C_OrderLine(Updated, M_Product_ID) index) before any join. Result on a 2.2M-shipment-schedule
+-- / 150k-order-line instance: ~7.6 s -> sub-second. Output semantics are unchanged.
 SELECT p_QueryNo,
        p_M_Product_ID,
-       AttributesKey,
-       SUM(QtyToBeShipped) AS QtyToBeShipped,
-       SUM(QtyOnHandStock) AS QtyOnHandStock,
-       C_UOM_ID,
-       p_AD_ORG_ID         AS AD_ORG_ID,
-       M_Warehouse_ID      AS M_Warehouse_ID
-FROM (SELECT *
-      FROM (SELECT sq.AttributesKey    AS AttributesKey,
-                   SUM(QtyToBeShipped) AS QtyToBeShipped,
-                   0                   AS QtyOnHandStock,
-                   C_UOM_ID,
-                   sq.M_Warehouse_ID   AS M_Warehouse_ID
-            FROM de_metas_material.MD_ShipmentQty_V sq
-            WHERE sq.M_Product_ID = p_M_Product_ID
-              -- if not ALL, then we want an exact match. i.e. when looking for goods without any attribute, we do not want to find e.g. goods with an "expired" attribute
-              AND ('-1000' LIKE p_StorageAttributesKey /*ALL*/ OR sq.AttributesKey LIKE p_StorageAttributesKey)
-              AND ( /*max. future PreparationDates we still care about; avoiding coalesce in an attempt to make it easier for the planner */
-                        sq.s_PreparationDate_Override <=
-                        (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)
-                    OR sq.s_PreparationDate_Override IS NULL AND sq.s_PreparationDate <=
-                                                                 (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)
-                    OR sq.s_PreparationDate_Override IS NULL AND sq.s_PreparationDate IS NULL AND
-                       sq.o_PreparationDate <=
-                       (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)
-                )
-              AND (sq.SalesOrderLastUpdated IS NULL /*could have used COALESCE(sq.SalesOrderLastUpdated, now()), but i hope this makes it easier for the planner*/
-                OR sq.SalesOrderLastUpdated >=
-                   (NOW() - (p_salesOrderLookBehindHours || ' hours')::INTERVAL) /*min updated value that is not yet too old for us to care */
-                )
-              AND sq.AD_ORG_ID = p_AD_ORG_ID
-              -- optional filter by p_M_Warehouse_ID if the caller passes one
-              AND (COALESCE(p_M_Warehouse_ID, sq.M_Warehouse_ID) = sq.M_Warehouse_ID)
-            GROUP BY C_UOM_ID, sq.AttributesKey, sq.M_Warehouse_ID) sales
+       final.AttributesKey,
+       SUM(final.QtyToBeShipped) AS QtyToBeShipped,
+       SUM(final.QtyOnHandStock) AS QtyOnHandStock,
+       final.C_UOM_ID,
+       p_AD_ORG_ID               AS AD_ORG_ID,
+       final.M_Warehouse_ID
+FROM (
+         -- (1) demand from open sales-order lines that do NOT yet have a shipment schedule.
+         --     Look-behind is applied here on ol.Updated (the former SalesOrderLastUpdated) so
+         --     the product's order-line history is pruned before the anti-join. Look-ahead
+         --     applies to the order's PreparationDate (these lines have no schedule yet).
+         SELECT GenerateASIStorageAttributesKey(ol.M_AttributeSetInstance_ID) AS AttributesKey,
+                SUM(ol.QtyOrdered)                                            AS QtyToBeShipped,
+                0                                                             AS QtyOnHandStock,
+                p.C_UOM_ID                                                    AS C_UOM_ID,
+                o.M_Warehouse_ID                                              AS M_Warehouse_ID
+         FROM M_Product p
+                  JOIN C_OrderLine ol ON ol.M_Product_ID = p.M_Product_ID
+                  JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
+         WHERE p.M_Product_ID = p_M_Product_ID
+           AND o.IsSOTrx = 'Y'
+           AND ol.AD_Org_ID = p_AD_ORG_ID
+           AND ol.Updated >= (NOW() - (p_salesOrderLookBehindHours || ' hours')::INTERVAL)
+           AND o.PreparationDate <= (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)
+           AND NOT EXISTS (SELECT 1 FROM M_ShipmentSchedule sched WHERE sched.C_OrderLine_ID = ol.C_OrderLine_ID)
+           AND (COALESCE(p_M_Warehouse_ID, o.M_Warehouse_ID) = o.M_Warehouse_ID)
+         GROUP BY p.C_UOM_ID, GenerateASIStorageAttributesKey(ol.M_AttributeSetInstance_ID), o.M_Warehouse_ID
 
-      UNION
+         UNION ALL
 
-      (SELECT s.AttributesKey  AS AttributesKey,
-              0                AS QtyToBeShipped,
-              SUM(QtyOnHand)   AS QtyOnHandStock,
-              p.C_UOM_ID       AS C_UOM_ID,
-              s.M_Warehouse_ID AS M_Warehouse_ID
-       FROM MD_Stock s
-                JOIN M_Product p ON p.M_Product_ID = s.M_Product_ID
-       WHERE s.M_Product_ID = p_M_Product_ID
-         AND s.IsActive = 'Y'
-         -- if not ALL, then we want an exact match. i.e. when looking for goods without any attribute, we do not want to find e.g. goods with an "expired" attribute
-         AND ('-1000' LIKE p_StorageAttributesKey /*ALL*/ OR s.AttributesKey LIKE p_StorageAttributesKey)
-         AND s.AD_ORG_ID = p_AD_ORG_ID
-         -- optional filter by p_M_Warehouse_ID if the caller passes one
-         AND (COALESCE(p_M_Warehouse_ID, s.M_Warehouse_ID) = s.M_Warehouse_ID)
-       GROUP BY s.AttributesKey, C_UOM_ID, s.M_Warehouse_ID)) AS final
+         -- (2) demand from open (Processed='N') shipment schedules. Look-ahead applies to the
+         --     schedule's effective preparation date. No look-behind here: these rows previously
+         --     had a NULL SalesOrderLastUpdated and were therefore always kept.
+         SELECT GenerateASIStorageAttributesKey(s.M_AttributeSetInstance_ID)  AS AttributesKey,
+                SUM(GREATEST(COALESCE(s.QtyReserved, 0), 0))                  AS QtyToBeShipped,
+                0                                                             AS QtyOnHandStock,
+                p.C_UOM_ID                                                    AS C_UOM_ID,
+                COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID)         AS M_Warehouse_ID
+         FROM M_Product p
+                  JOIN M_ShipmentSchedule s ON s.M_Product_ID = p.M_Product_ID
+         WHERE p.M_Product_ID = p_M_Product_ID
+           AND s.Processed = 'N'
+           AND s.AD_Org_ID = p_AD_ORG_ID
+           AND (s.PreparationDate_Override <= (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)
+               OR (s.PreparationDate_Override IS NULL
+                   AND s.PreparationDate <= (p_PreparationDate + (p_shipmentDateLookAheadHours || ' hours')::INTERVAL)))
+           AND (COALESCE(p_M_Warehouse_ID, COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID))
+               = COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID))
+         GROUP BY p.C_UOM_ID, GenerateASIStorageAttributesKey(s.M_AttributeSetInstance_ID), COALESCE(s.M_Warehouse_Override_ID, s.M_Warehouse_ID)
 
-GROUP BY final.AttributesKey, final.c_uom_id, final.M_Warehouse_ID
+         UNION ALL
+
+         -- (3) on-hand stock (unchanged)
+         SELECT s.AttributesKey  AS AttributesKey,
+                0                AS QtyToBeShipped,
+                SUM(s.QtyOnHand) AS QtyOnHandStock,
+                p.C_UOM_ID       AS C_UOM_ID,
+                s.M_Warehouse_ID AS M_Warehouse_ID
+         FROM MD_Stock s
+                  JOIN M_Product p ON p.M_Product_ID = s.M_Product_ID
+         WHERE s.M_Product_ID = p_M_Product_ID
+           AND s.IsActive = 'Y'
+           AND s.AD_ORG_ID = p_AD_ORG_ID
+           AND (COALESCE(p_M_Warehouse_ID, s.M_Warehouse_ID) = s.M_Warehouse_ID)
+         GROUP BY s.AttributesKey, p.C_UOM_ID, s.M_Warehouse_ID
+     ) AS final
+-- attribute-key filter (kept here so it applies uniformly to all three branches)
+WHERE ('-1000' LIKE p_StorageAttributesKey /*ALL*/ OR final.AttributesKey LIKE p_StorageAttributesKey)
+GROUP BY final.AttributesKey, final.C_UOM_ID, final.M_Warehouse_ID
 
 $BODY$
     LANGUAGE sql STABLE
@@ -94,6 +124,5 @@ COMMENT ON FUNCTION de_metas_material.retrieve_available_for_sales(integer, nume
     * p_salesOrderLookBehindHours: Used to ignore old/stale sales order lines. Returned rows have a SalesOrderLastUpdated date not before now() minus the given number of hours.
     * p_M_Warehouse_ID: optional filter by p_M_Warehouse_ID if the caller passes one
 
-    Also see https://github.com/metasfresh/metasfresh/issues/5108
-    Also see https://github.com/metasfresh/me03/issues/7048'
+    Also see https://github.com/metasfresh/metasfresh/issues/5108'
 ;

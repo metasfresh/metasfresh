@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FAST_ACTION_TIMEOUT, page } from '../common';
+import { FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, page } from '../common';
 import { expect } from '@playwright/test';
 
 const NAME = 'BarcodeScannerComponent';
@@ -12,6 +12,20 @@ export const BarcodeScannerComponent = {
         }
 
         await page.locator(selector).waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+    expectAttached: async ({ testId, timeout = SLOW_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect input element attached (${testId})`, async () => {
+        let selector = '#input-text';
+        if (testId) {
+            selector += `[data-testid="${testId}"]`;
+        }
+        await expect(page.locator(selector)).toBeAttached({ timeout });
+    }),
+    expectNotAttached: async ({ testId, timeout = FAST_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect input element NOT attached (${testId})`, async () => {
+        let selector = '#input-text';
+        if (testId) {
+            selector += `[data-testid="${testId}"]`;
+        }
+        await expect(page.locator(selector)).not.toBeAttached({ timeout });
     }),
     type: async (params) => await test.step(`${NAME} - Type scanned code`, async () => {
         let scannedCode;
@@ -123,5 +137,49 @@ export const BarcodeScannerComponent = {
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
+    }),
+
+    // Fills the visible editable input and presses Enter — exercises the manual-typing path
+    // (onChange debounce / onKeyUp Enter) in BarcodeScannerComponent. Only valid when
+    // barcodeScanner.showInputText=Y and barcodeScanner.isInputTextReadonly=N.
+    typeManually: async (barcode) => await test.step(`${NAME} - Type manually and press Enter`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        await page.locator('#input-text').fill(barcode);
+        await page.keyboard.press('Enter');
+    }),
+
+    // Asserts DOM attributes on #input-text. Pass null as value to assert the attribute is ABSENT.
+    // Example: expectAttributes({ type: 'text', inputmode: 'none', readonly: null })
+    expectAttributes: async (expectedAttrs) => await test.step(`${NAME} - Expect attributes: ${JSON.stringify(expectedAttrs)}`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        for (const [attr, expectedValue] of Object.entries(expectedAttrs)) {
+            if (expectedValue === null) {
+                await expect(page.locator('#input-text')).not.toHaveAttribute(attr);
+            } else {
+                await expect(page.locator('#input-text')).toHaveAttribute(attr, expectedValue);
+            }
+        }
+    }),
+
+    // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,
+    // then dispatches a keydown Ctrl+V on window — the useKeyboardBarcodeReader hook
+    // intercepts it and calls onReadDone(clipboardText).
+    pasteViaClipboard: async (barcode) => await test.step(`${NAME} - Paste via Ctrl+V`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        await page.evaluate((value) => {
+            Object.defineProperty(navigator, 'clipboard', {
+                value: { readText: () => Promise.resolve(value) },
+                configurable: true,
+            });
+        }, barcode);
+        await page.evaluate(() => {
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+        });
+    }),
+
+    expectCssClass: async ({ present, absent }) => await test.step(`${NAME} - Expect CSS class (present=${present}, absent=${absent})`, async () => {
+        await BarcodeScannerComponent.waitToAttach({});
+        if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(`(^|\\s)${present}(\\s|$)`));
+        if (absent) await expect(page.locator('#input-text')).not.toHaveClass(new RegExp(`(^|\\s)${absent}(\\s|$)`));
     }),
 }
