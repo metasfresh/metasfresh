@@ -28,14 +28,13 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
