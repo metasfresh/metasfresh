@@ -29,6 +29,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -115,8 +116,35 @@ public class MassPrintingService
 				continue;
 			}
 
-			final ProductResult result = processProductInTrx(request, luId, warehouseId, productId, unitsOnLUInt);
-			productResults.add(result);
+			// Pack+ship inside a transaction; label printing happens AFTER the transaction commits
+			// (best-effort: failures are counted but do not roll back the packed boxes).
+			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, warehouseId, productId, unitsOnLUInt);
+
+			int labelsPrinted = 0;
+			int labelPrintFailures = 0;
+			for (final HuId boxTuId : packAndPickResult.getBoxTuIds())
+			{
+				try
+				{
+					huService.printBoxLabel(boxTuId);
+					labelsPrinted++;
+				}
+				catch (final Exception e)
+				{
+					logger.warn("Failed to print box label for HU {}", boxTuId, e);
+					labelPrintFailures++;
+				}
+			}
+
+			productResults.add(ProductResult.builder()
+					.productId(productId)
+					.boxesPacked(packAndPickResult.getBoxesPacked())
+					.packedHUIds(packAndPickResult.getPackedHUIds())
+					.labelsPrinted(labelsPrinted)
+					.labelPrintFailures(labelPrintFailures)
+					.unitsLeftOnLU(packAndPickResult.getUnitsLeftOnLU())
+					.unitsOfOpenDemandRemaining(packAndPickResult.getOpenDemandRemaining())
+					.build());
 		}
 
 		return MassPrintingResult.builder()
@@ -126,7 +154,7 @@ public class MassPrintingService
 	}
 
 	@NonNull
-	private ProductResult processProductInTrx(
+	private PackAndPickResult processProductInTrx(
 			@NonNull final MassPrintingScanRequest request,
 			@NonNull final HuId luId,
 			@NonNull final WarehouseId warehouseId,
@@ -137,7 +165,7 @@ public class MassPrintingService
 	}
 
 	@NonNull
-	private ProductResult processProduct(
+	private PackAndPickResult processProduct(
 			@NonNull final MassPrintingScanRequest request,
 			@NonNull final HuId luId,
 			@NonNull final WarehouseId warehouseId,
@@ -187,13 +215,10 @@ public class MassPrintingService
 
 		if (selectedScheduleIds.isEmpty() || boxesToPack <= 0)
 		{
-			return ProductResult.builder()
-					.productId(productId)
+			return PackAndPickResult.builder()
 					.boxesPacked(0)
-					.labelsPrinted(0)
-					.labelPrintFailures(0)
 					.unitsLeftOnLU(unitsOnLUInt)
-					.unitsOfOpenDemandRemaining(totalDemand)
+					.openDemandRemaining(totalDemand)
 					.build();
 		}
 
@@ -249,21 +274,57 @@ public class MassPrintingService
 		}
 
 		final PickingJob pickedJob = pickingJobService.processStepEvents(pickingJob, pickEvents);
-		// Resolve the actual box HUs (descend any target LU): one HU per packed box.
-		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedJob.getAllPickedHuIds());
+
+		// Save the TU ids (for post-commit label printing) BEFORE completing the job.
+		// getAllPickedHuIds() returns the box TU HU ids — one TU per packed box.
+		final ImmutableSet<HuId> boxTuIds = pickedJob.getAllPickedHuIds();
+
+		// Resolve the actual box HUs (descend any target LU): one leaf-HU per packed box.
+		// Used for the box-shape assertion (qtyPerBoxHU); kept separate from boxTuIds which are TUs.
+		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(boxTuIds);
 		pickingJobService.complete(pickedJob);
 
 		final int unitsLeftOnLU = capacityRemaining;
 		final int openDemandRemaining = Math.max(0, totalDemand - boxesToPack);
 
-		return ProductResult.builder()
-				.productId(productId)
+		return PackAndPickResult.builder()
 				.boxesPacked(boxesToPack)
+				.boxTuIds(boxTuIds)
 				.packedHUIds(packedHUIds)
-				.labelsPrinted(0)
-				.labelPrintFailures(0)
 				.unitsLeftOnLU(unitsLeftOnLU)
-				.unitsOfOpenDemandRemaining(openDemandRemaining)
+				.openDemandRemaining(openDemandRemaining)
 				.build();
+	}
+
+	/**
+	 * Internal result of {@link #processProduct} holding both the box TU ids (for label printing after commit)
+	 * and the resolved leaf HU ids (for the box-shape assertion).
+	 */
+	@Value
+	@lombok.Builder
+	static class PackAndPickResult
+	{
+		/** Number of boxes packed (one per picked unit). */
+		int boxesPacked;
+
+		/**
+		 * Box TU ids produced by the pick — one TU per packed box, used for post-commit label printing.
+		 * May be empty when no boxes were packed.
+		 */
+		@lombok.Builder.Default
+		@NonNull ImmutableSet<HuId> boxTuIds = ImmutableSet.of();
+
+		/**
+		 * Leaf (VHU) HU ids inside each packed box — used for the per-box quantity assertion.
+		 * May be empty when no boxes were packed.
+		 */
+		@lombok.Builder.Default
+		@NonNull ImmutableSet<HuId> packedHUIds = ImmutableSet.of();
+
+		/** Units remaining on the LU after packing. */
+		int unitsLeftOnLU;
+
+		/** Units of open demand remaining after packing. */
+		int openDemandRemaining;
 	}
 }

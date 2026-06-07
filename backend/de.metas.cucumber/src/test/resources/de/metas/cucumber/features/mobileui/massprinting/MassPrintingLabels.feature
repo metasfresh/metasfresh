@@ -100,6 +100,13 @@ Feature: Mass Printing Labels (F00230.21)
       | M_HU_ID | HUStatus |
       | lu      | A        |
 
+    # ── HU label config: one TU label per box, Picking source-doc type ──
+    # SeqNo=10; process M_HU_Report_Print_Labels (prints HU labels from T_Selection).
+    # In cucumber the Jasper client is not available, so printing always fails — but the attempt is
+    # still made and counted in labelPrintFailures, proving one print call per packed box.
+    And metasfresh contains M_HU_Label_Config:
+      | HU_SourceDocType | LabelReport_Process_ID.Value | SeqNo | OPT.IsApplyToTUs |
+      | PI               | M_HU_Report_Print_Labels     | 10    | Y                |
 
   @from:cucumber
   @allure.label.epic:E0105_Picking
@@ -130,8 +137,8 @@ Feature: Mass Printing Labels (F00230.21)
       | LU |
       | lu |
     Then mass-printing result is
-      | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
-      | 3           | 0                 | 0                              |
+      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | 3           | 3                      | 0                 | 0                              |
     # Each packed unit produces its own leaf product-holding HU carrying exactly 1 unit
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
@@ -163,8 +170,8 @@ Feature: Mass Printing Labels (F00230.21)
       | LU |
       | lu |
     Then mass-printing result is
-      | boxesPacked | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
-      | 3           | 0                 | 1                              |
+      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | 3           | 3                      | 0                 | 1                              |
     # 3 box HUs: 2 for SO_A + 1 for SO_B; each holds exactly 1 unit
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
@@ -194,8 +201,8 @@ Feature: Mass Printing Labels (F00230.21)
       | LU |
       | lu |
     Then mass-printing result is
-      | boxesPacked | OPT.unitsLeftOnLU |
-      | 1           | 2                 |
+      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | 1           | 1                      | 2                 |
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
       | 1          | 1           |
@@ -232,8 +239,8 @@ Feature: Mass Printing Labels (F00230.21)
       | LU |
       | lu |
     Then mass-printing result is
-      | boxesPacked | OPT.unitsLeftOnLU |
-      | 1           | 2                 |
+      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | 1           | 1                      | 2                 |
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
       | 1          | 1           |
@@ -270,8 +277,8 @@ Feature: Mass Printing Labels (F00230.21)
       | LU |
       | lu |
     Then mass-printing result is
-      | boxesPacked | OPT.unitsLeftOnLU |
-      | 1           | 2                 |
+      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | 1           | 1                      | 2                 |
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
       | 1          | 1           |
@@ -330,8 +337,8 @@ Feature: Mass Printing Labels (F00230.21)
       | LU |
       | lu |
     Then mass-printing result is
-      | boxesPacked | OPT.unitsLeftOnLU |
-      | 2           | 1                 |
+      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | 2           | 2                      | 1                 |
 
     # customer (DO_NOT_CREATE): no M_InOut created for its order.
     And validate no M_InOut found for C_Order identified by SO_c1

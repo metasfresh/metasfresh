@@ -338,6 +338,33 @@ public class PickingJobHUService
 				.build());
 	}
 
+	/**
+	 * Prints one HU/shipping label for the given box HU (a TU produced by the mass-printing pick).
+	 *
+	 * <p>Uses source-doc-type {@link HULabelSourceDocType#Picking} and
+	 * {@code failOnMissingLabelConfig=true} so a missing label configuration is reported as a
+	 * clean {@link org.adempiere.exceptions.AdempiereException} that the caller can catch and count
+	 * as a label-print failure (per AC-10: best-effort, failure reported in the summary).
+	 *
+	 * <p>The print is scheduled via {@code ITrxManager.runAfterClose} inside
+	 * {@link HULabelService#print(HULabelPrintRequest)}; the physical job is enqueued after the
+	 * caller's transaction commits, so it does not participate in the pack+ship rollback boundary.
+	 *
+	 * @param boxTuId the HU id of the packed box TU to label (one call per box)
+	 * @throws org.adempiere.exceptions.AdempiereException if no matching {@code M_HU_Label_Config}
+	 *                                                      is found (captured by the caller for the
+	 *                                                      per-product result summary)
+	 */
+	public void printBoxLabel(@NonNull final HuId boxTuId)
+	{
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.huId(boxTuId)
+				.onlyIfAutoPrint(false)
+				.failOnMissingLabelConfig(true)
+				.build());
+	}
+
 	public HuId extractTopLevelCUIfNeeded(
 			@NonNull final HuId pickFromHUId,
 			@NonNull final ProductId productId,

@@ -84,7 +84,8 @@ public class MassPrinting_StepDef
 	 * </ul>
 	 * <p>Optional columns:
 	 * <ul>
-	 *   <li>{@code OPT.labelsPrinted} — expected labels printed (defaults to {@code boxesPacked} if omitted)</li>
+	 *   <li>{@code OPT.labelsPrinted} — expected labels successfully printed</li>
+	 *   <li>{@code OPT.labelPrintFailures} — expected label print failures</li>
 	 *   <li>{@code OPT.unitsLeftOnLU} — expected leftover units on LU</li>
 	 *   <li>{@code OPT.unitsOfOpenDemandRemaining} — expected remaining open demand</li>
 	 * </ul>
@@ -92,8 +93,8 @@ public class MassPrinting_StepDef
 	 * <p>Example:
 	 * <pre>
 	 * Then mass-printing result is
-	 *   | boxesPacked | OPT.labelsPrinted | OPT.unitsLeftOnLU |
-	 *   | 3           | 3                 | 0                 |
+	 *   | boxesPacked | OPT.labelsPrinted | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+	 *   | 3           | 0                 | 3                      | 0                 |
 	 * </pre>
 	 */
 	@Then("mass-printing result is")
@@ -162,10 +163,13 @@ public class MassPrinting_StepDef
 
 		assertThat(productResult.getBoxesPacked()).as("boxesPacked").isEqualTo(expectedBoxesPacked);
 
-		// labelsPrinted is asserted only when explicitly supplied (labels are wired in a later phase)
+		// labelsPrinted and labelPrintFailures are asserted only when explicitly supplied.
 		row.getAsOptionalInt("labelsPrinted")
 				.ifPresent(expectedLabelsPrinted -> assertThat(productResult.getLabelsPrinted())
 						.as("labelsPrinted").isEqualTo(expectedLabelsPrinted));
+		row.getAsOptionalInt("labelPrintFailures")
+				.ifPresent(expectedLabelPrintFailures -> assertThat(productResult.getLabelPrintFailures())
+						.as("labelPrintFailures").isEqualTo(expectedLabelPrintFailures));
 
 		if (expectedUnitsLeftOnLU >= 0)
 		{
