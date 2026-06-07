@@ -106,6 +106,7 @@ public class MobileUIPickingUserProfileRepository
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
 				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
+				.isMassPrinting(profileRecord.isMassPrinting())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -327,6 +328,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsActiveWorkplaceRequired(from.isActiveWorkplaceRequired());
 		record.setIsConsideredOnlyScheduledJobs(from.isConsiderOnlyJobScheduledToWorkplace());
 		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
+		record.setIsMassPrinting(from.isMassPrinting());
 		updateRecord(record, from.getDefaultPickingJobOptions());
 	}
 

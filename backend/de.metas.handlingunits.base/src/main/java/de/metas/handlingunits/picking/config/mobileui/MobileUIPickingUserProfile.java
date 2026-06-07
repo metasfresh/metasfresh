@@ -65,6 +65,7 @@ public class MobileUIPickingUserProfile
 	boolean isActiveWorkplaceRequired;
 	boolean isConsiderOnlyJobScheduledToWorkplace;
 	boolean isAllowQuickPackAll;
+	boolean isMassPrinting;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
@@ -81,6 +82,7 @@ public class MobileUIPickingUserProfile
 			final boolean isActiveWorkplaceRequired,
 			final boolean isConsiderOnlyJobScheduledToWorkplace,
 			final boolean isAllowQuickPackAll,
+			final boolean isMassPrinting,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
@@ -92,6 +94,7 @@ public class MobileUIPickingUserProfile
 		this.isActiveWorkplaceRequired = isActiveWorkplaceRequired;
 		this.isConsiderOnlyJobScheduledToWorkplace = isConsiderOnlyJobScheduledToWorkplace;
 		this.isAllowQuickPackAll = isAllowQuickPackAll;
+		this.isMassPrinting = isMassPrinting;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
