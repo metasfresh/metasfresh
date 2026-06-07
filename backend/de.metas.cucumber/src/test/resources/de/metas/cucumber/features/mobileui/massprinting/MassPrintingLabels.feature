@@ -21,8 +21,18 @@ Feature: Mass Printing Labels (F00230.21)
       | IsAllowPickingAnyHU | IsMassPrinting | CreateShipmentPolicy |
       | Y                   | Y              | DO_NOT_CREATE        |
 
-    # ── Workplace with a picking slot, assigned to the picker (mirrors the operator being logged in
-    #    at a Mass-Printing workplace; the programmatic PRODUCT job auto-allocates this slot) ──
+    # ── Dedicated mass-printing picker user ──
+    # The workplace + picking-slot assignment is bound to this user, NOT the shared 'metasfresh'
+    # picker. The cucumber executor commits data and runs all features sequentially in one JVM, so a
+    # C_Workplace_User_Assign on the shared 'metasfresh' user would leak into later scenarios (e.g.
+    # picking workflows) and resolve a no-longer-valid workplace. Isolating it on this dedicated user
+    # keeps the leak contained to this feature's own picker.
+    And metasfresh contains AD_Users:
+      | Identifier         | Name               | OPT.Login          |
+      | massPrintingPicker | massPrintingPicker | massPrintingPicker |
+
+    # ── Workplace with a picking slot, assigned to the dedicated picker (mirrors the operator being
+    #    logged in at a Mass-Printing workplace; the programmatic PRODUCT job auto-allocates this slot) ──
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
       | warehouse      | StdWarehouse |
@@ -33,8 +43,8 @@ Feature: Mass Printing Labels (F00230.21)
       | Identifier | M_Warehouse_ID | M_PickingSlot_ID |
       | workplace  | warehouse      | pickingSlot      |
     And assign C_Workplace to user
-      | C_Workplace_ID | AD_User_ID.Login |
-      | workplace      | metasfresh       |
+      | C_Workplace_ID | AD_User_ID.Login   |
+      | workplace      | massPrintingPicker |
 
     # ── Packing instructions: a self-packed product box PI (1 CU per TU = 1 unit = 1 box) ──
     And metasfresh contains M_HU_PI:
@@ -102,8 +112,9 @@ Feature: Mass Printing Labels (F00230.21)
 
     # ── HU label config: one TU label per box, Picking source-doc type ──
     # SeqNo=10; process M_HU_Report_Print_Labels (prints HU labels from T_Selection).
-    # In cucumber the Jasper client is not available, so printing always fails — but the attempt is
-    # still made and counted in labelPrintFailures, proving one print call per packed box.
+    # One print call is issued per packed box. Whether the render succeeds depends on the environment
+    # (Jasper is available in CI but not in a local run), so scenarios assert labelPrintAttempts
+    # (= labelsPrinted + labelPrintFailures), which equals the box count in every environment.
     And metasfresh contains M_HU_Label_Config:
       | HU_SourceDocType | LabelReport_Process_ID.Value | SeqNo | OPT.IsApplyToTUs |
       | PI               | M_HU_Report_Print_Labels     | 10    | Y                |
@@ -134,10 +145,10 @@ Feature: Mass Printing Labels (F00230.21)
 
     # Invoke mass-printing — LU has 3 units, 3 single-unit orders → 3 boxes packed, nothing leftover
     When mass-printing scans LU
-      | LU |
-      | lu |
+      | LU | Picker             |
+      | lu | massPrintingPicker |
     Then mass-printing result is
-      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
       | 3           | 3                      | 0                 | 0                              |
     # Each packed unit produces its own leaf product-holding HU carrying exactly 1 unit
     And mass-printing produced box HUs
@@ -167,10 +178,10 @@ Feature: Mass Printing Labels (F00230.21)
 
     # LU has 3 units; SO_A needs 2 (fully filled), SO_B needs 2 but only 1 unit remains (partially filled).
     When mass-printing scans LU
-      | LU |
-      | lu |
+      | LU | Picker             |
+      | lu | massPrintingPicker |
     Then mass-printing result is
-      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU | OPT.unitsOfOpenDemandRemaining |
       | 3           | 3                      | 0                 | 1                              |
     # 3 box HUs: 2 for SO_A + 1 for SO_B; each holds exactly 1 unit
     And mass-printing produced box HUs
@@ -198,10 +209,10 @@ Feature: Mass Printing Labels (F00230.21)
       | SS         | OL                        | N             |
 
     When mass-printing scans LU
-      | LU |
-      | lu |
+      | LU | Picker             |
+      | lu | massPrintingPicker |
     Then mass-printing result is
-      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU |
       | 1           | 1                      | 2                 |
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
@@ -236,10 +247,10 @@ Feature: Mass Printing Labels (F00230.21)
       | SS         | OL                        | N             |
 
     When mass-printing scans LU
-      | LU |
-      | lu |
+      | LU | Picker             |
+      | lu | massPrintingPicker |
     Then mass-printing result is
-      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU |
       | 1           | 1                      | 2                 |
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
@@ -274,10 +285,10 @@ Feature: Mass Printing Labels (F00230.21)
       | SS         | OL                        | N             |
 
     When mass-printing scans LU
-      | LU |
-      | lu |
+      | LU | Picker             |
+      | lu | massPrintingPicker |
     Then mass-printing result is
-      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU |
       | 1           | 1                      | 2                 |
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
@@ -334,10 +345,10 @@ Feature: Mass Printing Labels (F00230.21)
 
     # Scan: 2 units packed (1 per customer), 1 unit leftover on LU.
     When mass-printing scans LU
-      | LU |
-      | lu |
+      | LU | Picker             |
+      | lu | massPrintingPicker |
     Then mass-printing result is
-      | boxesPacked | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
+      | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU |
       | 2           | 2                      | 1                 |
 
     # customer (DO_NOT_CREATE): no M_InOut created for its order.

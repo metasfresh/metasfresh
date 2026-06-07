@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.mobileui.massprinting;
 
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
@@ -40,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MassPrinting_StepDef
 {
 	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final AD_User_StepDefData userTable;
 
 	@NonNull private final MassPrintingService massPrintingService = SpringContextHolder.instance.getBean(MassPrintingService.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -49,18 +51,25 @@ public class MassPrinting_StepDef
 	private MassPrintingResult lastResult;
 
 	/**
-	 * Invokes the mass-printing scan for an LU.
+	 * Invokes the mass-printing scan for an LU, executed as a given picker user.
+	 *
+	 * <p>The picker must have a workplace (and picking slot) assigned via {@code assign C_Workplace to
+	 * user}, since the PRODUCT picking job auto-allocates the picker's slot. Tests use a dedicated
+	 * picker user (rather than the shared {@code metasfresh} user) so the committed
+	 * {@code C_Workplace_User_Assign} does not leak into later scenarios running in the same JVM.
 	 *
 	 * <p>Required columns:
 	 * <ul>
 	 *   <li>{@code LU} — identifier of the LU to scan</li>
+	 *   <li>{@code Picker} — identifier of the picker {@code AD_User} (created via {@code metasfresh
+	 *       contains AD_Users:}) the scan runs as</li>
 	 * </ul>
 	 *
 	 * <p>Example:
 	 * <pre>
 	 * When mass-printing scans LU
-	 *   | LU  |
-	 *   | lu1 |
+	 *   | LU  | Picker             |
+	 *   | lu1 | massPrintingPicker |
 	 * </pre>
 	 */
 	@When("mass-printing scans LU")
@@ -68,11 +77,12 @@ public class MassPrinting_StepDef
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 		final HuId luId = huTable.getId(row.getAsIdentifier("LU"));
+		final UserId pickerId = userTable.getId(row.getAsIdentifier("Picker"));
 
 		lastResult = massPrintingService.scan(
 				MassPrintingScanRequest.builder()
 						.luId(luId)
-						.pickerId(UserId.METASFRESH)
+						.pickerId(pickerId)
 						.build());
 	}
 
@@ -85,8 +95,15 @@ public class MassPrinting_StepDef
 	 * </ul>
 	 * <p>Optional columns:
 	 * <ul>
-	 *   <li>{@code OPT.labelsPrinted} — expected labels successfully printed</li>
-	 *   <li>{@code OPT.labelPrintFailures} — expected label print failures</li>
+	 *   <li>{@code OPT.labelPrintAttempts} — expected number of label print attempts, i.e.
+	 *       {@code labelsPrinted + labelPrintFailures}. One print call is issued per packed box
+	 *       regardless of whether rendering succeeds (CI, where Jasper is available) or fails (local,
+	 *       where it is not), so this is the environment-robust label assertion — it stays correct
+	 *       whether the labels actually render or not.</li>
+	 *   <li>{@code OPT.labelsPrinted} — expected labels successfully printed (environment-dependent:
+	 *       0 locally where Jasper is unavailable; use {@code labelPrintAttempts} for robustness)</li>
+	 *   <li>{@code OPT.labelPrintFailures} — expected label print failures (environment-dependent;
+	 *       use {@code labelPrintAttempts} for robustness)</li>
 	 *   <li>{@code OPT.unitsLeftOnLU} — expected leftover units on LU</li>
 	 *   <li>{@code OPT.unitsOfOpenDemandRemaining} — expected remaining open demand</li>
 	 * </ul>
@@ -94,8 +111,8 @@ public class MassPrinting_StepDef
 	 * <p>Example:
 	 * <pre>
 	 * Then mass-printing result is
-	 *   | boxesPacked | OPT.labelsPrinted | OPT.labelPrintFailures | OPT.unitsLeftOnLU |
-	 *   | 3           | 0                 | 3                      | 0                 |
+	 *   | boxesPacked | OPT.labelPrintAttempts | OPT.unitsLeftOnLU |
+	 *   | 3           | 3                      | 0                 |
 	 * </pre>
 	 */
 	@Then("mass-printing result is")
@@ -166,7 +183,14 @@ public class MassPrinting_StepDef
 
 		assertThat(productResult.getBoxesPacked()).as("boxesPacked").isEqualTo(expectedBoxesPacked);
 
-		// labelsPrinted and labelPrintFailures are asserted only when explicitly supplied.
+		// labelPrintAttempts is the environment-robust assertion: exactly one print call is issued per
+		// packed box, whether the render succeeds (Jasper available in CI) or fails (not available
+		// locally). Assert the total attempts (printed + failures) rather than either side alone.
+		row.getAsOptionalInt("labelPrintAttempts")
+				.ifPresent(expectedLabelPrintAttempts -> assertThat(productResult.getLabelsPrinted() + productResult.getLabelPrintFailures())
+						.as("labelPrintAttempts (labelsPrinted + labelPrintFailures)").isEqualTo(expectedLabelPrintAttempts));
+
+		// labelsPrinted and labelPrintFailures are environment-dependent; asserted only when explicitly supplied.
 		row.getAsOptionalInt("labelsPrinted")
 				.ifPresent(expectedLabelsPrinted -> assertThat(productResult.getLabelsPrinted())
 						.as("labelsPrinted").isEqualTo(expectedLabelsPrinted));
