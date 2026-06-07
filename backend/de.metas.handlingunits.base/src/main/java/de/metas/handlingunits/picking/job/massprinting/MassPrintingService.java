@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
@@ -78,24 +79,20 @@ public class MassPrintingService
 	{
 		final HuId luId = request.getLuId();
 
-		// Enumerate products on the LU
 		final List<IHUProductStorage> productStorages = huService.getProductStorages(luId);
 		if (productStorages.isEmpty())
 		{
 			return MassPrintingResult.builder().build();
 		}
 
-		// Resolve product master data to check IsSelfPacked
 		final ImmutableSet<ProductId> productIds = productStorages.stream()
 				.map(IHUProductStorage::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 		final Map<ProductId, Product> productsById = productService.getByIdsAsMap(productIds);
 
-		// Determine warehouse from scanned LU
 		final LocatorId locatorId = huService.getLocatorId(luId);
 		final WarehouseId warehouseId = locatorId.getWarehouseId();
 
-		// Per-product results
 		final ImmutableList.Builder<ProductResult> productResults = ImmutableList.builder();
 		final ImmutableList.Builder<ProductId> skippedNonSelfPacked = ImmutableList.builder();
 
@@ -213,7 +210,6 @@ public class MassPrintingService
 			logger.warn("IsSelfPacked product {} has no 1-CU-per-TU PI configured; one-box-per-unit cannot be enforced", productId);
 		}
 
-		// Create PRODUCT picking job restricted to selected schedules
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedScheduleIds);
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
@@ -223,7 +219,6 @@ public class MassPrintingService
 						.scheduleIds(scheduleIdSet)
 						.build());
 
-		// Obtain scanned LU's QR code to use as pick-from reference
 		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
 
 		// Pick each line from the scanned LU using the capped qty determined above.
@@ -233,22 +228,17 @@ public class MassPrintingService
 		final List<PickingJobStepEvent> pickEvents = new ArrayList<>();
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
-			// Resolve the shipment schedule this line was created for; fall back to full line qty
-			// when the mapping is absent (should not happen for PRODUCT-aggregation jobs).
 			final ShipmentScheduleId ssId = line.getScheduleId().getShipmentScheduleId();
-			final int cappedQty = ssId != null ? selectedScheduleQtys.getOrDefault(ssId, 0) : 0;
-			final BigDecimal qtyToPick;
-			if (cappedQty > 0)
+			final Integer cappedQtyInt = selectedScheduleQtys.get(ssId);
+			if (cappedQtyInt == null)
 			{
-				qtyToPick = BigDecimal.valueOf(cappedQty);
+				// Should not happen: every line in a PRODUCT-aggregation job was created from selectedScheduleIds.
+				throw new AdempiereException("Picking job line has no capped-qty entry in FIFO selection map")
+						.appendParametersToMessage()
+						.setParameter("lineId", line.getId())
+						.setParameter("ssId", ssId);
 			}
-			else
-			{
-				// Fallback: use line's own qty (should not occur in normal flow)
-				qtyToPick = line.getPickingUnit().isTU()
-						? line.getQtyToPickTUs().toBigDecimal()
-						: line.getQtyToPick().toBigDecimal();
-			}
+			final BigDecimal qtyToPick = BigDecimal.valueOf(cappedQtyInt);
 			pickEvents.add(PickingJobStepEvent.builder()
 					.pickingLineId(line.getId())
 					.eventType(PickingJobStepEventType.PICK)
@@ -266,7 +256,6 @@ public class MassPrintingService
 		final int unitsLeftOnLU = capacityRemaining;
 		final int openDemandRemaining = Math.max(0, totalDemand - boxesToPack);
 
-		// Labels printed after commit (best-effort) — done outside this trx block
 		return ProductResult.builder()
 				.productId(productId)
 				.boxesPacked(boxesToPack)

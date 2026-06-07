@@ -126,7 +126,6 @@ public class PickingJobHUService
 
 	/**
 	 * Returns all non-empty product storages on the given HU (e.g. an LU).
-	 * Used by mass-printing to enumerate which self-packed products are on the scanned LU.
 	 */
 	@NonNull
 	public List<IHUProductStorage> getProductStorages(@NonNull final HuId huId)
