@@ -52,6 +52,17 @@ public class PaymentTermService
 		return paymentTermRepository.getById(paymentTermId);
 	}
 
+	/**
+	 * Loads the payment term together with its breaks fresh from the committed DB state, in the current
+	 * (thread-inherited) transaction, bypassing the process-wide cache. Use this where a complete,
+	 * consistent break set is required (e.g. pay-schedule creation). See me03 #30080.
+	 */
+	@NonNull
+	public PaymentTerm getByIdInTrx(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.getByIdInTrx(paymentTermId);
+	}
+
 	@Nullable
 	public PaymentTermId getOrCreateDerivedPaymentTerm(@Nullable final PaymentTermId basePaymentTermId, @Nullable final Percent discount)
 	{

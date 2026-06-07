@@ -44,6 +44,15 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	PaymentTerm getById(PaymentTermId paymentTermId);
 
+	/**
+	 * Loads the payment term together with its breaks fresh from the committed DB state, in the current
+	 * (thread-inherited) transaction, bypassing the process-wide cache. Use this where a complete,
+	 * consistent break set is required (e.g. pay-schedule creation) and a possibly-stale/partial cached
+	 * snapshot would silently produce wrong amounts. See me03 #30080.
+	 */
+	@NonNull
+	PaymentTerm getByIdInTrx(@NonNull PaymentTermId paymentTermId);
+
 	@NonNull
 	Optional<PaymentTermId> firstIdOnly(@NonNull PaymentTermQuery build);
 
