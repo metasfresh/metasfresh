@@ -87,8 +87,8 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public @NonNull PaymentTerm getByIdInTrx(@NonNull final PaymentTermId paymentTermId)
 	{
-		// Bypass the process-wide CCache and load the term + its breaks fresh from the committed DB state,
-		// in the current (thread-inherited) transaction. The shared cache holds a single all-or-nothing
+		// Bypass the process-wide CCache and load the term + its breaks fresh from the DB using the current
+		// (thread-inherited) transaction/connection. The shared cache holds a single all-or-nothing
 		// snapshot of every term that can become stale/partial under concurrency: a reader populating it
 		// during the window between two break INSERTs can cache a term with only some of its breaks, and
 		// that snapshot can survive the cache reset. Callers that depend on a complete, consistent break
