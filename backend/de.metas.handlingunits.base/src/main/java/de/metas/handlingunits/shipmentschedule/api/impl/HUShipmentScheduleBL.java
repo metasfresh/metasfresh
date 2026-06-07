@@ -968,11 +968,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Guard: if the picked qty does not equal the total qty across all VHU storages, this QtyPicked covers
 		// only part of the TU and another QtyPicked record covers the rest — fall back to a single
 		// default candidate so each QtyPicked is not independently inflated by the full group sums.
-		// BigDecimal arithmetic is safe here: UOM consistency is guaranteed (same product → same stocking UOM).
-		final BigDecimal totalVHUQtyBD = storagesByFingerprint.values().stream()
-				.map(productStorage -> productStorage.getQty().getAsBigDecimal())
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		if (totalVHUQtyBD.compareTo(pickedQtyBD) != 0)
+		final boolean totalVHUQtyEqualsPickedQty = storagesByFingerprint.values().stream()
+				.map(IHUProductStorage::getQty)
+				.reduce(Quantity::add)
+				.filter(total -> total.qtyAndUomCompareToEquals(Quantity.of(pickedQtyBD, total.getUOM())))
+				.isPresent();
+		if (!totalVHUQtyEqualsPickedQty)
 		{
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
