@@ -10,6 +10,7 @@ import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult.ProductResult;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingScanRequest;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingService;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -27,7 +28,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions for the mass-printing flow (https://github.com/metasfresh/me03/issues/29942).
+ * Step definitions for the mass-printing scan flow.
  *
  * <p>Lifecycle:
  * <ul>
@@ -105,7 +106,7 @@ public class MassPrinting_StepDef
 	}
 
 	/**
-	 * Asserts the box-HU shape produced by the scan (Task 2.4 — one HU per box). For the first product
+	 * Asserts the box-HU shape produced by the scan — one packed HU per box. For the first product
 	 * result it verifies the produced box-HU count equals the expected value and that each box HU is a
 	 * transport unit holding exactly the expected per-box quantity.
 	 *
@@ -144,7 +145,9 @@ public class MassPrinting_StepDef
 		for (final HuId huId : productResult.getPackedHUIds())
 		{
 			final I_M_HU hu = handlingUnitsBL.getById(huId);
-			final BigDecimal qty = storageFactory.getStorage(hu).getProductStorageOrNull(productId).getQtyInStockingUOM().toBigDecimal();
+			final IHUProductStorage productStorage = storageFactory.getStorage(hu).getProductStorageOrNull(productId);
+			assertThat(productStorage).as("product storage in box HU %s for product %s", huId, productId).isNotNull();
+			final BigDecimal qty = productStorage.getQtyInStockingUOM().toBigDecimal();
 			assertThat(qty).as("storage qty in box HU %s", huId).isEqualByComparingTo(expectedQtyPerBoxHU);
 		}
 	}

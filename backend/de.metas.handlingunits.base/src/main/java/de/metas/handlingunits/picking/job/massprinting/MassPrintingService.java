@@ -109,7 +109,9 @@ public class MassPrintingService
 			}
 
 			final Quantity unitsOnLU = productStorage.getQty();
-			final int unitsOnLUInt = unitsOnLU.toBigDecimal().intValue();
+			// intValueExact: a self-packed product is whole-unit; a fractional qty would be a data error
+			// we must surface (ArithmeticException), not silently truncate (which would drop part of a box).
+			final int unitsOnLUInt = unitsOnLU.toBigDecimal().intValueExact();
 			if (unitsOnLUInt <= 0)
 			{
 				logger.debug("No units on LU for product: {}", productId);
@@ -190,7 +192,7 @@ public class MassPrintingService
 
 		for (final Packageable packageable : (Iterable<Packageable>) shipmentScheduleService.stream(query)::iterator)
 		{
-			final int scheduleDemand = packageable.getQtyToPick().toBigDecimal().intValue();
+			final int scheduleDemand = packageable.getQtyToPick().toBigDecimal().intValueExact();
 			if (scheduleDemand <= 0)
 			{
 				continue;

@@ -344,11 +344,11 @@ public class PickingJobHUService
 	 * <p>Uses source-doc-type {@link HULabelSourceDocType#Picking} and
 	 * {@code failOnMissingLabelConfig=true} so a missing label configuration is reported as a
 	 * clean {@link org.adempiere.exceptions.AdempiereException} that the caller can catch and count
-	 * as a label-print failure (per AC-10: best-effort, failure reported in the summary).
+	 * as a label-print failure — best-effort: the caller counts it but does not roll back the packed boxes.
 	 *
-	 * <p>The print is scheduled via {@code ITrxManager.runAfterClose} inside
-	 * {@link HULabelService#print(HULabelPrintRequest)}; the physical job is enqueued after the
-	 * caller's transaction commits, so it does not participate in the pack+ship rollback boundary.
+	 * <p>The print is scheduled via {@code ITrxManager.runAfterClose} (inside {@link HULabelService#print}'s
+	 * delegate command); the physical job is enqueued after the caller's transaction commits, so it does
+	 * not participate in the pack+ship rollback boundary.
 	 *
 	 * @param boxTuId the HU id of the packed box TU to label (one call per box)
 	 * @throws org.adempiere.exceptions.AdempiereException if no matching {@code M_HU_Label_Config}
