@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.With;
 
 /**
  * Per-scan result summary returned after a mass-printing scan.
@@ -36,10 +35,10 @@ public class MassPrintingResult
 		@NonNull @Singular ImmutableSet<HuId> packedHUIds;
 
 		/** Number of labels printed successfully. */
-		@With int labelsPrinted;
+		int labelsPrinted;
 
 		/** Number of label print failures (labels not printed). */
-		@With int labelPrintFailures;
+		int labelPrintFailures;
 
 		/** Units remaining on the LU after packing (leftover). */
 		int unitsLeftOnLU;
