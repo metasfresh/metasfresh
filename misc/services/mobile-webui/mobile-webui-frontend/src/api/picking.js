@@ -179,3 +179,9 @@ export const completePickingJob = ({ wfProcessId }) => {
     .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const postMassPrintingScan = ({ scannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/picking/massPrinting/scan`, { scannedCode })
+    .then((response) => unboxAxiosResponse(response));
+};
