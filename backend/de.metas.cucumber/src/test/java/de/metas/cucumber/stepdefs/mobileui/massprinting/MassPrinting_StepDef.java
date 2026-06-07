@@ -17,6 +17,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.picking.rest_api.PickingRestController;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingProductResult;
 import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingResult;
 import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingScanRequest;
 import de.metas.product.ProductId;
@@ -168,8 +169,7 @@ public class MassPrinting_StepDef
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		assertThat(lastJsonResult.getProductResults()).as("productResults").isNotEmpty();
-		final de.metas.picking.rest_api.json.massprinting.JsonMassPrintingProductResult productResult
-				= lastJsonResult.getProductResults().get(0);
+		final JsonMassPrintingProductResult productResult = lastJsonResult.getProductResults().get(0);
 
 		final int expectedBoxesPacked = row.getAsInt("boxesPacked");
 		assertThat(productResult.getBoxesPacked()).as("boxesPacked").isEqualTo(expectedBoxesPacked);

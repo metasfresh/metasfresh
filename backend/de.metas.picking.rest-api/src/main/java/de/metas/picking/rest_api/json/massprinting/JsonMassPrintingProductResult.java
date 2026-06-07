@@ -36,8 +36,15 @@ public class JsonMassPrintingProductResult
 	int unitsOfOpenDemandRemaining;
 
 	/**
-	 * Convenience field: total label print attempts ({@code labelsPrinted + labelPrintFailures}).
-	 * Equals {@code boxesPacked} in all environments (regardless of whether Jasper is available).
+	 * Builds a result entry from the individual per-product values.
+	 *
+	 * @param productId                  numeric product id (M_Product_ID)
+	 * @param boxesPacked                number of boxes packed (one box = one picked unit)
+	 * @param labelsPrinted              number of HU labels printed successfully
+	 * @param labelPrintFailures         number of label print failures
+	 * @param unitsLeftOnLU              units remaining on the LU after packing
+	 * @param unitsOfOpenDemandRemaining units of open demand that could not be fulfilled
+	 * @return the JSON per-product result entry
 	 */
 	@NonNull
 	public static JsonMassPrintingProductResult of(
