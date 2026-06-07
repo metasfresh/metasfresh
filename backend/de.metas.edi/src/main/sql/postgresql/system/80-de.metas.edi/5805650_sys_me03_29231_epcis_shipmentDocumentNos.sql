@@ -1,3 +1,12 @@
+-- EPCIS export: add shipmentDocumentNos[] (delivery-note numbers)
+--
+-- get_epcis_events_json_fn now also emits shipmentDocumentNos[] = DISTINCT M_InOut.DocumentNo of the
+-- DESADV messages on this SSCC (via the edi_desadv_m_inout junction). This is the value the receiver's
+-- EPCIS desadv bizTransaction must carry — the delivery-note number ("Lieferschein") — NOT
+-- EDI_Desadv.DocumentNo (which is 1:1 per ORDER and not unique across a partial delivery). Cardinality
+-- falls out naturally: 2 orders on one M_InOut → one delivery note; 2 M_InOuts sharing one SSCC → two.
+-- desadvReferences[]/poReferences[] are unchanged.
+
 /*
  * #%L
  * de.metas.edi
