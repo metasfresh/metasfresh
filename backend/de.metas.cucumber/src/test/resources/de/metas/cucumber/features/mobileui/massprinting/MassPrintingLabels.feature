@@ -426,7 +426,7 @@ Feature: Mass Printing Labels (F00230.21)
     And mass-printing produced box HUs
       | boxHUCount | qtyPerBoxHU |
       | 1          | 1           |
-    Then mass-printing skipped non-self-packed products:
+    And mass-printing skipped non-self-packed products:
       | skippedProduct   |
       | nonSelfPackedPrd |
 
@@ -436,7 +436,7 @@ Feature: Mass Printing Labels (F00230.21)
   Scenario: LU holds only a non-self-packed product — nothing packed, product reported as skipped
     # The scanned LU holds only a product with IsSelfPacked=N.
     # The result must have no packed boxes and must list the product as skipped,
-    # providing the informative feedback mandated by AC-3.
+    # providing informative feedback to the operator (non-self-packed → skipped).
 
     # ── Non-self-packed product ──
     And metasfresh contains M_Products:
