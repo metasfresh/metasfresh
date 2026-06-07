@@ -49,7 +49,8 @@ class MobileConfigPickingCommand
 					.isFilterByBarcode(request.getFilterByQRCode() != null && request.getFilterByQRCode())
 					.isActiveWorkplaceRequired(request.getActiveWorkplaceRequired() != null ? request.getActiveWorkplaceRequired() : false)
 					.isConsiderOnlyJobScheduledToWorkplace(request.getConsiderOnlyJobScheduledToWorkplace() != null ? request.getConsiderOnlyJobScheduledToWorkplace() : false)
-					.isAllowQuickPackAll(request.getAllowQuickPackAll() != null ? request.getAllowQuickPackAll() : false);
+					.isAllowQuickPackAll(request.getAllowQuickPackAll() != null ? request.getAllowQuickPackAll() : false)
+					.isMassPrinting(request.getMassPrinting() != null ? request.getMassPrinting() : false);
 
 			if (request.getAllowPickingAnyCustomer() != null)
 			{
@@ -97,6 +98,7 @@ class MobileConfigPickingCommand
 				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
 				.activeWorkplaceRequired(profile.isActiveWorkplaceRequired())
 				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())
+				.massPrinting(profile.isMassPrinting())
 				.filters(profile.getFilterGroupsInOrder())
 				.build();
 	}
