@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions for the mass-printing flow (me03 #29942).
+ * Step definitions for the mass-printing flow (https://github.com/metasfresh/me03/issues/29942).
  *
  * <p>Lifecycle:
  * <ul>
@@ -69,16 +69,15 @@ public class MassPrinting_StepDef
 	}
 
 	/**
-	 * Asserts boxes packed and labels printed per product.
+	 * Asserts boxes packed and labels printed for the first product result.
 	 *
 	 * <p>Required columns:
 	 * <ul>
-	 *   <li>{@code M_Product_ID} — identifier of the product</li>
 	 *   <li>{@code boxesPacked} — expected number of boxes</li>
 	 * </ul>
 	 * <p>Optional columns:
 	 * <ul>
-	 *   <li>{@code OPT.labelsPrinted} — expected labels printed (defaults to boxesPacked if omitted)</li>
+	 *   <li>{@code OPT.labelsPrinted} — expected labels printed (defaults to {@code boxesPacked} if omitted)</li>
 	 *   <li>{@code OPT.unitsLeftOnLU} — expected leftover units on LU</li>
 	 *   <li>{@code OPT.unitsOfOpenDemandRemaining} — expected remaining open demand</li>
 	 * </ul>
@@ -86,8 +85,8 @@ public class MassPrinting_StepDef
 	 * <p>Example:
 	 * <pre>
 	 * Then mass-printing result is
-	 *   | M_Product_ID | boxesPacked | OPT.labelsPrinted | OPT.unitsLeftOnLU |
-	 *   | product      | 3           | 3                 | 0                 |
+	 *   | boxesPacked | OPT.labelsPrinted | OPT.unitsLeftOnLU |
+	 *   | 3           | 3                 | 0                 |
 	 * </pre>
 	 */
 	@Then("mass-printing result is")

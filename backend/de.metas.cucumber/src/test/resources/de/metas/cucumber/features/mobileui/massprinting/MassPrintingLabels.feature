@@ -2,7 +2,7 @@
 @allure.label.epic:E0105_Picking
 @allure.label.feature:F00230_MobileUI_Picking
 @ghActions:run_on_executor7
-Feature: Mass Printing Labels — me03 #29942 (F00230.21)
+Feature: Mass Printing Labels — https://github.com/metasfresh/me03/issues/29942 (F00230.21)
   As a warehouse operator in mass-printing mode
   I want to scan an LU and have the system automatically pack all self-packed products
   So that I get one box and one label per unit without manual order-by-order picking

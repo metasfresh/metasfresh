@@ -22,6 +22,7 @@ import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -30,13 +31,13 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Orchestration service for the mass-printing flow:
@@ -154,8 +155,8 @@ public class MassPrintingService
 				.build();
 
 		final List<ShipmentScheduleId> selectedScheduleIds = new ArrayList<>();
-		final int[] demandRemaining = { 0 };
-		final int[] unitsAllocated = { 0 };
+		final AtomicInteger demandRemaining = new AtomicInteger(0);
+		final AtomicInteger unitsAllocated = new AtomicInteger(0);
 
 		shipmentScheduleService.stream(query).forEach(packageable -> {
 			final int qtyToPick = packageable.getQtyToPick().toBigDecimal().intValue();
@@ -164,15 +165,15 @@ public class MassPrintingService
 				return;
 			}
 
-			demandRemaining[0] += qtyToPick;
-			if (unitsAllocated[0] < unitsOnLUInt)
+			demandRemaining.addAndGet(qtyToPick);
+			if (unitsAllocated.get() < unitsOnLUInt)
 			{
 				selectedScheduleIds.add(packageable.getShipmentScheduleId());
-				unitsAllocated[0] += qtyToPick;
+				unitsAllocated.addAndGet(qtyToPick);
 			}
 		});
 
-		final int boxesToPack = Math.min(unitsAllocated[0], unitsOnLUInt);
+		final int boxesToPack = Math.min(unitsAllocated.get(), unitsOnLUInt);
 		if (selectedScheduleIds.isEmpty() || boxesToPack <= 0)
 		{
 			return ProductResult.builder()
@@ -181,7 +182,7 @@ public class MassPrintingService
 					.labelsPrinted(0)
 					.labelPrintFailures(0)
 					.unitsLeftOnLU(unitsOnLUInt)
-					.unitsOfOpenDemandRemaining(demandRemaining[0])
+					.unitsOfOpenDemandRemaining(demandRemaining.get())
 					.build();
 		}
 
@@ -216,13 +217,13 @@ public class MassPrintingService
 		pickingJobService.complete(pickedJob);
 
 		final int unitsLeftOnLU = unitsOnLUInt - boxesToPack;
-		final int openDemandRemaining = Math.max(0, demandRemaining[0] - boxesToPack);
+		final int openDemandRemaining = Math.max(0, demandRemaining.get() - boxesToPack);
 
 		// Labels printed after commit (best-effort) — done outside this trx block
 		return ProductResult.builder()
 				.productId(productId)
 				.boxesPacked(boxesToPack)
-				.labelsPrinted(0) // updated after label printing
+				.labelsPrinted(0)
 				.labelPrintFailures(0)
 				.unitsLeftOnLU(unitsLeftOnLU)
 				.unitsOfOpenDemandRemaining(openDemandRemaining)

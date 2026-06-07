@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUContextHolder;
@@ -129,8 +130,8 @@ public class PickingJobHUService
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		return storageFactory.getStorage(hu).getProductStorages()
 				.stream()
-				.filter(s -> !s.getQty().isZero())
-				.collect(java.util.stream.Collectors.toList());
+				.filter(s -> !s.isEmpty())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo) {return handlingUnitsBL.getFirstHuIdByExternalLotNo(externalLotNo);}
