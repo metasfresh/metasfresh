@@ -146,6 +146,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilterByQRCode(profile.isFilterByBarcode())
 				.showFilterByQtyAvailableAtPickFromLocator(true)
 				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
+				.applicationParameter("massPrinting", profile.isMassPrinting())
 				.build();
 	}
 
