@@ -4,7 +4,6 @@
 --   AD_Column    592732  (MobileUI_UserProfile_Picking.IsMassPrinting)
 --   AD_Field     780726  (tab 547258 — Mobile UI Kommissionierprofil)
 --   AD_UI_Element 652021 (group 551252 — flags, SeqNo 170)
--- me03: https://github.com/metasfresh/me03/issues/29942
 
 -- AD_Element: IsMassPrinting
 -- 2026-06-07T10:00:00Z

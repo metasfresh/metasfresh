@@ -9,7 +9,7 @@
 -- 2026-06-07T12:00:00Z
 INSERT INTO AD_Message
     (AD_Client_ID, AD_Message_ID, AD_Org_ID, Created, CreatedBy, EntityType, IsActive,
-     MsgText, MsgTip, MsgType, Updated, UpdatedBy, Value)
+     MsgText, MsgTip, MsgType, ErrorCode, Updated, UpdatedBy, Value)
 VALUES
     (0, 545747 /*From ID Server*/, 0,
      TO_TIMESTAMP('2026-06-07 12:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
@@ -17,6 +17,7 @@ VALUES
      'Massendruck ist in Ihrem Kommissionierprofil nicht aktiviert.',
      NULL,
      'E',
+     'MassPrintingNotEnabled',
      TO_TIMESTAMP('2026-06-07 12:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
      100,
      'de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled')
