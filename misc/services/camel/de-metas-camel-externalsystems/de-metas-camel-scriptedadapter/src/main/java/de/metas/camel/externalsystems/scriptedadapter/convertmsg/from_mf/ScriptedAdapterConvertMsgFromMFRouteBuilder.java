@@ -67,7 +67,9 @@ import java.util.Optional;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ERROR_CONTEXT;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_V2_URI;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ATTACHMENT_FILE_NAME;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
@@ -115,6 +117,14 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	/** Exchange property holding the {@link FanOutResult} aggregator across all iterations of one fan-out. */
 	@VisibleForTesting
 	static final String EXCHANGE_PROPERTY_FAN_OUT_RESULT = "fanOutResult";
+
+	/**
+	 * Exchange property used to stash the raw external-system HTTP response body before the /ok success-callback
+	 * POST to metasfresh overwrites the exchange body. Restored immediately after the /ok call so that
+	 * {@link #prepareJsonAttachmentRequest} can still include the original response in the audit log.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE = "externalSystemResponse";
 
 	private JavaScriptRepo javaScriptRepo;
 
@@ -198,6 +208,18 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
 							.end()
 
+							// Notify metasfresh that the export succeeded (2xx). Fires exactly once after the final
+							// successful response — whether from the original attempt or the 401-refresh retry.
+							// Save the external-system response body to a property so the attachment log can
+							// still read it after the /ok HTTP call overwrites the exchange body.
+							.log(LoggingLevel.DEBUG, "Reporting export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} httpCode=${header.CamelHttpResponseCode}")
+							.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+							.setBody(constant(null))
+							.removeHeaders("CamelHttp*")
+							.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+							.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
+							.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+
 							.process(this::prepareJsonAttachmentRequest)
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
 							.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
@@ -240,6 +262,19 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 							.process(this::forceRefreshOAuthToken)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_RETRY")
 					.end()
+
+					// Notify metasfresh that this fan-out element succeeded (2xx). Fires exactly once after
+					// the final successful response — whether from the original attempt or the 401-refresh retry.
+					// Save the external-system response body to a property so the attachment log can
+					// still read it after the /ok HTTP call overwrites the exchange body.
+					.log(LoggingLevel.DEBUG, "Reporting fan-out export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} element=${exchangeProperty." + EXCHANGE_PROPERTY_FAN_OUT_INDEX + "} httpCode=${header.CamelHttpResponseCode}")
+					.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+					.setBody(constant(null))
+					.removeHeaders("CamelHttp*")
+					.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+					.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
+					.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+
 					.process(this::prepareJsonAttachmentRequest)
 					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
 			.end();
