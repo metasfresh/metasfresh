@@ -210,15 +210,19 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 							// Notify metasfresh that the export succeeded (2xx). Fires exactly once after the final
 							// successful response — whether from the original attempt or the 401-refresh retry.
+							// Skipped when no pInstanceId is present (fire-and-configure invocations without a process instance).
 							// Save the external-system response body to a property so the attachment log can
 							// still read it after the /ok HTTP call overwrites the exchange body.
-							.log(LoggingLevel.DEBUG, "Reporting export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} httpCode=${header.CamelHttpResponseCode}")
-							.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
-							.setBody(constant(null))
-							.removeHeaders("CamelHttp*")
-							.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-							.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
-							.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+							.choice()
+								.when(header(HEADER_PINSTANCE_ID).isNotNull())
+									.log(LoggingLevel.DEBUG, "Reporting export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} httpCode=${header.CamelHttpResponseCode}")
+									.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+									.setBody(constant(null))
+									.removeHeaders("CamelHttp*")
+									.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+									.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
+									.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+							.end()
 
 							.process(this::prepareJsonAttachmentRequest)
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
@@ -265,15 +269,19 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 					// Notify metasfresh that this fan-out element succeeded (2xx). Fires exactly once after
 					// the final successful response — whether from the original attempt or the 401-refresh retry.
+					// Skipped when no pInstanceId is present (fire-and-configure invocations without a process instance).
 					// Save the external-system response body to a property so the attachment log can
 					// still read it after the /ok HTTP call overwrites the exchange body.
-					.log(LoggingLevel.DEBUG, "Reporting fan-out export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} element=${exchangeProperty." + EXCHANGE_PROPERTY_FAN_OUT_INDEX + "} httpCode=${header.CamelHttpResponseCode}")
-					.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
-					.setBody(constant(null))
-					.removeHeaders("CamelHttp*")
-					.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-					.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
-					.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+					.choice()
+						.when(header(HEADER_PINSTANCE_ID).isNotNull())
+							.log(LoggingLevel.DEBUG, "Reporting fan-out export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} element=${exchangeProperty." + EXCHANGE_PROPERTY_FAN_OUT_INDEX + "} httpCode=${header.CamelHttpResponseCode}")
+							.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+							.setBody(constant(null))
+							.removeHeaders("CamelHttp*")
+							.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+							.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
+							.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+					.end()
 
 					.process(this::prepareJsonAttachmentRequest)
 					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
