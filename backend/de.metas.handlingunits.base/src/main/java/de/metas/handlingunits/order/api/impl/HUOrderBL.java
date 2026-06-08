@@ -33,8 +33,8 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
@@ -52,11 +52,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import de.metas.project.ProjectId;
-import de.metas.project.service.ProjectRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -90,10 +90,14 @@ public class HUOrderBL implements IHUOrderBL
 
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
 	private final ProjectRepository projectRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void updateOrderLine(final de.metas.interfaces.I_C_OrderLine olPO, final String columnName)
@@ -599,9 +603,7 @@ public class HUOrderBL implements IHUOrderBL
 			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final ProductId productId)
 	{
-		final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 
 		final I_C_Order orderRecord = orderDAO.getById(salesOrderAndLineId.getOrderId(), I_C_Order.class);
 		final de.metas.handlingunits.model.I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.load(

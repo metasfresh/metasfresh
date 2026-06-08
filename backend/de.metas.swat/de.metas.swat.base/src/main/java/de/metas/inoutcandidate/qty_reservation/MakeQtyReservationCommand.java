@@ -44,6 +44,7 @@ public class MakeQtyReservationCommand
 	 * from this module). When {@code null} and the order line has no capacity, reservation fails.
 	 */
 	@Nullable Quantity capacityPerTUFallback;
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public QtyReservationId execute()
 	{
@@ -79,7 +80,7 @@ public class MakeQtyReservationCommand
 	private Quantity computeQtyCUToReserve()
 	{
 		final ProductId productId = rowVO.getProductId();
-		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 
 		final Quantity capacityPerTU = computeCapacityPerTU(stockUomId);
 
