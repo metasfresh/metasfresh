@@ -217,17 +217,6 @@ export const PickingJobScreen = {
         await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
     }),
 
-    clickMassPrintingButton: async () => await step(`${NAME} - Click Mass Printing button`, async () => {
-        const button = page.getByTestId('massPrinting-button');
-        await button.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
-        await expect(button).toBeEnabled();
-        await button.tap();
-    }),
-
-    expectMassPrintingButtonHidden: async () => await step(`${NAME} - Expect Mass Printing button hidden`, async () => {
-        await page.getByTestId('massPrinting-button').waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
-    }),
-
     abort: async () => await step(`${NAME} - Abort`, async () => {
         await page.locator('#abort-button').tap();
         await YesNoDialog.waitForDialog();

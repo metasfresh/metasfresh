@@ -17,8 +17,12 @@ export const pickingJobsListLocation = ({ applicationId = APPLICATION_ID_Picking
 const pickingJobLocation = ({ applicationId, wfProcessId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId });
 
-export const massPrintingScanScreenLocation = ({ applicationId, wfProcessId }) =>
-  pickingJobLocation({ applicationId, wfProcessId }) + '/massPrinting/scan';
+/**
+ * Mass printing scan screen reachable directly from the picking jobs list (launchers) screen.
+ * Does not require an open picking job.
+ */
+export const massPrintingScanScreenFromListLocation = ({ applicationId = APPLICATION_ID_Picking } = {}) =>
+  appLaunchersLocation({ applicationId }) + '/massPrinting/scan';
 
 export const pickingJobOrLineLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   lineId
@@ -170,10 +174,7 @@ export const pickingRoutes = [
     Component: PickStepScanScreen,
   },
   {
-    path: massPrintingScanScreenLocation({
-      applicationId: ':applicationId',
-      wfProcessId: ':workflowId',
-    }),
+    path: massPrintingScanScreenFromListLocation({ applicationId: ':applicationId' }),
     Component: MassPrintingScanScreen,
   },
 ];

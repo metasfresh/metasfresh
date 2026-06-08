@@ -18,6 +18,8 @@ import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { useLaunchers } from './useLaunchers';
 import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
 import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
+import { APPLICATION_ID_Picking } from '../../apps/picking';
+import PickingJobsListActions from '../../apps/picking/containers/PickingJobsListActions';
 import { useCurrentTrolley } from '../../api/trolley';
 import { toastError } from '../../utils/toast';
 
@@ -164,6 +166,7 @@ const WFLaunchersScreen = () => {
       {applicationId === APPLICATION_ID_Distribution && (
         <DistributionJobsListActions actions={actions} disabled={isLaunchersLoading} />
       )}
+      {applicationId === APPLICATION_ID_Picking && <PickingJobsListActions />}
       {launchers &&
         launchers.map((launcher, index) => {
           const id = `launcher-${index}-button`;

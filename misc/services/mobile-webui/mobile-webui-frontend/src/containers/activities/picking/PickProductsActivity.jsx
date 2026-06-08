@@ -4,7 +4,6 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import {
-  massPrintingScanScreenLocation,
   pickingJobsListLocation,
   pickingLineScanScreenLocation,
   pickingLineScreenLocation,
@@ -42,7 +41,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const history = useMobileNavigation();
   const dispatch = useDispatch();
 
-  const { allowQuickPackAll, massPrinting } = useApplicationInfoParameters({ applicationId });
+  const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
   const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: allowQuickPackAll });
   const isShowQuickPackAllButton = allowQuickPackAll && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
 
@@ -137,13 +136,6 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
         />
       )}
 
-      {massPrinting && (
-        <ButtonWithIndicator
-          testId={'massPrinting-button'}
-          captionKey={'activities.picking.massPrinting.triggerButton'}
-          onClick={() => history.push(massPrintingScanScreenLocation({ applicationId, wfProcessId }))}
-        />
-      )}
     </div>
   );
 };

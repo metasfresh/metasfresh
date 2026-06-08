@@ -6,6 +6,7 @@ import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
+import { MassPrintingScanScreen } from './MassPrintingScanScreen';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -92,6 +93,18 @@ export const PickingJobsListScreen = {
         // Make sure we have the expected number of buttons
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
+    }),
+
+    clickMassPrintingButton: async () => await test.step(`${NAME} - Click Mass Printing button`, async () => {
+        const button = page.getByTestId('massPrinting-button');
+        await button.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await MassPrintingScanScreen.waitForScreen();
+    }),
+
+    expectMassPrintingButtonHidden: async () => await test.step(`${NAME} - Expect Mass Printing button hidden`, async () => {
+        await page.getByTestId('massPrinting-button').waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

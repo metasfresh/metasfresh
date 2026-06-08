@@ -3,17 +3,17 @@ import PropTypes from 'prop-types';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import { pickingJobsListLocation } from '../../../routes/picking';
 import { trl } from '../../../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
 import * as uiTrace from '../../../utils/ui_trace';
 import { postMassPrintingScan } from '../../../api/picking';
 
 const MassPrintingScanScreen = () => {
-  const { history, applicationId, wfProcessId } = useScreenDefinition({
+  const { history, applicationId } = useScreenDefinition({
     screenId: 'MassPrintingScanScreen',
     captionKey: 'activities.picking.massPrinting.scanCaption',
-    back: getWFProcessScreenLocation,
+    back: pickingJobsListLocation,
   });
 
   const [result, setResult] = useState(null);
@@ -42,7 +42,7 @@ const MassPrintingScanScreen = () => {
   };
 
   const onDone = () => {
-    history.replace(getWFProcessScreenLocation({ applicationId, wfProcessId }));
+    history.replace(pickingJobsListLocation({ applicationId }));
   };
 
   if (result) {

@@ -2,7 +2,6 @@ import { test } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { MassPrintingScanScreen } from "../../utils/screens/picking/MassPrintingScanScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -10,16 +9,11 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 /**
  * End-to-end coverage of the mobileUI mass-printing scan-and-pack flow.
  *
- * The picking profile has mass-printing ON, so the picking-job screen shows a
- * "Mass Printing" trigger button. The operator opens a picking job (for an unrelated
- * order — this is how a real operator reaches the screen) and then scans an LU of a
- * self-packed product; the backend FIFO-allocates the LU's units against all open
- * single-unit demand for that product, packing one box (and printing one label) per
- * unit, and returns a per-product result.
- *
- * The job opened in the UI is for a DISTINCT product (`jobProduct`). Opening a picking
- * job locks that order's shipment schedule; keeping it on a separate product ensures the
- * self-packed demand the LU fills is never already-locked when mass-printing runs.
+ * With mass-printing enabled in the picking profile, the picking launchers/jobs-list
+ * screen shows a "Mass Printing" trigger button — reachable directly, without opening a
+ * picking job. The operator taps it and scans an LU of a self-packed product; the backend
+ * FIFO-allocates the LU's units against all open single-unit demand for that product,
+ * packing one box (and printing one label) per unit, and returns a per-product result.
  */
 const createMasterdata = async ({ luUnits, selfPackedOrderCount, createShipmentPolicy = 'NO' }) => {
     const salesOrders = {
@@ -81,17 +75,14 @@ const createMasterdata = async ({ luUnits, selfPackedOrderCount, createShipmentP
     });
 };
 
-const startUnrelatedJobAndOpenMassPrinting = async ({ masterdata }) => {
-    const documentNo = masterdata.salesOrders.SO_job.documentNo;
+// The mass-printing trigger lives on the picking launchers/jobs-list screen, reachable
+// directly from the picking application — without opening any picking job.
+const openMassPrintingFromLaunchers = async ({ masterdata }) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-
-    await PickingJobScreen.clickMassPrintingButton();
+    await PickingJobsListScreen.clickMassPrintingButton();
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -106,7 +97,7 @@ test('Mass printing — scan LU packs one box per unit for open demand', async (
     // LU has 3 units; 3 single-unit orders => 3 boxes packed, nothing left over.
     const masterdata = await createMasterdata({ luUnits: 3, selfPackedOrderCount: 3 });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
@@ -116,7 +107,7 @@ test('Mass printing — scan LU packs one box per unit for open demand', async (
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 
     // Policy = DO_NOT_CREATE: confirm no shipment was generated for any of the 3 orders.
     await Backend.expect({
@@ -141,7 +132,7 @@ test('Mass printing — scan LU with leftover units when demand is smaller than 
     // LU has 3 units but only 1 single-unit order => 1 box packed, 2 units left on the LU.
     const masterdata = await createMasterdata({ luUnits: 3, selfPackedOrderCount: 1 });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
@@ -151,7 +142,7 @@ test('Mass printing — scan LU with leftover units when demand is smaller than 
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 
     // Policy = DO_NOT_CREATE: confirm no shipment was generated for the packed order.
     await Backend.expect({
@@ -228,7 +219,7 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
         }
     });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
@@ -239,7 +230,7 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 
     // Per-SO FIFO allocation assertion:
     //   SO_A (earlier delivery date) → fully filled → completed shipment with movementQty=2
@@ -269,14 +260,14 @@ test('Mass printing — shipment created and completed when policy is CREATE_AND
         createShipmentPolicy: 'CREATE_AND_COMPLETE',
     });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 
     // Assert a completed (CO) shipment was created for the packed order.
     await Backend.expect({
@@ -303,14 +294,14 @@ test('Mass printing — shipment created in draft when policy is CREATE_DRAFT', 
         createShipmentPolicy: 'CREATE_DRAFT',
     });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 
     // Assert a draft (DR) shipment was created for the packed order.
     await Backend.expect({
@@ -333,14 +324,14 @@ test('Mass printing — no shipment created when policy is DO_NOT_CREATE', async
     // Profile policy DO_NOT_CREATE (the default 'NO'): no shipment is generated.
     const masterdata = await createMasterdata({ luUnits: 3, selfPackedOrderCount: 1 });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 
     // Assert no shipment was created for the packed order.
     await Backend.expect({
@@ -367,7 +358,7 @@ test('Mass printing — self-packed product on LU is packed; no skipped-products
     // "only non-self-packed products" test below (which uses a non-self-packed-only LU).
     const masterdata = await createMasterdata({ luUnits: 1, selfPackedOrderCount: 1 });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
@@ -377,7 +368,7 @@ test('Mass printing — self-packed product on LU is packed; no skipped-products
     await MassPrintingScanScreen.expectNoSkippedProducts();
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -432,15 +423,7 @@ test('Mass printing — LU with only non-self-packed products shows empty result
         }
     });
 
-    const documentNo = masterdata.salesOrders.SO_job.documentNo;
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-    await PickingJobScreen.clickMassPrintingButton();
+    await openMassPrintingFromLaunchers({ masterdata });
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.nonSelfLU.qrCode });
     await MassPrintingScanScreen.waitForResult();
@@ -451,7 +434,7 @@ test('Mass printing — LU with only non-self-packed products shows empty result
     await MassPrintingScanScreen.expectSkippedProductsVisible();
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -512,17 +495,13 @@ test('Mass printing — button absent when mass-printing is disabled in picking 
         }
     });
 
-    const documentNo = masterdata.salesOrders.SO_job.documentNo;
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 
     // The "Mass Printing" trigger button must NOT be visible when the feature is disabled.
-    await PickingJobScreen.expectMassPrintingButtonHidden();
+    await PickingJobsListScreen.expectMassPrintingButtonHidden();
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -605,7 +584,7 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
         }
     });
 
-    await startUnrelatedJobAndOpenMassPrinting({ masterdata });
+    await openMassPrintingFromLaunchers({ masterdata });
 
     // scanLUAndGetResult intercepts the massPrinting/scan REST response so we get packedHUIds.
     const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
@@ -633,5 +612,5 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
     });
 
     await MassPrintingScanScreen.clickDone();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobsListScreen.waitForScreen();
 });

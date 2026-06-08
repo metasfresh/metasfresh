@@ -3,16 +3,24 @@ import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'MassPrintingScanScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#MassPrintingScanScreen');
 
 /**
  * Screen object for the mobileUI mass-printing scan-and-pack screen
- * (route `/:applicationId/wf/:wfProcessId/massPrinting/scan`).
+ * (route `/:applicationId/launchers/massPrinting/scan`).
  *
+ * Reached directly from the picking launchers/jobs-list screen without opening a picking job.
  * The screen first renders a barcode scanner (the operator scans an LU QR code);
  * once the backend returns, it swaps to a result view wrapped in `mass-printing-result`
  * with one `mass-printing-product-result` block per packed product.
  */
 export const MassPrintingScanScreen = {
+    waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     waitForScanner: async () => await step(`${NAME} - Wait for scanner`, async () => {
         await BarcodeScannerComponent.waitToAttach({});
     }),
