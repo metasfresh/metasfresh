@@ -99,7 +99,7 @@ test('Mass printing — scan LU packs one box per unit for open demand', async (
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');
+    allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Mass printing — scan LU, one box per unit');
     allure.severity('critical');
 
@@ -124,7 +124,7 @@ test('Mass printing — scan LU with leftover units when demand is smaller than 
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');
+    allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Mass printing — scan LU, leftover units on LU');
     allure.severity('normal');
 
