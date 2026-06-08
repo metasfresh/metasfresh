@@ -287,6 +287,31 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
+	 * Resolves the config by ID (fail-fast — throws for inactive/missing configs) and, only on
+	 * success, creates a new {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y}.
+	 *
+	 * <p>The getById-before-recordPendingAsResend ordering is intentional: if the config is
+	 * inactive or missing, getById throws <em>before</em> any Pending row is created, preventing
+	 * an orphan log row with no subsequent invocation.
+	 *
+	 * @return the resolved config, ready for the follow-up
+	 *         {@link #executeInvokeScriptedExportConversionActionAndGetResult} call
+	 */
+	@NonNull
+	public ExternalSystemScriptedExportConversionConfig resolveConfigAndRecordPendingAsResend(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		// Resolve config first — throws for inactive/missing configs (fail-fast, no orphan Pending row)
+		final ExternalSystemScriptedExportConversionConfig config =
+				externalSystemScriptedExportConversionRepository.getById(configId);
+
+		exportStatusService.recordPendingAsResend(configId, sourceRecord);
+
+		return config;
+	}
+
+	/**
 	 * Records a {@link ExternalSystemExportStatus#Pending} log entry for the given config and source record.
 	 * Called by the interceptor's AFTER_COMPLETE branch for each matching config, before scheduling
 	 * the after-commit execution.

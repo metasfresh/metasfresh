@@ -36,7 +36,7 @@ INSERT INTO AD_Process
      IsReport, IsFormatExcelFile, EntityType,
      AccessLevel, Type, ShowHelp, IsBetaFunctionality)
 VALUES
-    (585633, 0, 0, 'Y',
+    (585633 /*From ID Server*/, 0, 0, 'Y',
      TO_TIMESTAMP('2026-06-09 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-09 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      'M_InOut_ReSend_ScriptedExportConversion',
@@ -104,7 +104,7 @@ INSERT INTO AD_Table_Process
      WEBUI_ViewQuickAction, WEBUI_ViewQuickAction_Default)
 VALUES
     (0, 0,
-     585633, 319 /*M_InOut*/, 541648,
+     585633 /*From ID Server*/, 319 /*M_InOut*/, 541648 /*From ID Server*/,
      TO_TIMESTAMP('2026-06-09 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      'de.metas.externalsystem', 'Y',
      TO_TIMESTAMP('2026-06-09 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,

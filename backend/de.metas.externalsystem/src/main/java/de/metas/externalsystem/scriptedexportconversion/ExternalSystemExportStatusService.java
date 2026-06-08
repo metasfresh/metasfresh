@@ -124,6 +124,20 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Returns the distinct config IDs whose most-recent log entry for the given source record
+	 * is not yet fully processed (i.e. neither {@link ExternalSystemExportStatus#Sent} nor
+	 * {@link ExternalSystemExportStatus#DontSend}).
+	 * Delegates to the repository; exposed here so the re-send AD process can inject only
+	 * services (no repositories).
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
+	}
+
+	/**
 	 * Creates a new log row with status {@link ExternalSystemExportStatus#Pending} and {@code IsResend=Y},
 	 * without a PInstance yet.
 	 * Called by the re-send AD process before invoking the scripted-export-conversion action for each config.

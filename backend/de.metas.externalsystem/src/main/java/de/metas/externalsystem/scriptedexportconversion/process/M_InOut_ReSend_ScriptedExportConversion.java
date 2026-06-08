@@ -23,11 +23,9 @@
 package de.metas.externalsystem.scriptedexportconversion.process;
 
 import de.metas.externalsystem.ExternalSystemErrorContext;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusRepository;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -46,8 +44,9 @@ import java.util.List;
  *
  * <p>For each qualifying config:
  * <ol>
- *   <li>A new log row is created via {@link ExternalSystemExportStatusService#recordPendingAsResend} with
- *       {@code IsResend=Y} and status {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}.</li>
+ *   <li>A new log row is created via {@link ExternalSystemScriptedExportConversionService#resolveConfigAndRecordPendingAsResend}
+ *       with {@code IsResend=Y} and status {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}.
+ *       The config is resolved (fail-fast) before creating the Pending row to prevent orphan rows.</li>
  *   <li>The scripted-export-conversion action is invoked via
  *       {@link ExternalSystemScriptedExportConversionService#executeInvokeScriptedExportConversionActionAndGetResult}
  *       with {@link ExternalSystemErrorContext#RESEND}.</li>
@@ -58,14 +57,8 @@ import java.util.List;
  */
 public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
-	private final ExternalSystemExportStatusRepository exportStatusRepository =
-			SpringContextHolder.instance.getBean(ExternalSystemExportStatusRepository.class);
-
 	private final ExternalSystemExportStatusService exportStatusService =
 			SpringContextHolder.instance.getBean(ExternalSystemExportStatusService.class);
-
-	private final ExternalSystemScriptedExportConversionRepository scriptedExportRepo =
-			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionRepository.class);
 
 	private final ExternalSystemScriptedExportConversionService scriptedExportService =
 			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
@@ -87,7 +80,7 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
 
 		final List<ExternalSystemScriptedExportConversionConfigId> configIds =
-				exportStatusRepository.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
+				exportStatusService.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
 
 		if (configIds.isEmpty())
 		{
@@ -97,14 +90,11 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		int triggered = 0;
 		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 		{
-			// Resolve config first — getById throws for inactive configs; fail-fast here
-			// avoids creating an orphan Pending row with no invocation.
-			final ExternalSystemScriptedExportConversionConfig config = scriptedExportRepo.getById(configId);
+			// Resolve config + create Pending row with IsResend=Y — getById throws for inactive
+			// configs (fail-fast); keeps the Pending row from being created without an invocation.
+			final ExternalSystemScriptedExportConversionConfig config =
+					scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
 
-			// (a) create a new Pending row with IsResend=Y — does not mutate prior rows
-			exportStatusService.recordPendingAsResend(configId, sourceRecord);
-
-			// (b) invoke the scripted export conversion action with RESEND error context
 			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
 					config,
 					m_inout_id,
