@@ -112,7 +112,7 @@ public class PickingJobShipmentScheduleService
 				.build();
 	}
 
-	public void addQtyPickedAndUpdateHU(final AddQtyPickedRequest request)
+	public void addQtyPickedAndUpdateHU(@NonNull final AddQtyPickedRequest request)
 	{
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(request);
 	}
@@ -124,7 +124,7 @@ public class PickingJobShipmentScheduleService
 	 *
 	 * @return {@code true} if the qty was merged into an existing row (caller must NOT also add a new row).
 	 */
-	public boolean tryMergeQtyPickedIntoExistingForVHU(final AddQtyPickedRequest request)
+	public boolean tryMergeQtyPickedIntoExistingForVHU(@NonNull final AddQtyPickedRequest request)
 	{
 		return huShipmentScheduleBL.tryMergeQtyPickedIntoExistingForVHU(request);
 	}

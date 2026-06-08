@@ -118,6 +118,8 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// QtyPicked rows that share the same (VHU, TU, LU, QtyLU, QtyTU, QtyPicked) tuple and
 		// later collide on the M_ShipmentSchedule_QtyPicked_UI partial unique index when the
 		// next shipment is generated.
+		// The FIRST trx-line for a (schedule, VHU) pair finds no existing row, so tryMerge returns
+		// false and the addQtyPickedAndUpdateHU below creates it; the 2nd..Nth lines merge into it.
 		if (huShipmentScheduleBL.tryMergeQtyPickedIntoExistingForVHU(request))
 		{
 			return;

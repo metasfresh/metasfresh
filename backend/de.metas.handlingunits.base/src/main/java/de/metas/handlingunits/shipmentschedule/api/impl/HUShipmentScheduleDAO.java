@@ -17,6 +17,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Properties;
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}
@@ -159,7 +161,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		// earlier in the SAME, not-yet-committed transaction. A context-less query would run
 		// out-of-trx (committed data only) and never see them, defeating the merge.
 		final Properties ctx = Env.getCtx();
-		final String trxName = Services.get(org.adempiere.ad.trx.api.ITrxManager.class).getThreadInheritedTrxName();
+		final String trxName = trxManager.getThreadInheritedTrxName();
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)

@@ -51,8 +51,9 @@ import static org.mockito.Mockito.mock;
  * non-listener-shaped picks to fall through to {@code addQtyPickedAndUpdateHU}. This test
  * locks each one in so we don't accidentally widen the merge scope in a future refactor.</p>
  *
- * <p>Happy-path coverage (qty actually summed into an existing row) requires HU machinery
- * and is exercised by the cucumber {@code reversedShipment.feature} scenario.</p>
+ * <p>Happy-path coverage (qty actually summed into an existing row) is in
+ * {@link HUShipmentScheduleBL_mergeQtyPickedHappyPath_Test} and the mobile-webui Playwright spec
+ * {@code recreate_shipment_after_void.spec.js}.</p>
  */
 class HUShipmentScheduleBL_tryMergeQtyPickedIntoExistingForVHU_Test
 {
