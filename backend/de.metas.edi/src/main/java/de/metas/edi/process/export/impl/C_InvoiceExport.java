@@ -25,7 +25,7 @@ package de.metas.edi.process.export.impl;
 import java.util.Collections;
 import java.util.List;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.impl.EDIDocumentBL;
@@ -99,9 +99,10 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 
 	@Override
 	@NonNull
-	public BPartnerId getBPartnerId()
+	public BPartnerLocationId getBPartnerLocationId()
 	{
-		return BPartnerId.ofRepoId(getInvoiceRecord().getC_BPartner_ID());
+		final I_C_Invoice invoice = getInvoiceRecord();
+		return BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 	}
 
 	@NonNull

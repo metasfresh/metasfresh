@@ -23,7 +23,7 @@
 -- EPCIS event JSON for a given M_InOut (shipment).
 -- HU-based, DESADV-optional: core data from HU hierarchy, DESADV only for optional biz references.
 --
--- Changes in me03#28815:
+-- HU-based discovery (replaces the earlier DESADV-pack-driven approach):
 --   - Pallet discovery: M_InOut → M_InOutLine → M_HU_Assignment.M_LU_HU_ID (primary)
 --                        + fallback via M_ShipmentSchedule_QtyPicked.M_LU_HU_ID
 --   - Crate (TU) discovery: M_HU_Item (itemtype='HU' individual, 'HA' aggregated)
@@ -166,16 +166,25 @@ BEGIN
                d.poreference                          AS desadv_poreference,
                -- arrays from junction (all DESADVs linked to this shipment)
                desadv_agg.desadv_documentnos,
-               desadv_agg.desadv_poreferences
+               desadv_agg.desadv_poreferences,
+               desadv_agg.shipment_documentnos
         FROM m_inout io
                  LEFT JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
                  -- aggregate all DESADV references via N:M junction, across all shipments
                  -- sharing owned LUs (so the owner event carries refs from sibling shipments too)
                  LEFT JOIN LATERAL (
                      SELECT jsonb_agg(da.documentno ORDER BY da.documentno)   AS desadv_documentnos,
-                            jsonb_agg(da.poreference ORDER BY da.documentno)  AS desadv_poreferences
+                            jsonb_agg(da.poreference ORDER BY da.documentno)  AS desadv_poreferences,
+                            -- Delivery-note numbers (M_InOut.DocumentNo) of the DESADV messages on this SSCC.
+                            -- This is the value the receiver's EPCIS desadv bizTransaction must carry
+                            -- ("Lieferschein") — NOT EDI_Desadv.DocumentNo, which is 1:1 per ORDER and not
+                            -- unique across partial deliveries.
+                            -- DISTINCT: two orders on ONE M_InOut collapse to one delivery note; two M_InOuts
+                            -- sharing the SSCC yield two.
+                            jsonb_agg(DISTINCT mio.documentno ORDER BY mio.documentno) AS shipment_documentnos
                      FROM edi_desadv_m_inout link
                      JOIN edi_desadv da ON da.edi_desadv_id = link.edi_desadv_id
+                     JOIN m_inout mio ON mio.m_inout_id = link.m_inout_id
                      WHERE link.isactive = 'Y'
                        AND link.m_inout_id IN (
                            -- always this shipment's own DESADVs ...
@@ -202,7 +211,7 @@ BEGIN
              -- All LU HU IDs for this shipment, enriched with the left-zero-padded POReference of
              -- their source order.  In an n:m consolidated shipment each LU belongs to exactly one
              -- source order; we pick one POReference per LU (MIN) and LPAD it to 10 digits for the
-             -- GRAI Serial middle segment per Migros spec:
+             -- GRAI Serial middle segment per the receiver's EPCIS spec:
              --   urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer left-padded><2-digit counter>
              -- Production POReferences are numeric (e.g. '1234567890'); LPAD pads shorter values
              -- with leading zeros and leaves 10-digit values unchanged.
@@ -251,7 +260,7 @@ BEGIN
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet.
              --
              -- Scoped to TUs allocated to SOME shipment via m_hu_assignment (excludes unshipped
-             -- TUs on a partial pallet). Per me03#29231 (one EPCIS event per physical SSCC) the
+             -- TUs on a partial pallet). Under the one-EPCIS-event-per-physical-SSCC rule the
              -- scope gate is the OWNED LU (pallet_list, restricted to LUs this shipment owns), NOT
              -- the M_InOut: when two shipments share a physical LU, the owner's event intentionally
              -- merges the individual TUs of BOTH source orders onto that one SSCC.
@@ -279,9 +288,9 @@ BEGIN
              --         both attribute lookup and storage item joins (avoids double m_hu scan).
              --
              -- Scoped to HA aggregates allocated to SOME shipment via m_hu_assignment; ha_item.qty
-             -- carries the crate count. Per me03#29231 (one EPCIS event per physical SSCC) the scope
+             -- carries the crate count. Under the one-EPCIS-event-per-physical-SSCC rule the scope
              -- gate is the OWNED LU (pallet_list), NOT the M_InOut: when two shipments share a
-             -- physical LU (LAF1010-3), the owner's event intentionally merges the HA aggregates of
+             -- physical LU, the owner's event intentionally merges the HA aggregates of
              -- BOTH source orders onto that one SSCC.
              SELECT lu_hu.m_hu_id                           AS lu_hu_id,
                     pl.lu_poreference_padded,
@@ -458,11 +467,9 @@ BEGIN
 
          all_crates_with_grai AS (
              -- Dummy GRAI: middle segment = source-order POReference (LPAD to 10 digits, per-LU).
-             -- Migros format: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
+             -- GRAI format: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
              -- Counter resets per LU so TUs within the same LU get 01, 02, … while TUs on
              -- different LUs (= different source orders) start at 01 independently.
-             -- This avoids both the cross-order POReference leak (pre-PR bug) and the
-             -- zero-uniqueness 'DUMMY_____' literal (first PR draft).
              SELECT lu_hu_id,
                     tu_hu_id,
                     CASE
@@ -522,6 +529,14 @@ BEGIN
                -- Scalar falls back to M_InOut.EDI_Desadv_ID for shipments without junction rows.
                    'desadvReference', COALESCE((ctx.desadv_documentnos ->> 0), ctx.desadv_documentno),
                    'desadvReferences', COALESCE(ctx.desadv_documentnos, '[]'::jsonb),
+               -- shipmentDocumentNos[]: the DELIVERY-NOTE numbers (M_InOut.DocumentNo) of the DESADV
+               -- messages on this SSCC. This is the value the receiver's EPCIS desadv bizTransaction
+               -- must carry ("Lieferschein") — NOT desadvReferences (EDI_Desadv.DocumentNo), which is
+               -- shared across a partial delivery.
+                   'shipmentDocumentNos', COALESCE(ctx.shipment_documentnos,
+                                                   CASE WHEN ctx.documentno IS NOT NULL
+                                                        THEN jsonb_build_array(ctx.documentno)
+                                                        ELSE '[]'::jsonb END),
                -- PO references: same scalar + array pattern.
                -- Scalar falls back to InOut.POReference for shipments without junction rows.
                    'poReference', COALESCE((ctx.desadv_poreferences ->> 0), ctx.poreference),

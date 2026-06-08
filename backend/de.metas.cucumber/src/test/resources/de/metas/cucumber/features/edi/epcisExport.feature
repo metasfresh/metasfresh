@@ -42,9 +42,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_EPCIS_010 | Y          | ps_EPCIS_010       | 9900000600010 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_EPCIS_010  | true                 | 9900000600010         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier               |
+      | bp_EPCIS_010  | true                 | 9900000600010         | edi_setting_EPCIS_010_bp |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
@@ -197,9 +197,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartners:
       | Identifier   | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_EPCIS_030 | Y          | ps_EPCIS_030       | 9900000600030 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_EPCIS_030  | true                 | 9900000600030         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier               |
+      | bp_EPCIS_030  | true                 | 9900000600030         | edi_setting_EPCIS_030_bp |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
@@ -283,9 +283,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartners:
       | Identifier      | IsCustomer | M_PricingSystem_ID | GLN           |
       | bp_S29231_130   | Y          | ps_S29231_130      | 9900000291300 |
-    And the following c_bpartner is changed
-      | C_BPartner_ID   | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_130   | true                 | 9900000291300         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                  |
+      | bp_S29231_130 | true                 | 9900000291300         | edi_setting_S29231_130_bp   |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID  | M_Product_ID  |
@@ -326,7 +326,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
       | pip_S29231_130          | pii_TU_S29231_130 | p_S29231_130  | 10  | 2020-01-01 |
 
-    # Order A — distinct numeric POReference (≤10 digits) → LPAD pads to '1234567893', per Migros spec
+    # Order A — distinct numeric POReference (≤10 digits) → LPAD pads to '1234567893', per the receiver's EPCIS spec
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference |
       | oA_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | 1234567893  |
@@ -340,7 +340,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
       | dA_S29231_130            | bp_S29231_130            | oA_S29231_130         | P                |
 
-    # Order B — distinct numeric POReference (10 digits) → LPAD leaves '9876543210' unchanged, per Migros spec
+    # Order B — distinct numeric POReference (10 digits) → LPAD leaves '9876543210' unchanged, per the receiver's EPCIS spec
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID  | DateOrdered | POReference |
       | oB_S29231_130 | true    | bp_S29231_130  | 2026-05-20  | 9876543210  |
@@ -458,14 +458,18 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | sscc18             |
       | 987654321000000016 |
       | 987654321000000023 |
+    # 2 orders / 2 DESADVs consolidated into ONE shipment (1 M_InOut):
+    # desadvReferences/poReferences are size 2, but shipmentDocumentNos is size 1
+    # — it carries the single M_InOut.DocumentNo, not one entry per order.
     And the EPCIS JSON array field has:
-      | field            | expectedSize |
-      | desadvReferences | 2            |
-      | poReferences     | 2            |
+      | field               | expectedSize |
+      | desadvReferences    | 2            |
+      | poReferences        | 2            |
+      | shipmentDocumentNos | 1            |
     # ─── Per-LU POReference in dummy GRAI ────────────────────────────────────────────
     # POReferences are '1234567893' (Order A, 10 digits → LPAD no-op → '1234567893') and
     # '9876543210' (Order B, 10 digits → LPAD no-op → '9876543210').
-    # Migros spec: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
+    # GRAI format: urn:epc:id:grai:<GCP>.<assetType>.<10-digit Bestellnummer><2-digit counter>
     # Each pallet's TU dummy GRAI must contain only its own source order's padded POReference.
     Then the EPCIS JSON pallets have dummy GRAIs containing the source order POReference:
       | sscc18             | ExpectedPOReferenceSanitized |
@@ -478,18 +482,18 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   Scenario: S29231_170 — Two mobile-picking jobs share one LU: EPCIS emits ONE event per physical SSCC (owner merges both orders, sibling returns {})
-  ## Contract change per me03#29231 customer clarification (Migros/Spavetti LAF1010-3):
+  ## Contract per customer clarification (two orders picked onto one shared pallet):
   ## When two sales orders are picked onto ONE shared physical pallet (ONE SSCC), the
   ## get_epcis_events_json_fn must emit exactly ONE picking+commissioning event for that
   ## SSCC. The owner shipment (lowest M_InOut_ID sharing the LU) returns the full event:
   ##   - pallets[0].crates = ALL crates from both orders on that LU (15 total)
   ##   - desadvReferences[] size 2 (one per DESADV)
   ##   - poReferences[]     size 2 (one per order)
-  ## The sibling shipment (higher M_InOut_ID) must return {} (empty object) so Eddyson
-  ## does not render a duplicate event for the same physical SSCC.
+  ## The sibling shipment (higher M_InOut_ID) must return {} (empty object) so the receiver's
+  ## system does not render a duplicate event for the same physical SSCC.
   ##
   ## The test uses two real mobile picking jobs (LUPickingTarget.ofExistingHU on the
-  ## second job) to reproduce the LAF1010-3 shape via the production code path.
+  ## second job) to reproduce the shared-pallet shape via the production code path.
   ## With IsAlwaysSplitHUsEnabled=N the shared LU survives across both picking jobs.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
@@ -520,9 +524,9 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
       | bpLoc_S29231_170 | 2900000291700 | bp_S29231_170 | true                | true         |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | bp_S29231_170 | true                 | 9900000291700         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S29231_170 | true                 | 9900000291700         | edi_setting_S29231_170_bp |
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
@@ -638,7 +642,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | dA_S29231_170            | bp_S29231_170            | oA_S29231_170         |
       | dB_S29231_170            | bp_S29231_170            | oB_S29231_170         |
 
-    # ─── Per-SSCC contract (me03#29231 customer clarification) ─────────────────────────
+    # ─── Per-SSCC contract (customer clarification) ───────────────────────────────────
     # ioA has the lower M_InOut_ID (created first) → it is the OWNER.
     # The owner's event merges ALL crates from the shared physical LU (5 TUs from order A
     # + 10 TUs from order B = 15 crates total) and carries both DESADV + PO references.
@@ -650,10 +654,14 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000001700 | 15         |
+    # 2 orders / 2 DESADVs delivered via TWO M_InOuts that share one SSCC:
+    # shipmentDocumentNos is size 2 — both M_InOut.DocumentNos. The owner's merged
+    # EPCIS event references both; this is the value the EPCIS desadv bizTransaction carries.
     And the EPCIS JSON array field has:
-      | field            | expectedSize |
-      | desadvReferences | 2            |
-      | poReferences     | 2            |
+      | field               | expectedSize |
+      | desadvReferences    | 2            |
+      | poReferences        | 2            |
+      | shipmentDocumentNos | 2            |
 
     # ─── Sibling shipment B must return {} (no duplicate event for the same SSCC) ──────
     Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170

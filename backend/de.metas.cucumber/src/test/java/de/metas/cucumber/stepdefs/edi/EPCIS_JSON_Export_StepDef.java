@@ -291,12 +291,12 @@ public class EPCIS_JSON_Export_StepDef
 	}
 
 	/**
-	 * Validates jsonb-array fields in the EPCIS JSON that carry arrays of string values.
-	 * Validates {@code desadvReferences[]} and {@code poReferences[]} array fields in the EPCIS JSON.
+	 * Validates jsonb-array fields in the EPCIS JSON that carry arrays of string values
+	 * (e.g. {@code desadvReferences[]}, {@code poReferences[]}, {@code shipmentDocumentNos[]}).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>field</b> — (required) name of the top-level array field (e.g. {@code desadvReferences}, {@code poReferences})<br>
+	 *   <b>field</b> — (required) name of the top-level array field (e.g. {@code desadvReferences}, {@code poReferences}, {@code shipmentDocumentNos})<br>
 	 *   <b>expectedSize</b> — (required) expected number of elements in the array<br>
 	 *   <b>containsValue</b> — (optional) a value that must appear somewhere in the array<br>
 	 * @cucumber.example

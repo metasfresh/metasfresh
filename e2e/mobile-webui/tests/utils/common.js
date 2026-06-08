@@ -63,20 +63,44 @@ export const expectErrorToastIf = async (condition, title, func, toastValidator)
     }
 };
 
+/**
+ * Grace timeout for the toast to appear AFTER func() has returned cleanly.
+ *
+ * Some flows render the error toast well after the action that triggers it returns:
+ * the GRAI scanner debounces ~1500ms before issuing the REST call, and func() in those
+ * tests returns almost immediately (the target screen is already in the DOM, so its
+ * waitForScreen() resolves at once). A fixed sleep-then-throw raced the toast wait and,
+ * under CI load, the sleep could win even though the (correct) toast appeared shortly
+ * after — a false "not detected". We instead actively wait for the toast element for this
+ * long, so a late-but-correct toast always wins. Must comfortably exceed the GRAI debounce
+ * plus CI scheduling jitter.
+ */
+const TOAST_GRACE_TIMEOUT = SLOW_ACTION_TIMEOUT; // 20s
+
 export const expectErrorToast = async (title, func, toastValidator) => {
     const watcherId = ++nextErrorWatcherId;
 
     return await test.step(`Expect error: ${title} (watcherId=${watcherId})`, async () => {
         const executeFuncFailOnSuccess = async () => {
             await func();
-            // Grace period: if func() returned cleanly but a toast is still pending, give
-            // React time to render before declaring "not detected". The original Promise.race
-            // could lose against a ~20ms-late toast render under CI load, producing false
-            // "not detected" failures. The hang-on-error semantic of Promise.race
-            // is preserved: if func() never returns (waiting for a screen that won't come),
-            // we never reach this sleep and the toast branch wins as before.
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            throw new Error(`Expected error toast not detected (watcherId=${watcherId})`);
+            // Grace period: func() returned cleanly but a toast may still be pending render
+            // (e.g. the GRAI scanner debounces ~1500ms before its REST call, yet func() returns
+            // immediately because the target screen is already on-screen). Instead of sleeping a
+            // fixed time and then throwing — which raced the toast wait and could lose to a
+            // late-but-correct toast under CI load — we actively wait for the toast element to
+            // attach. If it appears, this branch resolves (never throwing) and lets the parallel
+            // ErrorToast.waitToPopup branch validate + close it; only a genuine timeout (no toast
+            // within TOAST_GRACE_TIMEOUT) declares "not detected". The hang-on-error semantic of
+            // Promise.race is preserved: if func() never returns (waiting for a screen that won't
+            // come because the error fired instead), we never reach here and the toast branch wins.
+            try {
+                await ErrorToast.waitToPopup(undefined, TOAST_GRACE_TIMEOUT);
+            } catch {
+                throw new Error(`Expected error toast not detected (watcherId=${watcherId})`);
+            }
+            // Toast appeared after func() returned: yield to let the sibling waitToPopup branch
+            // (which carries the validator + closePopup) win the race and assert on it.
+            await new Promise(() => {});
         }
 
         const prevWatcherId = currentErrorWatcherId;

@@ -142,6 +142,10 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Schließen',
       },
+      graiScan: {
+        multipleScanned:
+          'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+      },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',

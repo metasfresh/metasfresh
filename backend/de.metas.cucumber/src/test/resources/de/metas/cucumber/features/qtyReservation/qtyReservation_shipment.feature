@@ -1006,3 +1006,86 @@ Feature: Qty Reservation — shipment attribute and project propagation
     And validate the created shipment lines
       | M_InOut_ID | M_Product_ID | movementqty |
       | shipment   | product      | 10          |
+
+
+  @from:cucumber
+  @Id:S_QtyRes_310
+  Scenario: On-the-fly pick to packing instructions packs CUs into a TU (not a bare CU)
+  ## _Given a product with 1 TU (10 PCE on-hand) and a sales order for 10 PCE
+  ## _And an M_QtyReservation for 10 PCE
+  ## _When shipment is generated with IsOnTheFlyPickToPackingInstructions=true
+  ## _Then the HU assigned to the shipment is a TU (its effective PI version is the TU version),
+  ## _     not a bare CU ("No Packing Item")
+  ## _This locks the capability the 'Auswahl Liefern' process now exposes via the hidden
+  ## _IsOnTheFlyPickToPackingInstructions param: on-the-fly picking honours the flag and packs
+  ## _to packing instructions, so the picked HU is TU-shaped and remains re-reservable after a reversal.
+
+    Given metasfresh contains M_Products:
+      | Identifier | IsStocked |
+      | product    | true      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPI       |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | huPIV              | huPI       | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPIItem        | huPIV              | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty    |
+      | huPIP_10PCE             | huPIItem        | product      | 10 PCE |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product      | 10.00    | PCE               |
+
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_HU_ID |
+      | inventory      | warehouse_1    | 2026-03-15   | product      | 0 PCE   | 10 PCE   | huPIP_10PCE             | hu      |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And M_HU_Attribute is changed
+      | M_HU_ID | M_Attribute_ID.Value | ValueStr |
+      | hu      | ProjectValue         | P200     |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | DeliveryRule |
+      | order      | true    | bp_1          | 2026-03-15  | warehouse_1    | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine  | order      | product      | 10         | huPIP_10PCE             |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+
+    And metasfresh contains M_QtyReservations:
+      | Identifier  | C_OrderLine_ID | M_Product_ID | M_Warehouse_ID | Qty    | QtyTU |
+      | reservation | orderLine      | product      | warehouse_1    | 10 PCE | 1     |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
+      | shipmentSchedule      | D            | true                | false       | true                                |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentSchedule      | shipment   |
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | movementqty |
+      | shipment   | product      | 10          |
+
+    # The picked HU must be TU-shaped: its effective PI version is the TU version (huPIV),
+    # proving the flag caused packing-to-instructions instead of a bare CU.
+    And load HUs assigned to M_InOut
+      | M_InOut_ID | M_HU_ID    |
+      | shipment   | pickedHU   |
+    And validate M_HUs:
+      | M_HU_ID  | M_HU_PI_Version_ID |
+      | pickedHU | huPIV              |
+
+    And validate M_QtyReservations:
+      | Identifier  | Qty    | QtyDelivered | Processed |
+      | reservation | 10 PCE | 10 PCE       | true      |

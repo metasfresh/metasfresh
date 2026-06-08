@@ -870,6 +870,16 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_M_InOut inout)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
+		);
+	}
+
+	@Override
 	public boolean isCustomerReturn(@NonNull final I_M_InOutLine inOutLine)
 	{
 		return isCustomerReturn(getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID())));

@@ -12,6 +12,9 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -65,6 +68,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -104,6 +108,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingJobGraiTargetService graiTargetService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -160,6 +165,7 @@ public class PickingJobService implements PickingSlotListener
 				.pickingSlotService(pickingSlotService)
 				.huService(huService)
 				.shipmentService(shipmentService)
+				.bpartnerService(bpartnerService)
 				//
 				.pickingJob(pickingJob)
 				.execute();
@@ -608,6 +614,68 @@ public class PickingJobService implements PickingSlotListener
 
 		pickingJobRepository.save(pickingJobChanged);
 		return pickingJobChanged;
+	}
+
+	/**
+	 * GRAI-scan picking entry point (lazy path): resolves the TU type and capacity from the scanned GRAI,
+	 * builds a new-TU {@link TUPickingTarget} carrying the parsed GRAI, and stores it on the line or at
+	 * job/header level (when {@code lineId == null}).
+	 * No physical HU is created here; the real TU is materialised later at first-pick time by the
+	 * framework, and {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}
+	 * stamps the GRAI on it afterwards via {@link PickingJobHUService#setGrais}.
+	 *
+	 * @param lineId      the picking-job line being picked; used to resolve the line's product for capacity checks
+	 *                    and the effective LU target for the TU-allowed-on-LU check.
+	 *                    {@code null} → header-level (no-line) scan: ONLY the per-product capacity check is skipped
+	 *                    (there is no single line product at header level). The TU-allowed-on-LU check still runs
+	 *                    against the job-level LU target, since {@link PickingJob#getLuPickingTargetEffective}
+	 *                    returns the job-level target when {@code lineId == null}; the TU target is stored at job level.
+	 * @param scannedGrai the raw scanned GRAI barcode.
+	 */
+	public PickingJob createTUFromGRAI(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedGrai)
+	{
+		// Resolve the TU type from the GRAI, validated against the effective LU target (line-level if set, else
+		// job-level). At header level (lineId == null) the effective LU target is the job-level one, so the
+		// TU-allowed-on-LU check still runs; ONLY the per-product capacity check is skipped, because there
+		// is no single line product at header level.
+		final LUPickingTarget luTarget = pickingJob.getLuPickingTargetEffective(lineId).orElse(null);
+		final ProductId lineProductId = (lineId != null) ? pickingJob.getLineById(lineId).getProductId() : null;
+		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
+				scannedGrai,
+				luTarget,
+				lineProductId);
+
+		final GRAI grai = resolved.getGrai();
+		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
+		final I_M_HU_PI tuPI = huService.getPI(tuPIId);
+
+		huService.assertTUTypeSupportsGraiAttribute(tuPIId, tuPI);
+
+		final TUPickingTarget tuTarget = TUPickingTarget.ofPackingInstructions(tuPIId, tuPI.getName(), grai);
+
+		return setTUPickingTarget(pickingJob, lineId, tuTarget);
+	}
+
+	/**
+	 * @return {@code true} if the GRAI-scan TU-target flow is enabled for the given customer;
+	 * {@code false} if {@code customerId} is {@code null} or the customer has GRAI scanning disabled.
+	 */
+	public boolean isGraiScanEnabled(@Nullable final BPartnerId customerId)
+	{
+		return !getGRAIRequired(customerId).isNo();
+	}
+
+	@NonNull
+	private GRAIRequired getGRAIRequired(@Nullable final BPartnerId customerId)
+	{
+		if (customerId == null)
+		{
+			return GRAIRequired.No;
+		}
+		return bpartnerService.getGRAIRequired(customerId);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)

@@ -318,6 +318,10 @@ public class DDOrderPickingReplenishmentService
 		ddOrder.setM_Warehouse_ID(request.getInTransitWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_From_ID(request.getSourceWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_To_ID(request.getTargetWarehouseId().getRepoId());
+		// PP_Plant from the target warehouse (mirrors HUs2DDOrderProducer) — the libero DD_OrderLine interceptor
+		// derives PP_Plant_From_ID from it; without it that interceptor logs a benign "@NotFound@ @PP_Plant_ID@" WARN.
+		warehouseBL.getPlantId(request.getTargetWarehouseId())
+				.ifPresent(plantId -> ddOrder.setPP_Plant_ID(plantId.getRepoId()));
 		ddOrder.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
 		ddOrder.setDateOrdered(TimeUtil.asTimestamp(request.getDatePromised()));
 		ddOrder.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
