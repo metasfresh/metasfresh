@@ -36,8 +36,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Repository cluster for C_PaymentTerm and C_PaySchedule.
- * Queries on other tables belong in their own DAO/Repo (e.g. C_Invoice → IInvoiceDAO).
+ * Repository Tables: C_PaymentTerm, C_PaymentTerm_Break, C_PaySchedule
+ * Repository Cluster: PaymentTermRepository
  */
 public interface IPaymentTermRepository extends ISingletonService
 {
