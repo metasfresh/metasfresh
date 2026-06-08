@@ -16,15 +16,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
  * packing one box (and printing one label) per unit, and returns a per-product result.
  */
 const createMasterdata = async ({ luUnits, selfPackedOrderCount, createShipmentPolicy = 'NO' }) => {
-    const salesOrders = {
-        // unrelated order the operator opens to reach the mass-printing button
-        "SO_job": {
-            bpartner: 'customer',
-            warehouse: 'wh',
-            datePromised: '2025-03-01T00:00:00.000+02:00',
-            lines: [{ product: 'jobProduct', qty: 1 }],
-        },
-    };
+    const salesOrders = {};
     for (let i = 1; i <= selfPackedOrderCount; i++) {
         salesOrders[`SO${i}`] = {
             bpartner: 'customer',
@@ -55,20 +47,14 @@ const createMasterdata = async ({ luUnits, selfPackedOrderCount, createShipmentP
             products: {
                 // self-packed product: the mass-printing flow only packs self-packed products
                 "selfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
-                // unrelated product whose picking job the operator opens to reach the button
-                "jobProduct": { prices: [{ price: 5 }] },
             },
             packingInstructions: {
                 // box PI: 1 CU per TU (= 1 unit = 1 box); the LU aggregates luUnits such boxes
                 "boxPI": { lu: "LU", qtyTUsPerLU: luUnits, tu: "TU", product: "selfPackedPrd", qtyCUsPerTU: 1 },
-                // CU PI for the unrelated job product so its order is pickable
-                "jobPI": { cu: true, lu: "jobLU", qtyTUsPerLU: 1 },
             },
             handlingUnits: {
                 // an LU of `luUnits` single-unit boxes of the self-packed product
                 "lu": { product: 'selfPackedPrd', warehouse: 'wh', packingInstructions: 'boxPI' },
-                // stock for the unrelated job product
-                "jobHU": { product: 'jobProduct', warehouse: 'wh', qty: 100, packingInstructions: 'jobPI' },
             },
             salesOrders,
         }
@@ -184,23 +170,14 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
             workplaces: { "workplace1": { warehouse: 'wh', pickingSlot: 'slot1' } },
             products: {
                 "selfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
-                "jobProduct": { prices: [{ price: 5 }] },
             },
             packingInstructions: {
                 "boxPI": { lu: "LU", qtyTUsPerLU: 3, tu: "TU", product: "selfPackedPrd", qtyCUsPerTU: 1 },
-                "jobPI": { cu: true, lu: "jobLU", qtyTUsPerLU: 1 },
             },
             handlingUnits: {
                 "lu": { product: 'selfPackedPrd', warehouse: 'wh', packingInstructions: 'boxPI' },
-                "jobHU": { product: 'jobProduct', warehouse: 'wh', qty: 100, packingInstructions: 'jobPI' },
             },
             salesOrders: {
-                "SO_job": {
-                    bpartner: 'customer',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'jobProduct', qty: 1 }],
-                },
                 // Earlier delivery date → filled first
                 "SO_A": {
                     bpartner: 'customer',
@@ -402,24 +379,14 @@ test('Mass printing — LU with only non-self-packed products shows empty result
             workplaces: { "workplace1": { warehouse: 'wh', pickingSlot: 'slot1' } },
             products: {
                 "nonSelfPackedPrd": { prices: [{ price: 8 }] },
-                "jobProduct": { prices: [{ price: 5 }] },
             },
             packingInstructions: {
                 "nonSelfBoxPI": { lu: "LU", qtyTUsPerLU: 1, tu: "nonSelfTU", product: "nonSelfPackedPrd", qtyCUsPerTU: 1 },
-                "jobPI": { cu: true, lu: "jobLU", qtyTUsPerLU: 1 },
             },
             handlingUnits: {
                 "nonSelfLU": { product: 'nonSelfPackedPrd', warehouse: 'wh', packingInstructions: 'nonSelfBoxPI' },
-                "jobHU": { product: 'jobProduct', warehouse: 'wh', qty: 100, packingInstructions: 'jobPI' },
             },
-            salesOrders: {
-                "SO_job": {
-                    bpartner: 'customer',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'jobProduct', qty: 1 }],
-                },
-            },
+            salesOrders: {},
         }
     });
 
@@ -468,23 +435,14 @@ test('Mass printing — button absent when mass-printing is disabled in picking 
             workplaces: { "workplace1": { warehouse: 'wh', pickingSlot: 'slot1' } },
             products: {
                 "selfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
-                "jobProduct": { prices: [{ price: 5 }] },
             },
             packingInstructions: {
                 "boxPI": { lu: "LU", qtyTUsPerLU: 3, tu: "TU", product: "selfPackedPrd", qtyCUsPerTU: 1 },
-                "jobPI": { cu: true, lu: "jobLU", qtyTUsPerLU: 1 },
             },
             handlingUnits: {
                 "lu": { product: 'selfPackedPrd', warehouse: 'wh', packingInstructions: 'boxPI' },
-                "jobHU": { product: 'jobProduct', warehouse: 'wh', qty: 100, packingInstructions: 'jobPI' },
             },
             salesOrders: {
-                "SO_job": {
-                    bpartner: 'customer',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'jobProduct', qty: 1 }],
-                },
                 "SO1": {
                     bpartner: 'customer',
                     warehouse: 'wh',
@@ -542,25 +500,16 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
             products: {
                 // Self-packed product with no TU packing instruction (CU-only = null-PI equivalent)
                 "nullPISelfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
-                "jobProduct": { prices: [{ price: 5 }] },
             },
             packingInstructions: {
                 // CU-only PI: no TU wrapping → schedule has no effective PackTo PI → VHU path
                 "cuOnlyPI": { cu: true, lu: "LU", qtyTUsPerLU: 3 },
-                "jobPI": { cu: true, lu: "jobLU", qtyTUsPerLU: 1 },
             },
             handlingUnits: {
                 // 3 bare VHUs/CUs of the self-packed product on a single LU
                 "lu": { product: 'nullPISelfPackedPrd', warehouse: 'wh', qty: 3, packingInstructions: 'cuOnlyPI' },
-                "jobHU": { product: 'jobProduct', warehouse: 'wh', qty: 100, packingInstructions: 'jobPI' },
             },
             salesOrders: {
-                "SO_job": {
-                    bpartner: 'customer',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'jobProduct', qty: 1 }],
-                },
                 // 3 single-unit orders → 3 VHU packs expected
                 "SO1": {
                     bpartner: 'customer',

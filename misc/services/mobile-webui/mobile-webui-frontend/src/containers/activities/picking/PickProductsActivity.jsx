@@ -135,7 +135,6 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           }}
         />
       )}
-
     </div>
   );
 };
