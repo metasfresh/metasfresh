@@ -329,7 +329,6 @@ public class PickingJobHUService
 	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
 	{
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
-		// Batch-load all top-level HUs to avoid N+1 queries.
 		final List<I_M_HU> topLevelHUs = getByIds(huIds);
 		for (final I_M_HU hu : topLevelHUs)
 		{

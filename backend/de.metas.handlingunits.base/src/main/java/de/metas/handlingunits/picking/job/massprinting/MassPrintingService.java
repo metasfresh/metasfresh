@@ -180,13 +180,9 @@ public class MassPrintingService
 			@NonNull final ProductId productId,
 			final int unitsOnLUInt)
 	{
-		// callInThreadInheritedTrx: scan() is invoked from the REST layer with no outer transaction,
-		// so this opens a fresh transaction per product. Using callInNewTrx here would also work but
-		// is semantically wrong — PickingJobCompleteCommand (called inside processProduct) uses
-		// callInThreadInheritedTrx for its own sub-calls to avoid self-deadlock on M_ShipmentSchedule
-		// row-locks; a callInNewTrx wrapper here would not cause that specific deadlock in this call
-		// path, but callInThreadInheritedTrx is consistent with the broader convention used by the
-		// picking-job command stack.
+		// callInThreadInheritedTrx (not callInNewTrx): all picking-job commands use this convention
+		// so every sub-call in the chain (PickingJobCompleteCommand, ShipmentService.groupSchedulesByAsyncBatch)
+		// joins the same transaction and avoids self-deadlock on M_ShipmentSchedule row-locks.
 		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, warehouseId, productId, unitsOnLUInt));
 	}
 
