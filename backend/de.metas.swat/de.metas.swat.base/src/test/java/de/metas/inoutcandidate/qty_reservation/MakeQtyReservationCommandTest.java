@@ -70,18 +70,15 @@ class MakeQtyReservationCommandTest
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
 
-		// --- mock IOrderLineBL: packing-item capacity = 11 CU/TU, QtyOrdered = 110 Each ---
+		// --- mock IOrderLineBL: packing-item capacity = 11 CU/TU ---
 		// getOrderLineById(..) returns de.metas.interfaces.I_C_OrderLine, which inherits
 		// getQtyItemCapacity() from org.compiere.model.I_C_OrderLine.
 		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
 		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
 
-		final Quantity qtyOrdered = Quantitys.of(new BigDecimal("110"), uomId);
-
 		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
-		when(orderLineBL.getQtyOrdered(salesOrderAndLineId)).thenReturn(qtyOrdered);
 
 		// --- mock QtyReservationService: no-op makeReservation, capture the request ---
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);

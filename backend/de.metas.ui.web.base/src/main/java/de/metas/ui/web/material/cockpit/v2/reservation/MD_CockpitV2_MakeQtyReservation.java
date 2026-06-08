@@ -102,7 +102,7 @@ public class MD_CockpitV2_MakeQtyReservation
 
 		final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
 
-		// zero qty → use the PI's CU-per-TU, not a stock-derived capacity
+		// fallback: the PI's CU-per-TU capacity, used when the order line has no positive QtyItemCapacity
 		final Quantity capacityPerTUFallback = huOrderBL.getCapacityPerTUInStockUOMFallback(salesOrderAndLineId, rowVO.getProductId());
 
 		MakeQtyReservationCommand.builder()

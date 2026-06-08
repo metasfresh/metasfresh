@@ -92,9 +92,6 @@ import java.util.Map;
  * <h3>{@code make qty reservation from QtyDemand_QtySupply_V row {string} for order line {string} with QtyTU {int}}</h3>
  * <p>Executes a reservation using a previously queried view row.
  *
- * <h3>{@code make qty reservation from QtyDemand_QtySupply_V row {string} for order line {string} with QtyTU {int} expecting error}</h3>
- * <p>Same as above but expects the reservation to fail with an exception.
- *
  * <h3>{@code validate QtyDemand_QtySupply_V:}</h3>
  * <p>Re-queries the view and validates field values against expectations.
  * <pre>
