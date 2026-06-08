@@ -138,6 +138,20 @@ class HUShipmentScheduleBL_tryMergeQtyPickedIntoExistingForVHU_Test
 		assertThat(bl.tryMergeQtyPickedIntoExistingForVHU(request)).isFalse();
 	}
 
+	@Test
+	void rejects_when_hu_is_not_virtual()
+	{
+		// Give the HU a non-virtual PI version (any id but the virtual 101); isVirtual(vhu) is then false.
+		// With a clean positive, non-catch-weight, non-anonymous, no-job-schedule request, all earlier
+		// guards pass and the non-virtual guard is the one that returns false (a non-VHU pick is never
+		// listener-shaped).
+		vhu.setM_HU_PI_Version_ID(500);
+		InterfaceWrapperHelper.saveRecord(vhu);
+		final AddQtyPickedRequest request = baseRequestBuilder(positiveStockQty(BigDecimal.TEN)).build();
+
+		assertThat(bl.tryMergeQtyPickedIntoExistingForVHU(request)).isFalse();
+	}
+
 	private AddQtyPickedRequest.AddQtyPickedRequestBuilder baseRequestBuilder(final StockQtyAndUOMQty qty)
 	{
 		return AddQtyPickedRequest.builder()

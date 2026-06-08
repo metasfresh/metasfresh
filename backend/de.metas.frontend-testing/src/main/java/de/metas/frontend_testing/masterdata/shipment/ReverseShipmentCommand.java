@@ -19,6 +19,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,9 +123,9 @@ public class ReverseShipmentCommand
 					+ "|" + row.getVHU_ID()
 					+ "|" + row.getM_TU_HU_ID()
 					+ "|" + row.getM_LU_HU_ID()
-					+ "|" + row.getQtyLU().stripTrailingZeros().toPlainString()
-					+ "|" + row.getQtyTU().stripTrailingZeros().toPlainString()
-					+ "|" + row.getQtyPicked().stripTrailingZeros().toPlainString();
+					+ "|" + plain(row.getQtyLU())
+					+ "|" + plain(row.getQtyTU())
+					+ "|" + plain(row.getQtyPicked());
 			final int count = countByTuple.merge(tuple, 1, Integer::sum);
 			if (count > max)
 			{
@@ -132,5 +133,11 @@ public class ReverseShipmentCommand
 			}
 		}
 		return max;
+	}
+
+	/** Null-safe plain-string of a qty column (a row written by a path that skipped updateQtyTUAndQtyLU may have null). */
+	private static String plain(final BigDecimal value)
+	{
+		return value != null ? value.stripTrailingZeros().toPlainString() : "0";
 	}
 }

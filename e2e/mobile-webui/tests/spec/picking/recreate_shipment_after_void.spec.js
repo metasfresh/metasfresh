@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
@@ -95,15 +96,11 @@ test('Reverse an aggregate-HU shipment then recreate it — no duplicate QtyPick
 
     await test.step('Reverse the completed shipment (the "void") — must not leave duplicate QtyPicked rows', async () => {
         const reversed = await Backend.reverseShipment({ shipmentId });
-        if (reversed?.docStatus !== 'RE') {
-            throw new Error('Shipment was not reversed (expected docStatus RE):\n' + JSON.stringify(reversed, null, 2));
-        }
+        expect(reversed?.docStatus, 'Shipment was not reversed (expected docStatus RE):\n' + JSON.stringify(reversed, null, 2)).toBe('RE');
 
         // GREEN (fix): exactly 1 active un-shipped row survives per tuple, so recreation cannot collide.
         // RED  (no fix): N identical rows survive (here 6) -> guaranteed unique-index collision on recreate.
         const dup = reversed.maxIdenticalUnshippedQtyPickedRowsPerVhuTuple;
-        if (dup !== 1) {
-            throw new Error(`Expected the reverse to leave exactly ONE active un-shipped QtyPicked row per unique-index tuple, but found ${dup} identical rows — they collide on M_ShipmentSchedule_QtyPicked_UI when the shipment is recreated. Full response:\n` + JSON.stringify(reversed, null, 2));
-        }
+        expect(dup, `Expected the reverse to leave exactly ONE active un-shipped QtyPicked row per unique-index tuple, but found ${dup} identical rows — they collide on M_ShipmentSchedule_QtyPicked_UI when the shipment is recreated. Full response:\n` + JSON.stringify(reversed, null, 2)).toBe(1);
     });
 });
