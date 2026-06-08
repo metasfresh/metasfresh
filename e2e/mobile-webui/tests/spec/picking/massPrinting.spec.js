@@ -181,7 +181,8 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
                     aggregationType: 'sales_order',
                     allowPickingAnyCustomer: true,
                     allowPickingAnyHU: true,
-                    createShipmentPolicy: 'NO',
+                    // CREATE_AND_COMPLETE so we can assert per-SO how many units were shipped.
+                    createShipmentPolicy: 'CREATE_AND_COMPLETE',
                     massPrinting: true,
                     pickTo: ['LU_TU'],
                 }
@@ -236,15 +237,20 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 1 });
-    // harness_gap(#3): per-order FIFO allocation assertions (SO_A fully filled = 2 boxes, SO_B partially
-    // filled = 1 box) are impractical with the current harness. The mass-printing result is aggregate
-    // per-product, not per-order; Backend.expect provides no per-order allocation path for mass-printing
-    // (only salesOrders.shipments and pickings, neither applies here). Adding per-order assertion would
-    // require extending JsonMassPrintingProductResult to expose per-order alloc counts + a new
-    // AssertMassPrintingExpectationsCommand — deferred as a follow-up harness improvement.
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobScreen.waitForScreen();
+
+    // Per-SO FIFO allocation assertion:
+    //   SO_A (earlier delivery date) → fully filled → completed shipment with movementQty=2
+    //   SO_B (later delivery date)   → partially filled → completed shipment with movementQty=1
+    await Backend.expect({
+        title: 'FIFO per-SO shipment assertion: SO_A fully filled, SO_B partially filled',
+        salesOrders: {
+            'SO_A': { shipments: [{ docStatus: 'CO', movementQty: 2 }] },
+            'SO_B': { shipments: [{ docStatus: 'CO', movementQty: 1 }] },
+        }
+    });
 });
 
 // noinspection JSUnusedLocalSymbols

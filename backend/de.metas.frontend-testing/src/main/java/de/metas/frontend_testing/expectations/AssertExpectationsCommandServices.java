@@ -33,6 +33,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -131,5 +132,10 @@ public class AssertExpectationsCommandServices
 	public List<I_M_InOut> getInOutsByOrderId(@NonNull final OrderId orderId)
 	{
 		return inOutDAO.retrieveInOutsByOrderId(orderId);
+	}
+
+	public List<I_M_InOutLine> getInOutLines(@NonNull final I_M_InOut inOut)
+	{
+		return inOutDAO.retrieveLines(inOut);
 	}
 }

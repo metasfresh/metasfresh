@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
+import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -12,9 +13,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.X_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -145,13 +147,29 @@ class AssertSalesOrderExpectationsCommand
 			softlyPutContext("shipmentIndex", index);
 			softlyPutContext("shipment", actual);
 
+			// Refresh to get the latest persisted state (e.g. after async completion).
+			InterfaceWrapperHelper.refresh(actual);
+
 			if (expectation.getDocStatus() != null)
 			{
-				// Refresh to get the latest persisted state (e.g. after async completion).
-				InterfaceWrapperHelper.refresh(actual);
-				assertThat(actual.getDocStatus())
+				final DocStatus actualDocStatus = DocStatus.ofCode(actual.getDocStatus());
+				assertThat(actualDocStatus)
 						.as("DocStatus of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
 						.isEqualTo(expectation.getDocStatus());
+			}
+
+			if (expectation.getMovementQty() != null)
+			{
+				final BigDecimal actualMovementQty = services.getInOutLines(actual).stream()
+						.map(I_M_InOutLine::getMovementQty)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				// Use compareTo (not equals) because BigDecimal.equals is scale-sensitive (2 != 2.0).
+				if (actualMovementQty.compareTo(expectation.getMovementQty()) != 0)
+				{
+					assertThat(actualMovementQty)
+							.as("total MovementQty of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
+							.isEqualTo(expectation.getMovementQty());
+				}
 			}
 		});
 	}
@@ -164,8 +182,8 @@ class AssertSalesOrderExpectationsCommand
 	private List<I_M_InOut> excludeVoidedAndReversedShipments(@NonNull final List<I_M_InOut> shipments)
 	{
 		return shipments.stream()
-				.filter(inout -> !X_M_InOut.DOCSTATUS_Voided.equals(inout.getDocStatus())
-						&& !X_M_InOut.DOCSTATUS_Reversed.equals(inout.getDocStatus()))
+				.filter(inout -> !DocStatus.Voided.equals(DocStatus.ofCode(inout.getDocStatus()))
+						&& !DocStatus.Reversed.equals(DocStatus.ofCode(inout.getDocStatus())))
 				.collect(Collectors.toList());
 	}
 }
