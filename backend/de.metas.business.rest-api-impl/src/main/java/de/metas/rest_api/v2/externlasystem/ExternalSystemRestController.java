@@ -63,6 +63,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalsystem" })
@@ -141,6 +142,23 @@ public class ExternalSystemRestController
 	{
 		final JsonCreateIssueResponse issueResponse = externalSystemService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok(issueResponse);
+	}
+
+	@ApiOperation("Notify metasfresh that an external system invocation completed successfully. "
+			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully recorded invocation success"),
+			@ApiResponse(code = 401, message = "You are not authorized to record invocation success"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request could not be processed")
+	})
+	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/ok")
+	public ResponseEntity<?> handleSuccess(
+			@PathVariable final Integer AD_PInstance_ID,
+			@RequestParam(required = false, defaultValue = "200") final int httpResponseCode)
+	{
+		externalSystemService.handleExportSuccess(PInstanceId.ofRepoId(AD_PInstance_ID), httpResponseCode);
+		return ResponseEntity.ok().build();
 	}
 
 	@ApiOperation("Upsert external system runtime parameter")

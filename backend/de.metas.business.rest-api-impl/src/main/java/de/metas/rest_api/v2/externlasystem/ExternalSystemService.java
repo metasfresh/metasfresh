@@ -45,6 +45,7 @@ import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
+import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
@@ -107,6 +108,7 @@ public class ExternalSystemService
 	@NonNull private final JsonExternalSystemRetriever jsonRetriever;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final List<IExternalSystemInvocationErrorListener> externalSystemInvocationErrorListeners;
+	@NonNull private final List<IExternalSystemInvocationSuccessListener> externalSystemInvocationSuccessListeners;
 
 	@VisibleForTesting
 	public static ExternalSystemService newInstanceForUnitTesting()
@@ -120,6 +122,7 @@ public class ExternalSystemService
 				ExternalServices.newInstanceForUnitTesting(),
 				new JsonExternalSystemRetriever(),
 				new ExternalSystemRepository(),
+				Collections.emptyList(),
 				Collections.emptyList()));
 	}
 
@@ -246,6 +249,42 @@ public class ExternalSystemService
 		catch (final Exception e)
 		{
 			logger.error("Failed to notify error listeners for PInstance {}", pInstanceId, e);
+		}
+	}
+
+	public void handleExportSuccess(@NonNull final PInstanceId pInstanceId, final int httpResponseCode)
+	{
+		notifyExternalSystemSuccessListeners(pInstanceId, ExternalSystemErrorContext.UNKNOWN, httpResponseCode);
+	}
+
+	private void notifyExternalSystemSuccessListeners(
+			@NonNull final PInstanceId pInstanceId,
+			@NonNull final ExternalSystemErrorContext context,
+			final int httpResponseCode)
+	{
+		try
+		{
+			for (final IExternalSystemInvocationSuccessListener listener : externalSystemInvocationSuccessListeners)
+			{
+				if (!listener.applies(context))
+				{
+					continue;
+				}
+
+				try
+				{
+					listener.onInvocationSuccess(pInstanceId, context, httpResponseCode);
+				}
+				catch (final Exception e)
+				{
+					logger.error("Success listener {} threw exception while handling success for PInstance {}",
+							listener.getClass().getSimpleName(), pInstanceId, e);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			logger.error("Failed to notify success listeners for PInstance {}", pInstanceId, e);
 		}
 	}
 
