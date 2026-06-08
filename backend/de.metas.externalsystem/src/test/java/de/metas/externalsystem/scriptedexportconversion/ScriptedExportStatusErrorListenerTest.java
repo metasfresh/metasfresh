@@ -112,6 +112,8 @@ public class ScriptedExportStatusErrorListenerTest
 		assertThat(after).isPresent();
 		assertThat(after.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
 		assertThat(after.get().getStatusMessage()).isEqualTo("Something went wrong");
+		// adIssueId=0: SPI does not provide the AD_Issue_ID; this is the documented limitation
+		assertThat(after.get().getAdIssueId()).isZero();
 	}
 
 	// -----------------------------------------------------------------------
