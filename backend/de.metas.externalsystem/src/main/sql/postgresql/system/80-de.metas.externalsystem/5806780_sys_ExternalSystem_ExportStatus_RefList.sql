@@ -32,7 +32,7 @@ SELECT l.AD_Language, t.AD_Reference_ID, t.Help, t.Name, t.Description,
   'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Reference t
 WHERE l.IsActive='Y'
-  AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N')
+  AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
   AND t.AD_Reference_ID=542104
   AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt
     WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID);
@@ -89,7 +89,7 @@ SELECT l.AD_Language, t.AD_Ref_List_ID, t.Name, t.Description,
   'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Ref_List t
 WHERE l.IsActive='Y'
-  AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N')
+  AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
   AND t.AD_Ref_List_ID IN (544252,544253,544254,544255,544256,544257,544258)
   AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt
     WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID);

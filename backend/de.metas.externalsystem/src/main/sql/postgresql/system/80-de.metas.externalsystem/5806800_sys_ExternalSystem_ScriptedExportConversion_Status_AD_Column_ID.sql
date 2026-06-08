@@ -43,7 +43,7 @@ INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Descrip
 SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, t.Description, t.Help,
   'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Element t
-WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N')
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
   AND t.AD_Element_ID=584958
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
     WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID);
