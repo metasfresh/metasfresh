@@ -240,6 +240,12 @@ class AssertSalesOrderExpectationsCommand
 			Thread.sleep(1000);
 		}
 
+		if (!actualShippedQty.stripTrailingZeros().equals(expectedShippedQty.stripTrailingZeros()))
+		{
+			logger.warn("Timed out after {} waiting for shipped qty for order {}: actual={} expected={}",
+					stopwatch, orderId, actualShippedQty, expectedShippedQty);
+		}
+
 		final BigDecimal finalShippedQty = actualShippedQty;
 		softly(() -> {
 			softlyPutContext("orderId", orderId);

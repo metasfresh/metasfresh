@@ -450,6 +450,8 @@ class AssertHUExpectationsCommand
 		else
 		{
 			// shipped=false: assert NOT on any sales-shipment line (single check, no poll needed).
+			// Refresh to avoid a stale husCache entry yielding a wrong-clean result.
+			InterfaceWrapperHelper.refresh(hu);
 			final List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu);
 			assertThat(salesShipmentLines)
 					.as("sales-shipment lines for HU " + huId + " (expected none)")
@@ -463,10 +465,20 @@ class AssertHUExpectationsCommand
 	 */
 	private List<I_M_InOutLine> getSalesShipmentLinesForHU(@NonNull final I_M_HU hu)
 	{
-		return services.getInOutLinesForHU(hu)
-				.stream()
+		final List<I_M_InOutLine> lines = services.getInOutLinesForHU(hu);
+
+		// Collect distinct M_InOut_IDs and load each at most once to avoid redundant DB round-trips
+		// in the hot polling loop (up to 60 iterations × N HUs).
+		final Map<Integer, I_M_InOut> inOutById = lines.stream()
+				.map(I_M_InOutLine::getM_InOut_ID)
+				.distinct()
+				.collect(Collectors.toMap(
+						id -> id,
+						id -> InterfaceWrapperHelper.load(id, I_M_InOut.class)));
+
+		return lines.stream()
 				.filter(line -> {
-					final I_M_InOut inOut = InterfaceWrapperHelper.load(line.getM_InOut_ID(), I_M_InOut.class);
+					final I_M_InOut inOut = inOutById.get(line.getM_InOut_ID());
 					return inOut != null && inOut.isSOTrx();
 				})
 				.collect(Collectors.toList());
