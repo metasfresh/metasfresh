@@ -81,7 +81,7 @@ public class MassPrintingService
 	 *   <li>Create a PRODUCT picking job restricted to those schedules.</li>
 	 *   <li>Pick each schedule from the scanned LU using the schedule's effective PI (finite PI → one box per unit; Virtual PI → one VHU/CU).</li>
 	 *   <li>Complete the picking job.</li>
-	 *   <li>Print one HU label per box (best-effort, after commit).</li>
+	 *   <li>Print one HU label per picked shippable HU (best-effort, after commit).</li>
 	 * </ol>
 	 *
 	 * @param request scan request carrying the LU id and the picker's user id
