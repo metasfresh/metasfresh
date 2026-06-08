@@ -152,7 +152,8 @@ class AssertSalesOrderExpectationsCommand
 
 			if (expectation.getDocStatus() != null)
 			{
-				final DocStatus actualDocStatus = DocStatus.ofCode(actual.getDocStatus());
+				// ofNullableCodeOrUnknown: null/unrecognised DB value maps to Unknown rather than NPE.
+				final DocStatus actualDocStatus = DocStatus.ofNullableCodeOrUnknown(actual.getDocStatus());
 				assertThat(actualDocStatus)
 						.as("DocStatus of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
 						.isEqualTo(expectation.getDocStatus());
@@ -163,13 +164,10 @@ class AssertSalesOrderExpectationsCommand
 				final BigDecimal actualMovementQty = services.getInOutLines(actual).stream()
 						.map(I_M_InOutLine::getMovementQty)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
-				// Use compareTo (not equals) because BigDecimal.equals is scale-sensitive (2 != 2.0).
-				if (actualMovementQty.compareTo(expectation.getMovementQty()) != 0)
-				{
-					assertThat(actualMovementQty)
-							.as("total MovementQty of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
-							.isEqualTo(expectation.getMovementQty());
-				}
+				// Strip trailing zeros so BigDecimal.equals is not scale-sensitive (2 == 2.0).
+				assertThat(actualMovementQty.stripTrailingZeros())
+						.as("total MovementQty of shipment[" + index + "] M_InOut_ID=" + actual.getM_InOut_ID())
+						.isEqualTo(expectation.getMovementQty().stripTrailingZeros());
 			}
 		});
 	}
@@ -182,8 +180,10 @@ class AssertSalesOrderExpectationsCommand
 	private List<I_M_InOut> excludeVoidedAndReversedShipments(@NonNull final List<I_M_InOut> shipments)
 	{
 		return shipments.stream()
-				.filter(inout -> !DocStatus.Voided.equals(DocStatus.ofCode(inout.getDocStatus()))
-						&& !DocStatus.Reversed.equals(DocStatus.ofCode(inout.getDocStatus())))
+				.filter(inout -> {
+					final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
+					return !docStatus.isReversedOrVoided();
+				})
 				.collect(Collectors.toList());
 	}
 }
