@@ -174,6 +174,34 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
+	 * Returns the distinct config IDs that have at least one non-{@link ExternalSystemExportStatus#Sent}
+	 * log entry for the given source record.
+	 * Only the most-recent attempt per config is considered; if the latest attempt is Sent the config
+	 * is excluded.
+	 * Used by the re-send process to determine which configs need to be re-triggered.
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		final List<ExternalSystemExportStatusLogEntry> allEntries = getLatestBySourceRecord(sourceRecord);
+
+		// Deduplicate: keep only the most-recent row per configId (list is ordered newest-first)
+		final java.util.LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ExternalSystemExportStatusLogEntry> latestPerConfig =
+				new java.util.LinkedHashMap<>();
+		for (final ExternalSystemExportStatusLogEntry entry : allEntries)
+		{
+			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
+		}
+
+		// Return config IDs whose latest attempt is NOT Sent
+		return latestPerConfig.entrySet().stream()
+				.filter(e -> !e.getValue().getStatus().isSent())
+				.map(java.util.Map.Entry::getKey)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
 	 * Returns all log entries for the given source record, ordered newest-first.
 	 * Callers that need the latest entry per config should deduplicate by configId
 	 * (first occurrence in this list wins).

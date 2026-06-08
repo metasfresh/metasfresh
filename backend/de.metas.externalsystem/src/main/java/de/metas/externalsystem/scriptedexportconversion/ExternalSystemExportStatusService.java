@@ -124,6 +124,28 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Creates a new log row with status {@link ExternalSystemExportStatus#Pending} and {@code IsResend=Y},
+	 * without a PInstance yet.
+	 * Called by the re-send AD process before invoking the scripted-export-conversion action for each config.
+	 * Prior attempt rows for the same (configId, sourceRecord) are <em>not</em> mutated.
+	 */
+	public void recordPendingAsResend(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		final ExternalSystemExportStatusLogEntry entry = ExternalSystemExportStatusLogEntry.builder()
+				.logId(0)
+				.pInstanceId(null)
+				.configId(configId)
+				.sourceRecord(sourceRecord)
+				.status(ExternalSystemExportStatus.Pending)
+				.isResend(true)
+				.build();
+		final ExternalSystemExportStatusLogEntry saved = repo.insert(entry);
+		writeRollUpToSourceRecord(saved);
+	}
+
+	/**
 	 * Finds the most-recent log row for (configId, sourceRecord), sets its PInstance, and transitions
 	 * to {@link ExternalSystemExportStatus#Enqueued}.
 	 * Called after the process has been successfully enqueued to RabbitMQ and the PInstance is known.

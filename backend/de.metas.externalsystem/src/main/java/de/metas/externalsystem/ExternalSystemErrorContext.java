@@ -45,7 +45,14 @@ public enum ExternalSystemErrorContext
 	 * EDI (Electronic Data Interchange) export context.
 	 * Used for DESADV and INVOIC exports via external system.
 	 */
-	EDI("EDI");
+	EDI("EDI"),
+
+	/**
+	 * Re-send context.
+	 * Used when a record's non-Sent attempt is being re-triggered via the
+	 * M_InOut_ReSend_ScriptedExportConversion AD process.
+	 */
+	RESEND("Resend");
 
 	private final String code;
 
@@ -82,5 +89,10 @@ public enum ExternalSystemErrorContext
 	public boolean isEDI()
 	{
 		return this == EDI;
+	}
+
+	public boolean isResend()
+	{
+		return this == RESEND;
 	}
 }
