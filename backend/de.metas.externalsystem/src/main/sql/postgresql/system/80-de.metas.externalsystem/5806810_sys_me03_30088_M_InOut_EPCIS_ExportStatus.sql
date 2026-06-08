@@ -55,7 +55,8 @@ VALUES (592752 /*From ID Server*/, 0, 0, 'Y',
   'N', 'N', 'N', 'N',
   0, 'Y',
   'N', 'N', 'NP', 1 /*fieldlength=1 like EDI counterpart*/,
-  'N', 'N', 'N',
+  'N', 'N', 'Y' /*IsForceIncludeInGeneratedModel: must be Y so the model generator includes
+                  this non-D entity-type column in the base I_M_InOut interface*/,
   'N', 'N', NULL, 'N', 'Y');
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, Description, IsTranslated,

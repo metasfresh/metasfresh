@@ -57,9 +57,12 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',
   WHERE AD_Language IN ('de_DE','de_CH') AND AD_Element_ID=584958;
 
 -- 3) AD_Column — Search(30) FK to AD_Column, nullable, with the new val rule ---------------
+-- AD_Reference_Value_ID=540748 (AD_Column generic table reference) is required so that the
+-- model generator can resolve the referenced table (AD_Column) from the FK column name
+-- "Status_AD_Column_ID" (which does not follow the simple <TableName>_ID pattern).
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,
   Updated, UpdatedBy, AD_Element_ID, AD_Table_ID, ColumnName, Name, Version,
-  AD_Reference_ID, AD_Val_Rule_ID, EntityType, IsKey, IsParent, IsMandatory, IsUpdateable,
+  AD_Reference_ID, AD_Reference_Value_ID, AD_Val_Rule_ID, EntityType, IsKey, IsParent, IsMandatory, IsUpdateable,
   IsIdentifier, IsTranslated, IsEncrypted, IsSelectionColumn, SeqNo, IsAllowLogging,
   IsAutocomplete, IsCalculated, PersonalDataCategory, FieldLength,
   IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsForceIncludeInGeneratedModel,
@@ -68,7 +71,7 @@ VALUES (592751 /*From ID Server*/, 0, 0, 'Y',
   TO_TIMESTAMP('2026-06-08 14:01:00','YYYY-MM-DD HH24:MI:SS'), 100,
   TO_TIMESTAMP('2026-06-08 14:01:00','YYYY-MM-DD HH24:MI:SS'), 100,
   584958, 542541, 'Status_AD_Column_ID', 'Status-Spalte', 0,
-  30, 540790, 'de.metas.externalsystem', 'N', 'N', 'N', 'Y',
+  30, 540748 /*AD_Column ref — needed for model generator table resolution*/, 540790, 'de.metas.externalsystem', 'N', 'N', 'N', 'Y',
   'N', 'N', 'N', 'N', 0, 'Y',
   'N', 'N', 'NP', 10,
   'N', 'N', 'N',
