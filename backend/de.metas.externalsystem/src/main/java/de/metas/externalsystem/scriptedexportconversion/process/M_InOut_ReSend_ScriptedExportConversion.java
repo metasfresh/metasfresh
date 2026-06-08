@@ -29,7 +29,6 @@ import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedEx
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
-import de.metas.inout.InOutId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.IProcessPrecondition;
@@ -98,11 +97,14 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		int triggered = 0;
 		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 		{
+			// Resolve config first — getById throws for inactive configs; fail-fast here
+			// avoids creating an orphan Pending row with no invocation.
+			final ExternalSystemScriptedExportConversionConfig config = scriptedExportRepo.getById(configId);
+
 			// (a) create a new Pending row with IsResend=Y — does not mutate prior rows
 			exportStatusService.recordPendingAsResend(configId, sourceRecord);
 
 			// (b) invoke the scripted export conversion action with RESEND error context
-			final ExternalSystemScriptedExportConversionConfig config = scriptedExportRepo.getById(configId);
 			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
 					config,
 					m_inout_id,

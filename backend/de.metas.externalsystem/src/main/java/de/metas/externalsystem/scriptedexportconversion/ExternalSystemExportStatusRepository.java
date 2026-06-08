@@ -42,7 +42,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -174,10 +176,10 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
-	 * Returns the distinct config IDs that have at least one non-{@link ExternalSystemExportStatus#Sent}
-	 * log entry for the given source record.
-	 * Only the most-recent attempt per config is considered; if the latest attempt is Sent the config
-	 * is excluded.
+	 * Returns the distinct config IDs whose most-recent log entry for the given source record is
+	 * not yet fully processed (i.e. neither {@link ExternalSystemExportStatus#Sent} nor
+	 * {@link ExternalSystemExportStatus#DontSend}).
+	 * Only the most-recent attempt per config is considered.
 	 * Used by the re-send process to determine which configs need to be re-triggered.
 	 */
 	@NonNull
@@ -187,17 +189,17 @@ public class ExternalSystemExportStatusRepository
 		final List<ExternalSystemExportStatusLogEntry> allEntries = getLatestBySourceRecord(sourceRecord);
 
 		// Deduplicate: keep only the most-recent row per configId (list is ordered newest-first)
-		final java.util.LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ExternalSystemExportStatusLogEntry> latestPerConfig =
-				new java.util.LinkedHashMap<>();
+		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ExternalSystemExportStatusLogEntry> latestPerConfig =
+				new LinkedHashMap<>();
 		for (final ExternalSystemExportStatusLogEntry entry : allEntries)
 		{
 			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
 		}
 
-		// Return config IDs whose latest attempt is NOT Sent
+		// Return config IDs whose latest attempt is NOT processed (i.e. not Sent and not DontSend)
 		return latestPerConfig.entrySet().stream()
-				.filter(e -> !e.getValue().getStatus().isSent())
-				.map(java.util.Map.Entry::getKey)
+				.filter(e -> !e.getValue().getStatus().isProcessed())
+				.map(Map.Entry::getKey)
 				.collect(ImmutableList.toImmutableList());
 	}
 
