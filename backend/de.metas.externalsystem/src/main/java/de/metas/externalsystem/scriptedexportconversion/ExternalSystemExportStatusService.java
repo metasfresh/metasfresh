@@ -43,16 +43,21 @@ import java.util.Optional;
 /**
  * Manages the export-status lifecycle for scripted-export-conversion log rows.
  *
- * <p>Each scripted-export invocation is identified by a unique {@code AD_PInstance_ID}.
- * The service upserts (insert-then-update) the single log row keyed by pInstance and
- * drives it through the status transitions:
+ * <p>The normal flow for an AFTER_COMPLETE triggered export is:
  * <pre>
- *   recordPending → recordEnqueued → markSent
- *                              ↘ markError
- *                              ↘ markInvalid
+ *   recordPending(configId, sourceRecord)          ← interceptor, no PInstance yet
+ *     → bindPInstanceAndMarkEnqueued(...)          ← after successful RabbitMQ dispatch
+ *       → markSent / markError                    ← driven by Camel response listener
  * </pre>
+ * On process failure before dispatch:
+ * <pre>
+ *   recordPending(configId, sourceRecord)
+ *     → markInvalidByRecord(configId, sourceRecord, msg)
+ * </pre>
+ * The legacy {@code recordPending(pInstanceId, configId, sourceRecord)} / {@code recordEnqueued(pInstanceId)}
+ * overloads remain available for callers that obtain the PInstance before creating the Pending row.
  *
- * <p>After each update the roll-up across all configs for the same source record is
+ * <p>After each status write the roll-up across all configs for the same source record is
  * computed and – when the config carries a non-null {@code Status_AD_Column_ID} –
  * written back to the source record's target column.
  *
