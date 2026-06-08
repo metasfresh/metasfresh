@@ -23,7 +23,8 @@
 package de.metas.externalsystem.scriptedexportconversion;
 
 import de.metas.externalsystem.ExternalSystemErrorContext;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemInvocationResult;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.scriptedexportconversion.process.M_InOut_ReSend_ScriptedExportConversion;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -31,9 +32,12 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.AdTableAndClientId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -133,7 +137,6 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemErrorContext.RESEND)))
 				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
 
-
 		// Run the process
 		final String result = runProcess(inoutId, tableId);
 
@@ -184,13 +187,11 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	{
 		return ExternalSystemScriptedExportConversionConfig.builder()
 				.id(id)
-				.parentId(de.metas.externalsystem.ExternalSystemParentConfigId.ofRepoId(1))
-				.externalSystemEndpointId(de.metas.externalsystem.endpoint.ExternalSystemEndpointId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(1))
 				.value("test")
 				.scriptIdentifier("test.js")
-				.tableAndClientId(org.adempiere.ad.table.api.AdTableAndClientId.of(
-						org.adempiere.ad.table.api.AdTableId.ofRepoId(tableId),
-						org.adempiere.service.ClientId.ofRepoId(0)))
+				.tableAndClientId(AdTableAndClientId.of(AdTableId.ofRepoId(tableId), ClientId.ofRepoId(0)))
 				.whereClause("1=1")
 				.active(true)
 				.isTriggerOnComplete(true)
