@@ -18,10 +18,4 @@ public class JsonShipmentScheduleExpectation
 	@Nullable BigDecimal qtyScheduledForPickingOfProcessed;
 	@Nullable Boolean isClosed;
 	@Nullable List<JsonShipmentScheduleQtyPickedExpectation> qtyPicked;
-
-	/** Total quantity already delivered (M_ShipmentSchedule.QtyDelivered). */
-	@Nullable BigDecimal qtyDelivered;
-
-	/** Remaining quantity to deliver (M_ShipmentSchedule.QtyToDeliver). */
-	@Nullable BigDecimal qtyToDeliver;
 }

@@ -22,7 +22,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderDAO;
@@ -58,7 +57,6 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -153,8 +151,8 @@ public class AssertExpectationsCommandServices
 				.collect(Collectors.toSet());
 	}
 
-	public List<I_M_ShipmentSchedule> getShipmentSchedulesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	public List<I_M_InOutLine> getProcessedShipmentLinesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
 	{
-		return shipmentSchedulePA.getByOrderLineIds(orderLineIds);
+		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
 	}
 }

@@ -4,11 +4,8 @@ import com.google.common.base.Stopwatch;
 import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
-import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -71,9 +68,9 @@ class AssertSalesOrderExpectationsCommand
 	{
 		final OrderId orderId = getOrderId(orderIdentifierStr);
 
-		if (expectation.getShipmentSchedule() != null)
+		if (expectation.getShippedQty() != null)
 		{
-			assertShipmentScheduleQty(orderId, expectation.getShipmentSchedule());
+			assertShippedQty(orderId, expectation.getShippedQty());
 		}
 
 		if (expectation.getShipments() == null)
@@ -199,18 +196,20 @@ class AssertSalesOrderExpectationsCommand
 	}
 
 	/**
-	 * Asserts the shipment-schedule delivered/remaining quantities for the given order.
+	 * Asserts the total shipped quantity for the given order by summing {@code MovementQty} across
+	 * all PROCESSED (completed) shipment lines (M_InOutLine) linked to the order's lines.
 	 *
-	 * <p>QtyDelivered and QtyToDeliver are updated asynchronously by the shipment-schedule recompute
-	 * after the shipment completes. This method polls until both values match the expectations
-	 * (waiting for the schedule to be valid and settled) or until the timeout elapses.
+	 * <p>This is aggregation-independent: it does not matter whether the shipment lines belong to
+	 * one or multiple M_InOut documents (e.g. mass-printing may create one combined per-customer
+	 * shipment). The check verifies the order's demand ended up shipped on line(s) with the right
+	 * total qty, regardless of grouping.
 	 *
-	 * <p>When the order has multiple lines (and hence multiple schedules), the quantities are
-	 * summed across all schedules before comparing.
+	 * <p>Shipment generation and completion are asynchronous. This method polls until the summed
+	 * qty equals the expectation, or until the timeout elapses.
 	 */
-	private void assertShipmentScheduleQty(
+	private void assertShippedQty(
 			@NonNull final OrderId orderId,
-			@NonNull final JsonShipmentScheduleExpectation expectation) throws InterruptedException
+			@NonNull final BigDecimal expectedShippedQty) throws InterruptedException
 	{
 		final Set<OrderLineId> orderLineIds = services.getOrderLineIdsByOrderId(orderId);
 
@@ -219,78 +218,34 @@ class AssertSalesOrderExpectationsCommand
 			throw new AdempiereException("No order lines found for order " + orderId);
 		}
 
-		final List<I_M_ShipmentSchedule> schedules = services.getShipmentSchedulesByOrderLineIds(orderLineIds);
-		if (schedules.isEmpty())
-		{
-			throw new AdempiereException("No shipment schedules found for order " + orderId);
-		}
-
-		final Set<ShipmentScheduleId> scheduleIds = schedules.stream()
-				.map(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()))
-				.collect(Collectors.toSet());
-
-		// Poll until the schedule is fully recomputed and values match
+		// Poll until processed shipment lines accumulate the expected total, or timeout
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		BigDecimal actualQtyDelivered = null;
-		BigDecimal actualQtyToDeliver = null;
+		BigDecimal actualShippedQty = BigDecimal.ZERO;
 
 		while (stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0)
 		{
-			// Wait for async recompute to settle
-			if (!services.isAllValid(scheduleIds))
-			{
-				logger.info("Shipment schedules for order {} are still being recomputed (elapsed: {}), waiting...", orderId, stopwatch);
-				//noinspection BusyWait
-				Thread.sleep(1000);
-				continue;
-			}
-
-			// Re-read refreshed schedules
-			final List<I_M_ShipmentSchedule> freshSchedules = services.getShipmentSchedulesByOrderLineIds(orderLineIds);
-			freshSchedules.forEach(InterfaceWrapperHelper::refresh);
-
-			actualQtyDelivered = freshSchedules.stream()
-					.map(I_M_ShipmentSchedule::getQtyDelivered)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			actualQtyToDeliver = freshSchedules.stream()
-					.map(I_M_ShipmentSchedule::getQtyToDeliver)
+			final List<I_M_InOutLine> processedLines = services.getProcessedShipmentLinesByOrderLineIds(orderLineIds);
+			actualShippedQty = processedLines.stream()
+					.map(I_M_InOutLine::getMovementQty)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			final boolean qtyDeliveredOk = expectation.getQtyDelivered() == null
-					|| actualQtyDelivered.stripTrailingZeros().equals(expectation.getQtyDelivered().stripTrailingZeros());
-			final boolean qtyToDeliverOk = expectation.getQtyToDeliver() == null
-					|| actualQtyToDeliver.stripTrailingZeros().equals(expectation.getQtyToDeliver().stripTrailingZeros());
-
-			if (qtyDeliveredOk && qtyToDeliverOk)
+			if (actualShippedQty.stripTrailingZeros().equals(expectedShippedQty.stripTrailingZeros()))
 			{
-				break; // values settled to expected — exit poll
+				break; // reached expected total — exit poll
 			}
 
-			logger.info("Waiting for shipment schedule qtys for order {} — qtyDelivered={} (expected {}), qtyToDeliver={} (expected {}) (elapsed: {})",
-					orderId, actualQtyDelivered, expectation.getQtyDelivered(),
-					actualQtyToDeliver, expectation.getQtyToDeliver(), stopwatch);
+			logger.info("Waiting for shipped qty for order {} — actual={} expected={} (elapsed: {})",
+					orderId, actualShippedQty, expectedShippedQty, stopwatch);
 			//noinspection BusyWait
 			Thread.sleep(1000);
 		}
 
-		final BigDecimal finalQtyDelivered = actualQtyDelivered;
-		final BigDecimal finalQtyToDeliver = actualQtyToDeliver;
+		final BigDecimal finalShippedQty = actualShippedQty;
 		softly(() -> {
 			softlyPutContext("orderId", orderId);
-
-			if (expectation.getQtyDelivered() != null)
-			{
-				assertThat(finalQtyDelivered != null ? finalQtyDelivered.stripTrailingZeros() : null)
-						.as("QtyDelivered of shipment schedule for order " + orderId)
-						.isEqualTo(expectation.getQtyDelivered().stripTrailingZeros());
-			}
-
-			if (expectation.getQtyToDeliver() != null)
-			{
-				assertThat(finalQtyToDeliver != null ? finalQtyToDeliver.stripTrailingZeros() : null)
-						.as("QtyToDeliver of shipment schedule for order " + orderId)
-						.isEqualTo(expectation.getQtyToDeliver().stripTrailingZeros());
-			}
+			assertThat(finalShippedQty.stripTrailingZeros())
+					.as("total shipped qty (sum of processed M_InOutLine.MovementQty) for order " + orderId)
+					.isEqualTo(expectedShippedQty.stripTrailingZeros());
 		});
 	}
 }

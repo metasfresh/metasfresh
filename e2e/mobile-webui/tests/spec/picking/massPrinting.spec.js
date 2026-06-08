@@ -209,14 +209,15 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
 
-    // FIFO per-SO verification via shipment-schedule delivered/remaining qty
-    // (mass-printing creates one combined per-customer shipment, so per-SO M_InOut lookup is not meaningful):
-    //   SO_A (earlier date) fully delivered (2, 0 remaining); SO_B (later) partially (1 delivered, 1 remaining).
+    // Aggregation-independent FIFO check: each SO's demand ended up shipped on shipment line(s)
+    // with the right total qty, regardless of whether mass-printing groups them into one or
+    // several M_InOut documents.
+    //   SO_A (earlier date) fully shipped (2); SO_B (later) partially shipped (1) — 1 unit demand remains (asserted above).
     await Backend.expect({
-        title: 'FIFO per-SO assertion via shipment-schedule qty: SO_A fully filled, SO_B partially filled',
+        title: 'FIFO per-SO assertion via shipped qty on shipment lines: SO_A fully filled, SO_B partially filled',
         salesOrders: {
-            'SO_A': { shipmentSchedule: { qtyDelivered: 2, qtyToDeliver: 0 } },
-            'SO_B': { shipmentSchedule: { qtyDelivered: 1, qtyToDeliver: 1 } },
+            'SO_A': { shippedQty: 2 },
+            'SO_B': { shippedQty: 1 },
         }
     });
 });

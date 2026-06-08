@@ -5,6 +5,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -23,11 +24,11 @@ import java.util.List;
  *       // assert order produced NO shipments (empty list = absence assertion)
  *       shipments: []
  *     },
- *     'SO3': {
- *       // assert FIFO partial delivery via shipment-schedule quantities
- *       // (useful when mass-printing creates one combined per-customer shipment
- *       //  instead of a separate shipment per SO):
- *       shipmentSchedule: { qtyDelivered: 2, qtyToDeliver: 0 }
+ *     'SO_A': {
+ *       // assert FIFO partial delivery via shipped qty on shipment lines
+ *       // (aggregation-independent: sums movementQty across all processed M_InOutLines
+ *       //  for this order, regardless of how many M_InOut documents they belong to):
+ *       shippedQty: 2
  *     }
  *   }
  * });
@@ -50,13 +51,15 @@ public class JsonSalesOrderExpectation
 	@Nullable List<JsonInOutExpectation> shipments;
 
 	/**
-	 * Assert the order's shipment-schedule delivered/remaining quantities (M_ShipmentSchedule).
+	 * Assert the total shipped quantity for this order, summed across all PROCESSED
+	 * (completed) shipment lines (M_InOutLine.MovementQty), regardless of how many
+	 * M_InOut documents the lines belong to.
 	 *
-	 * <p>Use this instead of {@link #shipments} when mass-printing creates one combined per-customer
-	 * shipment (so per-SO M_InOut lookup is not meaningful) but you still need to verify the FIFO
-	 * split per order via {@code QtyDelivered} / {@code QtyToDeliver}.
+	 * <p>Use this for aggregation-independent FIFO checks: it verifies the order's demand
+	 * was fulfilled on the right total qty on shipment line(s), without assuming whether
+	 * mass-printing groups them into one or several shipment documents.
 	 *
-	 * <p>Null means no shipment-schedule assertion (field omitted from JSON).
+	 * <p>Null means no shipped-qty assertion (field omitted from JSON).
 	 */
-	@Nullable JsonShipmentScheduleExpectation shipmentSchedule;
+	@Nullable BigDecimal shippedQty;
 }
