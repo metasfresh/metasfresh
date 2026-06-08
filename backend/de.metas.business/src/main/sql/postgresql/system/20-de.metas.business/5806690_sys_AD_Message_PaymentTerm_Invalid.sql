@@ -18,9 +18,9 @@ UPDATE AD_Message_Trl SET MsgText='Payment term {0} ({1}) is invalid and cannot 
 ;
 
 -- 2026-06-08T10:00:04.000Z
-UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-08 10:00:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545748
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Zahlungsbedingung {0} ({1}) ist ungültig und kann nicht für die Zahlungsplanerstellung verwendet werden: {2}',Updated=TO_TIMESTAMP('2026-06-08 10:00:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545748
 ;
 
 -- 2026-06-08T10:00:05.000Z
-UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-08 10:00:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545748
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Zahlungsbedingung {0} ({1}) ist ungültig und kann nicht für die Zahlungsplanerstellung verwendet werden: {2}',Updated=TO_TIMESTAMP('2026-06-08 10:00:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545748
 ;
