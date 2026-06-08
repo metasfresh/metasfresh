@@ -25,6 +25,6 @@ public interface IHUProductStorage extends IProductStorage, IHUAware
 	 */
 	default int getQtyAsInt()
 	{
-		return getQty().toBigDecimal().intValueExact();
+		return getQty().intValueExact();
 	}
 }

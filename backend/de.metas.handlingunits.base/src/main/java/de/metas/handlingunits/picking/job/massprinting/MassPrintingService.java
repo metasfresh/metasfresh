@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MassPrintingService
 {
-	static final AdMessageKey MSG_MASS_PRINTING_NOT_ENABLED = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled");
+	private static final AdMessageKey MSG_MASS_PRINTING_NOT_ENABLED = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled");
 
 	private static final Logger logger = LogManager.getLogger(MassPrintingService.class);
 
@@ -76,7 +77,7 @@ public class MassPrintingService
 		final List<IHUProductStorage> productStorages = huService.getProductStorages(luId);
 		if (productStorages.isEmpty())
 		{
-			return MassPrintingResult.builder().build();
+			return MassPrintingResult.EMPTY;
 		}
 
 		final ImmutableSet<ProductId> productIds = extractProductIds(productStorages);
@@ -85,7 +86,7 @@ public class MassPrintingService
 		final LocatorId locatorId = huService.getLocatorId(luId);
 		final WarehouseId warehouseId = locatorId.getWarehouseId();
 
-		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productIds, productsById);
+		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productsById.values());
 
 		// Batch-load all packageables for self-packed products in one query (avoids N+1 per product).
 		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds);
@@ -132,14 +133,11 @@ public class MassPrintingService
 	}
 
 	private static ImmutableSet<ProductId> retainSelfPackedProducts(
-			@NonNull final ImmutableSet<ProductId> productIds,
-			@NonNull final Map<ProductId, Product> productsById)
+			@NonNull final Collection<Product> products)
 	{
-		return productIds.stream()
-				.filter(productId -> {
-					final Product product = productsById.get(productId);
-					return product != null && product.isSelfPacked();
-				})
+		return products.stream()
+				.filter(Product::isSelfPacked)
+				.map(Product::getId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -156,11 +154,11 @@ public class MassPrintingService
 		final PackageableQuery query = PackageableQuery.builder()
 				.warehouseId(warehouseId)
 				.onlyFromSalesOrder(true)
+				.productIds(selfPackedProductIds)
 				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
 				.build();
 
 		return shipmentScheduleService.stream(query)
-				.filter(p -> selfPackedProductIds.contains(p.getProductId()))
 				.collect(Collectors.groupingBy(Packageable::getProductId));
 	}
 
@@ -188,12 +186,12 @@ public class MassPrintingService
 	{
 		final ScheduleSelection selection = selectSchedulesFifo(packageables, unitsOnLU);
 
-		if (selection.selectedScheduleIds.isEmpty() || selection.boxesToPack <= 0)
+		if (selection.getSelectedScheduleIds().isEmpty() || selection.getBoxesToPack() <= 0)
 		{
 			return PackAndPickResult.builder()
 					.boxesPacked(0)
 					.unitsLeftOnLU(unitsOnLU)
-					.openDemandRemaining(selection.totalDemand)
+					.openDemandRemaining(selection.getTotalDemand())
 					.build();
 		}
 
@@ -203,11 +201,11 @@ public class MassPrintingService
 		pickingJobService.complete(pickedJob);
 
 		return PackAndPickResult.builder()
-				.boxesPacked(selection.boxesToPack)
+				.boxesPacked(selection.getBoxesToPack())
 				.pickedHuIds(pickedHuIds)
 				.packedHUIds(packedHUIds)
-				.unitsLeftOnLU(selection.unitsLeftOnLU)
-				.openDemandRemaining(Math.max(0, selection.totalDemand - selection.boxesToPack))
+				.unitsLeftOnLU(selection.getUnitsLeftOnLU())
+				.openDemandRemaining(Math.max(0, selection.getTotalDemand() - selection.getBoxesToPack()))
 				.build();
 	}
 
@@ -227,6 +225,9 @@ public class MassPrintingService
 			}
 			catch (final Exception e)
 			{
+				// Label printing is best-effort: the pick is already committed, so we cannot roll back.
+				// Recovery: the caller receives labelPrintFailures in ProductResult and surfaces it
+				// to the operator via the JSON response, who can then reprint labels manually.
 				logger.warn("Failed to print label for HU {}", pickedHuId, e);
 				labelPrintFailures++;
 			}
@@ -279,7 +280,7 @@ public class MassPrintingService
 			capacityRemaining -= qtyToPickFromThisSchedule;
 		}
 
-		return new ScheduleSelection(
+		return ScheduleSelection.of(
 				selectedScheduleQtys,
 				totalDemand,
 				unitsOnLU - capacityRemaining,
@@ -298,7 +299,7 @@ public class MassPrintingService
 			@NonNull final HuId luId,
 			@NonNull final ScheduleSelection selection)
 	{
-		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selection.selectedScheduleIds);
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selection.getSelectedScheduleIds());
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
 						.pickerId(request.getPickerId())
@@ -312,7 +313,7 @@ public class MassPrintingService
 		PickingJob pickedJob = pickingJob;
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
-			pickedJob = pickLine(pickedJob, line, luQRCode, selection.selectedScheduleQtys);
+			pickedJob = pickLine(pickedJob, line, luQRCode, selection.getSelectedScheduleQtys());
 		}
 		return pickedJob;
 	}
@@ -355,6 +356,9 @@ public class MassPrintingService
 			final int cappedQtyInt)
 	{
 		PickingJob result = pickedJob;
+		// cappedQtyInt is already capped to schedule demand by selectSchedulesFifo (Math.min(scheduleDemand, capacityRemaining)),
+		// so each 1-unit pick never exceeds the schedule's open QtyToDeliver — overpick is prevented at source.
+		// checkIfAlreadyPacked=true (the default) additionally guards against re-picking an already-packed HU.
 		for (int unit = 0; unit < cappedQtyInt; unit++)
 		{
 			result = pickingJobService.processStepEvent(result, PickingJobStepEvent.builder()
@@ -363,6 +367,7 @@ public class MassPrintingService
 					.qrCode(luQRCode.toScannedCode())
 					.qtyPicked(BigDecimal.ONE)
 					.isPickWholeTU(false)
+					.checkIfAlreadyPacked(true)
 					.build());
 		}
 		return result;
@@ -376,35 +381,46 @@ public class MassPrintingService
 			@NonNull final HUQRCode luQRCode,
 			final int cappedQtyInt)
 	{
+		// cappedQtyInt is already capped to schedule demand by selectSchedulesFifo (Math.min(scheduleDemand, capacityRemaining)),
+		// so the total qty never exceeds the schedule's open QtyToDeliver — overpick is prevented at source.
+		// checkIfAlreadyPacked=true (the default) additionally guards against re-picking an already-packed HU.
 		return pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.eventType(PickingJobStepEventType.PICK)
 				.qrCode(luQRCode.toScannedCode())
 				.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
 				.isPickWholeTU(false)
+				.checkIfAlreadyPacked(true)
 				.build());
 	}
 
 	/** Result of FIFO schedule selection: which schedules to pick and how many units from each. */
+	@lombok.Value
+	@lombok.Builder
 	private static class ScheduleSelection
 	{
-		final ImmutableMap<ShipmentScheduleId, Integer> selectedScheduleQtys;
-		final ImmutableList<ShipmentScheduleId> selectedScheduleIds;
-		final int totalDemand;
-		final int boxesToPack;
-		final int unitsLeftOnLU;
+		/** Map from selected shipment-schedule ID to the capped qty to pick from it. */
+		@NonNull ImmutableMap<ShipmentScheduleId, Integer> selectedScheduleQtys;
+		/** Ordered list of the keys of {@link #selectedScheduleQtys} (insertion-order preserved). */
+		@NonNull ImmutableList<ShipmentScheduleId> selectedScheduleIds;
+		int totalDemand;
+		int boxesToPack;
+		int unitsLeftOnLU;
 
-		ScheduleSelection(
+		static ScheduleSelection of(
 				@NonNull final Map<ShipmentScheduleId, Integer> selectedScheduleQtys,
 				final int totalDemand,
 				final int boxesToPack,
 				final int unitsLeftOnLU)
 		{
-			this.selectedScheduleQtys = ImmutableMap.copyOf(selectedScheduleQtys);
-			this.selectedScheduleIds = ImmutableList.copyOf(selectedScheduleQtys.keySet());
-			this.totalDemand = totalDemand;
-			this.boxesToPack = boxesToPack;
-			this.unitsLeftOnLU = unitsLeftOnLU;
+			final ImmutableMap<ShipmentScheduleId, Integer> qtysMap = ImmutableMap.copyOf(selectedScheduleQtys);
+			return ScheduleSelection.builder()
+					.selectedScheduleQtys(qtysMap)
+					.selectedScheduleIds(ImmutableList.copyOf(qtysMap.keySet()))
+					.totalDemand(totalDemand)
+					.boxesToPack(boxesToPack)
+					.unitsLeftOnLU(unitsLeftOnLU)
+					.build();
 		}
 	}
 

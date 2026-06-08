@@ -17,6 +17,8 @@ import lombok.Value;
 @Builder
 public class MassPrintingResult
 {
+	public static final MassPrintingResult EMPTY = MassPrintingResult.builder().build();
+
 	@NonNull @Singular ImmutableList<ProductResult> productResults;
 
 	/** Products on the LU that were skipped because they are not IsSelfPacked. */
