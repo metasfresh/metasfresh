@@ -43,13 +43,14 @@ public class JsonMassPrintingResult
 	public static JsonMassPrintingResult of(@NonNull final MassPrintingResult result)
 	{
 		final List<JsonMassPrintingProductResult> productResults = result.getProductResults().stream()
-				.map(pr -> JsonMassPrintingProductResult.of(
-						pr.getProductId().getRepoId(),
-						pr.getBoxesPacked(),
-						pr.getLabelsPrinted(),
-						pr.getLabelPrintFailures(),
-						pr.getUnitsLeftOnLU(),
-						pr.getUnitsOfOpenDemandRemaining()))
+				.map(pr -> JsonMassPrintingProductResult.builder()
+						.productId(pr.getProductId().getRepoId())
+						.boxesPacked(pr.getBoxesPacked())
+						.labelsPrinted(pr.getLabelsPrinted())
+						.labelPrintFailures(pr.getLabelPrintFailures())
+						.unitsLeftOnLU(pr.getUnitsLeftOnLU())
+						.unitsOfOpenDemandRemaining(pr.getUnitsOfOpenDemandRemaining())
+						.build())
 				.collect(ImmutableList.toImmutableList());
 
 		final List<Integer> skippedIds = result.getSkippedNonSelfPackedProductIds().stream()

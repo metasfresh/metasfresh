@@ -322,32 +322,12 @@ public class PickingRestController
 		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
 	}
 
-	/**
-	 * Mass-printing scan: scan an LU and automatically pack all self-packed products.
-	 *
-	 * <p>For each {@code IsSelfPacked} product on the scanned LU that has open demand, the backend:
-	 * <ol>
-	 *   <li>Selects open shipment schedules FIFO by preparation date, capped at units on LU.</li>
-	 *   <li>Creates a PRODUCT picking job restricted to those schedules.</li>
-	 *   <li>Picks each schedule from the scanned LU (one box per unit via 1-CU-per-TU packTo PI).</li>
-	 *   <li>Completes the picking job (generating shipments per customer {@code CreateShipmentPolicy}).</li>
-	 *   <li>Prints one HU label per packed box (best-effort, after transaction commit).</li>
-	 * </ol>
-	 *
-	 * <p>The picker identity is resolved from the REST authentication context; no {@code pickerId} is
-	 * accepted in the request body.  There is no workflow process ID — the server orchestrates the
-	 * full operation in a single call with no step-by-step interaction.
-	 *
-	 * @param request body carrying the scanned LU QR code
-	 * @return per-product result summary (boxes packed, labels, leftovers)
-	 */
 	@PostMapping("/massPrinting/scan")
 	public @NonNull JsonMassPrintingResult massPrintingScan(@RequestBody @NonNull final JsonMassPrintingScanRequest request)
 	{
 		assertApplicationAccess();
 
-		final ScannedCode scannedCode = ScannedCode.ofString(request.getScannedCode());
-		final HUQRCode luQRCode = toHUQRCode(scannedCode);
+		final HUQRCode luQRCode = toHUQRCode(request.getScannedCode());
 		final HuId luId = huQRCodesService.getHuIdByQRCode(luQRCode);
 
 		final MassPrintingResult result = massPrintingService.scan(

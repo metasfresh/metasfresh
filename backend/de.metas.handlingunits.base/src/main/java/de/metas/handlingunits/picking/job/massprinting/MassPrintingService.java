@@ -27,7 +27,6 @@ import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -127,10 +126,9 @@ public class MassPrintingService
 				continue;
 			}
 
-			final Quantity unitsOnLU = productStorage.getQty();
 			// intValueExact: a self-packed product is whole-unit; a fractional qty would be a data error
 			// we must surface (ArithmeticException), not silently truncate (which would silently drop a shippable unit).
-			final int unitsOnLUInt = unitsOnLU.toBigDecimal().intValueExact();
+			final int unitsOnLUInt = productStorage.getQty().toBigDecimal().intValueExact();
 			if (unitsOnLUInt <= 0)
 			{
 				logger.debug("No units on LU for product: {}", productId);
@@ -182,6 +180,13 @@ public class MassPrintingService
 			@NonNull final ProductId productId,
 			final int unitsOnLUInt)
 	{
+		// callInThreadInheritedTrx: scan() is invoked from the REST layer with no outer transaction,
+		// so this opens a fresh transaction per product. Using callInNewTrx here would also work but
+		// is semantically wrong — PickingJobCompleteCommand (called inside processProduct) uses
+		// callInThreadInheritedTrx for its own sub-calls to avoid self-deadlock on M_ShipmentSchedule
+		// row-locks; a callInNewTrx wrapper here would not cause that specific deadlock in this call
+		// path, but callInThreadInheritedTrx is consistent with the broader convention used by the
+		// picking-job command stack.
 		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, warehouseId, productId, unitsOnLUInt));
 	}
 
