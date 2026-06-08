@@ -18,4 +18,13 @@ public interface IHUProductStorage extends IProductStorage, IHUAware
 	 * @return quantity in product's stocking UOM
 	 */
 	Quantity getQtyInStockingUOM();
+
+	/**
+	 * Returns the storage quantity as a whole-unit int.
+	 * Throws {@link ArithmeticException} if the quantity is fractional (surfacing a data error rather than silently truncating).
+	 */
+	default int getQtyAsInt()
+	{
+		return getQty().toBigDecimal().intValueExact();
+	}
 }

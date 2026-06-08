@@ -351,10 +351,8 @@ public class ShipmentService implements IShipmentService
 	@NonNull
 	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
-		// NOTE: Use callInThreadInheritedTrx (not callInNewTrx) to avoid a self-deadlock:
-		// When called from PickingJobCompleteCommand.executeInTrx (which already holds RowExclusiveLocks
-		// on M_ShipmentSchedule rows), a callInNewTrx would open a second DB connection and attempt to
-		// UPDATE M_ShipmentSchedule — which blocks on the outer transaction's lock, causing a deadlock.
+		// Use the caller's transaction (was callInNewTrx) to avoid a self-deadlock when invoked from within an open trx holding M_ShipmentSchedule row locks (e.g. mass-printing).
+		// The per-group async-batch isolation from #21683 is preserved regardless: AsyncBatchBL.newAsyncBatch() already commits each new C_Async_Batch in its own callInNewTrx.
 		return trxManager.callInThreadInheritedTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
 	}
 

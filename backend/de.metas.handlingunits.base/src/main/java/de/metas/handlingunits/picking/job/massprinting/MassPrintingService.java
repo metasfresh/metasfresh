@@ -43,21 +43,13 @@ import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Orchestration service for the mass-printing flow:
- * Scan LU → enumerate self-packed products → per-product FIFO selection →
- * create+pick+complete PRODUCT picking job → print one HU label per picked shippable HU.
- */
+/** Orchestration service for the mass-printing flow: scan LU → pick every self-packed product → print labels. */
 @Service
 @RequiredArgsConstructor
 public class MassPrintingService
 {
-	/**
-	 * Thrown when the picker's profile does not have mass-printing enabled.
-	 * Prevents any pick, shipment, or label action for a caller whose profile flag is off,
-	 * ensuring the server enforces the same constraint as the frontend trigger guard.
-	 */
 	static final AdMessageKey MSG_MASS_PRINTING_NOT_ENABLED = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled");
 
 	private static final Logger logger = LogManager.getLogger(MassPrintingService.class);
@@ -87,13 +79,16 @@ public class MassPrintingService
 			return MassPrintingResult.builder().build();
 		}
 
-		final ImmutableSet<ProductId> productIds = productStorages.stream()
-				.map(IHUProductStorage::getProductId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<ProductId> productIds = extractProductIds(productStorages);
 		final Map<ProductId, Product> productsById = productService.getByIdsAsMap(productIds);
 
 		final LocatorId locatorId = huService.getLocatorId(luId);
 		final WarehouseId warehouseId = locatorId.getWarehouseId();
+
+		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productIds, productsById);
+
+		// Batch-load all packageables for self-packed products in one query (avoids N+1 per product).
+		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds);
 
 		final ImmutableList.Builder<ProductResult> productResults = ImmutableList.builder();
 		final ImmutableList.Builder<ProductId> skippedNonSelfPacked = ImmutableList.builder();
@@ -101,52 +96,26 @@ public class MassPrintingService
 		for (final IHUProductStorage productStorage : productStorages)
 		{
 			final ProductId productId = productStorage.getProductId();
-			final Product product = productsById.get(productId);
-			if (product == null || !product.isSelfPacked())
+			if (!selfPackedProductIds.contains(productId))
 			{
 				logger.debug("Skipping non-self-packed product: {}", productId);
 				skippedNonSelfPacked.add(productId);
 				continue;
 			}
 
-			// intValueExact: a self-packed product is whole-unit; a fractional qty would be a data error
-			// we must surface (ArithmeticException), not silently truncate (which would silently drop a shippable unit).
-			final int unitsOnLUInt = productStorage.getQty().toBigDecimal().intValueExact();
-			if (unitsOnLUInt <= 0)
+			if (productStorage.getQtyAsInt() <= 0)
 			{
 				logger.debug("No units on LU for product: {}", productId);
 				continue;
 			}
 
+			final List<Packageable> packageables = packageablesByProduct.getOrDefault(productId, ImmutableList.of());
+
 			// Pack+ship inside a transaction; label printing happens AFTER the transaction commits
 			// (best-effort: failures are counted but do not roll back the packed boxes).
-			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, warehouseId, productId, unitsOnLUInt);
+			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, warehouseId, productId, productStorage.getQtyAsInt(), packageables);
 
-			int labelsPrinted = 0;
-			int labelPrintFailures = 0;
-			for (final HuId pickedHuId : packAndPickResult.getPickedHuIds())
-			{
-				try
-				{
-					huService.printHULabel(pickedHuId);
-					labelsPrinted++;
-				}
-				catch (final Exception e)
-				{
-					logger.warn("Failed to print label for HU {}", pickedHuId, e);
-					labelPrintFailures++;
-				}
-			}
-
-			productResults.add(ProductResult.builder()
-					.productId(productId)
-					.boxesPacked(packAndPickResult.getBoxesPacked())
-					.packedHUIds(packAndPickResult.getPackedHUIds())
-					.labelsPrinted(labelsPrinted)
-					.labelPrintFailures(labelPrintFailures)
-					.unitsLeftOnLU(packAndPickResult.getUnitsLeftOnLU())
-					.unitsOfOpenDemandRemaining(packAndPickResult.getOpenDemandRemaining())
-					.build());
+			productResults.add(buildProductResult(productId, packAndPickResult));
 		}
 
 		return MassPrintingResult.builder()
@@ -155,35 +124,76 @@ public class MassPrintingService
 				.build();
 	}
 
+	private static ImmutableSet<ProductId> extractProductIds(@NonNull final List<IHUProductStorage> productStorages)
+	{
+		return productStorages.stream()
+				.map(IHUProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static ImmutableSet<ProductId> retainSelfPackedProducts(
+			@NonNull final ImmutableSet<ProductId> productIds,
+			@NonNull final Map<ProductId, Product> productsById)
+	{
+		return productIds.stream()
+				.filter(productId -> {
+					final Product product = productsById.get(productId);
+					return product != null && product.isSelfPacked();
+				})
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** Loads all packageables for the given products in one query, grouped by product. */
+	private Map<ProductId, List<Packageable>> loadPackageablesGroupedByProduct(
+			@NonNull final WarehouseId warehouseId,
+			@NonNull final ImmutableSet<ProductId> selfPackedProductIds)
+	{
+		if (selfPackedProductIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final PackageableQuery query = PackageableQuery.builder()
+				.warehouseId(warehouseId)
+				.onlyFromSalesOrder(true)
+				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
+				.build();
+
+		return shipmentScheduleService.stream(query)
+				.filter(p -> selfPackedProductIds.contains(p.getProductId()))
+				.collect(Collectors.groupingBy(Packageable::getProductId));
+	}
+
 	@NonNull
 	private PackAndPickResult processProductInTrx(
 			@NonNull final MassPrintingScanRequest request,
 			@NonNull final HuId luId,
 			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
-			final int unitsOnLUInt)
+			final int unitsOnLU,
+			@NonNull final List<Packageable> packageables)
 	{
 		// callInThreadInheritedTrx (not callInNewTrx): all picking-job commands use this convention
 		// so every sub-call in the chain (PickingJobCompleteCommand, ShipmentService.groupSchedulesByAsyncBatch)
 		// joins the same transaction and avoids self-deadlock on M_ShipmentSchedule row-locks.
-		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, warehouseId, productId, unitsOnLUInt));
+		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, productId, unitsOnLU, packageables));
 	}
 
 	@NonNull
 	private PackAndPickResult processProduct(
 			@NonNull final MassPrintingScanRequest request,
 			@NonNull final HuId luId,
-			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
-			final int unitsOnLUInt)
+			final int unitsOnLU,
+			@NonNull final List<Packageable> packageables)
 	{
-		final ScheduleSelection selection = selectSchedules(productId, warehouseId, unitsOnLUInt);
+		final ScheduleSelection selection = selectSchedulesFifo(packageables, unitsOnLU);
 
 		if (selection.selectedScheduleIds.isEmpty() || selection.boxesToPack <= 0)
 		{
 			return PackAndPickResult.builder()
 					.boxesPacked(0)
-					.unitsLeftOnLU(unitsOnLUInt)
+					.unitsLeftOnLU(unitsOnLU)
 					.openDemandRemaining(selection.totalDemand)
 					.build();
 		}
@@ -202,29 +212,53 @@ public class MassPrintingService
 				.build();
 	}
 
+	@NonNull
+	private ProductResult buildProductResult(
+			@NonNull final ProductId productId,
+			@NonNull final PackAndPickResult packAndPickResult)
+	{
+		int labelsPrinted = 0;
+		int labelPrintFailures = 0;
+		for (final HuId pickedHuId : packAndPickResult.getPickedHuIds())
+		{
+			try
+			{
+				huService.printHULabel(pickedHuId);
+				labelsPrinted++;
+			}
+			catch (final Exception e)
+			{
+				logger.warn("Failed to print label for HU {}", pickedHuId, e);
+				labelPrintFailures++;
+			}
+		}
+
+		return ProductResult.builder()
+				.productId(productId)
+				.boxesPacked(packAndPickResult.getBoxesPacked())
+				.packedHUIds(packAndPickResult.getPackedHUIds())
+				.labelsPrinted(labelsPrinted)
+				.labelPrintFailures(labelPrintFailures)
+				.unitsLeftOnLU(packAndPickResult.getUnitsLeftOnLU())
+				.unitsOfOpenDemandRemaining(packAndPickResult.getOpenDemandRemaining())
+				.build();
+	}
+
 	/**
 	 * Selects shipment schedules FIFO by preparation date, capped at units on LU.
 	 * Fully fills each order before moving to the next; the last order may be partially filled.
 	 */
 	@NonNull
-	private ScheduleSelection selectSchedules(
-			@NonNull final ProductId productId,
-			@NonNull final WarehouseId warehouseId,
-			final int unitsOnLUInt)
+	private ScheduleSelection selectSchedulesFifo(
+			@NonNull final List<Packageable> packageables,
+			final int unitsOnLU)
 	{
-		final PackageableQuery query = PackageableQuery.builder()
-				.productId(productId)
-				.warehouseId(warehouseId)
-				.onlyFromSalesOrder(true)
-				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
-				.build();
-
 		// Maps each selected schedule to the qty to actually pick from it (may be < full demand for the last order).
 		final Map<ShipmentScheduleId, Integer> selectedScheduleQtys = new LinkedHashMap<>();
 		int totalDemand = 0;
-		int capacityRemaining = unitsOnLUInt;
+		int capacityRemaining = unitsOnLU;
 
-		for (final Packageable packageable : (Iterable<Packageable>) shipmentScheduleService.stream(query)::iterator)
+		for (final Packageable packageable : packageables)
 		{
 			final int scheduleDemand = packageable.getQtyToPick().toBigDecimal().intValueExact();
 			if (scheduleDemand <= 0)
@@ -249,7 +283,7 @@ public class MassPrintingService
 		return new ScheduleSelection(
 				selectedScheduleQtys,
 				totalDemand,
-				unitsOnLUInt - capacityRemaining,
+				unitsOnLU - capacityRemaining,
 				capacityRemaining);
 	}
 
@@ -305,32 +339,51 @@ public class MassPrintingService
 
 		if (line.getPickingUnit() == PickingUnit.CU)
 		{
-			// VHU/CU path: one event per unit → one VHU per unit → one label per unit.
-			// Splitting to N calls of qty=1 is the only way to obtain N separate VHUs.
-			PickingJob result = pickedJob;
-			for (int unit = 0; unit < cappedQtyInt; unit++)
-			{
-				result = pickingJobService.processStepEvent(result, PickingJobStepEvent.builder()
-						.pickingLineId(line.getId())
-						.eventType(PickingJobStepEventType.PICK)
-						.qrCode(luQRCode.toScannedCode())
-						.qtyPicked(BigDecimal.ONE)
-						.isPickWholeTU(false)
-						.build());
-			}
-			return result;
+			return pickCuLine(pickedJob, line, luQRCode, cappedQtyInt);
 		}
 		else
 		{
-			// TU path: one event with full qty; PI capacity=1 produces one TU per unit.
-			return pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
+			return pickTuLine(pickedJob, line, luQRCode, cappedQtyInt);
+		}
+	}
+
+	/** VHU/CU path: one event per unit → one VHU per unit → one label per unit. */
+	@NonNull
+	private PickingJob pickCuLine(
+			@NonNull final PickingJob pickedJob,
+			@NonNull final PickingJobLine line,
+			@NonNull final HUQRCode luQRCode,
+			final int cappedQtyInt)
+	{
+		PickingJob result = pickedJob;
+		for (int unit = 0; unit < cappedQtyInt; unit++)
+		{
+			result = pickingJobService.processStepEvent(result, PickingJobStepEvent.builder()
 					.pickingLineId(line.getId())
 					.eventType(PickingJobStepEventType.PICK)
 					.qrCode(luQRCode.toScannedCode())
-					.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
+					.qtyPicked(BigDecimal.ONE)
 					.isPickWholeTU(false)
 					.build());
 		}
+		return result;
+	}
+
+	/** TU path: one event with full qty; PI capacity=1 produces one TU per unit. */
+	@NonNull
+	private PickingJob pickTuLine(
+			@NonNull final PickingJob pickedJob,
+			@NonNull final PickingJobLine line,
+			@NonNull final HUQRCode luQRCode,
+			final int cappedQtyInt)
+	{
+		return pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
+				.pickingLineId(line.getId())
+				.eventType(PickingJobStepEventType.PICK)
+				.qrCode(luQRCode.toScannedCode())
+				.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
+				.isPickWholeTU(false)
+				.build());
 	}
 
 	/** Result of FIFO schedule selection: which schedules to pick and how many units from each. */
