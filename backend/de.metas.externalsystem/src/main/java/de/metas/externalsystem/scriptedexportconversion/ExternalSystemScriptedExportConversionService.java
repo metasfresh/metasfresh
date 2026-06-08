@@ -48,9 +48,9 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
-import org.compiere.SpringContextHolder;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
@@ -336,10 +336,14 @@ public class ExternalSystemScriptedExportConversionService
 				// (c) Invalid — the script did not produce a valid Resource (or another process error)
 				exportStatusService.markInvalidByRecord(config.getId(), sourceRecord, result.getSummary());
 			}
-			else
+			else if (processInfo.getPinstanceId() != null)
 			{
 				// (b) Enqueued — successfully dispatched to RabbitMQ
 				exportStatusService.bindPInstanceAndMarkEnqueued(config.getId(), sourceRecord, processInfo.getPinstanceId());
+			}
+			else
+			{
+				log.warn("Process succeeded but PInstance is null for Config ID {}, Record ID {} — skipping Enqueued status write", config.getId(), recordId);
 			}
 
 			return ExternalSystemInvocationResult.success(processInfo.getPinstanceId());
