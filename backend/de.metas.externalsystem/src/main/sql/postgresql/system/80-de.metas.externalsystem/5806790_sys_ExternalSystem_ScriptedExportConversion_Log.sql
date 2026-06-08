@@ -65,7 +65,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Status Message', PrintName='Status Message',
-  Updated=TO_TIMESTAMP('2026-06-08 11:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:15','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
   WHERE AD_Language='en_US' AND AD_Element_ID=584955;
 
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
@@ -78,7 +78,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='HTTP Response Code', PrintName='HTTP Response Code',
-  Updated=TO_TIMESTAMP('2026-06-08 11:00:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
   WHERE AD_Language='en_US' AND AD_Element_ID=584956;
 
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
@@ -91,8 +91,14 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Resend', PrintName='Resend',
-  Updated=TO_TIMESTAMP('2026-06-08 11:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:17','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
   WHERE AD_Language='en_US' AND AD_Element_ID=584957;
+
+-- Mark de_DE / de_CH as actively translated (base German text already correct)
+UPDATE AD_Element_Trl SET IsTranslated='Y',
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language IN ('de_DE','de_CH')
+    AND AD_Element_ID IN (584953, 584955, 584956, 584957);
 
 -- ============================================================================
 -- 3) AD_Columns

@@ -117,7 +117,12 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Don''t Send',
   Updated=TO_TIMESTAMP('2026-06-08 10:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
   WHERE AD_Language='en_US' AND AD_Ref_List_ID=544258;
 
--- 6) Mark de_DE / de_CH as actively translated (text already German in base) ---------------
+-- 6a) Mark AD_Reference_Trl de_DE / de_CH as actively translated (name already German in base) --
+UPDATE AD_Reference_Trl SET IsTranslated='Y',
+  Updated=TO_TIMESTAMP('2026-06-08 10:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language IN ('de_DE','de_CH') AND AD_Reference_ID=542104;
+
+-- 6b) Mark de_DE / de_CH as actively translated (text already German in base) ---------------
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y',
   Updated=TO_TIMESTAMP('2026-06-08 10:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
   WHERE AD_Language IN ('de_DE','de_CH')
