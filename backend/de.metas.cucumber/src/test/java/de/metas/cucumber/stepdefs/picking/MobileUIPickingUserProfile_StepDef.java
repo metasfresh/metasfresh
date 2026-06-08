@@ -132,11 +132,21 @@ public class MobileUIPickingUserProfile_StepDef
 
 			// Insert a MobileUI_UserProfile_Picking_Job record carrying only the shipment policy;
 			// all other options fall back to the profile default via PickingJobOptions.fallbackTo().
+			// All mandatory (NOT NULL) boolean columns must be set explicitly — DB has no defaults for them.
 			final I_MobileUI_UserProfile_Picking_Job jobRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
 			jobRecord.setIsActive(true);
 			jobRecord.setName("per-customer-" + customerId.getRepoId());
 			jobRecord.setCreateShipmentPolicy(policy.getCode());
 			jobRecord.setIsAllowCompletingPartialPickingJob(true);
+			jobRecord.setIsAllowPickingAnyHU(false);
+			jobRecord.setIsAllowSkippingRejectedReason(false);
+			jobRecord.setIsAlwaysSplitHUsEnabled(false);
+			jobRecord.setIsAnonymousHuPickedOnTheFly(false);
+			jobRecord.setIsCatchWeightTUPickingEnabled(false);
+			jobRecord.setIsConsiderSalesOrderCapacity(false);
+			jobRecord.setIsShipOnCloseLU(false);
+			jobRecord.setIsShowConfirmationPromptWhenOverPick(false);
+			jobRecord.setIsShowLastPickedBestBeforeDateForLines(false);
 			InterfaceWrapperHelper.saveRecord(jobRecord);
 
 			final PickingJobOptionsId optionsId = PickingJobOptionsId.ofRepoId(jobRecord.getMobileUI_UserProfile_Picking_Job_ID());
