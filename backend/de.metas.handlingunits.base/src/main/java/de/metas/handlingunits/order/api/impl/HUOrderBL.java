@@ -603,7 +603,7 @@ public class HUOrderBL implements IHUOrderBL
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 
-		final org.compiere.model.I_C_Order orderRecord = orderDAO.getById(salesOrderAndLineId.getOrderId());
+		final I_C_Order orderRecord = orderDAO.getById(salesOrderAndLineId.getOrderId(), I_C_Order.class);
 		final de.metas.handlingunits.model.I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.load(
 				salesOrderAndLineId.getOrderLineRepoId(),
 				de.metas.handlingunits.model.I_C_OrderLine.class);
