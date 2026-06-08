@@ -411,7 +411,7 @@ class AssertHUExpectationsCommand
 	 * Asserts whether the given HU is (or is not) assigned to a sales-shipment line.
 	 *
 	 * <p>When {@code expectedShipped=true}: polls (up to {@link #SHIPPED_ASSERTION_TIMEOUT}) until
-	 * {@link IHUInOutDAO#retrieveInOutLinesForHU(I_M_HU)} returns at least one line belonging to a
+	 * {@link #getSalesShipmentLinesForHU(I_M_HU)} returns at least one line belonging to a
 	 * sales shipment ({@code M_InOut.IsSOTrx=Y}).  Shipment assignment is async, so polling is required.
 	 *
 	 * <p>When {@code expectedShipped=false}: a single check is performed (no polling); asserts
