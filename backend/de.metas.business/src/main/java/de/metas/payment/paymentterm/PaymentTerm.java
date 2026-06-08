@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -160,7 +161,26 @@ public class PaymentTerm
 		}
 	}
 
+	private static final AdMessageKey MSG_PAYMENT_TERM_INVALID = AdMessageKey.of("PaymentTerm_Invalid");
+
 	public boolean isValid() {return valid.isTrue();}
+
+	/**
+	 * Asserts that this payment term is valid (all breaks sum to 100%).
+	 * <p>
+	 * A complex-but-invalid payment term (e.g. a partial/race-state snapshot with breaks summing ≠ 100%)
+	 * must never silently spread wrong amounts. Callers that are about to spread this term MUST call this
+	 * method first so the error is surfaced immediately rather than written as a wrong {@code DueAmt}.
+	 *
+	 * @throws AdempiereException (user-friendly, AD_Message {@code PaymentTerm_Invalid}) if {@link #isValid()} is false
+	 */
+	public void assertValid()
+	{
+		if (valid.isFalse())
+		{
+			throw new AdempiereException(MSG_PAYMENT_TERM_INVALID, value, name, valid.getReasonAsString());
+		}
+	}
 
 	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
 	{
@@ -184,6 +204,8 @@ public class PaymentTerm
 	@NonNull
 	public ImmutableMap<PaymentTermBreakId, Money> spreadByBreaks(@NonNull final Money amount, @NonNull final CurrencyPrecision precision)
 	{
+		assertValid();
+
 		final ImmutableMap.Builder<PaymentTermBreakId, Money> result = ImmutableMap.builder();
 
 		Money remainingAmtToSpread = amount;

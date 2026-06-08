@@ -157,11 +157,7 @@ public class OrderPayScheduleService
 		}
 
 		final PaymentTermId paymentTermId = orderBL.getPaymentTermId(orderRecord);
-		// Load the payment term fresh from the DB using the current (completion) transaction, NOT from
-		// the process-wide cache: that shared snapshot can be stale/partial under concurrency (a reader
-		// populating it between two break INSERTs caches only some breaks), which would make spreadByBreaks
-		// give the sole/last break the full amount.
-		final PaymentTerm paymentTerm = paymentTermService.getByIdInTrx(paymentTermId);
+		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
 		if (!paymentTerm.isComplex())
 		{
 			return null;
