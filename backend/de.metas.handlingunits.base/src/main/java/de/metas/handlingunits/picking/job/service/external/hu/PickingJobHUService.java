@@ -338,7 +338,7 @@ public class PickingJobHUService
 		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(hu);
 		if (includedHUs.isEmpty())
 		{
-			// Leaf HU: the actual product-holding unit (one per box).
+			// Leaf HU: the actual product-holding unit (TU box for finite PI, VHU/CU for Virtual PI).
 			result.add(HuId.ofRepoId(hu.getM_HU_ID()));
 			return;
 		}

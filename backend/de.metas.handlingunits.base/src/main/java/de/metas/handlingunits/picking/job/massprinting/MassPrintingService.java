@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * Orchestration service for the mass-printing flow:
  * Scan LU → enumerate self-packed products → per-product FIFO selection →
- * create+pick+complete PRODUCT picking job → print one HU label per box.
+ * create+pick+complete PRODUCT picking job → print one HU label per picked shippable HU.
  */
 @Service
 @RequiredArgsConstructor
@@ -316,7 +316,7 @@ public class MassPrintingService
 		int boxesPacked;
 
 		/**
-		 * Top-level picked HU ids (one per scheduled unit) — used for post-commit label printing.
+		 * Top-level picked HU ids (one per scheduled line) — used for post-commit label printing.
 		 * May be TU boxes (finite PI) or VHUs/CUs (Virtual PI). May be empty when nothing was packed.
 		 */
 		@lombok.Builder.Default
