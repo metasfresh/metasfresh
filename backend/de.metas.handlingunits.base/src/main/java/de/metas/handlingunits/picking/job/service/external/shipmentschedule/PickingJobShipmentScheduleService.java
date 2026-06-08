@@ -1,9 +1,7 @@
 package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -25,7 +23,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
@@ -84,24 +81,6 @@ public class PickingJobShipmentScheduleService
 	public I_M_ShipmentSchedule getByIdAsRecord(@NonNull final ShipmentScheduleId id)
 	{
 		return huShipmentScheduleBL.getById(id);
-	}
-
-	/**
-	 * Forces the pack-to packing instructions of the given shipment schedules to {@code huPIItemProductId}
-	 * by writing it to {@code M_HU_PI_Item_Product_Override_ID}. This drives the picking job's line to pack
-	 * into that PI (e.g. a 1-CU-per-TU box PI), so a single pick of the whole qty fans out into one TU per unit.
-	 */
-	public void setPackToHUPIItemProductOverride(
-			@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds,
-			@NonNull final HUPIItemProductId huPIItemProductId)
-	{
-		final Map<ShipmentScheduleId, de.metas.handlingunits.model.I_M_ShipmentSchedule> records =
-				huShipmentScheduleBL.getByIds(ImmutableSet.copyOf(shipmentScheduleIds));
-		for (final de.metas.handlingunits.model.I_M_ShipmentSchedule record : records.values())
-		{
-			record.setM_HU_PI_Item_Product_Override_ID(huPIItemProductId.getRepoId());
-			InterfaceWrapperHelper.save(record);
-		}
 	}
 
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule schedule)

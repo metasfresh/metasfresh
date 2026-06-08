@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.massprinting;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
@@ -44,7 +43,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
 
 /**
  * Orchestration service for the mass-printing flow:
@@ -81,7 +80,7 @@ public class MassPrintingService
 	 *       server enforces the same constraint for all callers.</li>
 	 *   <li>Select open shipment schedules FIFO by preparation date, capped at units on LU.</li>
 	 *   <li>Create a PRODUCT picking job restricted to those schedules.</li>
-	 *   <li>Pick each schedule from the scanned LU (one box per unit via 1-CU-per-TU packTo PI).</li>
+	 *   <li>Pick each schedule from the scanned LU using the schedule's effective PI (finite PI → one box per unit; Virtual PI → one VHU/CU).</li>
 	 *   <li>Complete the picking job.</li>
 	 *   <li>Print one HU label per box (best-effort, after commit).</li>
 	 * </ol>
@@ -144,16 +143,16 @@ public class MassPrintingService
 
 			int labelsPrinted = 0;
 			int labelPrintFailures = 0;
-			for (final HuId boxTuId : packAndPickResult.getBoxTuIds())
+			for (final HuId pickedHuId : packAndPickResult.getPickedHuIds())
 			{
 				try
 				{
-					huService.printBoxLabel(boxTuId);
+					huService.printBoxLabel(pickedHuId);
 					labelsPrinted++;
 				}
 				catch (final Exception e)
 				{
-					logger.warn("Failed to print box label for HU {}", boxTuId, e);
+					logger.warn("Failed to print label for HU {}", pickedHuId, e);
 					labelPrintFailures++;
 				}
 			}
@@ -244,19 +243,9 @@ public class MassPrintingService
 					.build();
 		}
 
-		// Force one HU per box: pack each unit into its own TU by overriding the selected schedules'
-		// pack-to PI with the self-packed product's own 1-CU-per-TU box PI. The picking job's line then
-		// picks as TU (finite 1-CU capacity), so the allocation engine fans the pick into one TU per unit.
-		final Optional<HUPIItemProductId> boxPIItemProductIdOpt = huService.getSelfPackedBoxPIItemProductId(productId);
-		if (boxPIItemProductIdOpt.isPresent())
-		{
-			shipmentScheduleService.setPackToHUPIItemProductOverride(selectedScheduleIds, boxPIItemProductIdOpt.get());
-		}
-		else
-		{
-			logger.warn("IsSelfPacked product {} has no 1-CU-per-TU PI configured; one-box-per-unit cannot be enforced", productId);
-		}
-
+		// Comply with the shipment schedule's effective packing instruction: the pick uses whatever
+		// PI the schedule already carries (finite 1-CU/TU → one box per unit; Virtual PI → one VHU/CU
+		// shipped directly without a box wrapper).  No PI override is written here.
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedScheduleIds);
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
@@ -269,9 +258,7 @@ public class MassPrintingService
 		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
 
 		// Pick each line from the scanned LU using the capped qty determined above.
-		// For a TU line (1-CU-per-TU box PI override applied), qtyPicked is the TU count;
-		// for a CU line it is the CU qty.  Either way the value equals the schedule-specific
-		// capped qty so the last partially-filled order is not over-picked.
+		// The qty equals the schedule-specific capped qty so the last partially-filled order is not over-picked.
 		final List<PickingJobStepEvent> pickEvents = new ArrayList<>();
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
@@ -297,13 +284,12 @@ public class MassPrintingService
 
 		final PickingJob pickedJob = pickingJobService.processStepEvents(pickingJob, pickEvents);
 
-		// Save the TU ids (for post-commit label printing) BEFORE completing the job.
-		// getAllPickedHuIds() returns the box TU HU ids — one TU per packed box.
-		final ImmutableSet<HuId> boxTuIds = pickedJob.getAllPickedHuIds();
+		// Capture the picked shippable HU ids BEFORE completing the job (for post-commit label printing).
+		// getAllPickedHuIds() returns the top-level picked HUs — one per scheduled unit.
+		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
 
-		// Resolve the actual box HUs (descend any target LU): one leaf-HU per packed box.
-		// Used for the box-shape assertion (qtyPerBoxHU); kept separate from boxTuIds which are TUs.
-		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(boxTuIds);
+		// Resolve the leaf HUs (descend any target LU wrapper): one leaf shippable HU per picked unit.
+		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedHuIds);
 		pickingJobService.complete(pickedJob);
 
 		final int unitsLeftOnLU = capacityRemaining;
@@ -311,7 +297,7 @@ public class MassPrintingService
 
 		return PackAndPickResult.builder()
 				.boxesPacked(boxesToPack)
-				.boxTuIds(boxTuIds)
+				.pickedHuIds(pickedHuIds)
 				.packedHUIds(packedHUIds)
 				.unitsLeftOnLU(unitsLeftOnLU)
 				.openDemandRemaining(openDemandRemaining)
@@ -319,26 +305,26 @@ public class MassPrintingService
 	}
 
 	/**
-	 * Internal result of {@link #processProduct} holding both the box TU ids (for label printing after commit)
-	 * and the resolved leaf HU ids (for the box-shape assertion).
+	 * Internal result of {@link #processProduct} holding both the picked shippable HU ids (for label printing after commit)
+	 * and the resolved leaf HU ids (for the HU-shape assertion).
 	 */
 	@Value
 	@lombok.Builder
 	static class PackAndPickResult
 	{
-		/** Number of boxes packed (one per picked unit). */
+		/** Number of shippable HUs packed (one per picked unit). */
 		int boxesPacked;
 
 		/**
-		 * Box TU ids produced by the pick — one TU per packed box, used for post-commit label printing.
-		 * May be empty when no boxes were packed.
+		 * Top-level picked HU ids (one per scheduled unit) — used for post-commit label printing.
+		 * May be TU boxes (finite PI) or VHUs/CUs (Virtual PI). May be empty when nothing was packed.
 		 */
 		@lombok.Builder.Default
-		@NonNull ImmutableSet<HuId> boxTuIds = ImmutableSet.of();
+		@NonNull ImmutableSet<HuId> pickedHuIds = ImmutableSet.of();
 
 		/**
-		 * Leaf (VHU) HU ids inside each packed box — used for the per-box quantity assertion.
-		 * May be empty when no boxes were packed.
+		 * Leaf shippable HU ids (descend any target-LU wrapper) — one per picked unit.
+		 * May be empty when nothing was packed.
 		 */
 		@lombok.Builder.Default
 		@NonNull ImmutableSet<HuId> packedHUIds = ImmutableSet.of();

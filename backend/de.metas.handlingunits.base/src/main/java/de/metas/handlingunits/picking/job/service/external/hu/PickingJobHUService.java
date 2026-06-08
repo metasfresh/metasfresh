@@ -86,7 +86,6 @@ import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -317,10 +316,10 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * Collects the packed box HUs at or below each of the given HUs — i.e. the lowest-level
+	 * Collects the leaf shippable HUs at or below each of the given HUs — i.e. the lowest-level
 	 * product-holding HUs (the VHUs that carry the actual product storage). Descends the HU hierarchy
-	 * so that, regardless of whether a packed box is materialised as a standalone TU, a TU nested under
-	 * a target LU, or an aggregate HU, the mass-printing result reports exactly one HU per packed box.
+	 * so that, regardless of whether a shippable HU is materialised as a standalone TU, a TU nested under
+	 * a target LU, a VHU, or an aggregate HU, the mass-printing result reports exactly one HU per picked unit.
 	 */
 	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
 	{
@@ -347,22 +346,6 @@ public class PickingJobHUService
 		{
 			collectBoxHUs(includedHU, result);
 		}
-	}
-
-	/**
-	 * Resolves the single-unit (1 CU per TU) box packing-instructions item-product for a self-packed product —
-	 * i.e. the product's own "ships as its own package" PI. Used by the mass-printing flow to pack one TU per unit.
-	 *
-	 * @return the matching {@link HUPIItemProductId}, or empty when the product has no such finite 1-CU-per-TU PI
-	 */
-	public Optional<HUPIItemProductId> getSelfPackedBoxPIItemProductId(@NonNull final ProductId productId)
-	{
-		return getPIItemProducts(ImmutableSet.of(productId), null).stream()
-				.map(record -> getPackingInfo(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID())))
-				.filter(HUPIItemProduct::isFiniteTU)
-				.filter(packingInfo -> packingInfo.getQtyCUsPerTU().toBigDecimal().compareTo(BigDecimal.ONE) == 0)
-				.map(HUPIItemProduct::getId)
-				.findFirst();
 	}
 
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
@@ -438,27 +421,28 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * Prints one HU/shipping label for the given box HU (a TU produced by the mass-printing pick).
+	 * Prints one HU/shipping label for the given shippable HU (produced by the mass-printing pick).
+	 * The HU may be a TU box (finite PI) or a VHU/CU (Virtual PI).
 	 *
 	 * <p>Uses source-doc-type {@link HULabelSourceDocType#Picking} and
 	 * {@code failOnMissingLabelConfig=true} so a missing label configuration is reported as a
 	 * clean {@link org.adempiere.exceptions.AdempiereException} that the caller can catch and count
-	 * as a label-print failure — best-effort: the caller counts it but does not roll back the packed boxes.
+	 * as a label-print failure — best-effort: the caller counts it but does not roll back the picked HUs.
 	 *
 	 * <p>The print is scheduled via {@code ITrxManager.runAfterClose} (inside {@link HULabelService#print}'s
 	 * delegate command); the physical job is enqueued after the caller's transaction commits, so it does
-	 * not participate in the pack+ship rollback boundary.
+	 * not participate in the pick+ship rollback boundary.
 	 *
-	 * @param boxTuId the HU id of the packed box TU to label (one call per box)
+	 * @param pickedHuId the HU id of the shippable HU to label (one call per picked unit)
 	 * @throws org.adempiere.exceptions.AdempiereException if no matching {@code M_HU_Label_Config}
 	 *                                                      is found (captured by the caller for the
 	 *                                                      per-product result summary)
 	 */
-	public void printBoxLabel(@NonNull final HuId boxTuId)
+	public void printBoxLabel(@NonNull final HuId pickedHuId)
 	{
 		huLabelService.print(HULabelPrintRequest.builder()
 				.sourceDocType(HULabelSourceDocType.Picking)
-				.huId(boxTuId)
+				.huId(pickedHuId)
 				.onlyIfAutoPrint(false)
 				.failOnMissingLabelConfig(true)
 				.build());
