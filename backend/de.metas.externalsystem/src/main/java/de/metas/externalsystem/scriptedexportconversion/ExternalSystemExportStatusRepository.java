@@ -48,6 +48,10 @@ import java.util.Optional;
  *
  * <p>Repository Tables: ExternalSystem_ScriptedExportConversion_Log,
  * ExternalSystem_Config_ScriptedExportConversion, AD_Column
+ *
+ * <p>Repository Cluster: sole owner of {@code ExternalSystem_ScriptedExportConversion_Log}
+ * (also reads {@code ExternalSystem_Config_ScriptedExportConversion} and {@code AD_Column} for
+ * roll-up column resolution). Service layer: {@link ExternalSystemExportStatusService}.
  */
 @Repository
 public class ExternalSystemExportStatusRepository

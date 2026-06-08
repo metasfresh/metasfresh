@@ -48,7 +48,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
@@ -89,7 +88,7 @@ public class ExternalSystemScriptedExportConversionService
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final SpringContextHolder.Lazy<ExternalSystemExportStatusService> exportStatusServiceLazy = SpringContextHolder.instance.lazyBean(ExternalSystemExportStatusService.class);
+	@NonNull private final ExternalSystemExportStatusService exportStatusService;
 
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
@@ -297,7 +296,7 @@ public class ExternalSystemScriptedExportConversionService
 			final int recordId)
 	{
 		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
-		exportStatusServiceLazy.get().recordPending(config.getId(), sourceRecord);
+		exportStatusService.recordPending(config.getId(), sourceRecord);
 	}
 
 	@NonNull
@@ -308,10 +307,6 @@ public class ExternalSystemScriptedExportConversionService
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
-		final ExternalSystemExportStatusService exportStatusService = exportStatusServiceLazy.get();
-
-		// (b)/(c) are written below after execution.
-		// (a) Pending was already written by the interceptor's AFTER_COMPLETE hook (recordPendingForConfig).
 
 		try
 		{
@@ -354,7 +349,14 @@ public class ExternalSystemScriptedExportConversionService
 					InvokeScriptedExportConversionAction.class.getName(),
 					config.getId(), recordId, e);
 			// Mark invalid if the process threw before the PInstance was established
-			exportStatusService.markInvalidByRecord(config.getId(), sourceRecord, e.getMessage());
+			try
+			{
+				exportStatusService.markInvalidByRecord(config.getId(), sourceRecord, e.getMessage());
+			}
+			catch (final Exception statusEx)
+			{
+				log.warn("Failed to write Invalid status for config={}, sourceRecord={} — continuing", config.getId(), sourceRecord, statusEx);
+			}
 			return ExternalSystemInvocationResult.error(e);
 		}
 	}

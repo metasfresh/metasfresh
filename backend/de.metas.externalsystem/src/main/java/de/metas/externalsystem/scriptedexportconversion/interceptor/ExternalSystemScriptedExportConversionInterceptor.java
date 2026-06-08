@@ -25,8 +25,10 @@ package de.metas.externalsystem.scriptedexportconversion.interceptor;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.slf4j.Logger;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -45,6 +47,8 @@ import org.jetbrains.annotations.Nullable;
  */
 /* package */ class ExternalSystemScriptedExportConversionInterceptor implements ModelValidator
 {
+	private static final Logger log = LogManager.getLogger(ExternalSystemScriptedExportConversionInterceptor.class);
+
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
@@ -146,7 +150,14 @@ import org.jetbrains.annotations.Nullable;
 					.getMatchingTriggerOnCompleteConfigsByTableAndClientId(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())), recordId)
 					.forEach(config -> {
 						// (a) Pending — written at complete time, before the after-commit invocation
-						externalSystemScriptedExportConversionService.recordPendingForConfig(config, recordId);
+						try
+						{
+							externalSystemScriptedExportConversionService.recordPendingForConfig(config, recordId);
+						}
+						catch (final Exception e)
+						{
+							log.warn("Failed to record Pending status for config={}, recordId={} — continuing", config.getId(), recordId, e);
+						}
 						externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAfterCommit(config, recordId);
 					});
 		}

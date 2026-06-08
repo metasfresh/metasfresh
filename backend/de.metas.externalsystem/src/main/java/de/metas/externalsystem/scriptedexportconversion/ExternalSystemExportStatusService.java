@@ -133,14 +133,19 @@ public class ExternalSystemExportStatusService
 			@NonNull final TableRecordReference sourceRecord,
 			@NonNull final PInstanceId pInstanceId)
 	{
-		final Optional<ExternalSystemExportStatusLogEntry> existing = repo.getLatestByConfigAndRecord(configId, sourceRecord);
-		if (!existing.isPresent())
+		final ExternalSystemExportStatusLogEntry existing = repo.getLatestByConfigAndRecord(configId, sourceRecord).orElse(null);
+		if (existing == null)
 		{
-			log.debug("No log row found for configId={}, sourceRecord={} – skipping Enqueued transition", configId, sourceRecord);
+			log.warn("No log row found for configId={}, sourceRecord={} – skipping Enqueued transition", configId, sourceRecord);
+			return;
+		}
+		if (!existing.getStatus().isPending())
+		{
+			log.warn("Skipping Enqueued transition for configId={}, sourceRecord={} — existing status is {} (expected Pending)", configId, sourceRecord, existing.getStatus());
 			return;
 		}
 
-		final ExternalSystemExportStatusLogEntry updated = existing.get()
+		final ExternalSystemExportStatusLogEntry updated = existing
 				.withPInstanceId(pInstanceId)
 				.withStatus(ExternalSystemExportStatus.Enqueued)
 				.withHttpResponseCode(0)
@@ -162,14 +167,14 @@ public class ExternalSystemExportStatusService
 			@NonNull final TableRecordReference sourceRecord,
 			@Nullable final String message)
 	{
-		final Optional<ExternalSystemExportStatusLogEntry> existing = repo.getLatestByConfigAndRecord(configId, sourceRecord);
-		if (!existing.isPresent())
+		final ExternalSystemExportStatusLogEntry existing = repo.getLatestByConfigAndRecord(configId, sourceRecord).orElse(null);
+		if (existing == null)
 		{
-			log.debug("No log row found for configId={}, sourceRecord={} – skipping Invalid transition", configId, sourceRecord);
+			log.warn("No log row found for configId={}, sourceRecord={} – skipping Invalid transition", configId, sourceRecord);
 			return;
 		}
 
-		final ExternalSystemExportStatusLogEntry updated = existing.get()
+		final ExternalSystemExportStatusLogEntry updated = existing
 				.withStatus(ExternalSystemExportStatus.Invalid)
 				.withStatusMessage(message);
 
