@@ -60,6 +60,22 @@ public class GenerateShipmentsForSchedulesRequest
 	 */
 	@Builder.Default boolean waitForShipments = true;
 
+	/**
+	 * When {@code true}, the {@code groupSchedulesByAsyncBatch} step inside
+	 * {@link ShipmentService#generateShipmentsForScheduleIds} runs in the caller's inherited transaction
+	 * instead of a new transaction.
+	 *
+	 * <p>Use this <em>only</em> when the caller already holds an open transaction that locks
+	 * {@code M_ShipmentSchedule} rows (e.g. the mass-printing flow inside
+	 * {@link de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCommand}),
+	 * where a nested {@code callInNewTrx} would dead-lock waiting for the same row locks.
+	 *
+	 * <p>The default is {@code false}: all other callers (normal shipment generation, EDI, REST)
+	 * require the new-transaction isolation so that newly written async-batch records are committed
+	 * and visible to downstream consumers (e.g. DESADV-pack creation) before they query them.
+	 */
+	@Builder.Default boolean groupSchedulesInInheritedTrx = false;
+
 	@SuppressWarnings("unused")
 	public static class GenerateShipmentsForSchedulesRequestBuilder
 	{

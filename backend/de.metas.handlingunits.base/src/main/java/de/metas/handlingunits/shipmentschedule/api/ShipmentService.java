@@ -158,7 +158,7 @@ public class ShipmentService implements IShipmentService
 				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
 				.waitForShipments(request.isWaitForShipments());
 
-		groupSchedulesByAsyncBatch(allScheduleIds)
+		groupSchedulesByAsyncBatch(allScheduleIds, request.isGroupSchedulesInInheritedTrx())
 				.forEach((asyncBatchId, scheduleIds) -> generateShipments(
 						generateShipmentsRequestTemplate
 								.asyncBatchId(asyncBatchId)
@@ -348,12 +348,56 @@ public class ShipmentService implements IShipmentService
 				.createWorkpackages(workPackageParameters);
 	}
 
+	/**
+	 * Groups the given schedules by async-batch, running the work in a <em>new</em> transaction.
+	 *
+	 * <p>The new-transaction default is required so that newly written async-batch records
+	 * ({@code C_Async_Batch} rows, async-batch assignments on {@code M_ShipmentSchedule}) are
+	 * committed and visible to downstream consumers (e.g. DESADV-pack creation) before they
+	 * query them.  This is the correct mode for all normal, EDI, and REST shipment-generation paths.
+	 *
+	 * <p>For the mass-printing path — where the caller already holds an open transaction with
+	 * {@code M_ShipmentSchedule} row locks — use
+	 * {@link #groupSchedulesByAsyncBatch(ShipmentScheduleAndJobScheduleIdSet, boolean)} with
+	 * {@code runInInheritedTrx = true} to avoid a self-deadlock.
+	 */
 	@NonNull
 	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
-		// Use the caller's transaction (was callInNewTrx) to avoid a self-deadlock when invoked from within an open trx holding M_ShipmentSchedule row locks (e.g. mass-printing).
-		// The per-group async-batch isolation from #21683 is preserved regardless: AsyncBatchBL.newAsyncBatch() already commits each new C_Async_Batch in its own callInNewTrx.
-		return trxManager.callInThreadInheritedTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
+		return groupSchedulesByAsyncBatch(scheduleIds, false);
+	}
+
+	/**
+	 * Groups the given schedules by async-batch.
+	 *
+	 * @param runInInheritedTrx when {@code false} (the default), the work runs in a new, isolated
+	 *                          transaction so that written records are committed and visible to
+	 *                          downstream consumers before they query them.
+	 *                          Set to {@code true} <em>only</em> when the caller already holds an
+	 *                          open transaction with {@code M_ShipmentSchedule} row locks (mass-printing
+	 *                          via {@link de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCommand})
+	 *                          and a nested {@code callInNewTrx} would dead-lock.
+	 */
+	@NonNull
+	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(
+			@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds,
+			final boolean runInInheritedTrx)
+	{
+		if (runInInheritedTrx)
+		{
+			// Mass-printing path: caller holds M_ShipmentSchedule row locks in an open trx.
+			// Join that trx to avoid a self-deadlock.  The C_Async_Batch inserts inside
+			// groupSchedulesByAsyncBatch0 each run in their own callInNewTrx via AsyncBatchBL,
+			// so they are still committed (and therefore visible) even though we join the outer trx.
+			return trxManager.callInThreadInheritedTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
+		}
+		else
+		{
+			// Normal / EDI / REST path: run in a new transaction so that C_Async_Batch records
+			// and M_ShipmentSchedule async-batch assignments are committed before downstream
+			// consumers (e.g. DESADV-pack creation) query them.
+			return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
+		}
 	}
 
 	/**
