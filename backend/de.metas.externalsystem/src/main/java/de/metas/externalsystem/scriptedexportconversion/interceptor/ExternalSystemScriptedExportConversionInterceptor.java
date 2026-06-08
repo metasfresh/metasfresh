@@ -28,7 +28,6 @@ import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedEx
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.slf4j.Logger;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -41,6 +40,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 /**
  * Interceptor which listens to a table specified in {@link I_ExternalSystem_Config_ScriptedExportConversion}.
