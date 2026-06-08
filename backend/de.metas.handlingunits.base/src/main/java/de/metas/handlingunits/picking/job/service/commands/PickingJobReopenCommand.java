@@ -162,8 +162,11 @@ public class PickingJobReopenCommand
 					// the M_ShipmentSchedule_QtyPicked_UI partial unique index when the shipment is recreated.
 					// The FIRST request for a (schedule, VHU) pair finds no existing row, so tryMerge returns
 					// false and falls through to addQtyPickedAndUpdateHU (which creates it); the 2nd..Nth
-					// requests merge into that row. (tryMerge must run in the same transaction as the reopen so
-					// it can see that just-created sibling row — guaranteed here by execute()'s runInThreadInheritedTrx.)
+					// requests merge into that row. (On a shipment reversal the HU-snapshot replay does NOT
+					// fire ShipmentScheduleHUTrxListener#trxLineProcessed, so this reopen — not the listener —
+					// is what re-creates the QtyPicked rows, and the first request genuinely finds none.)
+					// tryMerge must run in the same transaction as the reopen so it can see that just-created
+					// sibling row — guaranteed here by execute()'s runInThreadInheritedTrx.
 					// tryMerge is self-gated (no-op for job-schedule-bound, catch-weight, negative, anonymous
 					// or non-virtual picks), so genuine per-step picks are unaffected.
 					if (!shipmentScheduleService.tryMergeQtyPickedIntoExistingForVHU(request))
