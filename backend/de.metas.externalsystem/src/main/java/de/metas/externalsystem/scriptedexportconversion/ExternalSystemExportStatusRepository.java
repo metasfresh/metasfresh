@@ -147,6 +147,27 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
+	 * Returns the most-recent log entry for the given config + source record combination, if any.
+	 * Used to find a Pending row (with null pInstanceId) before the PInstance is established.
+	 */
+	@NonNull
+	public Optional<ExternalSystemExportStatusLogEntry> getLatestByConfigAndRecord(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Log.class)
+				.addEqualsFilter(
+						I_ExternalSystem_ScriptedExportConversion_Log.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID,
+						configId.getRepoId())
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Log.COLUMNNAME_AD_Table_ID, sourceRecord.getAD_Table_ID())
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Log.COLUMNNAME_Record_ID, sourceRecord.getRecord_ID())
+				.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Log.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Log_ID)
+				.create()
+				.firstOptional(I_ExternalSystem_ScriptedExportConversion_Log.class)
+				.map(this::fromRecord);
+	}
+
+	/**
 	 * Returns all log entries for the given source record, ordered newest-first.
 	 * Callers that need the latest entry per config should deduplicate by configId
 	 * (first occurrence in this list wins).

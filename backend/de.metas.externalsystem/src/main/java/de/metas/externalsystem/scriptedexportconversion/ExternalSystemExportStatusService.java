@@ -98,6 +98,81 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Creates a new log row with status {@link ExternalSystemExportStatus#Pending} and no PInstance yet.
+	 * Called at AFTER_COMPLETE time in the interceptor, before the process is invoked.
+	 * Use {@link #bindPInstanceAndMarkEnqueued} or {@link #markInvalidByRecord} after the process completes.
+	 */
+	public void recordPending(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		final ExternalSystemExportStatusLogEntry entry = ExternalSystemExportStatusLogEntry.builder()
+				.logId(0)
+				.pInstanceId(null)
+				.configId(configId)
+				.sourceRecord(sourceRecord)
+				.status(ExternalSystemExportStatus.Pending)
+				.build();
+		final ExternalSystemExportStatusLogEntry saved = repo.insert(entry);
+		writeRollUpToSourceRecord(saved);
+	}
+
+	/**
+	 * Finds the most-recent log row for (configId, sourceRecord), sets its PInstance, and transitions
+	 * to {@link ExternalSystemExportStatus#Enqueued}.
+	 * Called after the process has been successfully enqueued to RabbitMQ and the PInstance is known.
+	 * No-op (no throw) when no log row exists for (configId, sourceRecord).
+	 */
+	public void bindPInstanceAndMarkEnqueued(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord,
+			@NonNull final PInstanceId pInstanceId)
+	{
+		final Optional<ExternalSystemExportStatusLogEntry> existing = repo.getLatestByConfigAndRecord(configId, sourceRecord);
+		if (!existing.isPresent())
+		{
+			log.debug("No log row found for configId={}, sourceRecord={} – skipping Enqueued transition", configId, sourceRecord);
+			return;
+		}
+
+		final ExternalSystemExportStatusLogEntry updated = existing.get()
+				.withPInstanceId(pInstanceId)
+				.withStatus(ExternalSystemExportStatus.Enqueued)
+				.withHttpResponseCode(0)
+				.withAdIssueId(0)
+				.withStatusMessage(null);
+
+		repo.update(updated);
+		writeRollUpToSourceRecord(updated);
+	}
+
+	/**
+	 * Finds the most-recent log row for (configId, sourceRecord) and transitions to
+	 * {@link ExternalSystemExportStatus#Invalid}.
+	 * Called when the scripted outbound process did not produce a valid Resource.
+	 * No-op (no throw) when no log row exists for (configId, sourceRecord).
+	 */
+	public void markInvalidByRecord(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord,
+			@Nullable final String message)
+	{
+		final Optional<ExternalSystemExportStatusLogEntry> existing = repo.getLatestByConfigAndRecord(configId, sourceRecord);
+		if (!existing.isPresent())
+		{
+			log.debug("No log row found for configId={}, sourceRecord={} – skipping Invalid transition", configId, sourceRecord);
+			return;
+		}
+
+		final ExternalSystemExportStatusLogEntry updated = existing.get()
+				.withStatus(ExternalSystemExportStatus.Invalid)
+				.withStatusMessage(message);
+
+		repo.update(updated);
+		writeRollUpToSourceRecord(updated);
+	}
+
+	/**
 	 * Transitions the existing log row for the given pInstance to {@link ExternalSystemExportStatus#Enqueued}.
 	 * No-op (no throw) when no log row exists for the pInstance.
 	 */

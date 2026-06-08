@@ -50,6 +50,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.compiere.SpringContextHolder;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
@@ -88,6 +89,7 @@ public class ExternalSystemScriptedExportConversionService
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final SpringContextHolder.Lazy<ExternalSystemExportStatusService> exportStatusServiceLazy = SpringContextHolder.instance.lazyBean(ExternalSystemExportStatusService.class);
 
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
@@ -285,6 +287,19 @@ public class ExternalSystemScriptedExportConversionService
 		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
 	}
 
+	/**
+	 * Records a {@link ExternalSystemExportStatus#Pending} log entry for the given config and source record.
+	 * Called by the interceptor's AFTER_COMPLETE branch for each matching config, before scheduling
+	 * the after-commit execution.
+	 */
+	public void recordPendingForConfig(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId)
+	{
+		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
+		exportStatusServiceLazy.get().recordPending(config.getId(), sourceRecord);
+	}
+
 	@NonNull
 	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
@@ -292,6 +307,12 @@ public class ExternalSystemScriptedExportConversionService
 			@Nullable final ExternalSystemErrorContext errorContext)
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
+		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
+		final ExternalSystemExportStatusService exportStatusService = exportStatusServiceLazy.get();
+
+		// (b)/(c) are written below after execution.
+		// (a) Pending was already written by the interceptor's AFTER_COMPLETE hook (recordPendingForConfig).
+
 		try
 		{
 			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
@@ -308,6 +329,18 @@ public class ExternalSystemScriptedExportConversionService
 			}
 
 			final ProcessInfo processInfo = processInfoBuilder.buildAndPrepareExecution().executeSync().getProcessInfo();
+			final ProcessExecutionResult result = processInfo.getResult();
+
+			if (result.isError())
+			{
+				// (c) Invalid — the script did not produce a valid Resource (or another process error)
+				exportStatusService.markInvalidByRecord(config.getId(), sourceRecord, result.getSummary());
+			}
+			else
+			{
+				// (b) Enqueued — successfully dispatched to RabbitMQ
+				exportStatusService.bindPInstanceAndMarkEnqueued(config.getId(), sourceRecord, processInfo.getPinstanceId());
+			}
 
 			return ExternalSystemInvocationResult.success(processInfo.getPinstanceId());
 		}
@@ -316,6 +349,8 @@ public class ExternalSystemScriptedExportConversionService
 			log.warn("{} process failed for Config ID {}, Record ID: {}",
 					InvokeScriptedExportConversionAction.class.getName(),
 					config.getId(), recordId, e);
+			// Mark invalid if the process threw before the PInstance was established
+			exportStatusService.markInvalidByRecord(config.getId(), sourceRecord, e.getMessage());
 			return ExternalSystemInvocationResult.error(e);
 		}
 	}
