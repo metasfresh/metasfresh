@@ -12,11 +12,13 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
@@ -73,7 +75,7 @@ class AssertSalesOrderExpectationsCommand
 		{
 			// Absence assertion: the caller says NO shipment should exist.
 			// No polling needed — retrieve once and assert count is zero.
-			actualShipments = services.getInOutsByOrderId(orderId);
+			actualShipments = excludeVoidedAndReversedShipments(services.getInOutsByOrderId(orderId));
 		}
 		else
 		{
@@ -108,20 +110,21 @@ class AssertSalesOrderExpectationsCommand
 	/**
 	 * Polls until {@code expectedCount} shipments are available for the order, or until the timeout elapses.
 	 * Shipments are generated asynchronously after picking/scanning, so polling is required.
+	 * Voided and reversed shipments (DocStatus='VO'/'RE') are excluded from the count.
 	 */
 	private List<I_M_InOut> pollForShipments(
 			@NonNull final OrderId orderId,
 			final int expectedCount) throws InterruptedException
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		List<I_M_InOut> actuals = services.getInOutsByOrderId(orderId);
+		List<I_M_InOut> actuals = excludeVoidedAndReversedShipments(services.getInOutsByOrderId(orderId));
 
 		while (actuals.size() < expectedCount && stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0)
 		{
 			logger.info("Waiting for {}/{} shipments for order {} (elapsed: {})", actuals.size(), expectedCount, orderId, stopwatch);
 			//noinspection BusyWait
 			Thread.sleep(1000);
-			actuals = services.getInOutsByOrderId(orderId);
+			actuals = excludeVoidedAndReversedShipments(services.getInOutsByOrderId(orderId));
 		}
 
 		if (actuals.size() < expectedCount)
@@ -151,5 +154,18 @@ class AssertSalesOrderExpectationsCommand
 						.isEqualTo(expectation.getDocStatus());
 			}
 		});
+	}
+
+	/**
+	 * Excludes voided and reversed shipments from the list.
+	 * M_InOut records with DocStatus='VO' (voided) or 'RE' (reversed) are not considered valid shipments
+	 * for assertion purposes, even though they remain IsActive='Y' in the DB.
+	 */
+	private List<I_M_InOut> excludeVoidedAndReversedShipments(@NonNull final List<I_M_InOut> shipments)
+	{
+		return shipments.stream()
+				.filter(inout -> !X_M_InOut.DOCSTATUS_Voided.equals(inout.getDocStatus())
+						&& !X_M_InOut.DOCSTATUS_Reversed.equals(inout.getDocStatus()))
+				.collect(Collectors.toList());
 	}
 }
