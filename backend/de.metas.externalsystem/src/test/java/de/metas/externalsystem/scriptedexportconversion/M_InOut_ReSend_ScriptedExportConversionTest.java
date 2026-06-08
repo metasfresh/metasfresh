@@ -22,7 +22,6 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
