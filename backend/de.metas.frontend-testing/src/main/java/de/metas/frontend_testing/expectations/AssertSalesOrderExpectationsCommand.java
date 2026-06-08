@@ -5,17 +5,16 @@ import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import org.compiere.model.I_M_InOut;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

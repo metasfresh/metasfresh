@@ -19,7 +19,6 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
-import org.compiere.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -33,6 +32,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_InOut;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
