@@ -3,6 +3,7 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - galaxy_hero_hotfix
   - galaxy_hero_release
   - vernal_mousse_hotfix
   - vernal_mousse_release
