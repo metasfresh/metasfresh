@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 48 | 51 | 94% |
+| Picking | 56 | 59 | 95% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -141,10 +141,18 @@
 
 | Scenario | Test |
 |---|---|
-| Mass-printing scan of an LU → one box and one label per unit packed for open demand | `picking/massPrinting.spec.js` |
+| Mass-printing scan of an LU → one box and one label per unit packed for open demand (DO_NOT_CREATE policy, no shipment) | `picking/massPrinting.spec.js` |
 | Mass-printing scan of an LU → leftover units stay on the LU when demand is smaller than the LU | `picking/massPrinting.spec.js` |
+| FIFO partial fill: LU capacity < total demand → earliest-date order(s) fully filled, latest order left short, open demand remaining | `picking/massPrinting.spec.js` |
+| CREATE_AND_COMPLETE policy: scanning LU triggers packing and produces a completed (CO) shipment per order | `picking/massPrinting.spec.js` |
+| CREATE_DRAFT policy: scanning LU triggers packing and produces a draft (DR) shipment per order | `picking/massPrinting.spec.js` |
+| DO_NOT_CREATE policy: scanning LU packs boxes but produces no shipment | `picking/massPrinting.spec.js` |
+| Mixed LU (self-packed only): product is packed, skipped-products section is absent | `picking/massPrinting.spec.js` |
+| Non-self-packed-only LU: no boxes packed, skipped-products section is visible | `picking/massPrinting.spec.js` |
+| Off-mode guard: mass-printing trigger button is absent when feature is disabled in picking profile | `picking/massPrinting.spec.js` |
+| Null PackTo PI: self-packed product with no TU packing instruction packs as VHU (one label per unit, not a TU box) | `picking/massPrinting.spec.js` |
 
-**2/2 — 100%**
+**10/10 — 100%**
 
 ### Order-based picking — catch-weight
 
