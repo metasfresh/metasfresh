@@ -316,10 +316,15 @@ public class PickingJobHUService
 	}
 
 	/**
-	 * Collects the leaf shippable HUs at or below each of the given HUs — i.e. the lowest-level
-	 * product-holding HUs (the VHUs that carry the actual product storage). Descends the HU hierarchy
-	 * so that, regardless of whether a shippable HU is materialised as a standalone TU, a TU nested under
-	 * a target LU, a VHU, or an aggregate HU, the mass-printing result reports exactly one HU per picked unit.
+	 * Collects the leaf shippable HUs at or below each of the given HUs by descending the HU hierarchy.
+	 * Returns one entry per picked unit, regardless of packing-instruction type:
+	 * <ul>
+	 *   <li>Finite PI (1-CU/TU): each top-level TU has no children → itself is the leaf → one entry per TU.</li>
+	 *   <li>Virtual PI / null PackTo PI (CU path): the mass-printing flow fires one pick event per unit,
+	 *       so each VHU is already a single-unit leaf → one entry per VHU.</li>
+	 *   <li>TU nested under a target LU: descends past the LU wrapper to the leaf TU → one entry per TU.</li>
+	 * </ul>
+	 * The count of returned HU ids equals the number of shippable units packed (one HU = one unit = one label).
 	 */
 	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
 	{

@@ -10,6 +10,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
@@ -79,7 +80,7 @@ public class MassPrintingService
 	 *       server enforces the same constraint for all callers.</li>
 	 *   <li>Select open shipment schedules FIFO by preparation date, capped at units on LU.</li>
 	 *   <li>Create a PRODUCT picking job restricted to those schedules.</li>
-	 *   <li>Pick each schedule from the scanned LU using the schedule's effective PI (finite PI → one box per unit; Virtual PI → one VHU/CU).</li>
+	 *   <li>Pick each schedule from the scanned LU (finite PI → one TU/box per unit; Virtual/null PI → one VHU per unit via per-unit pick events).</li>
 	 *   <li>Complete the picking job.</li>
 	 *   <li>Print one HU label per picked shippable HU (best-effort, after commit).</li>
 	 * </ol>
@@ -128,7 +129,7 @@ public class MassPrintingService
 
 			final Quantity unitsOnLU = productStorage.getQty();
 			// intValueExact: a self-packed product is whole-unit; a fractional qty would be a data error
-			// we must surface (ArithmeticException), not silently truncate (which would drop part of a box).
+			// we must surface (ArithmeticException), not silently truncate (which would silently drop a shippable unit).
 			final int unitsOnLUInt = unitsOnLU.toBigDecimal().intValueExact();
 			if (unitsOnLUInt <= 0)
 			{
@@ -244,7 +245,7 @@ public class MassPrintingService
 
 		// Comply with the shipment schedule's effective packing instruction: the pick uses whatever
 		// PI the schedule already carries (finite 1-CU/TU → one box per unit; Virtual PI → one VHU/CU
-		// shipped directly without a box wrapper).  No PI override is written here.
+		// shipped directly without a box wrapper). No PI override is written here.
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedScheduleIds);
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
@@ -258,7 +259,16 @@ public class MassPrintingService
 
 		// Pick each line from the scanned LU using the capped qty determined above.
 		// The qty equals the schedule-specific capped qty so the last partially-filled order is not over-picked.
-		final List<PickingJobStepEvent> pickEvents = new ArrayList<>();
+		//
+		// CU (Virtual PI / null PackTo PI) lines: fire one pick event per unit (qty=1 each).
+		// Each event runs in its own PickingJobPickCommand with a fresh PackToHUsProducer, which
+		// creates exactly one VHU per invocation (capacity-less VHU producers accept any qty into a
+		// single HU when called once with qty=N; splitting to N calls of qty=1 is the only way to
+		// obtain N separate VHUs and thereby honour the 1-unit = 1-shippable-HU = 1-label invariant).
+		//
+		// TU (finite 1-CU/TU PI) lines: one event with the full capped qty suffices because the PI's
+		// capacity-1 constraint forces the producer to create one TU per unit automatically.
+		PickingJob pickedJob = pickingJob;
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
 			final ShipmentScheduleId ssId = line.getScheduleId().getShipmentScheduleId();
@@ -271,21 +281,38 @@ public class MassPrintingService
 						.setParameter("lineId", line.getId())
 						.setParameter("ssId", ssId);
 			}
-			final BigDecimal qtyToPick = BigDecimal.valueOf(cappedQtyInt);
-			pickEvents.add(PickingJobStepEvent.builder()
-					.pickingLineId(line.getId())
-					.eventType(PickingJobStepEventType.PICK)
-					.qrCode(luQRCode.toScannedCode())
-					.qtyPicked(qtyToPick)
-					.isPickWholeTU(false)
-					.build());
+
+			if (line.getPickingUnit() == PickingUnit.CU)
+			{
+				// VHU/CU path: one event per unit → one VHU per unit → one label per unit.
+				for (int unit = 0; unit < cappedQtyInt; unit++)
+				{
+					pickedJob = pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
+							.pickingLineId(line.getId())
+							.eventType(PickingJobStepEventType.PICK)
+							.qrCode(luQRCode.toScannedCode())
+							.qtyPicked(BigDecimal.ONE)
+							.isPickWholeTU(false)
+							.build());
+				}
+			}
+			else
+			{
+				// TU path: one event with full qty; PI capacity=1 produces one TU per unit.
+				pickedJob = pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
+						.pickingLineId(line.getId())
+						.eventType(PickingJobStepEventType.PICK)
+						.qrCode(luQRCode.toScannedCode())
+						.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
+						.isPickWholeTU(false)
+						.build());
+			}
 		}
 
-		final PickingJob pickedJob = pickingJobService.processStepEvents(pickingJob, pickEvents);
-
 		// Capture the picked shippable HU ids BEFORE completing the job (for post-commit label printing).
-		// getAllPickedHuIds() returns the top-level picked HUs — one per scheduled line
-		// (finite PI: one TU per unit; Virtual PI: one VHU for all units in that schedule).
+		// getAllPickedHuIds() collects the top-level picked HUs across all steps:
+		// - CU path: N steps of qty=1 → N separate VHUs (one per unit).
+		// - TU path: one step of qty=N → N TUs (PI capacity=1 forces one box per unit).
 		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
 
 		// Resolve the leaf HUs (descend any target LU wrapper): one leaf shippable HU per picked unit.
@@ -316,8 +343,10 @@ public class MassPrintingService
 		int boxesPacked;
 
 		/**
-		 * Top-level picked HU ids (one per scheduled line) — used for post-commit label printing.
-		 * May be TU boxes (finite PI) or VHUs/CUs (Virtual PI). May be empty when nothing was packed.
+		 * Top-level picked HU ids — used for post-commit label printing.
+		 * One per picked unit: TU boxes for finite-PI lines; one VHU per unit for VHU/CU lines
+		 * (the CU pick-loop fires one event per unit so each unit gets its own VHU).
+		 * May be empty when nothing was packed.
 		 */
 		@lombok.Builder.Default
 		@NonNull ImmutableSet<HuId> pickedHuIds = ImmutableSet.of();

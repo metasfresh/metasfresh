@@ -31,7 +31,11 @@ public class MassPrintingResult
 		/** Number of boxes packed (one box = one picked unit). */
 		int boxesPacked;
 
-		/** The box HUs produced (one HU per box); size must equal {@link #boxesPacked}. */
+		/**
+		 * The shippable HUs produced — one per picked unit, regardless of packing-instruction type
+		 * (one VHU per unit for the Virtual/null-PI path; one TU box per unit for finite-PI).
+		 * Size must equal {@link #boxesPacked}.
+		 */
 		@NonNull @Singular ImmutableSet<HuId> packedHUIds;
 
 		/** Number of labels printed successfully. */
