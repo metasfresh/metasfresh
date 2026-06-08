@@ -31,6 +31,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -123,6 +124,16 @@ public class MobileUIPickingUserProfile_StepDef
 	@And("set per-customer mobile UI shipment policy:")
 	public void setPerCustomerShipmentPolicy(@NonNull final DataTable dataTable)
 	{
+		// Snapshot the profile's current default options before the loop — all per-customer
+		// job records copy the profile's boolean flags from here, overriding only CreateShipmentPolicy.
+		// This is necessary because PickingJobOptions.fallbackTo() only falls back for a few structured
+		// fields (allowedPickToStructures, pickAttributes, displayPickingSlotSuggestions,
+		// completeJobAutomatically) — primitive booleans in the per-customer DB record are read as-is,
+		// with no fallback to the profile default. Every mandatory NOT-NULL boolean must be set
+		// explicitly to avoid a DB constraint violation, and must mirror the profile's current value
+		// to preserve the expected picking behaviour in the test.
+		final PickingJobOptions profileDefaults = profileService.getProfile().getDefaultPickingJobOptions();
+
 		// Build per-customer PickingJobOptionsId entries, creating a MobileUI_UserProfile_Picking_Job
 		// record per row so the PickingJobOptionsCollection cache can load them from DB.
 		final List<PickingCustomerConfig> newConfigs = new ArrayList<>();
@@ -130,23 +141,24 @@ public class MobileUIPickingUserProfile_StepDef
 			final BPartnerId customerId = bPartnerTable.getId(row.getAsIdentifier("C_BPartner_ID"));
 			final CreateShipmentPolicy policy = CreateShipmentPolicy.ofCodeOrName(row.getAsString("CreateShipmentPolicy"));
 
-			// Insert a MobileUI_UserProfile_Picking_Job record carrying only the shipment policy;
-			// all other options fall back to the profile default via PickingJobOptions.fallbackTo().
-			// All mandatory (NOT NULL) boolean columns must be set explicitly — DB has no defaults for them.
+			// Insert a MobileUI_UserProfile_Picking_Job record overriding only the shipment policy.
+			// All other boolean flags are copied from the profile's default PickingJobOptions so that
+			// the per-customer record does not silently disable capabilities that the profile enables
+			// (e.g. IsAllowPickingAnyHU=Y set by the test background).
 			final I_MobileUI_UserProfile_Picking_Job jobRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
 			jobRecord.setIsActive(true);
 			jobRecord.setName("per-customer-" + customerId.getRepoId());
 			jobRecord.setCreateShipmentPolicy(policy.getCode());
-			jobRecord.setIsAllowCompletingPartialPickingJob(true);
-			jobRecord.setIsAllowPickingAnyHU(false);
-			jobRecord.setIsAllowSkippingRejectedReason(false);
-			jobRecord.setIsAlwaysSplitHUsEnabled(false);
-			jobRecord.setIsAnonymousHuPickedOnTheFly(false);
-			jobRecord.setIsCatchWeightTUPickingEnabled(false);
-			jobRecord.setIsConsiderSalesOrderCapacity(false);
-			jobRecord.setIsShipOnCloseLU(false);
-			jobRecord.setIsShowConfirmationPromptWhenOverPick(false);
-			jobRecord.setIsShowLastPickedBestBeforeDateForLines(false);
+			jobRecord.setIsAllowCompletingPartialPickingJob(profileDefaults.isAllowCompletingPartialPickingJob());
+			jobRecord.setIsAllowPickingAnyHU(profileDefaults.isAllowPickingAnyHU());
+			jobRecord.setIsAllowSkippingRejectedReason(profileDefaults.isAllowSkippingRejectedReason());
+			jobRecord.setIsAlwaysSplitHUsEnabled(profileDefaults.isAlwaysSplitHUsEnabled());
+			jobRecord.setIsAnonymousHuPickedOnTheFly(profileDefaults.isAnonymousPickHUsOnTheFly());
+			jobRecord.setIsCatchWeightTUPickingEnabled(profileDefaults.isCatchWeightTUPickingEnabled());
+			jobRecord.setIsConsiderSalesOrderCapacity(profileDefaults.isConsiderSalesOrderCapacity());
+			jobRecord.setIsShipOnCloseLU(profileDefaults.isShipOnCloseLU());
+			jobRecord.setIsShowConfirmationPromptWhenOverPick(profileDefaults.isShowConfirmationPromptWhenOverPick());
+			jobRecord.setIsShowLastPickedBestBeforeDateForLines(profileDefaults.isShowLastPickedBestBeforeDateForLines());
 			InterfaceWrapperHelper.saveRecord(jobRecord);
 
 			final PickingJobOptionsId optionsId = PickingJobOptionsId.ofRepoId(jobRecord.getMobileUI_UserProfile_Picking_Job_ID());
