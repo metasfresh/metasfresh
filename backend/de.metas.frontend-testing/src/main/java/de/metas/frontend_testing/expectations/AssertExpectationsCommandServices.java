@@ -17,12 +17,15 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
+import org.compiere.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -48,6 +51,7 @@ public class AssertExpectationsCommandServices
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -122,5 +126,10 @@ public class AssertExpectationsCommandServices
 	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return invalidationRepository.isAllValid(shipmentScheduleIds);
+	}
+
+	public List<I_M_InOut> getInOutsByOrderId(@NonNull final OrderId orderId)
+	{
+		return inOutDAO.retrieveInOutsByOrderId(orderId);
 	}
 }

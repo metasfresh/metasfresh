@@ -52,6 +52,15 @@ public class AssertExpectationsCommand
 	{
 		try
 		{
+			if (expectations.getSalesOrders() != null)
+			{
+				AssertSalesOrderExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getSalesOrders())
+						.build()
+						.execute();
+			}
 			if (expectations.getPickings() != null)
 			{
 				AssertPickingExpectationsCommand.builder()
