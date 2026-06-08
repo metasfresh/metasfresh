@@ -215,28 +215,24 @@ public class ExternalSystemExportStatusService
 	{
 		try
 		{
-			// 1. Resolve the target column name via the repository (returns null when not configured)
 			final String columnName = repo.getStatusColumnNameForConfig(entry.getConfigId());
 			if (columnName == null)
 			{
 				return; // no target column configured – log-rows-only mode
 			}
 
-			// 2. Compute roll-up across ALL latest entries for this source record
 			final TableRecordReference sourceRecord = entry.getSourceRecord();
-			final List<ExternalSystemExportStatusLogEntry> latestEntries =
+			final List<ExternalSystemExportStatusLogEntry> allEntries =
 					repo.getLatestBySourceRecord(sourceRecord);
-			// Deduplicate: keep only the latest row per configId
 			final Map<ExternalSystemScriptedExportConversionConfigId, ExternalSystemExportStatusLogEntry> latestPerConfig =
 					new LinkedHashMap<>();
-			for (final ExternalSystemExportStatusLogEntry e : latestEntries)
+			for (final ExternalSystemExportStatusLogEntry e : allEntries)
 			{
 				latestPerConfig.putIfAbsent(e.getConfigId(), e);
 			}
 			final ExternalSystemExportStatus rollUp =
 					computeRollUp(ImmutableList.copyOf(latestPerConfig.values()));
 
-			// 3. Write the roll-up code to the source record's target column
 			repo.writeStatusToSourceRecord(sourceRecord, columnName, rollUp.getCode());
 		}
 		catch (final Exception e)

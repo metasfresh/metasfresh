@@ -147,8 +147,9 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
-	 * Returns the latest log entry per distinct config for the given source record.
-	 * Used to compute the roll-up status across all active configs.
+	 * Returns all log entries for the given source record, ordered newest-first.
+	 * Callers that need the latest entry per config should deduplicate by configId
+	 * (first occurrence in this list wins).
 	 */
 	@NonNull
 	public List<ExternalSystemExportStatusLogEntry> getLatestBySourceRecord(@NonNull final TableRecordReference sourceRecord)
@@ -160,7 +161,6 @@ public class ExternalSystemExportStatusRepository
 				.create()
 				.stream()
 				.map(this::fromRecord)
-				// keep only the latest entry per configId
 				.collect(ImmutableList.toImmutableList());
 	}
 
