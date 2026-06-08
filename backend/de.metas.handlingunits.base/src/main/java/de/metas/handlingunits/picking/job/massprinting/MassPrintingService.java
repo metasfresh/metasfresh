@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.massprinting;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -39,7 +40,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -336,8 +336,8 @@ public class MassPrintingService
 	/** Result of FIFO schedule selection: which schedules to pick and how many units from each. */
 	private static class ScheduleSelection
 	{
-		final Map<ShipmentScheduleId, Integer> selectedScheduleQtys;
-		final List<ShipmentScheduleId> selectedScheduleIds;
+		final ImmutableMap<ShipmentScheduleId, Integer> selectedScheduleQtys;
+		final ImmutableList<ShipmentScheduleId> selectedScheduleIds;
 		final int totalDemand;
 		final int boxesToPack;
 		final int unitsLeftOnLU;
@@ -348,8 +348,8 @@ public class MassPrintingService
 				final int boxesToPack,
 				final int unitsLeftOnLU)
 		{
-			this.selectedScheduleQtys = selectedScheduleQtys;
-			this.selectedScheduleIds = new ArrayList<>(selectedScheduleQtys.keySet());
+			this.selectedScheduleQtys = ImmutableMap.copyOf(selectedScheduleQtys);
+			this.selectedScheduleIds = ImmutableList.copyOf(selectedScheduleQtys.keySet());
 			this.totalDemand = totalDemand;
 			this.boxesToPack = boxesToPack;
 			this.unitsLeftOnLU = unitsLeftOnLU;
