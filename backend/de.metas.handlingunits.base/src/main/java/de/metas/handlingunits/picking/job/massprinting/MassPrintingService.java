@@ -70,24 +70,7 @@ public class MassPrintingService
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	/**
-	 * Scan the LU and for each self-packed product on it:
-	 * <ol>
-	 *   <li>Guard: reject immediately if the picker's profile does not have mass-printing enabled
-	 *       ({@code IsMassPrinting=N}). Prevents any pick, shipment, or label action for callers
-	 *       whose profile disables the feature — the frontend hides the trigger when off, but the
-	 *       server enforces the same constraint for all callers.</li>
-	 *   <li>Select open shipment schedules FIFO by preparation date, capped at units on LU.</li>
-	 *   <li>Create a PRODUCT picking job restricted to those schedules.</li>
-	 *   <li>Pick each schedule from the scanned LU (finite PI → one TU/box per unit; Virtual/null PI → one VHU per unit via per-unit pick events).</li>
-	 *   <li>Complete the picking job.</li>
-	 *   <li>Print one HU label per picked shippable HU (best-effort, after commit).</li>
-	 * </ol>
-	 *
-	 * @param request scan request carrying the LU id and the picker's user id
-	 * @return per-product result summary (boxes packed, labels printed, leftovers)
-	 * @throws AdempiereException with {@link #MSG_MASS_PRINTING_NOT_ENABLED} when the profile flag is off
-	 */
+	/** Processes an LU scan: picks and labels every self-packed product on the LU, FIFO by preparation date. */
 	@NonNull
 	public MassPrintingResult scan(@NonNull final MassPrintingScanRequest request)
 	{
@@ -194,10 +177,41 @@ public class MassPrintingService
 			@NonNull final ProductId productId,
 			final int unitsOnLUInt)
 	{
-		// FIFO selection of open shipment schedules, capped at units on LU.
-		// Fully fill each order before moving to the next; if the last selected order's demand
-		// exceeds remaining LU capacity, that order is partially filled — pick only the remaining
-		// capacity, and its unmet demand stays open.
+		final ScheduleSelection selection = selectSchedules(productId, warehouseId, unitsOnLUInt);
+
+		if (selection.selectedScheduleIds.isEmpty() || selection.boxesToPack <= 0)
+		{
+			return PackAndPickResult.builder()
+					.boxesPacked(0)
+					.unitsLeftOnLU(unitsOnLUInt)
+					.openDemandRemaining(selection.totalDemand)
+					.build();
+		}
+
+		final PickingJob pickedJob = createAndPickJob(request, luId, selection);
+		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
+		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedHuIds);
+		pickingJobService.complete(pickedJob);
+
+		return PackAndPickResult.builder()
+				.boxesPacked(selection.boxesToPack)
+				.pickedHuIds(pickedHuIds)
+				.packedHUIds(packedHUIds)
+				.unitsLeftOnLU(selection.unitsLeftOnLU)
+				.openDemandRemaining(Math.max(0, selection.totalDemand - selection.boxesToPack))
+				.build();
+	}
+
+	/**
+	 * Selects shipment schedules FIFO by preparation date, capped at units on LU.
+	 * Fully fills each order before moving to the next; the last order may be partially filled.
+	 */
+	@NonNull
+	private ScheduleSelection selectSchedules(
+			@NonNull final ProductId productId,
+			@NonNull final WarehouseId warehouseId,
+			final int unitsOnLUInt)
+	{
 		final PackageableQuery query = PackageableQuery.builder()
 				.productId(productId)
 				.warehouseId(warehouseId)
@@ -222,7 +236,7 @@ public class MassPrintingService
 
 			if (capacityRemaining <= 0)
 			{
-				// LU is fully allocated; this schedule stays entirely open — include its demand in total but don't pick it.
+				// LU is fully allocated; include demand in total but don't pick this schedule.
 				continue;
 			}
 
@@ -232,22 +246,26 @@ public class MassPrintingService
 			capacityRemaining -= qtyToPickFromThisSchedule;
 		}
 
-		final List<ShipmentScheduleId> selectedScheduleIds = new ArrayList<>(selectedScheduleQtys.keySet());
-		final int boxesToPack = unitsOnLUInt - capacityRemaining;
+		return new ScheduleSelection(
+				selectedScheduleQtys,
+				totalDemand,
+				unitsOnLUInt - capacityRemaining,
+				capacityRemaining);
+	}
 
-		if (selectedScheduleIds.isEmpty() || boxesToPack <= 0)
-		{
-			return PackAndPickResult.builder()
-					.boxesPacked(0)
-					.unitsLeftOnLU(unitsOnLUInt)
-					.openDemandRemaining(totalDemand)
-					.build();
-		}
-
-		// Comply with the shipment schedule's effective packing instruction: the pick uses whatever
-		// PI the schedule already carries (finite 1-CU/TU → one box per unit; Virtual PI → one VHU/CU
-		// shipped directly without a box wrapper). No PI override is written here.
-		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedScheduleIds);
+	/**
+	 * Creates a PRODUCT picking job for the selected schedules, then picks each line from the scanned LU.
+	 *
+	 * <p>CU (Virtual PI) lines: one pick event per unit → one VHU per unit → one label per unit.
+	 * TU (finite PI) lines: one event with full capped qty; PI capacity=1 forces one box per unit.
+	 */
+	@NonNull
+	private PickingJob createAndPickJob(
+			@NonNull final MassPrintingScanRequest request,
+			@NonNull final HuId luId,
+			@NonNull final ScheduleSelection selection)
+	{
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selection.selectedScheduleIds);
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
 						.pickerId(request.getPickerId())
@@ -258,78 +276,84 @@ public class MassPrintingService
 
 		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
 
-		// Pick each line from the scanned LU using the capped qty determined above.
-		// The qty equals the schedule-specific capped qty so the last partially-filled order is not over-picked.
-		//
-		// CU (Virtual PI / null PackTo PI) lines: fire one pick event per unit (qty=1 each).
-		// Each event runs in its own PickingJobPickCommand with a fresh PackToHUsProducer, which
-		// creates exactly one VHU per invocation (capacity-less VHU producers accept any qty into a
-		// single HU when called once with qty=N; splitting to N calls of qty=1 is the only way to
-		// obtain N separate VHUs and thereby honour the 1-unit = 1-shippable-HU = 1-label invariant).
-		//
-		// TU (finite 1-CU/TU PI) lines: one event with the full capped qty suffices because the PI's
-		// capacity-1 constraint forces the producer to create one TU per unit automatically.
 		PickingJob pickedJob = pickingJob;
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
-			final ShipmentScheduleId ssId = line.getScheduleId().getShipmentScheduleId();
-			final Integer cappedQtyInt = selectedScheduleQtys.get(ssId);
-			if (cappedQtyInt == null)
-			{
-				// Should not happen: every line in a PRODUCT-aggregation job was created from selectedScheduleIds.
-				throw new AdempiereException("Picking job line has no capped-qty entry in FIFO selection map")
-						.appendParametersToMessage()
-						.setParameter("lineId", line.getId())
-						.setParameter("ssId", ssId);
-			}
+			pickedJob = pickLine(pickedJob, line, luQRCode, selection.selectedScheduleQtys);
+		}
+		return pickedJob;
+	}
 
-			if (line.getPickingUnit() == PickingUnit.CU)
+	/** Fires pick events for one line from the LU, using the capped qty from the FIFO selection. */
+	@NonNull
+	private PickingJob pickLine(
+			@NonNull final PickingJob pickedJob,
+			@NonNull final PickingJobLine line,
+			@NonNull final HUQRCode luQRCode,
+			@NonNull final Map<ShipmentScheduleId, Integer> selectedScheduleQtys)
+	{
+		final ShipmentScheduleId ssId = line.getScheduleId().getShipmentScheduleId();
+		final Integer cappedQtyInt = selectedScheduleQtys.get(ssId);
+		if (cappedQtyInt == null)
+		{
+			// Should not happen: every line in a PRODUCT-aggregation job was created from selectedScheduleIds.
+			throw new AdempiereException("Picking job line has no capped-qty entry in FIFO selection map")
+					.appendParametersToMessage()
+					.setParameter("lineId", line.getId())
+					.setParameter("ssId", ssId);
+		}
+
+		if (line.getPickingUnit() == PickingUnit.CU)
+		{
+			// VHU/CU path: one event per unit → one VHU per unit → one label per unit.
+			// Splitting to N calls of qty=1 is the only way to obtain N separate VHUs.
+			PickingJob result = pickedJob;
+			for (int unit = 0; unit < cappedQtyInt; unit++)
 			{
-				// VHU/CU path: one event per unit → one VHU per unit → one label per unit.
-				for (int unit = 0; unit < cappedQtyInt; unit++)
-				{
-					pickedJob = pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
-							.pickingLineId(line.getId())
-							.eventType(PickingJobStepEventType.PICK)
-							.qrCode(luQRCode.toScannedCode())
-							.qtyPicked(BigDecimal.ONE)
-							.isPickWholeTU(false)
-							.build());
-				}
-			}
-			else
-			{
-				// TU path: one event with full qty; PI capacity=1 produces one TU per unit.
-				pickedJob = pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
+				result = pickingJobService.processStepEvent(result, PickingJobStepEvent.builder()
 						.pickingLineId(line.getId())
 						.eventType(PickingJobStepEventType.PICK)
 						.qrCode(luQRCode.toScannedCode())
-						.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
+						.qtyPicked(BigDecimal.ONE)
 						.isPickWholeTU(false)
 						.build());
 			}
+			return result;
 		}
+		else
+		{
+			// TU path: one event with full qty; PI capacity=1 produces one TU per unit.
+			return pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.eventType(PickingJobStepEventType.PICK)
+					.qrCode(luQRCode.toScannedCode())
+					.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
+					.isPickWholeTU(false)
+					.build());
+		}
+	}
 
-		// Capture the picked shippable HU ids BEFORE completing the job (for post-commit label printing).
-		// getAllPickedHuIds() collects the top-level picked HUs across all steps:
-		// - CU path: N steps of qty=1 → N separate VHUs (one per unit).
-		// - TU path: one step of qty=N → N TUs (PI capacity=1 forces one box per unit).
-		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
+	/** Result of FIFO schedule selection: which schedules to pick and how many units from each. */
+	private static class ScheduleSelection
+	{
+		final Map<ShipmentScheduleId, Integer> selectedScheduleQtys;
+		final List<ShipmentScheduleId> selectedScheduleIds;
+		final int totalDemand;
+		final int boxesToPack;
+		final int unitsLeftOnLU;
 
-		// Resolve the leaf HUs (descend any target LU wrapper): one leaf shippable HU per picked unit.
-		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedHuIds);
-		pickingJobService.complete(pickedJob);
-
-		final int unitsLeftOnLU = capacityRemaining;
-		final int openDemandRemaining = Math.max(0, totalDemand - boxesToPack);
-
-		return PackAndPickResult.builder()
-				.boxesPacked(boxesToPack)
-				.pickedHuIds(pickedHuIds)
-				.packedHUIds(packedHUIds)
-				.unitsLeftOnLU(unitsLeftOnLU)
-				.openDemandRemaining(openDemandRemaining)
-				.build();
+		ScheduleSelection(
+				@NonNull final Map<ShipmentScheduleId, Integer> selectedScheduleQtys,
+				final int totalDemand,
+				final int boxesToPack,
+				final int unitsLeftOnLU)
+		{
+			this.selectedScheduleQtys = selectedScheduleQtys;
+			this.selectedScheduleIds = new ArrayList<>(selectedScheduleQtys.keySet());
+			this.totalDemand = totalDemand;
+			this.boxesToPack = boxesToPack;
+			this.unitsLeftOnLU = unitsLeftOnLU;
+		}
 	}
 
 	/**
@@ -338,7 +362,7 @@ public class MassPrintingService
 	 */
 	@Value
 	@lombok.Builder
-	static class PackAndPickResult
+	private static class PackAndPickResult
 	{
 		/** Number of shippable HUs packed (one per picked unit). */
 		int boxesPacked;

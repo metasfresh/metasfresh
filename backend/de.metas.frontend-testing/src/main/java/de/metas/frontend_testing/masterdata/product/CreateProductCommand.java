@@ -133,11 +133,11 @@ public class CreateProductCommand
 		productRecord.setProductType(productType.getCode());
 		// Explicit request override wins; otherwise Items are stocked, non-items are not.
 		final Boolean explicitIsStocked = request.getIsStocked();
-		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked.booleanValue() : productType.isItem());
+		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked : productType.isItem());
 		final Boolean isSelfPacked = request.getIsSelfPacked();
 		if (isSelfPacked != null)
 		{
-			productRecord.setIsSelfPacked(isSelfPacked.booleanValue());
+			productRecord.setIsSelfPacked(isSelfPacked);
 		}
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
