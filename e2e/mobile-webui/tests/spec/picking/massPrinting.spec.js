@@ -525,21 +525,17 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('Mass printing — null-PI self-packed product ships as VHU/CU (dt204 reality)');
+    allure.story('Mass printing — null-PI self-packed product ships as VHU/CU');
     allure.severity('blocker');
 
-    // dt204 reality: self-packed shipment schedules have no PackTo PI configured.
-    // When the schedule has no PI override, the picking framework defaults to Virtual → VHU/CU
-    // (one bare VHU per unit, one label each) rather than a TU box.
-    // This test creates stock WITHOUT packing instructions (bare CU/VHU) so the schedule has
-    // no effective PI, and asserts that mass-printing packs N units as N boxes (one VHU each).
+    // When a self-packed shipment schedule has no PackTo PI configured, the picking framework
+    // defaults to Virtual → VHU/CU (one bare VHU per unit, one label each) rather than a TU box.
+    // This test sets up stock with a CU-only packing instruction (no TU wrapping), so the schedule
+    // has no effective PackTo PI, then asserts mass-printing packs N units as N VHUs.
     //
-    // masterdata_gap: The masterdata API does not yet expose a way to configure the schedule's
-    // PackTo PI as NULL explicitly after a packingInstructions entry has been created. This test
-    // creates a self-packed product with a CU-only packing instruction (cu: true) to approximate
-    // the null-PI path. If the framework still resolves a TU from the CU PI rather than falling
-    // back to VHU, the boxes-packed count will still equal the order qty — the assertion holds
-    // either way; the label config requirement (isApplyToCUs=Y) is the dt204-specific hard gate.
+    // The VHU assertion below (huType='V' per packed HU) discriminates the VHU path from a TU box —
+    // it fails if the framework regresses to producing TU boxes. The label-config requirement
+    // (isApplyToCUs=Y) is the deployment-specific gate for the labels to actually print.
     const masterdata = await Backend.createMasterdata({
         language: 'en_US',
         request: {

@@ -25,7 +25,8 @@ export const MassPrintingScanScreen = {
     /**
      * Scan an LU and return the raw scan response body from the backend.
      * The response includes `productResults[*].packedHUIds` — the shippable HU ids
-     * produced by the scan. Use them with Backend.expect({ hus: { <huId>: { huType: 'VirtualPI' } } })
+     * produced by the scan. Use them with Backend.expect({ hus: { <huId>: { huType: 'V' } } })
+     * (huType is the DB code: 'V' = Virtual/VHU, 'TU' = TransportUnit, 'LU' = LoadingUnit)
      * to assert that the VHU (null-PI) path produced bare Virtual HUs, not TU boxes.
      *
      * @returns {Promise<Object>} parsed JSON response body from the massPrinting/scan endpoint
