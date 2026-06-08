@@ -22,10 +22,16 @@
 
 package de.metas.rest_api.v2.externlasystem;
 
+import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
+import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
+import de.metas.externalsystem.externalservice.ExternalServices;
+import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -92,7 +98,7 @@ public class ExternalSystemServiceSuccessTest
 		final ExternalSystemService service = buildService(Collections.singletonList(failingListener));
 
 		// must not propagate listener exception
-		org.assertj.core.api.Assertions.assertThatCode(
+		Assertions.assertThatCode(
 				() -> service.handleExportSuccess(PInstanceId.ofRepoId(3003), 202))
 				.doesNotThrowAnyException();
 	}
@@ -105,12 +111,12 @@ public class ExternalSystemServiceSuccessTest
 			final List<IExternalSystemInvocationSuccessListener> successListeners)
 	{
 		return new ExternalSystemService(
-				de.metas.externalsystem.ExternalSystemConfigRepo.newInstanceForUnitTesting(),
-				de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
-				new de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository(),
-				de.metas.externalsystem.externalservice.ExternalServices.newInstanceForUnitTesting(),
+				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
+				new RuntimeParametersRepository(),
+				ExternalServices.newInstanceForUnitTesting(),
 				new JsonExternalSystemRetriever(),
-				new de.metas.externalsystem.ExternalSystemRepository(),
+				new ExternalSystemRepository(),
 				Collections.emptyList(),
 				successListeners);
 	}
