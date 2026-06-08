@@ -1,6 +1,6 @@
 -- 2026-06-08T10:00:00.000Z
--- me03 https://github.com/metasfresh/me03/issues/30080 — Fail-loud invariant: spreading a complex-but-invalid
--- payment term (breaks sum ≠ 100%) must throw a clear, user-facing error instead of silently writing a wrong DueAmt.
+-- Fail-loud invariant: spreading a complex-but-invalid payment term (breaks sum ≠ 100%) must throw a
+-- clear, user-facing error instead of silently writing a wrong DueAmt.
 -- {0} = term value, {1} = term name, {2} = reason (e.g. "Total percent must be exactly 100%, but it was: 30%")
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545748 /*From ID Server*/,0,TO_TIMESTAMP('2026-06-08 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Zahlungsbedingung {0} ({1}) ist ungültig und kann nicht für die Zahlungsplanerstellung verwendet werden: {2}','E',TO_TIMESTAMP('2026-06-08 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'PaymentTerm_Invalid')
 ;
