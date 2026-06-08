@@ -89,9 +89,7 @@ test('Reverse an aggregate-HU shipment then recreate it — no duplicate QtyPick
             request: { shipments: { FIRST_SHIPMENT: { salesOrder: 'SO1', quantityType: 'P', complete: true } } },
         });
         shipmentId = ship?.shipments?.FIRST_SHIPMENT?.id;
-        if (!shipmentId) {
-            throw new Error('Initial shipment was not created:\n' + JSON.stringify(ship, null, 2));
-        }
+        expect(shipmentId, 'Initial shipment was not created:\n' + JSON.stringify(ship, null, 2)).toBeTruthy();
     });
 
     await test.step('Reverse the completed shipment (the "void") — must not leave duplicate QtyPicked rows', async () => {
