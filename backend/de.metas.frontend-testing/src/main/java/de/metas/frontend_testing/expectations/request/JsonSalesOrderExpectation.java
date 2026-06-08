@@ -22,6 +22,12 @@ import java.util.List;
  *     'SO2': {
  *       // assert order produced NO shipments (empty list = absence assertion)
  *       shipments: []
+ *     },
+ *     'SO3': {
+ *       // assert FIFO partial delivery via shipment-schedule quantities
+ *       // (useful when mass-printing creates one combined per-customer shipment
+ *       //  instead of a separate shipment per SO):
+ *       shipmentSchedule: { qtyDelivered: 2, qtyToDeliver: 0 }
  *     }
  *   }
  * });
@@ -42,4 +48,15 @@ public class JsonSalesOrderExpectation
 	 * </ul>
 	 */
 	@Nullable List<JsonInOutExpectation> shipments;
+
+	/**
+	 * Assert the order's shipment-schedule delivered/remaining quantities (M_ShipmentSchedule).
+	 *
+	 * <p>Use this instead of {@link #shipments} when mass-printing creates one combined per-customer
+	 * shipment (so per-SO M_InOut lookup is not meaningful) but you still need to verify the FIFO
+	 * split per order via {@code QtyDelivered} / {@code QtyToDeliver}.
+	 *
+	 * <p>Null means no shipment-schedule assertion (field omitted from JSON).
+	 */
+	@Nullable JsonShipmentScheduleExpectation shipmentSchedule;
 }

@@ -1,13 +1,22 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
+import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -20,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
@@ -49,6 +59,9 @@ class AssertSalesOrderExpectationsCommand
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonSalesOrderExpectation> expectations;
 
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
 	/** How long to poll for async-generated shipments before failing. */
 	private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(60);
 
@@ -64,12 +77,18 @@ class AssertSalesOrderExpectationsCommand
 			@NonNull final String orderIdentifierStr,
 			@NonNull final JsonSalesOrderExpectation expectation) throws InterruptedException
 	{
+		final OrderId orderId = getOrderId(orderIdentifierStr);
+
+		if (expectation.getShipmentSchedule() != null)
+		{
+			assertShipmentScheduleQty(orderId, expectation.getShipmentSchedule());
+		}
+
 		if (expectation.getShipments() == null)
 		{
 			return; // field omitted – nothing to assert
 		}
 
-		final OrderId orderId = getOrderId(orderIdentifierStr);
 		final List<JsonInOutExpectation> shipmentExpectations = expectation.getShipments();
 
 		final List<I_M_InOut> actualShipments;
@@ -185,5 +204,104 @@ class AssertSalesOrderExpectationsCommand
 					return !docStatus.isReversedOrVoided();
 				})
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Asserts the shipment-schedule delivered/remaining quantities for the given order.
+	 *
+	 * <p>QtyDelivered and QtyToDeliver are updated asynchronously by the shipment-schedule recompute
+	 * after the shipment completes. This method polls until both values match the expectations
+	 * (waiting for the schedule to be valid and settled) or until the timeout elapses.
+	 *
+	 * <p>When the order has multiple lines (and hence multiple schedules), the quantities are
+	 * summed across all schedules before comparing.
+	 */
+	private void assertShipmentScheduleQty(
+			@NonNull final OrderId orderId,
+			@NonNull final JsonShipmentScheduleExpectation expectation) throws InterruptedException
+	{
+		final Set<OrderLineId> orderLineIds = orderDAO.retrieveOrderLines(orderId)
+				.stream()
+				.map(line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()))
+				.collect(Collectors.toSet());
+
+		if (orderLineIds.isEmpty())
+		{
+			throw new AdempiereException("No order lines found for order " + orderId);
+		}
+
+		final List<I_M_ShipmentSchedule> schedules = shipmentSchedulePA.getByOrderLineIds(ImmutableSet.copyOf(orderLineIds));
+		if (schedules.isEmpty())
+		{
+			throw new AdempiereException("No shipment schedules found for order " + orderId);
+		}
+
+		final Set<ShipmentScheduleId> scheduleIds = schedules.stream()
+				.map(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()))
+				.collect(Collectors.toSet());
+
+		// Poll until the schedule is fully recomputed and values match
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		BigDecimal actualQtyDelivered = null;
+		BigDecimal actualQtyToDeliver = null;
+
+		while (stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0)
+		{
+			// Wait for async recompute to settle
+			if (!services.isAllValid(scheduleIds))
+			{
+				logger.info("Shipment schedules for order {} are still being recomputed (elapsed: {}), waiting...", orderId, stopwatch);
+				//noinspection BusyWait
+				Thread.sleep(1000);
+				continue;
+			}
+
+			// Re-read refreshed schedules
+			final List<I_M_ShipmentSchedule> freshSchedules = shipmentSchedulePA.getByOrderLineIds(ImmutableSet.copyOf(orderLineIds));
+			freshSchedules.forEach(InterfaceWrapperHelper::refresh);
+
+			actualQtyDelivered = freshSchedules.stream()
+					.map(I_M_ShipmentSchedule::getQtyDelivered)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			actualQtyToDeliver = freshSchedules.stream()
+					.map(I_M_ShipmentSchedule::getQtyToDeliver)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			final boolean qtyDeliveredOk = expectation.getQtyDelivered() == null
+					|| actualQtyDelivered.stripTrailingZeros().equals(expectation.getQtyDelivered().stripTrailingZeros());
+			final boolean qtyToDeliverOk = expectation.getQtyToDeliver() == null
+					|| actualQtyToDeliver.stripTrailingZeros().equals(expectation.getQtyToDeliver().stripTrailingZeros());
+
+			if (qtyDeliveredOk && qtyToDeliverOk)
+			{
+				break; // values settled to expected — exit poll
+			}
+
+			logger.info("Waiting for shipment schedule qtys for order {} — qtyDelivered={} (expected {}), qtyToDeliver={} (expected {}) (elapsed: {})",
+					orderId, actualQtyDelivered, expectation.getQtyDelivered(),
+					actualQtyToDeliver, expectation.getQtyToDeliver(), stopwatch);
+			//noinspection BusyWait
+			Thread.sleep(1000);
+		}
+
+		final BigDecimal finalQtyDelivered = actualQtyDelivered;
+		final BigDecimal finalQtyToDeliver = actualQtyToDeliver;
+		softly(() -> {
+			softlyPutContext("orderId", orderId);
+
+			if (expectation.getQtyDelivered() != null)
+			{
+				assertThat(finalQtyDelivered != null ? finalQtyDelivered.stripTrailingZeros() : null)
+						.as("QtyDelivered of shipment schedule for order " + orderId)
+						.isEqualTo(expectation.getQtyDelivered().stripTrailingZeros());
+			}
+
+			if (expectation.getQtyToDeliver() != null)
+			{
+				assertThat(finalQtyToDeliver != null ? finalQtyToDeliver.stripTrailingZeros() : null)
+						.as("QtyToDeliver of shipment schedule for order " + orderId)
+						.isEqualTo(expectation.getQtyToDeliver().stripTrailingZeros());
+			}
+		});
 	}
 }
