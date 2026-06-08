@@ -11,24 +11,24 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.generichumodel.HUType;
-import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -42,6 +42,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
@@ -418,14 +419,13 @@ class AssertHUExpectationsCommand
 	 */
 	private void assertShipped(@NonNull final HuId huId, final boolean expectedShipped)
 	{
-		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 		final I_M_HU hu = getHUById(huId);
 
 		if (expectedShipped)
 		{
 			// Poll until the HU appears on a sales-shipment line (assignment is async).
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu, huInOutDAO);
+			List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu);
 			while (salesShipmentLines.isEmpty() && stopwatch.elapsed().compareTo(SHIPPED_ASSERTION_TIMEOUT) < 0)
 			{
 				logger.info("Waiting for HU {} to appear on a sales-shipment line (elapsed: {})", huId, stopwatch);
@@ -439,7 +439,7 @@ class AssertHUExpectationsCommand
 					Thread.currentThread().interrupt();
 					throw new AdempiereException("Interrupted while waiting for HU " + huId + " to be shipped", e);
 				}
-				salesShipmentLines = getSalesShipmentLinesForHU(hu, huInOutDAO);
+				salesShipmentLines = getSalesShipmentLinesForHU(hu);
 			}
 
 			if (salesShipmentLines.isEmpty())
@@ -450,7 +450,7 @@ class AssertHUExpectationsCommand
 		else
 		{
 			// shipped=false: assert NOT on any sales-shipment line (single check, no poll needed).
-			final List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu, huInOutDAO);
+			final List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu);
 			assertThat(salesShipmentLines)
 					.as("sales-shipment lines for HU " + huId + " (expected none)")
 					.isEmpty();
@@ -461,18 +461,15 @@ class AssertHUExpectationsCommand
 	 * Returns all {@link I_M_InOutLine} records that belong to a <em>sales</em> shipment
 	 * ({@code M_InOut.IsSOTrx=Y}) and are associated with the given HU.
 	 */
-	private static List<I_M_InOutLine> getSalesShipmentLinesForHU(
-			@NonNull final I_M_HU hu,
-			@NonNull final IHUInOutDAO huInOutDAO)
+	private List<I_M_InOutLine> getSalesShipmentLinesForHU(@NonNull final I_M_HU hu)
 	{
-		return huInOutDAO.retrieveInOutLinesForHU(hu)
+		return services.getInOutLinesForHU(hu)
 				.stream()
 				.filter(line -> {
-					final org.compiere.model.I_M_InOut inOut = org.adempiere.model.InterfaceWrapperHelper.load(
-							line.getM_InOut_ID(), org.compiere.model.I_M_InOut.class);
+					final I_M_InOut inOut = InterfaceWrapperHelper.load(line.getM_InOut_ID(), I_M_InOut.class);
 					return inOut != null && inOut.isSOTrx();
 				})
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 	}
 
 }
