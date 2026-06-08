@@ -50,9 +50,8 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
-	@Nullable ProductId productId;
-	/** If non-empty, restrict to rows whose product_id is in this set (IN-filter, pushed to DB). Takes precedence over {@link #productId} when both are set. */
-	@Builder.Default @NonNull ImmutableSet<ProductId> productIds = ImmutableSet.of();
+	/** If non-empty, restrict to rows whose product_id is in this set (IN-filter, pushed to DB). */
+	@NonNull @Singular ImmutableSet<ProductId> productIds;
 	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 	@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 	@Nullable BPartnerLocationId deliveryBPLocationId;

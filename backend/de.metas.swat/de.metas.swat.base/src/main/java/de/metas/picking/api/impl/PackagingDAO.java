@@ -94,10 +94,6 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductIds());
 		}
-		else if (query.getProductId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductId());
-		}
 
 		//
 		// Filter: Customer
