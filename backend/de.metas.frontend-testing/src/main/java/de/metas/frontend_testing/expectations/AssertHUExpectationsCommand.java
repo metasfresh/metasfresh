@@ -467,14 +467,15 @@ class AssertHUExpectationsCommand
 	{
 		final List<I_M_InOutLine> lines = services.getInOutLinesForHU(hu);
 
-		// Collect distinct M_InOut_IDs and load each at most once to avoid redundant DB round-trips
+		// Load each distinct M_InOut_ID at most once to avoid redundant DB round-trips
 		// in the hot polling loop (up to 60 iterations × N HUs).
-		final Map<Integer, I_M_InOut> inOutById = lines.stream()
+		// Use a HashMap (not Collectors.toMap) because load() may return null,
+		// and Collectors.toMap throws NPE on null values.
+		final Map<Integer, I_M_InOut> inOutById = new HashMap<>();
+		lines.stream()
 				.map(I_M_InOutLine::getM_InOut_ID)
 				.distinct()
-				.collect(Collectors.toMap(
-						id -> id,
-						id -> InterfaceWrapperHelper.load(id, I_M_InOut.class)));
+				.forEach(id -> inOutById.put(id, InterfaceWrapperHelper.load(id, I_M_InOut.class)));
 
 		return lines.stream()
 				.filter(line -> {
