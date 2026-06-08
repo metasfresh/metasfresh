@@ -98,6 +98,13 @@ class AssertHUExpectationsCommand
 			assertThat(hu.getHUStatus()).as("HUStatus").isEqualTo(expectation.getHuStatus());
 		}
 
+		if (expectation.getHuType() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final HUType expectedHuType = HUType.ofCode(expectation.getHuType());
+			assertThat(services.getHUUnitType(hu)).as("HUType").isEqualTo(expectedHuType);
+		}
+
 		if (expectation.getIsAggregatedTU() != null)
 		{
 			final I_M_HU hu = getHUById(huId);
@@ -207,6 +214,17 @@ class AssertHUExpectationsCommand
 		if (huId != null)
 		{
 			return huId;
+		}
+
+		// Allow raw numeric HU IDs (e.g. returned by the massPrinting/scan REST response in packedHUIds).
+		try
+		{
+			final int numericId = Integer.parseInt(matcherStr.trim());
+			return HuId.ofRepoId(numericId);
+		}
+		catch (final NumberFormatException ignored)
+		{
+			// not a numeric id — fall through to QR code lookup
 		}
 
 		return services.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(matcherStr));

@@ -22,6 +22,25 @@ export const MassPrintingScanScreen = {
         await BarcodeScannerComponent.type(qrCode);
     }),
 
+    /**
+     * Scan an LU and return the raw scan response body from the backend.
+     * The response includes `productResults[*].packedHUIds` — the shippable HU ids
+     * produced by the scan. Use them with Backend.expect({ hus: { <huId>: { huType: 'VirtualPI' } } })
+     * to assert that the VHU (null-PI) path produced bare Virtual HUs, not TU boxes.
+     *
+     * @returns {Promise<Object>} parsed JSON response body from the massPrinting/scan endpoint
+     */
+    scanLUAndGetResult: async ({ qrCode }) => await step(`${NAME} - Scan LU ${qrCode} and capture result`, async () => {
+        await MassPrintingScanScreen.waitForScanner();
+        const responsePromise = page.waitForResponse(
+            (resp) => resp.url().includes('/massPrinting/scan') && resp.status() === 200,
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        await BarcodeScannerComponent.type(qrCode);
+        const response = await responsePromise;
+        return response.json();
+    }),
+
     waitForResult: async () => await step(`${NAME} - Wait for result`, async () => {
         await page.getByTestId('mass-printing-result').waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
     }),

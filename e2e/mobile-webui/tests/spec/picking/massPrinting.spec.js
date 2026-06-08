@@ -605,23 +605,30 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
 
     await startUnrelatedJobAndOpenMassPrinting({ masterdata });
 
-    await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
+    // scanLUAndGetResult intercepts the massPrinting/scan REST response so we get packedHUIds.
+    const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     // 3 units → 3 boxes (one VHU/CU each), nothing left over, no open demand remaining
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
-    // harness_gap(#2): VHU unit-type assertion is blocked. The packed HU IDs are available in the
-    // backend domain object (MassPrintingResult.ProductResult.packedHUIds) but are not propagated
-    // to the REST response (JsonMassPrintingProductResult) — so the Playwright test cannot obtain
-    // them to call Backend.expect({ hus: { id: { huType: 'VirtualPI' } } }).
-    // Asserting VHU vs TU type requires extending JsonMassPrintingProductResult to expose
-    // packedHUIds + a new AssertMassPrintingExpectationsCommand (5+ Java file changes, compilation).
-    // The aggregate count assertion (expectBoxesPacked=3) still fails if the backend regresses to
-    // returning 0 boxes, but it cannot distinguish a VHU from a TU box at result-count level.
-    // Deferred as a follow-up harness extension: expose packedHUIds in the REST response and add
-    // a JsonMassPrintingExpectation path in Backend.expect.
+
+    // VHU assertion: each packed HU must be a Virtual PI (HU_UnitType='V', M_HU_PI_ID=101).
+    // This fails if the backend regresses to producing TU boxes (TransportUnit) for null-PI schedules.
+    // packedHUIds is exposed by JsonMassPrintingProductResult (extended in this issue).
+    const packedHUIds = scanResult?.productResults?.[0]?.packedHUIds ?? [];
+    if (packedHUIds.length === 0) {
+        throw new Error('scanResult.productResults[0].packedHUIds is empty — cannot assert VHU type. scanResult: ' + JSON.stringify(scanResult));
+    }
+    const husExpectation = {};
+    for (const huId of packedHUIds) {
+        husExpectation[String(huId)] = { huType: 'V' };
+    }
+    await Backend.expect({
+        title: 'Packed HUs from null-PI scan must be Virtual PIs (VHUs), not TU boxes',
+        hus: husExpectation,
+    });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobScreen.waitForScreen();

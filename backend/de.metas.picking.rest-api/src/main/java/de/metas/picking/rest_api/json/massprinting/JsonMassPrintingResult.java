@@ -1,6 +1,7 @@
 package de.metas.picking.rest_api.json.massprinting;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -46,6 +47,9 @@ public class JsonMassPrintingResult
 				.map(pr -> JsonMassPrintingProductResult.builder()
 						.productId(pr.getProductId().getRepoId())
 						.boxesPacked(pr.getBoxesPacked())
+						.packedHUIds(pr.getPackedHUIds().stream()
+								.map(HuId::getRepoId)
+								.collect(ImmutableList.toImmutableList()))
 						.labelsPrinted(pr.getLabelsPrinted())
 						.labelPrintFailures(pr.getLabelPrintFailures())
 						.unitsLeftOnLU(pr.getUnitsLeftOnLU())
