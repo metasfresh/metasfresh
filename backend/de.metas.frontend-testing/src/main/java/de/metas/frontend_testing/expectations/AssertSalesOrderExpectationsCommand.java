@@ -1,7 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
@@ -9,14 +8,10 @@ import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpect
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -58,9 +53,6 @@ class AssertSalesOrderExpectationsCommand
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonSalesOrderExpectation> expectations;
-
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	/** How long to poll for async-generated shipments before failing. */
 	private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(60);
@@ -220,17 +212,14 @@ class AssertSalesOrderExpectationsCommand
 			@NonNull final OrderId orderId,
 			@NonNull final JsonShipmentScheduleExpectation expectation) throws InterruptedException
 	{
-		final Set<OrderLineId> orderLineIds = orderDAO.retrieveOrderLines(orderId)
-				.stream()
-				.map(line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()))
-				.collect(Collectors.toSet());
+		final Set<OrderLineId> orderLineIds = services.getOrderLineIdsByOrderId(orderId);
 
 		if (orderLineIds.isEmpty())
 		{
 			throw new AdempiereException("No order lines found for order " + orderId);
 		}
 
-		final List<I_M_ShipmentSchedule> schedules = shipmentSchedulePA.getByOrderLineIds(ImmutableSet.copyOf(orderLineIds));
+		final List<I_M_ShipmentSchedule> schedules = services.getShipmentSchedulesByOrderLineIds(orderLineIds);
 		if (schedules.isEmpty())
 		{
 			throw new AdempiereException("No shipment schedules found for order " + orderId);
@@ -257,7 +246,7 @@ class AssertSalesOrderExpectationsCommand
 			}
 
 			// Re-read refreshed schedules
-			final List<I_M_ShipmentSchedule> freshSchedules = shipmentSchedulePA.getByOrderLineIds(ImmutableSet.copyOf(orderLineIds));
+			final List<I_M_ShipmentSchedule> freshSchedules = services.getShipmentSchedulesByOrderLineIds(orderLineIds);
 			freshSchedules.forEach(InterfaceWrapperHelper::refresh);
 
 			actualQtyDelivered = freshSchedules.stream()

@@ -22,9 +22,12 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -40,6 +43,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -53,6 +57,8 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -137,5 +143,18 @@ public class AssertExpectationsCommandServices
 	public List<I_M_InOutLine> getInOutLines(@NonNull final I_M_InOut inOut)
 	{
 		return inOutDAO.retrieveLines(inOut);
+	}
+
+	public Set<OrderLineId> getOrderLineIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return orderDAO.retrieveOrderLines(orderId)
+				.stream()
+				.map(line -> OrderLineId.ofRepoId(line.getC_OrderLine_ID()))
+				.collect(Collectors.toSet());
+	}
+
+	public List<I_M_ShipmentSchedule> getShipmentSchedulesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return shipmentSchedulePA.getByOrderLineIds(orderLineIds);
 	}
 }
