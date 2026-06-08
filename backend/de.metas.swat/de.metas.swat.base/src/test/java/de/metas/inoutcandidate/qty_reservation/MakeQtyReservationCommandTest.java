@@ -5,6 +5,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -31,6 +32,7 @@ class MakeQtyReservationCommandTest
 	private UomId uomId;
 	private ProductId productId;
 	private WarehouseId warehouseId;
+	private IProductBL productBL;
 
 	@BeforeEach
 	void beforeEach()
@@ -40,6 +42,10 @@ class MakeQtyReservationCommandTest
 		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 		productId = BusinessTestHelper.createProductId("P1", uom);
 		warehouseId = WarehouseId.ofRepoId(1);
+
+		// the product's stock UOM is the same "Each" UOM used for the rowVO qty and the capacity
+		productBL = mock(IProductBL.class);
+		when(productBL.getStockUOMId(productId)).thenReturn(uomId);
 	}
 
 	/**
@@ -84,6 +90,7 @@ class MakeQtyReservationCommandTest
 
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.rowVO(rowVO)
 				.salesOrderAndLineId(salesOrderAndLineId)
@@ -131,6 +138,7 @@ class MakeQtyReservationCommandTest
 
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.rowVO(rowVO)
 				.salesOrderAndLineId(salesOrderAndLineId)
@@ -178,6 +186,7 @@ class MakeQtyReservationCommandTest
 
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.rowVO(rowVO)
 				.salesOrderAndLineId(salesOrderAndLineId)
@@ -229,6 +238,7 @@ class MakeQtyReservationCommandTest
 
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.rowVO(rowVO)
 				.salesOrderAndLineId(salesOrderAndLineId)
@@ -275,6 +285,7 @@ class MakeQtyReservationCommandTest
 
 		final MakeQtyReservationCommand command = MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.rowVO(rowVO)
 				.salesOrderAndLineId(salesOrderAndLineId)
@@ -283,6 +294,57 @@ class MakeQtyReservationCommandTest
 				.build();
 
 		assertThatThrownBy(command::execute)
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(e -> assertThat(((AdempiereException)e).isUserValidationError()).isTrue());
+	}
+
+	/**
+	 * Whole-TU reservation is intentional: for a planned-supply row the reserved CU qty is
+	 * {@code qtyToReserveTU x capacity} and is NOT capped at the order line's QtyOrdered (the TU count
+	 * is already bounded upstream). 10 TU x 10 CU/TU = 100 CU even though the order line's CU is 95.
+	 */
+	@Test
+	void plannedSupply_reservesWholeTUs_evenWhenExceedingQtyOrdered()
+	{
+		final Quantity qtyStockZero = Quantitys.of(BigDecimal.ZERO, uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.PLANNED_SUPPLY)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStockZero)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		// capacity = 10 CU/TU; order line's CU (QtyOrdered) = 95 -> 10 x 10 = 100 > 95
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("10"));
+		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
+				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.productBL(productBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.build()
+				.execute();
+
+		verify(qtyReservationService).makeReservation(requestCaptor.capture());
+		final CreateQtyReservationRequest request = requestCaptor.getValue();
+
+		// 10 TU x 10 CU/TU = 100 CU; intentionally NOT capped at the order line's CU of 95
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("100"));
+		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
 	}
 }

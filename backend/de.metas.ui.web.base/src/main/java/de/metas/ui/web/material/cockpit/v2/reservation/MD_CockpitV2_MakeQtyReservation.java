@@ -7,6 +7,7 @@ import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.process.IProcessDefaultParameter;
@@ -29,6 +30,7 @@ public class MD_CockpitV2_MakeQtyReservation
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	@Autowired private QtyReservationService qtyReservationService;
 	@Autowired private ProjectRepository projectRepository;
@@ -105,6 +107,7 @@ public class MD_CockpitV2_MakeQtyReservation
 
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.projectRepository(projectRepository)
 				.rowVO(rowVO)

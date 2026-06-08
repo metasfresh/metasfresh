@@ -32,6 +32,7 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.inoutcandidate.qty_reservation.MakeQtyReservationCommand;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
@@ -106,6 +107,7 @@ import java.util.Map;
 public class QtyDemand_QtySupply_V_StepDef
 {
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
@@ -172,6 +174,7 @@ public class QtyDemand_QtySupply_V_StepDef
 
 		final QtyReservationId reservationId = MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.projectRepository(projectRepository)
 				.rowVO(rowVO)

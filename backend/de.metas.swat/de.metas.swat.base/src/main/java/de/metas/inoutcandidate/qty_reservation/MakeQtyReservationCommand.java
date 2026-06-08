@@ -11,7 +11,6 @@ import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +30,7 @@ import java.math.BigDecimal;
 public class MakeQtyReservationCommand
 {
 	@NonNull IOrderLineBL orderLineBL;
+	@NonNull IProductBL productBL;
 	@NonNull QtyReservationService qtyReservationService;
 	@Nullable ProjectRepository projectRepository;
 	@NonNull MaterialCockpitV2RowVO rowVO;
@@ -44,7 +44,6 @@ public class MakeQtyReservationCommand
 	 * from this module). When {@code null} and the order line has no capacity, reservation fails.
 	 */
 	@Nullable Quantity capacityPerTUFallback;
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public QtyReservationId execute()
 	{
@@ -111,6 +110,8 @@ public class MakeQtyReservationCommand
 		final BigDecimal qtyItemCapacity = orderLineRecord.getQtyItemCapacity();
 		if (qtyItemCapacity != null && qtyItemCapacity.signum() > 0)
 		{
+			// QtyItemCapacity is held in the product's stock UOM (cf. IHUPIItemProductBL.getQtyCUsPerTUInStockUOM),
+			// so wrapping it with stockUomId needs no conversion.
 			return Quantitys.of(qtyItemCapacity, stockUomId);
 		}
 
