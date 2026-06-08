@@ -1,11 +1,24 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.qty_reservation.MakeQtyReservationCommand;
 import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -94,17 +107,56 @@ public class MD_CockpitV2_MakeQtyReservation
 		final QtyTU qtyToReserveTU = getAndValidateQtyToReserveTUParam();
 		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
 
+		final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
+
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
 				.qtyReservationService(qtyReservationService)
 				.projectRepository(projectRepository)
 				.rowVO(rowVO)
-				.salesOrderAndLineId(getSalesOrderAndLineId())
+				.salesOrderAndLineId(salesOrderAndLineId)
 				.qtyToReserveTU(qtyToReserveTU)
+				.capacityPerTUFallback(computeCapacityPerTUFromLUTU(salesOrderAndLineId, rowVO.getProductId()))
 				.build()
 				.execute();
 
 		return MSG_OK;
+	}
+
+	/**
+	 * Resolves the packing capacity per TU (in the product's stock UOM) from the sales order line's
+	 * {@code M_HU_LUTU_Configuration}, used as a fallback by {@link MakeQtyReservationCommand} when
+	 * the order line carries no explicit {@code QtyItemCapacity}. The HU LU/TU machinery lives in
+	 * {@code de.metas.handlingunits.base}, which is reachable from this WebUI module but not from
+	 * {@code de.metas.swat.base} where the command lives.
+	 */
+	private Quantity computeCapacityPerTUFromLUTU(
+			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final ProductId productId)
+	{
+		final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+
+		final I_C_Order orderRecord = orderBL.getById(salesOrderAndLineId.getOrderId());
+		final de.metas.handlingunits.model.I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.load(
+				salesOrderAndLineId.getOrderLineRepoId(),
+				de.metas.handlingunits.model.I_C_OrderLine.class);
+
+		final I_M_HU_PI_Item_Product tuPIItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
+
+		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				productId,
+				stockUomId,
+				null/* bpartnerId */,
+				false/* noLUForVirtualTU */);
+
+		// Pass a zero stock qty so the result reflects the packing instruction's CU-per-TU (the
+		// order-line-QtyItemCapacity branch is handled inside the command).
+		final Quantity zeroStockQty = Quantitys.of(BigDecimal.ZERO, stockUomId);
+		return IHUPIItemProductBL.getQtyCUsPerTUInStockUOM(orderLineRecord, zeroStockQty, lutuConfigurationInStockUOM);
 	}
 
 	@Override

@@ -96,4 +96,96 @@ class MakeQtyReservationCommandTest
 		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("110"));
 		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
 	}
+
+	/**
+	 * On-hand reservation: {@code qtyToReserveTU x capacity} (10 x 11 = 110) exceeds the row's
+	 * on-hand stock (50), so the reserved CU qty is capped at the on-hand stock.
+	 */
+	@Test
+	void onHand_cappedAtQtyStock()
+	{
+		final Quantity qtyStock = Quantitys.of(new BigDecimal("50"), uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.ON_HAND)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStock)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
+				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.build()
+				.execute();
+
+		verify(qtyReservationService).makeReservation(requestCaptor.capture());
+		final CreateQtyReservationRequest request = requestCaptor.getValue();
+
+		// 10 TU x 11 CU/TU = 110, but capped at the on-hand stock of 50
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("50"));
+		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
+	}
+
+	/**
+	 * On-hand reservation: {@code qtyToReserveTU x capacity} (2 x 11 = 22) is within the row's
+	 * on-hand stock (50), so the reserved CU qty is NOT reduced.
+	 */
+	@Test
+	void onHand_notReducedWhenWithinStock()
+	{
+		final Quantity qtyStock = Quantitys.of(new BigDecimal("50"), uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.ON_HAND)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStock)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
+				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(2))
+				.build()
+				.execute();
+
+		verify(qtyReservationService).makeReservation(requestCaptor.capture());
+		final CreateQtyReservationRequest request = requestCaptor.getValue();
+
+		// 2 TU x 11 CU/TU = 22, within the on-hand stock of 50 -> not reduced
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("22"));
+		assertThat(request.getQtyTU().toInt()).isEqualTo(2);
+	}
 }
