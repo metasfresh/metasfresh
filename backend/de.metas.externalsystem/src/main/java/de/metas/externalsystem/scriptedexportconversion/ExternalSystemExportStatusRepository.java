@@ -25,7 +25,9 @@ package de.metas.externalsystem.scriptedexportconversion;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemExportStatus;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_ScriptedExportConversion_Log;
+import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,19 +35,25 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Column;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
 /**
  * Repository for {@code ExternalSystem_ScriptedExportConversion_Log}.
  *
- * <p>Repository Tables: ExternalSystem_ScriptedExportConversion_Log
+ * <p>Repository Tables: ExternalSystem_ScriptedExportConversion_Log,
+ * ExternalSystem_Config_ScriptedExportConversion, AD_Column
  */
 @Repository
 public class ExternalSystemExportStatusRepository
 {
+	private static final Logger log = LogManager.getLogger(ExternalSystemExportStatusRepository.class);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
@@ -154,6 +162,49 @@ public class ExternalSystemExportStatusRepository
 				.map(this::fromRecord)
 				// keep only the latest entry per configId
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	// ------------------------------------------------------------------
+	// Source-record roll-up write
+	// ------------------------------------------------------------------
+
+	/**
+	 * Looks up the {@code Status_AD_Column_ID} configured for the given config.
+	 * Returns {@code null} when no target column is set (log-rows-only mode).
+	 */
+	@Nullable
+	public String getStatusColumnNameForConfig(@NonNull final ExternalSystemScriptedExportConversionConfigId configId)
+	{
+		final I_ExternalSystem_Config_ScriptedExportConversion configRecord =
+				InterfaceWrapperHelper.load(configId.getRepoId(), I_ExternalSystem_Config_ScriptedExportConversion.class);
+
+		final int statusAdColumnId = configRecord.getStatus_AD_Column_ID();
+		if (statusAdColumnId <= 0)
+		{
+			return null;
+		}
+
+		final I_AD_Column adColumn = InterfaceWrapperHelper.load(statusAdColumnId, I_AD_Column.class);
+		if (adColumn == null)
+		{
+			log.debug("AD_Column {} not found for configId={} – skipping roll-up write", statusAdColumnId, configId);
+			return null;
+		}
+		return adColumn.getColumnName();
+	}
+
+	/**
+	 * Writes the given status code into the named column of the source record.
+	 * Uses dynamic column assignment so any String column can be the roll-up target.
+	 */
+	public void writeStatusToSourceRecord(
+			@NonNull final TableRecordReference sourceRecord,
+			@NonNull final String columnName,
+			@NonNull final String statusCode)
+	{
+		final Object sourceModel = sourceRecord.getModel();
+		InterfaceWrapperHelper.setValue(sourceModel, columnName, statusCode);
+		InterfaceWrapperHelper.saveRecord(sourceModel);
 	}
 
 	// ------------------------------------------------------------------

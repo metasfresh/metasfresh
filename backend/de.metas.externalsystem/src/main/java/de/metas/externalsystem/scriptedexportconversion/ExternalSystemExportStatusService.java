@@ -23,13 +23,12 @@
 package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemExportStatus;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
@@ -192,7 +191,7 @@ public class ExternalSystemExportStatusService
 		final Optional<ExternalSystemExportStatusLogEntry> existing = repo.getLatestByPInstanceId(pInstanceId);
 		if (!existing.isPresent())
 		{
-			// AC-10 safety: no matching row → silently ignore
+			// No matching row for this pInstance — silently ignore; the caller may have skipped recordPending
 			log.debug("No log row found for pInstanceId={}, status={} – skipping", pInstanceId, newStatus);
 			return;
 		}
@@ -216,35 +215,15 @@ public class ExternalSystemExportStatusService
 	{
 		try
 		{
-			// 1. Load config record to get Status_AD_Column_ID
-			final I_ExternalSystem_Config_ScriptedExportConversion configRecord =
-					InterfaceWrapperHelper.load(
-							entry.getConfigId().getRepoId(),
-							I_ExternalSystem_Config_ScriptedExportConversion.class);
-
-			final int statusAdColumnId = configRecord.getStatus_AD_Column_ID();
-			if (statusAdColumnId <= 0)
+			// 1. Resolve the target column name via the repository (returns null when not configured)
+			final String columnName = repo.getStatusColumnNameForConfig(entry.getConfigId());
+			if (columnName == null)
 			{
 				return; // no target column configured – log-rows-only mode
 			}
 
-			// 2. Resolve the column name from AD_Column_ID.
-			// We load the I_AD_Column record directly; this works in both production and
-			// unit-test mode (POJOWrapper in-memory) without triggering a CCache reload.
-			final org.compiere.model.I_AD_Column adColumn =
-					InterfaceWrapperHelper.load(statusAdColumnId, org.compiere.model.I_AD_Column.class);
-			if (adColumn == null)
-			{
-				log.debug("AD_Column {} not found – skipping roll-up write", statusAdColumnId);
-				return;
-			}
-			final String columnName = adColumn.getColumnName();
-
-			// 3. Get the source record reference.
-			// Use the table name stored in the reference directly.
+			// 2. Compute roll-up across ALL latest entries for this source record
 			final TableRecordReference sourceRecord = entry.getSourceRecord();
-
-			// 4. Compute roll-up across ALL latest entries for this source record
 			final List<ExternalSystemExportStatusLogEntry> latestEntries =
 					repo.getLatestBySourceRecord(sourceRecord);
 			// Deduplicate: keep only the latest row per configId
@@ -255,16 +234,14 @@ public class ExternalSystemExportStatusService
 				latestPerConfig.putIfAbsent(e.getConfigId(), e);
 			}
 			final ExternalSystemExportStatus rollUp =
-					computeRollUp(com.google.common.collect.ImmutableList.copyOf(latestPerConfig.values()));
+					computeRollUp(ImmutableList.copyOf(latestPerConfig.values()));
 
-			// 5. Load source record and set the column value
-			final Object sourceModel = sourceRecord.getModel();
-			InterfaceWrapperHelper.setValue(sourceModel, columnName, rollUp.getCode());
-			InterfaceWrapperHelper.saveRecord(sourceModel);
+			// 3. Write the roll-up code to the source record's target column
+			repo.writeStatusToSourceRecord(sourceRecord, columnName, rollUp.getCode());
 		}
 		catch (final Exception e)
 		{
-			// AC-10: never throw – log the failure only
+			// never throw – log the failure only
 			log.warn("Failed to write roll-up status for entry {}: {}", entry, e.getMessage(), e);
 		}
 	}
