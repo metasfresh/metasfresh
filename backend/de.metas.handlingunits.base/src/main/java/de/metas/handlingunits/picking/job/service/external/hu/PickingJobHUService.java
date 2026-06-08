@@ -83,7 +83,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
