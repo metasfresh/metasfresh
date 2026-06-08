@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 54 | 57 | 95% |
+| Picking | 55 | 58 | 95% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -165,8 +165,9 @@
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
 | DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
+| Reverse (void) an aggregate-HU shipment → recreate must not collide on duplicate QtyPicked rows | `picking/recreate_shipment_after_void.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Product-based picking
 

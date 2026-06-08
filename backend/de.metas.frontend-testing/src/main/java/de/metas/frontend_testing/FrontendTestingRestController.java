@@ -11,6 +11,9 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
+import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
@@ -137,6 +140,15 @@ public class FrontendTestingRestController
 	{
 		return callInContext(() -> GetHUQRCodeCommand.builder()
 				.huQRCodesService(huQRCodesService)
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("reverseShipment")
+	public JsonReverseShipmentResponse reverseShipment(@RequestBody @NonNull final JsonReverseShipmentRequest request)
+	{
+		return callInContext(() -> ReverseShipmentCommand.builder()
 				.request(request)
 				.build()
 				.execute());

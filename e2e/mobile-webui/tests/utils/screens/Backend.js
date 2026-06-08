@@ -133,6 +133,30 @@ export const Backend = {
         return { shipmentId: shipment.id, documentNo: shipment.documentNo };
     }),
 
+    /**
+     * Reverse (document-engine Reverse-Correct) a previously-created, completed shipment — the
+     * faithful equivalent of the customer's "void shipment". Restores the HU snapshot taken at
+     * completion and replays the per-transport-unit HU-trx lines through the aggregate VHU.
+     *
+     * @param {Object} args
+     * @param {string} args.shipmentId - the M_InOut_ID returned by a prior shipment-create call.
+     * @returns {Promise<{id: string, documentNo: string, docStatus: string}>}
+     */
+    reverseShipment: async ({ shipmentId }) => await test.step(`Backend: reverse shipment ${shipmentId}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/reverseShipment`, {
+            data: { shipmentId: String(shipmentId) },
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
+        return responseBody;
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {

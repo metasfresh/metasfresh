@@ -117,6 +117,18 @@ public class PickingJobShipmentScheduleService
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(request);
 	}
 
+	/**
+	 * Consolidate an aggregate-HU snapshot-replay pick into the single existing un-shipped QtyPicked row
+	 * for the same VHU, rather than creating a duplicate. Self-gated: returns {@code false} (no merge) for
+	 * genuine job-schedule-bound picks, catch-weight, negative, anonymous-on-the-fly or non-virtual picks.
+	 *
+	 * @return {@code true} if the qty was merged into an existing row (caller must NOT also add a new row).
+	 */
+	public boolean tryMergeQtyPickedIntoExistingForVHU(final AddQtyPickedRequest request)
+	{
+		return huShipmentScheduleBL.tryMergeQtyPickedIntoExistingForVHU(request);
+	}
+
 	public void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull final Collection<I_M_HU> topLevelHUs, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);

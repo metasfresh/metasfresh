@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.base.Preconditions;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -145,6 +146,30 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
 				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
+	}
+
+	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveMergeableListenerQtyPickedForVHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId vhuId)
+	{
+		// Run in the thread-inherited transaction. This method is called from
+		// ShipmentScheduleHUTrxListener#trxLineProcessed during an aggregate-HU snapshot replay
+		// (e.g. shipment reversal): the sibling QtyPicked rows we need to merge into are created
+		// earlier in the SAME, not-yet-committed transaction. A context-less query would run
+		// out-of-trx (committed data only) and never see them, defeating the merge.
+		final Properties ctx = Env.getCtx();
+		final String trxName = Services.get(org.adempiere.ad.trx.api.ITrxManager.class).getThreadInheritedTrxName();
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_Picking_Job_Schedule_ID, null)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_IsAnonymousHuPickedOnTheFly, false)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.create()
+				.list();
 	}
 
 	@Override

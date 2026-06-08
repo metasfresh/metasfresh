@@ -145,7 +145,7 @@ public class PickingJobReopenCommand
 				.forEach(pickStepHU -> {
 					final HuId huId = pickStepHU.getActualPickedHU().getId();
 					final I_M_HU hu = huService.getById(huId);
-					shipmentScheduleService.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+					final AddQtyPickedRequest request = AddQtyPickedRequest.builder()
 							.scheduleId(step.getScheduleId())
 							.qtyPicked(CatchWeightHelper.extractQtys(
 									huContext,
@@ -155,7 +155,17 @@ public class PickingJobReopenCommand
 							.hu(hu)
 							.huContext(huContext)
 							.anonymousHuPickedOnTheFly(huIdsToPick.get(huId).isAnonymousHuPickedOnTheFly())
-							.build());
+							.build();
+					// An aggregate HU exposes one "actual picked HU" per aggregated TU, so reopening replays
+					// N requests through the SAME VHU. Consolidate them into the single existing un-shipped
+					// QtyPicked row (restoring the pre-reversal one-row shape) so they do not later collide on
+					// the M_ShipmentSchedule_QtyPicked_UI partial unique index when the shipment is recreated.
+					// tryMerge is self-gated (no-op for job-schedule-bound, catch-weight, negative, anonymous
+					// or non-virtual picks), so genuine per-step picks are unaffected.
+					if (!shipmentScheduleService.tryMergeQtyPickedIntoExistingForVHU(request))
+					{
+						shipmentScheduleService.addQtyPickedAndUpdateHU(request);
+					}
 				});
 	}
 }
