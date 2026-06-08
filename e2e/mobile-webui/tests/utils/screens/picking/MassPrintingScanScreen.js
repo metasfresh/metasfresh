@@ -63,6 +63,30 @@ export const MassPrintingScanScreen = {
         }
     }),
 
+    /**
+     * Assert the result container shows the empty-result element
+     * (rendered when productResults is empty AND skippedNonSelfPackedProductIds is empty).
+     */
+    expectResultEmpty: async () => await step(`${NAME} - Expect result is empty`, async () => {
+        await page.getByTestId('mass-printing-result-empty').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Assert that the skipped-non-self-packed products section is visible, i.e.
+     * at least one product was skipped because it is not self-packed.
+     */
+    expectSkippedProductsVisible: async () => await step(`${NAME} - Expect skipped products visible`, async () => {
+        await page.getByTestId('mass-printing-skipped').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Assert that the skipped-products section is absent (no non-self-packed products
+     * were present on the scanned LU).
+     */
+    expectNoSkippedProducts: async () => await step(`${NAME} - Expect no skipped products`, async () => {
+        await page.getByTestId('mass-printing-skipped').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
     clickDone: async () => await step(`${NAME} - Click Done`, async () => {
         await page.getByTestId('mass-printing-done-button').tap();
     }),
