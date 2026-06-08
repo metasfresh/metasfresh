@@ -113,7 +113,7 @@ public class MassPrintingService
 
 			// Pack+ship inside a transaction; label printing happens AFTER the transaction commits
 			// (best-effort: failures are counted but do not roll back the packed boxes).
-			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, warehouseId, productId, productStorage.getQtyAsInt(), packageables);
+			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, productId, productStorage.getQtyAsInt(), packageables);
 
 			productResults.add(buildProductResult(productId, packAndPickResult));
 		}
@@ -168,7 +168,6 @@ public class MassPrintingService
 	private PackAndPickResult processProductInTrx(
 			@NonNull final MassPrintingScanRequest request,
 			@NonNull final HuId luId,
-			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
 			final int unitsOnLU,
 			@NonNull final List<Packageable> packageables)
