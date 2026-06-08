@@ -117,7 +117,9 @@ public interface IHUOrderBL extends ISingletonService
 
 	/**
 	 * Resolves the packing capacity per TU (in the product's stock UOM) from the sales order line's
-	 * {@code M_HU_LUTU_Configuration}, ignoring the order line's explicit {@code QtyItemCapacity}.
+	 * {@code M_HU_LUTU_Configuration}, regardless of the order line's explicit {@code QtyItemCapacity}
+	 * (intended for the fallback path where {@code QtyItemCapacity} is not positive; it does not
+	 * validate that precondition).
 	 * <p>
 	 * Intended as the fallback used by {@code MakeQtyReservationCommand} when the order line carries
 	 * no positive {@code QtyItemCapacity}: that module lives in {@code de.metas.swat.base}, which cannot

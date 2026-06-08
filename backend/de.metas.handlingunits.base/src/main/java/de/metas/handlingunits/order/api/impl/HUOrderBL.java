@@ -609,6 +609,10 @@ public class HUOrderBL implements IHUOrderBL
 				de.metas.handlingunits.model.I_C_OrderLine.class);
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
+		if (tuPIItemProduct == null)
+		{
+			return null;
+		}
 
 		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,

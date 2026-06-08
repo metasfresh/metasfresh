@@ -2,12 +2,14 @@ package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.QtyTU;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -18,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,7 +67,7 @@ class MakeQtyReservationCommandTest
 		// --- mock IOrderLineBL: packing-item capacity = 11 CU/TU, QtyOrdered = 110 Each ---
 		// getOrderLineById(..) returns de.metas.interfaces.I_C_OrderLine, which inherits
 		// getQtyItemCapacity() from org.compiere.model.I_C_OrderLine.
-		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
 		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
 
@@ -115,7 +118,7 @@ class MakeQtyReservationCommandTest
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
 
-		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
 		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
 
@@ -162,7 +165,7 @@ class MakeQtyReservationCommandTest
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
 
-		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
 		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
 
@@ -188,5 +191,98 @@ class MakeQtyReservationCommandTest
 		// 2 TU x 11 CU/TU = 22, within the on-hand stock of 50 -> not reduced
 		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("22"));
 		assertThat(request.getQtyTU().toInt()).isEqualTo(2);
+	}
+
+	/**
+	 * Planned-supply reservation with NO order-line {@code QtyItemCapacity}: the command falls back to
+	 * the caller-supplied {@code capacityPerTUFallback} (13 CU/TU). 10 TU x 13 CU/TU = 130 CU, not
+	 * capped (planned supply).
+	 */
+	@Test
+	void plannedSupply_usesFallbackCapacity_whenNoQtyItemCapacity()
+	{
+		final Quantity qtyStockZero = Quantitys.of(BigDecimal.ZERO, uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.PLANNED_SUPPLY)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStockZero)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		// order line carries NO explicit packing-item capacity -> the fallback capacity is used
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(BigDecimal.ZERO);
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
+				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
+
+		// caller-resolved fallback: 13 CU/TU (in the product's stock UOM)
+		final Quantity capacityPerTUFallback = Quantitys.of(new BigDecimal("13"), uomId);
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.capacityPerTUFallback(capacityPerTUFallback)
+				.build()
+				.execute();
+
+		verify(qtyReservationService).makeReservation(requestCaptor.capture());
+		final CreateQtyReservationRequest request = requestCaptor.getValue();
+
+		// 10 TU x 13 CU/TU (fallback) = 130 CU
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("130"));
+		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
+	}
+
+	/**
+	 * Neither the order line's {@code QtyItemCapacity} nor a {@code capacityPerTUFallback} yields a
+	 * positive capacity: the command cannot derive a CU qty and raises a user-validation error.
+	 */
+	@Test
+	void noCapacity_throwsUserError()
+	{
+		final Quantity qtyStockZero = Quantitys.of(BigDecimal.ZERO, uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.PLANNED_SUPPLY)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStockZero)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		// no explicit packing-item capacity AND no fallback supplied
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(BigDecimal.ZERO);
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+
+		final MakeQtyReservationCommand command = MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.capacityPerTUFallback(null)
+				.build();
+
+		assertThatThrownBy(command::execute)
+				.isInstanceOf(AdempiereException.class);
 	}
 }
