@@ -433,12 +433,12 @@ public class PickingJobHUService
 	 * delegate command); the physical job is enqueued after the caller's transaction commits, so it does
 	 * not participate in the pick+ship rollback boundary.
 	 *
-	 * @param pickedHuId the HU id of the shippable HU to label (one call per picked unit)
+	 * @param pickedHuId the HU id of the shippable HU to label (one call per picked HU)
 	 * @throws org.adempiere.exceptions.AdempiereException if no matching {@code M_HU_Label_Config}
 	 *                                                      is found (captured by the caller for the
 	 *                                                      per-product result summary)
 	 */
-	public void printBoxLabel(@NonNull final HuId pickedHuId)
+	public void printHULabel(@NonNull final HuId pickedHuId)
 	{
 		huLabelService.print(HULabelPrintRequest.builder()
 				.sourceDocType(HULabelSourceDocType.Picking)

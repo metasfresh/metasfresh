@@ -44,7 +44,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Orchestration service for the mass-printing flow:
  * Scan LU → enumerate self-packed products → per-product FIFO selection →
@@ -147,7 +146,7 @@ public class MassPrintingService
 			{
 				try
 				{
-					huService.printBoxLabel(pickedHuId);
+					huService.printHULabel(pickedHuId);
 					labelsPrinted++;
 				}
 				catch (final Exception e)
@@ -285,7 +284,8 @@ public class MassPrintingService
 		final PickingJob pickedJob = pickingJobService.processStepEvents(pickingJob, pickEvents);
 
 		// Capture the picked shippable HU ids BEFORE completing the job (for post-commit label printing).
-		// getAllPickedHuIds() returns the top-level picked HUs — one per scheduled unit.
+		// getAllPickedHuIds() returns the top-level picked HUs — one per scheduled line
+		// (finite PI: one TU per unit; Virtual PI: one VHU for all units in that schedule).
 		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
 
 		// Resolve the leaf HUs (descend any target LU wrapper): one leaf shippable HU per picked unit.
