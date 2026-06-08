@@ -34,16 +34,18 @@ import org.springframework.stereotype.Component;
 /**
  * Error listener for Scripted Export Conversion.
  * Updates the {@code ExternalSystem_ScriptedExportConversion_Log} row to {@code Error}
- * when an external system invocation fails.
+ * when an external system invocation fails, and links the {@code AD_Issue} created for
+ * this invocation.
  *
  * <p>This listener applies to <em>all</em> error contexts — it uses the {@code pInstanceId}
  * to look up the matching log row and is a no-op (no throw) when no matching row exists
  * (AC-10 safety: the pInstanceId may belong to a different external system invocation).
  *
- * <p>Note: the {@link IExternalSystemInvocationErrorListener} SPI does not provide the
- * {@code AD_Issue_ID} — only {@code pInstanceId}, {@code errorContext}, and {@code errorMessage}
- * are available. Therefore {@code markError} is called with {@code adIssueId=0}; the issue link
- * cannot be set via this listener path.
+ * <p>The {@link IExternalSystemInvocationErrorListener} SPI does not provide the
+ * {@code AD_Issue_ID} directly. Instead, {@link de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService#markError}
+ * resolves the most-recent {@code AD_Issue} stamped with the given {@code AD_PInstance_ID}
+ * — created by {@code ExternalSystemService.createIssue()} before listeners are notified —
+ * and links it to the log row automatically.
  */
 @Component
 @RequiredArgsConstructor
@@ -70,7 +72,7 @@ public class ScriptedExportStatusErrorListener implements IExternalSystemInvocat
 			@NonNull final String errorMessage)
 	{
 		logger.debug("Handling invocation error for pInstanceId={}, errorContext={}", pInstanceId, errorContext);
-		// adIssueId=0: the SPI does not expose the AD_Issue_ID created by ExternalSystemService.createIssue
+		// adIssueId=0: markError will resolve the AD_Issue_ID by querying AD_Issue.AD_PInstance_ID
 		exportStatusService.markError(pInstanceId, 0, errorMessage);
 	}
 }

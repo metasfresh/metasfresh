@@ -24,6 +24,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -203,13 +204,30 @@ public class ExternalSystemExportStatusService
 	/**
 	 * Transitions the log row to {@link ExternalSystemExportStatus#Error}.
 	 * No-op (no throw) when no log row exists for the pInstance.
+	 *
+	 * <p>When {@code adIssueId == 0} (caller does not know the issue ID, e.g. the error-listener
+	 * SPI path), the most-recent {@code AD_Issue} stamped with this {@code pInstanceId} is
+	 * resolved from the database and linked automatically. This closes the DoD gap: the
+	 * {@code AD_Issue} is created by {@code ExternalSystemService.createIssue()} — stamped with
+	 * {@code AD_PInstance_ID} — before any listener is notified, so the resolution always finds
+	 * the correct record.
 	 */
 	public void markError(
 			@NonNull final PInstanceId pInstanceId,
 			final int adIssueId,
 			@Nullable final String message)
 	{
-		updateStatus(pInstanceId, ExternalSystemExportStatus.Error, 0, adIssueId, message);
+		final int resolvedAdIssueId;
+		if (adIssueId > 0)
+		{
+			resolvedAdIssueId = adIssueId;
+		}
+		else
+		{
+			final AdIssueId resolved = repo.resolveLatestAdIssueIdByPInstanceId(pInstanceId);
+			resolvedAdIssueId = resolved != null ? resolved.getRepoId() : 0;
+		}
+		updateStatus(pInstanceId, ExternalSystemExportStatus.Error, 0, resolvedAdIssueId, message);
 	}
 
 	/**

@@ -24,6 +24,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_ScriptedExportConversion_Log;
@@ -36,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Issue;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -187,6 +189,29 @@ public class ExternalSystemExportStatusRepository
 				.stream()
 				.map(this::fromRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Resolves the most-recent {@code AD_Issue_ID} that was created for the given
+	 * {@code AD_PInstance_ID}.
+	 *
+	 * <p>The AD_Issue is created by {@code ExternalSystemService.createIssue()} (stamped with the
+	 * pInstanceId) <em>before</em> any error-listener is notified, so it is already visible when
+	 * this method is called.
+	 *
+	 * @return the {@link AdIssueId} of the most recently created AD_Issue for the pInstance,
+	 *         or {@code null} when none exists (pInstance had no issues created yet).
+	 */
+	@Nullable
+	public AdIssueId resolveLatestAdIssueIdByPInstanceId(@NonNull final PInstanceId pInstanceId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_PInstance_ID, pInstanceId.getRepoId())
+				.orderByDescending(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.create()
+				.firstOptional(I_AD_Issue.class)
+				.map(issue -> AdIssueId.ofRepoId(issue.getAD_Issue_ID()))
+				.orElse(null);
 	}
 
 	// ------------------------------------------------------------------

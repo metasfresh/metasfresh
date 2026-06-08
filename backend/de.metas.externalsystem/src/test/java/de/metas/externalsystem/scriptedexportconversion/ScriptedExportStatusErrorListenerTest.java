@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,8 +47,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * Tests for {@link ScriptedExportStatusErrorListener}.
  * <p>
  * AC-10: the listener must be a no-op (no throw) when there is no matching log row.
- * Main path: when a pInstanceId has a matching Enqueued log row, the listener must
- * transition it to Error and set the message.
+ * Main path: when a pInstanceId has a matching Enqueued log row and an AD_Issue exists
+ * for that pInstanceId, the listener must transition the row to Error, set the message,
+ * and link the AD_Issue_ID.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 public class ScriptedExportStatusErrorListenerTest
@@ -82,10 +84,10 @@ public class ScriptedExportStatusErrorListenerTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Main path: Enqueued log row → Error + message stored
+	// Main path: Enqueued log row → Error + message stored + AD_Issue linked
 	// -----------------------------------------------------------------------
 	@Test
-	void onInvocationError_setsErrorStatus_whenMatchingLogRowExists()
+	void onInvocationError_setsErrorStatus_andLinksAdIssue_whenMatchingLogRowExists()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -104,16 +106,56 @@ public class ScriptedExportStatusErrorListenerTest
 		assertThat(before).isPresent();
 		assertThat(before.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 
+		// Simulate ExternalSystemService.createIssue() creating an AD_Issue stamped with pInstanceId.
+		// This mirrors the production path: the issue is created BEFORE the listener is called.
+		final I_AD_Issue adIssue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class);
+		adIssue.setAD_PInstance_ID(pInstanceId.getRepoId());
+		adIssue.setIssueSummary("Something went wrong");
+		adIssue.setIssueCategory("O");
+		InterfaceWrapperHelper.saveRecord(adIssue);
+		final int expectedAdIssueId = adIssue.getAD_Issue_ID();
+
 		// act
 		listener.onInvocationError(pInstanceId, ExternalSystemErrorContext.UNKNOWN, "Something went wrong");
 
-		// assert
+		// assert: status=Error, message set, and AD_Issue linked
 		final Optional<ExternalSystemExportStatusLogEntry> after = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(after).isPresent();
 		assertThat(after.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
 		assertThat(after.get().getStatusMessage()).isEqualTo("Something went wrong");
-		// adIssueId=0: SPI does not provide the AD_Issue_ID; this is the documented limitation
-		assertThat(after.get().getAdIssueId()).isZero();
+		assertThat(after.get().getAdIssueId())
+				.as("Log row must be linked to the AD_Issue created for this pInstanceId")
+				.isEqualTo(expectedAdIssueId);
+	}
+
+	// -----------------------------------------------------------------------
+	// Fallback: no AD_Issue exists for pInstanceId → adIssueId stays 0 (no throw)
+	// -----------------------------------------------------------------------
+	@Test
+	void onInvocationError_setsErrorStatus_adIssueZero_whenNoAdIssueExists()
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		InterfaceWrapperHelper.saveRecord(inout);
+		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
+
+		final I_ExternalSystem_Config_ScriptedExportConversion cfg = createConfig(getM_InOutTableId());
+		final ExternalSystemScriptedExportConversionConfigId configId =
+				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID());
+
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1002);
+		statusService.recordPending(configId, sourceRecord);
+		statusService.bindPInstanceAndMarkEnqueued(configId, sourceRecord, pInstanceId);
+
+		// No AD_Issue created for this pInstanceId — fallback behaviour: adIssueId=0, no throw
+
+		listener.onInvocationError(pInstanceId, ExternalSystemErrorContext.UNKNOWN, "Some error");
+
+		final Optional<ExternalSystemExportStatusLogEntry> after = repo.getLatestByPInstanceId(pInstanceId);
+		assertThat(after).isPresent();
+		assertThat(after.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
+		assertThat(after.get().getAdIssueId())
+				.as("No AD_Issue exists for this pInstanceId — adIssueId must remain 0")
+				.isZero();
 	}
 
 	// -----------------------------------------------------------------------
