@@ -34,7 +34,14 @@ public class JsonHUExpectation
 	@Nullable List<CU> cus;
 	@Nullable Boolean isAggregatedTU;
 	@Nullable QtyTU qtyTUs;
-	
+	/**
+	 * When {@code true}, assert this HU is assigned to a shipment line
+	 * ({@code M_InOutLine} of a sales shipment, i.e. {@code M_InOut.IsSOTrx=Y}).
+	 * Polled, because shipment generation is async.
+	 * When {@code false}, assert this HU is NOT on any sales-shipment line (no poll).
+	 */
+	@Nullable Boolean shipped;
+
 	//
  	//
  	//

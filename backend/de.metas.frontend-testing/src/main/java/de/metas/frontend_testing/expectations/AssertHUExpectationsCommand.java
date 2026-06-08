@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
@@ -10,23 +11,30 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,11 +51,15 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 @Builder
 class AssertHUExpectationsCommand
 {
+	@NonNull private static final Logger logger = LogManager.getLogger(AssertHUExpectationsCommand.class);
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
 	@NonNull final Map<String, JsonHUExpectation> expectations;
 
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
+
+	/** How long to poll for async-generated shipment line assignments before failing. */
+	private static final Duration SHIPPED_ASSERTION_TIMEOUT = Duration.ofSeconds(60);
 
 	void execute()
 	{
@@ -143,6 +155,11 @@ class AssertHUExpectationsCommand
 		if (expectation.getCus() != null)
 		{
 			assertCUs(expectation.getCus(), huId);
+		}
+
+		if (expectation.getShipped() != null)
+		{
+			assertShipped(huId, expectation.getShipped());
 		}
 	}
 
@@ -387,6 +404,75 @@ class AssertHUExpectationsCommand
 		{
 			assertAttributes(expectation.getAttributes(), cu);
 		}
+	}
+
+	/**
+	 * Asserts whether the given HU is (or is not) assigned to a sales-shipment line.
+	 *
+	 * <p>When {@code expectedShipped=true}: polls (up to {@link #SHIPPED_ASSERTION_TIMEOUT}) until
+	 * {@link IHUInOutDAO#retrieveInOutLinesForHU(I_M_HU)} returns at least one line belonging to a
+	 * sales shipment ({@code M_InOut.IsSOTrx=Y}).  Shipment assignment is async, so polling is required.
+	 *
+	 * <p>When {@code expectedShipped=false}: a single check is performed (no polling); asserts
+	 * the HU is NOT on any sales-shipment line.
+	 */
+	private void assertShipped(@NonNull final HuId huId, final boolean expectedShipped)
+	{
+		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+		final I_M_HU hu = getHUById(huId);
+
+		if (expectedShipped)
+		{
+			// Poll until the HU appears on a sales-shipment line (assignment is async).
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu, huInOutDAO);
+			while (salesShipmentLines.isEmpty() && stopwatch.elapsed().compareTo(SHIPPED_ASSERTION_TIMEOUT) < 0)
+			{
+				logger.info("Waiting for HU {} to appear on a sales-shipment line (elapsed: {})", huId, stopwatch);
+				try
+				{
+					//noinspection BusyWait
+					Thread.sleep(1000);
+				}
+				catch (final InterruptedException e)
+				{
+					Thread.currentThread().interrupt();
+					throw new AdempiereException("Interrupted while waiting for HU " + huId + " to be shipped", e);
+				}
+				salesShipmentLines = getSalesShipmentLinesForHU(hu, huInOutDAO);
+			}
+
+			if (salesShipmentLines.isEmpty())
+			{
+				throw new AdempiereException("HU " + huId + " is not assigned to any sales-shipment line after " + stopwatch);
+			}
+		}
+		else
+		{
+			// shipped=false: assert NOT on any sales-shipment line (single check, no poll needed).
+			final List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu, huInOutDAO);
+			assertThat(salesShipmentLines)
+					.as("sales-shipment lines for HU " + huId + " (expected none)")
+					.isEmpty();
+		}
+	}
+
+	/**
+	 * Returns all {@link I_M_InOutLine} records that belong to a <em>sales</em> shipment
+	 * ({@code M_InOut.IsSOTrx=Y}) and are associated with the given HU.
+	 */
+	private static List<I_M_InOutLine> getSalesShipmentLinesForHU(
+			@NonNull final I_M_HU hu,
+			@NonNull final IHUInOutDAO huInOutDAO)
+	{
+		return huInOutDAO.retrieveInOutLinesForHU(hu)
+				.stream()
+				.filter(line -> {
+					final org.compiere.model.I_M_InOut inOut = org.adempiere.model.InterfaceWrapperHelper.load(
+							line.getM_InOut_ID(), org.compiere.model.I_M_InOut.class);
+					return inOut != null && inOut.isSOTrx();
+				})
+				.collect(java.util.stream.Collectors.toList());
 	}
 
 }

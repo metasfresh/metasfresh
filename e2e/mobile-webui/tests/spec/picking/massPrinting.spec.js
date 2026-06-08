@@ -198,7 +198,7 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
 
     await openMassPrintingFromLaunchers({ masterdata });
 
-    await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
+    const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     // 3 boxes packed total (2 for SO_A, 1 for SO_B), 0 units left on LU, 1 unit demand remaining on SO_B
@@ -220,6 +220,20 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
             'SO_B': { shippedQty: 1 },
         }
     });
+
+    // Assert each of the 3 packed HUs (2 for SO_A, 1 for SO_B) landed on a shipment line.
+    const packedHUIds = scanResult?.productResults?.[0]?.packedHUIds ?? [];
+    if (packedHUIds.length === 0) {
+        throw new Error('scanResult.productResults[0].packedHUIds is empty — cannot assert shipped. scanResult: ' + JSON.stringify(scanResult));
+    }
+    const husExpectation = {};
+    for (const huId of packedHUIds) {
+        husExpectation[String(huId)] = { shipped: true };
+    }
+    await Backend.expect({
+        title: 'All 3 packed HUs from FIFO scan must be assigned to a sales-shipment line (2 for SO_A, 1 for SO_B)',
+        hus: husExpectation,
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -240,7 +254,7 @@ test('Mass printing — shipment created and completed when policy is CREATE_AND
 
     await openMassPrintingFromLaunchers({ masterdata });
 
-    await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
+    const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
 
@@ -253,6 +267,20 @@ test('Mass printing — shipment created and completed when policy is CREATE_AND
         salesOrders: {
             'SO1': { shipments: [{ docStatus: 'CO' }] },
         }
+    });
+
+    // Assert each packed HU landed on a shipment line.
+    const packedHUIds = scanResult?.productResults?.[0]?.packedHUIds ?? [];
+    if (packedHUIds.length === 0) {
+        throw new Error('scanResult.productResults[0].packedHUIds is empty — cannot assert shipped. scanResult: ' + JSON.stringify(scanResult));
+    }
+    const husExpectation = {};
+    for (const huId of packedHUIds) {
+        husExpectation[String(huId)] = { shipped: true };
+    }
+    await Backend.expect({
+        title: 'Packed HUs from CREATE_AND_COMPLETE scan must be assigned to a sales-shipment line',
+        hus: husExpectation,
     });
 });
 
@@ -274,7 +302,7 @@ test('Mass printing — shipment created in draft when policy is CREATE_DRAFT', 
 
     await openMassPrintingFromLaunchers({ masterdata });
 
-    await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
+    const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
 
@@ -287,6 +315,20 @@ test('Mass printing — shipment created in draft when policy is CREATE_DRAFT', 
         salesOrders: {
             'SO1': { shipments: [{ docStatus: 'DR' }] },
         }
+    });
+
+    // Draft shipment lines still have the HU assigned — assert shipped=true (HU on a shipment line).
+    const packedHUIds = scanResult?.productResults?.[0]?.packedHUIds ?? [];
+    if (packedHUIds.length === 0) {
+        throw new Error('scanResult.productResults[0].packedHUIds is empty — cannot assert shipped. scanResult: ' + JSON.stringify(scanResult));
+    }
+    const husExpectation = {};
+    for (const huId of packedHUIds) {
+        husExpectation[String(huId)] = { shipped: true };
+    }
+    await Backend.expect({
+        title: 'Packed HUs from CREATE_DRAFT scan must be assigned to a sales-shipment line',
+        hus: husExpectation,
     });
 });
 
