@@ -27,9 +27,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_Forecast;
 
+import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -111,4 +114,18 @@ public interface IHUOrderBL extends ISingletonService
 	void findM_HU_PI_Item_ProductForForecast(I_M_Forecast forecast, ProductId productId, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
 
 	void updateOrderLineFromReservations(OrderAndLineId orderLineId);
+
+	/**
+	 * Resolves the packing capacity per TU (in the product's stock UOM) from the sales order line's
+	 * {@code M_HU_LUTU_Configuration}, ignoring the order line's explicit {@code QtyItemCapacity}.
+	 * <p>
+	 * Intended as the fallback used by {@code MakeQtyReservationCommand} when the order line carries
+	 * no positive {@code QtyItemCapacity}: that module lives in {@code de.metas.swat.base}, which cannot
+	 * reach the HU LU/TU machinery, so the resolution is centralised here.
+	 *
+	 * @return the CU-per-TU capacity in the product's stock UOM derived from the order line's packing
+	 *         instruction, or {@code null} when it cannot be derived to a positive value.
+	 */
+	@Nullable
+	Quantity getCapacityPerTUInStockUOMFallback(@NonNull OrderAndLineId salesOrderAndLineId, @NonNull ProductId productId);
 }

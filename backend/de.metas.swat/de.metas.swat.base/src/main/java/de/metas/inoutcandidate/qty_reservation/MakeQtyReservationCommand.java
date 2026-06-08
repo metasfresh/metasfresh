@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
@@ -104,7 +105,7 @@ public class MakeQtyReservationCommand
 	@NonNull
 	private Quantity computeCapacityPerTU(@NonNull final UomId stockUomId)
 	{
-		final de.metas.interfaces.I_C_OrderLine orderLineRecord = orderLineBL.getOrderLineById(salesOrderAndLineId);
+		final I_C_OrderLine orderLineRecord = orderLineBL.getOrderLineById(salesOrderAndLineId);
 
 		final BigDecimal qtyItemCapacity = orderLineRecord.getQtyItemCapacity();
 		if (qtyItemCapacity != null && qtyItemCapacity.signum() > 0)

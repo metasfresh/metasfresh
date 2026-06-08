@@ -40,11 +40,10 @@ class MakeQtyReservationCommandTest
 	}
 
 	/**
-	 * Planned-supply reservation: the CU qty must be {@code qtyToReserveTU x packing-capacity},
-	 * NOT the (zero) on-hand stock of the planned-supply cockpit row.
-	 * <p>
-	 * RED: today {@link MakeQtyReservationCommand#execute()} derives CU from the cockpit row's
-	 * {@code qtyStock} (0 for planned supply) → {@code Qty=0}. Target: 10 TU x 11 CU/TU = 110.
+	 * Planned-supply reservation: a reservation is created with
+	 * {@code Qty = qtyToReserveTU x packing-capacity} (10 x 11 = 110), NOT the row's (zero) on-hand
+	 * stock. Deriving the CU qty from the packing capacity rather than the cockpit row's
+	 * {@code qtyStock} (0 for planned supply) is what avoids a {@code Qty=0} reservation.
 	 */
 	@Test
 	void plannedSupply_reservesQtyTU_timesPackingCapacity()
@@ -118,6 +117,7 @@ class MakeQtyReservationCommandTest
 
 		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
+		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
 
 		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
@@ -164,6 +164,7 @@ class MakeQtyReservationCommandTest
 
 		final de.metas.interfaces.I_C_OrderLine orderLineRecord = mock(de.metas.interfaces.I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
+		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
 
 		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
