@@ -49,7 +49,7 @@ import java.util.Optional;
  * Repository for {@code ExternalSystem_ScriptedExportConversion_Log}.
  *
  * <p>Repository Tables: ExternalSystem_ScriptedExportConversion_Log,
- * ExternalSystem_Config_ScriptedExportConversion, AD_Column
+ * ExternalSystem_Config_ScriptedExportConversion, AD_Column, AD_Issue (read-only)
  *
  * <p>Repository Cluster: sole owner of {@code ExternalSystem_ScriptedExportConversion_Log}
  * (also reads {@code ExternalSystem_Config_ScriptedExportConversion} and {@code AD_Column} for
@@ -205,7 +205,10 @@ public class ExternalSystemExportStatusRepository
 	@Nullable
 	public AdIssueId resolveLatestAdIssueIdByPInstanceId(@NonNull final PInstanceId pInstanceId)
 	{
-		return queryBL.createQueryBuilder(I_AD_Issue.class)
+		// OutOfTrx: the AD_Issue is committed (insertRemoteIssue runs in runInNewTrx) before
+		// this is called; we must read committed data regardless of the caller's outer trx.
+		// Consistent with ErrorManager.getById() which also uses createQueryBuilderOutOfTrx.
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
 				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_PInstance_ID, pInstanceId.getRepoId())
 				.orderByDescending(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
 				.create()

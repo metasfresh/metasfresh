@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
  * (AC-10 safety: the pInstanceId may belong to a different external system invocation).
  *
  * <p>The {@link IExternalSystemInvocationErrorListener} SPI does not provide the
- * {@code AD_Issue_ID} directly. Instead, {@link de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService#markError}
+ * {@code AD_Issue_ID} directly. Instead, {@link ExternalSystemExportStatusService#markError}
  * resolves the most-recent {@code AD_Issue} stamped with the given {@code AD_PInstance_ID}
  * — created by {@code ExternalSystemService.createIssue()} before listeners are notified —
  * and links it to the log row automatically.
