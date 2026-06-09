@@ -102,6 +102,22 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID = "ScriptedExportConversionOutboundHttpEPId";
 
+	/** Node ID for the single-send /ok success-callback toD, used by AdviceWith in tests. */
+	@VisibleForTesting
+	static final String ScriptedExportConversion_OkCallback_EP_ID = "ScriptedExportConversionOkCallbackEPId";
+
+	/** Node ID for the fan-out /ok success-callback toD, used by AdviceWith in tests. */
+	@VisibleForTesting
+	static final String ScriptedExportConversion_FanOutOkCallback_EP_ID = "ScriptedExportConversionFanOutOkCallbackEPId";
+
+	/**
+	 * Exchange property used to carry the HTTP response code received from the external system
+	 * across the {@code removeHeaders("CamelHttp*")} boundary so the success-callback URL can
+	 * include it as a query parameter.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE = "savedHttpResponseCode";
+
 	/** Exchange property holding the parsed {@link ArrayNode} when fan-out mode is active; null/missing otherwise. */
 	@VisibleForTesting
 	static final String EXCHANGE_PROPERTY_FAN_OUT_ARRAY = "fanOutArray";
@@ -217,10 +233,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 								.when(header(HEADER_PINSTANCE_ID).isNotNull())
 									.log(LoggingLevel.DEBUG, "Reporting export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} httpCode=${header.CamelHttpResponseCode}")
 									.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+									.setProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE, header(Exchange.HTTP_RESPONSE_CODE))
 									.setBody(constant(null))
 									.removeHeaders("CamelHttp*")
 									.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-									.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
+									.setHeader(Exchange.HTTP_RESPONSE_CODE, exchangeProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE))
+									.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok?httpResponseCode=${header.CamelHttpResponseCode}").id(ScriptedExportConversion_OkCallback_EP_ID)
 									.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
 							.end()
 
@@ -276,10 +294,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 						.when(header(HEADER_PINSTANCE_ID).isNotNull())
 							.log(LoggingLevel.DEBUG, "Reporting fan-out export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} element=${exchangeProperty." + EXCHANGE_PROPERTY_FAN_OUT_INDEX + "} httpCode=${header.CamelHttpResponseCode}")
 							.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+							.setProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE, header(Exchange.HTTP_RESPONSE_CODE))
 							.setBody(constant(null))
 							.removeHeaders("CamelHttp*")
 							.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-							.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok")
+							.setHeader(Exchange.HTTP_RESPONSE_CODE, exchangeProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE))
+							.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok?httpResponseCode=${header.CamelHttpResponseCode}").id(ScriptedExportConversion_FanOutOkCallback_EP_ID)
 							.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
 					.end()
 

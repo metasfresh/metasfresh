@@ -53,13 +53,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_FanOutIteration_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_FanOutOkCallback_EP_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_OkCallback_EP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
@@ -656,6 +662,413 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 								  "authType" : "Token",
 								  "clientId" : "clientId",
 								  "clientSecret" : "clientSecret",
+								  "token" : "API_TOKEN",
+								  "user" : "user",
+								  "password" : "password"%s
+								}""".formatted(arrayFanOutLine))
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "TableName")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "123")
+						.build());
+
+		return exchange;
+	}
+
+	// ========================================================================================
+	// Success-callback wiring tests (single-send path and fan-out path)
+	// ========================================================================================
+
+	/**
+	 * Single-send, pInstance PRESENT, external system returns 201.
+	 * <p>
+	 * Asserts:
+	 * <ol>
+	 *   <li>The /ok callback fires exactly once.</li>
+	 *   <li>The /ok callback carries the HTTP response code from the external system (the exchange
+	 *       property and restored header must survive the {@code removeHeaders("CamelHttp*")} strip
+	 *       so the {@code toD} URL expression can include {@code ?httpResponseCode=201}).</li>
+	 * </ol>
+	 * This is the TDD RED for Task 1 (fix the /ok callback URL): the assertion on
+	 * {@code httpResponseCode} will fail against the un-fixed route and pass after the fix.
+	 */
+	@Test
+	void singleSend_withPInstanceId_okCallbackCarriesHttpResponseCode() throws Exception
+	{
+		final String jsScript = """
+				function transform(messageFromMetasfresh) {
+					return JSON.stringify({result: "ok"});
+				}
+				""";
+
+		final Exchange exchange = prepareScriptAndExchangeWithPInstance(jsScript, "{}", "42");
+
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+
+		// Capture the state seen by the /ok callback node so we can assert on it.
+		final AtomicReference<Integer> capturedResponseCode = new AtomicReference<>();
+		final AtomicReference<String> capturedPInstanceId = new AtomicReference<>();
+		final AtomicInteger okCallbackCount = new AtomicInteger(0);
+
+		AdviceWith.adviceWith(context,
+				ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID,
+				advice -> {
+					// Replace the external-system HTTP call; return 201.
+					advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+							.replace()
+							.process(ex -> {
+								ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 201);
+								ex.getIn().setBody("Created");
+							});
+
+					// Replace the /ok callback toD; capture what the route passes to it.
+					advice.weaveById(ScriptedExportConversion_OkCallback_EP_ID)
+							.replace()
+							.process(ex -> {
+								okCallbackCount.incrementAndGet();
+								capturedResponseCode.set(ex.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class));
+								capturedPInstanceId.set(ex.getIn().getHeader(HEADER_PINSTANCE_ID, String.class));
+								// Simulate a 200 OK reply so the route continues normally.
+								ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+								ex.getIn().setBody(null);
+							});
+
+					advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_ATTACHMENT_ENDPOINT)
+							.process(mockJsonAttachmentRequestProcessor);
+				});
+
+		context.start();
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
+
+		// /ok callback must fire exactly once.
+		assertThat(okCallbackCount.get()).isEqualTo(1);
+
+		// The pInstanceId from the header must be passed through.
+		assertThat(capturedPInstanceId.get()).isEqualTo("42");
+
+		// The HTTP response code from the external system (201) must survive the
+		// removeHeaders("CamelHttp*") strip and arrive at the /ok callback so the toD URL
+		// expression can embed it as ?httpResponseCode=201.
+		// RED before fix (returns null / missing header); GREEN after fix.
+		assertThat(capturedResponseCode.get())
+				.as("httpResponseCode must be preserved across removeHeaders(\"CamelHttp*\") and available for the /ok callback URL")
+				.isEqualTo(201);
+	}
+
+	/**
+	 * Single-send, pInstance ABSENT (header null).
+	 * The {@code .when(header(HEADER_PINSTANCE_ID).isNotNull())} guard must suppress the /ok callback.
+	 */
+	@Test
+	void singleSend_withoutPInstanceId_okCallbackNotInvoked() throws Exception
+	{
+		final String jsScript = """
+				function transform(messageFromMetasfresh) {
+					return JSON.stringify({result: "ok"});
+				}
+				""";
+
+		// No pInstanceId set on this exchange.
+		final Exchange exchange = prepareScriptAndExchangeForFanOut(jsScript, "{}", /*arrayFanOut*/ null);
+
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+		final AtomicInteger okCallbackCount = new AtomicInteger(0);
+
+		AdviceWith.adviceWith(context,
+				ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID,
+				advice -> {
+					advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+							.replace()
+							.process(ex -> {
+								ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+								ex.getIn().setBody("OK");
+							});
+
+					advice.weaveById(ScriptedExportConversion_OkCallback_EP_ID)
+							.replace()
+							.process(ex -> okCallbackCount.incrementAndGet());
+
+					advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_ATTACHMENT_ENDPOINT)
+							.process(mockJsonAttachmentRequestProcessor);
+				});
+
+		context.start();
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
+
+		// /ok callback must NOT fire when pInstanceId is absent.
+		assertThat(okCallbackCount.get()).isEqualTo(0);
+	}
+
+	/**
+	 * Single-send, OAuth, external system returns 401 on the first call.
+	 * The route retries exactly once with a refreshed token; the /ok callback fires after the retry.
+	 */
+	@Test
+	void singleSend_oauthWith401_retriesOnceAndCallsOkCallback() throws Exception
+	{
+		final String jsScript = """
+				function transform(messageFromMetasfresh) {
+					return JSON.stringify({result: "ok"});
+				}
+				""";
+
+		final Exchange exchange = prepareScriptAndExchangeWithPInstanceOAuth(jsScript, "{}", "99");
+
+		final AtomicInteger outboundCallCount = new AtomicInteger(0);
+		final AtomicInteger okCallbackCount = new AtomicInteger(0);
+
+		AdviceWith.adviceWith(context,
+				ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID,
+				advice -> {
+					// First call → 401; second call (RETRY) → 200.
+					advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+							.replace()
+							.process(ex -> {
+								final int callNo = outboundCallCount.incrementAndGet();
+								if (callNo == 1)
+								{
+									ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 401);
+									ex.getIn().setBody("Unauthorized");
+								}
+								else
+								{
+									ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+									ex.getIn().setBody("OK after retry");
+								}
+							});
+
+					// Also intercept the RETRY node so it goes to the same counter mock.
+					advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
+							.replace()
+							.process(ex -> {
+								final int callNo = outboundCallCount.incrementAndGet();
+								if (callNo == 1)
+								{
+									ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 401);
+									ex.getIn().setBody("Unauthorized");
+								}
+								else
+								{
+									ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+									ex.getIn().setBody("OK after retry");
+								}
+							});
+
+					advice.weaveById(ScriptedExportConversion_OkCallback_EP_ID)
+							.replace()
+							.process(ex -> {
+								okCallbackCount.incrementAndGet();
+								ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+								ex.getIn().setBody(null);
+							});
+
+					advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_ATTACHMENT_ENDPOINT)
+							.process(new MockJsonAttachmentRequestProcessor());
+				});
+
+		context.start();
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
+
+		// Exactly two outbound calls (original + one retry).
+		assertThat(outboundCallCount.get()).isEqualTo(2);
+
+		// /ok callback fires once (after the successful retry).
+		assertThat(okCallbackCount.get()).isEqualTo(1);
+	}
+
+	/**
+	 * Fan-out path: JS returns a 2-element array, pInstance PRESENT.
+	 * The /ok callback must fire once per element (2 times total), each carrying the HTTP response
+	 * code from that element's external-system call.
+	 */
+	@Test
+	void fanOut_withPInstanceId_okCallbackFiredPerElement() throws Exception
+	{
+		final String jsScript = """
+				function transform(messageFromMetasfresh) {
+					return JSON.stringify([{a: 1}, {b: 2}]);
+				}
+				""";
+
+		final Exchange exchange = prepareScriptAndExchangeForFanOutWithPInstance(jsScript, "{}", Boolean.TRUE, "77");
+
+		final AtomicInteger fanOutOkCount = new AtomicInteger(0);
+		final List<Integer> capturedResponseCodes = new ArrayList<>();
+
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+
+		// The FanOutIteration sub-route is advised separately (its own routeId).
+		AdviceWith.adviceWith(context,
+				ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID,
+				advice -> advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+						.skipSendToOriginalEndpoint()
+						.to(MOCK_ATTACHMENT_ENDPOINT)
+						.process(mockJsonAttachmentRequestProcessor));
+
+		AdviceWith.adviceWith(context,
+				ScriptedExportConversion_FanOutIteration_ROUTE_ID,
+				advice -> {
+					final AtomicInteger elementCallIdx = new AtomicInteger(0);
+					advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT")
+							.replace()
+							.process(ex -> {
+								final int code = 200 + elementCallIdx.getAndIncrement();
+								ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, code);
+								ex.getIn().setBody("body-" + code);
+							});
+
+					advice.weaveById(ScriptedExportConversion_FanOutOkCallback_EP_ID)
+							.replace()
+							.process(ex -> {
+								fanOutOkCount.incrementAndGet();
+								synchronized (capturedResponseCodes)
+								{
+									capturedResponseCodes.add(ex.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class));
+								}
+								ex.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+								ex.getIn().setBody(null);
+							});
+
+					advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_ATTACHMENT_ENDPOINT)
+							.process(mockJsonAttachmentRequestProcessor);
+				});
+
+		context.start();
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
+
+		// Two elements → /ok callback fired twice.
+		assertThat(fanOutOkCount.get()).isEqualTo(2);
+
+		// Each call carried the element-specific HTTP response code.
+		assertThat(capturedResponseCodes).containsExactlyInAnyOrder(200, 201);
+	}
+
+	/**
+	 * Builds an exchange with a pInstance header set, using Token auth (simpler than OAuth for
+	 * the success-path tests).
+	 */
+	@NonNull
+	private Exchange prepareScriptAndExchangeWithPInstance(
+			@NonNull final String jsScript,
+			@NonNull final String messageFromMetasfresh,
+			@NonNull final String pInstanceId)
+	{
+		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(context.resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+		javaScriptRepo.save("testScript", jsScript);
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, pInstanceId);
+		exchange.getIn().setBody(
+				JsonExternalSystemRequest.builder()
+						.orgCode("orgCode")
+						.externalSystemName(JsonExternalSystemName.of("externalSystemName"))
+						.command("command")
+						.externalSystemConfigId(JsonMetasfreshId.of(1))
+						.traceId("traceId")
+						.externalSystemChildConfigValue("externalSystemChildConfigValue")
+						.adPInstanceId(JsonMetasfreshId.of(Integer.parseInt(pInstanceId)))
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh)
+						.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "testScript")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, """
+								{
+								  "value" : "value",
+								  "endpointUrl" : "http://localhost:8080/test",
+								  "method" : "POST",
+								  "authType" : "Token",
+								  "token" : "API_TOKEN",
+								  "user" : "user",
+								  "password" : "password"
+								}""")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "TableName")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "123")
+						.build());
+
+		return exchange;
+	}
+
+	/**
+	 * Builds an exchange with a pInstance header, using OAuth auth (for the 401-retry test).
+	 */
+	@NonNull
+	private Exchange prepareScriptAndExchangeWithPInstanceOAuth(
+			@NonNull final String jsScript,
+			@NonNull final String messageFromMetasfresh,
+			@NonNull final String pInstanceId)
+	{
+		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(context.resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+		javaScriptRepo.save("testScript", jsScript);
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, pInstanceId);
+		exchange.getIn().setBody(
+				JsonExternalSystemRequest.builder()
+						.orgCode("orgCode")
+						.externalSystemName(JsonExternalSystemName.of("externalSystemName"))
+						.command("command")
+						.externalSystemConfigId(JsonMetasfreshId.of(1))
+						.traceId("traceId")
+						.externalSystemChildConfigValue("externalSystemChildConfigValue")
+						.adPInstanceId(JsonMetasfreshId.of(Integer.parseInt(pInstanceId)))
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh)
+						.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "testScript")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, """
+								{
+								  "value" : "value",
+								  "endpointUrl" : "http://localhost:8080/test",
+								  "method" : "POST",
+								  "authType" : "OAuth",
+								  "clientId" : "clientId",
+								  "clientSecret" : "clientSecret",
+								  "user" : "user",
+								  "password" : "password"
+								}""")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "TableName")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "123")
+						.build());
+
+		return exchange;
+	}
+
+	/**
+	 * Builds a fan-out exchange with the pInstance header set.
+	 */
+	@NonNull
+	private Exchange prepareScriptAndExchangeForFanOutWithPInstance(
+			@NonNull final String jsScript,
+			@NonNull final String messageFromMetasfresh,
+			final Boolean arrayFanOut,
+			@NonNull final String pInstanceId)
+	{
+		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(context.resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+		javaScriptRepo.save("testScript", jsScript);
+
+		final String arrayFanOutLine = arrayFanOut == null ? "" : ",\n  \"arrayFanOut\" : " + arrayFanOut;
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, pInstanceId);
+		exchange.getIn().setBody(
+				JsonExternalSystemRequest.builder()
+						.orgCode("orgCode")
+						.externalSystemName(JsonExternalSystemName.of("externalSystemName"))
+						.command("command")
+						.externalSystemConfigId(JsonMetasfreshId.of(1))
+						.traceId("traceId")
+						.externalSystemChildConfigValue("externalSystemChildConfigValue")
+						.adPInstanceId(JsonMetasfreshId.of(Integer.parseInt(pInstanceId)))
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh)
+						.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "testScript")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, """
+								{
+								  "value" : "value",
+								  "endpointUrl" : "http://localhost:8080/test",
+								  "method" : "POST",
+								  "authType" : "Token",
 								  "token" : "API_TOKEN",
 								  "user" : "user",
 								  "password" : "password"%s
