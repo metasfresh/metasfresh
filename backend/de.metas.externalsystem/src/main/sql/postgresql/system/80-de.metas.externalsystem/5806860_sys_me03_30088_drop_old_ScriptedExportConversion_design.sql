@@ -99,6 +99,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=780727;
 DELETE FROM AD_Column_Trl WHERE AD_Column_ID=592751;
 
 -- 3.6 Physical column + FK constraint — MUST happen before AD_Column 592751 is deleted
+SELECT public.backup_table('externalsystem_config_scriptedexportconversion', '_me03_30088_r12');
 ALTER TABLE ExternalSystem_Config_ScriptedExportConversion
     DROP CONSTRAINT IF EXISTS adcolumn_externalsystemconfigscriptedexportconversion;
 /* DDL */ SELECT public.db_alter_table('ExternalSystem_Config_ScriptedExportConversion',
@@ -124,6 +125,7 @@ DELETE FROM AD_Val_Rule WHERE AD_Val_Rule_ID=540790;
 DELETE FROM AD_Column_Trl WHERE AD_Column_ID=592752;
 
 -- 4.2 Physical column + check constraint
+SELECT public.backup_table('m_inout', '_me03_30088_r12_epcisexport');
 ALTER TABLE M_InOut DROP CONSTRAINT IF EXISTS EPCIS_ExportStatus_Check;
 /* DDL */ SELECT public.db_alter_table('M_InOut',
     'ALTER TABLE public.M_InOut DROP COLUMN IF EXISTS EPCIS_ExportStatus');
@@ -149,6 +151,7 @@ DELETE FROM AD_Table_Trl WHERE AD_Table_ID=542614;
 DELETE FROM AD_Table WHERE AD_Table_ID=542614;
 
 -- 5.4 Physical table (CASCADE removes FK + PK constraints)
+SELECT public.backup_table('externalsystem_scriptedexportconversion_log', '_me03_30088_r12');
 DROP TABLE IF EXISTS public.ExternalSystem_ScriptedExportConversion_Log CASCADE;
 
 -- 5.5 Log-specific AD_Element 584953 (PK element — only referenced by the now-dropped log column)
