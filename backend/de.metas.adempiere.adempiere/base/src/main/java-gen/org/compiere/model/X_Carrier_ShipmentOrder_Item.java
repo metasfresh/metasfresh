@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Carrier_ShipmentOrder_Item extends org.compiere.model.PO implements I_Carrier_ShipmentOrder_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 501137430L;
+	private static final long serialVersionUID = -75732750L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder_Item (final Properties ctx, final int Carrier_ShipmentOrder_Item_ID, @Nullable final String trxName)
@@ -90,6 +90,18 @@ public class X_Carrier_ShipmentOrder_Item extends org.compiere.model.PO implemen
 	public int getC_Currency_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+	public void setCountryOfOrigin (final @Nullable java.lang.String CountryOfOrigin)
+	{
+		set_Value (COLUMNNAME_CountryOfOrigin, CountryOfOrigin);
+	}
+
+	@Override
+	public java.lang.String getCountryOfOrigin() 
+	{
+		return get_ValueAsString(COLUMNNAME_CountryOfOrigin);
 	}
 
 	@Override

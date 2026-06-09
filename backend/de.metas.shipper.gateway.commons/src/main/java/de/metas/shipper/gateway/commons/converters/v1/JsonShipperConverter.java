@@ -218,6 +218,7 @@ public class JsonShipperConverter
 				.productName(item.getProductName())
 				.productValue(item.getProductValue())
 				.customsTariff(item.getCustomsTariff())
+				.countryOfOrigin(item.getCountryOfOrigin())
 				.shippedQuantity(JsonQuantity.builder()
 						.value(item.getShippedQuantity().toBigDecimal())
 						.uomCode(item.getShippedQuantity().getUOMSymbol())

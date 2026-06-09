@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
@@ -37,6 +38,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
@@ -62,6 +65,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final CompositeHUAssignmentListener listeners = new CompositeHUAssignmentListener();
 
 	/**
@@ -439,5 +443,14 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			}
 		}
 		return countTUs;
+	}
+
+	@Override
+	public List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
+			@NonNull final ImmutableSet<HuId> huIds,
+			@NonNull final String tableName)
+	{
+		final AdTableId adTableId = tableDAO.retrieveAdTableId(tableName);
+		return huAssignmentDAO.retrieveAssignmentsForHUsAndTable(huIds, adTableId);
 	}
 }
