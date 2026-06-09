@@ -167,11 +167,8 @@ public class AD_User_StepDef
 				.ifPresent(userRecord::setIsBillToContact_Default);
 		tableRow.getAsOptionalString(COLUMNNAME_NotificationType).ifPresent(userRecord::setNotificationType);
 
-		final String isInvoiceEmailEnabled = DataTableUtil.extractStringOrNullForColumnName(tableRowMap, "OPT." + I_AD_User.COLUMNNAME_IsInvoiceEmailEnabled);
-		if (isInvoiceEmailEnabled != null)
-		{
-			userRecord.setIsInvoiceEmailEnabled(DataTableUtil.nullToken2Null(isInvoiceEmailEnabled));
-		}
+		tableRow.getAsOptionalString(I_AD_User.COLUMNNAME_IsInvoiceEmailEnabled)
+				.ifPresent(value -> userRecord.setIsInvoiceEmailEnabled(DataTableUtil.nullToken2Null(value)));
 
 		InterfaceWrapperHelper.saveRecord(userRecord);
 
