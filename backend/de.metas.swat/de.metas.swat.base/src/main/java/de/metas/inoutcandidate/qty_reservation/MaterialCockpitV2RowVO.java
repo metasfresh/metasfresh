@@ -11,7 +11,6 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -35,20 +34,6 @@ public class MaterialCockpitV2RowVO
 	@Nullable ProjectValue projectValue;
 	@NonNull QtyTU qtyTU;
 	@NonNull Quantity qtyStock;
-
-	public Quantity computeQtyCUToReserve(@NonNull final QtyTU qtyTUToReserve)
-	{
-		if (!qtyTUToReserve.isPositive()) {return qtyStock.toZero();}
-		if (!qtyTU.isPositive() || qtyStock.signum() <= 0) {return qtyStock.toZero();}
-
-		return getQtyCUsPerTU().multiply(qtyTUToReserve.toInt());
-	}
-
-	private Quantity getQtyCUsPerTU()
-	{
-		if (!qtyTU.isPositive()) {throw new AdempiereException("qtyTU shall be positive");}
-		return qtyStock.divide(qtyTU.toInt());
-	}
 
 	public boolean isAvailableForReservation()
 	{
