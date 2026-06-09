@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>This listener applies to <em>all</em> invocation contexts — it dispatches by {@code pInstanceId},
  * not by context: it looks up the matching log row and is a no-op (no throw) when no matching row
- * exists (AC-10 safety: the pInstanceId may belong to a different external system invocation).
+ * exists (safety: the pInstanceId may belong to a different external system invocation).
  */
 @Component
 @RequiredArgsConstructor

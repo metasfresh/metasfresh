@@ -46,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 /**
  * Tests for {@link ScriptedExportStatusSuccessListener}.
  * <p>
- * AC-10: the listener must be a no-op (no throw) when there is no matching log row.
+ * The listener must be a no-op (no throw) when there is no matching log row.
  * Main path: when a pInstanceId has a matching Enqueued log row,
  * the listener must transition the row to Sent and store the httpResponseCode.
  */
@@ -145,7 +145,7 @@ public class ScriptedExportStatusSuccessListenerTest
 	}
 
 	// -----------------------------------------------------------------------
-	// AC-10: no matching log row → no-op, no throw
+	// no matching log row → no-op, no throw
 	// -----------------------------------------------------------------------
 	@Test
 	void onInvocationSuccess_noopAndNoThrow_whenNoMatchingLogRow()

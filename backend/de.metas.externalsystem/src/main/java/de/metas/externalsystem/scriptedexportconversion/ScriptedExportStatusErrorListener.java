@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>This listener applies to <em>all</em> invocation contexts — it uses the {@code pInstanceId}
  * to look up the matching log row and is a no-op (no throw) when no matching row exists
- * (AC-10 safety: the pInstanceId may belong to a different external system invocation).
+ * (safety: the pInstanceId may belong to a different external system invocation).
  *
  * <p>The {@link IExternalSystemInvocationErrorListener} SPI does not provide the
  * {@code AD_Issue_ID} directly. Instead, {@link ExternalSystemExportStatusService#markError}

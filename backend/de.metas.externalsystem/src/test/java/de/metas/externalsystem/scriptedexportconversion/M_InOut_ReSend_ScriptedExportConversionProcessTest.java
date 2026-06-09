@@ -77,7 +77,7 @@ import static org.mockito.Mockito.when;
  *       once per config.</li>
  *   <li>The IsResend=Y Pending row is created (via {@code resolveConfigAndRecordPendingAsResend})
  *       before the invocation call.</li>
- *   <li>When no qualifying configs exist the process returns the "nothing to re-send" message
+ *   <li>When no qualifying configs exist the process returns a zero-count result ({@code @Processed@ #0})
  *       and neither service method is called.</li>
  * </ul>
  */
@@ -151,10 +151,10 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 2. No qualifying configs → nothing to re-send, no invocations
+	// 2. No qualifying configs → zero-count result, no invocations
 	// -----------------------------------------------------------------------
 	@Test
-	void doIt_noQualifyingConfigs_returnsNothingToReSend()
+	void doIt_noQualifyingConfigs_returnsZeroCount()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -166,7 +166,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 
 		final String result = runProcess(inoutId, tableId);
 
-		assertThat(result).contains("0");
+		assertThat(result).contains("#0");
 		verify(scriptedExportServiceMock, times(0)).resolveConfigAndRecordPendingAsResend(any(), any());
 		verify(scriptedExportServiceMock, times(0)).executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), any());
 	}
