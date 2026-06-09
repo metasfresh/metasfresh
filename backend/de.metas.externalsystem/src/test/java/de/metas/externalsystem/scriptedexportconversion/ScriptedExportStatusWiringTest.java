@@ -149,7 +149,8 @@ public class ScriptedExportStatusWiringTest
 	{
 		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
 				InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
-		cfg.setAD_Table_ID(adTableId);		cfg.setExternalSystemValue("test");
+		cfg.setAD_Table_ID(adTableId);
+		cfg.setExternalSystemValue("test");
 		cfg.setScriptIdentifier("test.js");
 		cfg.setWhereClause("1=1");
 		cfg.setIsTriggerOnComplete(true);
