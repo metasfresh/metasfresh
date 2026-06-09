@@ -127,7 +127,7 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 	}
 
 	// -----------------------------------------------------------------------
-	// R2.3 core: matching → Pending; non-matching → DontSend
+	// Core behaviour: matching → Pending; non-matching → DontSend
 	// -----------------------------------------------------------------------
 
 	/**
@@ -248,7 +248,7 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 	/**
 	 * Status-write failure for one config must NOT abort the whole loop — the remaining config
 	 * must still receive its status row.
-	 * (Mirrors the corpus-#6 pattern: status-write failure must never abort document completion.)
+	 * (Principle: a status-write failure must never abort document completion.)
 	 *
 	 * <p>We simulate the failure via a Mockito spy on the exportStatusService: the spy throws on
 	 * the first {@code recordDontSend} call (for the "bad" config) but delegates normally for the
