@@ -167,9 +167,9 @@ public interface ITrxManager extends ISingletonService
 	 * <p>Not slated for automatic removal — some uses are legitimate (e.g. committing an async-batch
 	 * assignment so a separate async consumer can read it). Policy: (a) every NEW use must carry an inline
 	 * {@code //} comment justifying why isolation from the caller's transaction is genuinely required;
-	 * (b) REMOVING an existing use must be investigated very carefully — a careless change broke EDI
-	 * (me03 https://github.com/metasfresh/me03/issues/29942: dropping the new transaction left the
-	 * async-batch assignment uncommitted → DESADV-pack null), and if it cannot be removed a full
+	 * (b) REMOVING an existing use must be investigated very carefully — a careless change once broke EDI
+	 * (switching to a thread-inherited transaction left the async-batch assignment uncommitted →
+	 * DESADV-pack null → EDI regression), and if it cannot be removed a full
 	 * {@code //} comment above the call must explain why and how it could be removed in future. See the
 	 * {@code metasfresh-coding-gotchas} skill for the full policy.
 	 */

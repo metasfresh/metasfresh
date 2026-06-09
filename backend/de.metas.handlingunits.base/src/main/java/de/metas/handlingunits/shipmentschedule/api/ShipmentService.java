@@ -349,6 +349,7 @@ public class ShipmentService implements IShipmentService
 	}
 
 	/** Groups the given schedules by async-batch (assigning a fresh {@code C_Async_Batch_ID} where missing). */
+	@SuppressWarnings("deprecation") // intentional callInNewTrx — see the inline rationale below
 	@NonNull
 	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
