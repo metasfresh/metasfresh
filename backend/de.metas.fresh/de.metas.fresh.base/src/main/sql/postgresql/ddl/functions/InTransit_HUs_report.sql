@@ -75,7 +75,7 @@ FROM M_HU hu
              WHERE alloc.DD_OrderLine_ID = ddol.DD_OrderLine_ID
              LIMIT 1
          ) cand ON true
-         LEFT JOIN pp_order pp ON cand.Forward_PP_Order_ID = pp.pp_order_id
+         LEFT JOIN pp_order pp ON coalesce(ddo.forward_pp_order_id, cand.Forward_PP_Order_ID) = pp.pp_order_id
          LEFT JOIN PP_Order_BOMLine bomline ON cand.Forward_PP_Order_BOMLine_ID = bomline.PP_Order_BOMLine_ID
          LEFT JOIN M_HU_PI_Item_Product piip ON ddol.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID
 
