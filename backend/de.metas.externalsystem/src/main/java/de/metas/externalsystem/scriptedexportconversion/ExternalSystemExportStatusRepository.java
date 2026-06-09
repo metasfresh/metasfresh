@@ -136,12 +136,12 @@ public class ExternalSystemExportStatusRepository
 			@NonNull final PInstanceId pInstanceId,
 			@NonNull final UnaryOperator<ExternalSystemExportStatusLogEntry> operator)
 	{
-		final Optional<ExternalSystemExportStatusLogEntry> existing = getLatestByPInstanceId(pInstanceId);
-		if (!existing.isPresent())
+		final ExternalSystemExportStatusLogEntry existing = getLatestByPInstanceId(pInstanceId).orElse(null);
+		if (existing == null)
 		{
 			return;
 		}
-		final ExternalSystemExportStatusLogEntry updated = operator.apply(existing.get());
+		final ExternalSystemExportStatusLogEntry updated = operator.apply(existing);
 		update(updated);
 	}
 

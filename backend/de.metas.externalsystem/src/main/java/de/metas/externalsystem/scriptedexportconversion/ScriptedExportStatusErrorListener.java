@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Error listener for Scripted Export Conversion.
- * Updates the {@code ExternalSystem_ScriptedExportConversion_Log} row to {@code Error}
+ * Updates the {@code ExternalSystem_ScriptedExportConversion_Status} row to {@code Error}
  * when an external system invocation fails, and links the {@code AD_Issue} created for
  * this invocation.
  *

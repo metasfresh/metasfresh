@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Success listener for Scripted Export Conversion.
- * Updates the {@code ExternalSystem_ScriptedExportConversion_Log} row to {@code Sent}
+ * Updates the {@code ExternalSystem_ScriptedExportConversion_Status} row to {@code Sent}
  * when an external system invocation succeeds, and stores the HTTP response code.
  *
  * <p>This listener applies to <em>all</em> success contexts — it uses the {@code pInstanceId}

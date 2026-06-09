@@ -327,15 +327,15 @@ public class ExternalSystemExportStatusService
 			final int adIssueId,
 			@Nullable final String message)
 	{
-		final Optional<ExternalSystemExportStatusLogEntry> existing = repo.getLatestByPInstanceId(pInstanceId);
-		if (!existing.isPresent())
+		final ExternalSystemExportStatusLogEntry existing = repo.getLatestByPInstanceId(pInstanceId).orElse(null);
+		if (existing == null)
 		{
 			// No matching row for this pInstance — silently ignore; the caller may have skipped recordPending
 			log.debug("No status row found for pInstanceId={}, status={} – skipping", pInstanceId, newStatus);
 			return;
 		}
 
-		final ExternalSystemExportStatusLogEntry updated = existing.get()
+		final ExternalSystemExportStatusLogEntry updated = existing
 				.withStatus(newStatus)
 				.withHttpResponseCode(httpResponseCode)
 				.withAdIssueId(adIssueId)
