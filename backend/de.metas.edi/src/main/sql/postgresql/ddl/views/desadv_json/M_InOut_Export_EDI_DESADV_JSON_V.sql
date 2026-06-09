@@ -36,6 +36,7 @@ SELECT io.m_inout_id,
                'DateOrdered', d.dateordered,
                'ShipmentDocumentNo', io.documentno,
                'EDI_Desadv_ID', d.edi_desadv_id,
+                -- copied from 5805740_sys_me03_30189_DESADV_JSON_MovementDate_from_EDI_Desadv.sql
                -- MovementDate carries the promised delivery date: EDI_Desadv.MovementDate is set from
                -- C_Order.DatePromised at DESADV creation (DesadvBL.retrieveOrCreateDesadv). This matches the
                -- legacy CCTOP XML export (M_InOut_Desadv_V) and is per-DESADV (correct for consolidated

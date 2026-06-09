@@ -43,7 +43,12 @@ SELECT io.m_inout_id,
                'DateOrdered', d.dateordered,
                'ShipmentDocumentNo', io.documentno,
                'EDI_Desadv_ID', d.edi_desadv_id,
-               'MovementDate', io.movementdate,
+                -- copied from 5805740_sys_me03_30189_DESADV_JSON_MovementDate_from_EDI_Desadv.sql
+                -- MovementDate carries the promised delivery date: EDI_Desadv.MovementDate is set from
+                -- C_Order.DatePromised at DESADV creation (DesadvBL.retrieveOrCreateDesadv). This matches the
+                -- legacy CCTOP XML export (M_InOut_Desadv_V) and is per-DESADV (correct for consolidated
+                -- shipments), unlike io.movementdate which is the single shipment-wide goods-movement date.
+               'MovementDate', d.movementdate,
                'POReference', COALESCE(d.poreference, io.poreference),
                'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id, io.m_inout_id),
                'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
