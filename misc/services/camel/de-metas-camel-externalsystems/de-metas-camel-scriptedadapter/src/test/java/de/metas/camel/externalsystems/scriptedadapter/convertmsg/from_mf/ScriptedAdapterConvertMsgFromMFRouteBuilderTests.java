@@ -59,7 +59,6 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
-import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID;
@@ -687,8 +686,9 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	 *       property and restored header must survive the {@code removeHeaders("CamelHttp*")} strip
 	 *       so the {@code toD} URL expression can include {@code ?httpResponseCode=201}).</li>
 	 * </ol>
-	 * This is the TDD RED for Task 1 (fix the /ok callback URL): the assertion on
-	 * {@code httpResponseCode} will fail against the un-fixed route and pass after the fix.
+	 * The {@code httpResponseCode} assertion guards the stash/restore across the
+	 * {@code removeHeaders("CamelHttp*")} strip: it fails if the {@code setProperty}/{@code setHeader}
+	 * pair is removed and the /ok URL loses the external system's response code.
 	 */
 	@Test
 	void singleSend_withPInstanceId_okCallbackCarriesHttpResponseCode() throws Exception
