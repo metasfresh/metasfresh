@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_ScriptedExportConversion_Status;
 import de.metas.process.PInstanceId;
@@ -36,6 +37,7 @@ import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,18 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * TDD test for {@link ExternalSystemExportStatusRepository}.
- *
- * <p>R2.1 coverage:
- * <ul>
- *   <li>upsert creates one row then updates-in-place on the same (config,table,record) key</li>
- *   <li>{@link ExternalSystemExportStatusRepository#updateLatestByPInstanceId} applies the operator to the pInstance-bound row</li>
- *   <li>{@link ExternalSystemExportStatusRepository#fromRecord} / {@link ExternalSystemExportStatusRepository#updateRecord} round-trip</li>
- *   <li>httpResponseCode and adIssueId are persisted and reloaded correctly</li>
- *   <li>getConfigsWithNonSentAttemptBySourceRecord filters correctly</li>
- *   <li>getLatestByPInstanceId finds the row by pInstance after upsert</li>
- * </ul>
- *
- * <p>TODO(R2.2): add typed HttpStatus / AdIssueId assertions once VO fields are promoted to typed wrappers.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 public class ExternalSystemExportStatusRepositoryTest
@@ -70,113 +60,82 @@ public class ExternalSystemExportStatusRepositoryTest
 		AdempiereTestHelper.get().init();
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
 
-		// Create a minimal config ID (no DB record needed for repo tests — we use the int value directly)
 		configId = ExternalSystemScriptedExportConversionConfigId.ofRepoId(1001);
 
-		// Source record: M_InOut table + record ID
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
 		sourceRecord = TableRecordReference.of(tableId, 5001);
 	}
 
+	private ScriptedExportConversionStatusCreateRequest.ScriptedExportConversionStatusCreateRequestBuilder requestBuilder()
+	{
+		return ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId)
+				.sourceRecord(sourceRecord)
+				.status(ExternalSystemExportStatus.Pending);
+	}
+
 	// -----------------------------------------------------------------------
-	// 1. upsert — creates one row, then updates in-place on the same key
+	// upsert — creates one row, then updates in-place on the same key
 	// -----------------------------------------------------------------------
 
 	@Test
 	void upsert_createsOneRow()
 	{
-		final ExternalSystemExportStatusLogEntry entry = ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
-				.pInstanceId(null)
-				.configId(configId)
-				.sourceRecord(sourceRecord)
-				.status(ExternalSystemExportStatus.Pending)
-				.build();
+		repo.upsert(requestBuilder().build());
 
-		final ExternalSystemExportStatusLogEntry saved = repo.upsert(entry);
-
-		// One row should now exist in the DB
-		assertThat(saved.getLogId()).isGreaterThan(0);
-		final long rowCount = countStatusRows(configId, sourceRecord);
-		assertThat(rowCount).isEqualTo(1);
+		assertThat(countStatusRows(configId, sourceRecord)).isEqualTo(1);
 	}
 
 	@Test
 	void upsert_updateInPlace_onSameKey()
 	{
-		// First upsert: Pending, no pInstance
-		final ExternalSystemExportStatusLogEntry pendingEntry = ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
-				.pInstanceId(null)
-				.configId(configId)
-				.sourceRecord(sourceRecord)
-				.status(ExternalSystemExportStatus.Pending)
-				.build();
-		final ExternalSystemExportStatusLogEntry saved = repo.upsert(pendingEntry);
-		final int originalLogId = saved.getLogId();
+		repo.upsert(requestBuilder().status(ExternalSystemExportStatus.Pending).build());
 
-		// Second upsert on same key: Enqueued + pInstance
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(777);
-		final ExternalSystemExportStatusLogEntry enqueuedEntry = ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		repo.upsert(requestBuilder()
 				.pInstanceId(pInstanceId)
-				.configId(configId)
-				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Enqueued)
-				.build();
-		final ExternalSystemExportStatusLogEntry updated = repo.upsert(enqueuedEntry);
+				.build());
 
-		// Still only ONE row (in-place update)
 		assertThat(countStatusRows(configId, sourceRecord)).isEqualTo(1);
 
-		// The same PK
-		assertThat(updated.getLogId()).isEqualTo(originalLogId);
-
-		// Status updated
-		final Optional<ExternalSystemExportStatusLogEntry> reloaded = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> reloaded = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(reloaded).isPresent();
 		assertThat(reloaded.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 		assertThat(reloaded.get().getPInstanceId()).isEqualTo(pInstanceId);
 	}
 
 	// -----------------------------------------------------------------------
-	// 2. updateLatestByPInstanceId — applies operator to pInstance-bound row
+	// updateLatestByPInstanceId — applies operator to pInstance-bound row
 	// -----------------------------------------------------------------------
 
 	@Test
 	void updateLatestByPInstanceId_appliesOperator()
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(888);
-		final ExternalSystemExportStatusLogEntry entry = ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		repo.upsert(requestBuilder()
 				.pInstanceId(pInstanceId)
-				.configId(configId)
-				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Enqueued)
-				.build();
-		repo.upsert(entry);
+				.build());
 
-		// Apply operator: Enqueued → Sent with httpResponseCode=200
 		repo.updateLatestByPInstanceId(pInstanceId,
-				e -> e.withStatus(ExternalSystemExportStatus.Sent).withHttpResponseCode(200));
+				e -> e.withStatus(ExternalSystemExportStatus.Sent).withHttpResponseCode(HttpStatus.OK));
 
-		final Optional<ExternalSystemExportStatusLogEntry> result = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> result = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(result).isPresent();
 		assertThat(result.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
-		assertThat(result.get().getHttpResponseCode()).isEqualTo(200);
+		assertThat(result.get().getHttpResponseCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
 	void updateLatestByPInstanceId_noopWhenNoRow()
 	{
-		// Should not throw when no row exists for the pInstance
 		repo.updateLatestByPInstanceId(PInstanceId.ofRepoId(99999),
 				e -> e.withStatus(ExternalSystemExportStatus.Sent));
-		// No assertion needed — just must not throw
 	}
 
 	// -----------------------------------------------------------------------
-	// 3. fromRecord / updateRecord round-trip
+	// fromRecord / updateRecord round-trip
 	// -----------------------------------------------------------------------
 
 	@Test
@@ -184,85 +143,72 @@ public class ExternalSystemExportStatusRepositoryTest
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(999);
 
-		// Build VO
-		final ExternalSystemExportStatusLogEntry original = ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		final ScriptedExportConversionStatus original = ScriptedExportConversionStatus.builder()
 				.pInstanceId(pInstanceId)
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Error)
-				.httpResponseCode(500)
-				.adIssueId(42)
+				.httpResponseCode(HttpStatus.INTERNAL_SERVER_ERROR)
+				.adIssueId(AdIssueId.ofRepoId(42))
 				.statusMessage("Something went wrong")
 				.isResend(true)
 				.build();
 
-		// updateRecord into a fresh record
 		final I_ExternalSystem_ScriptedExportConversion_Status record =
 				InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class);
 		ExternalSystemExportStatusRepository.updateRecord(record, original);
 		InterfaceWrapperHelper.saveRecord(record);
 
-		// fromRecord back to VO
-		final ExternalSystemExportStatusLogEntry reloaded = ExternalSystemExportStatusRepository.fromRecord(record);
+		final ScriptedExportConversionStatus reloaded = ExternalSystemExportStatusRepository.fromRecord(record);
 
 		assertThat(reloaded.getPInstanceId()).isEqualTo(pInstanceId);
 		assertThat(reloaded.getConfigId()).isEqualTo(configId);
 		assertThat(reloaded.getSourceRecord()).isEqualTo(sourceRecord);
 		assertThat(reloaded.getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
-		assertThat(reloaded.getHttpResponseCode()).isEqualTo(500);
-		assertThat(reloaded.getAdIssueId()).isEqualTo(42);
+		assertThat(reloaded.getHttpResponseCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(reloaded.getAdIssueId()).isEqualTo(AdIssueId.ofRepoId(42));
 		assertThat(reloaded.getStatusMessage()).isEqualTo("Something went wrong");
 		assertThat(reloaded.isResend()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------
-	// 4. httpResponseCode and adIssueId persisted correctly
+	// httpResponseCode and adIssueId persisted correctly
 	// -----------------------------------------------------------------------
 
 	@Test
 	void upsert_persists_httpResponseCode_and_adIssueId()
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1234);
-		final ExternalSystemExportStatusLogEntry entry = ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		repo.upsert(requestBuilder()
 				.pInstanceId(pInstanceId)
-				.configId(configId)
-				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Error)
-				.httpResponseCode(503)
-				.adIssueId(77)
+				.httpResponseCode(HttpStatus.SERVICE_UNAVAILABLE)
+				.adIssueId(AdIssueId.ofRepoId(77))
 				.statusMessage("service unavailable")
-				.build();
+				.build());
 
-		repo.upsert(entry);
-
-		final Optional<ExternalSystemExportStatusLogEntry> loaded = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> loaded = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(loaded).isPresent();
-		assertThat(loaded.get().getHttpResponseCode()).isEqualTo(503);
-		assertThat(loaded.get().getAdIssueId()).isEqualTo(77);
+		assertThat(loaded.get().getHttpResponseCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+		assertThat(loaded.get().getAdIssueId()).isEqualTo(AdIssueId.ofRepoId(77));
 		assertThat(loaded.get().getStatusMessage()).isEqualTo("service unavailable");
 	}
 
 	// -----------------------------------------------------------------------
-	// 5. getConfigsWithNonSentAttemptBySourceRecord — filters correctly
+	// getConfigsWithNonSentAttemptBySourceRecord — filters correctly
 	// -----------------------------------------------------------------------
 
 	@Test
 	void getConfigsWithNonSentAttempt_returnsNonSentConfig()
 	{
-		// Config 1 in Error state (non-Sent)
-		repo.upsert(ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Error)
 				.build());
 
 		final ExternalSystemScriptedExportConversionConfigId configId2 = ExternalSystemScriptedExportConversionConfigId.ofRepoId(1002);
-		// Config 2 in Sent state
-		repo.upsert(ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId2)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Sent)
@@ -276,7 +222,7 @@ public class ExternalSystemExportStatusRepositoryTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 6. getLatestByPInstanceId — returns the single row matching the pInstance
+	// getLatestByPInstanceId
 	// -----------------------------------------------------------------------
 
 	@Test
@@ -284,26 +230,23 @@ public class ExternalSystemExportStatusRepositoryTest
 	{
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(4242);
 
-		repo.upsert(ExternalSystemExportStatusLogEntry.builder()
-				.logId(0)
+		repo.upsert(requestBuilder()
 				.pInstanceId(pInstanceId)
-				.configId(configId)
-				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Sent)
-				.httpResponseCode(200)
+				.httpResponseCode(HttpStatus.OK)
 				.build());
 
-		final Optional<ExternalSystemExportStatusLogEntry> result = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> result = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(result).isPresent();
 		assertThat(result.get().getPInstanceId()).isEqualTo(pInstanceId);
 		assertThat(result.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
-		assertThat(result.get().getHttpResponseCode()).isEqualTo(200);
+		assertThat(result.get().getHttpResponseCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
 	void getLatestByPInstanceId_returnsEmpty_whenNoRow()
 	{
-		final Optional<ExternalSystemExportStatusLogEntry> result =
+		final Optional<ScriptedExportConversionStatus> result =
 				repo.getLatestByPInstanceId(PInstanceId.ofRepoId(88888));
 		assertThat(result).isEmpty();
 	}

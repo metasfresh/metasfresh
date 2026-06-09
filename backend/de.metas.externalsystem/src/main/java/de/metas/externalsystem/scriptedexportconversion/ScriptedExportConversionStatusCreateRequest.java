@@ -22,41 +22,31 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nullable;
 
 /**
- * Value object mapping one row of {@code ExternalSystem_ScriptedExportConversion_Status}.
- *
- * <p>Grain: one row per (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Table_ID, Record_ID).
- *
- * <p>TODO(R2.2): rename class to {@code ScriptedExportConversionStatus} and promote
- * {@code httpResponseCode}/{@code adIssueId} to typed wrappers (HttpStatus / AdIssueId).
+ * Insert shape for a {@code ExternalSystem_ScriptedExportConversion_Status} row.
+ * The loaded/read shape is {@link ScriptedExportConversionStatus}.
  */
 @Value
 @Builder
-@With
-public class ExternalSystemExportStatusLogEntry
+public class ScriptedExportConversionStatusCreateRequest
 {
-	/**
-	 * DB primary key of the Status row ({@code ExternalSystem_ScriptedExportConversion_Status_ID}).
-	 * 0 when not yet persisted.
-	 */
-	int logId;
-
 	@Nullable PInstanceId pInstanceId;
 	@NonNull ExternalSystemScriptedExportConversionConfigId configId;
 	@NonNull TableRecordReference sourceRecord;
 	@NonNull ExternalSystemExportStatus status;
-	int httpResponseCode;
-	int adIssueId;
+	@Nullable HttpStatus httpResponseCode;
+	@Nullable AdIssueId adIssueId;
 	@Nullable String statusMessage;
 	boolean isResend;
 }

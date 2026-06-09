@@ -36,6 +36,7 @@ import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.HttpStatus;
 
 import java.util.Optional;
 
@@ -62,7 +63,7 @@ public class ScriptedExportStatusSuccessListenerTest
 		AdempiereTestHelper.get().init();
 
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
-		statusService = ExternalSystemExportStatusService.newInstanceForUnitTesting(repo);
+		statusService = ExternalSystemExportStatusService.newInstanceForUnitTesting();
 		listener = new ScriptedExportStatusSuccessListener(statusService);
 	}
 
@@ -97,10 +98,10 @@ public class ScriptedExportStatusSuccessListenerTest
 
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(2001);
 		statusService.recordPending(configId, sourceRecord);
-		statusService.bindPInstanceAndMarkEnqueued(configId, sourceRecord, pInstanceId);
+		statusService.markEnqueued(configId, sourceRecord, pInstanceId);
 
 		// precondition: row is Enqueued
-		final Optional<ExternalSystemExportStatusLogEntry> before = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> before = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(before).isPresent();
 		assertThat(before.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 
@@ -108,12 +109,12 @@ public class ScriptedExportStatusSuccessListenerTest
 		listener.onInvocationSuccess(pInstanceId, ExternalSystemErrorContext.UNKNOWN, 200);
 
 		// assert: status=Sent, httpResponseCode stored
-		final Optional<ExternalSystemExportStatusLogEntry> after = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> after = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(after).isPresent();
 		assertThat(after.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
 		assertThat(after.get().getHttpResponseCode())
-				.as("HttpResponseCode must be stored on the log row")
-				.isEqualTo(200);
+				.as("HttpResponseCode must be stored on the status row")
+				.isEqualTo(HttpStatus.OK);
 	}
 
 	// -----------------------------------------------------------------------
@@ -132,11 +133,11 @@ public class ScriptedExportStatusSuccessListenerTest
 
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(2002);
 		statusService.recordPending(configId, sourceRecord);
-		statusService.bindPInstanceAndMarkEnqueued(configId, sourceRecord, pInstanceId);
+		statusService.markEnqueued(configId, sourceRecord, pInstanceId);
 
 		listener.onInvocationSuccess(pInstanceId, ExternalSystemErrorContext.UNKNOWN, 201);
 
-		final Optional<ExternalSystemExportStatusLogEntry> after = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> after = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(after).isPresent();
 		assertThat(after.get().getStatus())
 				.as("Single-entry roll-up must be Sent after success")

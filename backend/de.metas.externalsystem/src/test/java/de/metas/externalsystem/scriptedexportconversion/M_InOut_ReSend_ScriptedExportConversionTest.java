@@ -22,6 +22,9 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.error.IssueCreateRequest;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
@@ -32,10 +35,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -63,8 +69,13 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		final IErrorManager errorManager = Mockito.mock(IErrorManager.class);
+		Mockito.when(errorManager.createIssue(Mockito.any(IssueCreateRequest.class))).thenReturn(AdIssueId.ofRepoId(8888));
+		SpringContextHolder.registerJUnitBean(IErrorManager.class, errorManager);
+
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
-		service = ExternalSystemExportStatusService.newInstanceForUnitTesting(repo);
+		service = ExternalSystemExportStatusService.newInstanceForUnitTesting();
 	}
 
 	// -----------------------------------------------------------------------
@@ -107,8 +118,9 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 
 		// Simulate: initial attempt => Error
 		final PInstanceId pInstance = PInstanceId.ofRepoId(1001);
-		service.recordPending(pInstance, configId, ref);
-		service.markError(pInstance, 0, "Connection refused");
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstance);
+		service.markError(pInstance, null, "Connection refused");
 
 		final List<ExternalSystemScriptedExportConversionConfigId> nonSentConfigs =
 				repo.getConfigsWithNonSentAttemptBySourceRecord(ref);
@@ -133,8 +145,9 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 
 		// Simulate: attempt => Sent
 		final PInstanceId pInstance = PInstanceId.ofRepoId(2001);
-		service.recordPending(pInstance, configId, ref);
-		service.markSent(pInstance, 200);
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstance);
+		service.markSent(pInstance, HttpStatus.OK);
 
 		final List<ExternalSystemScriptedExportConversionConfigId> nonSentConfigs =
 				repo.getConfigsWithNonSentAttemptBySourceRecord(ref);
@@ -163,12 +176,14 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 
 		// Config A: Error
 		final PInstanceId pA = PInstanceId.ofRepoId(3001);
-		service.recordPending(pA, configIdA, ref);
-		service.markError(pA, 0, "Error A");
+		service.recordPending(configIdA, ref);
+		service.markEnqueued(configIdA, ref, pA);
+		service.markError(pA, null, "Error A");
 
 		// Config B: Invalid (also non-Sent)
 		final PInstanceId pB = PInstanceId.ofRepoId(3002);
-		service.recordPending(pB, configIdB, ref);
+		service.recordPending(configIdB, ref);
+		service.markEnqueued(configIdB, ref, pB);
 		service.markInvalid(pB, "Invalid B");
 
 		final List<ExternalSystemScriptedExportConversionConfigId> nonSentConfigs =
@@ -194,12 +209,13 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 
 		// Prior attempt => Error
 		final PInstanceId pInstance = PInstanceId.ofRepoId(4001);
-		service.recordPending(pInstance, configId, ref);
-		service.markError(pInstance, 0, "prior error");
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstance);
+		service.markError(pInstance, null, "prior error");
 
 		// Assert: only 1 row initially
 		assertThat(repo.getByConfigId(configId)).hasSize(1);
-		final ExternalSystemExportStatusLogEntry priorRow = repo.getByConfigId(configId).get(0);
+		final ScriptedExportConversionStatus priorRow = repo.getByConfigId(configId).get(0);
 		assertThat(priorRow.getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
 		assertThat(priorRow.isResend()).isFalse();
 
@@ -207,12 +223,12 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 		service.recordPendingAsResend(configId, ref);
 
 		// Assert: 2 rows now
-		final List<ExternalSystemExportStatusLogEntry> rows = repo.getByConfigId(configId);
+		final List<ScriptedExportConversionStatus> rows = repo.getByConfigId(configId);
 		assertThat(rows).hasSize(2);
 
 		// Find the new resend row (Pending + IsResend=Y)
-		final ExternalSystemExportStatusLogEntry newRow = rows.stream()
-				.filter(ExternalSystemExportStatusLogEntry::isResend)
+		final ScriptedExportConversionStatus newRow = rows.stream()
+				.filter(ScriptedExportConversionStatus::isResend)
 				.findFirst()
 				.orElse(null);
 		assertThat(newRow).isNotNull();
@@ -220,13 +236,12 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 		assertThat(newRow.isResend()).isTrue();
 
 		// Prior row NOT mutated
-		final ExternalSystemExportStatusLogEntry priorRowAfter = rows.stream()
+		final ScriptedExportConversionStatus priorRowAfter = rows.stream()
 				.filter(r -> !r.isResend())
 				.findFirst()
 				.orElse(null);
 		assertThat(priorRowAfter).isNotNull();
 		assertThat(priorRowAfter.getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
-		assertThat(priorRowAfter.getLogId()).isEqualTo(priorRow.getLogId());
 	}
 
 	// -----------------------------------------------------------------------

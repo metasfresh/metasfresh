@@ -62,7 +62,7 @@ public class ScriptedExportStatusWiringTest
 		AdempiereTestHelper.get().init();
 
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
-		statusService = ExternalSystemExportStatusService.newInstanceForUnitTesting(repo);
+		statusService = ExternalSystemExportStatusService.newInstanceForUnitTesting();
 	}
 
 	// -----------------------------------------------------------------------
@@ -82,18 +82,18 @@ public class ScriptedExportStatusWiringTest
 		// (a) — the interceptor hook
 		statusService.recordPending(configId, sourceRecord);
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByConfigAndRecord(configId, sourceRecord);
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByConfigAndRecord(configId, sourceRecord);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
 		assertThat(entry.get().getPInstanceId()).isNull();
 	}
 
 	// -----------------------------------------------------------------------
-	// (b) Enqueued — bindPInstanceAndMarkEnqueued updates the Pending row
+	// (b) Enqueued — markEnqueued updates the Pending row
 	//     with the PInstance and transitions status to Enqueued.
 	// -----------------------------------------------------------------------
 	@Test
-	void bindPInstanceAndMarkEnqueued_transitionsPendingToEnqueued()
+	void markEnqueued_transitionsPendingToEnqueued()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -108,9 +108,9 @@ public class ScriptedExportStatusWiringTest
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(555);
 
 		// (b) — the invocation service hook after successful enqueue
-		statusService.bindPInstanceAndMarkEnqueued(configId, sourceRecord, pInstanceId);
+		statusService.markEnqueued(configId, sourceRecord, pInstanceId);
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 		assertThat(entry.get().getPInstanceId()).isEqualTo(pInstanceId);
@@ -135,7 +135,7 @@ public class ScriptedExportStatusWiringTest
 		// (c) — the invocation service hook on "no valid Resource" path
 		statusService.markInvalidByRecord(configId, sourceRecord, "Process did not return a valid Resource");
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByConfigAndRecord(configId, sourceRecord);
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByConfigAndRecord(configId, sourceRecord);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Invalid);
 		assertThat(entry.get().getStatusMessage()).isEqualTo("Process did not return a valid Resource");
@@ -149,9 +149,7 @@ public class ScriptedExportStatusWiringTest
 	{
 		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
 				InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
-		cfg.setAD_Table_ID(adTableId);
-		// NOTE: Status_AD_Column_ID removed in R1; virtual column approach used instead (TODO R2.2)
-		cfg.setExternalSystemValue("test");
+		cfg.setAD_Table_ID(adTableId);		cfg.setExternalSystemValue("test");
 		cfg.setScriptIdentifier("test.js");
 		cfg.setWhereClause("1=1");
 		cfg.setIsTriggerOnComplete(true);

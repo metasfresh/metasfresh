@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.process.PInstanceId;
@@ -35,14 +36,13 @@ import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-
-// TODO(R2.2): restore targetColumnWrite tests when the virtual-column roll-up mechanism is wired
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ExternalSystemExportStatusServiceTest
@@ -56,12 +56,9 @@ public class ExternalSystemExportStatusServiceTest
 		AdempiereTestHelper.get().init();
 
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
-		service = ExternalSystemExportStatusService.newInstanceForUnitTesting(repo);
+		service = ExternalSystemExportStatusService.newInstanceForUnitTesting();
 	}
 
-	// -----------------------------------------------------------------------
-	// Helper: create a minimal scripted-export config record for a given AD_Table_ID.
-	// -----------------------------------------------------------------------
 	private I_ExternalSystem_Config_ScriptedExportConversion createConfig(final int adTableId)
 	{
 		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
@@ -76,177 +73,204 @@ public class ExternalSystemExportStatusServiceTest
 		return cfg;
 	}
 
-	// -----------------------------------------------------------------------
-	// 1.  recordPending  →  row exists with status Pending
-	// -----------------------------------------------------------------------
-	@Test
-	void recordPending_createsLogRow()
+	private TableRecordReference newInOutRef()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
-		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
-				createConfig(getM_InOutTableId());
+		return TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
+	}
 
-		final PInstanceId pInstanceId = PInstanceId.ofRepoId(101);
-		service.recordPending(
-				pInstanceId,
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID()),
-				TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID()));
+	private ExternalSystemScriptedExportConversionConfigId newConfigId()
+	{
+		final I_ExternalSystem_Config_ScriptedExportConversion cfg = createConfig(getM_InOutTableId());
+		return ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID());
+	}
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByPInstanceId(pInstanceId);
+	// -----------------------------------------------------------------------
+	// recordDontSend → terminal DontSend
+	// -----------------------------------------------------------------------
+	@Test
+	void recordDontSend_setsDontSendStatus()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordDontSend(configId, ref);
+
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByConfigAndRecord(configId, ref);
+		assertThat(entry).isPresent();
+		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.DontSend);
+	}
+
+	// -----------------------------------------------------------------------
+	// recordPending → Pending
+	// -----------------------------------------------------------------------
+	@Test
+	void recordPending_createsPendingRow()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref);
+
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByConfigAndRecord(configId, ref);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
 	}
 
 	// -----------------------------------------------------------------------
-	// 2.  Pending → Enqueued → Sent  transition
+	// Pending → Enqueued → Sent
 	// -----------------------------------------------------------------------
 	@Test
 	void transitions_Pending_Enqueued_Sent()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
-				createConfig(getM_InOutTableId());
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(201);
-		final ExternalSystemScriptedExportConversionConfigId configId =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID());
-		final TableRecordReference ref = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
 
-		service.recordPending(pInstanceId, configId, ref);
-		service.recordEnqueued(pInstanceId);
-		service.markSent(pInstanceId, 200);
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markSent(pInstanceId, HttpStatus.OK);
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Sent);
-		assertThat(entry.get().getHttpResponseCode()).isEqualTo(200);
+		assertThat(entry.get().getHttpResponseCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	// -----------------------------------------------------------------------
-	// 3.  markError records Error status + issue ID + message
+	// markEnqueued — at-most-one-in-flight guard: second call must not re-enqueue
+	// -----------------------------------------------------------------------
+	@Test
+	void markEnqueued_atMostOneInFlight_guardsAgainstDoubleEnqueue()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId first = PInstanceId.ofRepoId(701);
+		final PInstanceId second = PInstanceId.ofRepoId(702);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, first);
+		// already in-flight (Enqueued, not Pending) → second markEnqueued is a no-op
+		service.markEnqueued(configId, ref, second);
+
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByConfigAndRecord(configId, ref);
+		assertThat(entry).isPresent();
+		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
+		assertThat(entry.get().getPInstanceId()).isEqualTo(first);
+	}
+
+	// -----------------------------------------------------------------------
+	// markError records Error + issue ID + message
 	// -----------------------------------------------------------------------
 	@Test
 	void markError_setsErrorStatus()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
-				createConfig(getM_InOutTableId());
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(301);
-		final ExternalSystemScriptedExportConversionConfigId configId =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID());
-		final TableRecordReference ref = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
 
-		service.recordPending(pInstanceId, configId, ref);
-		service.markError(pInstanceId, 42, "Something went wrong");
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markError(pInstanceId, AdIssueId.ofRepoId(42), "Something went wrong");
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
-		assertThat(entry.get().getAdIssueId()).isEqualTo(42);
+		assertThat(entry.get().getAdIssueId()).isEqualTo(AdIssueId.ofRepoId(42));
 		assertThat(entry.get().getStatusMessage()).isEqualTo("Something went wrong");
 	}
 
 	// -----------------------------------------------------------------------
-	// 4.  markInvalid records Invalid status
+	// markInvalid records Invalid
 	// -----------------------------------------------------------------------
 	@Test
 	void markInvalid_setsInvalidStatus()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
-				createConfig(getM_InOutTableId());
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(401);
-		final ExternalSystemScriptedExportConversionConfigId configId =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID());
-		final TableRecordReference ref = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
 
-		service.recordPending(pInstanceId, configId, ref);
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
 		service.markInvalid(pInstanceId, "Bad data");
 
-		final Optional<ExternalSystemExportStatusLogEntry> entry = repo.getLatestByPInstanceId(pInstanceId);
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(entry).isPresent();
 		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Invalid);
 		assertThat(entry.get().getStatusMessage()).isEqualTo("Bad data");
 	}
 
 	// -----------------------------------------------------------------------
-	// 5.  Roll-up: Error beats in-flight beats Sent
+	// markInvalidByRecord — pre-send revalidation failure (no pInstance)
+	// -----------------------------------------------------------------------
+	@Test
+	void markInvalidByRecord_setsInvalidStatus()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref);
+		service.markInvalidByRecord(configId, ref, "revalidation failed");
+
+		final Optional<ScriptedExportConversionStatus> entry = repo.getLatestByConfigAndRecord(configId, ref);
+		assertThat(entry).isPresent();
+		assertThat(entry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Invalid);
+	}
+
+	// -----------------------------------------------------------------------
+	// Roll-up: Error beats in-flight beats Sent
 	// -----------------------------------------------------------------------
 	@Test
 	void rollUp_Error_beats_inFlight_beats_Sent()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final int m_InOutTableId = getM_InOutTableId();
-		final TableRecordReference ref = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
+		final TableRecordReference ref = newInOutRef();
 
-		// Config A → Sent
-		final I_ExternalSystem_Config_ScriptedExportConversion cfgA = createConfig(m_InOutTableId);
+		final ExternalSystemScriptedExportConversionConfigId idA = newConfigId();
 		final PInstanceId pA = PInstanceId.ofRepoId(501);
-		final ExternalSystemScriptedExportConversionConfigId idA =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfgA.getExternalSystem_Config_ScriptedExportConversion_ID());
-		service.recordPending(pA, idA, ref);
-		service.markSent(pA, 200);
+		service.recordPending(idA, ref);
+		service.markEnqueued(idA, ref, pA);
+		service.markSent(pA, HttpStatus.OK);
 
-		// Config B → still Pending (in-flight)
-		final I_ExternalSystem_Config_ScriptedExportConversion cfgB = createConfig(m_InOutTableId);
-		final PInstanceId pB = PInstanceId.ofRepoId(502);
-		final ExternalSystemScriptedExportConversionConfigId idB =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfgB.getExternalSystem_Config_ScriptedExportConversion_ID());
-		service.recordPending(pB, idB, ref);
+		final ExternalSystemScriptedExportConversionConfigId idB = newConfigId();
+		service.recordPending(idB, ref);
 
-		// Config C → Error
-		final I_ExternalSystem_Config_ScriptedExportConversion cfgC = createConfig(m_InOutTableId);
+		final ExternalSystemScriptedExportConversionConfigId idC = newConfigId();
 		final PInstanceId pC = PInstanceId.ofRepoId(503);
-		final ExternalSystemScriptedExportConversionConfigId idC =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfgC.getExternalSystem_Config_ScriptedExportConversion_ID());
-		service.recordPending(pC, idC, ref);
-		service.markError(pC, 0, "oops");
+		service.recordPending(idC, ref);
+		service.markEnqueued(idC, ref, pC);
+		service.markError(pC, AdIssueId.ofRepoId(9), "oops");
 
-		final List<ExternalSystemExportStatusLogEntry> rows =
-				repo.getLatestBySourceRecord(ref);
-		final ExternalSystemExportStatus rollUp = service.computeRollUp(rows);
-
-		assertThat(rollUp).isEqualTo(ExternalSystemExportStatus.Error);
+		final List<ScriptedExportConversionStatus> rows = repo.getLatestBySourceRecord(ref);
+		assertThat(service.computeRollUp(rows)).isEqualTo(ExternalSystemExportStatus.Error);
 	}
 
 	@Test
 	void rollUp_inFlight_beats_Sent()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final int m_InOutTableId = getM_InOutTableId();
-		final TableRecordReference ref = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
+		final TableRecordReference ref = newInOutRef();
 
-		final I_ExternalSystem_Config_ScriptedExportConversion cfgA = createConfig(m_InOutTableId);
+		final ExternalSystemScriptedExportConversionConfigId idA = newConfigId();
 		final PInstanceId pA = PInstanceId.ofRepoId(601);
-		service.recordPending(pA,
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfgA.getExternalSystem_Config_ScriptedExportConversion_ID()),
-				ref);
-		service.markSent(pA, 200);
+		service.recordPending(idA, ref);
+		service.markEnqueued(idA, ref, pA);
+		service.markSent(pA, HttpStatus.OK);
 
-		final I_ExternalSystem_Config_ScriptedExportConversion cfgB = createConfig(m_InOutTableId);
-		final PInstanceId pB = PInstanceId.ofRepoId(602);
-		service.recordPending(pB,
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfgB.getExternalSystem_Config_ScriptedExportConversion_ID()),
-				ref);
-		// pB stays Pending (in-flight)
+		final ExternalSystemScriptedExportConversionConfigId idB = newConfigId();
+		service.recordPending(idB, ref);
 
-		final List<ExternalSystemExportStatusLogEntry> rows = repo.getLatestBySourceRecord(ref);
+		final List<ScriptedExportConversionStatus> rows = repo.getLatestBySourceRecord(ref);
 		assertThat(service.computeRollUp(rows)).isEqualTo(ExternalSystemExportStatus.Pending);
 	}
 
 	// -----------------------------------------------------------------------
-	// 6.  AC-10 safety: no throw when pInstanceId has no matching status row
+	// No-op / no-throw when pInstanceId has no matching status row
 	// -----------------------------------------------------------------------
 	@Test
 	void markSent_noopAndNoThrow_whenNoMatchingLogRow()
 	{
 		final PInstanceId unknownPInstance = PInstanceId.ofRepoId(99999);
-		assertThatCode(() -> service.markSent(unknownPInstance, 200))
+		assertThatCode(() -> service.markSent(unknownPInstance, HttpStatus.OK))
 				.doesNotThrowAnyException();
 	}
 
@@ -254,43 +278,28 @@ public class ExternalSystemExportStatusServiceTest
 	void markError_noopAndNoThrow_whenNoMatchingLogRow()
 	{
 		final PInstanceId unknownPInstance = PInstanceId.ofRepoId(99998);
-		assertThatCode(() -> service.markError(unknownPInstance, 0, "msg"))
+		assertThatCode(() -> service.markError(unknownPInstance, null, "msg"))
 				.doesNotThrowAnyException();
 	}
 
 	// -----------------------------------------------------------------------
-	// 7.  Upsert semantics: second call for same pInstance updates, not inserts
+	// Upsert semantics: second transition on same key keeps a single row
 	// -----------------------------------------------------------------------
 	@Test
 	void upsert_sameRow_onSecondCall()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
-				createConfig(getM_InOutTableId());
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(901);
-		final ExternalSystemScriptedExportConversionConfigId configId =
-				ExternalSystemScriptedExportConversionConfigId.ofRepoId(cfg.getExternalSystem_Config_ScriptedExportConversion_ID());
-		final TableRecordReference ref = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
 
-		service.recordPending(pInstanceId, configId, ref);
-		service.recordEnqueued(pInstanceId);
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
 
-		// There should be exactly ONE status row for this config+record (upsert semantic)
-		final List<ExternalSystemExportStatusLogEntry> byConfig =
-				repo.getByConfigId(configId);
+		final List<ScriptedExportConversionStatus> byConfig = repo.getByConfigId(configId);
 		assertThat(byConfig).hasSize(1);
 		assertThat(byConfig.get(0).getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 	}
 
-	// -----------------------------------------------------------------------
-	// Helpers
-	// -----------------------------------------------------------------------
-
-	/**
-	 * Returns the M_InOut table ID via IADTableDAO so that we use the same
-	 * JUnit-generated ID that the service will resolve at runtime.
-	 */
 	private int getM_InOutTableId()
 	{
 		return Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);

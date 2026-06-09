@@ -29,6 +29,7 @@ import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -65,6 +66,6 @@ public class ScriptedExportStatusSuccessListener implements IExternalSystemInvoc
 			final int httpResponseCode)
 	{
 		logger.debug("Handling invocation success for pInstanceId={}, context={}, httpResponseCode={}", pInstanceId, context, httpResponseCode);
-		exportStatusService.markSent(pInstanceId, httpResponseCode);
+		exportStatusService.markSent(pInstanceId, HttpStatus.valueOf(httpResponseCode));
 	}
 }

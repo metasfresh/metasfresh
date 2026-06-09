@@ -24,6 +24,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_ScriptedExportConversion_Status;
 import de.metas.process.PInstanceId;
@@ -33,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -66,83 +68,68 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	// ------------------------------------------------------------------
-	// Upsert
+	// Upsert / insert
 	// ------------------------------------------------------------------
 
 	/**
 	 * Upserts the status row for the given (config, sourceRecord) key.
 	 * Creates the row if it does not exist yet; updates it in-place otherwise.
-	 * Returns the persisted VO (with the Status row ID set in {@code logId}).
 	 */
 	@NonNull
-	public ExternalSystemExportStatusLogEntry upsert(@NonNull final ExternalSystemExportStatusLogEntry entry)
+	public ScriptedExportConversionStatus upsert(@NonNull final ScriptedExportConversionStatusCreateRequest request)
 	{
-		final I_ExternalSystem_ScriptedExportConversion_Status existing =
-				queryStatusRecord(entry.getConfigId(), entry.getSourceRecord()).orElse(null);
-
-		if (existing != null)
-		{
-			updateRecord(existing, entry);
-			InterfaceWrapperHelper.saveRecord(existing);
-			return entry.withLogId(existing.getExternalSystem_ScriptedExportConversion_Status_ID());
-		}
-		else
-		{
-			final I_ExternalSystem_ScriptedExportConversion_Status record =
-					InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class);
-			updateRecord(record, entry);
-			InterfaceWrapperHelper.saveRecord(record);
-			return entry.withLogId(record.getExternalSystem_ScriptedExportConversion_Status_ID());
-		}
+		final I_ExternalSystem_ScriptedExportConversion_Status record =
+				queryStatusRecord(request.getConfigId(), request.getSourceRecord())
+						.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class));
+		updateRecord(record, request);
+		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(record);
 	}
 
 	/**
-	 * Inserts a new status row and returns the persisted entry (with its new logId).
-	 *
-	 * <p>Note: for the _Status table the grain is one row per (config, table, record),
-	 * so callers that want upsert semantics should use {@link #upsert(ExternalSystemExportStatusLogEntry)}.
-	 * This method is kept for callers that explicitly need a fresh row (e.g. re-send creates
-	 * a new row to preserve history — TODO(R2.2): evaluate if re-send should upsert instead).
+	 * Inserts a new status row, for callers that explicitly need a fresh row (e.g. re-send
+	 * creates a new row to preserve history).
 	 */
 	@NonNull
-	public ExternalSystemExportStatusLogEntry insert(@NonNull final ExternalSystemExportStatusLogEntry entry)
+	public ScriptedExportConversionStatus insert(@NonNull final ScriptedExportConversionStatusCreateRequest request)
 	{
 		final I_ExternalSystem_ScriptedExportConversion_Status record =
 				InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class);
-		updateRecord(record, entry);
+		updateRecord(record, request);
 		InterfaceWrapperHelper.saveRecord(record);
-		return entry.withLogId(record.getExternalSystem_ScriptedExportConversion_Status_ID());
+		return fromRecord(record);
 	}
 
 	/**
-	 * Updates the status row identified by its {@code logId} (Status row PK).
+	 * Persists the loaded status identified by its (config, sourceRecord) key.
+	 * No-op (no throw) when no row exists for that key.
 	 */
-	public void update(@NonNull final ExternalSystemExportStatusLogEntry entry)
+	public void update(@NonNull final ScriptedExportConversionStatus status)
 	{
 		final I_ExternalSystem_ScriptedExportConversion_Status record =
-				InterfaceWrapperHelper.load(entry.getLogId(), I_ExternalSystem_ScriptedExportConversion_Status.class);
-		updateRecord(record, entry);
+				queryStatusRecord(status.getConfigId(), status.getSourceRecord()).orElse(null);
+		if (record == null)
+		{
+			return;
+		}
+		updateRecord(record, status);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	/**
 	 * Loads the status row bound to the given {@code pInstanceId}, applies the operator,
 	 * and saves the result. No-op (no throw) when no row is bound to the pInstance.
-	 *
-	 * @param pInstanceId the process-instance whose status row to update
-	 * @param operator    applied to the loaded VO to produce the updated VO
 	 */
 	public void updateLatestByPInstanceId(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final UnaryOperator<ExternalSystemExportStatusLogEntry> operator)
+			@NonNull final UnaryOperator<ScriptedExportConversionStatus> operator)
 	{
-		final ExternalSystemExportStatusLogEntry existing = getLatestByPInstanceId(pInstanceId).orElse(null);
+		final ScriptedExportConversionStatus existing = getLatestByPInstanceId(pInstanceId).orElse(null);
 		if (existing == null)
 		{
 			return;
 		}
-		final ExternalSystemExportStatusLogEntry updated = operator.apply(existing);
-		update(updated);
+		update(operator.apply(existing));
 	}
 
 	// ------------------------------------------------------------------
@@ -151,10 +138,9 @@ public class ExternalSystemExportStatusRepository
 
 	/**
 	 * Returns the status row for the given pInstance, if any.
-	 * (Since each key has one row, "latest" is the single row whose AD_PInstance_ID matches.)
 	 */
 	@NonNull
-	public Optional<ExternalSystemExportStatusLogEntry> getLatestByPInstanceId(@NonNull final PInstanceId pInstanceId)
+	public Optional<ScriptedExportConversionStatus> getLatestByPInstanceId(@NonNull final PInstanceId pInstanceId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
 				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_PInstance_ID, pInstanceId.getRepoId())
@@ -168,7 +154,7 @@ public class ExternalSystemExportStatusRepository
 	 * Returns all status rows for the given config.
 	 */
 	@NonNull
-	public List<ExternalSystemExportStatusLogEntry> getByConfigId(@NonNull final ExternalSystemScriptedExportConversionConfigId configId)
+	public List<ScriptedExportConversionStatus> getByConfigId(@NonNull final ExternalSystemScriptedExportConversionConfigId configId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
 				.addEqualsFilter(
@@ -182,10 +168,9 @@ public class ExternalSystemExportStatusRepository
 
 	/**
 	 * Returns the single status row for the given config + source record combination, if any.
-	 * Since the grain is one row per (config, table, record), this returns the unique row.
 	 */
 	@NonNull
-	public Optional<ExternalSystemExportStatusLogEntry> getLatestByConfigAndRecord(
+	public Optional<ScriptedExportConversionStatus> getLatestByConfigAndRecord(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
@@ -202,12 +187,11 @@ public class ExternalSystemExportStatusRepository
 	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		final List<ExternalSystemExportStatusLogEntry> allEntries = getLatestBySourceRecord(sourceRecord);
+		final List<ScriptedExportConversionStatus> allEntries = getLatestBySourceRecord(sourceRecord);
 
-		// Deduplicate: keep only the most-recent row per configId
-		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ExternalSystemExportStatusLogEntry> latestPerConfig =
+		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
 				new LinkedHashMap<>();
-		for (final ExternalSystemExportStatusLogEntry entry : allEntries)
+		for (final ScriptedExportConversionStatus entry : allEntries)
 		{
 			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
 		}
@@ -222,7 +206,7 @@ public class ExternalSystemExportStatusRepository
 	 * Returns all status rows for the given source record, ordered newest-first.
 	 */
 	@NonNull
-	public List<ExternalSystemExportStatusLogEntry> getLatestBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	public List<ScriptedExportConversionStatus> getLatestBySourceRecord(@NonNull final TableRecordReference sourceRecord)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
 				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, sourceRecord.getAD_Table_ID())
@@ -254,65 +238,78 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	// ------------------------------------------------------------------
-	// Mapping helpers (static for easy access from tests)
+	// Mapping helpers
 	// ------------------------------------------------------------------
 
-	/**
-	 * Maps a persisted status record to the VO.
-	 * The {@code logId} field carries the Status row PK.
-	 */
 	@NonNull
-	public static ExternalSystemExportStatusLogEntry fromRecord(
+	public static ScriptedExportConversionStatus fromRecord(
 			@NonNull final I_ExternalSystem_ScriptedExportConversion_Status record)
 	{
-		return ExternalSystemExportStatusLogEntry.builder()
-				.logId(record.getExternalSystem_ScriptedExportConversion_Status_ID())
+		final int httpCode = record.getHttpResponseCode();
+		return ScriptedExportConversionStatus.builder()
 				.pInstanceId(PInstanceId.ofRepoIdOrNull(record.getAD_PInstance_ID()))
 				.configId(ExternalSystemScriptedExportConversionConfigId.ofRepoId(record.getExternalSystem_Config_ScriptedExportConversion_ID()))
 				.sourceRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.status(ExternalSystemExportStatus.ofCode(record.getExportStatus()))
-				.httpResponseCode(record.getHttpResponseCode())
-				.adIssueId(record.getAD_Issue_ID())
+				.httpResponseCode(httpCode > 0 ? HttpStatus.valueOf(httpCode) : null)
+				.adIssueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
 				.statusMessage(record.getStatusMessage())
 				.isResend(record.isResend())
 				.build();
 	}
 
-	/**
-	 * Applies the VO fields onto the given record (for insert or update).
-	 * Does NOT save — caller must call {@link InterfaceWrapperHelper#saveRecord(Object)}.
-	 */
-	public static void updateRecord(
+	private static void updateRecord(
 			@NonNull final I_ExternalSystem_ScriptedExportConversion_Status record,
-			@NonNull final ExternalSystemExportStatusLogEntry entry)
+			@NonNull final ScriptedExportConversionStatusCreateRequest request)
 	{
-		record.setExternalSystem_Config_ScriptedExportConversion_ID(entry.getConfigId().getRepoId());
-		record.setAD_Table_ID(entry.getSourceRecord().getAD_Table_ID());
-		record.setRecord_ID(entry.getSourceRecord().getRecord_ID());
-		record.setExportStatus(entry.getStatus().getCode());
+		applyFields(
+				record,
+				request.getPInstanceId(),
+				request.getConfigId(),
+				request.getSourceRecord(),
+				request.getStatus(),
+				request.getHttpResponseCode(),
+				request.getAdIssueId(),
+				request.getStatusMessage(),
+				request.isResend());
+	}
 
-		final PInstanceId pInstanceId = entry.getPInstanceId();
-		if (pInstanceId != null)
-		{
-			record.setAD_PInstance_ID(pInstanceId.getRepoId());
-		}
-		else
-		{
-			record.setAD_PInstance_ID(0);
-		}
+	@VisibleForTesting
+	static void updateRecord(
+			@NonNull final I_ExternalSystem_ScriptedExportConversion_Status record,
+			@NonNull final ScriptedExportConversionStatus status)
+	{
+		applyFields(
+				record,
+				status.getPInstanceId(),
+				status.getConfigId(),
+				status.getSourceRecord(),
+				status.getStatus(),
+				status.getHttpResponseCode(),
+				status.getAdIssueId(),
+				status.getStatusMessage(),
+				status.isResend());
+	}
 
-		record.setHttpResponseCode(entry.getHttpResponseCode());
-
-		if (entry.getAdIssueId() > 0)
-		{
-			record.setAD_Issue_ID(entry.getAdIssueId());
-		}
-		else
-		{
-			record.setAD_Issue_ID(0);
-		}
-
-		record.setStatusMessage(entry.getStatusMessage());
-		record.setIsResend(entry.isResend());
+	private static void applyFields(
+			@NonNull final I_ExternalSystem_ScriptedExportConversion_Status record,
+			@Nullable final PInstanceId pInstanceId,
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord,
+			@NonNull final ExternalSystemExportStatus status,
+			@Nullable final HttpStatus httpResponseCode,
+			@Nullable final AdIssueId adIssueId,
+			@Nullable final String statusMessage,
+			final boolean isResend)
+	{
+		record.setExternalSystem_Config_ScriptedExportConversion_ID(configId.getRepoId());
+		record.setAD_Table_ID(sourceRecord.getAD_Table_ID());
+		record.setRecord_ID(sourceRecord.getRecord_ID());
+		record.setExportStatus(status.getCode());
+		record.setAD_PInstance_ID(pInstanceId != null ? pInstanceId.getRepoId() : 0);
+		record.setHttpResponseCode(httpResponseCode != null ? httpResponseCode.value() : 0);
+		record.setAD_Issue_ID(adIssueId != null ? adIssueId.getRepoId() : 0);
+		record.setStatusMessage(statusMessage);
+		record.setIsResend(isResend);
 	}
 }

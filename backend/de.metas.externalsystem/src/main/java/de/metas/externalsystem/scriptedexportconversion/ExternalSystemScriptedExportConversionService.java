@@ -359,7 +359,7 @@ public class ExternalSystemScriptedExportConversionService
 			else if (processInfo.getPinstanceId() != null)
 			{
 				// (b) Enqueued — successfully dispatched to RabbitMQ
-				exportStatusService.bindPInstanceAndMarkEnqueued(config.getId(), sourceRecord, processInfo.getPinstanceId());
+				exportStatusService.markEnqueued(config.getId(), sourceRecord, processInfo.getPinstanceId());
 			}
 			else
 			{

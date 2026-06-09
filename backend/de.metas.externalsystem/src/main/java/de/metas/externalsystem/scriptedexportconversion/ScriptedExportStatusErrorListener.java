@@ -43,9 +43,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>The {@link IExternalSystemInvocationErrorListener} SPI does not provide the
  * {@code AD_Issue_ID} directly. Instead, {@link ExternalSystemExportStatusService#markError}
- * resolves the most-recent {@code AD_Issue} stamped with the given {@code AD_PInstance_ID}
- * — created by {@code ExternalSystemService.createIssue()} before listeners are notified —
- * and links it to the log row automatically.
+ * creates an {@code AD_Issue} via {@code IErrorManager} and links it to the status row.
  */
 @Component
 @RequiredArgsConstructor
@@ -72,7 +70,7 @@ public class ScriptedExportStatusErrorListener implements IExternalSystemInvocat
 			@NonNull final String errorMessage)
 	{
 		logger.debug("Handling invocation error for pInstanceId={}, errorContext={}", pInstanceId, errorContext);
-		// adIssueId=0: markError will resolve the AD_Issue_ID by querying AD_Issue.AD_PInstance_ID
-		exportStatusService.markError(pInstanceId, 0, errorMessage);
+		// adIssueId=null: markError creates the AD_Issue via IErrorManager
+		exportStatusService.markError(pInstanceId, null, errorMessage);
 	}
 }
