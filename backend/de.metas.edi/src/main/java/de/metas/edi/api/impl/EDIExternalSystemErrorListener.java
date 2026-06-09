@@ -23,7 +23,7 @@
 package de.metas.edi.api.impl;
 
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -48,7 +48,7 @@ public class EDIExternalSystemErrorListener implements IExternalSystemInvocation
 	@NonNull private final EDIInvoiceDAO ediInvoiceDAO;
 
 	@Override
-	public boolean applies(@NonNull final ExternalSystemErrorContext errorContext)
+	public boolean applies(@NonNull final ExternalSystemInvocationContext errorContext)
 	{
 		return errorContext.isEDI();
 	}
@@ -56,7 +56,7 @@ public class EDIExternalSystemErrorListener implements IExternalSystemInvocation
 	@Override
 	public void onInvocationError(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext errorContext,
+			@NonNull final ExternalSystemInvocationContext errorContext,
 			@NonNull final String errorMessage)
 	{
 		//safety check

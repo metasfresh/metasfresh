@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.scriptedexportconversion.process.M_InOut_ReSend_ScriptedExportConversion;
@@ -134,7 +134,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 				.thenReturn(configB);
 
 		// executeInvokeScriptedExportConversionActionAndGetResult returns a result for both (process ignores the return value)
-		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemErrorContext.RESEND)))
+		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemInvocationContext.RESEND)))
 				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
 
 		// Run the process
@@ -146,9 +146,9 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 
 		// Assert: executeInvokeScriptedExportConversionActionAndGetResult called once per config with RESEND
 		verify(scriptedExportServiceMock, times(1))
-				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configA), eq(inoutId), eq(ExternalSystemErrorContext.RESEND));
+				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configA), eq(inoutId), eq(ExternalSystemInvocationContext.RESEND));
 		verify(scriptedExportServiceMock, times(1))
-				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configB), eq(inoutId), eq(ExternalSystemErrorContext.RESEND));
+				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configB), eq(inoutId), eq(ExternalSystemInvocationContext.RESEND));
 
 		assertThat(result).contains("2");
 	}

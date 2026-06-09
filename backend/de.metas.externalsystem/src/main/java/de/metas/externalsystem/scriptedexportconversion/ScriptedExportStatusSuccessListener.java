@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -35,11 +35,11 @@ import org.springframework.stereotype.Component;
 /**
  * Success listener for Scripted Export Conversion.
  * Updates the {@code ExternalSystem_ScriptedExportConversion_Status} row to {@code Sent}
- * when an external system invocation succeeds, and stores the HTTP response code.
+ * when an external system invocation succeeds, and stores the HTTP response status.
  *
- * <p>This listener applies to <em>all</em> success contexts — it uses the {@code pInstanceId}
- * to look up the matching log row and is a no-op (no throw) when no matching row exists
- * (AC-10 safety: the pInstanceId may belong to a different external system invocation).
+ * <p>This listener applies to <em>all</em> invocation contexts — it dispatches by {@code pInstanceId},
+ * not by context: it looks up the matching log row and is a no-op (no throw) when no matching row
+ * exists (AC-10 safety: the pInstanceId may belong to a different external system invocation).
  */
 @Component
 @RequiredArgsConstructor
@@ -50,11 +50,12 @@ public class ScriptedExportStatusSuccessListener implements IExternalSystemInvoc
 	@NonNull private final ExternalSystemExportStatusService exportStatusService;
 
 	/**
-	 * Always returns {@code true} — this listener looks up by {@code pInstanceId} and is a no-op
-	 * when no matching log row exists, so it is safe to be consulted for every success context.
+	 * Always returns {@code true} — this listener dispatches by {@code pInstanceId}, not by context:
+	 * it looks up the matching log row and is a no-op when no row exists, making it safe to consult
+	 * for every invocation context.
 	 */
 	@Override
-	public boolean applies(@NonNull final ExternalSystemErrorContext context)
+	public boolean applies(@NonNull final ExternalSystemInvocationContext context)
 	{
 		return true;
 	}
@@ -62,10 +63,10 @@ public class ScriptedExportStatusSuccessListener implements IExternalSystemInvoc
 	@Override
 	public void onInvocationSuccess(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext context,
-			final int httpResponseCode)
+			@NonNull final ExternalSystemInvocationContext context,
+			@NonNull final HttpStatus httpStatus)
 	{
-		logger.debug("Handling invocation success for pInstanceId={}, context={}, httpResponseCode={}", pInstanceId, context, httpResponseCode);
-		exportStatusService.markSent(pInstanceId, HttpStatus.valueOf(httpResponseCode));
+		logger.debug("Handling invocation success for pInstanceId={}, context={}, httpStatus={}", pInstanceId, context, httpStatus);
+		exportStatusService.markSent(pInstanceId, httpStatus);
 	}
 }

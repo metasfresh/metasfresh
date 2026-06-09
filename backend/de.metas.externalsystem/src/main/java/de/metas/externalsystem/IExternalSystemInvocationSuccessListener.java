@@ -24,6 +24,7 @@ package de.metas.externalsystem;
 
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
+import org.springframework.http.HttpStatus;
 
 /**
  * Listener interface for external system invocation successes.
@@ -32,18 +33,18 @@ import lombok.NonNull;
  * This listener is invoked when the external system REST API receives a success callback
  * (e.g., from Camel route processing completions).
  * <p>
- * Listeners should implement {@link #applies(ExternalSystemErrorContext)} to check if they should handle
+ * Listeners should implement {@link #applies(ExternalSystemInvocationContext)} to check if they should handle
  * successes for a given context.
  */
 public interface IExternalSystemInvocationSuccessListener
 {
 	/**
-	 * Checks if this listener applies to the given context.
+	 * Checks if this listener applies to the given invocation context.
 	 *
-	 * @param context the invocation context (EDI, ShopwareSync, etc.), never null (defaults to UNKNOWN)
+	 * @param context the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
 	 * @return true if this listener should handle successes for the given context
 	 */
-	boolean applies(@NonNull ExternalSystemErrorContext context);
+	boolean applies(@NonNull ExternalSystemInvocationContext context);
 
 	/**
 	 * Called when external system invocation succeeds.
@@ -51,12 +52,12 @@ public interface IExternalSystemInvocationSuccessListener
 	 * The listener queries its relevant tables (M_InOut, C_Invoice, etc.) by PInstance_ID
 	 * to find which record(s) are affected by this success.
 	 *
-	 * @param pInstanceId      the process instance ID of the external system invocation
-	 * @param context          the invocation context (EDI, ShopwareSync, etc.), never null (defaults to UNKNOWN)
-	 * @param httpResponseCode the HTTP response code returned by the external system (e.g. 200, 201)
+	 * @param pInstanceId    the process instance ID of the external system invocation
+	 * @param context        the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
+	 * @param httpStatus     the HTTP response status returned by the external system
 	 */
 	void onInvocationSuccess(
 			@NonNull PInstanceId pInstanceId,
-			@NonNull ExternalSystemErrorContext context,
-			int httpResponseCode);
+			@NonNull ExternalSystemInvocationContext context,
+			@NonNull HttpStatus httpStatus);
 }

@@ -31,7 +31,7 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
@@ -414,7 +414,7 @@ public class ExternalSystemScriptedExportConversionService
 	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId,
-			@Nullable final ExternalSystemErrorContext errorContext)
+			@Nullable final ExternalSystemInvocationContext errorContext)
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);

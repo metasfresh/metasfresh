@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.process.PInstanceId;
@@ -74,7 +74,7 @@ public class ScriptedExportStatusSuccessListenerTest
 	@Test
 	void applies_trueForAllContexts()
 	{
-		for (final ExternalSystemErrorContext ctx : ExternalSystemErrorContext.values())
+		for (final ExternalSystemInvocationContext ctx : ExternalSystemInvocationContext.values())
 		{
 			assertThat(listener.applies(ctx))
 					.as("applies() must return true for context %s", ctx)
@@ -106,7 +106,7 @@ public class ScriptedExportStatusSuccessListenerTest
 		assertThat(before.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 
 		// act
-		listener.onInvocationSuccess(pInstanceId, ExternalSystemErrorContext.UNKNOWN, 200);
+		listener.onInvocationSuccess(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, HttpStatus.OK);
 
 		// assert: status=Sent, httpResponseCode stored
 		final Optional<ScriptedExportConversionStatus> after = repo.getLatestByPInstanceId(pInstanceId);
@@ -135,7 +135,7 @@ public class ScriptedExportStatusSuccessListenerTest
 		statusService.recordPending(configId, sourceRecord);
 		statusService.markEnqueued(configId, sourceRecord, pInstanceId);
 
-		listener.onInvocationSuccess(pInstanceId, ExternalSystemErrorContext.UNKNOWN, 201);
+		listener.onInvocationSuccess(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, HttpStatus.CREATED);
 
 		final Optional<ScriptedExportConversionStatus> after = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(after).isPresent();
@@ -153,8 +153,8 @@ public class ScriptedExportStatusSuccessListenerTest
 		final PInstanceId unknownPInstance = PInstanceId.ofRepoId(99998);
 		assertThatCode(() -> listener.onInvocationSuccess(
 				unknownPInstance,
-				ExternalSystemErrorContext.UNKNOWN,
-				200))
+				ExternalSystemInvocationContext.UNKNOWN,
+				HttpStatus.OK))
 				.doesNotThrowAnyException();
 	}
 

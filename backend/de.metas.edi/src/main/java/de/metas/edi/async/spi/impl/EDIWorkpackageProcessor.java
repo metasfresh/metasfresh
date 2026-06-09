@@ -42,7 +42,7 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemInvocationResult;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
@@ -297,7 +297,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		return externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAndGetResult(
 				configs.get(0),
 				documentRecordId,
-				ExternalSystemErrorContext.EDI);
+				ExternalSystemInvocationContext.EDI);
 	}
 
 	@Getter

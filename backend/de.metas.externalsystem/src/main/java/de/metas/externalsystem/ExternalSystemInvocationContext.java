@@ -30,10 +30,10 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 
 /**
- * Identifies the functional context of an external system invocation for error handling purposes.
- * Error listeners can filter errors based on this context.
+ * Identifies the functional context of an external system invocation.
+ * Both success and error listeners can filter invocations based on this context.
  */
-public enum ExternalSystemErrorContext
+public enum ExternalSystemInvocationContext
 {
 	/**
 	 * Unknown or unspecified context.
@@ -56,7 +56,7 @@ public enum ExternalSystemErrorContext
 
 	private final String code;
 
-	ExternalSystemErrorContext(@NonNull final String code)
+	ExternalSystemInvocationContext(@NonNull final String code)
 	{
 		this.code = code;
 	}
@@ -68,7 +68,7 @@ public enum ExternalSystemErrorContext
 	}
 
 	@JsonCreator
-	public static ExternalSystemErrorContext ofCodeOrUnknown(@Nullable final String code)
+	public static ExternalSystemInvocationContext ofCodeOrUnknown(@Nullable final String code)
 	{
 		if (code == null)
 		{

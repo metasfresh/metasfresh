@@ -23,7 +23,7 @@
 package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -31,6 +31,7 @@ import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.springframework.http.HttpStatus;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ public class ExternalSystemServiceSuccessTest
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(3001);
 		service.handleExportSuccess(pInstanceId, 200);
 
-		verify(listener).onInvocationSuccess(pInstanceId, ExternalSystemErrorContext.UNKNOWN, 200);
+		verify(listener).onInvocationSuccess(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, HttpStatus.OK);
 	}
 
 	@Test
@@ -81,10 +82,10 @@ public class ExternalSystemServiceSuccessTest
 
 		service.handleExportSuccess(PInstanceId.ofRepoId(3002), 201);
 
-		verify(listener).applies(ExternalSystemErrorContext.UNKNOWN);
+		verify(listener).applies(ExternalSystemInvocationContext.UNKNOWN);
 		// onInvocationSuccess must NOT have been called
 		verify(listener, Mockito.never()).onInvocationSuccess(
-				Mockito.any(), Mockito.any(), Mockito.anyInt());
+				Mockito.any(), Mockito.any(), Mockito.any(HttpStatus.class));
 	}
 
 	@Test
@@ -93,7 +94,7 @@ public class ExternalSystemServiceSuccessTest
 		final IExternalSystemInvocationSuccessListener failingListener = mock(IExternalSystemInvocationSuccessListener.class);
 		when(failingListener.applies(Mockito.any())).thenReturn(true);
 		Mockito.doThrow(new RuntimeException("listener failure"))
-				.when(failingListener).onInvocationSuccess(Mockito.any(), Mockito.any(), Mockito.anyInt());
+				.when(failingListener).onInvocationSuccess(Mockito.any(), Mockito.any(), Mockito.any(HttpStatus.class));
 
 		final ExternalSystemService service = buildService(Collections.singletonList(failingListener));
 

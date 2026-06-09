@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion.process;
 
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
@@ -49,7 +49,7 @@ import java.util.List;
  *       The config is resolved (fail-fast) before creating the Pending row to prevent orphan rows.</li>
  *   <li>The scripted-export-conversion action is invoked via
  *       {@link ExternalSystemScriptedExportConversionService#executeInvokeScriptedExportConversionActionAndGetResult}
- *       with {@link ExternalSystemErrorContext#RESEND}.</li>
+ *       with {@link ExternalSystemInvocationContext#RESEND}.</li>
  * </ol>
  * Prior attempt rows are <em>never</em> mutated.
  *
@@ -98,7 +98,7 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
 					config,
 					m_inout_id,
-					ExternalSystemErrorContext.RESEND);
+					ExternalSystemInvocationContext.RESEND);
 
 			triggered++;
 		}

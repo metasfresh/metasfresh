@@ -43,7 +43,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.ExternalSystemParentConfig;
@@ -76,6 +76,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -184,7 +185,7 @@ public class ExternalSystemService
 				.findFirst()
 				.ifPresent(error -> {
 					final String errorMessage = buildAggregatedErrorMessage(jsonError);
-					final ExternalSystemErrorContext errorContext = ExternalSystemErrorContext.ofCodeOrUnknown(error.getErrorContext());
+					final ExternalSystemInvocationContext errorContext = ExternalSystemInvocationContext.ofCodeOrUnknown(error.getErrorContext());
 					notifyExternalSystemErrorListeners(pInstanceId, errorContext, errorMessage);
 				});
 
@@ -223,7 +224,7 @@ public class ExternalSystemService
 
 	private void notifyExternalSystemErrorListeners(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext errorContext,
+			@NonNull final ExternalSystemInvocationContext errorContext,
 			@NonNull final String errorMessage)
 	{
 		try
@@ -254,13 +255,13 @@ public class ExternalSystemService
 
 	public void handleExportSuccess(@NonNull final PInstanceId pInstanceId, final int httpResponseCode)
 	{
-		notifyExternalSystemSuccessListeners(pInstanceId, ExternalSystemErrorContext.UNKNOWN, httpResponseCode);
+		notifyExternalSystemSuccessListeners(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, HttpStatus.valueOf(httpResponseCode));
 	}
 
 	private void notifyExternalSystemSuccessListeners(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext context,
-			final int httpResponseCode)
+			@NonNull final ExternalSystemInvocationContext context,
+			@NonNull final HttpStatus httpStatus)
 	{
 		try
 		{
@@ -273,7 +274,7 @@ public class ExternalSystemService
 
 				try
 				{
-					listener.onInvocationSuccess(pInstanceId, context, httpResponseCode);
+					listener.onInvocationSuccess(pInstanceId, context, httpStatus);
 				}
 				catch (final Exception e)
 				{

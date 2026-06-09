@@ -22,8 +22,8 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
-import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  * when an external system invocation fails, and links the {@code AD_Issue} created for
  * this invocation.
  *
- * <p>This listener applies to <em>all</em> error contexts — it uses the {@code pInstanceId}
+ * <p>This listener applies to <em>all</em> invocation contexts — it uses the {@code pInstanceId}
  * to look up the matching log row and is a no-op (no throw) when no matching row exists
  * (AC-10 safety: the pInstanceId may belong to a different external system invocation).
  *
@@ -54,11 +54,12 @@ public class ScriptedExportStatusErrorListener implements IExternalSystemInvocat
 	@NonNull private final ExternalSystemExportStatusService exportStatusService;
 
 	/**
-	 * Always returns {@code true} — this listener looks up by {@code pInstanceId} and is a no-op
-	 * when no matching log row exists, so it is safe to be consulted for every error context.
+	 * Always returns {@code true} — this listener dispatches by {@code pInstanceId}, not by context:
+	 * it looks up the matching log row and is a no-op when no row exists, making it safe to consult
+	 * for every invocation context.
 	 */
 	@Override
-	public boolean applies(@NonNull final ExternalSystemErrorContext errorContext)
+	public boolean applies(@NonNull final ExternalSystemInvocationContext context)
 	{
 		return true;
 	}
@@ -66,10 +67,10 @@ public class ScriptedExportStatusErrorListener implements IExternalSystemInvocat
 	@Override
 	public void onInvocationError(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext errorContext,
+			@NonNull final ExternalSystemInvocationContext context,
 			@NonNull final String errorMessage)
 	{
-		logger.debug("Handling invocation error for pInstanceId={}, errorContext={}", pInstanceId, errorContext);
+		logger.debug("Handling invocation error for pInstanceId={}, context={}", pInstanceId, context);
 		// adIssueId=null: markError creates the AD_Issue via IErrorManager
 		exportStatusService.markError(pInstanceId, null, errorMessage);
 	}

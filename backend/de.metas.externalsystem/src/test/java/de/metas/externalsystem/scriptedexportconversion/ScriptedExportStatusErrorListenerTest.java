@@ -25,7 +25,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.process.PInstanceId;
@@ -80,7 +80,7 @@ public class ScriptedExportStatusErrorListenerTest
 	@Test
 	void applies_trueForAllContexts()
 	{
-		for (final ExternalSystemErrorContext ctx : ExternalSystemErrorContext.values())
+		for (final ExternalSystemInvocationContext ctx : ExternalSystemInvocationContext.values())
 		{
 			assertThat(listener.applies(ctx))
 					.as("applies() must return true for context %s", ctx)
@@ -110,7 +110,7 @@ public class ScriptedExportStatusErrorListenerTest
 		assertThat(before).isPresent();
 		assertThat(before.get().getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 
-		listener.onInvocationError(pInstanceId, ExternalSystemErrorContext.UNKNOWN, "Something went wrong");
+		listener.onInvocationError(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, "Something went wrong");
 
 		final Optional<ScriptedExportConversionStatus> after = repo.getLatestByPInstanceId(pInstanceId);
 		assertThat(after).isPresent();
@@ -130,7 +130,7 @@ public class ScriptedExportStatusErrorListenerTest
 		final PInstanceId unknownPInstance = PInstanceId.ofRepoId(99997);
 		assertThatCode(() -> listener.onInvocationError(
 				unknownPInstance,
-				ExternalSystemErrorContext.UNKNOWN,
+				ExternalSystemInvocationContext.UNKNOWN,
 				"Some error"))
 				.doesNotThrowAnyException();
 	}

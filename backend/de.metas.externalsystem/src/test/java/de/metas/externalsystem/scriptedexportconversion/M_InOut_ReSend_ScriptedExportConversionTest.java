@@ -25,7 +25,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.process.PInstanceId;
@@ -251,7 +251,7 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 	void externalSystemErrorContext_hasResendValue()
 	{
 		// This will fail until RESEND is added to the enum
-		assertThat(ExternalSystemErrorContext.RESEND).isNotNull();
-		assertThat(ExternalSystemErrorContext.RESEND.getCode()).isNotBlank();
+		assertThat(ExternalSystemInvocationContext.RESEND).isNotNull();
+		assertThat(ExternalSystemInvocationContext.RESEND.getCode()).isNotBlank();
 	}
 }
