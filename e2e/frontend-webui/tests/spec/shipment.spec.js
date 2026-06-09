@@ -299,7 +299,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
 
             // Step 15: Zoom to invoice candidates from sales order (Alt+6)
             // Wait for invoice candidates to be created (5 seconds)
-            await SalesOrderPage.openRelatedInvoiceCandidate(5000);
+            await SalesOrderPage.openRelatedInvoiceCandidate({ retryDelay: 5000 });
             console.log(`[${language}] Navigated to Invoice Candidates from Sales Order`);
 
             // Step 16: Verify invoice candidate window is visible
