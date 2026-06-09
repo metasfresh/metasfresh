@@ -97,12 +97,6 @@ public class PickingShipmentService
 				.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 				.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
 				.waitForShipments(false)
-				// This service is always called from within PickingJobCompleteCommand.executeInTrx(),
-				// which already holds an open transaction with M_ShipmentSchedule row locks.
-				// Requesting a new transaction inside groupSchedulesByAsyncBatch would dead-lock
-				// while waiting for the same row locks (the mass-printing self-deadlock).
-				// We therefore join the caller's transaction here.
-				.groupSchedulesInInheritedTrx(true)
 				.build());
 	}
 

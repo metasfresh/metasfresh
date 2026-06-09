@@ -170,9 +170,12 @@ public class MassPrintingService
 			final int unitsOnLU,
 			@NonNull final List<Packageable> packageables)
 	{
-		// callInThreadInheritedTrx (not callInNewTrx): all picking-job commands use this convention
-		// so every sub-call in the chain (PickingJobCompleteCommand, ShipmentService.groupSchedulesByAsyncBatch)
-		// joins the same transaction and avoids self-deadlock on M_ShipmentSchedule row-locks.
+		// callInThreadInheritedTrx: run this product's whole pack+pick+complete atomically in one
+		// transaction (the picking-job-command convention). NOTE: shipment generation inside
+		// PickingJobCompleteCommand still opens its OWN new transaction (ShipmentService.groupSchedulesByAsyncBatch
+		// uses callInNewTrx) so the async-batch assignment is committed for the async shipment / EDI consumers.
+		// There is NO M_ShipmentSchedule row-lock self-deadlock here (an earlier comment claimed one) —
+		// verified by local reproduction.
 		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, productId, unitsOnLU, packageables));
 	}
 
