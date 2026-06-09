@@ -109,15 +109,21 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("expect")
-	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
+	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations)
 	{
 		assertEnabled();
 
-		return AssertExpectationsCommand.builder()
+		// Run in the METASFRESH client/org context (mirroring createMasterdata above). The assertion
+		// queries are client-scoped — e.g. AssertHUExpectationsCommand.assertShipped uses
+		// addOnlyContextClientOrSystem() (AD_Client_ID IN (ctxClient, 0)). createMasterdata creates its
+		// data under ClientId.METASFRESH; without switching into that same context here the request runs
+		// as system (AD_Client_ID=0), so those reads (e.g. the packed-HU → sales-shipment-line lookup)
+		// filter out the METASFRESH-client rows and return empty — making shipped:true assertions fail.
+		return callInContext(() -> AssertExpectationsCommand.builder()
 				.services(services.assertExpectationsCommandServices)
 				.expectations(jsonExpectations)
 				.build()
-				.execute();
+				.execute());
 	}
 
 	@PostMapping("setSysconfigs")

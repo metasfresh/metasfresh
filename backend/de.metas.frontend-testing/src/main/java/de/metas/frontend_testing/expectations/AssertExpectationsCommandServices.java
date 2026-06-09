@@ -34,7 +34,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -55,7 +54,6 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	@NonNull private final IShipmentScheduleInvalidateRepository invalidationRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
@@ -135,36 +133,6 @@ public class AssertExpectationsCommandServices
 	public List<de.metas.handlingunits.model.I_M_InOutLine> getInOutLinesForHU(@NonNull final I_M_HU hu)
 	{
 		return huInOutDAO.retrieveInOutLinesForHU(hu);
-	}
-
-	/**
-	 * Fresh <b>in-transaction</b> read of the SALES-shipment lines ({@code M_InOut.IsSOTrx=Y}) the given
-	 * HU is currently assigned to.
-	 *
-	 * <p>Deliberately bypasses the out-of-transaction model cache (the documented {@code InTrx} cache-bypass
-	 * pattern): the shipment and its {@code M_HU_Assignment} are created by the <i>async</i>
-	 * shipment-generation workpackage in a SEPARATE transaction. An out-of-trx query (as used by the plain
-	 * {@link #getInOutLinesForHU(I_M_HU)}) returns a <i>stale empty</i> result that was cached before the
-	 * shipment existed, and the cache entry is not refreshed for the polling caller — so
-	 * {@code assertShipped} would poll forever and never observe the committed assignment. Loading the HU
-	 * and running the assignment query inside a fresh trx forces a committed DB read each call.
-	 */
-	@SuppressWarnings("deprecation") // intentional callInNewTrx — see the inline rationale below
-	public List<de.metas.handlingunits.model.I_M_InOutLine> getSalesShipmentLinesForHUInTrx(@NonNull final HuId huId)
-	{
-		// callInNewTrx (a fresh trx, NOT the caller's): the assertShipped poll loop has no open
-		// transaction, so there is no atomicity to break here. A fresh trx forces the HU + assignment
-		// queries to read COMMITTED state and bypass the out-of-trx model cache (which otherwise returns
-		// a stale empty result cached before the async shipment workpackage committed the assignment).
-		// To remove this dedicated trx in future: give IHUInOutDAO.retrieveInOutLinesForHU /
-		// IHandlingUnitsDAO.getById a documented cache-bypass overload and call that instead.
-		return trxManager.callInNewTrx(() -> huInOutDAO.retrieveInOutLinesForHU(handlingUnitsDAO.getById(huId))
-				.stream()
-				.filter(line -> {
-					final I_M_InOut inOut = line.getM_InOut();
-					return inOut != null && inOut.isSOTrx();
-				})
-				.collect(Collectors.toList()));
 	}
 
 	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
