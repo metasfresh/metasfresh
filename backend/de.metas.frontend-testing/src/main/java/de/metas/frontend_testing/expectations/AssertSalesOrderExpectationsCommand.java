@@ -51,8 +51,14 @@ class AssertSalesOrderExpectationsCommand
 	@NonNull private final MasterdataContext context;
 	@NonNull private final Map<String, JsonSalesOrderExpectation> expectations;
 
-	/** How long to poll for async-generated shipments before failing. */
-	private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(60);
+	/**
+	 * How long to poll for async-generated shipments before failing.
+	 * Shipments are produced by a background workpackage (PickingShipmentService uses
+	 * {@code waitForShipments(false)}); under loaded CI that queue can back up past a minute,
+	 * so this ceiling is generous to avoid flaky timeouts (a 60s value flaked on CI for the
+	 * mass-printing CREATE_AND_COMPLETE shippedQty / shipment assertions).
+	 */
+	private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(240);
 
 	void execute() throws InterruptedException
 	{

@@ -59,8 +59,15 @@ class AssertHUExpectationsCommand
 
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 
-	/** How long to poll for async-generated shipment line assignments before failing. */
-	private static final Duration SHIPPED_ASSERTION_TIMEOUT = Duration.ofSeconds(60);
+	/**
+	 * How long to poll for async-generated shipment line assignments before failing.
+	 * Shipment generation runs in a background workpackage (PickingShipmentService uses
+	 * {@code waitForShipments(false)}), so the M_HU_Assignment linking the packed HU to its
+	 * shipment line only appears once that workpackage completes. Locally this is a few seconds,
+	 * but under loaded CI the workpackage queue can back up well past a minute — hence the
+	 * generous ceiling (a too-short value caused the mass-printing CREATE_* specs to flake on CI).
+	 */
+	private static final Duration SHIPPED_ASSERTION_TIMEOUT = Duration.ofSeconds(240);
 
 	void execute()
 	{
