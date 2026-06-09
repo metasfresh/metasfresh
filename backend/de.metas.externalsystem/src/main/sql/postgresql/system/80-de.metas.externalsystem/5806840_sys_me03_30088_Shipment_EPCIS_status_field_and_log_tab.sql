@@ -486,3 +486,69 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=780736;
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(780736);
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
 VALUES (0, 780736, 0, 549292, 555430, 652031 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-06-09 10:12:15','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Erstellt', 80, 80, 0, TO_TIMESTAMP('2026-06-09 10:12:15','YYYY-MM-DD HH24:MI:SS'), 100);
+
+-- ===========================================================================
+-- PART 5: Window-review fixes (grid sort, config field label, translation flags)
+-- ===========================================================================
+
+-- Fix #1 (HIGH): Grid sort indicator — AD_Tab 549292 has OrderByClause='Created DESC'.
+-- metasfresh convention: DESC sort ⇒ negative SortNo (verified empirically:
+--   DateAcct DESC → SortNo=-1, DateDoc DESC → SortNo=-10, ValidFrom desc → SortNo=-2).
+-- Set SortNo=-1 on AD_Field 780736 (Created) so the WebUI grid sort indicator shows ↓.
+UPDATE AD_Field
+SET SortNo    = -1,
+    Updated   = TO_TIMESTAMP('2026-06-09 10:20:00', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy = 100
+WHERE AD_Field_ID = 780736
+;
+
+-- Fix #2 (MEDIUM/UI — must-fix): Raw technical column name shown to users.
+-- AD_Element 584101 is SHARED (2 columns, 3 fields) — do NOT touch the shared element.
+-- Apply a field-level label override via AD_Field_Trl for AD_Field 780730 only.
+UPDATE AD_Field_Trl
+SET Name        = 'Exportkonfiguration',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-09 10:20:01', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Field_ID = 780730
+  AND AD_Language IN ('de_DE', 'de_CH')
+;
+UPDATE AD_Field_Trl
+SET Name        = 'Export Configuration',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-09 10:20:02', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Field_ID = 780730
+  AND AD_Language = 'en_US'
+;
+
+-- Fix #3 (MEDIUM/LOW): IsTranslated hygiene — field-level only (shared elements untouched).
+-- AD_Element 577791 (ExportStatus) and 114 (AD_PInstance_ID) and 245 (Created) are all shared.
+-- Set IsTranslated='Y' on AD_Field_Trl rows for the three affected fields.
+
+-- ExportStatus (AD_Field 780729) — de_DE, de_CH, en_US
+UPDATE AD_Field_Trl
+SET IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-09 10:20:03', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Field_ID = 780729
+  AND AD_Language IN ('de_DE', 'de_CH', 'en_US')
+;
+
+-- AD_PInstance_ID (AD_Field 780731) — de_DE, de_CH (en_US was already 'Y')
+UPDATE AD_Field_Trl
+SET IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-09 10:20:04', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Field_ID = 780731
+  AND AD_Language IN ('de_DE', 'de_CH', 'en_US')
+;
+
+-- Created (AD_Field 780736) — de_DE (de_CH and en_US were already 'Y')
+UPDATE AD_Field_Trl
+SET IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-09 10:20:05', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Field_ID = 780736
+  AND AD_Language IN ('de_DE', 'de_CH', 'en_US')
+;
