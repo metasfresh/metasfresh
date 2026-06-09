@@ -149,4 +149,153 @@ class EDIBPartnerConfigRepositoryTest
 		assertThat(config).isNotNull();
 		assertThat(config.isINVOICExternalSystemRecipient()).isTrue();
 	}
+
+	@Test
+	void lowestSeqNo_winsAmongMatchingCandidates()
+	{
+		// Arrange: two null-location rows for the same partner, different SeqNo values.
+		// The row with the lower SeqNo (10) must win over the one with SeqNo 20.
+		AdempiereTestHelper.get().init();
+
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
+		bp.setValue("SeqTest1");
+		bp.setName("SeqTest1");
+		saveRecord(bp);
+		final BPartnerId pid = BPartnerId.ofRepoId(bp.getC_BPartner_ID());
+
+		final I_C_BPartner_Location loc = newInstance(I_C_BPartner_Location.class);
+		loc.setC_BPartner_ID(pid.getRepoId());
+		saveRecord(loc);
+		final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(pid, loc.getC_BPartner_Location_ID());
+
+		// SeqNo 10 – exact-location row (GLN = "GLN-10")
+		final I_C_BPartner_EDI_Setting s10 = newInstance(I_C_BPartner_EDI_Setting.class);
+		s10.setC_BPartner_ID(pid.getRepoId());
+		s10.setC_BPartner_Location_ID(bpl.getRepoId());
+		s10.setSeqNo(10);
+		s10.setIsEdiDesadvRecipient(true);
+		s10.setEdiDesadvRecipientGLN("GLN-10");
+		s10.setEdiDESADVSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		s10.setIsEdiInvoicRecipient(false);
+		s10.setEdiINVOICSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		saveRecord(s10);
+
+		// SeqNo 20 – another exact-location row (GLN = "GLN-20")
+		final I_C_BPartner_EDI_Setting s20 = newInstance(I_C_BPartner_EDI_Setting.class);
+		s20.setC_BPartner_ID(pid.getRepoId());
+		s20.setC_BPartner_Location_ID(bpl.getRepoId());
+		s20.setSeqNo(20);
+		s20.setIsEdiDesadvRecipient(true);
+		s20.setEdiDesadvRecipientGLN("GLN-20");
+		s20.setEdiDESADVSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		s20.setIsEdiInvoicRecipient(false);
+		s20.setEdiINVOICSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		saveRecord(s20);
+
+		// Act
+		final EDIBPartnerConfig config = EDIBPartnerConfigRepository.newInstanceForUnitTesting().getById(bpl);
+
+		// Assert: lowest SeqNo wins
+		assertThat(config.getEdiDesadvRecipientGLN()).isEqualTo("GLN-10");
+	}
+
+	@Test
+	void nullLocation_withLowestSeqNo_beatsHigherSeqNo_exactLocation()
+	{
+		// Arrange: null-location row (SeqNo 5) vs exact-location row (SeqNo 50).
+		// The null-location row has a lower SeqNo → must win.
+		AdempiereTestHelper.get().init();
+
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
+		bp.setValue("SeqTest2");
+		bp.setName("SeqTest2");
+		saveRecord(bp);
+		final BPartnerId pid = BPartnerId.ofRepoId(bp.getC_BPartner_ID());
+
+		final I_C_BPartner_Location loc = newInstance(I_C_BPartner_Location.class);
+		loc.setC_BPartner_ID(pid.getRepoId());
+		saveRecord(loc);
+		final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(pid, loc.getC_BPartner_Location_ID());
+
+		// Exact-location row – SeqNo 50, GLN = "GLN-EXACT"
+		final I_C_BPartner_EDI_Setting sExact = newInstance(I_C_BPartner_EDI_Setting.class);
+		sExact.setC_BPartner_ID(pid.getRepoId());
+		sExact.setC_BPartner_Location_ID(bpl.getRepoId());
+		sExact.setSeqNo(50);
+		sExact.setIsEdiDesadvRecipient(true);
+		sExact.setEdiDesadvRecipientGLN("GLN-EXACT");
+		sExact.setEdiDESADVSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		sExact.setIsEdiInvoicRecipient(false);
+		sExact.setEdiINVOICSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		saveRecord(sExact);
+
+		// Null-location (partner-default) row – SeqNo 5, GLN = "GLN-NULL-LOC"
+		final I_C_BPartner_EDI_Setting sNull = newInstance(I_C_BPartner_EDI_Setting.class);
+		sNull.setC_BPartner_ID(pid.getRepoId());
+		// C_BPartner_Location_ID left at 0 → null location
+		sNull.setSeqNo(5);
+		sNull.setIsEdiDesadvRecipient(true);
+		sNull.setEdiDesadvRecipientGLN("GLN-NULL-LOC");
+		sNull.setEdiDESADVSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		sNull.setIsEdiInvoicRecipient(false);
+		sNull.setEdiINVOICSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		saveRecord(sNull);
+
+		// Act
+		final EDIBPartnerConfig config = EDIBPartnerConfigRepository.newInstanceForUnitTesting().getById(bpl);
+
+		// Assert: null-location row with SeqNo 5 wins over exact-location row with SeqNo 50
+		assertThat(config.getEdiDesadvRecipientGLN()).isEqualTo("GLN-NULL-LOC");
+	}
+
+	@Test
+	void tiebreak_byLowestId_whenSeqNoEqual()
+	{
+		// Arrange: two null-location rows, same SeqNo but different record IDs.
+		// The one with the lower C_BPartner_EDI_Setting_ID must win.
+		AdempiereTestHelper.get().init();
+
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
+		bp.setValue("SeqTest3");
+		bp.setName("SeqTest3");
+		saveRecord(bp);
+		final BPartnerId pid = BPartnerId.ofRepoId(bp.getC_BPartner_ID());
+
+		final I_C_BPartner_Location loc = newInstance(I_C_BPartner_Location.class);
+		loc.setC_BPartner_ID(pid.getRepoId());
+		saveRecord(loc);
+		final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(pid, loc.getC_BPartner_Location_ID());
+
+		// Both have SeqNo 10; records are inserted in order so the first save gets the lower ID.
+		final I_C_BPartner_EDI_Setting sFirst = newInstance(I_C_BPartner_EDI_Setting.class);
+		sFirst.setC_BPartner_ID(pid.getRepoId());
+		sFirst.setC_BPartner_Location_ID(bpl.getRepoId());
+		sFirst.setSeqNo(10);
+		sFirst.setIsEdiDesadvRecipient(true);
+		sFirst.setEdiDesadvRecipientGLN("GLN-FIRST");
+		sFirst.setEdiDESADVSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		sFirst.setIsEdiInvoicRecipient(false);
+		sFirst.setEdiINVOICSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		saveRecord(sFirst);
+
+		final I_C_BPartner_EDI_Setting sSecond = newInstance(I_C_BPartner_EDI_Setting.class);
+		sSecond.setC_BPartner_ID(pid.getRepoId());
+		sSecond.setC_BPartner_Location_ID(bpl.getRepoId());
+		sSecond.setSeqNo(10);
+		sSecond.setIsEdiDesadvRecipient(true);
+		sSecond.setEdiDesadvRecipientGLN("GLN-SECOND");
+		sSecond.setEdiDESADVSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		sSecond.setIsEdiInvoicRecipient(false);
+		sSecond.setEdiINVOICSendingMode(SENDING_MODE_REPLICATION_INTERFACE);
+		saveRecord(sSecond);
+
+		// Sanity check: first record must have a lower ID than second
+		assertThat(sFirst.getC_BPartner_EDI_Setting_ID()).isLessThan(sSecond.getC_BPartner_EDI_Setting_ID());
+
+		// Act
+		final EDIBPartnerConfig config = EDIBPartnerConfigRepository.newInstanceForUnitTesting().getById(bpl);
+
+		// Assert: lower ID wins the tiebreak
+		assertThat(config.getEdiDesadvRecipientGLN()).isEqualTo("GLN-FIRST");
+	}
 }
