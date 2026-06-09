@@ -53,11 +53,14 @@ BEGIN
 			
 		inssel := TRIM (ins) || ' ' || TRIM (sel) || ' ON CONFLICT DO NOTHING';
 
-		EXECUTE inssel;
+		BEGIN
+			EXECUTE inssel;
+			GET DIAGNOSTICS v_InsertCount = ROW_COUNT;
+			raise notice 'Inserted % rows into %_Trl (%)', v_InsertCount, t.tablename, trlColumnNames;
+		EXCEPTION WHEN others THEN
+			raise warning 'add_missing_translations: skipping %_Trl insert due to: %', t.tablename, SQLERRM;
+		END;
 		v_TrlTablesCount := v_TrlTablesCount + 1;
-		
-		GET DIAGNOSTICS v_InsertCount = ROW_COUNT;
-		raise notice 'Inserted % rows into %_Trl (%)', v_InsertCount, t.tablename, trlColumnNames;
 	END LOOP;
 	
 	raise notice 'Done. Checked/Updated % translation tables', v_TrlTablesCount;
