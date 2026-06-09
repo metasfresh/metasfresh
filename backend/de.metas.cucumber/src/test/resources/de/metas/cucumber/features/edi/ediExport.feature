@@ -250,6 +250,19 @@ Feature: EDI_cctop_invoic_v export format
       | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
       | e_d_1                        | 10                                       | 100                                      | 10                                 |
 
+    # me03 #30308 — the replication-interface DESADV XML must carry the recipient GLN (resolved from
+    # the partner-default C_BPartner_EDI_Setting row, edi_setting_export_sc2) AND its other
+    # business-critical recipient/header elements. Superset check: catches a future silently-dropped
+    # export element (e.g. an EXP_FormatLine cascade-deleted by a column drop — the #30238 failure mode).
+    And the following EDI_Exp_Desadv XML carries the expected elements:
+      | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName                | OPT.Value     |
+      | e_d_1                        | C_BPartner_ID | EdiRecipientGLN        | 1234567890123 |
+      | e_d_1                        |               | C_BPartner_ID          |               |
+      | e_d_1                        |               | C_BPartner_Location_ID |               |
+      | e_d_1                        |               | ShipmentDocumentNo     |               |
+      | e_d_1                        |               | MovementDate           |               |
+      | e_d_1                        |               | EDI_Exp_Desadv_Pack    |               |
+
      #  Test Kunde 1
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.DeliveryRule |
@@ -437,3 +450,13 @@ Feature: EDI_cctop_invoic_v export format
     And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
       | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
       | e_dB_150                     | 20                                       | 100                                      | 5                                  |
+
+    # ─── RECIPIENT-GLN ASSERTION (me03 #30308) ────────────────────────────────
+    # Both replication-interface DESADV XMLs must carry the recipient GLN under <C_BPartner_ID>,
+    # resolved from bp_150's partner-default C_BPartner_EDI_Setting row (edi_setting_S150_bp1).
+    # Regression: the element vanished when #30238 dropped the C_BPartner GLN column without
+    # repointing the replication (EXP_Format) export path.
+    And the following EDI_Exp_Desadv XML carries the expected elements:
+      | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName         | OPT.Value     |
+      | e_dA_150                     | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
+      | e_dB_150                     | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
