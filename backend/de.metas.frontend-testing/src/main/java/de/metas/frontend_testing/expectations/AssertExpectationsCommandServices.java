@@ -149,8 +149,15 @@ public class AssertExpectationsCommandServices
 	 * {@code assertShipped} would poll forever and never observe the committed assignment. Loading the HU
 	 * and running the assignment query inside a fresh trx forces a committed DB read each call.
 	 */
+	@SuppressWarnings("deprecation") // intentional callInNewTrx — see the inline rationale below
 	public List<de.metas.handlingunits.model.I_M_InOutLine> getSalesShipmentLinesForHUInTrx(@NonNull final HuId huId)
 	{
+		// callInNewTrx (a fresh trx, NOT the caller's): the assertShipped poll loop has no open
+		// transaction, so there is no atomicity to break here. A fresh trx forces the HU + assignment
+		// queries to read COMMITTED state and bypass the out-of-trx model cache (which otherwise returns
+		// a stale empty result cached before the async shipment workpackage committed the assignment).
+		// To remove this dedicated trx in future: give IHUInOutDAO.retrieveInOutLinesForHU /
+		// IHandlingUnitsDAO.getById a documented cache-bypass overload and call that instead.
 		return trxManager.callInNewTrx(() -> huInOutDAO.retrieveInOutLinesForHU(handlingUnitsDAO.getById(huId))
 				.stream()
 				.filter(line -> {
