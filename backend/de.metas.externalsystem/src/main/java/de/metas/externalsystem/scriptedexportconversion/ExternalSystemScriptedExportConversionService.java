@@ -106,14 +106,6 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	@NonNull
-	public ImmutableList<ExternalSystemScriptedExportConversionConfig> getMatchingTriggerOnCompleteConfigsByTableAndClientId(@NonNull final AdTableAndClientId tableAndClientId, @NonNull final Integer recordId)
-	{
-		return externalSystemScriptedExportConversionRepository.getTriggerOnCompleteConfigsByTableAndClientIds(tableAndClientId).stream()
-				.filter(config -> isConfigMatchingRecord(config, recordId))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
 	public Map<String, String> getParameters(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			@NonNull final Properties context,
@@ -333,12 +325,12 @@ public class ExternalSystemScriptedExportConversionService
 	 *   <li>WhereClause MATCHES → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}
 	 *       + schedules the after-commit invocation (existing behaviour).</li>
 	 *   <li>WhereClause does NOT match → {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}
-	 *       (new, R2.3 — EDI-consistency: DontSend is always persisted).</li>
+	 *       (EDI-consistency: DontSend is always persisted).</li>
 	 * </ul>
 	 *
 	 * <p>Status writes run in the same transaction (no InNewTrx). The invocation scheduling
 	 * stays after-commit. A status-write failure for one config is logged and swallowed so that
-	 * document completion is never aborted (corpus-#6 pattern).
+	 * document completion is never aborted.
 	 */
 	public void recordCompleteTimeEligibilityAndScheduleInvocation(
 			@NonNull final AdTableAndClientId tableAndClientId,
@@ -359,7 +351,6 @@ public class ExternalSystemScriptedExportConversionService
 
 		recordCompleteTimeEligibilityStatusesOnly(matchingConfigs, nonMatchingConfigs, recordId);
 
-		// Schedule after-commit invocation only for matching configs
 		matchingConfigs.forEach(config -> executeInvokeScriptedExportConversionActionAfterCommit(config, recordId));
 	}
 
@@ -368,10 +359,10 @@ public class ExternalSystemScriptedExportConversionService
 	 * in the current transaction.
 	 *
 	 * <p>This method is intentionally separated from the DB-matching logic so it can be unit-tested
-	 * without a live DB (R2.3 TDD seam — the DB-driven partitioning is deferred to R8 cucumber coverage).
+	 * without a live DB.
 	 *
 	 * <p>Each status write is individually guarded: a failure for one config is logged and swallowed
-	 * so that document completion is never aborted (corpus-#6 pattern).
+	 * so that document completion is never aborted.
 	 *
 	 * @param matchingConfigs    configs whose WhereClause matches the record → written as Pending
 	 * @param nonMatchingConfigs configs whose WhereClause does NOT match the record → written as DontSend

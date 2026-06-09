@@ -140,7 +140,8 @@ import org.jetbrains.annotations.Nullable;
 		if (timing == ModelValidator.TIMING_AFTER_COMPLETE
 				&& !documentBL.isReversalDocument(po))
 		{
-			// After commit because it might be a postgrest process that is executed here, so on complete changes need to be present in db
+			// Eligibility status writes run in the current transaction; the export invocation is scheduled
+			// after-commit (a postgrest process may run it, so the completed record must be visible in the db).
 			final int recordId = po.get_ID();
 			externalSystemScriptedExportConversionService.recordCompleteTimeEligibilityAndScheduleInvocation(
 					AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())),

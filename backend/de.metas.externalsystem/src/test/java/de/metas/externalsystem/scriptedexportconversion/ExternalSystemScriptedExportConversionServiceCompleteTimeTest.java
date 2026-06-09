@@ -47,7 +47,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * TDD tests for R2.3: at complete-time, ALL trigger-on-complete configs for the record's table
+ * At complete-time, ALL trigger-on-complete configs for the record's table
  * must have an eligibility status recorded — Pending for matching configs, DontSend for non-matching ones.
  *
  * <p>The DB-SQL matching ({@code isConfigMatchingRecord}) is sealed behind the inner method
@@ -65,6 +65,8 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		// `repo` and the repo inside `exportStatusService` are distinct instances but share the
+		// POJOLookupMap singleton in unit-test mode, so writes through the service are visible via `repo`.
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
 		exportStatusService = ExternalSystemExportStatusService.newInstanceForUnitTesting();
 
@@ -288,10 +290,15 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 				ImmutableList.of(badConfig, goodConfig),
 				recordId);
 
-		// goodConfig must still have its DontSend row (badConfig's row will be absent due to the thrown exception)
+		// goodConfig must still have its DontSend row even though badConfig's write threw first
 		final Optional<ScriptedExportConversionStatus> goodEntry =
 				repo.getLatestByConfigAndRecord(goodConfigId, TableRecordReference.of(I_M_InOut.Table_Name, recordId));
 		assertThat(goodEntry).as("good config must still be processed despite bad config failure").isPresent();
 		assertThat(goodEntry.get().getStatus()).isEqualTo(ExternalSystemExportStatus.DontSend);
+
+		// badConfig's write threw, so no row was persisted for it
+		final Optional<ScriptedExportConversionStatus> badEntry =
+				repo.getLatestByConfigAndRecord(badConfigId, TableRecordReference.of(I_M_InOut.Table_Name, recordId));
+		assertThat(badEntry).as("bad config's row is absent because its status write threw").isEmpty();
 	}
 }
