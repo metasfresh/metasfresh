@@ -135,9 +135,8 @@ public class ExternalSystemScriptedExportConversionAuditWriteTest
 		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inout.getM_InOut_ID());
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(42);
 
-		final ExternalSystemParentConfigId parentId = ExternalSystemParentConfigId.ofRepoId(1);
 		final AdTableId tableId = AdTableId.ofRepoId(sourceRecord.getAD_Table_ID());
-		final ExternalSystemScriptedExportConversionConfig config = buildConfig(parentId, tableId);
+		final ExternalSystemScriptedExportConversionConfig config = buildConfig(PARENT_ID, tableId);
 
 		// Act
 		service.writeExportAudit(config, sourceRecord, pInstanceId);
