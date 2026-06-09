@@ -181,7 +181,6 @@ public class ScriptedExportStatusErrorListenerTest
 		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
 				InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
 		cfg.setAD_Table_ID(adTableId);
-		cfg.setStatus_AD_Column_ID(0);
 		cfg.setExternalSystemValue("test-error-listener");
 		cfg.setScriptIdentifier("test.js");
 		cfg.setWhereClause("1=1");

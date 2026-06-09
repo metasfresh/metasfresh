@@ -24,7 +24,7 @@ package de.metas.externalsystem;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.model.X_ExternalSystem_ScriptedExportConversion_Log;
+import de.metas.externalsystem.model.X_ExternalSystem_ScriptedExportConversion_Status;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -38,18 +38,18 @@ import java.util.Optional;
 @Getter
 public enum ExternalSystemExportStatus implements ReferenceListAwareEnum
 {
-	Pending(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Pending),
-	Enqueued(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Enqueued),
-	SendingStarted(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_SendingStarted),
-	Sent(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Sent),
-	Error(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Error),
-	Invalid(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Invalid),
-	DontSend(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_DontSend),
+	Pending(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Pending),
+	Enqueued(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Enqueued),
+	SendingStarted(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_SendingStarted),
+	Sent(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Sent),
+	Error(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Error),
+	Invalid(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Invalid),
+	DontSend(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_DontSend),
 	;
 
 	@NonNull private static final ReferenceListAwareEnums.ValuesIndex<ExternalSystemExportStatus> index = ReferenceListAwareEnums.index(values());
 
-	public static final int AD_Reference_ID = X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_AD_Reference_ID;
+	public static final int AD_Reference_ID = X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_AD_Reference_ID;
 
 	@NonNull private final String code;
 

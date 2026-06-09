@@ -145,12 +145,12 @@ public class ScriptedExportStatusWiringTest
 	// Helpers
 	// -----------------------------------------------------------------------
 
-	private I_ExternalSystem_Config_ScriptedExportConversion createConfig(final int adTableId, final int statusAdColumnId)
+	private I_ExternalSystem_Config_ScriptedExportConversion createConfig(final int adTableId, @SuppressWarnings("unused") final int statusAdColumnId)
 	{
 		final I_ExternalSystem_Config_ScriptedExportConversion cfg =
 				InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
 		cfg.setAD_Table_ID(adTableId);
-		cfg.setStatus_AD_Column_ID(statusAdColumnId);
+		// NOTE: Status_AD_Column_ID removed in R1; virtual column approach used instead (TODO R2.2)
 		cfg.setExternalSystemValue("test");
 		cfg.setScriptIdentifier("test.js");
 		cfg.setWhereClause("1=1");

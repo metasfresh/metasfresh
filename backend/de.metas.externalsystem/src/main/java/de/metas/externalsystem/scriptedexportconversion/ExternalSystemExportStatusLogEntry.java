@@ -33,14 +33,22 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 
 /**
- * Value object mapping one row of {@code ExternalSystem_ScriptedExportConversion_Log}.
+ * Value object mapping one row of {@code ExternalSystem_ScriptedExportConversion_Status}.
+ *
+ * <p>Grain: one row per (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Table_ID, Record_ID).
+ *
+ * <p>TODO(R2.2): rename class to {@code ScriptedExportConversionStatus} and promote
+ * {@code httpResponseCode}/{@code adIssueId} to typed wrappers (HttpStatus / AdIssueId).
  */
 @Value
 @Builder
 @With
 public class ExternalSystemExportStatusLogEntry
 {
-	/** DB primary key; 0 when not yet persisted. */
+	/**
+	 * DB primary key of the Status row ({@code ExternalSystem_ScriptedExportConversion_Status_ID}).
+	 * 0 when not yet persisted.
+	 */
 	int logId;
 
 	@Nullable PInstanceId pInstanceId;

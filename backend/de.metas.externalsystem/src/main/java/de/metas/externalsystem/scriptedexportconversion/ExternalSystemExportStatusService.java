@@ -24,14 +24,17 @@ package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemExportStatus;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Issue;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Manages the export-status lifecycle for scripted-export-conversion log rows.
+ * Manages the export-status lifecycle for scripted-export-conversion status rows.
  *
  * <p>The normal flow for an AFTER_COMPLETE triggered export is:
  * <pre>
@@ -58,11 +61,9 @@ import java.util.Optional;
  * The legacy {@code recordPending(pInstanceId, configId, sourceRecord)} / {@code recordEnqueued(pInstanceId)}
  * overloads remain available for callers that obtain the PInstance before creating the Pending row.
  *
- * <p>After each status write the roll-up across all configs for the same source record is
- * computed and – when the config carries a non-null {@code Status_AD_Column_ID} –
- * written back to the source record's target column.
- *
- * <p>Roll-up precedence: Error ⟫ in-flight (Pending / Enqueued / SendingStarted) ⟫ Sent
+ * <p>TODO(R2.2): deep state-machine rework — this service retains its old structure for compile
+ * compatibility; the full behavioural rework (roll-up via virtual column, AD_Issue via IErrorManager,
+ * upsert-first semantics) is scheduled for R2.2.
  */
 @Service
 @RequiredArgsConstructor
@@ -71,6 +72,9 @@ public class ExternalSystemExportStatusService
 	private static final Logger log = LogManager.getLogger(ExternalSystemExportStatusService.class);
 
 	@NonNull private final ExternalSystemExportStatusRepository repo;
+
+	// TODO(R2.2): inject ExternalSystemScriptedExportConversionRepository for config-column lookups
+	// TODO(R2.2): inject IErrorManager for AD_Issue resolution (replace inline AD_Issue query)
 
 	@VisibleForTesting
 	public static ExternalSystemExportStatusService newInstanceForUnitTesting(
@@ -85,7 +89,7 @@ public class ExternalSystemExportStatusService
 	// ------------------------------------------------------------------
 
 	/**
-	 * Creates a new log row with status {@link ExternalSystemExportStatus#Pending}.
+	 * Creates (or updates) the status row with status {@link ExternalSystemExportStatus#Pending}.
 	 */
 	public void recordPending(
 			@NonNull final PInstanceId pInstanceId,
@@ -99,12 +103,12 @@ public class ExternalSystemExportStatusService
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)
 				.build();
-		final ExternalSystemExportStatusLogEntry saved = repo.insert(entry);
+		final ExternalSystemExportStatusLogEntry saved = repo.upsert(entry);
 		writeRollUpToSourceRecord(saved);
 	}
 
 	/**
-	 * Creates a new log row with status {@link ExternalSystemExportStatus#Pending} and no PInstance yet.
+	 * Creates (or updates) the status row with status {@link ExternalSystemExportStatus#Pending} and no PInstance yet.
 	 * Called at AFTER_COMPLETE time in the interceptor, before the process is invoked.
 	 * Use {@link #bindPInstanceAndMarkEnqueued} or {@link #markInvalidByRecord} after the process completes.
 	 */
@@ -119,12 +123,12 @@ public class ExternalSystemExportStatusService
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)
 				.build();
-		final ExternalSystemExportStatusLogEntry saved = repo.insert(entry);
+		final ExternalSystemExportStatusLogEntry saved = repo.upsert(entry);
 		writeRollUpToSourceRecord(saved);
 	}
 
 	/**
-	 * Returns the distinct config IDs whose most-recent log entry for the given source record
+	 * Returns the distinct config IDs whose status row for the given source record
 	 * is not yet fully processed (i.e. neither {@link ExternalSystemExportStatus#Sent} nor
 	 * {@link ExternalSystemExportStatus#DontSend}).
 	 * Delegates to the repository; exposed here so the re-send AD process can inject only
@@ -138,10 +142,10 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Creates a new log row with status {@link ExternalSystemExportStatus#Pending} and {@code IsResend=Y},
-	 * without a PInstance yet.
+	 * Creates (or updates) the status row with status {@link ExternalSystemExportStatus#Pending} and {@code IsResend=Y}.
 	 * Called by the re-send AD process before invoking the scripted-export-conversion action for each config.
-	 * Prior attempt rows for the same (configId, sourceRecord) are <em>not</em> mutated.
+	 *
+	 * <p>TODO(R2.2): evaluate whether re-send should use insert (new row for history) or upsert; for now uses upsert.
 	 */
 	public void recordPendingAsResend(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
@@ -160,10 +164,9 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Finds the most-recent log row for (configId, sourceRecord), sets its PInstance, and transitions
+	 * Finds the status row for (configId, sourceRecord), sets its PInstance, and transitions
 	 * to {@link ExternalSystemExportStatus#Enqueued}.
-	 * Called after the process has been successfully enqueued to RabbitMQ and the PInstance is known.
-	 * No-op (no throw) when no log row exists for (configId, sourceRecord).
+	 * No-op (no throw) when no status row exists for (configId, sourceRecord).
 	 */
 	public void bindPInstanceAndMarkEnqueued(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
@@ -173,7 +176,7 @@ public class ExternalSystemExportStatusService
 		final ExternalSystemExportStatusLogEntry existing = repo.getLatestByConfigAndRecord(configId, sourceRecord).orElse(null);
 		if (existing == null)
 		{
-			log.warn("No log row found for configId={}, sourceRecord={} – skipping Enqueued transition", configId, sourceRecord);
+			log.warn("No status row found for configId={}, sourceRecord={} – skipping Enqueued transition", configId, sourceRecord);
 			return;
 		}
 		if (!existing.getStatus().isPending())
@@ -194,10 +197,9 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Finds the most-recent log row for (configId, sourceRecord) and transitions to
+	 * Finds the status row for (configId, sourceRecord) and transitions to
 	 * {@link ExternalSystemExportStatus#Invalid}.
-	 * Called when the scripted outbound process did not produce a valid Resource.
-	 * No-op (no throw) when no log row exists for (configId, sourceRecord).
+	 * No-op (no throw) when no status row exists for (configId, sourceRecord).
 	 */
 	public void markInvalidByRecord(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
@@ -207,7 +209,7 @@ public class ExternalSystemExportStatusService
 		final ExternalSystemExportStatusLogEntry existing = repo.getLatestByConfigAndRecord(configId, sourceRecord).orElse(null);
 		if (existing == null)
 		{
-			log.warn("No log row found for configId={}, sourceRecord={} – skipping Invalid transition", configId, sourceRecord);
+			log.warn("No status row found for configId={}, sourceRecord={} – skipping Invalid transition", configId, sourceRecord);
 			return;
 		}
 
@@ -220,8 +222,8 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Transitions the existing log row for the given pInstance to {@link ExternalSystemExportStatus#Enqueued}.
-	 * No-op (no throw) when no log row exists for the pInstance.
+	 * Transitions the existing status row for the given pInstance to {@link ExternalSystemExportStatus#Enqueued}.
+	 * No-op (no throw) when no status row exists for the pInstance.
 	 */
 	public void recordEnqueued(@NonNull final PInstanceId pInstanceId)
 	{
@@ -229,8 +231,8 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Transitions the log row to {@link ExternalSystemExportStatus#Sent}.
-	 * No-op (no throw) when no log row exists for the pInstance.
+	 * Transitions the status row to {@link ExternalSystemExportStatus#Sent}.
+	 * No-op (no throw) when no status row exists for the pInstance.
 	 */
 	public void markSent(@NonNull final PInstanceId pInstanceId, final int httpResponseCode)
 	{
@@ -238,15 +240,13 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Transitions the log row to {@link ExternalSystemExportStatus#Error}.
-	 * No-op (no throw) when no log row exists for the pInstance.
+	 * Transitions the status row to {@link ExternalSystemExportStatus#Error}.
+	 * No-op (no throw) when no status row exists for the pInstance.
 	 *
-	 * <p>When {@code adIssueId == 0} (caller does not know the issue ID, e.g. the error-listener
-	 * SPI path), the most-recent {@code AD_Issue} stamped with this {@code pInstanceId} is
-	 * resolved from the database and linked automatically. This closes the DoD gap: the
-	 * {@code AD_Issue} is created by {@code ExternalSystemService.createIssue()} — stamped with
-	 * {@code AD_PInstance_ID} — before any listener is notified, so the resolution always finds
-	 * the correct record.
+	 * <p>When {@code adIssueId == 0}, resolves the most-recent {@code AD_Issue} stamped with
+	 * this {@code pInstanceId} from the database.
+	 *
+	 * <p>TODO(R2.2): replace inline AD_Issue query with IErrorManager.getByPInstanceId().
 	 */
 	public void markError(
 			@NonNull final PInstanceId pInstanceId,
@@ -260,15 +260,15 @@ public class ExternalSystemExportStatusService
 		}
 		else
 		{
-			final AdIssueId resolved = repo.resolveLatestAdIssueIdByPInstanceId(pInstanceId);
-			resolvedAdIssueId = resolved != null ? resolved.getRepoId() : 0;
+			// TODO(R2.2): replace with IErrorManager call
+			resolvedAdIssueId = resolveLatestAdIssueIdByPInstanceId(pInstanceId);
 		}
 		updateStatus(pInstanceId, ExternalSystemExportStatus.Error, 0, resolvedAdIssueId, message);
 	}
 
 	/**
-	 * Transitions the log row to {@link ExternalSystemExportStatus#Invalid}.
-	 * No-op (no throw) when no log row exists for the pInstance.
+	 * Transitions the status row to {@link ExternalSystemExportStatus#Invalid}.
+	 * No-op (no throw) when no status row exists for the pInstance.
 	 */
 	public void markInvalid(
 			@NonNull final PInstanceId pInstanceId,
@@ -282,7 +282,7 @@ public class ExternalSystemExportStatusService
 	// ------------------------------------------------------------------
 
 	/**
-	 * Computes the aggregate roll-up status from a set of log entries
+	 * Computes the aggregate roll-up status from a set of status entries
 	 * (one per config, typically the latest attempt).
 	 *
 	 * <p>Precedence: Error ⟫ in-flight (Pending/Enqueued/SendingStarted) ⟫ Sent
@@ -331,7 +331,7 @@ public class ExternalSystemExportStatusService
 		if (!existing.isPresent())
 		{
 			// No matching row for this pInstance — silently ignore; the caller may have skipped recordPending
-			log.debug("No log row found for pInstanceId={}, status={} – skipping", pInstanceId, newStatus);
+			log.debug("No status row found for pInstanceId={}, status={} – skipping", pInstanceId, newStatus);
 			return;
 		}
 
@@ -346,38 +346,33 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Writes the computed roll-up status code into the source record's target column,
-	 * if the config has a {@code Status_AD_Column_ID} set.
+	 * Writes the computed roll-up status code into the source record's target column.
+	 *
+	 * <p>TODO(R2.2): The _Status table exposes ExportStatus as a virtual column on the source record;
+	 * write-back via a separate column may no longer be needed. This method is a stub that
+	 * preserves existing behaviour (no-op when no column configured) until R2.2 rework.
 	 * All failure modes are caught and logged – never throws.
 	 */
 	private void writeRollUpToSourceRecord(@NonNull final ExternalSystemExportStatusLogEntry entry)
 	{
-		try
-		{
-			final String columnName = repo.getStatusColumnNameForConfig(entry.getConfigId());
-			if (columnName == null)
-			{
-				return; // no target column configured – log-rows-only mode
-			}
+		// TODO(R2.2): replace with virtual-column approach or delegate to ExternalSystemScriptedExportConversionRepository
+		// For now: no-op — the Status_AD_Column_ID roll-up write-back is removed with the old Log table.
+		// The virtual column on _Status makes this unnecessary.
+	}
 
-			final TableRecordReference sourceRecord = entry.getSourceRecord();
-			final List<ExternalSystemExportStatusLogEntry> allEntries =
-					repo.getLatestBySourceRecord(sourceRecord);
-			final Map<ExternalSystemScriptedExportConversionConfigId, ExternalSystemExportStatusLogEntry> latestPerConfig =
-					new LinkedHashMap<>();
-			for (final ExternalSystemExportStatusLogEntry e : allEntries)
-			{
-				latestPerConfig.putIfAbsent(e.getConfigId(), e);
-			}
-			final ExternalSystemExportStatus rollUp =
-					computeRollUp(ImmutableList.copyOf(latestPerConfig.values()));
-
-			repo.writeStatusToSourceRecord(sourceRecord, columnName, rollUp.getCode());
-		}
-		catch (final Exception e)
-		{
-			// never throw – log the failure only
-			log.warn("Failed to write roll-up status for entry {}: {}", entry, e.getMessage(), e);
-		}
+	/**
+	 * Resolves the most-recent {@code AD_Issue_ID} created for the given {@code AD_PInstance_ID}.
+	 *
+	 * <p>TODO(R2.2): replace with {@code IErrorManager.getByPInstanceId()} call.
+	 */
+	private int resolveLatestAdIssueIdByPInstanceId(@NonNull final PInstanceId pInstanceId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_PInstance_ID, pInstanceId.getRepoId())
+				.orderByDescending(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.create()
+				.firstOptional(I_AD_Issue.class)
+				.map(issue -> issue.getAD_Issue_ID())
+				.orElse(0);
 	}
 }

@@ -23,7 +23,7 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.externalsystem.model.X_ExternalSystem_ScriptedExportConversion_Log;
+import de.metas.externalsystem.model.X_ExternalSystem_ScriptedExportConversion_Status;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -51,13 +51,13 @@ class ExternalSystemExportStatusTest
 	void testExactlySevenCodesMatchingXConstants()
 	{
 		final Set<String> expectedCodes = ImmutableSet.of(
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Pending,
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Enqueued,
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_SendingStarted,
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Sent,
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Error,
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Invalid,
-				X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_DontSend
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Pending,
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Enqueued,
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_SendingStarted,
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Sent,
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Error,
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Invalid,
+				X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_DontSend
 		);
 
 		final Set<String> actualCodes = Arrays.stream(ExternalSystemExportStatus.values())
@@ -72,19 +72,19 @@ class ExternalSystemExportStatusTest
 	void testIndividualCodes()
 	{
 		assertThat(ExternalSystemExportStatus.Pending.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Pending);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Pending);
 		assertThat(ExternalSystemExportStatus.Enqueued.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Enqueued);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Enqueued);
 		assertThat(ExternalSystemExportStatus.SendingStarted.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_SendingStarted);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_SendingStarted);
 		assertThat(ExternalSystemExportStatus.Sent.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Sent);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Sent);
 		assertThat(ExternalSystemExportStatus.Error.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Error);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Error);
 		assertThat(ExternalSystemExportStatus.Invalid.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_Invalid);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_Invalid);
 		assertThat(ExternalSystemExportStatus.DontSend.getCode())
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_DontSend);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_DontSend);
 	}
 
 	/** Predicate methods: isError() */
@@ -224,6 +224,6 @@ class ExternalSystemExportStatusTest
 	void testAdReferenceId()
 	{
 		assertThat(ExternalSystemExportStatus.AD_Reference_ID)
-				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Log.EXPORTSTATUS_AD_Reference_ID);
+				.isEqualTo(X_ExternalSystem_ScriptedExportConversion_Status.EXPORTSTATUS_AD_Reference_ID);
 	}
 }
