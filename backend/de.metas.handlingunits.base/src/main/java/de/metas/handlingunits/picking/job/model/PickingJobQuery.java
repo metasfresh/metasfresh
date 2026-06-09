@@ -110,7 +110,7 @@ public class PickingJobQuery
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
-				.excludeFullyOnDraftShipment(true)
+				.excludeNothingToPick(true)
 				.scannedProductCodes(this.getScannedProductCodes())
 				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
