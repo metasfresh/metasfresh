@@ -288,7 +288,7 @@ UPDATE public.ExternalSystem_ScriptedExportConversion_Status SET IsResend='N' WH
 /* DDL */ SELECT public.db_alter_table('ExternalSystem_ScriptedExportConversion_Status','ALTER TABLE public.ExternalSystem_ScriptedExportConversion_Status ALTER COLUMN IsResend SET NOT NULL');
 
 -- ============================================================================
--- 4.17) AD_Column for IsResend — reuses AD_Element 584957 (created by 5806790_Log script)
+-- 4.17) AD_Column for IsResend — reuses AD_Element 584957 (created in section 3.14b above)
 -- ============================================================================
 -- ID 592789 allocated from idserver.metas.de on 2026-06-09
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version)
