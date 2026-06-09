@@ -30,7 +30,7 @@
 --   584101 ExternalSystem_Config_ScriptedExportConversion_ID
 --   114  AD_PInstance_ID  | 2887 AD_Issue_ID
 --   577791 ExportStatus (existing element)
---   584955 StatusMessage  | 584956 HttpResponseCode | 584957 IsResend
+--   584955 StatusMessage  | 584956 HttpResponseCode | 584957 IsResend  (created in this script, section 3.14b)
 --
 -- IDs allocated from idserver.metas.de on 2026-06-09:
 --   AD_Table   542617
@@ -188,6 +188,60 @@ VALUES (0,592786 /*From ID Server*/,2887,0,19,542617,'AD_Issue_ID',TO_TIMESTAMP(
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=592786 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID);
 /* DDL */ select update_Column_Translation_From_AD_Element(2887);
 
+-- ============================================================================
+-- 3.14b) Relocated AD_Elements: 584955 StatusMessage, 584956 HttpResponseCode,
+--        584957 IsResend — originally in the now-deleted 5806790 Log script.
+--        Placed here (before the AD_Column inserts that reference them) to make
+--        this script self-contained on a fresh DB apply.
+-- ============================================================================
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+VALUES (0,584955 /*From ID Server*/,0,'StatusMessage',TO_TIMESTAMP('2026-06-08 11:00:04','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','Status-Meldung','Status-Meldung',TO_TIMESTAMP('2026-06-08 11:00:04','YYYY-MM-DD HH24:MI:SS'),100)
+ON CONFLICT (AD_Element_ID) DO NOTHING
+;
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+FROM AD_Language l, AD_Element t
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584955
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Status Message', PrintName='Status Message',
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:15','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language='en_US' AND AD_Element_ID=584955;
+
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+VALUES (0,584956 /*From ID Server*/,0,'HttpResponseCode',TO_TIMESTAMP('2026-06-08 11:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','HTTP-Antwortcode','HTTP-Antwortcode',TO_TIMESTAMP('2026-06-08 11:00:05','YYYY-MM-DD HH24:MI:SS'),100)
+ON CONFLICT (AD_Element_ID) DO NOTHING
+;
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+FROM AD_Language l, AD_Element t
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584956
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='HTTP Response Code', PrintName='HTTP Response Code',
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language='en_US' AND AD_Element_ID=584956;
+
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+VALUES (0,584957 /*From ID Server*/,0,'IsResend',TO_TIMESTAMP('2026-06-08 11:00:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','Erneut gesendet','Erneut gesendet',TO_TIMESTAMP('2026-06-08 11:00:06','YYYY-MM-DD HH24:MI:SS'),100)
+ON CONFLICT (AD_Element_ID) DO NOTHING
+;
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+FROM AD_Language l, AD_Element t
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584957
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Resend', PrintName='Resend',
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:17','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language='en_US' AND AD_Element_ID=584957;
+
+-- Mark de_DE / de_CH as actively translated (base German text already correct)
+UPDATE AD_Element_Trl SET IsTranslated='Y',
+  Updated=TO_TIMESTAMP('2026-06-08 11:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language IN ('de_DE','de_CH')
+    AND AD_Element_ID IN (584955, 584956, 584957);
+
 -- 3.15 HttpResponseCode (nullable integer) ------------------------------------
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version)
 VALUES (0,592787 /*From ID Server*/,584956,0,11,542617,'HttpResponseCode',TO_TIMESTAMP('2026-06-09 09:01:14','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.externalsystem',10,'Y','N','N','N','N','N','N','N','N','N','N','Y','N','Y','HTTP-Antwortcode','NP',0,TO_TIMESTAMP('2026-06-09 09:01:14','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -202,7 +256,7 @@ VALUES (0,592788 /*From ID Server*/,584955,0,10,542617,'StatusMessage',TO_TIMEST
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=592788 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID);
 /* DDL */ select update_Column_Translation_From_AD_Element(584955);
 
--- NOTE: IsResend column reuses element 584957 (already created by sibling script 5806790_sys_ExternalSystem_ScriptedExportConversion_Log.sql)
+-- NOTE: IsResend column reuses AD_Element 584957 (created by the relocated block above, section 3.14b).
 -- A fresh AD_Column ID is needed for the column on THIS table; see section 4.17 below.
 
 -- ============================================================================
