@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
+import de.metas.product.PackageDimensions;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,11 +60,16 @@ public class InOutPackageRepository
 		mPackage.setShipDate(null);
 		mPackage.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		mPackage.setC_BPartner_Location_ID(inOut.getC_BPartner_Location_ID());
+		mPackage.setAD_User_ID(inOut.getAD_User_ID());
 		mPackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mPackage.setPOReference(inOut.getPOReference());
 		mPackage.setTrackingInfo(createPackageRequest.getTrackingCode());
 		mPackage.setPackageWeight(createPackageRequest.getWeightInKg());
 		mPackage.setTrackingURL(createPackageRequest.getTrackingURL());
+		final PackageDimensions packageDimensions = createPackageRequest.getPackageDimensions();
+		mPackage.setLengthInCm(packageDimensions.getLengthInCM());
+		mPackage.setHeightInCm(packageDimensions.getHeightInCM());
+		mPackage.setWidthInCm(packageDimensions.getWidthInCM());
 
 		InterfaceWrapperHelper.save(mPackage);
 

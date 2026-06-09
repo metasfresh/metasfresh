@@ -36,14 +36,10 @@ import javax.annotation.Nullable;
 public class WorkflowLauncher
 {
 	@NonNull MobileApplicationId applicationId;
-
 	@NonNull WorkflowLauncherCaption caption;
-
 	@Nullable WFProcessId startedWFProcessId;
 	@Nullable JsonTestId testId;
-
-	@Builder.Default
-	@NonNull Params wfParameters = Params.EMPTY;
-
+	@NonNull @Builder.Default Params wfParameters = Params.EMPTY;
+	@Nullable WorkflowLauncherIndicator indicator;
 	boolean partiallyHandledBefore;
 }

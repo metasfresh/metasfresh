@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
+import './utils/diagnostics'; // White screen diagnostic logging - type hilfe() in console
+import { logDiagEvent } from './utils/diagnostics';
 import App from './containers/App';
 import { ProvideAuth } from './hooks/useAuth';
 import { historyDoubleBackOnPopstate } from './utils';
@@ -43,5 +45,6 @@ ReactDOM.render(
 // to deal with this case we added a `popstate` listener that will go to the correct page in history skipping
 // the case when the URL and the view are the same when the back button is pressed
 window.addEventListener('popstate', () => {
+  logDiagEvent('popstate', {});
   historyDoubleBackOnPopstate(store);
 });

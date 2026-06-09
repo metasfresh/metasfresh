@@ -11,7 +11,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
@@ -32,7 +32,7 @@ public class M_PriceList_Create extends JavaProcess implements IProcessPrecondit
 {
 	// Services
 	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final transient IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private  final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	@Override
@@ -100,7 +100,7 @@ public class M_PriceList_Create extends JavaProcess implements IProcessPrecondit
 		// NOTE: we assume the ASI was set when the initial copy function was executed
 
 		final I_M_AttributeSetInstance sourceASI = productPrice.getM_AttributeSetInstance();
-		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);
+		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : asiBL.copy(sourceASI);
 
 		productPrice.setM_AttributeSetInstance(targetASI);
 		InterfaceWrapperHelper.save(productPrice);

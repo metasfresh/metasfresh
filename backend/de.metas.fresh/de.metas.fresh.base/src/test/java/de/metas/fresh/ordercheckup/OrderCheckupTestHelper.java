@@ -28,7 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
@@ -68,7 +67,7 @@ public class OrderCheckupTestHelper
 		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 
 		printOutputFacade = new PrintOutputFacade(
-				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
+				new PrintingDataFactory(new HardwarePrinterRepository(), ArchiveFileNameService.newInstanceForUnitTesting()),
 				new PrintingDataToPDFFileStorer());
 	}
 

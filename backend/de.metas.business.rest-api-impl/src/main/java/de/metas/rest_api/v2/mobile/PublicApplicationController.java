@@ -22,23 +22,33 @@
 
 package de.metas.rest_api.v2.mobile;
 
+import de.metas.common.rest_api.v2.i18n.JsonMessages;
+import de.metas.i18n.IMsgBL;
 import de.metas.mobile.MobileAuthMethod;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfigService;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.security.AuthResolution;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import lombok.NonNull;
+import org.compiere.util.Env;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
 
 @RestController
 @RequestMapping(PublicApplicationController.ENDPOINT)
 public class PublicApplicationController
 {
 	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/public/mobile";
+	private static final String MSG_PREFIX = "mobileui.frontend.";
 
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final MobileConfigService configService;
 
 	public PublicApplicationController(
@@ -59,5 +69,18 @@ public class PublicApplicationController
 				.defaultAuthMethod(config.getDefaultAuthMethod())
 				.availableAuthMethods(MobileAuthMethod.all())
 				.build();
+	}
+
+	@GetMapping("/messages")
+	public JsonMessages getMessages(
+			@RequestParam(name = "lang", required = false) @Nullable final String adLanguageParam)
+	{
+		final String adLanguage = StringUtils.trimBlankToOptional(adLanguageParam).orElseGet(Env::getADLanguageOrBaseLanguage);
+
+		return msgBL.messagesTree()
+				.adMessagePrefix(MSG_PREFIX)
+				.removePrefix(true)
+				.load(adLanguage)
+				.toJson();
 	}
 }

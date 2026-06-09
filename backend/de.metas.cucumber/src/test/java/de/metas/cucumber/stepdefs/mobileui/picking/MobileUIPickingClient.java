@@ -110,10 +110,9 @@ public class MobileUIPickingClient
 		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
 		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
 		return pickingJob.getLuPickingTarget(null);
-
 	}
 
-	public JsonWFProcess pickLine(JsonPickingStepEvent request)
+	public JsonWFProcess pickLine(@NonNull final JsonPickingStepEvent request)
 	{
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);

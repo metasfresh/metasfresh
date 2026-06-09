@@ -83,6 +83,13 @@ public class PackageableQuery
 	 */
 	@Builder.Default boolean excludeLockedForProcessing = false; // false by default to be backward-compatibile
 
+	/**
+	 * Excludes records that have nothing left to pick, i.e. {@code QtyToDeliver <= 0} (the qty is already
+	 * fully picked - completed, shipped, or bound to a draft shipment - so there is nothing for the picker
+	 * to do). Records with {@code QtyToDeliver > 0} are kept.
+	 */
+	@Builder.Default boolean excludeNothingToPick = false; // false by default to be backward-compatible
+
 	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
 

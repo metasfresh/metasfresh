@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for I_ElementValue
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_I_ElementValue extends org.compiere.model.PO implements I_I_ElementValue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1988684738L;
+	private static final long serialVersionUID = 893353566L;
 
     /** Standard Constructor */
     public X_I_ElementValue (final Properties ctx, final int I_ElementValue_ID, @Nullable final String trxName)
@@ -357,6 +357,18 @@ public class X_I_ElementValue extends org.compiere.model.PO implements I_I_Eleme
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setOrgValue (final @Nullable java.lang.String OrgValue)
+	{
+		set_Value (COLUMNNAME_OrgValue, OrgValue);
+	}
+
+	@Override
+	public java.lang.String getOrgValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_OrgValue);
 	}
 
 	@Override

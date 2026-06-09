@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 @ghActions:run_on_executor7
 Feature: picking rest controller tests
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -66,6 +69,8 @@ Feature: picking rest controller tests
       | PS_1       | 063.1       | Y         |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do the picking, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -98,6 +103,8 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do the picking, log out, log back in with the same user, complete the picking => ship the goods
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -149,9 +156,11 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do the whole picking, log out, log back in with a different user, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | Identifier     | Name           | EMail                    | Login          | AD_Role_ID  |
       | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -202,9 +211,11 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do nothing, log out, log back in with a different user, do the whole picking, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | Identifier     | Name           | EMail                    | Login          | AD_Role_ID  |
       | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
@@ -251,9 +262,11 @@ Feature: picking rest controller tests
       | pickingShipmentSchedule          | shipment_1            | CO            |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   Scenario: start a fresh picking job, do a partial pick, log out, log back in with a different user, do the picking, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | Identifier     | Name           | EMail                    | Login          | AD_Role_ID  |
       | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy |

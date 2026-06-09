@@ -1,9 +1,14 @@
 @from:cucumber
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8032_Manufacturing_Workflow_Activity_Raw_Materials_Issue
+@F8032
 @ghActions:run_on_executor6
 Feature: Export PP_Order to LeichMehl config
+## F8032: PP Order
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-03T13:30:13+01:00[Europe/Berlin]
 

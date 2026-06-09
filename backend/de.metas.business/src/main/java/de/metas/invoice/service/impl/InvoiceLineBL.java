@@ -503,6 +503,34 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
+	public void recomputePriceActual(final I_C_InvoiceLine invoiceLine)
+	{
+		final CurrencyPrecision pricePrecision = extractPrecision(invoiceLine);
+		if (pricePrecision == null)
+		{
+			return;
+		}
+
+		InvoiceLinePriceAndDiscount.of(invoiceLine, pricePrecision)
+				.withUpdatedPriceActual()
+				.applyTo(invoiceLine);
+	}
+
+	@Nullable
+	private CurrencyPrecision extractPrecision(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		if (invoiceLine.getC_Invoice_ID() <= 0)
+		{
+			return null;
+		}
+
+		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return priceListBL.getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
+	}
+
+
+	@Override
 	public void updatePrices(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);

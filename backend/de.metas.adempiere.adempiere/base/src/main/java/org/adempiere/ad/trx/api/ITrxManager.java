@@ -280,6 +280,8 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void runAfterCommit(final Runnable runnable);
 
+	void runAfterClose(@NonNull Consumer<ITrx> runnable);
+
 	/**
 	 * Commit transaction for given <code>trxName</code>.
 	 *

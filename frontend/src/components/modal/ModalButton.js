@@ -20,6 +20,11 @@ const ModalButton = ({
       onMouseEnter={() => onShowTooltip && onShowTooltip(name)}
       onMouseLeave={() => onHideTooltip && onHideTooltip(name)}
       disabled={disabled}
+      data-testid={
+        name
+          ? `modal-${name.toLowerCase().replace(/\s+/g, '-')}`
+          : 'modal-unnamed'
+      }
     >
       {children}
     </button>

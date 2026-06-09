@@ -83,6 +83,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -149,6 +150,18 @@ public class PPOrderBL implements IPPOrderBL
 	public String getDocumentNoById(@NonNull final PPOrderId ppOrderId)
 	{
 		return getById(ppOrderId).getDocumentNo();
+	}
+
+	@Override
+	public I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId)
+	{
+		return orderBOMService.getOrderBOMLineById(orderBOMLineId);
+	}
+
+	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
+	{
+		return orderBOMService.getOrderBOMLines(orderId);
 	}
 
 	@Override
@@ -339,11 +352,11 @@ public class PPOrderBL implements IPPOrderBL
 			@NonNull final DocSubType docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-																	  .docBaseType(docBaseType.toDocBaseType())
-																	  .docSubType(docSubType)
-																	  .adClientId(ppOrder.getAD_Client_ID())
-																	  .adOrgId(ppOrder.getAD_Org_ID())
-																	  .build());
+				.docBaseType(docBaseType.toDocBaseType())
+				.docSubType(docSubType)
+				.adClientId(ppOrder.getAD_Client_ID())
+				.adOrgId(ppOrder.getAD_Org_ID())
+				.build());
 
 		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
@@ -504,13 +517,13 @@ public class PPOrderBL implements IPPOrderBL
 						.build();
 
 				costCollectorsService.createActivityControl(ActivityControlCreateRequest.builder()
-																	.order(orderRecord)
-																	.orderActivity(activity)
-																	.movementDate(reportDate)
-																	.qtyMoved(qtyToProcess)
-																	.durationSetup(setupTimeRemaining)
-																	.duration(durationRemaining.getDuration())
-																	.build());
+						.order(orderRecord)
+						.orderActivity(activity)
+						.movementDate(reportDate)
+						.qtyMoved(qtyToProcess)
+						.durationSetup(setupTimeRemaining)
+						.duration(durationRemaining.getDuration())
+						.build());
 			}
 		}
 	}

@@ -32,9 +32,9 @@ import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 
 /**
- * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set.
+ * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set - <b>unless</b> the caller already set the respective property to the request-item "explicitly".
  */
 @Service
 public class JsonRequestConsolidateService
@@ -145,7 +145,7 @@ public class JsonRequestConsolidateService
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
-				if (jsonLocation.isGlnSet())
+				if (!jsonLocation.isGlnSet())
 				{
 					jsonLocation.setGln(identifierString.asGLN().getCode());
 				}

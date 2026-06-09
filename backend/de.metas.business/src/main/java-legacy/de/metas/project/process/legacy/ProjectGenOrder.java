@@ -25,6 +25,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_C_ProjectLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -46,6 +49,8 @@ import de.metas.process.ProcessInfoParameter;
 @Deprecated
 public class ProjectGenOrder extends JavaProcess
 {
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 	/**	Project ID from project directly		*/
 	private int		m_C_Project_ID = 0;
 
@@ -112,7 +117,7 @@ public class ProjectGenOrder extends JavaProcess
 				if (line.getPlannedPrice() != null && line.getPlannedPrice().compareTo(Env.ZERO) != 0)
 					ol.setPrice(line.getPlannedPrice());
 				updateDiscount(ol);
-				ol.setTax();
+				orderLineBL.setTax(ol);
 				if (ol.save())
 					count++;
 			}	//	for all lines

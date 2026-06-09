@@ -22,7 +22,7 @@
 
 package de.metas.shipper.gateway.dpd.util;
 
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

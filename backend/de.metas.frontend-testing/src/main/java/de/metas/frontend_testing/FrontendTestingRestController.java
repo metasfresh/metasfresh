@@ -4,10 +4,15 @@ import de.metas.Profiles;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
+import de.metas.frontend_testing.huQRCode.GetHUQRCodeCommand;
+import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeRequest;
+import de.metas.frontend_testing.huQRCode.JsonGetHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -47,6 +52,7 @@ public class FrontendTestingRestController
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private boolean isEnabled()
 	{
@@ -76,7 +82,7 @@ public class FrontendTestingRestController
 		}
 	}
 
-	private <T> T callInContext(Supplier<T> callable)
+	private <T> T callInContext(@NonNull final Supplier<T> callable)
 	{
 		assertEnabled();
 
@@ -112,5 +118,27 @@ public class FrontendTestingRestController
 				.expectations(jsonExpectations)
 				.build()
 				.execute();
+	}
+
+	@PostMapping("setSysconfigs")
+	public void setSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> sysconfigs)
+	{
+		callInContext(() -> {
+			SysconfigCommand.builder()
+					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
+	}
+
+	@PostMapping("getHUQRCode")
+	public JsonGetHUQRCodeResponse getHUQRCode(@RequestBody @NonNull final JsonGetHUQRCodeRequest request)
+	{
+		return callInContext(() -> GetHUQRCodeCommand.builder()
+				.huQRCodesService(huQRCodesService)
+				.request(request)
+				.build()
+				.execute());
 	}
 }

@@ -1,0 +1,130 @@
+{
+  "result": [
+    {
+      "id": 1,
+      "externalLineId": "dhl_1",
+      "externalHeaderId": "dhl_1",
+      "poReference": "ref_12301",
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 2,
+          "code": "G0001",
+          "globalId": null,
+          "active": true,
+          "name": "Test Kunde 1",
+          "companyName": "Testkunde Kunde 1",
+          "language": "de_DE",
+          "group": "Standard",
+          "vendor": false,
+          "customer": true,
+          "paymentRule": "OnCredit",
+          "company": true,
+          "vatId": null,
+          "metasfreshUrl": "http://localhost:3000/window/123/2",
+          "changeInfo": {
+            "createdMillis": 1436877414000,
+            "createdBy": 100,
+            "lastUpdatedMillis": 1440098714000,
+            "lastUpdatedBy": 100
+          }
+        },
+        "location": {
+          "metasfreshId": 3,
+          "name": "Testadresse 3",
+          "bpartnerName": null,
+          "active": true,
+          "address1": "teststraße 996",
+          "postal": "45678",
+          "city": "teststadt 3",
+          "gln": null,
+          "countryCode": "DE",
+          "shipTo": true,
+          "shipToDefault": true,
+          "billTo": true,
+          "billToDefault": true,
+          "ephemeral": false,
+          "visitorsAddress": false,
+          "handoverLocation": false,
+          "remitTo": false,
+          "replicationLookupDefault": false,
+          "vatId": null,
+          "changeInfo": {
+            "createdMillis": 1436877663000,
+            "createdBy": 100,
+            "lastUpdatedMillis": 1438079387000,
+            "lastUpdatedBy": 100
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 4,
+          "code": "G0001",
+          "globalId": null,
+          "active": true,
+          "name": "Test Kunde 1",
+          "companyName": "Testkunde Kunde 1",
+          "language": "de_DE",
+          "group": "Standard",
+          "vendor": false,
+          "customer": true,
+          "paymentRule": "OnCredit",
+          "company": true,
+          "vatId": null,
+          "metasfreshUrl": "http://localhost:3000/window/123/4",
+          "changeInfo": {
+            "createdMillis": 1436877414000,
+            "createdBy": 100,
+            "lastUpdatedMillis": 1440098714000,
+            "lastUpdatedBy": 100
+          }
+        },
+        "location": {
+          "metasfreshId": 5,
+          "name": "Testadresse 3",
+          "bpartnerName": null,
+          "active": true,
+          "address1": "teststraße 996",
+          "postal": "45678",
+          "city": "teststadt 3",
+          "gln": null,
+          "countryCode": "DE",
+          "shipTo": true,
+          "shipToDefault": true,
+          "billTo": true,
+          "billToDefault": true,
+          "ephemeral": false,
+          "visitorsAddress": false,
+          "handoverLocation": false,
+          "remitTo": false,
+          "replicationLookupDefault": false,
+          "vatId": null,
+          "changeInfo": {
+            "createdMillis": 1436877663000,
+            "createdBy": 100,
+            "lastUpdatedMillis": 1438079387000,
+            "lastUpdatedBy": 100
+          }
+        }
+      },
+      "dateOrdered": "2022-12-12",
+      "datePromised": "2022-12-12",
+      "dateCandidate": "2025-10-28",
+      "flatrateConditionsId": 0,
+      "productId": 6,
+      "productDescription": null,
+      "qty": 1,
+      "uomId": 8,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": -1,
+      "pricingSystemId": 7,
+      "price": 2.0,
+      "discount": 0,
+      "warehouseDestId": -1,
+      "jsonOrderLineGroup": null,
+      "description": null,
+      "line": 0,
+      "orgCode": "001"
+    }
+  ]
+}

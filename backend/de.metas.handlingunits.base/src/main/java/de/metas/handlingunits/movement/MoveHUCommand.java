@@ -213,14 +213,14 @@ public class MoveHUCommand
 	{
 		if (requestItem.getNumberOfTUs() == null || requestItem.getNumberOfTUs().isOne())
 		{
-			final HuId splitHuId = huTransformService.extractToTopLevel(requestItem.getHuIdAndQRCode().getHuId(),
-					requestItem.getHuIdAndQRCode().getHuQRCode());
+			final HuId splitHuId = huTransformService.extractToTopLevel(requestItem.getHuId(), requestItem.getHuQRCode());
 			return Stream.of(splitHuId);
 		}
-		return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
-						requestItem.getHuIdAndQRCode().getHuQRCode(),
+		return huTransformService.extractFromAggregatedByQrCode(
+						requestItem.getHuId(),
+						requestItem.getHuQRCode(),
 						requestItem.getNumberOfTUs(),
-						getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuIdAndQRCode().getHuId()).orElse(null))
+						getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuId()).orElse(null))
 				.stream();
 	}
 

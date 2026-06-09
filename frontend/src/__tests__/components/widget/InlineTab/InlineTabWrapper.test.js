@@ -10,8 +10,6 @@ import viewHandler from '../../../../reducers/viewHandler';
 import InlineTabWrapper, {
   InlineTabWrapper as DisconnectedInlineTabWrapper
 } from '../../../../components/widget/InlineTabWrapper';
-import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../../test_setup/fixtures/keymap.json';
 import {
   ShortcutProvider
 } from '../../../../components/keyshortcuts/ShortcutProvider';
@@ -101,7 +99,7 @@ describe('InlineTabWrapper component', () => {
         .reply(200, tabData);
 
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <InlineTabWrapper {...props} />
           </Provider>
@@ -133,7 +131,7 @@ describe('InlineTabWrapper component', () => {
       .reply(200, tabData);
 
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTabWrapper {...props} />
         </Provider>
@@ -172,7 +170,7 @@ describe('InlineTabWrapper component', () => {
       .reply(200, tabData);
 
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTabWrapper {...props} />
         </Provider>
@@ -218,7 +216,7 @@ describe('InlineTabWrapper component', () => {
       .reply(200, tabData);
 
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTabWrapper {...props} />
         </Provider>
@@ -252,7 +250,7 @@ describe('InlineTabWrapper component', () => {
       .reply(200, tabData);
 
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <InlineTabWrapper {...props} />
         </Provider>

@@ -80,10 +80,20 @@ public class UserId implements RepoIdAware
 		return id != null ? id : UserId.SYSTEM;
 	}
 
+	/**
+	 * Will be deprecated.
+	 * Consider using {#ofRegularUserRepoIdOrNull(Integer)}
+	 */
 	@Nullable
 	public static UserId ofRepoIdOrNullIfSystem(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	@Nullable
+	public static UserId ofRegularUserRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && isRegularUser(repoId) ? ofRepoId(repoId) : null;
 	}
 
 	public static Optional<UserId> optionalOfRepoId(final int repoId)
@@ -122,13 +132,11 @@ public class UserId implements RepoIdAware
 		return repoId;
 	}
 
-	public boolean isSystemUser()
-	{
-		return repoId == SYSTEM.repoId;
-	}
+	public boolean isSystemUser() {return isSystemUser(repoId);}
 
-	public boolean isRegularUser()
-	{
-		return !isSystemUser();
-	}
+	private static boolean isSystemUser(final int repoId) {return repoId == SYSTEM.repoId;}
+
+	public boolean isRegularUser() {return !isSystemUser();}
+
+	private static boolean isRegularUser(int repoId) {return !isSystemUser(repoId);}
 }

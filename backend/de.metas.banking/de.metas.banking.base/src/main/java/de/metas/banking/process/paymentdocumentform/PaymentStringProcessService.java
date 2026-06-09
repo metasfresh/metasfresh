@@ -148,6 +148,11 @@ public class PaymentStringProcessService
 			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_INVOICE_SELECTED));
 		}
 
+		if (!invoice.isFinancial())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason( "Only financial invoices are supported");
+		}
+
 		// only completed invoiced
 		if (!invoiceBL.isComplete(invoice))
 		{

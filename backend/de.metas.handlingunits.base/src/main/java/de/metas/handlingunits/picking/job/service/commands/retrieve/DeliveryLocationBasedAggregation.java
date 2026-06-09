@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service.commands.retrieve;
 
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProductsCollector;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -13,6 +14,7 @@ class DeliveryLocationBasedAggregation
 {
 	@NonNull private final DeliveryLocationBasedAggregationKey key;
 	private boolean partiallyPickedBefore = false;
+	@NonNull private final PickingJobCandidateProductsCollector productsCollector = new PickingJobCandidateProductsCollector();
 	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	public DeliveryLocationBasedAggregation(@NonNull final DeliveryLocationBasedAggregationKey key)
@@ -23,6 +25,7 @@ class DeliveryLocationBasedAggregation
 	public void add(@NonNull final ScheduledPackageable item)
 	{
 		this.partiallyPickedBefore = this.partiallyPickedBefore || item.isPartiallyPickedOrDelivered();
+		this.productsCollector.collect(item);
 		this.scheduleIds.add(item.getId());
 	}
 
@@ -35,6 +38,7 @@ class DeliveryLocationBasedAggregation
 				.deliveryBPLocationId(key.getDeliveryBPLocationId())
 				.warehouseTypeId(key.getWarehouseTypeId())
 				.partiallyPickedBefore(partiallyPickedBefore)
+				.products(productsCollector.toProducts())
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds))
 				.build();
 	}

@@ -26,18 +26,21 @@ package org.adempiere.mm.attributes.listeners.inAusLand;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.countryattribute.impl.CountryAwareAttributeUpdater;
 import org.adempiere.mm.attributes.countryattribute.impl.InOutLineCountryAware;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class InOutLineInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_M_InOutLine.Table_Name;
 	}

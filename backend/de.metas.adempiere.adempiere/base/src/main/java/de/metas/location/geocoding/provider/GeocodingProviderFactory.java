@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,13 +22,7 @@
 
 package de.metas.location.geocoding.provider;
 
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Service;
-
 import com.google.maps.GeoApiContext;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.location.geocoding.GeocodingConfig;
@@ -39,6 +33,10 @@ import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.provider.googlemaps.GoogleMapsGeocodingProviderImpl;
 import de.metas.location.geocoding.provider.openstreetmap.NominatimOSMGeocodingProviderImpl;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class GeocodingProviderFactory
@@ -56,6 +54,7 @@ public class GeocodingProviderFactory
 		this.configRepository = configRepository;
 	}
 
+	@NonNull
 	public Optional<GeocodingProvider> getProvider()
 	{
 		final GeocodingConfig config = configRepository.getGeocodingConfig().orElse(null);

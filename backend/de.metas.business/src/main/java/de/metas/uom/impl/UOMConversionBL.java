@@ -793,10 +793,10 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public @NonNull Quantity convertToKilogram(@NonNull final Quantity weight, @NonNull final ProductId productId)
+	public @NonNull Quantity convertToKilogram(@NonNull final Quantity qty, @NonNull final ProductId productId)
 	{
 		final UomId kilogramUomId = uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM);
-		return convertQuantityTo(weight, UOMConversionContext.of(productId), kilogramUomId)
+		return convertQuantityTo(qty, UOMConversionContext.of(productId), kilogramUomId)
 				.roundToUOMPrecision();
 	}
 

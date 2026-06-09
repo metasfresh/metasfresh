@@ -23,8 +23,8 @@
 package de.metas.rest_api.v2.shipping;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.MSequence;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,7 +34,7 @@ public class ShipmentCandidateExportSequenceNumberProvider
 
 	public int provideNextShipmentCandidateSeqNo()
 	{
-		final int exportSequenceNumber = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, SHIPMENT_CANDIDATE_EXPORT_SEQ_NO);
+		final int exportSequenceNumber = MSequence.getNextID(ClientId.SYSTEM.getRepoId(), SHIPMENT_CANDIDATE_EXPORT_SEQ_NO);
 		if (exportSequenceNumber <= 0)
 		{
 			throw new AdempiereException("Could not retrieve nextID for sequence " + SHIPMENT_CANDIDATE_EXPORT_SEQ_NO);

@@ -11,6 +11,7 @@ import {
   PICKTO_STRUCTURE_LU_TU,
   PICKTO_STRUCTURE_TU,
 } from '../../../reducers/wfProcesses/picking/PickToStructure';
+import { useHasClosedHUs } from './useClosedHUs';
 
 const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, lineId, isUserEditable = true }) => {
   const history = useMobileNavigation();
@@ -18,6 +19,10 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
   const { luPickingTarget, tuPickingTarget, allowedPickToStructures, isAllowReopeningLU } = useCurrentPickingTargetInfo(
     { wfProcessId, activityId, lineId }
   );
+
+  const { hasClosedLUs } = useHasClosedHUs({ wfProcessId, lineId });
+
+  const isShowReopenLUButton = isAllowReopeningLU && hasClosedLUs;
 
   const { isShowLUButton, isShowTUButton } = computeIsShowButtons({
     luPickingTarget,
@@ -39,7 +44,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
 
   return (
     <>
-      {isAllowReopeningLU && (
+      {isShowReopenLUButton && (
         <ButtonWithIndicator
           testId="reopenLU-button"
           captionKey="activities.picking.reopenLU"

@@ -22,8 +22,11 @@
 
 package de.metas.rest_api.v2.externlasystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
@@ -40,6 +43,8 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
@@ -74,6 +79,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -100,6 +106,22 @@ public class ExternalSystemService
 	@NonNull private final ExternalServices externalServices;
 	@NonNull private final JsonExternalSystemRetriever jsonRetriever;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final List<IExternalSystemInvocationErrorListener> externalSystemInvocationErrorListeners;
+
+	@VisibleForTesting
+	public static ExternalSystemService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalSystemService.class, () -> new ExternalSystemService(
+				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
+				new RuntimeParametersRepository(),
+				ExternalServices.newInstanceForUnitTesting(),
+				new JsonExternalSystemRetriever(),
+				new ExternalSystemRepository(),
+				Collections.emptyList()));
+	}
 
 	@NonNull
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
@@ -153,9 +175,27 @@ public class ExternalSystemService
 				.map(id -> JsonCreateIssueResponseItem.builder().issueId(JsonMetasfreshId.of(id.getRepoId())).build())
 				.collect(Collectors.toList());
 
+		// Notify error listeners with error context from the first error item
+		jsonError.getErrors().stream()
+				.filter(error -> error.getErrorContext() != null)
+				.findFirst()
+				.ifPresent(error -> {
+					final String errorMessage = buildAggregatedErrorMessage(jsonError);
+					final ExternalSystemErrorContext errorContext = ExternalSystemErrorContext.ofCodeOrUnknown(error.getErrorContext());
+					notifyExternalSystemErrorListeners(pInstanceId, errorContext, errorMessage);
+				});
+
 		return JsonCreateIssueResponse.builder()
 				.ids(adIssueIds)
 				.build();
+	}
+
+	private String buildAggregatedErrorMessage(@NonNull final JsonError jsonError)
+	{
+		return jsonError.getErrors()
+				.stream()
+				.map(JsonErrorItem::getMessage)
+				.collect(Collectors.joining("; "));
 	}
 
 	public void storeExternalPinstanceLog(@NonNull final CreatePInstanceLogRequest request, @NonNull final PInstanceId pInstanceId)
@@ -175,6 +215,37 @@ public class ExternalSystemService
 			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
 			logger.error("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
 			throw e;
+		}
+	}
+
+	private void notifyExternalSystemErrorListeners(
+			@NonNull final PInstanceId pInstanceId,
+			@NonNull final ExternalSystemErrorContext errorContext,
+			@NonNull final String errorMessage)
+	{
+		try
+		{
+			for (final IExternalSystemInvocationErrorListener listener : externalSystemInvocationErrorListeners)
+			{
+				if (!listener.applies(errorContext))
+				{
+					continue;
+				}
+
+				try
+				{
+					listener.onInvocationError(pInstanceId, errorContext, errorMessage);
+				}
+				catch (final Exception e)
+				{
+					logger.error("Error listener {} threw exception while handling error for PInstance {}",
+							listener.getClass().getSimpleName(), pInstanceId, e);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			logger.error("Failed to notify error listeners for PInstance {}", pInstanceId, e);
 		}
 	}
 

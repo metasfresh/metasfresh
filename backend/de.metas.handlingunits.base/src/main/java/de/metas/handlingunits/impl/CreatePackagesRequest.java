@@ -22,6 +22,7 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.inout.InOutId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,4 +41,5 @@ public class CreatePackagesRequest
 	@Nullable String trackingCode;
 	@Nullable String trackingURL;
 	@Nullable BigDecimal weightInKg;
+	@NonNull PackageDimensions packageDimensions;
 }

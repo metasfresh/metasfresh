@@ -8,6 +8,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Locator;
 
 import javax.annotation.Nullable;
@@ -156,5 +157,13 @@ public class LocatorId implements RepoIdAware
 		final int warehouseId = Integer.parseInt(parts[0]);
 		final int locatorId = Integer.parseInt(parts[1]);
 		return ofRepoId(warehouseId, locatorId);
+	}
+
+	public void assetWarehouseId(@NonNull final WarehouseId expectedWarehouseId)
+	{
+		if (!WarehouseId.equals(this.warehouseId, expectedWarehouseId))
+		{
+			throw new AdempiereException("Expected " + expectedWarehouseId + " for " + this);
+		}
 	}
 }

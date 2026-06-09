@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -34,6 +35,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.api.AdTableId;
@@ -51,26 +53,17 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class AD_Column_StepDef
 {
-	private final C_Order_StepDefData orderTable;
-	private final S_ResourceType_StepDefData resourceTypeTable;
-
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
-
-	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-	public AD_Column_StepDef(
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final S_ResourceType_StepDefData resourceTypeTable)
-	{
-		this.orderTable = orderTable;
-		this.resourceTypeTable = resourceTypeTable;
-	}
+	@NonNull private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
+	@NonNull private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final S_ResourceType_StepDefData resourceTypeTable;
 
 	@Given("^assert defaultValue is (.*) for tableName (.*) and columnName (.*)$")
 	public void assertDefaultValue(
@@ -121,7 +114,7 @@ public class AD_Column_StepDef
 	}
 
 	@When("^set custom columns for C_Order( expecting error:|:)$")
-	public void setCustomColumn_C_Order(@NonNull final String semantics, @NonNull final DataTable dataTable)
+	public void setCustomColumn_C_Order(@NonNull final String ignoredSemantics, @NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

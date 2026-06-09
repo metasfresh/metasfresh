@@ -20,14 +20,15 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.planning.event.MaterialPlanningContextHelper;
+import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +36,6 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +81,6 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 @ExtendWith(AdempiereTestWatcher.class)
 public class CandidateChangeHandlerTests
 {
-	private final Instant t1 = Instant.parse("2017-11-22T00:00:00Z");
-	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
-	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
-	private final Instant t4 = t1.plus(30, ChronoUnit.MINUTES);
-
-	private final WarehouseId OTHER_WAREHOUSE_ID = WarehouseId.ofRepoId(WAREHOUSE_ID.getRepoId() + 10);
-
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private AvailableToPromiseRepository stockRepository;
 	private CandidateChangeService candidateChangeHandler;
@@ -118,7 +111,14 @@ public class CandidateChangeHandlerTests
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, postMaterialEventService, stockRepository, stockCandidateService, supplyCandidateHandler),
+						new DemandCandidateHandler(candidateRepositoryRetrieval,
+								candidateRepositoryCommands,
+								postMaterialEventService,
+								stockRepository,
+								stockCandidateService,
+								supplyCandidateHandler,
+								Mockito.mock(MaterialPlanningContextHelper.class),
+								new PPOrderCandidateDemandMatcher()),
 						supplyCandidateHandler));
 	}
 

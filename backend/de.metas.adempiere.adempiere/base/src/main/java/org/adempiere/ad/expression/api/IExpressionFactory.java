@@ -2,6 +2,8 @@ package org.adempiere.ad.expression.api;
 
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /**
  * Expressions factory. Used for compiling various types of expressions.
  * 
@@ -20,7 +22,7 @@ public interface IExpressionFactory extends ISingletonService
 	 * @param expressionStr The expression to be compiled
 	 * @return compiled string expression; never returns null
 	 */
-	<V, ET extends IExpression<V>> ET compile(String expressionStr, final Class<ET> expressionType);
+	<V, ET extends IExpression<V>> ET compile(@Nullable String expressionStr, final Class<ET> expressionType);
 
 	/**
 	 * Compiles given string expression

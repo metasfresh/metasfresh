@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Available_For_Sales_QueryResult extends org.compiere.model.PO implements I_MD_Available_For_Sales_QueryResult, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 658342584L;
+	private static final long serialVersionUID = -466979828L;
 
     /** Standard Constructor */
     public X_MD_Available_For_Sales_QueryResult (final Properties ctx, final int MD_Available_For_Sales_QueryResult_ID, @Nullable final String trxName)
@@ -66,6 +66,21 @@ public class X_MD_Available_For_Sales_QueryResult extends org.compiere.model.PO 
 	}
 
 	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
 	public void setQtyOnHandStock (final @Nullable BigDecimal QtyOnHandStock)
 	{
 		set_Value (COLUMNNAME_QtyOnHandStock, QtyOnHandStock);
@@ -110,7 +125,7 @@ public class X_MD_Available_For_Sales_QueryResult extends org.compiere.model.PO 
 	}
 
 	@Override
-	public String getStorageAttributesKey()
+	public String getStorageAttributesKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_StorageAttributesKey);
 	}

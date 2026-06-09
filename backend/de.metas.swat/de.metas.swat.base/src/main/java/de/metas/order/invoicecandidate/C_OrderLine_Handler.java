@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.invoicecandidate;
 
 import de.metas.acct.api.IProductAcctDAO;
@@ -43,7 +65,9 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
@@ -61,7 +85,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -71,6 +95,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -91,6 +116,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private static final AdMessageKey MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = AdMessageKey.of("C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed");
 
@@ -113,8 +139,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 *
-	 *
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
 	 */
 	@Override
@@ -127,7 +151,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final @NotNull QueryLimit limit_IGNORED)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -161,13 +185,13 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_OrderLine(orderLine);
 
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
+		icRecord.setIsSOTrx(order.isSOTrx());
 		setOrderedData(icRecord, orderLine);
 
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
-
-		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		setBPartnerData(icRecord, orderLine);
 		setGroupCompensationData(icRecord, orderLine);
@@ -175,16 +199,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Invoice Rule(s)
 		icRecord.setInvoiceRule(order.getInvoiceRule());
+		icRecord.setIsAutoInvoice(order.isAutoInvoice());
 
 		// If we are dealing with a non-receivable service set the InvoiceRule_Override to Immediate
 		// because we want to invoice those right away (08408)
-		if (isNotReceivebleService(icRecord))
+		if (isNotReceivableService(icRecord))
 		{
 			icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 		}
-
-		// 05265
-		icRecord.setIsSOTrx(order.isSOTrx());
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
@@ -215,7 +237,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
@@ -230,6 +252,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 
 		// external identifiers
+		icRecord.setExternalSystem_ID(order.getExternalSystem_ID());
 		icRecord.setExternalLineId(orderLine.getExternalId());
 		icRecord.setExternalHeaderId(order.getExternalId());
 
@@ -329,9 +352,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setIncoterms(ic, orderLine);
 
+		setPromotionCodes(ic, orderLine);
+
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
+
+		// F00127.1 — propagate free-of-charge flag. Lives in setOrderedData so amendments
+		// to the order line after IC creation also flow through.
+		ic.setIsWithoutCharge(orderLine.isWithoutCharge());
+		ic.setReason(orderLine.isWithoutCharge() ? orderLine.getReason() : null);
 	}
 
 	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
@@ -378,17 +408,33 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIncotermLocation(order.getIncotermLocation());
 	}
 
+	private void setPromotionCodes(@NonNull final I_C_Invoice_Candidate ic,
+								   @NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_PromotionCode_ID(order.getC_PromotionCode_ID());
+		ic.setC_PromotionCode2_ID(order.getC_PromotionCode2_ID());
+	}
+
 	private void setC_PaymentTerm(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		if (!ic.isSOTrx())
-		{
-			return;
-		}
-
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+
+		// me03 #29369: complex-term orders → use Immediate payment term on the IC,
+		// so partial-delivery invoices get a single-line pay-schedule (= invoice's
+		// own GrandTotal as DueAmt). Without this, the IC inherits the order's
+		// complex schedule and partial invoices show inflated OpenAmt.
+		final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+		if (paymentTerm.isComplex())
+		{
+			final ClientId clientId = ClientId.ofRepoId(ic.getAD_Client_ID());
+			final OrgId orgId = OrgId.ofRepoId(ic.getAD_Org_ID());
+			paymentTermRepository.getImmediatePaymentTermId(clientId, orgId)
+					.ifPresent(immediateTermId -> ic.setC_PaymentTerm_ID(immediateTermId.getRepoId()));
+		}
 	}
 
 	/**

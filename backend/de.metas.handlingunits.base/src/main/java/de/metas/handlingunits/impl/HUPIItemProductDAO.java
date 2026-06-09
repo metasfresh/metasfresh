@@ -47,6 +47,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -88,9 +89,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			.build();
 
 	@Override
+	@NonNull
 	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id)
 	{
-		return cacheById.getOrLoad(id, this::retrieveById);
+		return cacheById.getOrLoadNonNull(id, this::retrieveById);
 	}
 
 	public HUPIItemProduct retrieveById(@NonNull final HUPIItemProductId id)
@@ -109,7 +111,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(NumberUtils.stripTrailingDecimalZeros(record.getQty()), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isOrderInTuUomWhenMatched(record.isOrderInTuUomWhenMatched())
 				.build();
 	}
@@ -210,6 +212,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
 			final ProductId productId,
 			final BPartnerId bpartnerId,
@@ -222,6 +225,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
 			final ProductId productId,
 			final BPartnerId bpartnerId,
@@ -266,6 +270,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
+	@NonNull
 	public List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(
 			final Properties ctx,
 			final IHUPIItemProductQuery queryVO,
@@ -668,7 +673,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
 													@NonNull final ProductId cuProductId,
-													final BPartnerId bpartnerId,
+													@Nullable final BPartnerId bpartnerId,
 													final boolean allowInfiniteCapacity)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();

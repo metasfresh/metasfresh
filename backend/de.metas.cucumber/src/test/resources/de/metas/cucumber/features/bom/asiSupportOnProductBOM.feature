@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
 @ghActions:run_on_executor3
 Feature: ASI support in Product BOM rest-api
+## F00500: Product BOM
   Add ProductBOM and ProductBOMLine with ASI via rest-api
   Using default ad_orgId 1000000
 
@@ -41,6 +44,8 @@ Feature: ASI support in Product BOM rest-api
       | 540075         | 0        |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order with different ASI, on complete no production candidate is found
     Given metasfresh contains M_Products:
       | Identifier   | Value             | Name              | OPT.M_Product_Category_ID.Identifier |
@@ -159,6 +164,7 @@ Feature: ASI support in Product BOM rest-api
     And metasfresh has no AD_EventLog_Entry records
 
     And the order identified by order_SO is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, AD_EventLog are found
       | AD_EventLog_ID.Identifier | EventName           | SupplyRequiredEvent.M_Product_ID.Identifier |
@@ -170,6 +176,8 @@ Feature: ASI support in Product BOM rest-api
       | eventLogEntry_2                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order without ASI, on complete production candidate is found having the productPlanning ASI
     Given metasfresh contains M_Products:
       | Identifier   | Value        | Name         | OPT.M_Product_Category_ID.Identifier |
@@ -275,6 +283,7 @@ Feature: ASI support in Product BOM rest-api
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_SO | order_SO              | product_S2              | 5          |
     And the order identified by order_SO is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -289,6 +298,8 @@ Feature: ASI support in Product BOM rest-api
       | c_222      | SUPPLY            | PRODUCTION                    | product_S2              | 2022-01-08T21:00:00Z | 5   | 5                      | bomAttributeSetInstance                  |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order with the same ASI, on complete production candidate is found having the same ASI
     Given metasfresh contains M_Products:
       | Identifier   | Value        | Name         | OPT.M_Product_Category_ID.Identifier |
@@ -418,12 +429,13 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             | 2022-01-08T21:00:00Z |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
+      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | POO             | ps_PO                             | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_PO | order_PO              | product_S3              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | md_po      | SUPPLY            | PURCHASE                      | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
@@ -446,6 +458,7 @@ Feature: ASI support in Product BOM rest-api
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S3              | 20         | orderLineAttributeSetInstance            |
     And the order identified by order_SO is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -460,6 +473,8 @@ Feature: ASI support in Product BOM rest-api
       | c_222      | SUPPLY            | PRODUCTION                    | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
 
   @from:cucumber
+@allure.label.epic:E0380_Masterdata_Products
+@allure.label.feature:F00500
   Scenario: Create sales order with ASI (country-M_Attribute 1000001), on complete production candidate is found having the same ASI
     Given metasfresh contains M_Products:
       | Identifier   | Value        | Name         | OPT.M_Product_Category_ID.Identifier |
@@ -589,12 +604,13 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             | 2022-01-08T21:00:00Z |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
+      | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | POO             | ps_PO                             | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_PO | order_PO              | product_S4              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -618,6 +634,7 @@ Feature: ASI support in Product BOM rest-api
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S4              | 20         | orderLineAttributeSetInstance            |
     And the order identified by order_SO is completed
+    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |

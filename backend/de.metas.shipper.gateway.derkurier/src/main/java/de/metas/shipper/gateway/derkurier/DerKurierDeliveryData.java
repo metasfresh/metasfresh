@@ -1,12 +1,12 @@
 package de.metas.shipper.gateway.derkurier;
 
-import java.time.LocalTime;
-
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryLineData;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.LocalTime;
 
 /*
  * #%L
@@ -32,11 +32,11 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-public class DerKurierDeliveryData implements CustomDeliveryData
+public class DerKurierDeliveryData implements CustomDeliveryLineData
 {
 	public static DerKurierDeliveryData ofDeliveryPosition(@NonNull final DeliveryPosition deliveryPosition)
 	{
-		final CustomDeliveryData customDeliveryData = deliveryPosition.getCustomDeliveryData();
+		final CustomDeliveryLineData customDeliveryData = deliveryPosition.getCustomDeliveryData();
 		return (DerKurierDeliveryData)customDeliveryData;
 	}
 

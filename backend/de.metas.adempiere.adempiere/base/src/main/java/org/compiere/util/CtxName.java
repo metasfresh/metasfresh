@@ -28,8 +28,8 @@ public final class CtxName
 	private Optional<Boolean> defaultValueBoolean; // lazy
 	private Optional<BigDecimal> defaultValueBigDecimal; // lazy
 	private Optional<java.util.Date> defaultValueDate; // lazy
-	private transient volatile String cachedToStringWithTagMarkers = null;
-	private transient volatile String cachedToStringWithoutTagMarkers = null;
+	private transient volatile String cachedToStringWithTagMarkers = null; // lazy
+	private transient volatile String cachedToStringWithoutTagMarkers = null; // lazy
 
 	private Integer _hashcode; // lazy
 
@@ -129,7 +129,7 @@ public final class CtxName
 
 	/**
 	 * @return true if this context name is an explicit global variable (i.e. starts with # or $)
-	 * @name context name
+	 * @param name context name
 	 */
 	public static boolean isExplicitGlobal(final String name)
 	{
@@ -379,17 +379,20 @@ public final class CtxName
 		return includeTagMarkers ? toStringWithMarkers() : toStringWithoutMarkers();
 	}
 
+	@NonNull
 	public String toStringWithMarkers()
 	{
+		String cachedToStringWithTagMarkers = this.cachedToStringWithTagMarkers;
 		if (cachedToStringWithTagMarkers == null)
 		{
-			cachedToStringWithTagMarkers = CtxNames.NAME_Marker + toStringWithoutMarkers() + CtxNames.NAME_Marker;
+			cachedToStringWithTagMarkers = this.cachedToStringWithTagMarkers = CtxNames.NAME_Marker + toStringWithoutMarkers() + CtxNames.NAME_Marker;
 		}
 		return cachedToStringWithTagMarkers;
 	}
 
 	public String toStringWithoutMarkers()
 	{
+		String cachedToStringWithoutTagMarkers = this.cachedToStringWithoutTagMarkers;
 		if (cachedToStringWithoutTagMarkers == null)
 		{
 			final StringBuilder sb = new StringBuilder();
@@ -405,7 +408,8 @@ public final class CtxName
 			{
 				sb.append(CtxNames.SEPARATOR).append(defaultValue);
 			}
-			cachedToStringWithoutTagMarkers = sb.toString();
+
+			cachedToStringWithoutTagMarkers = this.cachedToStringWithoutTagMarkers = sb.toString();
 		}
 		return cachedToStringWithoutTagMarkers;
 	}

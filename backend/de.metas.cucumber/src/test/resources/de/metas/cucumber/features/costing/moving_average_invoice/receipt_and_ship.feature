@@ -1,10 +1,15 @@
 @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor6
 Feature: Moving Average Invoice - receive and ship
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
@@ -59,8 +64,11 @@ Feature: Moving Average Invoice - receive and ship
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 10 PCE     | 100 CHF      |
-    
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 10        |
+
+
     
     
     
@@ -86,6 +94,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, no invoice price variance
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | M_MatchInv_ID |
@@ -116,6 +127,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, invoice price variance
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | PriceEntered_Override | M_MatchInv_ID |
@@ -144,6 +158,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, receive, ship, get vendor invoice with price variance, ship again
     #
     # Ship 7 items
@@ -161,7 +178,10 @@ Feature: Moving Average Invoice - receive and ship
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 3 PCE      | 30 CHF       |
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 3         |
+
     #
     # Get the invoice for those 10 we purchase, but with a different price
     #
@@ -199,3 +219,6 @@ Feature: Moving Average Invoice - receive and ship
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 13 CHF           | 0 PCE      | 0 CHF        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 0         |

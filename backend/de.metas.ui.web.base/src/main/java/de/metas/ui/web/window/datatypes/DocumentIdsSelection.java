@@ -3,6 +3,9 @@ package de.metas.ui.web.window.datatypes;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.SelectionSize;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
@@ -19,6 +22,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -58,6 +62,8 @@ import java.util.stream.Stream;
 @EqualsAndHashCode
 public final class DocumentIdsSelection
 {
+	private static final ITranslatableString STRING_ALL = TranslatableStrings.adMessage(AdMessageKey.of("All"));
+
 	public static DocumentIdsSelection of(final Collection<DocumentId> documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
@@ -230,6 +236,11 @@ public final class DocumentIdsSelection
 		return documentIds.size();
 	}
 
+	public ITranslatableString getSizeAsTranslatableString()
+	{
+		return isAll() ? STRING_ALL : TranslatableStrings.number(size());
+	}
+
 	public boolean contains(final DocumentId documentId)
 	{
 		return all || documentIds.contains(documentId);
@@ -281,6 +292,11 @@ public final class DocumentIdsSelection
 	public <ID extends RepoIdAware> ImmutableSet<ID> toIds(@NonNull final Function<Integer, ID> idMapper)
 	{
 		return toSet(idMapper.compose(DocumentId::toInt));
+	}
+
+	public <ID extends RepoIdAware> ImmutableSet<ID> toIdsFromInt(@NonNull final IntFunction<ID> idMapper)
+	{
+		return toSet(documentId -> idMapper.apply(documentId.toInt()));
 	}
 
 	/**

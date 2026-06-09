@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
 @topic:commissionContracts
 @ghActions:run_on_executor3
 Feature: Hierarchy commission and license fee commission combined
+## F09000: Commission Contract
 
   Background:
     Given infrastructure and metasfresh are running
@@ -37,6 +40,8 @@ Feature: Hierarchy commission and license fee commission combined
       | licenseFeeSettingsLine_1               | licenseFeeSettings_1               | 10    | 5                   |
 
   @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
   @topic:commissionContracts
   @Id:S0150_170
   Scenario: Hierarchy commission and license fee commission combined having two sales rep in hierarchy
@@ -53,10 +58,10 @@ Feature: Hierarchy commission and license fee commission combined
       | licenseFeeConditions_1 | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
 
     And metasfresh contains C_BPartners:
-      | Identifier     | OPT.C_BPartner_Location_ID.Identifier | Name           | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName    | OPT.GLN       |
-      | super_salesRep | super_salesRep_location               | super_salesRep | ps_1                          | Y            | Y              | Y              | 1000009              |                                       | super_salesRep cmp |               |
-      | salesRep_1     | salesRep_location_1                   | salesRep_1     | ps_1                          | Y            | Y              | Y              | 1000009              | super_salesRep                        | salesRep_1 cmp     |               |
-      | customer_1     | customer_location_1                   | customer_1     | ps_1                          | Y            | Y              | Y              | 1000009              | salesRep_1                            | customer_1 cmp     | 1234567891234 |
+      | Identifier     | OPT.C_BPartner_Location_ID.Identifier | Name           | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | C_PaymentTerm_ID.Value | PO_PaymentTerm_ID.Value | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName    | OPT.GLN       |
+      | super_salesRep | super_salesRep_location               | super_salesRep | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            | 10 Tage 1 %             |                                       | super_salesRep cmp |               |
+      | salesRep_1     | salesRep_location_1                   | salesRep_1     | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            | 10 Tage 1 %             | super_salesRep                        | salesRep_1 cmp     |               |
+      | customer_1     | customer_location_1                   | customer_1     | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            | 10 Tage 1 %             | salesRep_1                            | customer_1 cmp     | 1234567891234 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier           | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -70,6 +75,7 @@ Feature: Hierarchy commission and license fee commission combined
     "orgCode": "001",
     "externalHeaderId": "12114",
     "externalLineId": "111",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-1234567891234",
@@ -92,7 +98,7 @@ Feature: Hierarchy commission and license fee commission combined
 """
 {
     "externalHeaderId": "12114",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false
@@ -102,8 +108,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | shipment_1            | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        | Shopware                               | Shopware6            |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine1_1              | invoice_1               | transaction_product     | 1           | true      |
@@ -114,8 +120,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | customer_1                  | transaction_product     | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName |
-      | so_invoice_candidate              | customer_1                      | transaction_product         | 0                   | true        | 10                 | Shopware                               |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | so_invoice_candidate              | customer_1                      | transaction_product         | 0                   | true        | 10                 | Shopware                               | Shopware6            |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
@@ -173,8 +179,9 @@ Feature: Hierarchy commission and license fee commission combined
       | hierarchy_settlement_1            | salesRep_1                      | commission_product          | 0                   | false       | 1                  |
       | hierarchy_settlement_2            | super_salesRep                  | commission_product          | 0                   | false       | 0.9                |
       | license_fee_settlement            | salesRep_1                      | commission_product          | 0                   | true        | 0.5                |
+#    TODO check if test is correct, why sales invoice doesn't have payment term of sales order?
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.DocSubType |
       | invoiceSettled_1        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_2        | super_salesRep           | super_salesRep_location           | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_3        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | LS             |
@@ -220,6 +227,8 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 0.50             | FORECASTED            |
 
   @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
   @topic:commissionContracts
   @Id:S0150_180
   Scenario: Hierarchy commission and license fee commission combined having the salesRep as direct customer
@@ -235,8 +244,8 @@ Feature: Hierarchy commission and license fee commission combined
       | licenseFeeConditions_1        | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
 
     And metasfresh contains C_BPartners:
-      | Identifier          | OPT.C_BPartner_Location_ID.Identifier | Name                | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName         | OPT.GLN       |
-      | customer_salesRep_1 | customer_salesRep_location_1          | customer_salesRep_1 | ps_1                          | Y            | Y              | Y              | 1000009              |                                       | customer_salesRep_1 cmp | 1234567891235 |
+      | Identifier          | OPT.C_BPartner_Location_ID.Identifier | Name                | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | C_PaymentTerm_ID.Value | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName         | OPT.GLN       |
+      | customer_salesRep_1 | customer_salesRep_location_1          | customer_salesRep_1 | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            |                                       | customer_salesRep_1 cmp | 1234567891235 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -249,6 +258,7 @@ Feature: Hierarchy commission and license fee commission combined
     "orgCode": "001",
     "externalHeaderId": "23433",
     "externalLineId": "111",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-1234567891235",
@@ -271,7 +281,7 @@ Feature: Hierarchy commission and license fee commission combined
 """
 {
     "externalHeaderId": "23433",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false
@@ -287,8 +297,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | customer_salesRep_1         | transaction_product     | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName |
-      | so_invoice_candidate              | customer_salesRep_1             | transaction_product         | 0                   | true        | 10                 | Shopware                               |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | so_invoice_candidate              | customer_salesRep_1             | transaction_product         | 0                   | true        | 10                 | Shopware                               | Shopware6            |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_salesRep_1         | transaction_product           | 0                     | 0                      | 10                  |
@@ -322,8 +332,9 @@ Feature: Hierarchy commission and license fee commission combined
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
       | settlement_so                     | customer_salesRep_1             | commission_product          | 0                   | true        | 0.5                |
+#    TODO check if test is correct, why sales invoice doesn't have payment term of sales order?
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.DocSubType |
       | invoiceSettled_so       | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |

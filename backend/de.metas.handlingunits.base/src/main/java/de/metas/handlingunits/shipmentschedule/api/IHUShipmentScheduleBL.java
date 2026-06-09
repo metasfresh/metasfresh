@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.TULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -11,7 +12,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -23,6 +26,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -135,5 +139,34 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 
+	Quantity getQtyRemainingToScheduleForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
 	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
+
+	/**
+	 * Extracts a common projectId from the given shipment schedules. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
+	@Nullable
+	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
+
+	/**
+	 * Creates shipment candidates for a QtyPicked record, expanding mixed-origin TUs into
+	 * per-VHU or per-COO-group candidates so each gets its own InOutLine with the correct ASI.
+	 */
+	List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
+			@NonNull I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull IHUContext huContext,
+			@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse);
+
+	/**
+	 * Retrieves all undelivered shipment schedule candidates for a list of top-level HUs,
+	 * expanding any mixed-origin TUs into per-COO candidates.
+	 * Each HU in the list must be a top-level HU.
+	 */
+	List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull List<I_M_HU> hus);
 }

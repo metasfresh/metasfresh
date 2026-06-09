@@ -71,6 +71,7 @@ public class ChartOfAccountsRepository
 				.id(ChartOfAccountsId.ofRepoId(record.getC_Element_ID()))
 				.name(record.getName())
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.treeId(AdTreeId.ofRepoId(record.getAD_Tree_ID()))
 				.build();
 	}
@@ -85,9 +86,9 @@ public class ChartOfAccountsRepository
 		return getMap().getByIds(chartOfAccountsIds);
 	}
 
-	public Optional<ChartOfAccounts> getByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId)
+	public Optional<ChartOfAccounts> getByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId,  @NonNull final OrgId orgId)
 	{
-		return getMap().getByName(chartOfAccountsName, clientId);
+		return getMap().getByName(chartOfAccountsName, clientId, orgId);
 	}
 
 	public Optional<ChartOfAccounts> getByTreeId(@NonNull final AdTreeId treeId)
@@ -98,14 +99,16 @@ public class ChartOfAccountsRepository
 	ChartOfAccounts createChartOfAccounts(
 			@NonNull final String name,
 			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
 			@NonNull final AdTreeId chartOfAccountsTreeId)
 	{
 		final I_C_Element record = InterfaceWrapperHelper.newInstance(I_C_Element.class);
 		InterfaceWrapperHelper.setValue(record, I_C_Element.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
-		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setName(name);
 		record.setAD_Tree_ID(chartOfAccountsTreeId.getRepoId());
 		record.setElementType(X_C_Element.ELEMENTTYPE_Account);
+		record.setIsNaturalAccount(true);
 
 		InterfaceWrapperHelper.save(record);
 

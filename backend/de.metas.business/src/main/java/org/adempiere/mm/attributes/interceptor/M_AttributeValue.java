@@ -37,10 +37,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 @Interceptor(I_M_AttributeValue.class)
 public class M_AttributeValue
 {
-	public M_AttributeValue()
-	{
-	}
-
 	/**
 	 * Note: no user-friendly msg needed, because the column is not updatable.
 	 */

@@ -102,7 +102,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		}
 		if (attributeCode != null)
 		{
-			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(huAttribute.getM_Attribute_ID());
+			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeRecordById(huAttribute.getM_Attribute_ID());
 			assertNotNull(messageActual.expect("M_Attribute_ID is null"), attributeActual);
 			assertEquals(messageActual.expect("M_Attribute.Value"), attributeCode.getCode(), attributeActual.getValue());
 		}

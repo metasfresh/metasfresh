@@ -31,6 +31,7 @@ import de.metas.postgrest.config.PostgRESTConfigId;
 import de.metas.postgrest.config.PostgRESTConfigRepository;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -192,10 +193,18 @@ public class PostgRESTProcessExecutor extends JavaProcess
 		return Evaluatees.compose(contexts);
 	}
 
+	protected final boolean isCalledViaAPI()
+	{
+		return ProcessCalledFrom.API.equals(getProcessInfo().getProcessCalledFrom());
+	}
+
 	@Value
 	@Builder
 	protected static class CustomPostgRESTParameters
 	{
+		/**
+		 * If true, then the postgREST invocation result is stored in the folder specified by the postgREST-Config.
+		 */
 		boolean storeJsonFile;
 
 		/**

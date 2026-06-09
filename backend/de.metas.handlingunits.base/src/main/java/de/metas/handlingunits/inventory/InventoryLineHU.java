@@ -14,6 +14,7 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -50,47 +51,42 @@ import java.util.stream.Stream;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLineHU
 {
-	/** Null if not yet persisted or if this is an inventory line's single InventoryLineHU. */
-	@Nullable
-	@NonFinal
-	InventoryLineHUId id;
+	/**
+	 * Null if not yet persisted or if this is an inventory line's single InventoryLineHU.
+	 */
+	@Nullable @NonFinal InventoryLineHUId id;
+	@NonNull AttributeSetInstanceId asiId;
 
-	/** Null if this instance does not yet have a persisted HU */
+	/**
+	 * Null if this instance does not yet have a persisted HU
+	 */
 	@Nullable HuId huId;
 	@Nullable HUQRCode huQRCode;
 
 	//
 	// Quantities
-	InventoryType inventoryType;
-	//
-	Quantity qtyInternalUse;
-	//
-	Quantity qtyBook;
-	Quantity qtyCount;
-
-	public static InventoryLineHU zeroPhysicalInventory(@NonNull final I_C_UOM uom)
-	{
-		final Quantity zero = Quantity.zero(uom);
-		return builder()
-				.huId(null)
-				.qtyInternalUse(null)
-				.qtyBook(zero)
-				.qtyCount(zero)
-				.build();
-	}
+	@NonNull InventoryType inventoryType;
+	@Nullable Quantity qtyInternalUse;
+	@Nullable Quantity qtyBook;
+	@Nullable Quantity qtyCount;
+	boolean isCounted;
 
 	@Builder(toBuilder = true)
 	private InventoryLineHU(
 			@Nullable final InventoryLineHUId id,
-			@Nullable final HuId huId, 
+			@Nullable final AttributeSetInstanceId asiId,
+			@Nullable final HuId huId,
 			@Nullable final HUQRCode huQRCode,
 			@Nullable final Quantity qtyInternalUse,
 			@Nullable final Quantity qtyBook,
-			@Nullable final Quantity qtyCount)
+			@Nullable final Quantity qtyCount,
+			final boolean isCounted)
 	{
 		this.id = id;
+		this.asiId = AttributeSetInstanceId.nullToNone(asiId);
 		this.huId = huId;
 		this.huQRCode = huQRCode;
+		this.isCounted = isCounted;
 
 		if (qtyInternalUse != null)
 		{
@@ -115,6 +111,8 @@ public class InventoryLineHU
 		}
 	}
 
+	public @NonNull InventoryLineHUId getIdNotNull() {return Check.assumeNotNull(id, "line is saved: {}", this);}
+
 	void setId(@NonNull final InventoryLineHUId id)
 	{
 		this.id = id;
@@ -133,6 +131,30 @@ public class InventoryLineHU
 		if (!getInventoryType().isPhysical())
 		{
 			throw new AdempiereException("Expected Physical Inventory: " + this);
+		}
+	}
+
+	public String getUOMSymbol()
+	{
+		return getUOM().getUOMSymbol();
+	}
+
+	public I_C_UOM getUOM()
+	{
+		if (inventoryType.isPhysical())
+		{
+			final Quantity qtyBook = getQtyBook();
+			final Quantity qtyCount = getQtyCount();
+			Quantity.assertSameUOM(qtyBook, qtyCount);
+			return qtyBook.getUOM();
+		}
+		else if (inventoryType.isInternalUse())
+		{
+			return getQtyInternalUse().getUOM();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown inventory type: " + inventoryType);
 		}
 	}
 
@@ -164,12 +186,12 @@ public class InventoryLineHU
 	 */
 	public InventoryLineHU withAddingQtyCount(@NonNull final Quantity qtyCountToAdd)
 	{
-		return withQtyCount(qtyCount.add(qtyCountToAdd));
+		return withQtyCount(getQtyCount().add(qtyCountToAdd));
 	}
 
 	public InventoryLineHU withZeroQtyCount()
 	{
-		return withQtyCount(qtyCount.toZero());
+		return withQtyCount(getQtyCount().toZero());
 	}
 
 	public InventoryLineHU withQtyCount(@NonNull final Quantity newQtyCount)
@@ -191,16 +213,47 @@ public class InventoryLineHU
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public InventoryLineHU withHuId(final @NonNull HuId huId)
-	{
-		return toBuilder().huId(huId).build();
-	}
-
 	public InventoryLineHU convertQuantities(@NonNull final UnaryOperator<Quantity> qtyConverter)
 	{
 		return toBuilder()
 				.qtyCount(qtyConverter.apply(getQtyCount()))
 				.qtyBook(qtyConverter.apply(getQtyBook()))
 				.build();
+	}
+
+	public InventoryLineHU updatingFrom(@NonNull final InventoryLineCountRequest request)
+	{
+		return toBuilder().updatingFrom(request).build();
+	}
+
+	public static InventoryLineHU of(@NonNull final InventoryLineCountRequest request)
+	{
+		return builder().updatingFrom(request).build();
+
+	}
+
+	//
+	//
+	//
+	// -------------------------------------------------------------------------
+	//
+	//
+	//
+
+	@SuppressWarnings("unused")
+	public static class InventoryLineHUBuilder
+	{
+		InventoryLineHUBuilder updatingFrom(@NonNull final InventoryLineCountRequest request)
+		{
+			return huId(request.getHuId())
+					.huQRCode(HuId.equals(this.huId, request.getHuId()) ? this.huQRCode : null)
+					.qtyInternalUse(null)
+					.qtyBook(request.getQtyBook())
+					.qtyCount(request.getQtyCount())
+					.isCounted(true)
+					.asiId(request.getAsiId())
+					;
+		}
+
 	}
 }

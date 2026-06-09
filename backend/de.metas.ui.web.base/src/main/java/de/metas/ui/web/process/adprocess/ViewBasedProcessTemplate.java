@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -18,10 +19,13 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
 /*
@@ -247,6 +251,22 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		final ViewRowIdsSelection viewRowIdsSelection = Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
 		return viewRowIdsSelection.getRowIds();
+	}
+
+	protected final <ID extends RepoIdAware> ImmutableSet<ID> getSelectedIds(@NonNull final IntFunction<ID> idMapper, @NonNull final QueryLimit limit)
+	{
+		final DocumentIdsSelection selectedRowsIds = getSelectedRowIds();
+		if (selectedRowsIds.isAll())
+		{
+			return streamSelectedRows()
+					.limit(limit.toIntOr(Integer.MAX_VALUE))
+					.map(row -> row.getId().toId(idMapper))
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			return selectedRowsIds.toIdsFromInt(idMapper);
+		}
 	}
 
 	@OverridingMethodsMustInvokeSuper

@@ -116,6 +116,18 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
+	public List<IHUProductStorage> getProductStorages(@NonNull final I_M_HU hu)
+	{
+		return getStorage(hu).getProductStorages();
+	}
+
+	@Override
+	public IHUProductStorage getProductStorage(@NonNull final I_M_HU hu, @NonNull ProductId productId)
+	{
+		return getStorage(hu).getProductStorage(productId);
+	}
+
+	@Override
 	public @NonNull ImmutableMap<HuId, Set<ProductId>> getHUProductIds(@NonNull final List<I_M_HU> hus)
 	{
 		final Map<HuId, Set<ProductId>> huId2ProductIds = new HashMap<>();

@@ -22,25 +22,26 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * #L%
  */
 
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import de.metas.order.IOrderDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
 
-import de.metas.order.IOrderDAO;
-import de.metas.util.Services;
+import java.util.Collections;
+import java.util.List;
 
+@Component
 public class OrderCountryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private final OrderLineCountryModelAttributeSetInstanceListener orderLineListener = new OrderLineCountryModelAttributeSetInstanceListener();
-	private static final List<String> sourceColumnNames = Arrays.asList(I_C_Order.COLUMNNAME_C_BPartner_Location_ID);
+	private static final List<String> sourceColumnNames = Collections.singletonList(I_C_Order.COLUMNNAME_C_BPartner_Location_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_Order.Table_Name;
 	}

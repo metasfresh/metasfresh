@@ -6,45 +6,42 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
 import de.metas.handlingunits.picking.job.repository.PickingJobCreateRepoRequest;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.picking.job_schedule.model.PickingJobSchedule;
-import de.metas.picking.api.PickingJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
-import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -66,17 +63,16 @@ public class PickingJobCreateCommand
 	private static final AdMessageKey MORE_THAN_ONE_JOB_ERROR_MSG = AdMessageKey.of("PickingJobCreateCommand.MORE_THAN_ONE_JOB_ERROR_MSG");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull MobileUIPickingUserProfileService configService;
+	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingCandidateService pickingCandidateService;
-	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
-	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final PickingJobSlotService pickingJobSlotService;
-	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
+	@NonNull private final PickingJobHUService huService;
 
 	@NonNull private final PickingJobCreateRequest request;
 
@@ -113,7 +109,7 @@ public class PickingJobCreateCommand
 							.build(),
 					loadingSupportServices);
 
-			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			huService.reservePickFromHUs(pickingJob);
 
 			return allocatePickingSlotIfPossible(pickingJob);
 		}
@@ -135,7 +131,7 @@ public class PickingJobCreateCommand
 	@NonNull
 	private PickingJob allocatePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
 	{
-		final PickingSlotId pickingSlotId = workplaceService.getWorkplaceByUserId(request.getPickerId())
+		final PickingSlotId pickingSlotId = warehouseService.getWorkplaceByUserId(request.getPickerId())
 				.map(Workplace::getPickingSlotId)
 				.orElse(null);
 
@@ -164,7 +160,7 @@ public class PickingJobCreateCommand
 		);
 
 		final PackageableQuery query = toPackageableQuery(request);
-		final ScheduledPackageableList items = packagingDAO.stream(query)
+		final ScheduledPackageableList items = shipmentScheduleService.stream(query)
 				.flatMap(packageable -> toScheduledPackageables(packageable, jobSchedulesMap))
 				.collect(ScheduledPackageableList.collect());
 		if (items.isEmpty())
@@ -273,7 +269,7 @@ public class PickingJobCreateCommand
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
 				.packageables(items)
-				.considerAttributes(pickingConfigRepo.getPickingConfig().isConsiderAttributes())
+				.considerAttributes(configService.isConsiderAttributes())
 				.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
@@ -286,6 +282,10 @@ public class PickingJobCreateCommand
 					.setParameter("plan", plan);
 		}
 
+		// Compute once for all steps (all lines share the same SO line within a ScheduledPackageableList)
+		final ImmutableSet<HuId> allowedReservedVhuIds = huService.getVHUIdsByDocumentRef(
+				HUReservationDocRef.ofSalesOrderLineId(items.getSingleSalesOrderLineId()));
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
@@ -295,7 +295,7 @@ public class PickingJobCreateCommand
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElse(null))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
-						.map(this::createStepRequest)
+						.map(planLine -> createStepRequest(planLine, allowedReservedVhuIds))
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
 						.stream()
@@ -318,14 +318,16 @@ public class PickingJobCreateCommand
 				.build();
 	}
 
-	private PickingJobCreateRepoRequest.Step createStepRequest(@NonNull final PickingPlanLine planLine)
+	private PickingJobCreateRepoRequest.Step createStepRequest(
+			@NonNull final PickingPlanLine planLine,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
 	{
 		final PickingPlanLineType type = planLine.getType();
 		switch (type)
 		{
 			case PICK_FROM_HU:
 			{
-				return createStepRequest_PickFromHU(planLine);
+				return createStepRequest_PickFromHU(planLine, allowedReservedVhuIds);
 			}
 			case UNALLOCABLE:
 			{
@@ -340,7 +342,9 @@ public class PickingJobCreateCommand
 		}
 	}
 
-	private PickingJobCreateRepoRequest.Step createStepRequest_PickFromHU(final @NonNull PickingPlanLine planLine)
+	private PickingJobCreateRepoRequest.Step createStepRequest_PickFromHU(
+			final @NonNull PickingPlanLine planLine,
+			final @NonNull ImmutableSet<HuId> allowedReservedVhuIds)
 	{
 		final ProductId productId = planLine.getProductId();
 		final Quantity qtyToPick = planLine.getQty();
@@ -349,7 +353,7 @@ public class PickingJobCreateCommand
 
 		final PickingJobCreateRepoRequest.StepPickFrom mainPickFrom = PickingJobCreateRepoRequest.StepPickFrom.builder()
 				.pickFromLocatorId(pickFromHU.getLocatorId())
-				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick))
+				.pickFromHUId(extractTopLevelCUIfNeeded(pickFromHU.getTopLevelHUId(), productId, qtyToPick, allowedReservedVhuIds))
 				.build();
 
 		final ImmutableSet<PickingJobCreateRepoRequest.StepPickFrom> pickFromAlternatives = pickFromHU.getAlternatives()
@@ -375,7 +379,7 @@ public class PickingJobCreateCommand
 	 * If the given HU is a top level CU, and it has the storage quantity greater than the qty we have to pick,
 	 * then split out a top level CU for the qty we have to pick.
 	 * <p>
-	 * Why we do this?
+	 * Why do we do this?
 	 * We do this because when we reserve the HU/Qty, the reservation service is splitting out the reserved Qty and tries to keep the CU under the same HU,
 	 * but in this case our CU is a top level one, so we will end up with a new top level CU which is not our <code>pickFromHUId</code>.
 	 * The <code>pickFromHUId</code> will remain there but with qtyToPick less quantity which might not be enough for picking.
@@ -385,36 +389,9 @@ public class PickingJobCreateCommand
 	private HuId extractTopLevelCUIfNeeded(
 			@NonNull final HuId pickFromHUId,
 			@NonNull final ProductId productId,
-			@NonNull final Quantity qtyToPick)
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
 	{
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-
-		// Not a top level CU
-		if (!handlingUnitsBL.isTopLevel(pickFromHU) || !handlingUnitsBL.isVirtual(pickFromHU))
-		{
-			return pickFromHUId;
-		}
-
-		final Quantity storageQty = handlingUnitsBL.getStorageFactory()
-				.getStorage(pickFromHU)
-				.getProductStorage(productId)
-				.getQty(qtyToPick.getUOM());
-
-		// Nothing to split
-		if (storageQty.compareTo(qtyToPick) <= 0)
-		{
-			return pickFromHUId;
-		}
-
-		final I_M_HU extractedCU = HUTransformService.newInstance()
-				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-						.sourceHU(pickFromHU)
-						.productId(productId)
-						.qtyCU(qtyToPick)
-						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-						.build());
-
-		return HuId.ofRepoId(extractedCU.getM_HU_ID());
+		return huService.extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, allowedReservedVhuIds);
 	}
 }

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -54,10 +54,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-abstract class M_HU_Trace_CreateForHU_Template  extends JavaProcess
+abstract class M_HU_Trace_CreateForHU_Template extends JavaProcess
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -65,7 +64,7 @@ abstract class M_HU_Trace_CreateForHU_Template  extends JavaProcess
 	private final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
 	private final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 
-	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -116,8 +115,7 @@ abstract class M_HU_Trace_CreateForHU_Template  extends JavaProcess
 				huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
 			}
 
-			final Set<I_M_InventoryLine> inventoryLines = inventoryRepository.retrieveAllLinesForHU(this, HuId.ofRepoId(hu.getM_HU_ID()));
-			for (final I_M_InventoryLine inventoryLine : inventoryLines)
+			for (final I_M_InventoryLine inventoryLine : inventoryService.retrieveAllLinesForHU(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
 				addLog("Checking for M_Inventory_Line={}", inventoryLine);
 				huTraceEventsCreateAndAdd.createAndAddFor(inventoryLine.getM_Inventory(), ImmutableList.of(inventoryLine));

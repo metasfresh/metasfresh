@@ -1,19 +1,22 @@
 package de.metas.payment.paymentterm;
 
-import de.metas.cache.CCache;
+import com.google.common.collect.ImmutableSet;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.util.Util.ArrayKey;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 
 /*
  * #%L
@@ -40,71 +43,63 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class PaymentTermService
 {
-	private final CCache<ArrayKey, PaymentTermId> cache = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-	/**
-	 * @param basePaymentTermId may be null
-	 * @param discount may be null
-	 */
-	public PaymentTermId getOrCreateDerivedPaymentTerm(
-			@Nullable final PaymentTermId basePaymentTermId,
-			@Nullable final Percent discount)
+	@NonNull
+	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
-		if (basePaymentTermId == null)
-		{
-			return null; // the caller gave us no base to derive from
-		}
-		if (discount == null)
-		{
-			return basePaymentTermId; // the caller did not specify a change, so we return the base we got
-		}
-
-		final ArrayKey key = ArrayKey.of(basePaymentTermId, discount);
-		return cache.getOrLoad(key, () -> getOrCreateDerivedPaymentTerm0(basePaymentTermId, discount));
+		return paymentTermRepository.getById(paymentTermId);
 	}
 
-	private PaymentTermId getOrCreateDerivedPaymentTerm0(
-			@NonNull final PaymentTermId basePaymentTermId,
-			@NonNull final Percent discount)
+	@Nullable
+	public PaymentTermId getOrCreateDerivedPaymentTerm(@Nullable final PaymentTermId basePaymentTermId, @Nullable final Percent discount)
 	{
-		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getRecordById(basePaymentTermId);
+		return paymentTermRepository.getOrCreateDerivedPaymentTerm(basePaymentTermId, discount);
+	}
 
-		// see if the designed payment term already exists
-		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_PaymentTerm.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.toBigDecimal())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTermRecord.getAD_Client_ID())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTermRecord.getAD_Org_ID())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTermRecord.getDiscount2())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_DiscountDays2, basePaymentTermRecord.getDiscountDays2())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AfterDelivery, basePaymentTermRecord.isAfterDelivery())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthCutoff, basePaymentTermRecord.getFixMonthCutoff())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthDay, basePaymentTermRecord.getFixMonthDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthOffset, basePaymentTermRecord.getFixMonthOffset())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_GraceDays, basePaymentTermRecord.getGraceDays())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDueFixed, basePaymentTermRecord.isDueFixed())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsNextBusinessDay, basePaymentTermRecord.isNextBusinessDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDay, basePaymentTermRecord.getNetDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, basePaymentTermRecord.getNetDays())
-				.orderBy().addColumn(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID).endOrderBy()
-				.create()
-				.first();
-		if (existingDerivedPaymentTermRecord != null)
-		{
-			return PaymentTermId.ofRepoId(existingDerivedPaymentTermRecord.getC_PaymentTerm_ID());
-		}
+	@NonNull
+	public Percent getPaymentTermDiscount(PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.getById(paymentTermId).getDiscount();
+	}
 
-		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
-		InterfaceWrapperHelper.copyValues(basePaymentTermRecord, newPaymentTerm);
-		newPaymentTerm.setDiscount(discount.toBigDecimal());
+	public void validateNow(@NonNull final PaymentTermId paymentTermId)
+	{
+		validateNow(ImmutableSet.of(paymentTermId));
+	}
 
-		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.toBigDecimal() + " %)";
-		newPaymentTerm.setName(newName);
-		saveRecord(newPaymentTerm);
+	public void validateBeforeCommit(final PaymentTermId paymentTermId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"PaymentTermService.validateBeforeCommit",
+				Collections.singleton(paymentTermId),
+				this::validateNow
+		);
+	}
 
-		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
+	private void validateNow(@NonNull final Collection<PaymentTermId> paymentTermIds)
+	{
+		paymentTermRepository.newLoaderAndSaver()
+				.syncStateToDatabase(ImmutableSet.copyOf(paymentTermIds));
+	}
+
+	public LocalDate computeDueDateFromPaymentTerm(@NonNull final PaymentTermId paymentTermId, @NonNull final LocalDate dateInvoiced)
+	{
+		final Timestamp dueDateTS = DB.getSQLValueTSEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT paymentTermDueDate(?,?)",
+				paymentTermId, TimeUtil.asTimestamp(dateInvoiced)
+		);
+
+		return TimeUtil.asLocalDate(dueDateTS);
+	}
+
+	public int computeDueDays(
+			@NonNull final PaymentTermId paymentTermId,
+			final Date dateInvoiced,
+			final Date date)
+	{
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId.getRepoId(), dateInvoiced, date);
 	}
 }

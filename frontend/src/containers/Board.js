@@ -1,55 +1,48 @@
-import update from 'immutability-helper';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { connect } from 'react-redux';
+import { shallowEqual, useSelector } from 'react-redux';
 
-import { getData, deleteRequest, patchRequest } from '../api';
+import { deleteRequest, getData, patchRequest } from '../api';
 import { addCard } from '../actions/BoardActions';
 import { getRequest } from '../actions/GenericActions';
-import { connectWS, disconnectWS } from '../utils/websockets';
 
 import { BlankPage } from '../components/BlankPage';
 import Container from '../components/Container';
 import Lanes from '../components/board/Lanes';
 import Sidenav from '../components/board/Sidenav';
+import { useWebsocket } from '../hooks/useWebsocket';
 
-/**
- * @file Class based component.
- * @module Board
- * @extends Component
- */
-class Board extends Component {
-  constructor(props) {
-    super(props);
+const Board = ({ boardId }) => {
+  const sideNavRef = useRef();
+  const [isSideNavDisplayed, setIsSideNavDisplayed] = useState(false);
+  const { board, setBoard } = useBoardData({ boardId });
+  const [targetIndicator, setTargetIndicator] = useState({
+    laneId: null,
+    index: null,
+  });
+  const [sidenavViewId, setSidenavViewId] = useState(null);
 
-    this.state = {
-      sidenav: false,
-      board: props.board || null,
-      targetIndicator: {
-        laneId: null,
-        index: null,
-      },
-      sidenavViewId: null,
-    };
-  }
+  const { modal, rawModal, pluginModal, indicator, breadcrumb } = useSelector(
+    (state) => mapStateToProps(state),
+    shallowEqual
+  );
 
-  UNSAFE_componentWillMount = () => {
-    this.init();
-  };
+  useWebsocket({
+    topic: board?.websocketEndpoint,
+    onMessage: (msg) => {
+      msg.event.events.map((event) => {
+        switch (event.changeType) {
+          case 'laneCardsChanged':
+            laneCardsChanged(event);
+            break;
+        }
+      });
+    },
+  });
 
-  componentWillUnmount = () => {
-    disconnectWS.call(this);
-  };
-
-  /**
-   * @method laneCardsChanged
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   */
-  laneCardsChanged = (event) => {
-    const { board } = this.state;
+  const laneCardsChanged = (event) => {
     const { laneId, cardIds } = event;
     const laneIndex = board.lanes.findIndex((lane) => lane.laneId === laneId);
 
@@ -59,62 +52,15 @@ class Board extends Component {
 
     prom.then((res) => {
       const cards = res.map((item) => item.data);
-      this.addCards(laneIndex, cards);
+      addCards(laneIndex, cards);
     });
 
     // refresh the view once the ws event is received
-    this.sideNav && this.sideNav.instanceRef.refreshView(board.boardId);
+    sideNavRef.current?.instanceRef?.refreshView?.(board.boardId);
   };
 
-  /**
-   * @method init
-   * @summary ToDo: Describe the method
-   */
-  init = () => {
-    const { boardId } = this.props;
-    // in case it's a 404 page because we couldn't match any url
-    const { board } = this.state;
-
-    if (!board) {
-      getData({
-        entity: 'board',
-        docType: boardId,
-      })
-        .then((res) => {
-          this.setState(
-            {
-              board: res.data,
-            },
-            () => {
-              connectWS.call(this, res.data.websocketEndpoint, (msg) => {
-                msg.events.map((event) => {
-                  switch (event.changeType) {
-                    case 'laneCardsChanged':
-                      this.laneCardsChanged(event);
-                      break;
-                  }
-                });
-              });
-            }
-          );
-        })
-        .catch(() => {
-          this.setState({
-            board: '404',
-          });
-        });
-    }
-  };
-
-  /**
-   * @method handleDrop
-   * @summary ToDo: Describe the method
-   * @param {*} card
-   * @param {*} targetLaneId
-   */
-  handleDrop = (card, targetLaneId) => {
-    const { board } = this.state;
-    this.clearTargetIndicator();
+  const handleDrop = (card, targetLaneId) => {
+    clearTargetIndicator();
 
     if (card.initLaneId === 0) {
       // Adding card
@@ -145,81 +91,44 @@ class Board extends Component {
     }
   };
 
-  /**
-   * @method handleHover
-   * @summary ToDo: Describe the method
-   * @param {*} card
-   * @param {*} targetLaneId
-   * @param {*} targetIndex
-   */
-  handleHover = (card, targetLaneId, targetIndex) => {
-    this.setState({
-      targetIndicator: {
-        laneId: targetLaneId,
-        index: targetIndex,
-      },
+  const handleHover = (card, targetLaneId, targetIndex) => {
+    setTargetIndicator({
+      laneId: targetLaneId,
+      index: targetIndex,
     });
   };
 
-  /**
-   * @method clearTargetIndicator
-   * @summary ToDo: Describe the method
-   */
-  clearTargetIndicator = () => {
-    this.setState({
-      targetIndicator: {
-        laneId: undefined,
-        index: undefined,
-      },
+  const clearTargetIndicator = () => {
+    setTargetIndicator({
+      laneId: undefined,
+      index: undefined,
     });
   };
 
-  /**
-   * @method removeCard
-   * @summary ToDo: Describe the method
-   * @param {*} laneIndex
-   * @param {*} cardIndex
-   */
-  removeCard = (laneIndex, cardIndex) => {
-    this.setState((prev) =>
-      update(prev, {
-        board: {
-          lanes: {
-            [laneIndex]: {
-              cards: { $splice: [[cardIndex, 1]] },
-            },
-          },
-        },
-      })
-    );
+  const removeCard = (laneIndex, cardIndex) => {
+    setBoard((prevBoard) => ({
+      ...prevBoard,
+      lanes: prevBoard.lanes.map((lane, lIndex) => {
+        return lIndex !== laneIndex
+          ? lane
+          : {
+              ...lane,
+              cards: lane.cards.filter((_, cIndex) => cIndex !== cardIndex),
+            };
+      }),
+    }));
   };
 
-  /**
-   * @method addCards
-   * @summary ToDo: Describe the method
-   * @param {*} laneIndex
-   * @param {*} cards
-   */
-  addCards = (laneIndex, cards) => {
-    this.setState((prev) =>
-      update(prev, {
-        board: {
-          lanes: {
-            [laneIndex]: {
-              cards: { $set: cards },
-            },
-          },
-        },
-      })
-    );
+  const addCards = (laneIndex, cards) => {
+    setBoard((prevBoard) => ({
+      ...prevBoard,
+      lanes: prevBoard.lanes.map((lane, lIndex) => {
+        return lIndex !== laneIndex ? lane : { ...lane, cards: cards };
+      }),
+    }));
   };
 
-  /**
-   * @method handleCaptionClick
-   * @summary ToDo: Describe the method
-   * @param {*} docPath
-   */
-  handleCaptionClick = (docPath) => {
+  const handleCaptionClick = (docPath) => {
     if (!docPath) return;
 
     const url =
@@ -230,15 +139,7 @@ class Board extends Component {
     window.open(url, '_blank');
   };
 
-  /**
-   * @method handleDelete
-   * @summary ToDo: Describe the method
-   * @param {*} laneId
-   * @param {*} cardId
-   */
-  handleDelete = (laneId, cardId) => {
-    const { board } = this.state;
-
+  const handleDelete = (laneId, cardId) => {
     const laneIndex = board.lanes.findIndex((l) => l.laneId === laneId);
 
     deleteRequest(
@@ -250,101 +151,72 @@ class Board extends Component {
       'card',
       cardId
     ).then(() => {
-      this.removeCard(
+      removeCard(
         laneIndex,
         board.lanes[laneIndex].cards.findIndex((c) => c.cardId === cardId)
       );
     });
   };
 
-  /**
-   * @method setSidenavViewId
-   * @summary ToDo: Describe the method
-   * @param {*} id
-   */
-  setSidenavViewId = (id) => {
-    this.setState({ sidenavViewId: id });
-  };
-
-  render() {
-    const { modal, rawModal, pluginModal, breadcrumb, indicator } = this.props;
-    const { board, targetIndicator, sidenav, sidenavViewId } = this.state;
-
-    return (
-      <DndProvider backend={HTML5Backend}>
-        <Container
-          entity="board"
-          siteName={board && board.caption}
-          windowId={board && board.boardId && String(board.boardId)}
-          {...{ modal, rawModal, pluginModal, breadcrumb, indicator }}
-        >
-          {sidenav && (
-            <Sidenav
-              ref={(c) => (this.sideNav = c)}
-              boardId={board.boardId}
-              viewId={sidenavViewId}
-              onClickOutside={() => this.setState({ sidenav: false })}
-              setViewId={this.setSidenavViewId}
-            />
-          )}
-          {board === '404' ? (
-            <BlankPage what="Board" />
-          ) : (
-            <div className="board">
-              <div key="board-header" className="board-header clearfix">
-                <button
-                  className="btn btn-meta-outline-secondary btn-sm float-right"
-                  onClick={() => this.setState({ sidenav: true })}
-                >
-                  Add new
-                </button>
-              </div>
-              <Lanes
-                {...{ targetIndicator }}
-                key="board-lanes"
-                onDrop={this.handleDrop}
-                onHover={this.handleHover}
-                onReject={this.clearTargetIndicator}
-                onDelete={this.handleDelete}
-                onCaptionClick={this.handleCaptionClick}
-                lanes={board && board.lanes}
-              />
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <Container
+        entity="board"
+        siteName={board && board.caption}
+        windowId={board && board.boardId && String(board.boardId)}
+        {...{ modal, rawModal, pluginModal, breadcrumb, indicator }}
+      >
+        {isSideNavDisplayed && (
+          <Sidenav
+            ref={sideNavRef}
+            boardId={board.boardId}
+            viewId={sidenavViewId}
+            onClickOutside={() => setIsSideNavDisplayed(false)}
+            setViewId={setSidenavViewId}
+          />
+        )}
+        {board === '404' ? (
+          <BlankPage what="Board" />
+        ) : (
+          <div className="board">
+            <div key="board-header" className="board-header clearfix">
+              <button
+                className="btn btn-meta-outline-secondary btn-sm float-right"
+                onClick={() => setIsSideNavDisplayed(true)}
+              >
+                Add new
+              </button>
             </div>
-          )}
-        </Container>
-      </DndProvider>
-    );
-  }
-}
-
-/**
- * @typedef {object} Props Component props
- * @prop {object} modal
- * @prop {array} breadcrumb
- * @prop {func} dispatch
- * @prop {object} rawModal
- * @prop {string} indicator
- * @prop {object} [pluginModal]
- * @prop {*} [updateDocList]
- * @prop {*} [boardId]
- */
-Board.propTypes = {
-  modal: PropTypes.object.isRequired,
-  breadcrumb: PropTypes.array.isRequired,
-  dispatch: PropTypes.func.isRequired,
-  rawModal: PropTypes.object.isRequired,
-  indicator: PropTypes.string.isRequired,
-  pluginModal: PropTypes.object,
-  boardId: PropTypes.any,
-  board: PropTypes.string,
+            <Lanes
+              {...{ targetIndicator }}
+              key="board-lanes"
+              onDrop={handleDrop}
+              onHover={handleHover}
+              onReject={clearTargetIndicator}
+              onDelete={handleDelete}
+              onCaptionClick={handleCaptionClick}
+              lanes={board && board.lanes}
+            />
+          </div>
+        )}
+      </Container>
+    </DndProvider>
+  );
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {object} state
- */
-function mapStateToProps(state) {
+Board.propTypes = {
+  boardId: PropTypes.any,
+};
+
+export default Board;
+
+//
+//
+//
+//
+//
+
+const mapStateToProps = (state) => {
   const { windowHandler, menuHandler } = state;
 
   const { modal, rawModal, pluginModal, indicator } = windowHandler || {
@@ -365,6 +237,29 @@ function mapStateToProps(state) {
     indicator,
     breadcrumb,
   };
-}
+};
 
-export default connect(mapStateToProps)(Board);
+//
+//
+//
+//
+//
+
+const useBoardData = ({ boardId }) => {
+  const [board, setBoard] = useState(null);
+
+  useEffect(() => {
+    if (!boardId) {
+      return;
+    }
+
+    getData({
+      entity: 'board',
+      docType: boardId,
+    })
+      .then((res) => setBoard(res.data))
+      .catch(() => setBoard('404'));
+  }, [boardId]);
+
+  return { board, setBoard };
+};

@@ -96,6 +96,7 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		else
 		{
 			forecastDAO.addForecastLine(context.forecastId, toForecastLineRequest(importRecord));
+
 		}
 
 		importRecord.setM_Forecast_ID(context.forecastId.getRepoId());
@@ -157,9 +158,6 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		return new X_I_Forecast(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	//
-	//
-
 	@Value
 	@Builder
 	private static class ForecastHeaderKey
@@ -191,16 +189,9 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		}
 	}
 
-	//
-	//
-	//
-	//
-	//
-
 	public static final class ForecastImportContext
 	{
 		@Nullable ForecastId forecastId;
 		@Nullable ForecastImportProcess.ForecastHeaderKey forecastHeaderKey;
 	}
-
 }

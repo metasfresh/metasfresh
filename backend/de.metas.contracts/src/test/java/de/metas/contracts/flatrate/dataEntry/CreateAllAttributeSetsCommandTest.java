@@ -25,8 +25,8 @@ package de.metas.contracts.flatrate.dataEntry;
 import com.google.common.collect.ImmutableList;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CreateAllAttributeSetsCommandTest
 {
@@ -66,12 +66,13 @@ class CreateAllAttributeSetsCommandTest
 
 		final List<ImmutableAttributeSet> attributeSets = CreateAllAttributeSetsCommand.withValues(attributeListValues).run();
 
-		assertThat(attributeSets).hasSize(6);
-		assertThat(attributeSets).allSatisfy(
-				as -> {
-					assertThat(as.getAttributeIdByCode(timeOfDay).getRepoId()).isEqualTo(att1.getM_Attribute_ID());
-					assertThat(as.getAttributeIdByCode(typeOfMeal).getRepoId()).isEqualTo(att2.getM_Attribute_ID());
-				}
-		);
+		assertThat(attributeSets)
+				.hasSize(6)
+				.allSatisfy(
+						as -> {
+							assertThat(as.getAttributeIdByCode(timeOfDay).getRepoId()).isEqualTo(att1.getM_Attribute_ID());
+							assertThat(as.getAttributeIdByCode(typeOfMeal).getRepoId()).isEqualTo(att2.getM_Attribute_ID());
+						}
+				);
 	}
 }

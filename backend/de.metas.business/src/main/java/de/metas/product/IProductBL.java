@@ -37,10 +37,10 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
@@ -97,6 +97,8 @@ public interface IProductBL extends ISingletonService
 	 */
 	AttributeSetId getAttributeSetId(I_M_Product product);
 
+	AttributeSetDescriptor getAttributeSet(@NonNull ProductId productId);
+
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
 	 *
@@ -112,7 +114,8 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * @return product/product category's attribute set or null
 	 */
-	I_M_AttributeSet getAttributeSetOrNull(ProductId productId);
+	@Nullable
+	AttributeSetDescriptor getAttributeSetOrNull(ProductId productId);
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
@@ -184,13 +187,6 @@ public interface IProductBL extends ISingletonService
 
 	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
 
-	/**
-	 * Has the Product Instance Attribute
-	 *
-	 * @return true if instance attributes
-	 */
-	boolean isInstanceAttribute(ProductId productId);
-
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
 	String getProductValueAndName(@Nullable ProductId productId);
@@ -230,7 +226,7 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * @return {@code M_Product.M_AttributeSet_ID}
 	 */
-	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+	AttributeSetDescriptor getProductMasterDataSchemaOrNull(ProductId productId);
 
 	/**
 	 * @return {@code M_Product.M_AttributeSet_ID}
@@ -260,6 +256,8 @@ public interface IProductBL extends ISingletonService
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
 
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+
+	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId);
 
 	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
 

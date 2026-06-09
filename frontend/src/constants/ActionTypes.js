@@ -363,30 +363,6 @@ export const DISABLE_OUTSIDE_CLICK = 'DISABLE_OUTSIDE_CLICK';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const INIT_KEYMAP = 'INIT_KEYMAP';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_KEYMAP = 'UPDATE_KEYMAP';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const INIT_HOTKEYS = 'INIT_HOTKEYS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_HOTKEYS = 'UPDATE_HOTKEYS';
-
-/**
- * @constant
  * @type {string} set languages in the app handler
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';

@@ -32,13 +32,16 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -74,11 +77,13 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
@@ -87,13 +92,17 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -124,10 +133,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
+
+	private static final AdMessageKey ERR_HUHasPackages = AdMessageKey.of("de.metas.handlingunits.impl.HUHasPackages");
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -192,6 +204,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public void saveHU(final I_M_HU hu)
+	{
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
 	public IHUStorageFactory getStorageFactory()
 	{
 		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
@@ -199,9 +217,19 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<ProductId> getStoredProducts(final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		return getStorageFactory().streamHUProductStorages(hus)
+				.map(IHUProductStorage::getProductId)
+				.collect(Collectors.toSet());
+	}
+
+	@Override
 	public IHUProductStorage getSingleHUProductStorage(final HuId huId) {return getSingleHUProductStorage(getById(huId));}
 
 	@Override
+	@NonNull
 	public IHUProductStorage getSingleHUProductStorage(final I_M_HU hu) {return getStorageFactory().getSingleHUProductStorage(hu);}
 
 	@Override
@@ -332,10 +360,23 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		if (huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		if (huContext.isDontDestroyHu(huId))
 		{
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;
+		}
+		final boolean isReceiptReversal = huContext.isPropertyTrue(IHUContext.PROPERTY_IsReceiptReversal);
+		if(!isReceiptReversal)
+		{
+			//Loaded here to prevent recursion
+			final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
+			if(!packageIds.isEmpty())
+			{
+				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packageIds.stream().map(PackageId::getRepoId).collect(ImmutableList.toImmutableList()))
+						.markAsUserValidationError();
+			}
 		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
@@ -947,9 +988,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
-		return piItemId != null
-				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
-				: null;
+		return piItemId != null ? getPIItem(piItemId) : null;
+	}
+
+	@Override
+	public @NonNull I_M_HU_PI_Item getPIItem(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
 	}
 
 	@NonNull
@@ -985,6 +1030,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
+	}
+
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersionId(piId);
+	}
+
+	@Override
+	@NonNull
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersion(piId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		return handlingUnitsRepo.retrievePIItemMaterial(version);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
 	}
 
 	@NonNull
@@ -1072,6 +1145,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
 	{
 		return getEffectivePI(getById(huId));
+	}
+
+	@Override
+	public HUPIItemProduct getPIItemProduct(final HUPIItemProductId piItemProductId)
+	{
+		return huPIItemProductDAO.getById(piItemProductId);
 	}
 
 	@Override
@@ -1332,6 +1411,58 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		// Validate first: check if all HUs in the hierarchy can be reserved/unreserved
+		if (reserved)
+		{
+			if (!canReserveRecursively(hu))
+			{
+				return false;
+			}
+		}
+
+		// If validation passes (or unreserving), proceed with reservation
+		setReservedRecursivelyWithoutValidation(hu, reserved);
+		return true;
+	}
+
+	private boolean canReserveRecursively(@NonNull final I_M_HU hu)
+	{
+		if (hu.isReserved())
+		{
+			return false;
+		}
+
+		// Recursively validate all children
+		return handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.stream()
+				.allMatch(this::canReserveRecursively);
+	}
+
+	private void setReservedRecursivelyWithoutValidation(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		hu.setIsReserved(reserved);
+		handlingUnitsRepo.saveHU(hu);
+		handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.forEach(includedHU -> setReservedRecursivelyWithoutValidation(includedHU, reserved));
+	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			setReservedRecursively(hu, reserved);
+		}
+	}
+
+
+	@Override
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
 	{
 		return isWholeHierarchyCleared(getTopLevelParent(huId));
@@ -1436,7 +1567,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}
@@ -1456,6 +1587,24 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU huId)
+	{
+		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu, final HUItemType type)
+	{
+		return handlingUnitsRepo.retrieveItems(hu, type);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version piVersion, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrievePIItems(piVersion, bpartnerId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
 	{
@@ -1468,5 +1617,39 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.collect(ImmutableSet.toImmutableSet());
 
 		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
+	}
+
+	@Override
+	public Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull final ScannedCode scannedCode)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getHUIdByValue(scannedCode.getAsString()),
+				() -> getByExternalBarcode(scannedCode)
+		);
+	}
+
+	private Optional<HuId> getHUIdByValue(final String value)
+	{
+		final HuId huId = HuId.ofHUValueOrNull(value);
+		return huId != null && existsById(huId) ? Optional.of(huId) : Optional.empty();
+	}
+
+	private Optional<HuId> getByExternalBarcode(@NonNull final ScannedCode scannedCode)
+	{
+		return handlingUnitsRepo.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
+				.firstIdOnly();
+	}
+
+	@Override
+	public Set<HuPackingMaterialId> getHUPackingMaterialIds(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveAllItemsNoCache(Collections.singleton(huId))
+				.stream()
+				.map(item -> HuPackingMaterialId.ofRepoIdOrNull(item.getM_HU_PackingMaterial_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 	}
 }

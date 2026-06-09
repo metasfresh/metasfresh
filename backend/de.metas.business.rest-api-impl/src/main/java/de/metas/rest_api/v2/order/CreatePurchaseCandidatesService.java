@@ -25,7 +25,6 @@ package de.metas.rest_api.v2.order;
 import ch.qos.logback.classic.Level;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
@@ -39,6 +38,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -49,9 +49,11 @@ import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.IPurchaseCandidateBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidateQuery;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -98,29 +100,32 @@ public class CreatePurchaseCandidatesService
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final WarehouseService warehouseService;
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
+	@NonNull private final POJsonConverters poJsonConverters;
 
 	public CreatePurchaseCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
-			@NonNull final WarehouseService warehouseService, 
-			@NonNull final ExternalIdentifierProductLookupService productLookupService)
+			@NonNull final WarehouseService warehouseService,
+			@NonNull final ExternalIdentifierProductLookupService productLookupService,
+			@NonNull final POJsonConverters poJsonConverters)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.currencyRepository = currencyRepository;
 		this.warehouseService = warehouseService;
 		this.productLookupService = productLookupService;
+		this.poJsonConverters = poJsonConverters;
 	}
-	
+
 	public Optional<JsonPurchaseCandidate> createCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
 		final Optional<PurchaseCandidateId> alreadyCreatedCandId = retrieveAlreadyCreatedCandId(request);
 		if (alreadyCreatedCandId.isPresent())
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("C_PurchaseCandidate_ID={} with ExternalHeaderId={} and ExternalLineId={} already exists; -> ignore request",
-					alreadyCreatedCandId.get().getRepoId(), request.getExternalHeaderId(), request.getExternalLineId());
+			Loggables.withLogger(logger, Level.INFO).addLog("C_PurchaseCandidate_ID={} with ExternalSystemCode={}, ExternalHeaderId={} and ExternalLineId={} already exists; -> ignore request",
+					alreadyCreatedCandId.get().getRepoId(), request.getExternalSystemCode(), request.getExternalHeaderId(), request.getExternalLineId());
 			return Optional.empty();
 		}
 
@@ -128,9 +133,10 @@ public class CreatePurchaseCandidatesService
 
 		final PurchaseCandidateId save = purchaseCandidateRepo.save(purchaseCandidate);
 		return Optional.of(JsonPurchaseCandidate.builder()
+				.externalSystemCode(poJsonConverters.getExternalSystemTypeById(purchaseCandidate))
 				.metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
-				.externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
-				.externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+				.externalHeaderId(JsonExternalIds.ofOrNull(purchaseCandidate.getExternalHeaderId()))
+				.externalLineId(JsonExternalIds.ofOrNull((purchaseCandidate.getExternalLineId())))
 				.purchaseDateOrdered(purchaseCandidate.getPurchaseDateOrdered())
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
@@ -171,6 +177,7 @@ public class CreatePurchaseCandidatesService
 
 		final PurchaseCandidate.PurchaseCandidateBuilder purchaseCandidateBuilder = PurchaseCandidate.builder()
 				.orgId(orgId)
+				.externalSystemId(poJsonConverters.getExternalSystemIdByExternalSystemCode(request))
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
 				.poReference(request.getPoReference())
@@ -207,17 +214,21 @@ public class CreatePurchaseCandidatesService
 		return purchaseCandidate;
 	}
 
+	@NonNull
 	private Optional<PurchaseCandidateId> retrieveAlreadyCreatedCandId(@NonNull final JsonPurchaseCandidateCreateItem purchaseCandRequest)
 	{
-		if (Check.isBlank(purchaseCandRequest.getExternalHeaderId())
+		if (Check.isBlank(purchaseCandRequest.getExternalSystemCode())
+				|| Check.isBlank(purchaseCandRequest.getExternalHeaderId())
 				|| Check.isBlank(purchaseCandRequest.getExternalLineId()))
 		{
 			return Optional.empty();
 		}
 
-		return purchaseCandidateRepo.getByExternalHeaderAndLineId(purchaseCandRequest.getExternalHeaderId(),
-				purchaseCandRequest.getExternalLineId());
-
+		return purchaseCandidateRepo.getIdByQuery(PurchaseCandidateQuery.builder()
+				.externalSystemType(ExternalSystemType.ofValue(purchaseCandRequest.getExternalSystemCode()))
+				.externalHeaderId(purchaseCandRequest.getExternalHeaderId())
+				.externalLineId(purchaseCandRequest.getExternalLineId())
+				.build());
 	}
 
 	private AttributeSetInstanceId getAttributeSetInstanceId(@Nullable final JsonAttributeSetInstance attributeSetInstance)

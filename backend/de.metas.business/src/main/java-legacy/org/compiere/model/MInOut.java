@@ -413,6 +413,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+		setExternalSystem_ID(order.getExternalSystem_ID());
 
 		// Drop shipment
 		// metas start: cg: 01717
@@ -514,6 +515,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser2_ID(invoice.getUser2_ID());
 		setEMail(invoice.getEMail());
 		setAD_InputDataSource_ID(invoice.getAD_InputDataSource_ID());
+		setExternalSystem_ID(invoice.getExternalSystem_ID());
 
 		// metas
 		copyAdditionalCols(order);

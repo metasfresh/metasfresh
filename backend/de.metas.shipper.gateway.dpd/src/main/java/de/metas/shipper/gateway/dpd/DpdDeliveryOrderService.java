@@ -26,6 +26,7 @@ import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -41,7 +42,7 @@ public class DpdDeliveryOrderService implements DeliveryOrderService
 	private final DpdDeliveryOrderRepository dpdDeliveryOrderRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}

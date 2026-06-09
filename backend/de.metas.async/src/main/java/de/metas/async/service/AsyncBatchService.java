@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -88,9 +88,9 @@ public class AsyncBatchService
 				.count();
 
 		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
-																" allWPSize: " + workPackages.size() +
-																" processedWPSize: " + workPackagesProcessedCount +
-																" erroredWPSize: " + workPackagesWithErrorCount);
+				" allWPSize: " + workPackages.size() +
+				" processedWPSize: " + workPackagesProcessedCount +
+				" erroredWPSize: " + workPackagesWithErrorCount);
 
 		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
 				.clientId(Env.getClientId())
@@ -104,22 +104,24 @@ public class AsyncBatchService
 	}
 
 	/**
-	 * Invokes the given {@code supplier} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
-	 * It's mandatory for the given {@code supplier} to assign those workpackages to the given async batch.
-	 * If the supplier enqueues zero workpackages, that's OK and nothing is done.
+	 * Invokes the given {@code workPackageEnqueuer} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
+	 * <p>
+	 * <b></b>It's mandatory for the given {@code workPackageEnqueuer} to assign those workpackages to the given async batch.</b>
+	 * If the workPackageEnqueuer enqueues zero workpackages, that's OK and nothing is done.
 	 * <br/>
-	 * @return the enqueuing result as returned by the supplier.
 	 *
+	 * @param workPackageEnqueuer a workPackageEnqueuer that enqueues workpackages.
+	 * @return the enqueuing result as returned by the workPackageEnqueuer.
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
-	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> workPackageEnqueuer, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final T result;
 		try
 		{
 			asyncBatchObserver.observeOn(asyncBatchId);
 
-			result = trxManager.callInNewTrx(supplier::get); // let the supplier enqueue its workpackages
+			result = trxManager.callInNewTrx(workPackageEnqueuer::get); // let the workPackageEnqueuer enqueue its workpackages
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
@@ -146,22 +148,23 @@ public class AsyncBatchService
 		final Optional<Instant> startMonitoringFrom = asyncBatchObserver.getStartMonitoringTimestamp(asyncBatchId);
 
 		if (!startMonitoringFrom.isPresent())
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
+		{ 
+			// Consider removing the call to loggables altogether. If the asyncBatch is not observers, we actually don't for it here.
+			Loggables.withLogger(logger, Level.DEBUG).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} is not monitored; =>Return empty list", asyncBatchId.getRepoId());
 			return ImmutableList.of();
 		}
 
 		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
 
-		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}!",
-														asyncBatchId, startMonitoringFrom.get(), workPackages.size());
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}",
+				asyncBatchId, startMonitoringFrom.get(), workPackages.size());
 
 		final List<I_C_Queue_WorkPackage> filteredWPs = workPackages.stream()
 				.filter(workPackage -> qualifiesForBatchProcessingStatus(workPackage, startMonitoringFrom.get()))
 				.collect(ImmutableList.toImmutableList());
 
-		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}!",
-														asyncBatchId, startMonitoringFrom.get(), filteredWPs.size());
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}",
+				asyncBatchId, startMonitoringFrom.get(), filteredWPs.size());
 
 		return filteredWPs;
 	}
@@ -170,12 +173,12 @@ public class AsyncBatchService
 	 *
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * This is important as we want to avoid old "with-error" work packages failing a new async batch run.
 	 * <br/>
 	 * <br/>
 	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * This is important as we want to consider work packages that were created in the past but only run now.
 	 * <br/>
 	 * <br/>
 	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.

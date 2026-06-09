@@ -16,6 +16,7 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -85,10 +86,7 @@ public interface IHUInOutBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getTU_HU_PI(I_M_InOutLine inoutLine);
 
-	/**
-	 * Destroy all HUs which are assigned to this receipt.
-	 */
-	void destroyHUs(I_M_InOut inout);
+	void destroyHandlingUnitsIfReversedInboundTransaction(@NonNull I_M_InOut reversalInout);
 
 	/**
 	 * Set shipment line's QtyEntered, QtyEnteredTU, M_HU_PI_Item_Product from calculated or from overrides, based on {@link I_M_InOutLine#isManualPackingMaterial()}.
@@ -127,4 +125,25 @@ public interface IHUInOutBL extends ISingletonService
 	boolean isValidHuForReturn(InOutId inOutId, HuId huId);
 
 	void validateMandatoryOnShipmentAttributes(I_M_InOut shipment);
+
+	/**
+	 * Stamps {@link org.adempiere.mm.attributes.api.AttributeConstants#ATTR_DateReceived} with {@code inout.getMovementDate()}
+	 * on every receipt line's ASI. No-op on shipments and vendor returns. Use at {@code BEFORE_COMPLETE} so HUs
+	 * created downstream during completion inherit the date via the existing line-ASI → HU propagation.
+	 */
+	void setReceivedDateOnReceiptLineASIs(@NonNull I_M_InOut inout);
+
+	/**
+	 * Stamps {@link org.adempiere.mm.attributes.api.AttributeConstants#ATTR_DateReceived} with {@code inout.getMovementDate()}
+	 * on every assigned HU. No-op on shipments and vendor returns. Always overwrites. Use at {@code AFTER_COMPLETE} to
+	 * cover HUs that already existed before completion (e.g. vendor receipt schedule HUs).
+	 */
+	void setReceivedDateOnReceiptHUs(@NonNull I_M_InOut inout);
+
+	boolean isReversal(I_M_InOut inout);
+
+	List<I_M_HU> retrieveHandlingUnits(I_M_InOut inOut);
+
+	@NonNull
+	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(Set<InOutLineId> shipmentLineIds);
 }

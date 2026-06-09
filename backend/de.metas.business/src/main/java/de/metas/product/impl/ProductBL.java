@@ -18,6 +18,7 @@ import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -46,6 +47,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,11 +55,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.MAttributeSet;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -353,6 +353,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public AttributeSetDescriptor getAttributeSet(@NonNull final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = getAttributeSetId(productId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
+	}
+
+	@Override
 	public AttributeSetId getAttributeSetId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -361,7 +368,7 @@ public final class ProductBL implements IProductBL
 
 	@Override
 	@Nullable
-	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -369,7 +376,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@Nullable
@@ -437,22 +444,8 @@ public final class ProductBL implements IProductBL
 		final AttributeSetId attributeSetId = getAttributeSetId(product);
 		if (!attributeSetId.isNone())
 		{
-			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
-			if (mas == null || !mas.isInstanceAttribute())
-			{
-				return false;
-			}
-			// Outgoing transaction
-			else if (isSOTrx)
-			{
-				return mas.isMandatory();
-			}
-			// Incoming transaction
-			else
-			{
-				// isSOTrx == false
-				return mas.isMandatoryAlways();
-			}
+			return attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+					.isASIMandatory(SOTrx.ofBoolean(isSOTrx));
 		}
 		//
 		// Default not mandatory
@@ -466,13 +459,6 @@ public final class ProductBL implements IProductBL
 	{
 		final I_M_Product product = getById(productId);
 		return isASIMandatory(product, isSOTrx);
-	}
-
-	@Override
-	public boolean isInstanceAttribute(@NonNull final ProductId productId)
-	{
-		final I_M_AttributeSet mas = getAttributeSetOrNull(productId);
-		return mas != null && mas.isInstanceAttribute();
 	}
 
 	@Override
@@ -683,7 +669,7 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -691,7 +677,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@NonNull
@@ -731,7 +717,7 @@ public final class ProductBL implements IProductBL
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
 		return productRecord.getDiscontinuedFrom() == null
-				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+				|| !TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).isAfter(targetDate);
 	}
 
 	@Override
@@ -829,6 +815,12 @@ public final class ProductBL implements IProductBL
 		}
 
 		return productsRepo.getProductIdByEAN13ProductCode(ean13ProductCode, clientId);
+	}
+
+	@Override
+	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId)
+	{
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, null);
 	}
 
 	@Override

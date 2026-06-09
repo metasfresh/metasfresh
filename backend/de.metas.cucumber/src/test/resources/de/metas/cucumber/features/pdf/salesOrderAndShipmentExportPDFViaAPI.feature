@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0198_System_Documents_Jasper
+@allure.label.feature:F00198
 @ghActions:run_on_executor5
 Feature: PDF Export Tests via API
+## F00198: PDF
 
   Background:
     Given infrastructure and metasfresh are running
@@ -40,6 +43,8 @@ Feature: PDF Export Tests via API
       | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
 
   @from:cucumber
+@allure.label.epic:E0198_System_Documents_Jasper
+@allure.label.feature:F00198
   @Id:S0476_010
   @Id:S0477_010
   Scenario: PDF retriever for Sales Orders and Shipments

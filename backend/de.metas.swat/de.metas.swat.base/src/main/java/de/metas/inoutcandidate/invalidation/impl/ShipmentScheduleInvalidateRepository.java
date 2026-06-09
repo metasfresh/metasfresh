@@ -29,7 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
@@ -114,6 +114,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		final boolean flaggedForRrecompute = result == 1;
 		return flaggedForRrecompute;
+	}
+
+	@Override
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(
+						I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID,
+						shipmentScheduleIds)
+				.create()
+				.noneMatch();
 	}
 
 	@Override
@@ -319,9 +330,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// Not already exists
 		sqlWhereClause.append("\n AND ");
 		sqlWhereClause.append(" NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e "
-									  + " where "
-									  + " e.AD_PInstance_ID is NULL"
-									  + " and e.M_ShipmentSchedule_ID=" + ssAlias + "" + COLUMNNAME_M_ShipmentSchedule_ID + ")");
+				+ " where "
+				+ " e.AD_PInstance_ID is NULL"
+				+ " and e.M_ShipmentSchedule_ID=" + ssAlias + "" + COLUMNNAME_M_ShipmentSchedule_ID + ")");
 
 		//
 		// Build INSERT SQL
@@ -410,10 +421,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append(" EXISTS (select 1 from " + I_M_Locator.Table_Name + " loc"
-									   + " WHERE"
-									   + "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
-									   + " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
-									   + ")");
+					+ " WHERE"
+					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
+					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
+					+ ")");
 		}
 
 		//
@@ -425,9 +436,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			whereClause.append("\n\t AND (");
 			whereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID + " IS NULL");
 			whereClause.append(" OR EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
-									   + " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
-									   + " AND (" + attributeSegmentsWhereClause + ")"
-									   + ")");
+					+ " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
+					+ " AND (" + attributeSegmentsWhereClause + ")"
+					+ ")");
 			whereClause.append(")");
 		}
 
@@ -499,7 +510,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		for (final ShipmentScheduleAttributeSegment segment : attributeSegments)
 		{
 			final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+			final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 			if (segment.getAttributeId() != null)
 			{
@@ -513,7 +524,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			{
 				continue;
 			}
-			attributeDAO
+			asiBL
 					.getAttributeIdsByAttributeSetInstanceId(segment.getAttributeSetInstanceId())
 					.stream()
 					.filter(attributesBL::isStorageRelevant)
@@ -656,7 +667,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	/**
 	 * Enqueue one workpackage per each async batch id that was flagged for recomputing in the chunk identified by the {@code chunkUUID} param.
-	 *
+	 * <p>
 	 * dev-note: we need this one workpackage per async batch separation to be sure that any enqueued workpackage within the same certain async batch
 	 * will also wait for the {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor} to finish work.
 	 */

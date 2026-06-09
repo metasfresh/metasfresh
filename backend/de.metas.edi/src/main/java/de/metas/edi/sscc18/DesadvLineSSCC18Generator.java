@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
@@ -82,7 +82,7 @@ public class DesadvLineSSCC18Generator
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final SSCC18CodeBL sscc18CodeBL;
-	private final IDesadvBL desadvBL;
+	private final DesadvBL desadvBL;
 	private final EDIDesadvPackService ediDesadvPackService;
 
 	//
@@ -108,7 +108,7 @@ public class DesadvLineSSCC18Generator
 	@Builder
 	private DesadvLineSSCC18Generator(
 			@NonNull final SSCC18CodeBL sscc18CodeService,
-			@NonNull final IDesadvBL desadvBL,
+			@NonNull final DesadvBL desadvBL,
 			final boolean printExistingLabels,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final EDIDesadvPackService ediDesadvPackService)

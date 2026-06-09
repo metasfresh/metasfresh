@@ -5,9 +5,9 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.config.DocOutboundConfig;
+import de.metas.document.archive.config.DocOutboundConfigService;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.logging.LogManager;
@@ -21,8 +21,10 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -73,12 +75,13 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient org.adempiere.archive.api.IArchiveDAO archiveDAO = Services.get(org.adempiere.archive.api.IArchiveDAO.class);
 	private final transient IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
+	private final transient DocOutboundConfigService docOutboundConfigService = SpringContextHolder.instance.getBean(DocOutboundConfigService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public Result processWorkPackage(
 			@NonNull final I_C_Queue_WorkPackage workpackage,
-			@NonNull final String localTrxName)
+			@Nullable final String ignored_localTrxName)
 	{
 		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
@@ -111,13 +114,13 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// Get Document Outbound Configuration
-		final I_C_Doc_Outbound_Config config = Services.get(IDocOutboundDAO.class).retrieveConfigForModel(model);
+		final DocOutboundConfig config = docOutboundConfigService.retrieveConfigForModel(model);
 		if (config == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Doc_Outbound_Config@ (" + model + ")");
 		}
 
-		final String ccPath = config.getCCPath();
+		final String ccPath = config.getCcPath();
 		if (Check.isEmpty(ccPath, true))
 		{
 			// Doc Outbound config does not have CC Path set

@@ -22,16 +22,24 @@
 
 package de.metas.cucumber.stepdefs.aggregation;
 
+import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_Aggregation_StepDefData extends StepDefData<I_C_Aggregation>
+public class C_Aggregation_StepDefData extends StepDefData<I_C_Aggregation> implements StepDefDataGetIdAware<AggregationId, I_C_Aggregation>
 {
 	public C_Aggregation_StepDefData()
 	{
 		super(I_C_Aggregation.class);
+	}
+
+	@Override
+	public AggregationId extractIdFromRecord(final I_C_Aggregation record)
+	{
+		return AggregationId.ofRepoId(record.getC_Aggregation_ID());
 	}
 }

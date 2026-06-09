@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 @ghActions:run_on_executor4
 Feature: sales order
+## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +13,9 @@ Feature: sales order
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: we can create and complete a sales order
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -41,6 +48,9 @@ Feature: sales order
       | s_ol_1     | ol_1                      | N             |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   @Id:S0473
   Scenario: we can create and complete a sales order with external ids and those ids are propagated to shipment schedule
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
@@ -77,6 +87,9 @@ Feature: sales order
       | s_ol_1                           | externalHeaderId_08122025_1 | externalLineId_08122025_1 |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: we can generate a mediated purchase order from a sales order
     Given metasfresh contains M_Products:
       | Identifier | Name            |
@@ -127,6 +140,9 @@ Feature: sales order
     And the shipment schedule identified by s_ol_2 is processed after not more than 30 seconds
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: we can generate a mediated purchase order from a sales order with dropship address
     And metasfresh contains M_Products:
       | Identifier | Name             |
@@ -178,6 +194,9 @@ Feature: sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: we can generate a purchase order from a sales order, exploding BOM components
     Given metasfresh contains M_Products:
       | Identifier | Name                |

@@ -23,12 +23,20 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
-public class M_HU_PackingMaterial_StepDefData extends StepDefData<I_M_HU_PackingMaterial>
+public class M_HU_PackingMaterial_StepDefData extends StepDefData<I_M_HU_PackingMaterial> implements StepDefDataGetIdAware<HuPackingMaterialId, I_M_HU_PackingMaterial>
 {
 	public M_HU_PackingMaterial_StepDefData()
 	{
 		super(I_M_HU_PackingMaterial.class);
+	}
+
+	@Override
+	public HuPackingMaterialId extractIdFromRecord(final I_M_HU_PackingMaterial record)
+	{
+		return HuPackingMaterialId.ofRepoId(record.getM_HU_PackingMaterial_ID());
 	}
 }

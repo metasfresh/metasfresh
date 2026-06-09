@@ -28,7 +28,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
  * #L%
  */
 
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 

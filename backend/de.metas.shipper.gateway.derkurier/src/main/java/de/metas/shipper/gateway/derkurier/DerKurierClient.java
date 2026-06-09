@@ -2,6 +2,9 @@ package de.metas.shipper.gateway.derkurier;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessInfo;
 import de.metas.report.PrintCopies;
@@ -18,6 +21,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -39,6 +43,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Properties;
+
+import static de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct.OVERNIGHT;
 
 /*
  * #%L
@@ -88,15 +94,9 @@ public class DerKurierClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new UnsupportedOperationException("DerKurierClient.createDeliveryOrder is not implemented");
 	}
 
 	@VisibleForTesting
@@ -152,9 +152,7 @@ public class DerKurierClient implements ShipperGatewayClient
 			@NonNull final Routing routing,
 			@NonNull final DeliveryOrder originalDeliveryOrder)
 	{
-		final OrderId orderId = OrderId.of(
-				getShipperGatewayId(),
-				Integer.toString(originalDeliveryOrder.getId().getRepoId()));
+		final OrderId orderId = OrderId.of(getShipperGatewayId(), originalDeliveryOrder.getId());
 
 		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
 				.orderId(orderId)
@@ -246,5 +244,16 @@ public class DerKurierClient implements ShipperGatewayClient
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		return ImmutableList.of();
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(OVERNIGHT.getCode())
+						.build())
+				.build();
 	}
 }

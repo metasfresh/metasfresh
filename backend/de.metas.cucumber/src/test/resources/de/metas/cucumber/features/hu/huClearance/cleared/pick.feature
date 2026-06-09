@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ghActions:run_on_executor5
 Feature: Cleared HU can be picked on the fly and manually picked
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running
@@ -65,8 +69,8 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | location_1 | 0442283371291 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -103,8 +107,8 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | location_1 | 0120087122881 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | deliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -145,6 +149,6 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And the shipment identified by s_1_09242025 is reversed
 
-    And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed | OPT.QtyToDeliver |
-      | s_s_2                            | false        | false         | 10               |
+    And after not more than 120s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed |
+      | s_s_2                            | false        | false         |

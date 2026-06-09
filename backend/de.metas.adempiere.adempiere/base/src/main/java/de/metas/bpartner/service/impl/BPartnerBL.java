@@ -1,9 +1,32 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -19,6 +42,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
@@ -33,6 +57,8 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -71,7 +97,6 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
-	private final static String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
@@ -102,7 +127,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull Class<T> type)
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull final Class<T> type)
 	{
 		return bpartnersRepo.getById(bpartnerId, type);
 	}
@@ -707,10 +732,13 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId)
+	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
-		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode(bpartner.getPaymentRule());
+
+		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode( soTrx.isSales()
+				? bpartner.getPaymentRule()
+				: bpartner.getPaymentRulePO());
 		if (bpartnerPaymentRule.isPresent())
 		{
 			return bpartnerPaymentRule;
@@ -718,9 +746,10 @@ public class BPartnerBL implements IBPartnerBL
 		//
 		// No payment rule in BP. Fallback to group.
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
-		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
-		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
+		return PaymentRule.optionalOfCode( soTrx.isSales()
+				? bpGroup.getPaymentRule()
+				: bpGroup.getPaymentRulePO());
 	}
 
 	@Override
@@ -929,5 +958,87 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		return bpartner.isInvoiceEmailCcToMember();
+	}
+	
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Override
+	public List<I_C_BPartner_Location> getBPartnerLocationsByIds(final Set<BPartnerLocationId> bpartnerLocationIds)
+	{
+		return bpartnersRepo.retrieveBPartnerLocationsByIds(bpartnerLocationIds);
+	}
+
+	@Nullable
+	@Override
+	public I_AD_User retrieveContact(
+			final Properties ctx,
+			final int bpartnerId,
+			final boolean isSOTrx,
+			final String trxName)
+	{
+		return bpartnersRepo.retrieveContact(ctx, bpartnerId, isSOTrx, trxName);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final IBPartnerDAO.BPartnerLocationQuery query)
+	{
+		return bpartnersRepo.retrieveBPartnerLocation(query);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+	}
+
+	@Nullable
+	@Override
+	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
+	{
+		return bpartnersRepo.getContactLocationEmail(contactId);
+	}
+
+	@Nullable
+	@Override
+	public PricingSystemId retrievePricingSystemIdOrNull(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
+	{
+		return bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
+	}
+
+	@Nullable
+	@Override
+	public ShipperId getEffectiveShipperId(@Nullable final BPartnerLocationId bPartnerDropShipLocationId,
+										   @NonNull final BPartnerLocationId bPartnerLocationId)
+	{
+		if (bPartnerDropShipLocationId != null)
+		{
+			return CoalesceUtil.coalesceSuppliers(
+					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerDropShipLocationId),
+					() -> bpartnersRepo.getShipperId(bPartnerDropShipLocationId.getBpartnerId()),
+					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerLocationId),
+					() -> bpartnersRepo.getShipperId(bPartnerLocationId.getBpartnerId())
+			);
+		}
+		else
+		{
+			return CoalesceUtil.coalesceSuppliers(
+					() -> bpartnersRepo.getShipperIdByBPLocationId(bPartnerLocationId),
+					() -> bpartnersRepo.getShipperId(bPartnerLocationId.getBpartnerId())
+			);
+		}
+
 	}
 }

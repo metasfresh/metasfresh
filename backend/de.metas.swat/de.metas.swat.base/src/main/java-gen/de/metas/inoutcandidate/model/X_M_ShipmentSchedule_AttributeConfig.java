@@ -35,6 +35,18 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
 	}
 
 	@Override
+	public void setIsHUAttributeOverridesASI (final boolean IsHUAttributeOverridesASI)
+	{
+		set_Value (COLUMNNAME_IsHUAttributeOverridesASI, IsHUAttributeOverridesASI);
+	}
+
+	@Override
+	public boolean isHUAttributeOverridesASI()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHUAttributeOverridesASI);
+	}
+
+	@Override
 	public void setM_Attribute_ID (final int M_Attribute_ID)
 	{
 		if (M_Attribute_ID < 1) 

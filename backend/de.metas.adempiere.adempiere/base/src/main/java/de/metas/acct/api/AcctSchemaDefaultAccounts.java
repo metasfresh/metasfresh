@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,13 +33,11 @@ import lombok.Value;
 @Builder
 public class AcctSchemaDefaultAccounts
 {
-	@NonNull
-	Account realizedGainAcct;
-	@NonNull
-	Account realizedLossAcct;
+	@NonNull Account realizedGainAcct;
+	@NonNull Account realizedLossAcct;
 
-	@NonNull
-	Account unrealizedGainAcct;
-	@NonNull
-	Account unrealizedLossAcct;
+	@NonNull Account unrealizedGainAcct;
+	@NonNull Account unrealizedLossAcct;
+
+	@Nullable Account payBankFeeAcct;
 }

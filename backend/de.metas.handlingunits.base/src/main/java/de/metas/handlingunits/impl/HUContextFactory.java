@@ -74,8 +74,8 @@ public class HUContextFactory implements IHUContextFactory
 			return;
 		}
 
-		final Boolean configured = huContext.getProperty(IHUContext.PROPERTY_Configured);
-		if (configured != null && configured)
+		final boolean configured = huContext.isPropertyTrue(IHUContext.PROPERTY_Configured);
+		if (configured)
 		{
 			return;
 		}

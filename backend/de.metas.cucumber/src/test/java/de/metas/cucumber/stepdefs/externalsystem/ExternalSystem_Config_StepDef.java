@@ -22,9 +22,14 @@
 
 package de.metas.cucumber.stepdefs.externalsystem;
 
+import de.metas.audit.apirequest.HttpMethod;
 import de.metas.cucumber.stepdefs.AD_UserGroup_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemId;
@@ -33,12 +38,19 @@ import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.leichmehl.PLUType;
+import de.metas.externalsystem.endpoint.EndpointAuthType;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -51,6 +63,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
@@ -79,12 +93,15 @@ public class ExternalSystem_Config_StepDef
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
+	private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionRepository.class);
 
 	private final ExternalSystem_Config_StepDefData configTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final AD_UserGroup_StepDefData userGroupTable;
+	private final ExternalSystem_Config_ScriptedExportConversion_StepDefData scriptedExportConversionConfigTable;
 
 	private final TestContext testContext;
 
@@ -92,11 +109,13 @@ public class ExternalSystem_Config_StepDef
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
 			@NonNull final AD_UserGroup_StepDefData userGroupTable,
+			@NonNull final ExternalSystem_Config_ScriptedExportConversion_StepDefData scriptedExportConversionConfigTable,
 			final TestContext testContext)
 	{
 		this.configTable = configTable;
 		this.leichMehlConfigTable = leichMehlConfigTable;
 		this.userGroupTable = userGroupTable;
+		this.scriptedExportConversionConfigTable = scriptedExportConversionConfigTable;
 		this.testContext = testContext;
 	}
 
@@ -329,5 +348,62 @@ public class ExternalSystem_Config_StepDef
 		{
 			throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
+	}
+
+	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion")
+	public void add_externalSystemConfigWithScriptedExportConversion(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::saveExternalSystemConfigWithScriptedExportConversion);
+	}
+
+	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier parentConfigIdentifier = row.getAsIdentifier(COLUMNNAME_ExternalSystem_Config_ID);
+		final StepDefDataIdentifier scriptedConfigIdentifier = row.getAsIdentifier(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID);
+
+		final ValueAndName valueAndName = row.suggestValueAndName();
+
+		// Create an outbound endpoint with defaults
+		final I_ExternalSystem_Endpoint outboundEndpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+		outboundEndpoint.setOutboundHttpEP("http://localhost:9999");
+		outboundEndpoint.setOutboundHttpMethod(HttpMethod.POST.getCode());
+		outboundEndpoint.setType(X_ExternalSystem_Endpoint.TYPE_HTTP);
+		outboundEndpoint.setAuthType(EndpointAuthType.Token.getCode());
+		outboundEndpoint.setAuthToken("Bearer xyz");
+		outboundEndpoint.setValue(valueAndName.getValue());
+		InterfaceWrapperHelper.save(outboundEndpoint);
+
+		// Create parent config with a ScriptedExportConversion type
+		final I_ExternalSystem_Config externalSystemParentConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
+		externalSystemParentConfig.setExternalSystem_ID(externalSystemRepository.getByType(ExternalSystemType.ScriptedExportConversion).getId().getRepoId());
+		externalSystemParentConfig.setName(valueAndName.getName());
+		InterfaceWrapperHelper.save(externalSystemParentConfig);
+
+		configTable.put(parentConfigIdentifier, externalSystemParentConfig);
+
+		// Create a scripted export conversion config
+		final I_ExternalSystem_Config_ScriptedExportConversion scriptedExportConversionConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
+		scriptedExportConversionConfig.setExternalSystem_Config_ID(externalSystemParentConfig.getExternalSystem_Config_ID());
+		scriptedExportConversionConfig.setExternalSystem_Endpoint_ID(outboundEndpoint.getExternalSystem_Endpoint_ID());
+		scriptedExportConversionConfig.setScriptIdentifier("echo");
+
+		final String processValue = row.getAsString(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_AD_Process_OutboundData_ID + ".Value");
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(processValue);
+		Check.assumeNotNull(processId, "ProcessId shall be found by value: {}", processValue);
+		scriptedExportConversionConfig.setAD_Process_OutboundData_ID(processId.getRepoId());
+
+		final AdTableId tableId = AdTableId.ofRepoId(tableDAO.retrieveTableId(row.getAsString("TableName")));
+		scriptedExportConversionConfig.setAD_Table_ID(tableId.getRepoId());
+
+		scriptedExportConversionConfig.setExternalSystemValue(valueAndName.getValue());
+
+
+		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
+
+		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(
+				ExternalSystemScriptedExportConversionConfigId.ofRepoId(scriptedExportConversionConfig.getExternalSystem_Config_ScriptedExportConversion_ID())
+		);
+
+		scriptedExportConversionConfigTable.put(scriptedConfigIdentifier, config);
 	}
 }

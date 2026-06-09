@@ -57,7 +57,8 @@ public class C_OrderLine
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 					I_C_OrderLine.COLUMNNAME_M_Product_ID,
-					I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
+					I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID,
+					I_C_OrderLine.COLUMNNAME_M_Warehouse_ID })
 	public void validateQtyAvailableForSale(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		if (!availableForSalesUtil.isOrderLineEligibleForFeature(orderLineRecord))
@@ -94,7 +95,8 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_QtyOrdered,
 					I_C_OrderLine.COLUMNNAME_M_Product_ID,
 					I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID,
-					I_C_OrderLine.COLUMNNAME_AD_Org_ID })
+					I_C_OrderLine.COLUMNNAME_AD_Org_ID,
+					I_C_OrderLine.COLUMNNAME_M_Warehouse_ID })
 	public void triggerSyncAvailableForSales(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		syncOrderLineWithAvailableForSales(orderLineRecord);

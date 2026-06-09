@@ -43,7 +43,8 @@ public interface ICurrentCostsRepository
 	@Nullable
 	CurrentCost getOrNull(CostSegmentAndElement costSegmentAndElement);
 
-	CurrentCost getOrCreate(CostSegmentAndElement costSegmentAndElement);
+	/** Like {@link #getOrNull} but creates the record if missing and locks it for update (held until trx end). */
+	CurrentCost getOrCreateForUpdate(CostSegmentAndElement costSegmentAndElement);
 
 	CurrentCost create(CostSegmentAndElement costSegmentAndElement);
 

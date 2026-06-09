@@ -80,7 +80,7 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).getAttributeById(adrAttributeId);
+		return Services.get(IAttributeDAO.class).getAttributeRecordById(adrAttributeId);
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
@@ -40,6 +41,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.X_C_Project;
 import org.slf4j.Logger;
@@ -78,6 +80,12 @@ public class ProjectService
 	public I_C_Project getById(@NonNull final ProjectId id)
 	{
 		return projectRepository.getById(id);
+	}
+
+	@Nullable
+	public ProjectId getIdByValueOrNull(@NonNull final String projectValue)
+	{
+		return projectRepository.getIdByValueOrNull(projectValue);
 	}
 
 	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId id)
@@ -121,21 +129,25 @@ public class ProjectService
 		// Project Type (and related)
 		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrg(
 				request.getProjectCategory(),
-				request.getOrgId());
+				request.getOrgId(),
+				false);
 		project.setC_ProjectType_ID(projectTypeId.getRepoId());
 		updateFromProjectType(project);
 
 		//
 		// BPartner & Location
-		project.setC_BPartner_ID(request.getBpartnerAndLocationId().getBpartnerId().getRepoId());
-		project.setC_BPartner_Location_ID(request.getBpartnerAndLocationId().getRepoId());
+		if (request.getBpartnerAndLocationId() != null)
+		{
+			project.setC_BPartner_ID(request.getBpartnerAndLocationId().getBpartnerId().getRepoId());
+			project.setC_BPartner_Location_ID(request.getBpartnerAndLocationId().getRepoId());
+		}
 		project.setAD_User_ID(BPartnerContactId.toRepoId(request.getContactId()));
 
 		//
 		// Pricing Info
 		project.setC_Currency_ID(request.getCurrencyId().getRepoId());
-		project.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
-		project.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		project.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(request.getPriceListVersionId()));
+		project.setM_Warehouse_ID(WarehouseId.toRepoId(request.getWarehouseId()));
 
 		projectRepository.save(project);
 		final ProjectId projectId = ProjectId.ofRepoId(project.getC_Project_ID());

@@ -77,6 +77,13 @@ public class ADProcessDAO implements IADProcessDAO
 		return InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
 	}
 
+	@Override
+	public Optional<String> getFilenamePattern(@NonNull final AdProcessId processId)
+	{
+		final String pattern = getById(processId).getFilenamePattern();
+		return Check.isNotBlank(pattern) ? Optional.of(pattern.trim()) : Optional.empty();
+	}
+
 	@NonNull
 	@Override
 	public AdProcessId retrieveProcessIdByClass(final Class<?> processClass)
@@ -582,7 +589,12 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public ITranslatableString getProcessNameById(final AdProcessId id)
 	{
-		final I_AD_Process process = getById(id);
+		return getProcessName(getById(id));
+	}
+
+	@Override
+	public ITranslatableString getProcessName(@NonNull final I_AD_Process process)
+	{
 		return InterfaceWrapperHelper.getModelTranslationMap(process)
 				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, process.getName());
 	}

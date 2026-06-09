@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -55,8 +57,8 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> the method does <b>not save</b> the given <code>documentLine</code> after having changed its ASI-ID.
 	 *
-	 * @param documentLine must be not <code>null</code> and convertible to {@link org.adempiere.mm.attributes.api.IAttributeSetInstanceAware IAttributeSetInstanceAware} via
-	 *            {@link org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService IAttributeSetInstanceAwareFactoryService}
+	 * @param documentLine must be not <code>null</code> and convertible to {@link IAttributeSetInstanceAware IAttributeSetInstanceAware} via
+	 *            {@link IAttributeSetInstanceAwareFactoryService IAttributeSetInstanceAwareFactoryService}
 	 * @param materialTracking may be <code>null</code>, but even then, the new ASI will have an (empty) <code>M_Material_Tracking_ID</code> attribute.
 	 */
 	void createOrUpdateMaterialTrackingASI(Object documentLine, I_M_Material_Tracking materialTracking);
@@ -73,7 +75,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	/**
 	 * Check if the given ASI has a material tracking attribute. Note that this attribute's value can still be <code>null</code>, even if this method returns <code>true</code>.
 	 *
-	 * @param asi the asi to check; not {@code null}, but may be "none".
+	 * @param asiId the asi to check; not {@code null}, but may be "none".
 	 * @return <code>true</code> if the given asi's attribute set contains the <code>M_Attribute</code> with <code>value=M_Material_Tracking_ID.</code>
 	 */
 	boolean hasMaterialTrackingAttribute(AttributeSetInstanceId asiId);

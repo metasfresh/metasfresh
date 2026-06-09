@@ -34,9 +34,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
-import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -49,6 +47,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -58,7 +57,6 @@ import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
@@ -123,8 +121,6 @@ import java.util.Optional;
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -236,7 +232,7 @@ import java.util.Optional;
 	}
 
 	@Override
-	public List<I_M_HU> receiveLUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId, @NonNull HuPackingInstructionsItemId luPIItemId)
+	public List<I_M_HU> receiveLUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId, @NonNull final HuPackingInstructionsItemId luPIItemId)
 	{
 		this.receiveUsingSpec = HUPIItemProductLUTUSpec.lu(tuPIItemProductId, luPIItemId);
 		return receiveHUs(qtyToReceive);
@@ -293,8 +289,8 @@ import java.util.Optional;
 		// Create receipt candidates
 		createAndProcessReceiptCandidatesIfRequested(ppOrderReceiptCandidateCollector.getRequests());
 
-		// Refresh the planning HUs if neeed.
-		// e.g. if processed those  "planning" HUs, will no longer have HUStatus=P but HUStatus=A
+		// Refresh the planning HUs if needed.
+		// E.g. if processed those "planning" HUs will no longer have HUStatus=P but HUStatus=A
 		if (processReceiptCandidates)
 		{
 			InterfaceWrapperHelper.refreshAll(planningHUs);
@@ -363,7 +359,10 @@ import java.util.Optional;
 				if (Check.isNotBlank(lotNumber)
 						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 				{
-					huAttributesBL.updateHUAttributeRecursive(huId, AttributeConstants.ATTR_LotNumber, lotNumber, null);
+					huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+							.attributeCode(AttributeConstants.ATTR_LotNumber)
+							.attributeValue(lotNumber)
+							.build());
 				}
 			}
 
@@ -378,11 +377,15 @@ import java.util.Optional;
 				huAttributes.setValue(AttributeConstants.ProductionDate, getProductionDate());
 			}
 
-			huAttributesBL.updateHUAttributeRecursive(
-					huId,
-					HUAttributeConstants.ATTR_PP_Order_ID,
-					ppOrderId.getRepoId(),
-					null);
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(HUAttributeConstants.ATTR_PP_Order_ID)
+					.attributeValue(ppOrderId.getRepoId())
+					.build());
+
+			huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+					.attributeCode(AttributeConstants.ATTR_DateReceived)
+					.attributeValue(getProductionDate())
+					.build());
 		}
 
 		//
@@ -498,18 +501,15 @@ import java.util.Optional;
 				}
 				else
 				{
-					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getRecordById(lutuSpec.getTuPIItemProductId());
-
 					final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 					lutuProducer.setLocatorId(getLocatorId());
-					lutuProducer.setTUPI(handlingUnitsBL.getPI(HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID())));
 					lutuProducer.setIsHUPlanningReceiptOwnerPM(true);
-					lutuProducer.addCUPerTU(huCapacityBL.getCapacity(tuPIItemProduct, getProductId()));
+					lutuProducer.setTUPI(lutuSpec.getTuPIItemProductId(), getProductId());
 
 					final HuPackingInstructionsItemId luPIItemId = lutuSpec.getLuPIItemId();
 					if (luPIItemId != null)
 					{
-						lutuProducer.setLUPI(handlingUnitsBL.getPI(luPIItemId));
+						lutuProducer.setLUItemPI(luPIItemId);
 					}
 					else
 					{
@@ -525,7 +525,7 @@ import java.util.Optional;
 
 				final LUTUProducerDestination tuProducer = new LUTUProducerDestination();
 				tuProducer.setLocatorId(getLocatorId());
-				tuProducer.setTUPI(handlingUnitsBL.getPI(preciseTUSpec.getTuPackingInstructionsId()));
+				tuProducer.setTUPI(preciseTUSpec.getTuPackingInstructionsId());
 				tuProducer.setIsHUPlanningReceiptOwnerPM(true);
 				tuProducer.addCUPerTU(Capacity.createCapacity(preciseTUSpec.getQtyCUsPerTU(), getProductId()));
 				tuProducer.setNoLU();
@@ -556,7 +556,7 @@ import java.util.Optional;
 		if (_lutuConfiguration == null)
 		{
 			_lutuConfiguration = createReceiptLUTUConfigurationManager()
-					.startEditing() // start editing just to make sure the LU/TU configuration is created if does not already exist
+					.startEditing() // start editing just to make sure the LU/TU configuration is created if it does not already exist
 					.pushBackToModel()
 					.getLUTUConfiguration();
 		}
@@ -749,14 +749,14 @@ import java.util.Optional;
 		@NonNull HUPIItemProductId tuPIItemProductId;
 		@Nullable HuPackingInstructionsItemId luPIItemId;
 
-		public static HUPIItemProductLUTUSpec topLevelTU(@NonNull HUPIItemProductId tuPIItemProductId)
+		public static HUPIItemProductLUTUSpec topLevelTU(@NonNull final HUPIItemProductId tuPIItemProductId)
 		{
 			return tuPIItemProductId.isVirtualHU()
 					? VIRTUAL
 					: new HUPIItemProductLUTUSpec(tuPIItemProductId, null);
 		}
 
-		public static HUPIItemProductLUTUSpec lu(@NonNull HUPIItemProductId tuPIItemProductId, @NonNull HuPackingInstructionsItemId luPIItemId)
+		public static HUPIItemProductLUTUSpec lu(@NonNull final HUPIItemProductId tuPIItemProductId, @NonNull final HuPackingInstructionsItemId luPIItemId)
 		{
 			return new HUPIItemProductLUTUSpec(tuPIItemProductId, luPIItemId);
 		}

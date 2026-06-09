@@ -25,12 +25,12 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -43,10 +43,12 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
@@ -62,34 +64,24 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
 
+@RequiredArgsConstructor
 public class M_HU_Attribute_StepDef
 {
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
-	private final M_HU_StepDefData huTable;
-	private final M_Attribute_StepDefData attributeTable;
-
-	public M_HU_Attribute_StepDef(@NonNull final M_HU_StepDefData huTable, @NonNull final M_Attribute_StepDefData attributeTable)
-	{
-		this.huTable = huTable;
-		this.attributeTable = attributeTable;
-	}
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final M_Attribute_StepDefData attributeTable;
 
 	@And("M_HU_Attribute is changed")
 	public void m_hu_attribute_is_changed(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			changeHUAttribute(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::changeHUAttribute);
 	}
 
 	@And("M_HU_Attribute is validated")
@@ -98,22 +90,37 @@ public class M_HU_Attribute_StepDef
 		DataTableRows.of(dataTable).forEach(this::validateHUAttribute);
 	}
 
+	/**
+	 * Sets a numeric attribute value recursively on the given HU and all its descendants.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) HU at the root of the recursion<br>
+	 *   <b>M_Attribute_ID</b> — (required, identifier-ref) attribute to set<br>
+	 *   <b>ValueNumber</b> — (optional) numeric value; {@code null} clears the attribute<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Attribute_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_HU_Attribute recursive:
+	 *   | M_HU_ID | M_Attribute_ID | ValueNumber |
+	 *   | hu_lu   | weightAttr     | 12.5        |
+	 * </pre>
+	 */
 	@And("update M_HU_Attribute recursive:")
 	public void update_M_HU_Attribute_recursive(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_HU hu = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID).lookupNotNullIn(huTable);
+			final Attribute attribute = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID).lookupNotNullIn(attributeTable);
+			final BigDecimal valueNumber = row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber).orElse(null);
 
-			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_Attribute attribute = attributeTable.get(attributeIdentifier);
-
-			final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(row, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
-
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeCode.ofString(attribute.getValue()), valueNumber, null);
-		}
+			huAttributesBL.updateHUAttributeRecursive(
+					HuId.ofRepoId(hu.getM_HU_ID()),
+					HUAttributeUpdateRequest.builder()
+							.attributeCode(attribute.getAttributeCode())
+							.attributeValue(valueNumber)
+							.build());
+		});
 	}
 
 	@And("update M_HU_Attribute:")
@@ -164,10 +171,10 @@ public class M_HU_Attribute_StepDef
 		{
 			SharedTestContext.put("huIdentifier", huIdentifier);
 
-			final int huId = huIdentifier.lookupIn(huTable).getM_HU_ID();
+			final HuId huId = huIdentifier.lookupIdIn(huTable);
 			SharedTestContext.put("huId", huId);
 
-			final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
 			assertThat(huRecord).isNotNull();
 
 			final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
@@ -214,14 +221,13 @@ public class M_HU_Attribute_StepDef
 				+ ", ValueDate=" + huAttribute.getValueDate();
 	}
 
-	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)
+	private void changeHUAttribute(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huID = huTable.getOptional(huIdentifier)
+		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID);
+		final I_M_HU huRecord = huTable.getOptional(huIdentifier)
 				.map(I_M_HU::getM_HU_ID)
-				.orElseGet(() -> Integer.parseInt(huIdentifier));
-
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huID, I_M_HU.class);
+				.map(huId -> InterfaceWrapperHelper.load(huId, I_M_HU.class))
+				.orElseGet(() -> InterfaceWrapperHelper.load(huIdentifier.getAsInt(), I_M_HU.class));
 		assertThat(huRecord).isNotNull();
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -230,17 +236,16 @@ public class M_HU_Attribute_StepDef
 		final IAttributeStorage attributesStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 		attributesStorage.setSaveOnChange(true);
 
-		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+		final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
 		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
 
 		final I_M_Attribute attributeRecord = attributesStorage.getAttributeByValueKeyOrNull(attributeCode);
 		assertThat(attributeRecord).isNotNull();
 
-		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
+				.ifPresent(valueNumber -> attributesStorage.setValue(attributeRecord, valueNumber));
 
-		if (valueNumber != null)
-		{
-			attributesStorage.setValue(attributeRecord, valueNumber);
-		}
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
+				.ifPresent(value -> attributesStorage.setValue(attributeRecord, value));
 	}
 }

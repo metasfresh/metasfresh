@@ -48,17 +48,9 @@ public class I18NRestController
 								.filterAdMessageStartingWithIgnoringCase(filterString)
 								.removePrefix(false)
 								.load(adLanguage))
-						.collect(ImmutableList.toImmutableList()));
+						.collect(ImmutableList.toImmutableList())
+		);
 
-		return toJson(adMessagesTree);
+		return adMessagesTree.toJson();
 	}
-
-	private static JsonMessages toJson(@NonNull final AdMessagesTree adMessagesTree)
-	{
-		return JsonMessages.builder()
-				.language(adMessagesTree.getAdLanguage())
-				.messages(adMessagesTree.getMap())
-				.build();
-	}
-
 }

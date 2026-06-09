@@ -85,6 +85,28 @@ public interface I_MD_Available_For_Sales_QueryResult
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
 	 * Set Qty On Hand Stock.
 	 * Qty On Hand Stock
 	 *
@@ -109,6 +131,7 @@ public interface I_MD_Available_For_Sales_QueryResult
 
 	/**
 	 * Set QtyToBeShipped.
+	 * Quantity that according to the respective org's "Available quantity for sales config" is still stocked, but is going to be shipped soon
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -118,6 +141,7 @@ public interface I_MD_Available_For_Sales_QueryResult
 
 	/**
 	 * Get QtyToBeShipped.
+	 * Quantity that according to the respective org's "Available quantity for sales config" is still stocked, but is going to be shipped soon
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

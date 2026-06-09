@@ -4,7 +4,7 @@ import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStr
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
 import de.metas.util.Services;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_M_Attribute;

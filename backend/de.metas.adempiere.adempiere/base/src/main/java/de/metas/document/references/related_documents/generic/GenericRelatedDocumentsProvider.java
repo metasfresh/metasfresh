@@ -81,6 +81,11 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
+		if (!fromDocument.isSingleKeyRecord())
+		{
+			return ImmutableList.of();
+		}
+
 		final List<GenericRelatedDocumentDescriptor> descriptors = getDescriptors(fromDocument.getKeyColumnNameOrNull());
 		if (descriptors.isEmpty())
 		{
@@ -261,7 +266,7 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 			final StringBuilder result = new StringBuilder();
 			for (final String sqlWhereClause : sqlWhereClauses)
 			{
-                if (result.length() > 0)
+				if (result.length() > 0)
 				{
 					result.append(" ").append(join).append(" ");
 				}

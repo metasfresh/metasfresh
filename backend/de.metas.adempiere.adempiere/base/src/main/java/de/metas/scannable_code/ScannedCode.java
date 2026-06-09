@@ -10,10 +10,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 /**
- * A scanned code by user.
+ * A scanned code by the user.
  * At this level we don't know what kind of code it is (Barcode, QRCode etc.).
  */
 @EqualsAndHashCode(doNotUseGetters = true)
@@ -21,28 +20,36 @@ public class ScannedCode
 {
 	private final String code;
 
-	private ScannedCode(@NonNull final String code)
+	private ScannedCode(@NonNull final Object obj)
 	{
-		this.code = StringUtils.trimBlankToNull(code);
+		this.code = normalizeCode(obj);
 		if (this.code == null)
 		{
 			throw new AdempiereException("code is blank");
 		}
 	}
 
+	@Nullable
+	private static String normalizeCode(@Nullable final Object obj)
+	{
+		return obj != null ? StringUtils.trimBlankToNull(obj.toString()) : null;
+	}
+
 	public static ScannedCode ofString(@NonNull final String code) {return new ScannedCode(code);}
 
 	@Nullable
-	@JsonCreator // IMPORTANT: keep it here because we want to handle the case when the json value is empty string 
 	public static ScannedCode ofNullableString(@Nullable final String code)
 	{
 		final String codeNorm = StringUtils.trimBlankToNull(code);
 		return codeNorm != null ? new ScannedCode(codeNorm) : null;
 	}
 
-	public static Optional<ScannedCode> optionalOfString(@Nullable final String code)
+	@Nullable
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING) // IMPORTANT: keep it here because we want to handle the case when the JSON value is empty string, number etc. 
+	public static ScannedCode ofNullableObject(@Nullable final Object obj)
 	{
-		return StringUtils.trimBlankToOptional(code).map(ScannedCode::new);
+		final String code = normalizeCode(obj);
+		return code != null ? new ScannedCode(code) : null;
 	}
 
 	@Override

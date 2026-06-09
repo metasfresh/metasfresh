@@ -12,7 +12,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
@@ -58,7 +57,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -128,7 +126,7 @@ public class InvoiceToExportFactory
 		final CurrencyCode currencyCode = extractCurrencyCode(invoiceRecord);
 		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currencyCode.toThreeLetterCode());
 
-		final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
+		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceRecord).toBigDecimal();
 		final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
 		final DocBaseAndSubType docBaseAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));

@@ -22,9 +22,15 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.fresh.model.I_C_BPartner;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -36,17 +42,9 @@ import org.adempiere.mm.attributes.api.ISubProducerAttributeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.fresh.model.I_C_BPartner;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 public class SubProducerAttributeBL implements ISubProducerAttributeBL
 {
@@ -59,16 +57,16 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 
 	@Override
 	public void updateAttributesOnSubProducerChanged(final Properties ctx,
-			final IAttributeSet attributeSet,
-			final boolean subProducerJustInitialized)
+													 final IAttributeSet attributeSet,
+													 final boolean subProducerJustInitialized)
 	{
 		// Set the Marke ADR from the subproducer
 		recalculateADR(ctx, attributeSet, subProducerJustInitialized);
 	}
 
 	private void recalculateADR(final Properties ctx,
-			final IAttributeSet attributeSet,
-			final boolean subProducerJustInitialized)
+								final IAttributeSet attributeSet,
+								final boolean subProducerJustInitialized)
 	{
 		final I_M_Attribute attr_MarkeADR = adrAttributeDAO.retrieveADRAttribute(ctx);
 		if (attr_MarkeADR == null)
@@ -88,7 +86,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 
 		// This variable will keep the partner for who we want to compute the ADR Region attribute
 		// It can be either the sub-producer,if it exists, or the partner if it doesn't
-		I_C_BPartner partner = getSubProducerBPartnerOrNull(ctx, attributeStorage);
+		I_C_BPartner partner = getSubProducerBPartnerOrNull(attributeStorage);
 		if (partner == null)
 		{
 			final I_M_HU hu = huAttributesBL.getM_HU_OrNull(attributeSet); // attributeset might also belong to e.g. an inventory line and have no HU
@@ -114,24 +112,23 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 
 		attributeStorage.setValue(attr_MarkeADR, markeADRValue);
 	}
-	
+
 	@Nullable
-	private I_C_BPartner getSubProducerBPartnerOrNull(final Properties ctx, final IAttributeSet attributeStorage)
+	private I_C_BPartner getSubProducerBPartnerOrNull(final IAttributeSet attributeStorage)
 	{
-		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
+		final AttributeId subProducerAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 		if (subProducerAttributeId == null)
 		{
 			return null;
 		}
 
-		final I_M_Attribute subProducerAttribute = attributeDAO.getAttributeById(subProducerAttributeId);
+		final I_M_Attribute subProducerAttribute = attributeDAO.getAttributeRecordById(subProducerAttributeId);
 		final BigDecimal subProducerIdBD = attributeStorage.getValueAsBigDecimal(subProducerAttribute);
 		final int subProducerID = subProducerIdBD.intValueExact();
 		if (subProducerID <= 0)
 		{
 			return null;
 		}
-		final I_C_BPartner subProducer = bpartnerDAO.getById(subProducerID, I_C_BPartner.class);
-		return subProducer;
+		return bpartnerDAO.getById(subProducerID, I_C_BPartner.class);
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.dd_order;
 
+import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.frontend_testing.JsonTestId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,6 +15,7 @@ public class JsonDDOrderResponse
 	@NonNull String documentNo;
 	@NonNull String launcherCaption;
 	@NonNull JsonTestId launcherTestId;
+	@NonNull DistributionJobId jobId;
 
 	@NonNull String warehouseFromFacetId;
 	@NonNull String warehouseToFacetId;

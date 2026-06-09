@@ -51,7 +51,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
 {
@@ -259,13 +259,55 @@ class JsonSerializeDeserializeTests
 	}
 
 	@Test
-	void jsonCreateReceiptRequest() throws IOException
+	void jsonCreateReceiptRequestIdentifyByReceiptScheduleId() throws IOException
 	{
 
 		final JsonCreateReceiptInfo jsonCreateReceiptInfo = JsonCreateReceiptInfo.builder()
 				.receiptScheduleId(JsonMetasfreshId.of(1))
 				.productSearchKey("productSearchKey")
 				.externalId("externalId")
+				.movementQuantity(BigDecimal.ONE)
+				.movementDate(LocalDate.now())
+				.attributes(ImmutableList.of(mockAttributeInstance()))
+				.dateReceived(LocalDateTime.now())
+				.build();
+
+		final JsonCreateReceiptsRequest jsonCreateReceiptsRequest = JsonCreateReceiptsRequest
+				.builder()
+				.jsonCreateReceiptInfoList(ImmutableList.of(jsonCreateReceiptInfo))
+				.build();
+
+		assertOK(jsonCreateReceiptsRequest, JsonCreateReceiptsRequest.class);
+	}
+
+	@Test
+	void jsonCreateReceiptRequestIdentifyByExternalIds() throws IOException
+	{
+
+		final JsonCreateReceiptInfo jsonCreateReceiptInfo = JsonCreateReceiptInfo.builder()
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.productSearchKey("productSearchKey")
+				.movementQuantity(BigDecimal.ONE)
+				.movementDate(LocalDate.now())
+				.attributes(ImmutableList.of(mockAttributeInstance()))
+				.dateReceived(LocalDateTime.now())
+				.build();
+
+		final JsonCreateReceiptsRequest jsonCreateReceiptsRequest = JsonCreateReceiptsRequest
+				.builder()
+				.jsonCreateReceiptInfoList(ImmutableList.of(jsonCreateReceiptInfo))
+				.build();
+
+		assertOK(jsonCreateReceiptsRequest, JsonCreateReceiptsRequest.class);
+	}
+
+	@Test
+	void jsonCreateReceiptRequestIdentifyByOrderLineId() throws IOException
+	{
+		final JsonCreateReceiptInfo jsonCreateReceiptInfo = JsonCreateReceiptInfo.builder()
+				.orderLineId(JsonMetasfreshId.of(1))
+				.productSearchKey("productSearchKey")
 				.movementQuantity(BigDecimal.ONE)
 				.movementDate(LocalDate.now())
 				.attributes(ImmutableList.of(mockAttributeInstance()))

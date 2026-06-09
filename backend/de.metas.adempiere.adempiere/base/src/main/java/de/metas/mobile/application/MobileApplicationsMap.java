@@ -70,7 +70,7 @@ public final class MobileApplicationsMap
 		final MobileApplication application = applicationsById.get(id);
 		if (application == null)
 		{
-			throw new AdempiereException("No application found for " + id + ". Available applications are: " + applications);
+			throw new AdempiereException("No registered application found for `" + id + "`. Available registered applications are: " + applicationsById.keySet());
 		}
 		return application;
 	}

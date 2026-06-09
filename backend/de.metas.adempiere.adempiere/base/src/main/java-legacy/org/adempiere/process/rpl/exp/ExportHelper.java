@@ -353,7 +353,7 @@ public class ExportHelper
 		if (exportFormat.getAD_Sequence_ID() > 0)
 		{
 			final String sequenceName = exportFormat.getAD_Sequence().getName();
-			final int nextID = DB.getNextID(m_AD_Client_ID, sequenceName, null);
+			final int nextID = DB.getNextID(m_AD_Client_ID, sequenceName);
 			if (nextID <= 0)
 			{
 				throw new AdempiereException("Could not retrieve nextID for sequence " + sequenceName);

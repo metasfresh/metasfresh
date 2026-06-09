@@ -38,7 +38,7 @@ import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.impexp.InputDataSourceId;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -49,14 +49,12 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.rest_api.v2.shipping.JsonShipmentService;
 import de.metas.salesorder.candidate.ProcessOLCandsRequest;
 import de.metas.salesorder.candidate.ProcessOLCandsWorkpackageEnqueuer;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderInfo;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderLineInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
@@ -73,14 +71,11 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessOLCands;
-import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Service
 @RequiredArgsConstructor
 public class OrderCandidateRestControllerService
 {
-	private static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
-
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
@@ -119,41 +114,14 @@ public class OrderCandidateRestControllerService
 			return false;
 		}
 
-		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(olCandRequest.getDataSource());
-
 		final OLCandQuery olCandQuery = OLCandQuery.builder()
 				.externalHeaderId(olCandRequest.getExternalHeaderId())
-				.inputDataSourceName(inputDataSourceIdentifier.asInternalName())
+				.externalSystemType(ExternalSystemType.ofValue(olCandRequest.getExternalSystemCode()))
 				.build();
 
 		return queryToOLCandList.computeIfAbsent(olCandQuery, olCandRepo::getByQuery)
 				.stream()
 				.anyMatch(existingOLCand -> olCandRequest.getExternalLineId().equals(existingOLCand.getExternalLineId()));
-	}
-
-	private OLCandCreateRequest fromJson(
-			@NonNull final JsonOLCandCreateRequest request,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		final String dataSourceInternalNameToUse = coalesce(
-				request.getDataSource(),
-				"int-" + DATA_SOURCE_INTERNAL_NAME);
-
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(
-				dataSourceInternalNameToUse,
-				masterdataProvider.getOrgId(request.getOrgCode()));
-		if (dataSourceId == null)
-		{
-			throw MissingResourceException.builder()
-					.resourceName("dataSource")
-					.resourceIdentifier(dataSourceInternalNameToUse)
-					.parentResource(request).build();
-		}
-
-		return jsonConverters
-				.fromJson(request, masterdataProvider)
-				.dataSourceId(dataSourceId)
-				.build();
 	}
 
 	private OLCand createOrderLineCandidate(
@@ -162,7 +130,7 @@ public class OrderCandidateRestControllerService
 	{
 		assertCanCreate(request, masterdataProvider);
 
-		final OLCandCreateRequest candCreateRequest = fromJson(request, masterdataProvider);
+		final OLCandCreateRequest candCreateRequest = jsonConverters.fromJson(request, masterdataProvider);
 		final OLCand olCand = olCandRepo.create(candCreateRequest);
 
 		if (request.getAlbertaOrderInfo() == null)
@@ -178,7 +146,7 @@ public class OrderCandidateRestControllerService
 	@NonNull
 	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
 	{
-		final Set<OLCandId> olCandIds = getOLCands(IdentifierString.of(request.getInputDataSourceName()), request.getExternalHeaderId());
+		final Set<OLCandId> olCandIds = getOLCands(request.getExternalSystemCode(), request.getExternalHeaderId());
 
 		processValidOlCands(request, olCandIds);
 
@@ -245,12 +213,12 @@ public class OrderCandidateRestControllerService
 
 	@NonNull
 	private Set<OLCandId> getOLCands(
-			@NonNull final IdentifierString identifierString,
+			@NonNull final String externalSystemCode,
 			@NonNull final String externalHeaderId)
 	{
 		final OLCandQuery olCandQuery = OLCandQuery.builder()
 				.externalHeaderId(externalHeaderId)
-				.inputDataSourceName(identifierString.asInternalName())
+				.externalSystemType(ExternalSystemType.ofValue(externalSystemCode))
 				.build();
 
 		return olCandRepo.getByQuery(olCandQuery)

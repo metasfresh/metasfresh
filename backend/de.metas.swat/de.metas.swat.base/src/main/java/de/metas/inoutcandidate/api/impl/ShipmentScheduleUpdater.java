@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
@@ -10,7 +32,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.inoutcandidate.ShipmentConstraintId;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -34,7 +58,6 @@ import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -62,6 +85,7 @@ import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.inout.util.ReservationKey;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
@@ -90,28 +114,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
 @RequiredArgsConstructor
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
@@ -126,7 +128,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+	@NonNull private final ShipmentConstraintService shipmentConstraintService;
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -149,12 +151,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
-		final StockRepository stockRepository = new StockRepository();
-		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
+		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = ShipmentScheduleQtyOnHandStorageFactory.newInstanceForUnitTesting();
 		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
 		return new ShipmentScheduleUpdater(
+				new ShipmentConstraintService(new de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintRepository()),
 				shipmentScheduleQtyOnHandStorageFactory,
 				shipmentScheduleReferencedLineFactory,
 				pickingBOMService,
@@ -278,6 +280,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				updateShipmentConstraints(sched);
 
+				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+				sched.setQtyDelivered(qtyDelivered);
+
 				//
 				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
@@ -336,10 +341,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// TODO: invert dependency add make this pluggable from de.metas.tourplanning module
 			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(schedRecord);
 
-			// task 09358: ol.qtyReserved should be as correct as QtyOrdered and QtyDelivered, but in some cases isn't. this here is a workaround to the problem
-			// task 09869: don't rely on ol anyways
-			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
-			schedRecord.setQtyDelivered(qtyDelivered);
 			// takes into consideration isClosed flag 
 			schedRecord.setQtyReserved(BigDecimal.ZERO.max(shipmentScheduleEffectiveBL.computeQtyOrdered(olAndSched.getSched()).subtract(schedRecord.getQtyDelivered())));
 
@@ -431,7 +432,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	private void updateFromPickingJobSchedules(final List<OlAndSched> olsAndScheds)
+	private void updateFromPickingJobSchedules(@NonNull final List<OlAndSched> olsAndScheds)
 	{
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = olsAndScheds.stream()
 				.map(OlAndSched::getShipmentScheduleId)
@@ -450,17 +451,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				updateFromPickingJobSchedules(olAndSched, jobSchedules);
 			}
 		}
-
 	}
 
 	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection jobSchedules)
 	{
 		final Quantity qtyScheduledToPick = jobSchedules.getQtyToPick().orElse(null);
+		final Quantity qtyScheduledToPickOfProcessed = jobSchedules.getQtyToPickOfProcessed().orElse(null);
 		final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
 
 		shipmentSchedule.setIsScheduledForPicking(qtyScheduledToPick != null && qtyScheduledToPick.signum() > 0);
 		shipmentSchedule.setQtyScheduledForPicking(qtyScheduledToPick != null ? qtyScheduledToPick.toBigDecimal() : null);
-		shipmentSchedulePA.save(shipmentSchedule);
+		shipmentSchedule.setQtyScheduledForPickingOfProcessed(qtyScheduledToPickOfProcessed != null ? qtyScheduledToPickOfProcessed.toBigDecimal() : null);
 	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)
@@ -537,7 +538,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Get the QtyOnHand storages suitable for our order line
 			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
+			final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(sched);
+			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable(reservationKey);
 
 			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
@@ -679,6 +681,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return; // we are done
 		}
 
+		final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(olAndSched.getSched());
+
 		// Shipment Lines (i.e. candidate lines)
 		final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();
 
@@ -698,7 +702,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Adjust the quantity that can be delivered from this storage line
 			// Check: Not enough On Hand
-			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex);
+			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex, reservationKey);
 			if (qtyToDeliver.compareTo(qtyAvailable) > 0
 					&& qtyAvailable.signum() >= 0)         // positive storage
 			{
@@ -826,15 +830,16 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		sched.setDeliveryDate(TimeUtil.asTimestamp(shipmentScheduleOrderDoc.getDeliveryDate()));
 	}
 
-	private void updateShipmentConstraints(final I_M_ShipmentSchedule sched)
+	private void updateShipmentConstraints(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final int billBPartnerId = sched.getBill_BPartner_ID();
-		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
-		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-		if (isDeliveryStop)
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(sched.getBill_BPartner_ID());
+		final java.util.Optional<ShipmentConstraintId> constraintId = billBPartnerId != null
+				? shipmentConstraintService.getDeliveryStopConstraintIdFor(billBPartnerId)
+				: java.util.Optional.empty();
+		if (constraintId.isPresent())
 		{
 			sched.setIsDeliveryStop(true);
-			sched.setM_Shipment_Constraint_ID(deliveryStopShipmentConstraintId);
+			sched.setM_Shipment_Constraint_ID(constraintId.get().getRepoId());
 		}
 		else
 		{

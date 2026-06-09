@@ -16,27 +16,11 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Properties;
-
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.border.TitledBorder;
-
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -53,10 +37,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.UserPreferenceLevelConstraint;
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Properties;
 
 /**
  *  Maintain Value Preferences.
@@ -170,22 +156,6 @@ public class ValuePreference extends CDialog
 	/**	Logger			*/
 	private static Logger log = LogManager.getLogger(ValuePreference.class);
 	
-	/**
-	 *  Constructor
-	 *
-	 *  @param frame parent
-	 *  @param WindowNo window no
-	 *  @param AD_Client_ID client
-	 *  @param AD_Org_ID org
-	 *  @param AD_User_ID user
-	 *  @param AD_Window_ID window id
-	 *  @param Attribute attribute
-	 *  @param DisplayAttribute attribute display
-	 *  @param Value value
-	 *  @param DisplayValue calue display
-	 *  @param displayType display type
-	 *  @param AD_Reference_ID reference
-	 */
 	public ValuePreference (Frame frame, int WindowNo,
 		int AD_Client_ID, int AD_Org_ID, int AD_User_ID,
 		AdWindowId adWindowId,
@@ -539,7 +509,7 @@ public class ValuePreference extends CDialog
 		//  --- Inserting
 		int Client_ID = cbClient.isSelected() ? m_AD_Client_ID : 0;
 		int Org_ID = cbOrg.isSelected() ? m_AD_Org_ID : 0;
-		int AD_Preference_ID = DB.getNextID(m_ctx, I_AD_Preference.Table_Name, ITrx.TRXNAME_None);
+		int AD_Preference_ID = DB.getNextID(m_ctx, I_AD_Preference.Table_Name);
 		//
 		StringBuffer sql = new StringBuffer ("INSERT INTO AD_Preference ("
 			+ "AD_Preference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,CreatedBy,Updated,UpdatedBy,"

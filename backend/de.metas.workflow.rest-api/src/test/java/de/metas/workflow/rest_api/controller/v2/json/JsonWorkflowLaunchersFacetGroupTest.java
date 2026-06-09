@@ -24,10 +24,10 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacet;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroup;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

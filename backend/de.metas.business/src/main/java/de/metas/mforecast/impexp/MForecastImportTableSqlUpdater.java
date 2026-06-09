@@ -82,11 +82,19 @@ public class MForecastImportTableSqlUpdater
 				+ " SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
 				+ " WHERE i.BPValue=p.Value AND i.AD_Org_ID=p.AD_Org_ID) "
 				+ "WHERE C_BPartner_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + " = 'N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
 		logger.info("Partners Existing Value={}", no);
+
+		//  set error message if needed
+		final String errorSql = "UPDATE " + targetTableName + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Partner,' "
+				+ "WHERE C_BPartner_ID IS NULL AND  i.BPValue IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ selection.toSqlWhereClause("i");
+		DB.executeUpdateAndThrowExceptionOnFail(errorSql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
@@ -95,7 +103,7 @@ public class MForecastImportTableSqlUpdater
 				+ " SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p"
 				+ " WHERE i.ProductValue = p.Value AND i.AD_Org_ID=p.AD_Org_ID) "
 				+ "WHERE M_Product_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
@@ -116,7 +124,7 @@ public class MForecastImportTableSqlUpdater
 				+ " SET C_UOM_ID =(SELECT C_UOM_ID FROM C_UOM u"
 				+ " WHERE i.UOM = u.X12DE355 AND u.AD_Client_ID IN (0,i.AD_Client_ID) and u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) "
 				+ "WHERE C_UOM_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.info("Set UOM={}", no);
@@ -139,7 +147,7 @@ public class MForecastImportTableSqlUpdater
 				+ " AND pl.AD_Org_ID = i.AD_Org_ID"
 				+ " AND pl.IsActive='Y' order by pl.M_PriceList_ID limit 1)"
 				+ "WHERE M_PriceList_ID IS NULL AND PriceList IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.info("Set Price List ={}", no);
@@ -159,7 +167,7 @@ public class MForecastImportTableSqlUpdater
 				+ " SET M_Warehouse_ID =(SELECT M_Warehouse_ID FROM M_Warehouse p"
 				+ " WHERE i.WarehouseValue = p.Value AND i.AD_Org_ID=p.AD_Org_ID) "
 				+ "WHERE M_Warehouse_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
@@ -180,7 +188,7 @@ public class MForecastImportTableSqlUpdater
 				+ " SET C_Project_ID =(SELECT C_Project_ID FROM C_Project p"
 				+ " WHERE i.ProjectValue = p.Value AND i.AD_Org_ID=p.AD_Org_ID) "
 				+ "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
@@ -201,7 +209,7 @@ public class MForecastImportTableSqlUpdater
 				+ " SET C_Activity_ID =(SELECT C_Activity_ID FROM C_Activity p"
 				+ " WHERE i.ActivityValue = p.Value AND i.AD_Org_ID=p.AD_Org_ID) "
 				+ "WHERE C_Activity_ID IS NULL AND ActivityValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
@@ -222,7 +230,7 @@ public class MForecastImportTableSqlUpdater
 				+ " SET C_Campaign_ID =(SELECT C_Campaign_ID FROM C_Campaign p"
 				+ " WHERE i.CampaignValue = p.Value AND i.AD_Org_ID=p.AD_Org_ID) "
 				+ "WHERE C_Campaign_ID IS NULL AND CampaignValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 

@@ -68,6 +68,11 @@ public class JsonOLCandCreateRequest
 					+ " 'externalHeaderId'  and 'dataSource' together denote the unique group of olCands that were added in one bulk.")
 	String externalHeaderId;
 
+	@ApiModelProperty(required = true, //
+			value = "Identifier of the `ExternalSystem` record that tells where this OLCand came from.\n"
+					+ "This translates to 'ExternalSystem.value.'")
+	String externalSystemCode;
+	
 	@ApiModelProperty( //
 			required = true, //
 			value = "Identifier of the `AD_InputDataSource` record that tells where this OLCand came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
@@ -230,6 +235,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("org") final JsonOrganization org,
 			@JsonProperty("externalLineId") final String externalLineId,
 			@JsonProperty("externalHeaderId") final String externalHeaderId,
+			@JsonProperty("externalSystemCode") @NonNull final String externalSystemCode,
 			@JsonProperty("dataSource") final @NonNull String dataSource,
 			@JsonProperty("dataDest") final @Nullable String dataDest,
 			@JsonProperty("bpartner") final JsonRequestBPartnerLocationAndContact bpartner,
@@ -263,6 +269,7 @@ public class JsonOLCandCreateRequest
 		this.org = org;
 		this.externalLineId = externalLineId;
 		this.externalHeaderId = externalHeaderId;
+		this.externalSystemCode = externalSystemCode;
 		this.dataSource = dataSource;
 		this.dataDest = dataDest;
 		this.bpartner = bpartner;

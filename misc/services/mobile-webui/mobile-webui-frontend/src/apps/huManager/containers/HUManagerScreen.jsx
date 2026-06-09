@@ -7,6 +7,7 @@ import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
   huManagerBulkActionsLocation,
   huManagerDisposeLocation,
+  huManagerGraiLocation,
   huManagerHuLabelsLocation,
   huManagerMoveLocation,
 } from '../routes';
@@ -19,7 +20,6 @@ import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
 import HUScanner from '../../../components/huSelector/HUScanner';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
-import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { trl } from '../../../utils/translations';
 import { useApplicationInfo } from '../../../reducers/applications';
@@ -53,8 +53,11 @@ const HUManagerScreen = () => {
     history.push(huManagerBulkActionsLocation());
   };
   const onScanAgainClick = () => {
+    // Clear the loaded HU data. This causes handlingUnitInfo to become null,
+    // which re-renders the component to show the HUScanner (instead of the HU details).
+    // NOTE: we intentionally do NOT navigate to scanAnythingRoutes because that would redirect
+    // to the workplace/workstation setup screen, preventing the user from scanning another HU.
     dispatch(clearLoadedData());
-    history.push(scanAnythingRoutes.appLocation());
   };
   const onPrintLabelsClicked = () => {
     history.push(huManagerHuLabelsLocation());
@@ -101,6 +104,8 @@ const HUManagerScreen = () => {
     isSingleStorage && //
     (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
 
+  const isAllowBulkActions = actions.includes('bulkActions') && !!handlingUnitInfo?.qrCode?.code;
+
   if (handlingUnitInfo) {
     return (
       <>
@@ -135,13 +140,6 @@ const HUManagerScreen = () => {
         )}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
-          {actions.includes('dispose') && isExistingHU && (
-            <ButtonWithIndicator
-              captionKey="huManager.action.dispose.buttonCaption"
-              onClick={onDisposeClick}
-              testId="dispose-button"
-            />
-          )}
           {actions.includes('move') && (
             <ButtonWithIndicator
               captionKey="huManager.action.move.buttonCaption"
@@ -163,7 +161,7 @@ const HUManagerScreen = () => {
               testId="set-current-locator-button"
             />
           )}
-          {actions.includes('bulkActions') && (
+          {isAllowBulkActions && (
             <ButtonWithIndicator
               caption={trl('huManager.action.bulkActions.buttonCaption')}
               onClick={onBulkActionsClick}
@@ -182,6 +180,20 @@ const HUManagerScreen = () => {
               captionKey="huManager.action.printLabels.buttonCaption"
               onClick={onPrintLabelsClicked}
               testId="print-labels-button"
+            />
+          )}
+          {actions.includes('scanGRAI') && isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.scanGRAI.buttonCaption"
+              onClick={() => history.push(huManagerGraiLocation())}
+              testId="scan-grai-button"
+            />
+          )}
+          {actions.includes('dispose') && isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.dispose.buttonCaption"
+              onClick={onDisposeClick}
+              testId="dispose-button"
             />
           )}
           <ButtonWithIndicator

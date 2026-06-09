@@ -1,0 +1,33 @@
+{
+  "orgCode": "001",
+  "orderDocumentNo": "test_11202025_11",
+  "orderNumber": "orderNumber",
+  "currencyCode": "EUR",
+  "partnerValue": "vendorValue",
+  "partnerName": "vendorName",
+  "dropShip": {
+    "city": "City",
+    "postal": "5000",
+    "country": "DE",
+    "address1": "Address1",
+    "address2": "Address2",
+    "address3": "Address3",
+    "address4": "Address4",
+    "partnerID": 1234,
+    "partnerName": "dropShipName",
+    "partnerValue": "dropShipValue"
+  },
+  "Lines": [
+    {
+      "qty": 10,
+      "uom": "PCE",
+      "price": 2.0,
+      "discount": 0,
+      "orderLineId": 123,
+      "productName": "@postgRESTExportProductName1@",
+      "orderLineNumber": 10,
+      "productIdentifier": "@postgRESTExportProductValue1@",
+      "productDescription": "postgRESTExportProductDescription1"
+    }
+  ]
+}

@@ -56,6 +56,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -88,10 +89,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 {
 	// services
 	private static final POJOLookupMap instance = new POJOLookupMap("GLOBAL");
-	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
+	private static final Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
+	private static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	@NonNull
 	public static POJOLookupMap get()
@@ -189,7 +191,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	/**
 	 * Database name
 	 */
-	private final String databaseName;
+	@Getter private final String databaseName;
 
 	/**
 	 * Map of cached objects (TableName -> Record_ID -> Object)
@@ -426,6 +428,15 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					{
 						wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserRepoId);
 					}
+				}
+
+				//
+				// DocumentNo
+				if (isNew && wrapper.hasColumnName(COLUMNNAME_DocumentNo) && wrapper.getValue(COLUMNNAME_DocumentNo, String.class) == null)
+				{
+					final String documentNo = "DOCNO_" + id;
+					wrapper.setValue(COLUMNNAME_DocumentNo, documentNo);
+					logger.info("Generated DocumentNo on saving: \n\t documentNo: {} \n\t model: {} \n\t trace: {}", documentNo, wrapper, Trace.toOneLineStackTraceString());
 				}
 
 				// we use LinkedHashMap to preserve the order in which the objects are saved
@@ -956,11 +967,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		tableName2interceptors.clear();
 	}
 
-	public String getDatabaseName()
-	{
-		return databaseName;
-	}
-
 	private ObjectName jmxName = null;
 
 	private void registerJMX()
@@ -1018,6 +1024,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		catch (final MBeanRegistrationException | InstanceNotFoundException e)
 		{
 			// TODO Auto-generated catch block
+			//noinspection CallToPrintStackTrace
 			e.printStackTrace();
 		}
 	}
@@ -1157,7 +1164,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		sb.append("\n");
 
-		System.out.println(sb.toString());
+		System.out.println(sb);
 	}
 
 	/**

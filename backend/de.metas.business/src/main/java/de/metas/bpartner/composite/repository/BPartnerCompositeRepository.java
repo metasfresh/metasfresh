@@ -1,44 +1,8 @@
-package de.metas.bpartner.composite.repository;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
-import de.metas.bpartner.service.BPartnerContactQuery;
-import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.user.role.repository.UserRoleRepository;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.organization.OrgId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.table.LogEntriesRepository;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Recent_V;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -56,23 +20,67 @@ import java.util.Set;
  * #L%
  */
 
+package de.metas.bpartner.composite.repository;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
+import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerDAO;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.organization.OrgId;
+import de.metas.user.UserRepository;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Recent_V;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+
 @Repository
+@RequiredArgsConstructor
 public class BPartnerCompositeRepository
 {
 	private final IBPartnerBL bpartnerBL;
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
-	public BPartnerCompositeRepository(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository)
+	@VisibleForTesting
+	public static BPartnerCompositeRepository newInstanceForUnitTesting(@NonNull final LogEntriesRepository logEntriesRepository)
 	{
-		this.bpartnerBL = bpartnerBL;
-		this.recordChangeLogRepository = recordChangeLogRepository;
-		this.userRoleRepository = userRoleRepository;
+		return new BPartnerCompositeRepository(
+				new BPartnerBL(new UserRepository()),
+				logEntriesRepository,
+				new UserRoleRepository(),
+				new BPartnerCreditLimitRepository());
 	}
 
 	public BPartnerComposite getById(@NonNull final BPartnerId bpartnerId)
@@ -251,6 +259,14 @@ public class BPartnerCompositeRepository
 		final ImmutableList<BPartnerComposite> byQuery = getByQuery(query);
 		if (byQuery.size() > 1)
 		{
+			if (query.getBpartnerValue() != null)
+			{
+				throw new AdempiereException(
+						BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE_REST,
+						query.getBpartnerValue(), byQuery.size())
+						.markAsUserValidationError()
+						.setParameter("query", query);
+			}
 			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
 					.setParameter("query", query);
@@ -281,6 +297,7 @@ public class BPartnerCompositeRepository
 		final BPartnerCompositesLoader loader = BPartnerCompositesLoader.builder()
 				.recordChangeLogRepository(recordChangeLogRepository)
 				.userRoleRepository(userRoleRepository)
+				.bPartnerCreditLimitRepository(bPartnerCreditLimitRepository)
 				.build();
 
 		return loader.retrieveByIds(bpartnerIds);

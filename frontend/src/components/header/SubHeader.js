@@ -5,26 +5,17 @@ import onClickOutside from 'react-onclickoutside';
 import { connect, useSelector } from 'react-redux';
 
 import { elementPathRequest } from '../../api';
-import { getSelection, getTableId } from '../../reducers/tables';
+import {
+  getMasterViewStandardActions,
+  getSelection,
+  getTableId,
+} from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
 
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
-
-// keep in sync with de.metas.ui.web.window.model.DocumentStandardAction
-export const ACTION_BREADCRUMB_CLICK = 'breadcrumbClick';
-export const ACTION_TOGGLE_EDIT_MODE = 'toggleEditMode';
-export const ACTION_ABOUT_DOCUMENT = 'aboutDocument';
-export const ACTION_DOWNLOAD_SELECTED = 'downloadSelected';
-// Standard actions:
-export const ACTION_NEW_DOCUMENT = 'new';
-export const ACTION_OPEN_ADVANCED_EDIT = 'advancedEdit';
-export const ACTION_CLONE_DOCUMENT = 'clone';
-export const ACTION_OPEN_EMAIL = 'email';
-export const ACTION_OPEN_LETTER = 'letter';
-export const ACTION_OPEN_PRINT_RAPORT = 'print';
-export const ACTION_DELETE_DOCUMENT = 'delete';
-export const ACTION_OPEN_COMMENTS = 'comments';
+import { DocumentAction } from '../../constants/DocumentAction';
+import { getMasterDocumentStandardActions } from '../../reducers/windowHandler';
 
 const simplifyName = (name) => name.toLowerCase().replace(/\s/g, '');
 
@@ -234,6 +225,32 @@ export default connect(mapStateToProps)(onClickOutside(SubHeader));
 //
 //
 
+export const getStandardActions = ({ state, windowId, documentId, viewId }) => {
+  if (!windowId) {
+    return [];
+  }
+
+  if (viewId) {
+    return getMasterViewStandardActions({ state, windowId, viewId });
+  } else if (documentId) {
+    return getMasterDocumentStandardActions({ state, windowId, documentId });
+  } else {
+    return [];
+  }
+};
+
+const useStandardActions = ({ windowId, documentId, viewId }) => {
+  return useSelector((state) =>
+    getStandardActions({ state, windowId, documentId, viewId })
+  );
+};
+
+//
+//
+//
+//
+//
+
 const MenuNavigationColumn = ({
   windowId,
   viewId,
@@ -244,9 +261,11 @@ const MenuNavigationColumn = ({
   elementPath,
   onAction,
 }) => {
-  const standardActions = useSelector(
-    (state) => state.windowHandler.master.standardActions
-  );
+  const standardActions = useStandardActions({
+    windowId,
+    documentId: dataId,
+    viewId,
+  });
 
   let currentNode = elementPath;
   if (currentNode && currentNode.children) {
@@ -258,6 +277,7 @@ const MenuNavigationColumn = ({
       currentNode.type !== 'window'
     );
   }
+
   return (
     <div className="subheader-column js-subheader-column" tabIndex={0}>
       <div className="subheader-header">
@@ -266,7 +286,7 @@ const MenuNavigationColumn = ({
           nodeId={currentNode && currentNode.nodeId}
           transparentBookmarks={!!siteName}
           onUpdateData={(data) =>
-            onAction({ action: ACTION_BREADCRUMB_CLICK, payload: data })
+            onAction({ action: DocumentAction.BREADCRUMB_CLICK, payload: data })
           }
         >
           <span
@@ -281,15 +301,15 @@ const MenuNavigationColumn = ({
       <div className="subheader-break" />
 
       <MenuItem
-        action={ACTION_NEW_DOCUMENT}
+        action={DocumentAction.NEW_DOCUMENT}
         captionKey="window.new.caption"
         icon="meta-icon-report-1"
         hotkey={keymap.NEW_DOCUMENT}
         onAction={onAction}
-        visible={!!windowId}
+        visible={standardActions.includes(DocumentAction.NEW_DOCUMENT)}
       />
       <MenuItem
-        action={ACTION_ABOUT_DOCUMENT}
+        action={DocumentAction.ABOUT_DOCUMENT}
         captionKey="window.about.caption"
         icon="meta-icon-more"
         hotkey={keymap.ABOUT_DOCUMENT}
@@ -308,7 +328,7 @@ const MenuNavigationColumn = ({
         visible={!!windowId && !!dataId}
       />
       <MenuItem
-        action={ACTION_TOGGLE_EDIT_MODE}
+        action={DocumentAction.TOGGLE_EDIT_MODE}
         captionKey={editmode ? 'window.closeEditMode' : 'window.openEditMode'}
         icon="meta-icon-settings"
         hotkey={keymap.TOGGLE_EDIT_MODE}
@@ -335,6 +355,51 @@ MenuNavigationColumn.propTypes = {
 //
 //
 
+const STANDARD_ACTIONS_AVAILABLE = [
+  {
+    action: DocumentAction.OPEN_ADVANCED_EDIT,
+    icon: 'meta-icon-edit',
+    captionKey: 'window.advancedEdit.caption',
+    hotkey: keymap.OPEN_ADVANCED_EDIT,
+  },
+  {
+    action: DocumentAction.CLONE_DOCUMENT,
+    icon: 'meta-icon-duplicate',
+    captionKey: 'window.clone.caption',
+    hotkey: keymap.CLONE_DOCUMENT,
+  },
+  {
+    action: DocumentAction.OPEN_EMAIL,
+    icon: 'meta-icon-mail',
+    captionKey: 'window.email.caption',
+    hotkey: keymap.OPEN_EMAIL,
+  },
+  {
+    action: DocumentAction.OPEN_LETTER,
+    icon: 'meta-icon-letter',
+    captionKey: 'window.letter.caption',
+    hotkey: keymap.OPEN_LETTER,
+  },
+  {
+    action: DocumentAction.OPEN_PRINT_RAPORT,
+    icon: 'meta-icon-print',
+    captionKey: 'window.Print.caption',
+    hotkey: keymap.OPEN_PRINT_RAPORT,
+  },
+  {
+    action: DocumentAction.DELETE_DOCUMENT,
+    icon: 'meta-icon-delete',
+    captionKey: 'window.Delete.caption',
+    hotkey: keymap.DELETE_DOCUMENT,
+  },
+  {
+    action: DocumentAction.OPEN_COMMENTS,
+    icon: 'meta-icon-message',
+    captionKey: 'window.comments.caption',
+    hotkey: keymap.OPEN_COMMENTS,
+  },
+];
+
 const DocumentStandardActionMenuItems = ({
   enabledActions,
   visible = true,
@@ -342,60 +407,19 @@ const DocumentStandardActionMenuItems = ({
 }) => {
   if (!visible || !enabledActions || enabledActions.length <= 0) return null;
 
-  return [
-    {
-      action: ACTION_OPEN_ADVANCED_EDIT,
-      icon: 'meta-icon-edit',
-      captionKey: 'window.advancedEdit.caption',
-      hotkey: keymap.OPEN_ADVANCED_EDIT,
-    },
-    {
-      action: ACTION_CLONE_DOCUMENT,
-      icon: 'meta-icon-duplicate',
-      captionKey: 'window.clone.caption',
-      hotkey: keymap.CLONE_DOCUMENT,
-    },
-    {
-      action: ACTION_OPEN_EMAIL,
-      icon: 'meta-icon-mail',
-      captionKey: 'window.email.caption',
-      hotkey: keymap.OPEN_EMAIL,
-    },
-    {
-      action: ACTION_OPEN_LETTER,
-      icon: 'meta-icon-letter',
-      captionKey: 'window.letter.caption',
-      hotkey: keymap.OPEN_LETTER,
-    },
-    {
-      action: ACTION_OPEN_PRINT_RAPORT,
-      icon: 'meta-icon-print',
-      captionKey: 'window.Print.caption',
-      hotkey: keymap.OPEN_PRINT_RAPORT,
-    },
-    {
-      action: ACTION_DELETE_DOCUMENT,
-      icon: 'meta-icon-delete',
-      captionKey: 'window.Delete.caption',
-      hotkey: keymap.DELETE_DOCUMENT,
-    },
-    {
-      action: ACTION_OPEN_COMMENTS,
-      icon: 'meta-icon-message',
-      captionKey: 'window.comments.caption',
-      hotkey: keymap.OPEN_COMMENTS,
-    },
-  ].map(({ action, icon, captionKey, hotkey }) => (
-    <MenuItem
-      key={action}
-      action={action}
-      captionKey={captionKey}
-      icon={icon}
-      hotkey={hotkey}
-      visible={enabledActions.find((action) => action === action)}
-      onAction={onAction}
-    />
-  ));
+  return STANDARD_ACTIONS_AVAILABLE.map(
+    ({ action, icon, captionKey, hotkey }) => (
+      <MenuItem
+        key={action}
+        action={action}
+        captionKey={captionKey}
+        icon={icon}
+        hotkey={hotkey}
+        visible={enabledActions.includes(action)}
+        onAction={onAction}
+      />
+    )
+  );
 };
 DocumentStandardActionMenuItems.propTypes = {
   enabledActions: PropTypes.array,
@@ -467,7 +491,7 @@ const DownloadSelectedMenuItem = ({ windowId, viewId, selected, onAction }) => {
         ','
       )}`}
       download
-      onClick={() => onAction({ action: ACTION_DOWNLOAD_SELECTED })}
+      onClick={() => onAction({ action: DocumentAction.DOWNLOAD_SELECTED })}
     >
       {counterpart.translate('window.downloadSelected.caption')}
     </a>

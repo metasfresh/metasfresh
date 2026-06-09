@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 950213308L;
+	private static final long serialVersionUID = 1353556952L;
 
     /** Standard Constructor */
     public X_DD_OrderLine (final Properties ctx, final int DD_OrderLine_ID, @Nullable final String trxName)
@@ -552,6 +552,21 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public int getM_ShipmentSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override

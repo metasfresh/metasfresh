@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -752666192L;
+	private static final long serialVersionUID = 323037538L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -725,6 +725,17 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setFA_OpenQty_Exists_Color_ID (final int FA_OpenQty_Exists_Color_ID)
+	{
+		throw new IllegalArgumentException ("FA_OpenQty_Exists_Color_ID is virtual column");	}
+
+	@Override
+	public int getFA_OpenQty_Exists_Color_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FA_OpenQty_Exists_Color_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -760,6 +771,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getFrequencyType() 
 	{
 		return get_ValueAsString(COLUMNNAME_FrequencyType);
+	}
+
+	@Override
+	public void setGrossWeightKg (final BigDecimal GrossWeightKg)
+	{
+		set_Value (COLUMNNAME_GrossWeightKg, GrossWeightKg);
+	}
+
+	@Override
+	public BigDecimal getGrossWeightKg() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrossWeightKg);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 

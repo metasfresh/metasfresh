@@ -35,7 +35,6 @@
     <artifactId>metasfresh-report-service</artifactId>
 
     <properties>
-        <migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 
@@ -151,6 +150,11 @@
             <groupId>de.metas.report.jasper</groupId>
             <artifactId>cantarell-fonts</artifactId>
             <version>001.001</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
+            <artifactId>liberation-sans</artifactId>
+            <version>1.05</version>
         </dependency>
         <dependency>
             <groupId>de.metas.report.jasper</groupId>

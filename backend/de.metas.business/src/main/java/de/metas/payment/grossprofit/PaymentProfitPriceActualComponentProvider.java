@@ -1,12 +1,13 @@
 package de.metas.payment.grossprofit;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import de.metas.money.grossprofit.ProfitPriceActualComponentProvider;
+import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -31,19 +32,19 @@ import lombok.NonNull;
  */
 
 @Service
+@RequiredArgsConstructor
 public class PaymentProfitPriceActualComponentProvider implements ProfitPriceActualComponentProvider
 {
-	private final MoneyService moneyService;
-
-	public PaymentProfitPriceActualComponentProvider(@NonNull final MoneyService moneyService)
-	{
-		this.moneyService = moneyService;
-
-	}
+	@NonNull private final PaymentTermService paymentTermService;
+	@NonNull private final MoneyService moneyService;
 
 	@Override
 	public ProfitPriceActualComponent provideForRequest(@NonNull final CalculateProfitPriceActualRequest request)
 	{
-		return new PaymentProfitPriceActualComponent(request.getPaymentTermId(), moneyService);
+		return PaymentProfitPriceActualComponent.builder()
+				.paymentTermService(paymentTermService)
+				.moneyService(moneyService)
+				.paymentTermId(request.getPaymentTermId())
+				.build();
 	}
 }

@@ -4,6 +4,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
@@ -20,6 +21,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
@@ -80,7 +82,7 @@ public class SetPickFromHUWFActivityHandler implements WFActivityHandler, SetSca
 	@Override
 	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
-		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getScannedBarcode());
+		final HUQRCode qrCode = parseHUQRCode(request.getScannedBarcode());
 		final HuId huId = huQRCodesService.getHuIdByQRCode(qrCode);
 		final HUInfo pickFromHU = HUInfo.builder()
 				.id(huId)
@@ -91,5 +93,18 @@ public class SetPickFromHUWFActivityHandler implements WFActivityHandler, SetSca
 				request.getWfProcess(),
 				pickingJob -> pickingJobRestService.setPickFromHU(pickingJob, pickFromHU)
 		);
+	}
+
+	private HUQRCode parseHUQRCode(final String scannedCode)
+	{
+		final IHUQRCode huQRCode = huQRCodesService.parse(scannedCode);
+		if (huQRCode instanceof HUQRCode)
+		{
+			return (HUQRCode)huQRCode;
+		}
+		else
+		{
+			throw new AdempiereException("Invalid HU QR code: " + scannedCode);
+		}
 	}
 }

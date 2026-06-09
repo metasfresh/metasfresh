@@ -76,8 +76,8 @@ public class AgeAttributesService
 
 	private List<AttributeListValue> getAllAgeValues()
 	{
-		final AttributeId ageId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
-		final I_M_Attribute age = attributesRepo.getAttributeById(ageId);
+		final AttributeId ageId = attributesRepo.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
+		final I_M_Attribute age = attributesRepo.getAttributeRecordById(ageId);
 
 		return attributesRepo.retrieveAttributeValues(age);
 	}

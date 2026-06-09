@@ -3,9 +3,9 @@ package de.metas.handlingunits.inventory;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -23,10 +23,14 @@ import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -55,42 +59,22 @@ import java.util.List;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLine
 {
-	/** If not null then {@link InventoryRepository#save(InventoryLine)} will load and sync the respective {@code M_InventoryLine} record */
-	@Nullable
-	@NonFinal
-	InventoryLineId id;
+	@Nullable @NonFinal InventoryLineId id;
+	@NonNull OrgId orgId;
 
-	@NonNull
-	OrgId orgId;
+	@NonNull AttributeSetInstanceId asiId;
+	@NonNull ProductId productId;
+	@NonNull LocatorId locatorId;
+	@NonNull InventoryLinePackingInstructions packingInstructions;
 
-	/** If not null then {@link InventoryRepository#save(InventoryLine)} will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}. */
-	@Nullable
-	AttributeSetInstanceId asiId;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	AttributesKey storageAttributesKey;
-
-	@NonNull
-	LocatorId locatorId;
-
-	@Nullable
-	@NonFinal
-	@Setter
-	HUAggregationType huAggregationType;
-
-	@NonNull
-	private InventoryType inventoryType;
+	@Nullable @NonFinal @Setter HUAggregationType huAggregationType;
+	@NonNull InventoryType inventoryType;
 
 	boolean counted;
-
 	@Nullable Quantity qtyBookFixed;
 	@Nullable Quantity qtyCountFixed;
 
-	@NonNull
-	ImmutableList<InventoryLineHU> inventoryLineHUs;
+	@NonNull ImmutableList<InventoryLineHU> inventoryLineHUs;
 
 	@Builder(toBuilder = true)
 	private InventoryLine(
@@ -98,8 +82,8 @@ public class InventoryLine
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
-			@NonNull final AttributesKey storageAttributesKey,
 			@NonNull final LocatorId locatorId,
+			@Nullable final InventoryLinePackingInstructions packingInstructions,
 			@Nullable final HUAggregationType huAggregationType,
 			final boolean counted,
 			@Nullable final Quantity qtyBookFixed,
@@ -110,13 +94,13 @@ public class InventoryLine
 
 		this.id = id;
 		this.orgId = orgId;
-		this.asiId = asiId;
+		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
+		this.packingInstructions = coalesceNotNull(packingInstructions, InventoryLinePackingInstructions.VHU);
 		this.huAggregationType = huAggregationType;
 
-		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
+		inventoryType = extractInventoryType(inventoryLineHUs).orElse(InventoryType.PHYSICAL);
 		this.counted = counted;
 		this.qtyBookFixed = qtyBookFixed;
 		this.qtyCountFixed = qtyCountFixed;
@@ -129,14 +113,17 @@ public class InventoryLine
 		}
 	}
 
-	private static InventoryType extractInventoryType(
-			@NonNull final List<InventoryLineHU> lineHUs,
-			@NonNull final InventoryType defaultInventoryTypeWhenEmpty)
+	private static Optional<InventoryType> extractInventoryType(@NonNull final List<InventoryLineHU> lineHUs)
 	{
 		return lineHUs.stream()
 				.map(InventoryLineHU::getInventoryType)
-				.reduce(Reducers.singleValue(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lineHUs)))
-				.orElse(defaultInventoryTypeWhenEmpty);
+				.reduce(Reducers.singleValue(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lineHUs)));
+	}
+
+	@NonNull
+	public InventoryLineId getIdNonNull()
+	{
+		return Check.assumeNotNull(id, "line is saved: {}", this);
 	}
 
 	void setId(@NonNull final InventoryLineId id)
@@ -168,6 +155,19 @@ public class InventoryLine
 		}
 	}
 
+	public String getUOMSymbol()
+	{
+		return getUOM().getUOMSymbol();
+	}
+
+	public I_C_UOM getUOM()
+	{
+		final Quantity qtyBookFixed = getQtyBookFixed();
+		final Quantity qtyCountFixed = getQtyCountFixed();
+		Quantity.assertSameUOM(qtyBookFixed, qtyCountFixed);
+		return qtyBookFixed.getUOM();
+	}
+
 	public Quantity getQtyBookFixed()
 	{
 		if (qtyBookFixed == null)
@@ -188,22 +188,13 @@ public class InventoryLine
 		return qtyCountFixed;
 	}
 
-	public Quantity getQtyCountMinusBooked()
-	{
-		return getInventoryLineHUs()
-				.stream()
-				.map(InventoryLineHU::getQtyCountMinusBooked)
-				.reduce(Quantity::add)
-				.get();
-	}
-
 	public Quantity getQtyInternalUse()
 	{
 		return getInventoryLineHUs()
 				.stream()
 				.map(InventoryLineHU::getQtyInternalUse)
 				.reduce(Quantity::add)
-				.get();
+				.orElseThrow(() -> new AdempiereException("No HUs found for " + this));
 	}
 
 	public Quantity getQtyBook()
@@ -212,16 +203,26 @@ public class InventoryLine
 				.stream()
 				.map(InventoryLineHU::getQtyBook)
 				.reduce(Quantity::add)
-				.get();
+				.orElseThrow(() -> new AdempiereException("No HUs found for " + this));
 	}
 
 	public Quantity getQtyCount()
 	{
-		return getInventoryLineHUs()
+		return computeQtyCountSum(inventoryLineHUs);
+	}
+
+	private Quantity computeQtyCountSum(final List<InventoryLineHU> inventoryLineHUs)
+	{
+		return inventoryLineHUs
 				.stream()
 				.map(InventoryLineHU::getQtyCount)
 				.reduce(Quantity::add)
-				.get();
+				.orElseThrow(() -> new AdempiereException("No HUs found for " + this));
+	}
+
+	public InventoryLine distributeQtyCountToHUs()
+	{
+		return distributeQtyCountToHUs(getQtyCountFixed());
 	}
 
 	public InventoryLine distributeQtyCountToHUs(
@@ -274,11 +275,80 @@ public class InventoryLine
 		return withInventoryLineHUs(newInventoryLineHUs);
 	}
 
-	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> inventoryLineHUs)
+	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> newInventoryLineHUs)
 	{
 		return toBuilder()
+				.huAggregationType(computeHUAggregationType(newInventoryLineHUs, this.huAggregationType))
 				.clearInventoryLineHUs()
-				.inventoryLineHUs(inventoryLineHUs)
+				.inventoryLineHUs(newInventoryLineHUs)
 				.build();
 	}
+
+	public InventoryLine withCounting(@NonNull final InventoryLineCountRequest request)
+	{
+		final ArrayList<InventoryLineHU> newLineHUs = new ArrayList<>(inventoryLineHUs.size() + 1);
+		boolean updated = false;
+
+		boolean isSingleLineHUPlaceholder = inventoryLineHUs.size() == 1
+				&& inventoryLineHUs.get(0).getId() == null
+				&& inventoryLineHUs.get(0).getHuId() == null;
+
+		if (!isSingleLineHUPlaceholder)
+		{
+			for (InventoryLineHU lineHU : inventoryLineHUs)
+			{
+				if (!updated && HuId.equals(lineHU.getHuId(), request.getHuId()))
+				{
+					newLineHUs.add(lineHU.updatingFrom(request));
+					updated = true;
+				}
+				else
+				{
+					newLineHUs.add(lineHU);
+				}
+			}
+		}
+
+		if (!updated)
+		{
+			newLineHUs.add(InventoryLineHU.of(request));
+		}
+
+		return toBuilder()
+				.huAggregationType(computeHUAggregationType(newLineHUs, this.huAggregationType))
+				.qtyCountFixed(computeQtyCountSum(newLineHUs))
+				.clearInventoryLineHUs()
+				.inventoryLineHUs(newLineHUs)
+				.counted(newLineHUs.stream().allMatch(InventoryLineHU::isCounted))
+				.build();
+	}
+
+	@Nullable
+	private static HUAggregationType computeHUAggregationType(
+			@NonNull final List<InventoryLineHU> newInventoryLineHUs,
+			@Nullable final HUAggregationType prevHUAggregationType)
+	{
+		return newInventoryLineHUs.size() > 1 ? HUAggregationType.MULTI_HU : prevHUAggregationType;
+	}
+
+	public boolean isEligibleForCounting()
+	{
+		return !isCounted();
+	}
+
+	public InventoryLineHU getInventoryLineHUById(@NonNull final InventoryLineHUId id)
+	{
+		return inventoryLineHUs.stream()
+				.filter(lineHU -> InventoryLineHUId.equals(lineHU.getId(), id))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No Line HU found for " + id + " in " + this));
+	}
+
+	public Optional<InventoryLineHU> getInventoryLineHUByHUId(@NonNull final HuId huId)
+	{
+		return inventoryLineHUs.stream()
+				.filter(lineHU -> HuId.equals(lineHU.getHuId(), huId))
+				.findFirst();
+	}
+
 }

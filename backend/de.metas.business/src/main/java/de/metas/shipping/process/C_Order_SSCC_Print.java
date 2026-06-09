@@ -31,6 +31,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.ShippingPackageQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -63,7 +64,7 @@ public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondit
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not completed or closed");
 		}
 
-		if (!orderToShipperTransportationService.hasPackageIdsByOrderId(orderId))
+		if (!orderToShipperTransportationService.anyMatch(ShippingPackageQuery.builder().orderId(orderId).build()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("has no packages");
 		}

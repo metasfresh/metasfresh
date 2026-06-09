@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import groovy.transform.ToString;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -338,12 +339,26 @@ public final class Evaluatees
 			this.sources = ImmutableList.copyOf(sources);
 		}
 
+		private static OptionalBoolean hasVariableFlightCheck(@NonNull final Evaluatee source, @NonNull final String variableName)
+		{
+			if (source instanceof Evaluatee2)
+			{
+				return OptionalBoolean.ofBoolean(((Evaluatee2)source).has_Variable(variableName));
+			}
+			else
+			{
+				return OptionalBoolean.UNKNOWN;
+			}
+		}
+
 		@Nullable
 		@Override
 		public <T> T get_ValueAsObject(final String variableName)
 		{
 			for (final Evaluatee source : sources)
 			{
+				if (hasVariableFlightCheck(source, variableName).isFalse()) {continue;}
+
 				final Object value = source.get_ValueAsObject(variableName);
 				if (value != null)
 				{
@@ -360,6 +375,8 @@ public final class Evaluatees
 		{
 			for (final Evaluatee source : sources)
 			{
+				if (hasVariableFlightCheck(source, variableName).isFalse()) {continue;}
+
 				final String value = source.get_ValueAsString(variableName);
 				if (!Check.isEmpty(value))
 				{
@@ -403,6 +420,8 @@ public final class Evaluatees
 		{
 			for (final Evaluatee source : sources)
 			{
+				if (hasVariableFlightCheck(source, variableName).isFalse()) {continue;}
+
 				final Optional<Object> optionalValue = source.get_ValueIfExists(variableName, targetType);
 				if (optionalValue.isPresent())
 				{

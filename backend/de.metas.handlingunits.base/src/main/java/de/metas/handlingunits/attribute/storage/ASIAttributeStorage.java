@@ -1,26 +1,23 @@
 package de.metas.handlingunits.attribute.storage;
 
-import java.util.List;
-import java.util.Map;
-
-import lombok.Getter;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.impl.AbstractAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.uom.UOMType;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Wraps an {@link I_M_AttributeSetInstance}.
@@ -74,11 +71,11 @@ public class ASIAttributeStorage extends AbstractAttributeStorage
 	@Override
 	protected List<IAttributeValue> loadAttributeValues()
 	{
-		final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final ImmutableList.Builder<IAttributeValue> result = ImmutableList.builder();
 
-		final List<I_M_AttributeInstance> attributeInstances = attributesDAO.retrieveAttributeInstances(asi);
+		final List<I_M_AttributeInstance> attributeInstances = asiBL.getAttributeInstances(asi);
 		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
 		{
 			final IAttributeValue attributeValue = new AIAttributeValue(this, attributeInstance);

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Available_For_Sales extends org.compiere.model.PO implements I_MD_Available_For_Sales, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1707936847L;
+	private static final long serialVersionUID = -1044122981L;
 
     /** Standard Constructor */
     public X_MD_Available_For_Sales (final Properties ctx, final int MD_Available_For_Sales_ID, @Nullable final String trxName)
@@ -48,6 +48,21 @@ public class X_MD_Available_For_Sales extends org.compiere.model.PO implements I
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override

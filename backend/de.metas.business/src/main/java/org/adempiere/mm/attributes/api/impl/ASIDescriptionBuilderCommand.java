@@ -10,17 +10,17 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 
@@ -53,8 +53,8 @@ import java.util.Date;
 
 final class ASIDescriptionBuilderCommand
 {
-	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceDAO asiDAO = Services.get(IAttributeSetInstanceDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	static final String SEPARATOR = "_";
@@ -65,7 +65,6 @@ final class ASIDescriptionBuilderCommand
 
 	//
 	private final AttributeSetId attributeSetId;
-	private I_M_AttributeSet _attributeSet;
 
 	public ASIDescriptionBuilderCommand(@NonNull final I_M_AttributeSetInstance asi, final boolean verboseDescription)
 	{
@@ -105,7 +104,7 @@ final class ASIDescriptionBuilderCommand
 
 	private void appendInstanceAttributes(final TranslatableStringBuilder description)
 	{
-		for (final I_M_AttributeInstance instance : attributesRepo.retrieveAttributeInstances(asi))
+		for (final I_M_AttributeInstance instance : asiDAO.retrieveAttributeInstances(asi))
 		{
 			appendInstanceAttribute(description, instance);
 		}
@@ -126,48 +125,33 @@ final class ASIDescriptionBuilderCommand
 	private ITranslatableString buildInstanceAttributeDescription(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
-
-		final IStringExpression descriptionPattern = extractDescriptionPattern(attribute);
-		if (descriptionPattern == null)
+		final Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		final IStringExpression descriptionPattern = attribute.getDescriptionPattern();
+		if (descriptionPattern != null)
 		{
-			return getInstanceAttributeValueAsString(ai);
-		}
-		else
-		{
-			final Object value = getInstanceAttributeValue(ai);
-			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
-
 			final AttributeDescriptionPatternEvalCtx ctx = AttributeDescriptionPatternEvalCtx.builder()
 					.attributesRepo(attributesRepo)
-					.attributesBL(attributesBL)
 					.uomsRepo(uomsRepo)
 					.attribute(attribute)
-					.attributeValue(value)
-					.attributeValueId(attributeValueId)
+					.attributeValue(getInstanceAttributeValue(ai))
+					.attributeValueId(AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID()))
 					.adLanguage(adLanguage)
 					.verboseDescription(verboseDescription)
 					.build();
-			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.Preserve);
-			return TranslatableStrings.anyLanguage(description);
+			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
+			if(!descriptionPattern.isNoResult(description))
+			{
+				return TranslatableStrings.anyLanguage(description);
+			}
 		}
-	}
-
-	private IStringExpression extractDescriptionPattern(final I_M_Attribute attribute)
-	{
-		final String descriptionPatternStr = attribute.getDescriptionPattern();
-		if (Check.isEmpty(descriptionPatternStr, true))
-		{
-			return null;
-		}
-
-		return StringExpressionCompiler.instance.compileOrDefault(descriptionPatternStr, null);
+		
+		return getInstanceAttributeValueAsString(ai);
 	}
 
 	private Object getInstanceAttributeValue(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(attributeId);
 
 		final String attributeValueType = attribute.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
@@ -196,15 +180,15 @@ final class ASIDescriptionBuilderCommand
 	private ITranslatableString getInstanceAttributeValueAsString(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		final Attribute attribute = attributesRepo.getAttributeById(attributeId);
 
-		final String attributeValueType = attribute.getAttributeValueType();
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		final AttributeValueType attributeValueType = attribute.getValueType();
+		if (AttributeValueType.STRING.equals(attributeValueType))
 		{
 			final String valueStr = ai.getValue();
 			return formatStringValue(valueStr);
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		else if (AttributeValueType.NUMBER.equals(attributeValueType))
 		{
 			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
 			final BigDecimal valueBD = isNull ? null : ai.getValueNumber();
@@ -214,11 +198,10 @@ final class ASIDescriptionBuilderCommand
 			}
 			else
 			{
-				final int displayType = attributesBL.getNumberDisplayType(attribute);
-				return formatNumber(valueBD, displayType);
+				return formatNumber(valueBD, attribute.getNumberDisplayType());
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		else if (AttributeValueType.DATE.equals(attributeValueType))
 		{
 			final Date valueDate = ai.getValueDate();
 			if (valueDate == null && !verboseDescription)
@@ -230,7 +213,7 @@ final class ASIDescriptionBuilderCommand
 				return formatDateValue(valueDate);
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		else if (AttributeValueType.LIST.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
 			final AttributeListValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
@@ -301,20 +284,10 @@ final class ASIDescriptionBuilderCommand
 	private void appendProductAttributes(final TranslatableStringBuilder description)
 	{
 		final boolean isInstanceAttribute = false;
-		for (final I_M_Attribute attribute : attributesRepo.retrieveAttributes(attributeSetId, isInstanceAttribute))
+		for (final Attribute attribute : attributesRepo.retrieveAttributes(attributeSetId, isInstanceAttribute))
 		{
 			appendSeparator(description);
-			description.append(attribute.getName());
+			description.append(attribute.getDisplayName());
 		}
-	}
-
-	private I_M_AttributeSet getAttributeSet()
-	{
-		if (_attributeSet == null)
-		{
-			_attributeSet = attributesRepo.getAttributeSetById(attributeSetId);
-		}
-		return _attributeSet;
-
 	}
 }

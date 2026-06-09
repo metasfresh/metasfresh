@@ -243,6 +243,7 @@ public class AvailableForSalesService
 				.orgId(availableForSalesResult.getOrgId())
 				.qtyOnHandStock(availableForSalesResult.getQuantities().getQtyOnHandStock())
 				.qtyToBeShipped(availableForSalesResult.getQuantities().getQtyToBeShipped())
+				.warehouseId(availableForSalesResult.getWarehouseId())
 				.build();
 	}
 
@@ -253,6 +254,7 @@ public class AvailableForSalesService
 				.productId(availableForSalesQuery.getProductId())
 				.orgId(availableForSalesQuery.getOrgId())
 				.storageAttributesKeyPattern(availableForSalesQuery.getStorageAttributesKeyPattern())
+				.warehouseId(availableForSalesQuery.getWarehouseId())
 				.build();
 	}
 
@@ -276,7 +278,8 @@ public class AvailableForSalesService
 
 				final I_MD_Available_For_Sales availableForSalesRecord = availableForSalesIds2Records.get(availableForSalesId);
 
-				if (availableForSalesRecord.getStorageAttributesKey().equals(availableForSalesResult.getStorageAttributesKey().getAsString()))
+				if (availableForSalesRecord.getStorageAttributesKey().equals(availableForSalesResult.getStorageAttributesKey().getAsString()) &&
+						availableForSalesRecord.getM_Warehouse_ID() == availableForSalesResult.getWarehouseId().getRepoId())
 				{
 					idForCurrentResult = AvailableForSalesId.ofRepoId(availableForSalesRecord.getMD_Available_For_Sales_ID());
 				}

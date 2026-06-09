@@ -262,6 +262,7 @@ public class PaymentAllocationServiceTest
 		final de.metas.interfaces.I_C_BPartner bpartner = newInstance(de.metas.interfaces.I_C_BPartner.class);
 		bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
 		bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		bpartner.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		feeCompanyId1 = bpartnerId;
@@ -467,6 +468,7 @@ public class PaymentAllocationServiceTest
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
+				.dateAcct(LocalDate.now())
 				.build();
 	}
 
@@ -545,6 +547,7 @@ public class PaymentAllocationServiceTest
 			payment.setC_BPartner_ID(bpartnerId.getRepoId());
 			payment.setC_Currency_ID(euroCurrencyId.getRepoId());
 			payment.setDateTrx(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+			payment.setDateAcct(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
 			payment.setAD_Org_ID(adOrgId.getRepoId());
 			payment.setPayAmt(payAmt);
 			payment.setIsReceipt(isReceiptOptional.orElseTrue());
@@ -557,6 +560,7 @@ public class PaymentAllocationServiceTest
 	private BPartnerId createBPartnerId()
 	{
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpartnerRecord);
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
@@ -567,7 +571,7 @@ public class PaymentAllocationServiceTest
 		final InvoiceAmtMultiplier multiplierInRealLife = InvoiceAmtMultiplier.create(SOTrx.SALES, false, false);
 
 		//noinspection AssertThatBooleanCondition
-		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+		assertThat(multiplierInRealLife.isAPAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);

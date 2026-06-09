@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workplace.Workplace;
@@ -13,6 +14,7 @@ import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.qrcode.WorkplaceQRCode;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -42,13 +44,20 @@ public class CreateWorkplaceCommand
 	public JsonWorkplaceResponse createWorkplace(final String identifierStr, final JsonWorkplaceRequest request)
 	{
 		final Identifier identifier = Identifier.ofString(identifierStr);
-		final WarehouseId warehouseId = request.getWarehouse() != null
-				? context.getId(request.getWarehouse(), WarehouseId.class)
-				: context.getIdOfType(WarehouseId.class);
-		final Workplace workplace = workplaceService.create(WorkplaceCreateRequest.builder()
-				.name(identifier.toUniqueString())
-				.warehouseId(warehouseId)
-				.build());
+		final Workplace workplace = workplaceService.create(
+				WorkplaceCreateRequest.builder()
+						.name(identifier.toUniqueString())
+						.warehouseId(request.getWarehouse() != null
+								? context.getId(request.getWarehouse(), WarehouseId.class)
+								: context.getIdOfType(WarehouseId.class))
+						.pickFromLocatorId(request.getPickFromLocator() != null
+								? context.getId(request.getPickFromLocator(), LocatorId.class)
+								: null)
+						.pickingSlotId(request.getPickingSlot() != null
+								? context.getId(request.getPickingSlot(), PickingSlotId.class)
+								: null)
+						.build()
+		);
 		context.putIdentifier(identifier, workplace.getId());
 
 		return JsonWorkplaceResponse.builder()

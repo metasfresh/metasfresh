@@ -24,20 +24,28 @@
 
 set -e
 
-# We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
-if ! [ -z "$1" ]; then
+# Source common utility functions
+SCRIPT_DIR=$(dirname "$0")
+. "${SCRIPT_DIR}/00_common.sh"
+
+# Check if first parameter is an existing env file name
+if [ ! -z "$1" ] && [ -f "../env-files/$1.env" ]; then
+    # First param is a branch name
     BRANCH_NAME=$1
+    shift
 else
-    echo "!! The first parameter needs do correspond to an env-File !!"
-    echo "!! E.g. to use the env-file env-files/release.env, run 10_reset_db_to_seek_Dump.sh release !!" 
-    exit
+    # Auto-detect branch name
+    echo "Auto-detecting branch from git..."
+    BRANCH_NAME=$(auto_detect_branch_name)
+    echo "Using env file: ${BRANCH_NAME}.env"
 fi
 
-if ! [ -z "$2" ]; then
-    COMMAND=$2
-else
-    echo "!! The second parameter needs do be the command for docker-compose !!"
-    exit
+if [ -z "$1" ]; then
+    echo "!! Command parameter is required !!"
+    echo "!! Usage: $0 [branch_name] <docker-compose-command> [args...] !!"
+    echo "!! Example: $0 logs -f db !!"
+    echo "!! Example: $0 release logs -f db !!"
+    exit 1
 fi
 
 set -u
@@ -45,6 +53,6 @@ set -u
 COMPOSE_FILE=../docker-compose.yml
 ENV_FILE=../env-files/${BRANCH_NAME}.env
 
-# reset the database
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure "${@:2}"
+# Execute docker-compose command
+docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure "$@"
 

@@ -1,37 +1,16 @@
 package org.adempiere.mm.attributes.countryattribute.impl;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareAttributeService;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareFactory;
@@ -41,16 +20,10 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link ICountryAware}.
  *
  * @author tsa
- *
  */
 public class CountryAwareAttributeUpdater
 {
@@ -58,7 +31,6 @@ public class CountryAwareAttributeUpdater
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributeSetInstanceAwareFactoryService asiAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private Object sourceModel;
 	private ICountryAwareFactory countryAwareFactory;
@@ -122,7 +94,7 @@ public class CountryAwareAttributeUpdater
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		// Check if our attribute was already set in the ASI
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, attributeId);
 		if (ai != null)
 		{
 			// In case it was, just leave it as it is
@@ -163,13 +135,13 @@ public class CountryAwareAttributeUpdater
 		return this;
 	}
 
-	private final Object getSourceModel()
+	private Object getSourceModel()
 	{
 		Check.assumeNotNull(sourceModel, "sourceModel not null");
 		return sourceModel;
 	}
 
-	private final String getSourceTableName()
+	private String getSourceTableName()
 	{
 		return InterfaceWrapperHelper.getModelTableName(getSourceModel());
 	}
@@ -180,7 +152,7 @@ public class CountryAwareAttributeUpdater
 		return this;
 	}
 
-	private final ICountryAwareFactory getCountryAwareFactory()
+	private ICountryAwareFactory getCountryAwareFactory()
 	{
 		Check.assumeNotNull(countryAwareFactory, "countryAwareFactory not null");
 		return countryAwareFactory;
@@ -192,7 +164,7 @@ public class CountryAwareAttributeUpdater
 		return this;
 	}
 
-	private final ICountryAwareAttributeService getCountryAwareAttributeService()
+	private ICountryAwareAttributeService getCountryAwareAttributeService()
 	{
 		Check.assumeNotNull(countryAwareAttributeService, "countryAwareAttributeService not null");
 		return countryAwareAttributeService;

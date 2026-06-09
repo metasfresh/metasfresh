@@ -23,7 +23,18 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const useConfigParams = () => {
+const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRunningParam } = {}) => {
+  const isShowInputText =
+    isShowInputTextParam != null ? isShowInputTextParam : useBooleanSetting('barcodeScanner.showInputText');
+
+  const isInputTextReadonly = isShowInputText
+    ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
+    : true;
+
+  const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
+
+  const continuousRunning = continuousRunningParam != null ? continuousRunningParam : true;
+
   return {
     okBeepParams: {
       name: 'OK',
@@ -39,63 +50,67 @@ const useConfigParams = () => {
       beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
       vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
     },
-    isShowInputText: useBooleanSetting('barcodeScanner.showInputText'),
-    isInputTextReadonly: useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet),
+    isShowInputText,
+    isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
     ),
     textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
     scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
+    isShowVideo,
+    continuousRunning,
   };
 };
 
 const BarcodeScannerComponent = ({
+  testId,
+  isShowInputText: isShowInputTextParam,
+  isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
-  continuousRunning,
+  continuousRunning: continuousRunningParam,
 }) => {
   const {
+    okBeepParams,
+    errorBeepParams,
     isShowInputText,
     isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
-    okBeepParams,
-    errorBeepParams,
-  } = useConfigParams();
-  // console.log('BarcodeScannerComponent', {
-  //   isShowInputText,
-  //   isInputTextReadonly,
-  //   triggerOnChangeIfLengthGreaterThan,
-  //   textChangedDebounceMillis,
-  //   scanDuplicatesIntervalMillis,
-  // });
+    isShowVideo,
+    continuousRunning,
+  } = useConfigParams({ isShowInputTextParam, isShowVideoParam, continuousRunningParam });
 
-  const mountedRef = useRef(true);
-  const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
+  //
+  // Video
+  const mountedRef = useRef(true);
+  const videoRef = useRef();
   useEffect(() => {
     mountedRef.current = true;
 
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-      }
-    });
+    if (isShowVideo) {
+      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
+      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+        if (mountedRef.current === false) {
+          controls.stop();
+        } else if (typeof result !== 'undefined') {
+          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
+        }
+      });
+    }
 
     return () => {
       mountedRef.current = false;
     };
-  }, []);
+  }, [isShowVideo]);
 
   useEffect(() => {
     return () => handleInputTextChangedDebounced.cancel();
@@ -103,32 +118,55 @@ const BarcodeScannerComponent = ({
 
   useEffect(
     () => {
-      videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      if (isShowVideo) {
+        videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      }
       if (!isInputTextReadonly) {
         inputTextRef?.current?.focus();
       }
     } /* no deps, call it on each render */
   );
 
+  // DataWedge IME needs a focused editable input to establish InputConnection.
+  // Focus once on mount; the window-level hook handles all subsequent scan events.
+  useEffect(() => {
+    if (isInputTextReadonly) {
+      inputTextRef?.current?.focus();
+    }
+  }, []);
+
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
-      console.log('onReadDone', barcode);
-      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
+      // console.log('onReadDone', barcode);
+      // Clear the input BEFORE calling validateScannedBarcodeAndForward.
+      // validateScannedBarcodeAndForward calls setProcessing(true), which in React 17 legacy
+      // mode (outside a React event handler) triggers a synchronous re-render that unmounts
+      // the input ({!isProcessing && <input/>}) and nulls inputTextRef.current.  If we clear
+      // after the call, inputTextRef.current is already null and the clear is silently skipped.
+      // The un-cleared input value then reaches handleInputTextKeyPress via the keyup event
+      // that follows the Enter keydown, causing a second validateScannedBarcodeAndForward
+      // invocation and a duplicate error toast.
       if (inputTextRef?.current) {
         inputTextRef.current.value = '';
       }
+      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
     },
     onReadInProgress: (barcode) => {
+      // console.log('onReadInProgress', barcode);
       if (inputTextRef?.current) {
         inputTextRef.current.value = barcode;
       }
     },
     rateMs: textChangedDebounceMillis,
     minLength: triggerOnChangeIfLengthGreaterThan,
-    disabled: !isInputTextReadonly || isProcessing,
+    disabled: isProcessing,
   });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
+    if (!scannedBarcode?.trim()) {
+      uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
+      return;
+    }
     inputTextRef?.current?.select();
 
     const scanningStatus = scanningStatusRef.current;
@@ -162,7 +200,7 @@ const BarcodeScannerComponent = ({
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
+      console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -204,8 +242,6 @@ const BarcodeScannerComponent = ({
   );
 
   const handleInputTextChanged = (e) => {
-    if (isInputTextReadonly) return;
-
     const scannedBarcode = e.target.value;
 
     if (
@@ -222,10 +258,9 @@ const BarcodeScannerComponent = ({
   }, [textChangedDebounceMillis]);
 
   const handleInputTextKeyPress = (e) => {
-    if (isInputTextReadonly) return;
-
     if (e.key === 'Enter') {
-      const scannedBarcode = e.target.value;
+      const scannedBarcode = e.target.value?.trim();
+      if (!scannedBarcode) return;
 
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
@@ -244,34 +279,52 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
-      {isShowInputText && !isProcessing && (
+      {/* IMPORTANT: Always use type="text" — never type="hidden".
+          When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
+          instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
+          type="hidden" inputs cannot receive focus, so Android InputConnection is never established
+          and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
+          IME-compatible while remaining invisible to the user. (me03#28834) */}
+      {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
+          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
+      {/* ⚠️ HARDWARE CONTRACT — Zebra MC3300x DataWedge IME. The exact combination below lets scans
+          inject WITHOUT popping the virtual keyboard:
+            • type="text"                    — Android InputConnection (type="hidden" cannot focus)
+            • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
+            • the focus useEffects above     — establish / recover the InputConnection on the device
+          Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
+          regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
+          CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
+          on a physical Zebra MC3300x (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
+      {!isProcessing && (
         <input
           id="input-text"
           key="input-text"
           ref={inputTextRef}
-          className="input-text"
+          className={`input-text${isShowInputText ? '' : ' input-text-offscreen'}`}
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          readOnly={isInputTextReadonly}
+          inputMode={isInputTextReadonly ? 'none' : undefined}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
-          data-testid="qrCode-input"
+          data-testid={testId ?? 'qrCode-input'}
         />
       )}
+      <video key="video" ref={videoRef} width="100%" height="100%" />
     </div>
   );
 };
 
 BarcodeScannerComponent.propTypes = {
-  //
-  // Props:
+  testId: PropTypes.string,
+  isShowInputText: PropTypes.bool,
+  isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
-  onResolvedResult: PropTypes.func.isRequired,
   inputPlaceholderText: PropTypes.string,
   continuousRunning: PropTypes.bool,
+  onResolvedResult: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerComponent;

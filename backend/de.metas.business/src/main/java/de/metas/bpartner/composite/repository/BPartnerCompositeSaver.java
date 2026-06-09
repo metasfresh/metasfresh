@@ -13,11 +13,14 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.service.BPartnerCreditLimitId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
@@ -37,7 +40,6 @@ import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
@@ -146,6 +148,8 @@ final class BPartnerCompositeSaver
 			saveBPartnerContacts(bpartnerComposite, validatePermissions);
 
 			saveBPartnerBankAccounts(bpartnerComposite, validatePermissions);
+
+			saveBPartnerCreditLimits(bpartnerComposite, validatePermissions);
 		}
 	}
 
@@ -168,7 +172,7 @@ final class BPartnerCompositeSaver
 				|| !isBlank(bpartner.getCompanyName())) // kept this logic here for legacy purpose
 		{
 			bpartnerRecord.setIsCompany(true);
-			bpartnerRecord.setCompanyName(bpartner.getCompanyName().trim());
+			bpartnerRecord.setCompanyName(StringUtils.trimBlankToNull(bpartner.getCompanyName()));
 		}
 		else
 		{
@@ -187,7 +191,14 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setName(bpartner.getName());
 		bpartnerRecord.setName2(bpartner.getName2());
 		bpartnerRecord.setName3(bpartner.getName3());
+		bpartnerRecord.setLookup_Label(bpartner.getGlnLookupLabel());
+
 		bpartnerRecord.setC_Greeting_ID(GreetingId.toRepoId(bpartner.getGreetingId()));
+
+		if (bpartner.getSalesRepContact()!=null)
+		{
+			bpartnerRecord.setSalesRep_ID(bpartner.getSalesRepContact().getId().getRepoId());
+		}
 
 		bpartnerRecord.setBPartner_Parent_ID(BPartnerId.toRepoId(bpartner.getParentId()));
 		bpartnerRecord.setPhone2(bpartner.getPhone());
@@ -202,12 +213,15 @@ final class BPartnerCompositeSaver
 			bpartnerRecord.setInvoiceRule(bpartner.getCustomerInvoiceRule().getCode());
 		}
 
-		if(bpartner.getVendorInvoiceRule() != null)
+		if (bpartner.getVendorInvoiceRule() != null)
 		{
 			bpartnerRecord.setPO_InvoiceRule(bpartner.getVendorInvoiceRule().getCode());
 		}
 
 		bpartnerRecord.setVATaxID(bpartner.getVatId());
+
+		bpartnerRecord.setEORI(bpartner.getEori());
+		bpartnerRecord.setEInvoice_BuyerReference(bpartner.getEInvoiceBuyerReference());
 
 		if (!isBlank(bpartner.getValue()))
 		{
@@ -225,6 +239,11 @@ final class BPartnerCompositeSaver
 			bpartnerRecord.setC_PaymentTerm_ID(bpartner.getCustomerPaymentTermId().getRepoId());
 		}
 
+		if (bpartner.getCustomerIncotermsId() != null)
+		{
+			bpartnerRecord.setC_Incoterms_Customer_ID(bpartner.getCustomerIncotermsId().getRepoId());
+		}
+
 		if (bpartner.getVendorPricingSystemId() != null)
 		{
 			bpartnerRecord.setPO_PricingSystem_ID(bpartner.getVendorPricingSystemId().getRepoId());
@@ -238,19 +257,21 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
-		if(bpartner.getPaymentRule() != null)
+		bpartnerRecord.setIsDiscountPrinted(bpartner.isDiscountPrinted());
+
+		if (bpartner.getPaymentRule() != null)
 		{
 			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
 		}
-		if(bpartner.getSoDocTypeTargetId() != null)
+		if (bpartner.getSoDocTypeTargetId() != null)
 		{
 			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
 		}
-		if(bpartner.getFirstName() != null)
+		if (bpartner.getFirstName() != null)
 		{
 			bpartnerRecord.setFirstname(bpartner.getFirstName());
 		}
-	if(bpartner.getLastName() != null)
+		if (bpartner.getLastName() != null)
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
@@ -330,11 +351,11 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
 			bpartnerLocationRecord.setFax(partnerLocation.getFax());
 			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
+			bpartnerLocationRecord.setAttention(partnerLocation.getAttention());
 
 			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
 			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
 			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
-			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
 			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
 
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
@@ -345,6 +366,7 @@ final class BPartnerCompositeSaver
 				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
 				locationType.getVisitorsAddress().ifPresent(bpartnerLocationRecord::setVisitorsAddress);
+				locationType.getVisitorsAddressDefault().ifPresent(bpartnerLocationRecord::setIsDefaultVisitorAddress);
 			}
 
 			final BPartnerLocationAddressPart address = saveLocationRecord(partnerLocation);
@@ -378,53 +400,30 @@ final class BPartnerCompositeSaver
 	{
 		if (bpartnerLocation.isAddressSpecifiedByExistingLocationIdOnly())
 		{
-			final LocationId existingLocationId = Check.assumeNotNull(
-					bpartnerLocation.getExistingLocationId(),
-					"existingLocationId not null: {}", bpartnerLocation);
-
-			final I_C_Location existingLocationRecord = locationDAO.getById(existingLocationId);
+			final I_C_Location existingLocationRecord = locationDAO.getById(bpartnerLocation.getExistingLocationIdNotNull());
 			return BPartnerCompositesLoader.toBPartnerLocationAddressPart(
-					existingLocationRecord,
-					locationDAO,
-					countryDAO);
-		}
-
-		final BPartnerLocationAddressPart oldAddress;
-		if (bpartnerLocation.getExistingLocationId() != null)
-		{
-			final I_C_Location existingLocationRecord = locationDAO.getById(bpartnerLocation.getExistingLocationId());
-			oldAddress = BPartnerCompositesLoader.toBPartnerLocationAddressPart(
 					existingLocationRecord,
 					locationDAO,
 					countryDAO);
 		}
 		else
 		{
-			oldAddress = null;
+			return createOrReuseLocationRecord(bpartnerLocation.toAddress());
 		}
-
-		BPartnerLocationAddressPart newAddress = bpartnerLocation.toAddress();
-		if (oldAddress == null || !BPartnerLocationAddressPart.equals(oldAddress, newAddress))
-		{
-			newAddress = createNewLocationRecord(newAddress);
-		}
-
-		return newAddress;
 	}
 
-	private BPartnerLocationAddressPart createNewLocationRecord(@NonNull final BPartnerLocationAddressPart address)
+	private BPartnerLocationAddressPart createOrReuseLocationRecord(@NonNull final BPartnerLocationAddressPart address)
 	{
 		final LocationCreateRequest.LocationCreateRequestBuilder requestBuilder = LocationCreateRequest.builder()
+				.existingLocationId(address.getExistingLocationId())
 				.address1(address.getAddress1())
 				.address2(address.getAddress2())
 				.address3(address.getAddress3())
 				.address4(address.getAddress4());
 
-		if (address.getCountryCode() != null && !isBlank(address.getCountryCode()))
-		{
-			final CountryId countryId = countryDAO.getCountryIdByCountryCode(address.getCountryCode());
-			requestBuilder.countryId(countryId);
-		}
+		StringUtils.trimBlankToOptional(address.getCountryCode())
+				.map(countryDAO::getCountryIdByCountryCode)
+				.ifPresent(requestBuilder::countryId);
 
 		boolean postalDataSetFromPostalRecord = false;
 		final I_C_Postal postalRecord = retrievePostal(address);
@@ -448,7 +447,7 @@ final class BPartnerCompositeSaver
 
 		requestBuilder.poBox(address.getPoBox());
 
-		final LocationId newLocationId = locationDAO.createLocation(requestBuilder.build());
+		final LocationId newLocationId = locationDAO.createOrReuseLocation(requestBuilder.build());
 		return address.withExistingLocationId(newLocationId);
 	}
 
@@ -559,6 +558,12 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			// FIXME: disabled — AD_User.Value has no unique constraint, and BPartnerDAO.getBPartnerContactIdBy queries by Value
+			// using firstOnlyOrNull which would throw on duplicates. Add a unique constraint on AD_User.Value before enabling.
+			// if (!isBlank(bpartnerContact.getValue()))
+			// {
+			// 	bpartnerContactRecord.setValue(bpartnerContact.getValue());
+			// }
 
 			final String name = CoalesceUtil.coalesce(
 					StringUtils.trimBlankToNull(bpartnerContact.getName()),
@@ -594,6 +599,7 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
 			bpartnerContactRecord.setTitle(bpartnerContact.getTitle());
+			bpartnerContactRecord.setDepartment(bpartnerContact.getDepartment());
 
 			String invoiceEmailEnabled = null;
 
@@ -624,6 +630,57 @@ final class BPartnerCompositeSaver
 			// Update model from saved record:
 			bpartnerContact.setId(BPartnerContactId.ofRepoId(bpartnerId, bpartnerContactRecord.getAD_User_ID()));
 			bpartnerContact.setContactType(BPartnerCompositesLoader.extractBPartnerContactType(bpartnerContactRecord));
+		}
+	}
+
+	private void saveBPartnerCreditLimits(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
+	{
+		final List<BPartnerCreditLimit> creditLimits = bpartnerComposite.getCreditLimits();
+		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+		final OrgId orgId = bpartnerComposite.getOrgId();
+
+		for (final BPartnerCreditLimit creditLimit : creditLimits)
+		{
+			final BPartnerCreditLimitsSaveRequest request = BPartnerCreditLimitsSaveRequest.builder()
+					.bpartnerId(bpartnerId)
+					.orgId(orgId)
+					.creditLimit(creditLimit)
+					.validatePermissions(validatePermissions)
+					.build();
+
+			saveBPartnerCreditLimit(request);
+		}
+	}
+
+	private void saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitsSaveRequest request)
+	{
+		final BPartnerCreditLimit creditLimit = request.getCreditLimit();
+		final OrgId orgId = request.getOrgId();
+		final BPartnerId bpartnerId = request.getBpartnerId();
+		final boolean validatePermissions = request.isValidatePermissions();
+
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_CreditLimit.Table_Name, creditLimit.getId()))
+		{
+			final I_C_BPartner_CreditLimit record = loadOrNew(creditLimit.getId(), I_C_BPartner_CreditLimit.class);
+
+			if (orgId != null)
+			{
+				record.setAD_Org_ID(orgId.getRepoId());
+			}
+			record.setC_BPartner_ID(bpartnerId.getRepoId());
+			record.setAmount(creditLimit.getAmount());
+			record.setDateFrom(TimeUtil.asTimestamp(creditLimit.getDateFrom(), SystemTime.zoneId()));
+			record.setC_CreditLimit_Type_ID(creditLimit.getCreditLimitType().getCreditLimitTypeId().getRepoId());
+
+			if (validatePermissions)
+			{
+				assertCanCreateOrUpdate(record);
+			}
+			saveRecord(record);
+
+			final BPartnerCreditLimitId id = BPartnerCreditLimitId.ofRepoId(bpartnerId, record.getC_BPartner_CreditLimit_ID());
+
+			creditLimit.setId(id);
 		}
 	}
 

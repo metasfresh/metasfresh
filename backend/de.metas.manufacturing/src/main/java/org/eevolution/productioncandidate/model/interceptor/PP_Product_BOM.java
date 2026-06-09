@@ -31,7 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
@@ -50,7 +50,7 @@ public class PP_Product_BOM
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -114,6 +114,6 @@ public class PP_Product_BOM
 		final AttributeSetInstanceId orderLineCandidateASIId = AttributeSetInstanceId.ofRepoIdOrNull(currentVersion.getM_AttributeSetInstance_ID());
 		final AttributeSetInstanceId productBOMLineASIId = AttributeSetInstanceId.ofRepoIdOrNull(oldVersion.getM_AttributeSetInstance_ID());
 
-		return attributeDAO.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
+		return asiBL.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
 	}
 }

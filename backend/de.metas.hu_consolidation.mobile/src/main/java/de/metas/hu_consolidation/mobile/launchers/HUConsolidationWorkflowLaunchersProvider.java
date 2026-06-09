@@ -36,7 +36,7 @@ public class HUConsolidationWorkflowLaunchersProvider
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final HUConsolidationJobService jobService;
 	@NonNull private final HUConsolidationLauncherCaptionProviderFactory captionProviderFactory;
-
+	
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		query.assertNoFilterByDocumentNo();

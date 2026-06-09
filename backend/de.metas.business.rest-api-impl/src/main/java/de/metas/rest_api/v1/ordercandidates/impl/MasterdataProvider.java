@@ -27,10 +27,10 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.organization.OrgQuery;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilder;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery.PaymentTermQueryBuilder;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.IdentifierString;
@@ -443,7 +443,7 @@ final class MasterdataProvider
 				throw new InvalidIdentifierException(paymentTerm);
 		}
 
-		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.retrievePaymentTermId(queryBuilder.build());
+		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.firstIdOnly(queryBuilder.build());
 
 		return paymentTermId.orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("PaymentTerm")

@@ -1,0 +1,76 @@
+@import 'variables';
+
+$grai-extra-orange: #e67e22;
+
+.grai-count {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.5rem 0;
+  color: #333;
+}
+
+.grai-count-extra {
+  color: $grai-extra-orange;
+  font-weight: normal;
+}
+
+.grai-chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  min-height: 3rem;
+}
+
+.grai-chip {
+  display: flex;
+  align-items: center;
+  background-color: rgba($base-mf-green, 0.1);
+  border: 1px solid $base-mf-green;
+  border-radius: 20px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  color: #333;
+
+  .grai-chip-text {
+    flex: 1;
+    margin-right: 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: rtl;
+    text-align: left;
+  }
+
+  .grai-chip-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0;
+    color: #666;
+
+    &:active {
+      background-color: rgba($red, 0.2);
+      color: $red;
+    }
+  }
+
+  &--extra {
+    background-color: rgba($grai-extra-orange, 0.1);
+    border-color: $grai-extra-orange;
+
+    .grai-chip-remove:active {
+      background-color: rgba($grai-extra-orange, 0.2);
+      color: $grai-extra-orange;
+    }
+  }
+}

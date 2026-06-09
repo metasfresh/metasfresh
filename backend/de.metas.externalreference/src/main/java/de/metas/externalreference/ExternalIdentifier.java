@@ -23,6 +23,7 @@
 package de.metas.externalreference;
 
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
@@ -104,6 +105,12 @@ public class ExternalIdentifier
 			return Optional.of(new ExternalIdentifier(Type.GLN, identifier, null));
 		}
 
+		final Matcher glnWithLabelMatcher = Type.GLN_WITH_LABEL.pattern.matcher(identifier);
+		if (glnWithLabelMatcher.matches())
+		{
+			return Optional.of(new ExternalIdentifier(Type.GLN_WITH_LABEL, identifier, null));
+		}
+
 		final Matcher valMatcher = Type.VALUE.pattern.matcher(identifier);
 		if (valMatcher.matches())
 		{
@@ -115,10 +122,10 @@ public class ExternalIdentifier
 		{
 			return Optional.of(new ExternalIdentifier(Type.GTIN, identifier, null));
 		}
-		
+
 		return Optional.empty();
 	}
-	
+
 	@NonNull
 	public static ExternalIdentifier of(@NonNull final String identifier)
 	{
@@ -132,9 +139,9 @@ public class ExternalIdentifier
 	public ExternalReferenceValueAndSystem asExternalValueAndSystem()
 	{
 		Check.assume(Type.EXTERNAL_REFERENCE.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.EXTERNAL_REFERENCE, this);
+				"The type of this instance needs to be {}; this={}", Type.EXTERNAL_REFERENCE, this);
 		Check.assumeNotNull(externalReferenceValueAndSystem,
-							"externalReferenceValueAndSystem cannot be null to EXTERNAL_REFERENCE type!");
+				"externalReferenceValueAndSystem cannot be null to EXTERNAL_REFERENCE type!");
 
 		return externalReferenceValueAndSystem;
 	}
@@ -143,7 +150,7 @@ public class ExternalIdentifier
 	public MetasfreshId asMetasfreshId()
 	{
 		Check.assume(Type.METASFRESH_ID.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
+				"The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
 
 		return MetasfreshId.of(Integer.parseInt(rawValue));
 	}
@@ -151,25 +158,40 @@ public class ExternalIdentifier
 	@NonNull
 	public GLN asGLN()
 	{
-		Check.assume(Type.GLN.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.GLN, this);
-
+		Check.assume(Type.GLN.equals(type), "The type of this instance needs to be {}; this={}", Type.GLN, this);
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
 
-		if(glnMatcher.find()){
+		if (glnMatcher.find())
+		{
 			return GLN.ofString(glnMatcher.group(1));
 		}
-		else {
+		else
+		{
 			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
 		}
+	}
 
+	@NonNull
+	public GlnWithLabel asGlnWithLabel()
+	{
+		Check.assume(Type.GLN_WITH_LABEL.equals(type), "The type of this instance needs to be {}; this={}", Type.GLN_WITH_LABEL, this);
+		final Matcher glnWithLabelMatcher = Type.GLN_WITH_LABEL.pattern.matcher(rawValue);
+
+		if (glnWithLabelMatcher.find())
+		{
+			return GlnWithLabel.ofString(glnWithLabelMatcher.group(1));
+		}
+		else
+		{
+			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
+		}
 	}
 
 	@NonNull
 	public String asValue()
 	{
 		Check.assume(Type.VALUE.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.VALUE, this);
+				"The type of this instance needs to be {}; this={}", Type.VALUE, this);
 
 		final Matcher valueMatcher = Type.VALUE.pattern.matcher(rawValue);
 
@@ -196,7 +218,7 @@ public class ExternalIdentifier
 
 		return gtinMatcher.group(1);
 	}
-	
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
@@ -204,6 +226,12 @@ public class ExternalIdentifier
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
 		EXTERNAL_REFERENCE(Pattern.compile("^ext-([a-zA-Z0-9_]+)-(.+)$")),
 		GLN(Pattern.compile("^gln-(.+)")),
+
+		/**
+		 * GLN with an optional additional label that can be used in case metasfresh has multiple BPartners which share the same GLN.
+		 */
+		GLN_WITH_LABEL(Pattern.compile("^glnl-([^_]+_.+)")),
+		
 		GTIN(Pattern.compile("^gtin-(.+)")),
 		VALUE(Pattern.compile("^val-(.+)"));
 

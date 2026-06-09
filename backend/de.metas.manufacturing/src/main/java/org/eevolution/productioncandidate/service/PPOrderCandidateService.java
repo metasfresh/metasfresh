@@ -54,7 +54,7 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
@@ -107,7 +107,7 @@ public class PPOrderCandidateService
 	private static final String SYSCONFIG_ResourcePlanningPrecision = "resource.PlanningPrecision";
 
 	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
@@ -284,8 +284,8 @@ public class PPOrderCandidateService
 		if (bomLine.getM_AttributeSetInstance_ID() > 0)
 		{
 			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(bomLine.getM_AttributeSetInstance_ID());
-			final AttributeSetInstanceId asiCopy = attributesRepo.copyASI(asiId);
-			orderLineCandidate.setM_AttributeSetInstance_ID(asiCopy.getRepoId());
+			final AttributeSetInstanceId asiIdCopy = asiBL.copy(asiId);
+			orderLineCandidate.setM_AttributeSetInstance_ID(asiIdCopy.getRepoId());
 		}
 	}
 
@@ -382,7 +382,7 @@ public class PPOrderCandidateService
 
 		return Objects.equals(orderLineCandidate.getComponentType(), productBOMLine.getComponentType())
 				&& orderLineCandidate.getM_Product_ID() == productBOMLine.getM_Product_ID()
-				&& attributesRepo.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
+				&& asiBL.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
 	}
 
 	@NonNull

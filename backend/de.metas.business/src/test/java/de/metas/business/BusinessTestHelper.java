@@ -5,6 +5,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -165,6 +167,18 @@ public class BusinessTestHelper
 		return uom;
 	}
 
+	public I_ExternalSystem createExternalSystem(@NonNull final String name, @NonNull final ExternalSystemType type)
+	{
+		final I_ExternalSystem externalSystem = newInstance(I_ExternalSystem.class);
+
+		externalSystem.setName(name);
+		externalSystem.setValue(type.getValue());
+
+		saveRecord(externalSystem);
+
+		return externalSystem;
+	}
+	
 	@NonNull
 	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision)
 	{
@@ -359,6 +373,7 @@ public class BusinessTestHelper
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(BPGroupId.STANDARD.getRepoId());
 		bpGroupRecord.setName("Standard");
+		bpGroupRecord.setValue("Standard");
 		bpGroupRecord.setIsDefault(true);
 		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 
@@ -373,6 +388,7 @@ public class BusinessTestHelper
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
 		bpGroupRecord.setName(name);
+		bpGroupRecord.setValue(name);
 		bpGroupRecord.setIsDefault(isDefault);
 		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 

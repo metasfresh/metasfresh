@@ -56,9 +56,6 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 
 	/**
 	 * Invokes the given <code>sched</code>'s {@link ShipmentScheduleHandler} to get a {@link IDeliverRequest} instance.
-	 *
-	 * @param sched
-	 * @return
 	 */
 	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 

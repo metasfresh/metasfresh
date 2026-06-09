@@ -1,17 +1,19 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.rest_api.v1.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.v1.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.util.JSONObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
 import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -62,6 +64,7 @@ class JsonCreateInvoiceCandidatesRequestTest
 				.qtyDelivered(TEN)
 				.qtyOrdered(TEN)
 				.uomCode("uomCode")
+				.paymentTerm("paymentTerm")
 				.soTrx(JsonSOTrx.SALES)
 				.build();
 		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest

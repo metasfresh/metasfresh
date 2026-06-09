@@ -19,6 +19,7 @@ public class JsonSalesOrderCreateRequest
 	@Nullable Identifier bpartner;
 	@Nullable Identifier location;
 	@NonNull Identifier warehouse;
+	@Nullable Identifier shipper;
 	@NonNull ZonedDateTime datePromised;
 	@NonNull List<Line> lines;
 
@@ -37,6 +38,7 @@ public class JsonSalesOrderCreateRequest
 		@NonNull BigDecimal qty;
 		@Nullable Identifier piItemProduct;
 		@Nullable List<Schedule> schedules;
+		@Nullable Identifier workplace;
 	}
 
 	//

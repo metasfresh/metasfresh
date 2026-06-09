@@ -1010,6 +1010,22 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return String.valueOf(pgBackendPID);
 	}
 
+	@Override
+	public List<String> getFunctionsLike(@NonNull final String namePattern)
+	{
+		final String sql = "SELECT p.proname"
+				+ " FROM pg_proc p"
+				+ " JOIN pg_namespace n ON n.oid = p.pronamespace"
+				+ " WHERE n.nspname = current_schema()"
+				+ " AND p.proname LIKE lower(?)"
+				+ " ORDER BY p.proname";
+
+		return DB.retrieveRowsOutOfTrx(
+				sql,
+				java.util.Collections.singletonList(namePattern),
+				rs -> rs.getString("proname"));
+	}
+
 	private static List<String> getAquiredConnectionInfos(final ComboPooledDataSource dataSource) throws Exception
 	{
 		final List<String> infos = BasicResourcePool_MetasfreshObserver.getAquiredConnectionInfos(dataSource);

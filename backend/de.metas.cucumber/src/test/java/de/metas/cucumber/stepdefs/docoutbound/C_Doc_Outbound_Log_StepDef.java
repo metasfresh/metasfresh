@@ -23,14 +23,17 @@
 package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import org.compiere.model.I_C_Invoice;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -40,6 +43,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
 
 import java.util.Map;
 
@@ -49,7 +53,7 @@ import static de.metas.document.archive.model.I_C_Doc_Outbound_Log.COLUMNNAME_C_
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Log.COLUMNNAME_Record_ID;
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_Line_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Doc_Outbound_Log_StepDef
 {
@@ -59,17 +63,23 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final M_InOut_StepDefData inOutTable;
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final M_InOut_StepDefData inOutTable)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.invoiceTable = invoiceTable;
+		this.inOutTable = inOutTable;
 	}
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
@@ -161,18 +171,32 @@ public class C_Doc_Outbound_Log_StepDef
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.Table_Name + "." + I_AD_Table.COLUMNNAME_Name);
 
-		switch (tableName)
+		if (I_C_Order.Table_Name.equals(tableName))
 		{
-			case I_C_Order.Table_Name:
-				final I_C_Order order = orderTable.get(recordIdentifier);
-				assertThat(order).isNotNull();
+			final I_C_Order order = orderTable.get(recordIdentifier);
+			assertThat(order).isNotNull();
 
-				return TableRecordReference.of(order);
+			return TableRecordReference.of(order);
+		}
+		else if (I_C_Invoice.Table_Name.equals(tableName))
+		{
+			final I_C_Invoice invoice = invoiceTable.get(recordIdentifier);
+			assertThat(invoice).isNotNull();
 
-			default:
-				throw new AdempiereException("Unhandled tableName")
-						.appendParametersToMessage()
-						.setParameter("TableName", tableName);
+			return TableRecordReference.of(invoice);
+		}
+		else if (I_M_InOut.Table_Name.equals(tableName))
+		{
+			final I_M_InOut inOut = inOutTable.get(recordIdentifier);
+			assertThat(inOut).isNotNull();
+
+			return TableRecordReference.of(inOut);
+		}
+		else
+		{
+			throw new AdempiereException("Unhandled tableName")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
 		}
 	}
 

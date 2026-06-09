@@ -5,6 +5,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ProductId;
@@ -15,6 +16,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -29,6 +31,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
+import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Repository;
@@ -37,6 +40,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -64,6 +68,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+/**
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative
+ * Repository Cluster: DDOrderLowLevelDAO
+ */
 @Repository
 public class DDOrderLowLevelDAO
 {
@@ -78,6 +86,51 @@ public class DDOrderLowLevelDAO
 	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
 	{
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
+	}
+
+	/**
+	 * Returns a sub-query selecting all live (Completed), active {@link I_DD_Order} records.
+	 *
+	 * <p>Intended to be consumed by callers as an {@code IN}/{@code NOT IN} sub-query filter
+	 * (e.g. "shipment schedules that have / have no live DD_Order"). The cross-model join is
+	 * composed in the caller's service; this DAO owns only the DD_Order side of the query.</p>
+	 */
+	public IQuery<I_DD_Order> queryCompletedDDOrders()
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.create();
+	}
+
+	/**
+	 * Returns the ID of the first active (Completed) DD_Order linked to the given shipment schedule,
+	 * or empty if none exists.
+	 */
+	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.firstOptional(I_DD_Order.class)
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
+	 */
+	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_DD_Order.class);
+		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
@@ -223,9 +276,13 @@ public class DDOrderLowLevelDAO
 
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
-		return toSqlQuery(query)
-				.create()
-				.iterateAndStream();
+		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return Stream.empty();
+		}
+
+		return sqlQuery.iterateAndStream();
 	}
 
 	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
@@ -290,9 +347,22 @@ public class DDOrderLowLevelDAO
 
 		//
 		// Warehouse To
-		if (query.getWarehouseToIds() != null && !query.getWarehouseToIds().isEmpty())
+		if (query.getWarehouseToIds() != null)
 		{
 			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getWarehouseToIds());
+		}
+
+		//
+		// Locator To
+		if (query.getLocatorToIds() != null)
+		{
+			queryBuilder.addInSubQueryFilter()
+					.matchingColumnNames(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_Order.COLUMNNAME_DD_Order_ID)
+					.subQuery(queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getLocatorToIds())
+							.create())
+					.end();
 		}
 
 		//
@@ -325,6 +395,13 @@ public class DDOrderLowLevelDAO
 			{
 				filter.addEqualsFilter(I_DD_Order.COLUMNNAME_DatePromised, datePromised, DateTruncQueryFilterModifier.DAY);
 			}
+		}
+
+		//
+		// only DD_Order_IDs
+		if (query.getOnlyDDOrderIds() != null && !query.getOnlyDDOrderIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, query.getOnlyDDOrderIds());
 		}
 
 		//
@@ -364,10 +441,12 @@ public class DDOrderLowLevelDAO
 		return queryBuilder;
 	}
 
-	private void setOrderBys(
+	private static void setOrderBys(
 			@NonNull IQueryBuilder<I_DD_Order> queryBuilder,
 			@Nullable List<DDOrderQuery.OrderBy> orderBys)
 	{
+		queryBuilder.clearOrderBys();
+
 		if (orderBys != null && !orderBys.isEmpty())
 		{
 			orderBys.forEach(orderBy -> addOrderBy(queryBuilder, orderBy));
@@ -377,21 +456,37 @@ public class DDOrderLowLevelDAO
 		queryBuilder.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID);
 	}
 
-	private void addOrderBy(
+	private static void addOrderBy(
 			@NonNull final IQueryBuilder<I_DD_Order> queryBuilder,
 			@NonNull final DDOrderQuery.OrderBy orderBy)
 	{
-		if (orderBy == DDOrderQuery.OrderBy.PriorityRule)
+		final DDOrderQuery.OrderByField field = orderBy.getField();
+		final String sqlColumnName;
+		if (field == DDOrderQuery.OrderByField.PriorityRule)
 		{
-			queryBuilder.orderBy(I_DD_Order.COLUMNNAME_PriorityRule);
+			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
 		}
-		else if (orderBy == DDOrderQuery.OrderBy.DatePromised)
+		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{
-			queryBuilder.orderBy(I_DD_Order.COLUMNNAME_DatePromised);
+			sqlColumnName = I_DD_Order.COLUMNNAME_DatePromised;
+		}
+		else if (field == DDOrderQuery.OrderByField.SeqNo)
+		{
+			sqlColumnName = I_DD_Order.COLUMNNAME_SeqNo;
 		}
 		else
 		{
 			throw new AdempiereException("Unknown order by: " + orderBy);
+		}
+
+		final IQueryOrderBy.Direction direction = orderBy.getDirection();
+		if (direction.isAscending())
+		{
+			queryBuilder.orderBy(sqlColumnName);
+		}
+		else
+		{
+			queryBuilder.orderByDescending(sqlColumnName);
 		}
 	}
 

@@ -64,12 +64,17 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 
 	public static final int AD_Reference_ID = X_EDI_Desadv.EDI_EXPORTSTATUS_AD_Reference_ID;
 
-	public boolean isPending()
-	{
-		return this == Pending;
-	}
-
+	public boolean isPendingOrError() {return isPending() || isError();}
+	public boolean isErrorOrInvalid() {return isError() || isInvalid();}
+	public boolean isPending() {return Pending == this;}
+	public boolean isError() {return Error == this;}
+	public boolean isInvalid() {return Invalid == this;}
+	public boolean isSent() {return Sent == this;}
+	public boolean isDontSend() {return DontSend == this;}
+	public boolean isEnqueued() {return Enqueued == this;}
+	public boolean isSendingStarted() {return SendingStarted == this;}
+	public boolean isInProgressOrSend() {return isInProgressOrSend(this);}
 	public static boolean isInProgressOrSend(@Nullable final EDIExportStatus ediExportStatus){return SENT_OR_IN_PROGRESS.contains(ediExportStatus);}
-
-
+	public boolean isProcessing() {return isSendingStarted() || isEnqueued();}
+	public boolean isProcessed() {return isSent() || isDontSend();}
 }

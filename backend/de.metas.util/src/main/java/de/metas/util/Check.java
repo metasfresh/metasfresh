@@ -569,6 +569,7 @@ public final class Check
 		}
 	}
 
+	@Contract("_, _ -> fail")
 	public static RuntimeException fail(final String errMsg, final Object... params)
 	{
 		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);

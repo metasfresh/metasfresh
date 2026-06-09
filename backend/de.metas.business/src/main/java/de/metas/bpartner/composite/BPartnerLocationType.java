@@ -40,6 +40,7 @@ public class BPartnerLocationType
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String VISITORS_ADDRESS_DEFAULT = "visitorsAddressDefault";
 
 	@JsonInclude(Include.NON_ABSENT)
 	private final Optional<Boolean> billTo;
@@ -56,13 +57,17 @@ public class BPartnerLocationType
 	@JsonInclude(Include.NON_ABSENT)
 	private Optional<Boolean> visitorsAddress;
 
+	@JsonInclude(Include.NON_ABSENT)
+	private Optional<Boolean> visitorsAddressDefault;
+
 	@Builder
 	public BPartnerLocationType(
 			@Nullable final Boolean billTo,
 			@Nullable final Boolean billToDefault,
 			@Nullable final Boolean shipTo,
 			@Nullable final Boolean shipToDefault,
-			@Nullable final Boolean visitorsAddress)
+			@Nullable final Boolean visitorsAddress,
+			@Nullable final Boolean visitorsAddressDefault)
 	{
 		this.billToDefault = Optional.ofNullable(billToDefault);
 		if (this.billToDefault.orElse(false) && billTo == null)
@@ -85,6 +90,7 @@ public class BPartnerLocationType
 		}
 
 		this.visitorsAddress = Optional.ofNullable(visitorsAddress);
+		this.visitorsAddressDefault = Optional.ofNullable(visitorsAddressDefault);
 	}
 
 	/** copy constructor, see {@link #deepCopy()}. */
@@ -93,18 +99,20 @@ public class BPartnerLocationType
 			@Nullable final Optional<Boolean> billToDefault,
 			@Nullable final Optional<Boolean> shipTo,
 			@Nullable final Optional<Boolean> shipToDefault,
-			@Nullable final Optional<Boolean> visitorsAddress)
+			@Nullable final Optional<Boolean> visitorsAddress,
+			@Nullable final Optional<Boolean> visitorsAddressDefault)
 	{
 		this.billTo = billTo;
 		this.billToDefault = billToDefault;
 		this.shipTo = shipTo;
 		this.shipToDefault = shipToDefault;
 		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddressDefault = visitorsAddressDefault;
 	}
 
 	public BPartnerLocationType deepCopy()
 	{
-		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault, visitorsAddress);
+		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault, visitorsAddress, visitorsAddressDefault);
 	}
 
 	public boolean getIsShipToOr(final boolean defaultValue)
@@ -130,6 +138,11 @@ public class BPartnerLocationType
 	public boolean getIsVisitorsAddressOr(final boolean defaultValue)
 	{
 		return visitorsAddress.orElse(defaultValue);
+	}
+
+	public boolean getIsVisitorsAddressDefaultOr(final boolean defaultValue)
+	{
+		return visitorsAddressDefault.orElse(defaultValue);
 	}
 
 	public void setBillToDefault(final boolean billToDefault)

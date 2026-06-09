@@ -4,7 +4,6 @@ import { debounce, get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { getViewRowsByIds, locationSearchRequest } from '../api';
-import { connectWS, disconnectWS } from '../utils/websockets';
 import { deepUnfreeze } from '../utils';
 
 import { getTableId } from '../reducers/tables';
@@ -55,6 +54,7 @@ import { filtersActiveContains } from '../utils/filterHelpers';
 
 import DocumentList from '../components/app/DocumentList';
 import { requestRedirect } from '../reducers/redirect';
+import { useWebsocket } from '../hooks/useWebsocket';
 
 // TODO: This can be further simplified by extracting methods that are not responsible
 // for fetching data to a child container/component (or maybe back to DocumentList component)
@@ -109,7 +109,6 @@ class DocumentListContainer extends Component {
     const { isModal, windowId, viewId, deleteView, deleteTable } = this.props;
 
     this.mounted = false;
-    disconnectWS.call(this);
 
     deleteTable(getTableId({ windowId, viewId }));
     deleteView(windowId, isModal);
@@ -218,19 +217,8 @@ class DocumentListContainer extends Component {
     }
   };
 
-  /**
-   * @summary Subscribe to websocket stream for this view
-   */
-  connectWebSocket = (customViewId) => {
-    const viewId = customViewId ? customViewId : this.props.viewId;
-
-    connectWS.call(this, `/view/${viewId}`, (event) =>
-      this.onViewChangedEvent({ viewId, event })
-    );
-  };
-
-  onViewChangedEvent = ({ viewId, event }) => {
-    const { fullyChanged, headerPropertiesChanged } = event;
+  onViewChangedEvent = ({ event }) => {
+    const { viewId, fullyChanged, headerPropertiesChanged, changedIds } = event;
 
     const {
       windowId,
@@ -245,10 +233,7 @@ class DocumentListContainer extends Component {
     } = this.props;
     const { uncollapseRowsOnChange } = layout;
 
-    const changedRowIdsInPage = retainExistingRowIds(
-      table.rows,
-      event.changedIds
-    );
+    const changedRowIdsInPage = retainExistingRowIds(table.rows, changedIds);
 
     if (changedRowIdsInPage.length > 0) {
       getViewRowsByIds(windowId, viewId, changedRowIdsInPage.join()).then(
@@ -341,8 +326,6 @@ class DocumentListContainer extends Component {
         }
 
         if (viewId) {
-          this.connectWebSocket(viewId);
-
           if (!isNewFilter) {
             this.browseView();
           } else {
@@ -442,7 +425,6 @@ class DocumentListContainer extends Component {
         }
 
         if (this.mounted) {
-          this.connectWebSocket(viewId);
           this.getData(viewId, page, sort);
         }
       })
@@ -485,8 +467,6 @@ class DocumentListContainer extends Component {
     filterView(windowId, viewId, filtersActive, isModal)
       .then((response) => {
         const newViewId = response.viewId;
-
-        this.connectWebSocket(newViewId);
 
         if (response.data && response.data.description && setModalDescription) {
           setModalDescription(response.data.description);
@@ -768,6 +748,7 @@ class DocumentListContainer extends Component {
 
   render() {
     const {
+      viewId,
       includedView,
       layout,
       layoutPending,
@@ -783,22 +764,28 @@ class DocumentListContainer extends Component {
     const triggerSpinner = layoutPending || pending;
 
     return (
-      <DocumentList
-        {...this.props}
-        {...this.state}
-        triggerSpinner={triggerSpinner}
-        hasIncluded={hasIncluded}
-        onToggleState={this.toggleState}
-        pageLength={this.getPageLength()}
-        onGetSelected={this.getSelected}
-        onShowSelectedIncludedView={this.showSelectedIncludedView}
-        onSortData={this.sortData}
-        onFetchLayoutAndData={this.fetchLayoutAndData}
-        onChangePage={this.handleChangePage}
-        onFilterChange={this.handleFilterChange}
-        onRedirectToDocument={this.redirectToDocument}
-        onRedirectToNewDocument={this.onRedirectToNewDocument}
-      />
+      <>
+        <ViewWebsocketConnector
+          viewId={viewId}
+          onViewChangedEvent={this.onViewChangedEvent}
+        />
+        <DocumentList
+          {...this.props}
+          {...this.state}
+          triggerSpinner={triggerSpinner}
+          hasIncluded={hasIncluded}
+          onToggleState={this.toggleState}
+          pageLength={this.getPageLength()}
+          onGetSelected={this.getSelected}
+          onShowSelectedIncludedView={this.showSelectedIncludedView}
+          onSortData={this.sortData}
+          onFetchLayoutAndData={this.fetchLayoutAndData}
+          onChangePage={this.handleChangePage}
+          onFilterChange={this.handleFilterChange}
+          onRedirectToDocument={this.redirectToDocument}
+          onRedirectToNewDocument={this.onRedirectToNewDocument}
+        />
+      </>
     );
   }
 }
@@ -840,3 +827,18 @@ export default connect(
   null,
   { forwardRef: true }
 )(DocumentListContainer);
+
+//
+//
+//
+//
+//
+
+const ViewWebsocketConnector = ({ viewId, onViewChangedEvent }) => {
+  useWebsocket({
+    topic: viewId ? `/view/${viewId}` : null,
+    onMessage: ({ event }) => onViewChangedEvent({ viewId, event }),
+  });
+
+  return null;
+};

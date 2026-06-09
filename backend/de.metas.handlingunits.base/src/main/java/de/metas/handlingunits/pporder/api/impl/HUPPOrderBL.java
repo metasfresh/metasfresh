@@ -12,6 +12,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -50,6 +51,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -317,7 +319,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			@NonNull final I_M_HU hu,
 			@NonNull final ProductId maturedProductId)
 	{
-		if (!hu.isActive() || !hu.isReserved() || !hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
+		if (!hu.isActive() || hu.isReserved() || hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
 		{
 			return false;
 		}
@@ -343,6 +345,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 						.productId(maturedProductId)
 						.warehouseId(locatorId.getWarehouseId())
 						.maturingConfigLineId(maturingConfigLine.getId())
+						.orgId(maturingConfigLine.getOrgId())
 						.build())
 				.map(ProductPlanning::isMatured)
 				.orElse(false);
@@ -372,9 +375,12 @@ public class HUPPOrderBL implements IHUPPOrderBL
 
 		final ProductId maturedProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
-		if (isHUEligibleForMaturing(maturingHU, maturedProductId))
+		if (!isHUEligibleForMaturing(maturingHU, maturedProductId))
 		{
-			throw new AdempiereException("Issue HU is not eligible for maturing !");
+			throw new AdempiereException("Issue HU is not eligible for maturing!")
+					.appendParametersToMessage()
+					.setParameter("maturingHUId", maturingHUId)
+					.setParameter("maturedProductId", maturedProductId);
 		}
 
 		return maturingHU;
@@ -392,10 +398,39 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.receiveVHU(Quantitys.of(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
 
 		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
-		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+		final HuId receivedHuId = HuId.ofRepoId(receivedHu.getM_HU_ID());
+		attributesBL.updateHUAttribute(receivedHuId, AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+		// When maturing, the new HU's ProductionDate is set to NOW(), which would reset its calculated age to 0.
+		// To preserve the original aging timeline, we copy the source HU's current Age as AgeOffset.
+		// The AgeOffset is then used in PP_Maturing_Candidate_v to adjust the DateStartSchedule calculation.
+		final String ageString = attributesBL.getHUAttributeValue(huToBeIssued, HUAttributeConstants.ATTR_Age);
+		if (StringUtils.isNumeric(ageString))
+		{
 
-		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.get().assign(huqrCode, ImmutableSet.of(HuId.ofRepoId(receivedHu.getM_HU_ID())));
+			attributesBL.updateHUAttribute(receivedHuId, HUAttributeConstants.ATTR_AgeOffset, ageString);
+		}
+
+		final HUQRCodesService qrCodeService = huqrCodesService.get();
+		final HuId huToBeIssuedId = HuId.ofRepoId(huToBeIssued.getM_HU_ID());
+		final HUQRCode huqrCode = qrCodeService.getQRCodeByHuId(huToBeIssuedId);
+		if (huqrCode != null)
+		{
+			qrCodeService.assign(huqrCode, ImmutableSet.of(receivedHuId));
+			try
+			{
+				qrCodeService.removeAssignment(huqrCode, ImmutableSet.of(huToBeIssuedId));
+			}
+			catch (final Exception e)
+			{
+				// Compensating action: remove the assignment we just made
+				qrCodeService.removeAssignment(huqrCode, ImmutableSet.of(receivedHuId));
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("huqrCode", huqrCode.toDisplayableQRCode())
+						.setParameter("sourceHuId", huToBeIssuedId)
+						.setParameter("targetHuId", receivedHuId);
+			}
+		}
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}

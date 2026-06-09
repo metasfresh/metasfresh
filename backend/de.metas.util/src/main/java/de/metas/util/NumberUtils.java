@@ -1,10 +1,8 @@
-package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +20,11 @@ package de.metas.util;
  * #L%
  */
 
+package de.metas.util;
+
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -53,7 +54,9 @@ public final class NumberUtils
 	 *
 	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be returned
 	 */
-	public static BigDecimal stripTrailingDecimalZeros(final BigDecimal bd)
+	@Nullable
+	@Contract("!null -> !null")
+	public static BigDecimal stripTrailingDecimalZeros(@Nullable final BigDecimal bd)
 	{
 		if (bd == null)
 		{

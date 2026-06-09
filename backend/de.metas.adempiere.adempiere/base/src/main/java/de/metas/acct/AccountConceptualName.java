@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class AccountConceptualName implements Comparable<AccountConceptualName>
 {
 	private final String name;
+
 	private static final ConcurrentHashMap<String, AccountConceptualName> cache = new ConcurrentHashMap<>();
 
 	public static final AccountConceptualName P_Asset_Acct = new AccountConceptualName("P_Asset_Acct");

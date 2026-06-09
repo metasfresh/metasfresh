@@ -74,6 +74,7 @@ public class BPartnerContact
 	public static final String EMAIL3 = "email3";
 	public static final String PHONE2 = "phone2";
 	public static final String TITLE = "title";
+	public static final String DEPARTMENT = "department";
 	public static final String JOB_ID = "jobId";
 
 	public static final String SUBJECT_MATTER = "subjectMatter";
@@ -141,6 +142,9 @@ public class BPartnerContact
 
 	@Nullable
 	private String title;
+
+	@Nullable
+	private String department;
 
 	@Nullable
 	private String phone2;
@@ -217,6 +221,7 @@ public class BPartnerContact
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			@Nullable final String title,
+			@Nullable final String department,
 			@Nullable final String phone2,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
 			@Nullable final List<UserRole> roles,
@@ -259,6 +264,7 @@ public class BPartnerContact
 		this.title = title;
 		this.roles = roles;
 		this.jobId = jobId;
+		this.department = department;
 	}
 
 	public BPartnerContact deepCopy()

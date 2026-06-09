@@ -2,14 +2,16 @@ package org.adempiere.mm.attributes.listeners.expiry;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -33,6 +35,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@Component
 public class OrderLineMonthsUntilExpiryModelASIListener implements IModelAttributeSetInstanceListener
 {
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -40,7 +43,7 @@ public class OrderLineMonthsUntilExpiryModelASIListener implements IModelAttribu
 	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_OrderLine.Table_Name;
 	}

@@ -133,7 +133,7 @@ public class JsonPickingJobLine
 						: null)
 				.steps(line.getSteps()
 						.stream()
-						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
+						.map(step -> JsonPickingJobStep.of(step, line, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
 				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
 				.manuallyClosed(line.isManuallyClosed())

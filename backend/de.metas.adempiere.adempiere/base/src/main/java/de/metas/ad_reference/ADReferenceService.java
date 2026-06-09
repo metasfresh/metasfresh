@@ -9,6 +9,7 @@ import de.metas.util.Check;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.impl.LookupException;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -154,7 +155,7 @@ public class ADReferenceService
 		{
 			// NOTE: don't use logger.error because that call ErrorManager which will call POInfo which called this method.
 			System.err.println("Cannot retrieve tableRefInfo for " + referenceId + " because " + tableRefInfo.getExplanation().getDefaultValue()
-									   + ". Returning null.");
+					+ ". Returning null.");
 			// logger.error("Cannot retrieve tableRefInfo for {}. Returning null.", referenceId);
 			return null;
 		}
@@ -191,14 +192,20 @@ public class ADReferenceService
 		}
 
 		final boolean autoComplete;
+		final AdWindowId soWindowId;
+		final AdWindowId poWindowId;
 		final I_AD_Table table = adTableDAO.retrieveTableOrNull(tableName);
 		if (table == null)
 		{
 			autoComplete = false;
+			soWindowId = null;
+			poWindowId = null;
 		}
 		else
 		{
 			autoComplete = table.isAutocomplete();
+			soWindowId = AdWindowId.ofRepoIdOrNull(table.getAD_Window_ID());
+			poWindowId = AdWindowId.ofRepoIdOrNull(table.getPO_Window_ID());
 		}
 
 		final TooltipType tooltipType = adTableDAO.getTooltipTypeByTableName(tableName);
@@ -209,7 +216,31 @@ public class ADReferenceService
 				.keyColumn(keyColumn)
 				.autoComplete(autoComplete)
 				.tooltipType(tooltipType)
+				// dev-note: custom windows are handled directly in WindowRestController
+				.zoomSO_Window_ID(soWindowId)
+				.zoomPO_Window_ID(poWindowId)
+				.zoomAD_Window_ID_Override(resolveWindowId(soWindowId, poWindowId))
 				.build();
+	}
+
+	@Nullable
+	private static AdWindowId resolveWindowId(@Nullable final AdWindowId soWindowId, @Nullable final AdWindowId poWindowId)
+	{
+		// Case 1: Only SO window is defined
+		if (soWindowId != null && poWindowId == null)
+		{
+			return soWindowId;
+		}
+
+		// Case 2: Only PO window is defined
+		if (soWindowId == null && poWindowId != null)
+		{
+			return poWindowId;
+		}
+
+		// Case 3: Both defined OR both null
+		// Return null to allow IsSOTrx-based window selection
+		return null;
 	}
 
 	public ADRefTable retrieveAccountTableRefInfo()

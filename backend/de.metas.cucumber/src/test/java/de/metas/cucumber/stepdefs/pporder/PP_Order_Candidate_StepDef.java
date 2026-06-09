@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -37,6 +36,7 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
@@ -106,6 +106,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
@@ -159,7 +160,7 @@ public class PP_Order_Candidate_StepDef
 	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
 				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
 	}
 
@@ -310,19 +311,22 @@ public class PP_Order_Candidate_StepDef
 		InterfaceWrapperHelperUtils.unset_ManualUserAction(record);
 	}
 
+	@NonNull
 	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		return getPPOrderCandidateIdentifier(row).lookupIn(ppOrderCandidateTable);
+		return getPPOrderCandidateIdentifier(row).lookupNotNullIn(ppOrderCandidateTable);
 	}
 
+	@NonNull
 	private Set<PPOrderCandidateId> getPPOrderCandidateIds(final @NonNull DataTable table)
 	{
 		return DataTableRows.of(table).stream().map(this::getPPOrderCandidateId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
 	private PPOrderCandidateId getPPOrderCandidateId(@NonNull final DataTableRow row)
 	{
-		return getPPOrderCandidateIdentifier(row).lookupIdIn(ppOrderCandidateTable);
+		return getPPOrderCandidateIdentifier(row).lookupNotNullIdIn(ppOrderCandidateTable);
 	}
 
 	private static StepDefDataIdentifier getPPOrderCandidateIdentifier(final @NonNull DataTableRow row)
@@ -474,7 +478,7 @@ public class PP_Order_Candidate_StepDef
 		{
 			InterfaceWrapperHelper.save(orderCandidateRecord);
 
-			assertThat(false).as("InterfaceWrapperHelper.save should throw error!").isTrue();
+			fail("InterfaceWrapperHelper.save should throw error!");
 		}
 		catch (final AdempiereException adempiereException)
 		{
@@ -506,7 +510,7 @@ public class PP_Order_Candidate_StepDef
 		{
 			InterfaceWrapperHelper.save(orderCandidateRecord);
 
-			assertThat(false).as("InterfaceWrapperHelper.save should throw error!").isTrue();
+			fail("InterfaceWrapperHelper.save should throw error!");
 		}
 		catch (final AdempiereException adempiereException)
 		{
@@ -671,13 +675,5 @@ public class PP_Order_Candidate_StepDef
 				.resourceTable(resourceTable)
 				.productBOMTable(productBOMTable)
 				.build();
-	}
-
-	@And("^after not more than (.*)s, the following PP_Order_Candidates exist")
-	public void verifyPPOrderCandidatesAreUpdated(final int timeoutSec, @NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
-				.forEach(row -> this.validatePP_Order_Candidate(timeoutSec, row));
 	}
 }

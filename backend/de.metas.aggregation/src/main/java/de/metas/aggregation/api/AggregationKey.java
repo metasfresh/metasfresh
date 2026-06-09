@@ -10,18 +10,22 @@ package de.metas.aggregation.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -29,17 +33,16 @@ import org.adempiere.ad.expression.api.NullStringExpression;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
+import javax.annotation.Nullable;
 
 @EqualsAndHashCode(of = "keyString", doNotUseGetters = true)
 public final class AggregationKey
 {
 	public static final AggregationKey NULL = new AggregationKey();
 
-	private final String keyString;
+	@Nullable private final String keyString;
 	private final IStringExpression keyStringExpr;
+	@Nullable @Getter
 	private final AggregationId aggregationId;
 
 	public AggregationKey(final ArrayKey key, final AggregationId aggregationId)
@@ -47,14 +50,21 @@ public final class AggregationKey
 		this(key == null ? null : key.toString(), aggregationId);
 	}
 
-	public AggregationKey(final String keyString, final AggregationId aggregationId)
+	public AggregationKey(@Nullable final String keyString)
+	{
+		this(keyString, null);
+	}
+
+	public AggregationKey(@Nullable final String keyString, @Nullable final AggregationId aggregationId)
 	{
 		this.keyString = keyString;
 		keyStringExpr = Services.get(IExpressionFactory.class).compile(keyString, IStringExpression.class);
 		this.aggregationId = aggregationId;
 	}
 
-	/** Null ctor */
+	/**
+	 * Null ctor
+	 */
 	private AggregationKey()
 	{
 		this.keyString = null;
@@ -72,11 +82,6 @@ public final class AggregationKey
 	public String getAggregationKeyString()
 	{
 		return keyString;
-	}
-
-	public AggregationId getAggregationId()
-	{
-		return aggregationId;
 	}
 
 	public AggregationKey parse(final Evaluatee ctx)

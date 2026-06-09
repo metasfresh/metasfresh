@@ -96,6 +96,13 @@ public class RepoIdAwares
 		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdFunction();
 	}
 
+	private static <T extends RepoIdAware> IntFunction<T> getOfRepoIdOrNullFunction(final Class<T> repoIdClass)
+	{
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+		//noinspection unchecked
+		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdOrNullFunction();
+	}
+
 	public static <T extends RepoIdAware> T ofObject(@NonNull final Object repoIdObj, final Class<T> repoIdClass)
 	{
 		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
@@ -124,13 +131,13 @@ public class RepoIdAwares
 	@Nullable
 	public static <T extends RepoIdAware> T ofObjectOrNull(
 			@Nullable final Object repoIdObj,
-			@NonNull final Class<T> repoIdClass)
+			@NonNull final Class<T> repoIdClass,
+			@NonNull final IntFunction<T> ofRepoIdFunction)
 	{
 		if (repoIdObj == null)
 		{
 			return null;
 		}
-
 		if (repoIdClass.isInstance(repoIdObj))
 		{
 			return repoIdClass.cast(repoIdObj);
@@ -142,10 +149,15 @@ public class RepoIdAwares
 			return null;
 		}
 
-		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
-		final IntFunction<RepoIdAware> ofRepoIdOrNullFunction = repoIdAwareDescriptor.getOfRepoIdOrNullFunction();
-		@SuppressWarnings("unchecked") final T id = (T)ofRepoIdOrNullFunction.apply(repoId);
-		return id;
+		return ofRepoIdFunction.apply(repoId);
+	}
+
+	@Nullable
+	public static <T extends RepoIdAware> T ofObjectOrNull(
+			@Nullable final Object repoIdObj,
+			@NonNull final Class<T> repoIdClass)
+	{
+		return ofObjectOrNull(repoIdObj, repoIdClass, getOfRepoIdOrNullFunction(repoIdClass));
 	}
 
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)

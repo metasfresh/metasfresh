@@ -213,8 +213,6 @@ public class HUTransformServiceTests
 	/**
 	 * Run {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)}
 	 * by splitting a CU-quantity of 40 onto new TUs with a CU-capacity of 8 each.
-	 *
-	 * @param isOwnPackingMaterials
 	 */
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
@@ -944,7 +942,7 @@ public class HUTransformServiceTests
 				.build();
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		assertThat(newCUs).hasSize(1);
 		final I_M_HU newSaladCU = newCUs.get(0);
@@ -1183,8 +1181,7 @@ public class HUTransformServiceTests
 				.build();
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = huTransformService
-				.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		// data.helper.commitAndDumpHU(topLevelParent);
 
@@ -1218,8 +1215,7 @@ public class HUTransformServiceTests
 		data.disableHUPackingMaterialsCollector("the system will need to create one dedicated new TU for the 11th tomato");
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = huTransformService
-				.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 		// data.helper.commitAndDumpHU(topLevelParent);
 		// data.helper.commitAndDumpHUs(newCUs);
 
@@ -1253,8 +1249,7 @@ public class HUTransformServiceTests
 				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService
-				.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		final Node existingTUXML = HUXmlConverter.toXml(topLevelParent);
 		XmlAssert.assertThat(existingTUXML).valueByXPath("count(HU-LU_Palet[@HUStatus='A'])").isEqualTo("1");
@@ -1281,8 +1276,7 @@ public class HUTransformServiceTests
 				.qtyCU(Quantity.of(6, data.helper.uomKg))
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService
-				.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		final Node existingTUXML = HUXmlConverter.toXml(topLevelParent);
 		XmlAssert.assertThat(existingTUXML).valueByXPath("count(HU-LU_Palet[@HUStatus='D'])").isEqualTo("1");

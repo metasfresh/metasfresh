@@ -6,9 +6,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.inout.ShipmentScheduleId;
@@ -18,9 +18,12 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineId;
+import de.metas.shipping.ShipperId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
@@ -49,6 +52,7 @@ public class SalesOrderCreateCommand
 
 	@NonNull private final JsonSalesOrderCreateRequest request;
 	@NonNull private final MasterdataContext context;
+	@NonNull private final Identifier identifier;
 
 	//
 	// State
@@ -88,9 +92,22 @@ public class SalesOrderCreateCommand
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 				.datePromised(request.getDatePromised());
+
+		if (request.getShipper() != null)
+		{
+			this.salesOrderFactory.shipperId(context.getId(request.getShipper(), ShipperId.class));
+		}
 		request.getLines().forEach(this::createOrderLine);
 
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();
+
+		// Store order line IDs in context so manufacturing orders can reference them
+		for (int i = 0; i < lineCreateRequestAndBuilders.size(); i++)
+		{
+			final LineCreateRequestAndBuilder lineRequestAndBuilder = lineCreateRequestAndBuilders.get(i);
+			final Identifier lineIdentifier = Identifier.ofString(identifier.getAsString() + "_line" + (i + 1));
+			context.putIdentifier(lineIdentifier, lineRequestAndBuilder.getOrderLineId());
+		}
 
 		return JsonSalesOrderCreateResponse.builder()
 				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
@@ -129,7 +146,7 @@ public class SalesOrderCreateCommand
 
 		final ImmutableSet<OrderLineId> orderLineIds = ImmutableSet.copyOf(jobSchedulesToCreateByOrderLineId.keySet());
 
-		Stopwatch stopwatch = Stopwatch.createStarted();
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		while (!jobSchedulesToCreateByOrderLineId.isEmpty())
 		{
 			final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByOrderLineIds(orderLineIds);
@@ -164,7 +181,7 @@ public class SalesOrderCreateCommand
 		{
 			Thread.sleep(duration.toMillis());
 		}
-		catch (InterruptedException e)
+		catch (final InterruptedException e)
 		{
 			throw new AdempiereException(e);
 		}
@@ -193,11 +210,31 @@ public class SalesOrderCreateCommand
 	@Value(staticConstructor = "of")
 	private static class LineCreateRequestAndBuilder
 	{
-		@NonNull JsonSalesOrderCreateRequest.Line lineCreateRequest;
-		@NonNull OrderLineBuilder lineBuilder;
+		@NonNull JsonSalesOrderCreateRequest.Line request;
+		@NonNull OrderLineBuilder builder;
 
-		public OrderLineId getOrderLineId() {return lineBuilder.getCreatedOrderAndLineId().getOrderLineId();}
+		public OrderLineId getOrderLineId() {return builder.getCreatedOrderAndLineId().getOrderLineId();}
 
-		public List<JsonSalesOrderCreateRequest.Schedule> getScheduleRequests() {return lineCreateRequest.getSchedules() != null ? lineCreateRequest.getSchedules() : ImmutableList.of();}
+		public List<JsonSalesOrderCreateRequest.Schedule> getScheduleRequests()
+		{
+			if (request.getSchedules() != null)
+			{
+				Check.assumeNull(request.getWorkplace(), "Workplace and schedules can't be set at the same time: {}", request.getSchedules());
+				return request.getSchedules();
+			}
+			else if (request.getWorkplace() != null)
+			{
+				return ImmutableList.of(
+						JsonSalesOrderCreateRequest.Schedule.builder()
+								.workplace(request.getWorkplace())
+								.qty(request.getQty())
+								.build()
+				);
+			}
+			else
+			{
+				return ImmutableList.of();
+			}
+		}
 	}
 }

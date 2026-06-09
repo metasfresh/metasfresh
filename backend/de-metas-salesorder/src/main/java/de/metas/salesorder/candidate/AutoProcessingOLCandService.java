@@ -2,7 +2,7 @@
  * #%L
  * de-metas-salesorder
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,13 +46,9 @@ import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
 @Service
 public class AutoProcessingOLCandService
@@ -71,10 +67,10 @@ public class AutoProcessingOLCandService
 	private final ShipperDeliveryService shipperDeliveryService;
 
 	public AutoProcessingOLCandService(
-			final @NonNull OrderService orderService,
-			final @NonNull ShipmentService shipmentService,
-			final @NonNull InvoiceService invoiceService, 
-			final @NonNull ShipperDeliveryService shipperDeliveryService)
+			@NonNull final OrderService orderService,
+			@NonNull final ShipmentService shipmentService,
+			@NonNull final InvoiceService invoiceService,
+			@NonNull final ShipperDeliveryService shipperDeliveryService)
 	{
 		this.orderService = orderService;
 		this.shipmentService = shipmentService;
@@ -82,7 +78,7 @@ public class AutoProcessingOLCandService
 		this.shipperDeliveryService = shipperDeliveryService;
 	}
 
-	public void processOLCands(final @NonNull ProcessOLCandsRequest request)
+	public void processOLCands(@NonNull final ProcessOLCandsRequest request)
 	{
 		final Set<OLCandId> olCandIds = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.setOnlySelection(request.getPInstanceId())
@@ -100,12 +96,16 @@ public class AutoProcessingOLCandService
 
 		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = trxManager.callInNewTrx(() -> orderService.getAsyncBatchId2OLCandIds(olCandIds));
 
-		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
+		// Propagating them means that the WPs which create the shipment-scheds and invoice-candidates also belong to this async-batch.
+		// So, when the async-batch is finally done, we will have those scheds&ICs
+		final boolean propagateAsyncIdsToShipmentSchduleWPs = request.isShip() || request.isInvoice();
+
+		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds, propagateAsyncIdsToShipmentSchduleWPs);
 
 		if (request.isShip())
-		{
+		{   // now we need a new async-batch! The one we create the Orders with is processed and its observer unregistered
 			final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
-
+			Loggables.withLogger(logger, Level.INFO).addLog("Created {} M_InOuts", generatedInOutIds.size());
 			for (final InOutId inOutId : generatedInOutIds)
 			{
 				shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId);
@@ -114,24 +114,10 @@ public class AutoProcessingOLCandService
 
 		if (request.isInvoice())
 		{
-			final HashMap<AsyncBatchId, ArrayList<I_M_InOutLine>> asyncBatchId2Shipmentline = new HashMap<>();
 			final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveShipmentLinesForOrderId(orderIds);
+			Loggables.withLogger(logger, Level.INFO).addLog("Retrieved {} M_InOutLines for {} C_Order_IDs", shipmentLines.size(), orderIds.size());
 
-			for (final I_M_InOutLine shipmentLine : shipmentLines)
-			{
-				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOr(
-						shipmentLine.getM_InOut().getC_Async_Batch_ID(),
-						() -> asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing));
-
-				final ArrayList<I_M_InOutLine> iolsForAsyncBatchId = asyncBatchId2Shipmentline.computeIfAbsent(
-						asyncBatchId, key -> new ArrayList<>());
-				iolsForAsyncBatchId.add(shipmentLine);
-			}
-
-			for (final Map.Entry<AsyncBatchId, ArrayList<I_M_InOutLine>> entry : asyncBatchId2Shipmentline.entrySet())
-			{
-				invoiceService.generateInvoicesFromShipmentLines(entry.getValue(), entry.getKey());
-			}
+			invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 		}
 
 		if (request.isCloseOrder())

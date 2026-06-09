@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -21,8 +22,8 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -37,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
@@ -52,6 +54,7 @@ public class CreateHUCommand
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final SourceHUsService sourceHUsService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateHURequest request;
@@ -64,12 +67,15 @@ public class CreateHUCommand
 	private CreateHUCommand(
 			@NonNull final InventoryService inventoryService,
 			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateHURequest request,
 			@Nullable final String identifier)
 	{
 		this.inventoryService = inventoryService;
 		this.huQRCodesService = huQRCodesService;
+		this.sourceHUsService = sourceHUsService;
+		
 		this.context = context;
 		this.request = request;
 
@@ -82,16 +88,31 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
-		updateAttributes(huId);
+		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
-		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
+
+		final String huQRCodeStr;
+		if (request.isGenerateHUQRCode())
+		{
+			huQRCodeStr = huQRCodesService.getQRCodeByHuId(huId).toGlobalQRCodeString();
+		}
+		else
+		{
+			huQRCodeStr = null;
+		}
+
+		if (request.isSourceHU())
+		{
+			sourceHUsService.addSourceHuMarker(huId);
+		}
 
 		return JsonCreateHUResponse.builder()
 				.huId(String.valueOf(huId.getRepoId()))
-				.qrCode(huQRCode.toGlobalQRCodeString())
+				.qrCode(huQRCodeStr)
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
+				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
 				.build();
 	}
 
@@ -107,6 +128,7 @@ public class CreateHUCommand
 								.clientId(ClientId.METASFRESH)
 								.orgId(MasterdataContext.ORG_ID)
 								.warehouseId(warehouseId)
+								.locatorId(getLocatorIdOrNull())
 								.productId(productId)
 								.qty(Quantity.of(getTotalQtyCUs(), uom))
 								.movementDate(SystemTime.asZonedDateTime())
@@ -114,6 +136,15 @@ public class CreateHUCommand
 								.build()
 				)
 		);
+	}
+
+	@Nullable
+	private LocatorId getLocatorIdOrNull()
+	{
+		final Identifier locatorIdentifier = request.getLocator();
+		return locatorIdentifier != null
+				? context.getId(locatorIdentifier, LocatorId.class)
+				: null;
 	}
 
 	@NonNull
@@ -247,16 +278,18 @@ public class CreateHUCommand
 		return HuId.ofRepoId(newLU.getM_HU_ID());
 	}
 
-	private void updateAttributes(final HuId huId)
+	private IAttributeStorage updateAttributes(final HuId huId)
 	{
 		final BigDecimal weightNet = request.getWeightNet();
-		@Nullable final String lotNo = request.getLotNo();
+		final String lotNo = request.getLotNo();
 		final LocalDate bestBeforeDate = request.getBestBeforeDate() != null
 				? LocalDate.parse(request.getBestBeforeDate())
 				: null;
-		if (weightNet == null && lotNo == null && bestBeforeDate == null)
+		final String externalBarcode = request.getExternalBarcode();
+
+		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode) <= 0)
 		{
-			return;
+			return null;
 		}
 
 		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
@@ -277,6 +310,13 @@ public class CreateHUCommand
 		{
 			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 		}
+
+		if (externalBarcode != null)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
+		}
+
+		return huAttributes;
 	}
 
 }

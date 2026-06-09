@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.util.Check;
 import lombok.AccessLevel;
@@ -47,6 +47,7 @@ public class MobileUIPickingUserProfile
 			.defaultPickingJobOptions(PickingJobOptions.builder()
 					.aggregationType(PickingJobAggregationType.DEFAULT)
 					.allowedPickToStructures(AllowedPickToStructures.DEFAULT)
+					.pickAttributes(PickAttributesConfig.DEFAULT)
 					.isCatchWeightTUPickingEnabled(false)
 					.considerSalesOrderCapacity(false)
 					.isAllowSkippingRejectedReason(false)
@@ -54,36 +55,8 @@ public class MobileUIPickingUserProfile
 					.isAllowCompletingPartialPickingJob(true)
 					.isShowLastPickedBestBeforeDateForLines(false)
 					.build())
-			.filters(PickingFiltersList.ofList(ImmutableList.of(
-					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
-					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
-			)
-			.fields(ImmutableList.of(
-					PickingJobField.builder()
-							.seqNo(10)
-							.field(PickingJobFieldType.DOCUMENT_NO)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(20)
-							.field(PickingJobFieldType.CUSTOMER)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(30)
-							.field(PickingJobFieldType.PRODUCT)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(40)
-							.field(PickingJobFieldType.QTY_TO_DELIVER)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build()
-			))
+			.filters(PickingFiltersList.DEFAULT)
+			.fields(PickingJobField.DEFAULTS)
 			.build();
 
 	@NonNull String name;
@@ -91,6 +64,7 @@ public class MobileUIPickingUserProfile
 	boolean isFilterByBarcode;
 	boolean isActiveWorkplaceRequired;
 	boolean isConsiderOnlyJobScheduledToWorkplace;
+	boolean isAllowQuickPackAll;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
@@ -103,9 +77,10 @@ public class MobileUIPickingUserProfile
 	private MobileUIPickingUserProfile(
 			final @NonNull String name,
 			final boolean isAllowPickingAnyCustomer,
-			final boolean isFilterByBarcode, 
+			final boolean isFilterByBarcode,
 			final boolean isActiveWorkplaceRequired,
 			final boolean isConsiderOnlyJobScheduledToWorkplace,
+			final boolean isAllowQuickPackAll,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
@@ -116,6 +91,7 @@ public class MobileUIPickingUserProfile
 		this.isFilterByBarcode = isFilterByBarcode;
 		this.isActiveWorkplaceRequired = isActiveWorkplaceRequired;
 		this.isConsiderOnlyJobScheduledToWorkplace = isConsiderOnlyJobScheduledToWorkplace;
+		this.isAllowQuickPackAll = isAllowQuickPackAll;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;

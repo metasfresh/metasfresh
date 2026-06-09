@@ -41,6 +41,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -547,6 +548,8 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 						.discountAmt(Money.of(invoiceRow.getDiscount_APAdjusted(), currencyId))
 						.writeOffAmt(Money.of(invoiceRow.getWriteOffAmt_APAdjusted(), currencyId))
 						.build())
+				.date(TimeUtil.asLocalDate(invoiceRow.getDocumentDate()))
+				.dateAcct(TimeUtil.asLocalDate(invoiceRow.getDateAcct()))
 				//
 				.build();
 	}

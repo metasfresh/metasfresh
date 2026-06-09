@@ -22,12 +22,14 @@
 
 package de.metas.material.planning.interceptor;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -36,6 +38,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AD_WF_Node
 {
+	private static final AdMessageKey MSG_CannotDeactivateFirstNode = AdMessageKey.of("PPRouting_CannotDeactivateFirstNode");
+	private static final AdMessageKey MSG_CannotDeleteFirstNode = AdMessageKey.of("PPRouting_CannotDeleteFirstNode");
+	private static final AdMessageKey MSG_FirstNodeRequiresResource = AdMessageKey.of("PPRouting_FirstNodeRequiresResource");
+
 	final IPPRoutingRepository ppRoutingRepo = Services.get(IPPRoutingRepository.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -55,5 +61,81 @@ public class AD_WF_Node
 		// Issue https://github.com/metasfresh/metasfresh/issues/11292
 
 		ppRoutingRepo.setFirstNodeToWorkflow(ppRoutingActivityId);
+	}
+
+	@ModelChange(
+			timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_AD_WF_Node.COLUMNNAME_IsActive)
+	public void preventDeactivateFirstNode(final I_AD_WF_Node node)
+	{
+		// ifColumnsChanged=IsActive only fires when the value differs from the DB row, so
+		// reaching here with node.isActive()==true means the transition is N→Y — not our case.
+		if (node.isActive())
+		{
+			return;
+		}
+
+		final PPRoutingActivityId activityId = toActivityIdOrNull(node);
+		if (activityId == null)
+		{
+			return;
+		}
+
+		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
+		{
+			throw new AdempiereException(MSG_CannotDeactivateFirstNode);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void preventDeleteFirstNode(final I_AD_WF_Node node)
+	{
+		final PPRoutingActivityId activityId = toActivityIdOrNull(node);
+		if (activityId == null)
+		{
+			return;
+		}
+
+		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
+		{
+			throw new AdempiereException(MSG_CannotDeleteFirstNode);
+		}
+	}
+
+	@ModelChange(
+			timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_AD_WF_Node.COLUMNNAME_S_Resource_ID)
+	public void preventRemoveResourceFromFirstNode(final I_AD_WF_Node node)
+	{
+		// Only block if S_Resource_ID is becoming null/<=0.
+		if (node.getS_Resource_ID() > 0)
+		{
+			return;
+		}
+
+		final PPRoutingActivityId activityId = toActivityIdOrNull(node);
+		if (activityId == null)
+		{
+			return;
+		}
+
+		if (ppRoutingRepo.isFirstNodeOfWorkflow(activityId))
+		{
+			throw new AdempiereException(MSG_FirstNodeRequiresResource);
+		}
+	}
+
+	private static PPRoutingActivityId toActivityIdOrNull(final I_AD_WF_Node node)
+	{
+		final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(node.getAD_Workflow_ID());
+		if (routingId == null)
+		{
+			return null;
+		}
+		if (node.getAD_WF_Node_ID() <= 0)
+		{
+			return null;
+		}
+		return PPRoutingActivityId.ofRepoId(routingId, node.getAD_WF_Node_ID());
 	}
 }

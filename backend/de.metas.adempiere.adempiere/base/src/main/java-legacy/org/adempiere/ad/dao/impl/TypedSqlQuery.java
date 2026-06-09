@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -1245,6 +1246,31 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			{
 				sqlBuffer.append("\n ORDER BY ").append(orderBy);
 			}
+		}
+
+		// Append the row-locking clause (FOR UPDATE / FOR UPDATE SKIP LOCKED) after ORDER BY.
+		// Fail fast: locking clauses are only valid for SELECT statements, and PostgreSQL
+		// forbids them with UNION or GROUP BY.
+		final ForUpdate forUpdate = getForUpdate();
+		if (forUpdate != ForUpdate.NONE)
+		{
+			final String sel = selectClause != null ? selectClause.toString().replaceAll("^\\s+", "") : "";
+			if (!sel.isEmpty() && !sel.regionMatches(true, 0, "SELECT", 0, 6))
+			{
+				throw new AdempiereException("Locking clause (FOR UPDATE/...) is only valid for SELECT statements")
+						.appendParametersToMessage();
+			}
+			if (unions != null && !unions.isEmpty())
+			{
+				throw new AdempiereException("FOR UPDATE cannot be combined with UNION queries")
+						.appendParametersToMessage();
+			}
+			if (groupByClause != null && groupByClause.length() > 0)
+			{
+				throw new AdempiereException("FOR UPDATE cannot be combined with GROUP BY")
+						.appendParametersToMessage();
+			}
+			sqlBuffer.append("\n ").append(forUpdate.getSqlClause());
 		}
 
 		String sql = sqlBuffer.toString();

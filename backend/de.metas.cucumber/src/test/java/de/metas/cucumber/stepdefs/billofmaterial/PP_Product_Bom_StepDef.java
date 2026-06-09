@@ -55,11 +55,11 @@ import org.eevolution.model.X_PP_Product_BOM;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -70,7 +70,6 @@ public class PP_Product_Bom_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
-	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;

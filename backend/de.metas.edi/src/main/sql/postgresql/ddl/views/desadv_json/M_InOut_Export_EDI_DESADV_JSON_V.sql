@@ -3,9 +3,24 @@
 drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
 CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
 SELECT io.m_inout_id,
+       -- Top-level column so PostgREST can filter by (m_inout_id, edi_desadv_id).
+       -- A consolidated shipment links to N DESADVs via edi_desadv_m_inout; view emits N rows.
+       d.edi_desadv_id AS edi_desadv_id,
        JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
                'Version', '0.2',
-               'TechnicalRecipientGLN', buyer.edidesadvrecipientgln,
+               -- EdiDesadvRecipientGLN moved to C_BPartner_EDI_Setting; resolve via coalesce:
+               -- 1) exact location row (C_BPartner_ID + C_BPartner_Location_ID)
+               -- 2) partner-default row (C_BPartner_ID, no location)
+               'TechnicalRecipientGLN', COALESCE(edi_setting_loc.edidesadvrecipientgln, edi_setting_def.edidesadvrecipientgln),
+               'TechnicalSenderGLN', (SELECT REGEXP_REPLACE(sl.gln::text, '\s+$'::text, ''::text)
+                                      FROM c_bpartner_location sl
+                                      WHERE sl.c_bpartner_id = org.org_bpartner_id
+                                        AND sl.isremitto = 'Y'
+                                        AND sl.gln IS NOT NULL
+                                        AND sl.gln <> ''
+                                        AND sl.isactive = 'Y'
+                                      ORDER BY sl.c_bpartner_location_id
+                                      LIMIT 1),
                'Parties', JSONB_BUILD_OBJECT(
                        'Supplier', COALESCE(bp_supplier.bpartner_json, '{}'::jsonb),
                        'Supplier_Location', COALESCE(bpl_supplier.bpartner_location_json, '{}'::jsonb),
@@ -21,9 +36,13 @@ SELECT io.m_inout_id,
                'DateOrdered', d.dateordered,
                'ShipmentDocumentNo', io.documentno,
                'EDI_Desadv_ID', d.edi_desadv_id,
-               'MovementDate', io.movementdate,
+               -- MovementDate carries the promised delivery date: EDI_Desadv.MovementDate is set from
+               -- C_Order.DatePromised at DESADV creation (DesadvBL.retrieveOrCreateDesadv). This matches the
+               -- legacy CCTOP XML export (M_InOut_Desadv_V) and is per-DESADV (correct for consolidated
+               -- shipments), unlike io.movementdate which is the single shipment-wide goods-movement date.
+               'MovementDate', d.movementdate,
                'POReference', COALESCE(d.poreference, io.poreference),
-               'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id),
+               'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id, io.m_inout_id),
                'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
                'InvoicableQtyBasedOn', (SELECT edl_ib.invoicableqtybasedon
                                 FROM edi_desadvline edl_ib
@@ -32,14 +51,27 @@ SELECT io.m_inout_id,
                                 ORDER BY edl_ib.line
                                 LIMIT 1),
                'DeliveryViaRule', COALESCE(d.deliveryviarule, io.deliveryviarule),
-               'DesadvLineWithNoPacking', "de.metas.edi".get_desadv_lines_no_pack_json_fn(d.edi_desadv_id),
+               'DesadvLineWithNoPacking', "de.metas.edi".get_desadv_lines_no_pack_json_fn(d.edi_desadv_id, io.m_inout_id),
                'M_InOut_ID', io.m_inout_id,
                'DatePromised', o.datepromised)
        ) as embedded_json
                          FROM m_inout io
-                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id 
-                         JOIN edi_desadv d ON io.edi_desadv_id = d.edi_desadv_id
-                         JOIN c_bpartner buyer ON d.c_bpartner_id = buyer.c_bpartner_id
+                         LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
+                         -- Enumerate DESADVs via edi_desadv_m_inout junction.
+                         -- View emits one row per (m_inout_id, edi_desadv_id) pair.
+                         JOIN edi_desadv_m_inout link
+                              ON link.m_inout_id = io.m_inout_id AND link.isactive = 'Y'
+                         JOIN edi_desadv d
+                              ON d.edi_desadv_id = link.edi_desadv_id
+                         -- EDI setting: coalesce exact-location row → partner-default row for GLN resolution
+                         LEFT JOIN c_bpartner_edi_setting edi_setting_loc
+                              ON edi_setting_loc.c_bpartner_id = d.c_bpartner_id
+                             AND edi_setting_loc.c_bpartner_location_id = d.c_bpartner_location_id
+                             AND edi_setting_loc.isactive = 'Y'
+                         LEFT JOIN c_bpartner_edi_setting edi_setting_def
+                              ON edi_setting_def.c_bpartner_id = d.c_bpartner_id
+                             AND edi_setting_def.c_bpartner_location_id IS NULL
+                             AND edi_setting_def.isactive = 'Y'
     -- Joins for other lookup objects
                          LEFT JOIN "de.metas.edi".edi_currency_object_v curr ON curr.c_currency_id = d.c_currency_id
                          LEFT JOIN "de.metas.edi".edi_bpartner_object_v bp_buyer ON bp_buyer.c_bpartner_id = d.c_bpartner_id

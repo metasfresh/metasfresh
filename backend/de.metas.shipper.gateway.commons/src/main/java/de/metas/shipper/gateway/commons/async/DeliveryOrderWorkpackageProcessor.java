@@ -1,39 +1,8 @@
-package de.metas.shipper.gateway.commons.async;
-
-import de.metas.async.AsyncBatchId;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.printing.model.I_AD_Archive;
-import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderService;
-import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.PackageLabel;
-import de.metas.shipper.gateway.spi.model.PackageLabels;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Properties;
-
 /*
  * #%L
- * de.metas.shipper.gateway.go
+ * de.metas.shipper.gateway.commons
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,40 +20,74 @@ import java.util.Properties;
  * #L%
  */
 
+package de.metas.shipper.gateway.commons.async;
+
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.printing.model.I_AD_Archive;
+import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.DeliveryOrderService;
+import de.metas.shipper.gateway.spi.ShipperGatewayClient;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
+import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
+
 public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 	public static void enqueueOnTrxCommit(
-			final int deliveryOrderRepoId,
-			@NonNull final String shipperGatewayId,
+			@NonNull final DeliveryOrderId deliveryOrderRepoId,
+			@NonNull final ShipperGatewayId shipperGatewayId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
-
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId)
+				.setAsyncBatchId(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
 				.parameters()
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
-				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId)
+				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId.toJson())
 				.end()
 				.buildAndEnqueue();
 	}
 
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
 	private static final String PARAM_ShipperGatewayId = "ShipperGatewayId";
+
+	/**
+	 * When {@code false}, suppresses the {@code AD_Archive} auto-print step (the label PDF is still
+	 * persisted on {@code Carrier_ShipmentOrder_Parcel}). Lets test environments without an
+	 * {@code AD_Printer_Config} for the system user avoid "No Printer Configuration defined" failures.
+	 */
+	private static final String SYSCONFIG_PrintLabelsEnabled = "de.metas.shipper.gateway.printLabels.enabled";
+
 	// Services
-
-	private final ShipperGatewayServicesRegistry shipperRegistry;
-
-	public DeliveryOrderWorkpackageProcessor()
-	{
-		shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
-	}
+	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean isRunInTransaction()
@@ -97,29 +100,44 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	{
 		final DeliveryOrder draftedDeliveryOrder = retrieveDeliveryOrder();
 
-		final String shipperGatewayId = getParameters().getParameterAsString(PARAM_ShipperGatewayId);
+		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId();
 
 		final ShipperGatewayClient client = shipperRegistry
 				.getClientFactory(shipperGatewayId)
 				.newClientForShipperId(draftedDeliveryOrder.getShipperId());
 
-		final DeliveryOrderService deliveryOrderRepo = //
-				shipperRegistry.getDeliveryOrderService(shipperGatewayId);
+		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(draftedDeliveryOrder);
 		deliveryOrderRepo.save(completedDeliveryOrder);
 
-		final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
+		if (isPrintLabelsEnabled())
+		{
+			final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
 
-		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+			printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+		}
 
 		return Result.SUCCESS;
 	}
 
+	private boolean isPrintLabelsEnabled()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PrintLabelsEnabled, true);
+	}
+
+	private @NonNull ShipperGatewayId getShipperGatewayId()
+	{
+		return ShipperGatewayId.ofString(Check.assumeNotNull(
+				getParameters().getParameterAsString(PARAM_ShipperGatewayId),
+				"Parameter {} is set", PARAM_ShipperGatewayId
+		));
+	}
+
 	private DeliveryOrder retrieveDeliveryOrder()
 	{
-		final String shipperGatewayId = getParameters().getParameterAsString(PARAM_ShipperGatewayId);
+		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId();
 		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final DeliveryOrderId deliveryOrderRepoId = getDeliveryOrderRepoId();

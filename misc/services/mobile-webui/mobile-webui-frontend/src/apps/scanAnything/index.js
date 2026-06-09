@@ -1,7 +1,6 @@
 import messages_en from './i18n/en.json';
 import messages_de from './i18n/de.json';
 import { appLocation, routes } from './routes';
-import { push } from 'connected-react-router';
 import { APPLICATION_ID } from './constants';
 
 export const applicationDescriptor = {
@@ -11,9 +10,7 @@ export const applicationDescriptor = {
     en: messages_en,
     de: messages_de,
   },
-  startApplication: () => {
-    return (dispatch) => {
-      dispatch(push(appLocation()));
-    };
+  startApplication: ({ history }) => {
+    history.push(appLocation());
   },
 };

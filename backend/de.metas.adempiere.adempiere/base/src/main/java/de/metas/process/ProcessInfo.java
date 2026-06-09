@@ -30,6 +30,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.related_documents.relation_type.RelationTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
@@ -48,6 +49,7 @@ import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.workflow.WorkflowId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -86,6 +88,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,8 +124,10 @@ public final class ProcessInfo implements Serializable
 	{
 		this.ctx = ctx;
 		this.processCalledFrom = builder.getProcessCalledFrom();
-				
+
 		adProcessId = builder.getAD_Process_ID();
+		adRelationTypeId = builder.getAD_RelationType_ID();
+		openTarget = builder.getOpenTarget();
 		pinstanceId = builder.getPInstanceId();
 
 		clientId = builder.getAdClientId();
@@ -187,10 +192,12 @@ public final class ProcessInfo implements Serializable
 	@NonNull
 	@Getter
 	private final ProcessCalledFrom processCalledFrom;
-	
+
 	private Properties ctx;
 	@Getter private final String title;
 	@Getter private final AdProcessId adProcessId;
+	@Getter @Nullable private final RelationTypeId adRelationTypeId;
+	@Getter @Nullable private final ProcessOpenTarget openTarget;
 	private final int adTableId;
 	private final int recordId;
 	@Getter private final Set<TableRecordReference> selectedIncludedRecords;
@@ -761,7 +768,7 @@ public final class ProcessInfo implements Serializable
 		@NonNull
 		@Getter
 		private ProcessCalledFrom processCalledFrom = ProcessCalledFrom.Unknown;
-		
+
 		@Nullable private PInstanceId pInstanceId;
 		@Nullable private transient I_AD_PInstance _adPInstance;
 		@Nullable private AdProcessId adProcessId;
@@ -798,6 +805,9 @@ public final class ProcessInfo implements Serializable
 		private Boolean notifyUserAfterExecution;
 
 		private Boolean logWarning;
+
+		@Nullable private RelationTypeId adRelationTypeId;
+		@Nullable private ProcessOpenTarget openTarget;
 
 		private ProcessInfoBuilder()
 		{
@@ -1062,9 +1072,9 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setProcessCalledFrom(@NonNull final ProcessCalledFrom processCalledFrom)
 		{
 			this.processCalledFrom = processCalledFrom;
-			return this; 
+			return this;
 		}
-		
+
 		@Nullable
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
@@ -1116,13 +1126,59 @@ public final class ProcessInfo implements Serializable
 			return adProcessId;
 		}
 
+		@Nullable
+		private RelationTypeId getAD_RelationType_ID()
+		{
+			if (adRelationTypeId != null)
+			{
+				return adRelationTypeId;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return null;
+			}
+			return RelationTypeId.ofRepoIdOrNull(process.getAD_RelationType_ID());
+		}
+
+		@Nullable
+		public ProcessOpenTarget getOpenTarget()
+		{
+			if (openTarget != null)
+			{
+				return openTarget;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return null;
+			}
+			return ProcessOpenTarget.ofNullableCode(process.getOpenTarget());
+		}
+
 		public ProcessInfoBuilder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
 		{
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
+			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
+			setOpenTarget(ProcessOpenTarget.ofNullableCode(_adProcess.getOpenTarget()));
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());
+			return this;
+		}
+
+		public ProcessInfoBuilder setAdRelationTypeId(@Nullable final RelationTypeId adRelationTypeId)
+		{
+			this.adRelationTypeId = adRelationTypeId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setOpenTarget(@Nullable final ProcessOpenTarget openTarget)
+		{
+			this.openTarget = openTarget;
 			return this;
 		}
 
@@ -1235,7 +1291,9 @@ public final class ProcessInfo implements Serializable
 						.format(spreadsheetFormat)
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
-						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.csvFieldDelimiter(StringUtils.trimSpacesToNull(process.getCSVFieldDelimiter()))
+						.csvFieldQualifier(process.getCSVFieldQuote())
+						.includeCSVHeaderRow(process.isIncludeCSVHeaderRow())
 						.build();
 			}
 		}
@@ -1317,6 +1375,13 @@ public final class ProcessInfo implements Serializable
 		{
 			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			this.recordId = recordId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(@Nullable final String tableName, @NonNull final RepoIdAware recordId)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			this.recordId = recordId.getRepoId();
 			return this;
 		}
 
@@ -1646,18 +1711,18 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}
@@ -1721,6 +1786,12 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder addParameter(final String parameterName, @Nullable final RepoIdAware parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
 		public ProcessInfoBuilder addParameter(final String parameterName, final String parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
@@ -1728,6 +1799,12 @@ public final class ProcessInfo implements Serializable
 		}
 
 		public ProcessInfoBuilder addParameter(final String parameterName, final java.util.Date parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final LocalDate parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
 			return this;

@@ -172,6 +172,7 @@ const TableFilter = ({
               onMouseLeave={hideTooltip}
               tabIndex={tabIndex}
               disabled={pending}
+              data-testid="batch-entry-toggle"
             >
               {isBatchEntryActive
                 ? quickInputSupport.closeButtonCaption

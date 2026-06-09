@@ -110,7 +110,10 @@ public final class DocumentValidStatus
 
 			if (!TranslatableStrings.isBlank(reason))
 			{
-				sb.append("('").append(reason).append("')");
+				// Bound the rendered reason to avoid exponential growth when an exception message
+				// is built from Document.toString() (which embeds this validStatus). See
+				// DocumentSaveStatus#TOSTRING_REASON_MAX_CHARS for rationale.
+				sb.append("('").append(DocumentSaveStatus.truncateReasonForToString(reason)).append("')");
 			}
 
 			toString = this._toString = sb.toString();

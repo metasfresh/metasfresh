@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -136,6 +137,7 @@ class PricingConditionsTestUtils
 		final I_M_Attribute attr = newInstance(I_M_Attribute.class);
 		attr.setValue(attrName);
 		attr.setName(attrName);
+		attr.setAttributeValueType(AttributeValueType.STRING.getCode());
 		save(attr);
 		return attr;
 	}

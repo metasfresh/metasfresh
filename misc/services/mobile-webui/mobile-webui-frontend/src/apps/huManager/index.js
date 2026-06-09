@@ -1,5 +1,3 @@
-import { push } from 'connected-react-router';
-
 import { clearLoadedData, handlingUnitLoaded } from './actions';
 
 import messages_en from './i18n/en.json';
@@ -7,8 +5,8 @@ import messages_de from './i18n/de.json';
 import { huManagerReducer } from './reducers';
 import { huManagerLocation, huManagerRoutes } from './routes';
 import * as api from './api';
-import { toastError } from '../../utils/toast';
 import { APPLICATION_ID } from './constants';
+import { isHUQRCode } from '../../utils/qrCode/hu';
 
 export const applicationDescriptor = {
   applicationId: APPLICATION_ID,
@@ -17,22 +15,28 @@ export const applicationDescriptor = {
     en: messages_en,
     de: messages_de,
   },
-  startApplication: () => {
-    return (dispatch) => {
-      dispatch(clearLoadedData());
-      dispatch(push(huManagerLocation()));
-    };
+  startApplication: ({ dispatch, history }) => {
+    dispatch(clearLoadedData());
+    history.push(huManagerLocation());
   },
-  startApplicationByQRCode: ({ qrCode }) => {
-    return (dispatch) => {
-      api
-        .getHUByQRCode(qrCode)
-        .then((handlingUnitInfo) => {
-          dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-          dispatch(push(huManagerLocation()));
-        })
-        .catch((axiosError) => toastError({ axiosError }));
-    };
+  startApplicationByQRCode: async ({ qrCode, dispatch, history }) => {
+    let handlingUnitInfo;
+    try {
+      handlingUnitInfo = await api.getHUByQRCode(qrCode);
+    } catch (error) {
+      if (isHUQRCode(qrCode)) {
+        throw error;
+      } else {
+        console.log(
+          'Failed resolving scanned code but because we are not sure it shall be an HU, we are just returning false',
+          { qrCode, error }
+        );
+        return false;
+      }
+    }
+
+    dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+    history.push(huManagerLocation());
   },
   reduxReducer: huManagerReducer,
 };

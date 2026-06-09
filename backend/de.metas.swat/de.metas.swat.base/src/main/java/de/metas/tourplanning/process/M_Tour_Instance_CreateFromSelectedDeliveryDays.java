@@ -25,6 +25,7 @@ package de.metas.tourplanning.process;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.tourplanning.api.ITourInstanceBL;
 import de.metas.tourplanning.api.ITourInstanceDAO;
@@ -47,6 +48,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 	//
 	// Services
 	private final ITourInstanceBL tourInstanceBL = Services.get(ITourInstanceBL.class);
+	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 
 	//
 	// Process Parameter
@@ -232,8 +234,12 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		shipperTransportation.setDateDoc(tourInstance.getDeliveryDate());
 		shipperTransportation.setShipper_BPartner_ID(p_Shipper_BPartner_ID);
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);
-		shipperTransportation.setM_Shipper_ID(p_M_Shipper_ID);
-		Services.get(IShipperTransportationBL.class).setC_DocType(shipperTransportation);
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(p_M_Shipper_ID);
+		if (shipperId != null)
+		{
+			shipperTransportationBL.setShipper(shipperTransportation, shipperId);
+		}
+		shipperTransportationBL.setC_DocType(shipperTransportation);
 		shipperTransportation.setIsSOTrx(true);
 
 		// 07958

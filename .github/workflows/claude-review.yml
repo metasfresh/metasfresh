@@ -1,0 +1,106 @@
+name: Claude Code Review
+
+# Triggered by @claude mentions in PR comments and review comments.
+# Checks out private mf15-ai-dev-support repo to overlay CLAUDE.md,
+# REVIEW.md, skills, agents, and commands that are not committed to
+# the public metasfresh repo.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout metasfresh (default branch)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Switch to PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # issue_comment checks out the default branch. We need the PR branch
+          # so that the overlay lands on the right base and the action's internal
+          # git checkout becomes a no-op (already on the correct branch).
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName -q .headRefName)
+          git fetch origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
+
+      - name: Checkout mf15-ai-dev-support (private config)
+        uses: actions/checkout@v6
+        with:
+          repository: metasfresh/mf15-ai-dev-support
+          token: ${{ secrets.MF15_AI_DEV_SUPPORT_READ }}
+          path: _ai-config
+          fetch-depth: 1
+
+      - name: Overlay private config into metasfresh checkout
+        run: |
+          # The metasfresh repo has symlinks (e.g. docs/coding-rules) managed
+          # via mf15-ai-dev-support. Git stores them as mode 120000 entries.
+          # On Linux CI, they become plain text files containing the target path.
+          # cp cannot overwrite these files with directories, so remove them first.
+          git ls-files -s | awk '/^120000/{print $4}' | while read -r symfile; do
+            rm -f "$symfile"
+          done
+
+          # --- CLAUDE.md files (150+ across the module hierarchy) ---
+          cp -r --update=none _ai-config/claude/metasfresh/. ./
+
+          # --- REVIEW.md (review-specific guidelines) ---
+          if [ -f _ai-config/claude/metasfresh/REVIEW.md ]; then
+            cp _ai-config/claude/metasfresh/REVIEW.md ./REVIEW.md
+          elif [ -f _ai-config/claude/REVIEW.md ]; then
+            cp _ai-config/claude/REVIEW.md ./REVIEW.md
+          fi
+
+          # --- Skills, agents, commands, templates ---
+          # Copy from .claude directory but skip settings files (local/desktop-specific).
+          mkdir -p .claude
+          for dir in skills agents commands templates; do
+            if [ -d "_ai-config/claude/.claude/$dir" ]; then
+              cp -r "_ai-config/claude/.claude/$dir" .claude/
+            fi
+          done
+
+          # Clean up the private repo checkout so Claude doesn't index it
+          rm -rf _ai-config
+
+      - name: Detect model from comment
+        id: model
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body || '' }}
+        run: |
+          # Default: Sonnet (fast, ~$3-5/review)
+          # Use Opus with: @claude review opus  (thorough, ~$15-25/review)
+          if echo "$COMMENT_BODY" | grep -qi 'opus'; then
+            echo "claude_model=claude-opus-4-6" >> "$GITHUB_OUTPUT"
+          else
+            echo "claude_model=claude-sonnet-4-6" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--model ${{ steps.model.outputs.claude_model }}"
+          additional_permissions: |
+            actions: read

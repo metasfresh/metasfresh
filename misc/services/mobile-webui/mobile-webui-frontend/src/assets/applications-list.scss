@@ -1,14 +1,25 @@
 .applications-list {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+
   .section {
     padding-top: 3rem;
     padding-bottom: 3rem;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  @media only screen and (max-width: $small-screen-height) {
+  @media only screen and (max-height: $small-screen-height) {
+    > .p-3 {
+      padding: 0.5rem !important;
+    }
+
     .section {
       padding-top: 1rem;
       padding-bottom: 1rem;
     }
   }
-
 }

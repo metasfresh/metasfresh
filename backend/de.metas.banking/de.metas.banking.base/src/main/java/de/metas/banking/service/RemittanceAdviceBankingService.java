@@ -317,6 +317,7 @@ public class RemittanceAdviceBankingService
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(remittanceAdviceSOTrx)
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone))
+				.dateAcct(TimeUtil.asLocalDate(invoice.getDateAcct(), timeZone))
 				.build();
 	}
 

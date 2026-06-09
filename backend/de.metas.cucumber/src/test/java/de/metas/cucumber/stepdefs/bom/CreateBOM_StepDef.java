@@ -51,7 +51,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -70,8 +70,6 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
-import de.metas.material.planning.pporder.LiberoException;
-import org.eevolution.exceptions.BOMCycleException;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -92,7 +90,7 @@ public class CreateBOM_StepDef
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ProductBOMVersionsDAO productBOMVersionsDAO = SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class);
 
 	private final PP_Product_BOMVersions_StepDefData productBOMVersionsTable;
@@ -176,7 +174,7 @@ public class CreateBOM_StepDef
 			row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 					.ifPresent((asiIdentifier) -> {
 						final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(bom.getM_AttributeSetInstance_ID());
-						final I_M_AttributeSetInstance asi = attributeDAO.getAttributeSetInstanceById(asiId);
+						final I_M_AttributeSetInstance asi = asiBL.getById(asiId);
 						attributeSetInstanceTable.put(asiIdentifier, asi);
 					});
 		});
@@ -224,7 +222,7 @@ public class CreateBOM_StepDef
 			row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 					.ifPresent(asiIdentifier -> {
 						final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
-						final I_M_AttributeSetInstance asi = attributeDAO.getAttributeSetInstanceById(asiId);
+						final I_M_AttributeSetInstance asi = asiBL.getById(asiId);
 						assertThat(asi).isNotNull();
 						attributeSetInstanceTable.put(asiIdentifier, asi);
 					});
