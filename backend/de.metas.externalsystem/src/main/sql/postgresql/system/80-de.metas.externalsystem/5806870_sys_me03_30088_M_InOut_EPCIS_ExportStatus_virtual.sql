@@ -36,7 +36,8 @@ VALUES (592790 /*From ID Server*/, 0, 0, 'Y',
  WHERE s.AD_Table_ID=319 AND s.Record_ID=M_InOut.M_InOut_ID AND s.IsActive=''Y''
  ORDER BY CASE s.ExportStatus WHEN ''E'' THEN 1 WHEN ''I'' THEN 1 WHEN ''P'' THEN 2 WHEN ''U'' THEN 2 WHEN ''D'' THEN 2 WHEN ''S'' THEN 3 WHEN ''N'' THEN 3 ELSE 4 END, s.Updated DESC
  LIMIT 1)',
-  'N', 'N' /*IsSyncDatabase=N → virtual, no physical column sync*/);
+  'N', 'N' /*IsSyncDatabase=N → virtual, no physical column sync*/)
+ON CONFLICT (AD_Column_ID) DO NOTHING;
 
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, Description, IsTranslated,
   AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
