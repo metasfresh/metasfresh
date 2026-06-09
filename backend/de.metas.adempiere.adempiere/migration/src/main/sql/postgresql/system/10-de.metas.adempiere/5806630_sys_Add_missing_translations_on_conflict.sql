@@ -1,11 +1,3 @@
--- me03#30032: add_missing_translations() failed in customer builds with
--- "duplicate key value violates unique constraint ad_window_trl_name_uc"
--- when two windows share the same base-language name and the function tried
--- to INSERT a missing translation row for one of them.
---
--- Fix: append ON CONFLICT DO NOTHING so name collisions are skipped instead
--- of aborting the migration.
-
 CREATE OR REPLACE FUNCTION add_missing_translations()
 RETURNS void AS
 $BODY$
