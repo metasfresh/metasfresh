@@ -120,7 +120,7 @@ public class ExternalSystemScriptedExportConversionAuditWriteTest
 
 	/**
 	 * Given a source record and a pInstanceId,
-	 * {@code writeExportAudit} must persist exactly one audit row
+	 * {@code writeExportAudit} must persist an audit row
 	 * that carries the given pinstance and whose table-record reference
 	 * matches the source record.
 	 *

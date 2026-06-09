@@ -520,6 +520,8 @@ public class ExternalSystemScriptedExportConversionService
 		}
 		catch (final Exception e)
 		{
+			// Intentional swallow: the audit row is best-effort observability; failing to write it
+			// must never roll back the already-enqueued export or the document completion.
 			log.warn("Failed to write export audit for config={}, sourceRecord={}, pInstanceId={} — continuing",
 					config.getId(), sourceRecord, pInstanceId, e);
 		}
