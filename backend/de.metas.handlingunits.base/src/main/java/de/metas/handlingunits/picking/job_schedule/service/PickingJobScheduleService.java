@@ -11,7 +11,10 @@ import de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobSc
 import de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobScheduleAutoAssignRequest;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedules;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.IOrderDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -39,6 +42,9 @@ import java.util.stream.Stream;
 public class PickingJobScheduleService
 {
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IBPartnerDAO bpartnersDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
 	@NonNull private final WorkplaceRepository workplaceRepository;
@@ -149,6 +155,9 @@ public class PickingJobScheduleService
 				.pickingJobShipmentScheduleService(pickingJobShipmentScheduleService)
 				.sysConfigBL(sysConfigBL)
 				.pickingJobProductService(pickingJobProductService)
+				.partnerDAO(bpartnersDAO)
+				.bpGroupDAO(bpGroupDAO)
+				.orderDAO(orderDAO)
 				.request(request)
 				.build()
 				.execute();

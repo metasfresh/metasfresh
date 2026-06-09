@@ -179,3 +179,32 @@ Feature: Auto picking job schedule
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking |
       | sched7                | Y                     | 10                     |
+
+  Scenario: auto job schedule - BP Group
+    Given metasfresh contains C_BP_Groups:
+      | Identifier     |
+      | groupPreferred |
+      | groupOther     |
+    And metasfresh contains C_BPartners:
+      | Identifier      | M_PricingSystem_ID | IsCustomer | C_BP_Group_ID  |
+      | groupedCustomer | ps                 | Y          | groupPreferred |
+    Given deactivate all C_Workplace records
+    And metasfresh contains C_Workplaces
+      | Identifier         | SeqNo | M_Warehouse_ID | MaxPickingJobs | C_BP_Group_ID  |
+      | workplacePreferred | 10    | wh             | 10             | groupPreferred |
+      | workplaceFallback  | 20    | wh             | 10             | groupOther     |
+    When simple completed order with one line
+      | C_Order_ID | C_BPartner_ID   | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered |
+      | so8        | groupedCustomer | 2025-04-01  | true    | wh             | I           | so8_l1         | product      | 10         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | sched8     | so8_l1         | N             |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    # the schedule is assigned to the workplace restricted to the customer's BP group, not the higher-SeqNo fallback;
+    # document-type matching for the workplace restriction is covered by PickingJobScheduleAutoAssignCommandTest
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID     | QtyToPick |
+      | sched8                | workplacePreferred | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched8                | Y                     | 10                     |
