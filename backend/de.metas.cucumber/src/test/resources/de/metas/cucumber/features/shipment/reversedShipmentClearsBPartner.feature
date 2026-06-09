@@ -68,8 +68,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 10         |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -110,8 +110,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_B       | o_B                   | p_1                     | 10         |
     When the order identified by o_B is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_B      | ol_B                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_B      | ol_B                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_B                            | D            | true                | false       |
@@ -186,8 +186,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 10         |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -226,8 +226,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_B       | o_B                   | p_1                     | 10         |
     When the order identified by o_B is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_B      | ol_B                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_B      | ol_B                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_B                            | D            | true                | false       |
@@ -266,8 +266,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_C       | o_C                   | p_1                     | 10         |
     When the order identified by o_C is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_C      | ol_C                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_C      | ol_C                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_C                            | D            | true                | false       |
@@ -330,8 +330,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 10         |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -456,8 +456,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 10         |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -502,8 +502,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_B       | o_B                   | p_1                     | 10         |
     When the order identified by o_B is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_B      | ol_B                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_B      | ol_B                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_B                            | D            | true                | false       |
@@ -578,8 +578,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 5          |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 5            |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -627,8 +627,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_B       | o_B                   | p_1                     | 5          |
     When the order identified by o_B is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_B      | ol_B                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_B      | ol_B                      | N             | 5            |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_B                            | D            | true                | false       |
@@ -794,8 +794,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 10         |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -912,8 +912,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 5          |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 5            |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -1028,8 +1028,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_A       | o_A                   | p_1                     | 10         |
     When the order identified by o_A is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_A      | ol_A                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_A      | ol_A                      | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_A                            | D            | true                | false       |
@@ -1082,8 +1082,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | ol_B       | o_B                   | p_1                     | 5          |
     When the order identified by o_B is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_B      | ol_B                      | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_B      | ol_B                      | N             | 5            |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_B                            | D            | true                | false       |

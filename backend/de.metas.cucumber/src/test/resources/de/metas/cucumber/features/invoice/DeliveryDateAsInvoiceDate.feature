@@ -36,8 +36,8 @@ Feature: Invoice Date can be taken from DeliveryDate
     And the order identified by so_1 is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | sol_1                     | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1      | sol_1                     | N             | 10           |
 
     And metasfresh has date and time 2021-04-20T08:00:00+01:00[Europe/Berlin]
 
