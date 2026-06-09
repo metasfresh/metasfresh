@@ -111,9 +111,8 @@ public class FrontendTestingRestController
 	@PostMapping("expect")
 	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations)
 	{
-		assertEnabled();
-
-		// Run in the METASFRESH client/org context (mirroring createMasterdata above). The assertion
+		// Run in the METASFRESH client/org context (mirroring createMasterdata above; callInContext
+		// also performs the assertEnabled() check). The assertion
 		// queries are client-scoped — e.g. AssertHUExpectationsCommand.assertShipped uses
 		// addOnlyContextClientOrSystem() (AD_Client_ID IN (ctxClient, 0)). createMasterdata creates its
 		// data under ClientId.METASFRESH; without switching into that same context here the request runs
