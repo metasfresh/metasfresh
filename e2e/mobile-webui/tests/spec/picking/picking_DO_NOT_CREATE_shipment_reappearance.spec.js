@@ -8,15 +8,18 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from "../../utils/screens/picking/GetQuantityDialog";
 
 /**
- * With picking profile "Don't create shipment" (DO_NOT_CREATE), a fully-picked order whose
- * picked qty is bound to a DRAFT shipment must NOT appear in the mobileUI picking launcher:
- * there is nothing left to pick. It re-appears only if the shipment is reversed (the picked
- * qty becomes unbound again and the order genuinely has to be picked once more).
+ * Picking profile "Don't create shipment" (DO_NOT_CREATE): once a sales order has nothing left to
+ * pick it must NOT appear in the mobileUI picking launcher — there is nothing for the picker to do.
+ * "Nothing left to pick" means QtyToDeliver <= 0, regardless of whether a shipment was ever created.
  *
- * The fix excludes a schedule from the launcher ONLY when QtyToDeliver <= 0 AND
- * IsPickQtyOnDraftShipment='Y' (fully on draft). The second test below guards the inverse:
- * a PARTIAL draft (some picked qty on a draft line, but order qty still open => QtyToDeliver > 0)
- * must STAY visible, because there is still qty left to pick.
+ * - AC1 (the reported bug, me03 29437): pick FULLY + complete the job + NO shipment => launcher empty.
+ * - AC2: a PARTIALLY-picked order (qty still open, QtyToDeliver > 0) => stays in the launcher.
+ * - AC5: picked qty fully bound to a DRAFT shipment (the previously-merged fix's case) => not listed,
+ *        subsumed by the general "nothing left to pick" rule.
+ *
+ * On the current (merged) code AC1 FAILS (RED): the merged fix only excludes the fully-on-draft case
+ * (QtyToDeliver<=0 AND IsPickQtyOnDraftShipment='Y'); a completed, never-shipped order has
+ * IsPickQtyOnDraftShipment='N' and therefore still shows. AC2 + AC5 already pass on the merged code.
  */
 
 const createMasterdata = async ({ allowCompletingPartialPickingJob = false } = {}) => {
@@ -61,24 +64,25 @@ const createMasterdata = async ({ allowCompletingPartialPickingJob = false } = {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment is created', async ({ page }) => {
+// AC1 — the reported bug. RED on the current merged code (no shipment => IsPickQtyOnDraftShipment='N').
+test('DO_NOT_CREATE: fully-picked completed order with NO shipment must NOT appear in the picking launcher', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('DO_NOT_CREATE picking — order must stay gone after draft shipment');
+    allure.story('DO_NOT_CREATE picking — fully-picked completed order leaves the launcher (no shipment)');
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
 
-    // --- Pick all qty and complete in the mobileUI ---
+    // --- Pick all qty and complete in the mobileUI (mirrors the customer's manual flow exactly). ---
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo });
+    await PickingJobsListScreen.startJob({ documentNo });
 
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
@@ -89,19 +93,10 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
     await PickingJobScreen.complete();
     await PickingJobsListScreen.waitForScreen();
 
-    // After completing (createShipmentPolicy='NO' => no shipment created), the picked qty sits in
-    // M_ShipmentSchedule_QtyPicked rows with M_InOutLine_ID=NULL, Processed='N'. The order is still
-    // legitimately shown in the picking list (it still has to be shipped). We do NOT assert it gone
-    // here — that is normal and unchanged by the fix.
-
-    // --- Create a DRAFT shipment from the shipment schedule (quantityType='P', complete=false).
-    //     This binds M_ShipmentSchedule_QtyPicked.M_InOutLine_ID with Processed='N' — picked qty
-    //     fully assigned to a draft shipment line. ---
-    await Backend.createDraftShipmentForOrder({ orderIdentifier: 'SO1' });
-
-    // --- With all picked qty bound to the draft shipment line, the order has nothing left to pick
-    //     and must NOT be listed in the mobileUI picking launcher. ---
-    await test.step("After the draft shipment, the order must NOT be in the picking list", async () => {
+    // createShipmentPolicy='NO' => completing the job creates NO shipment at all. The order is now
+    // fully picked (QtyToDeliver=0) with nothing left to pick, so it MUST NOT be listed in the
+    // picking launcher — there is nothing for the picker to do.
+    await test.step("After completing the fully-picked job (no shipment), the order must NOT be in the picking list", async () => {
         await PickingJobsListScreen.goBack();
         await ApplicationsListScreen.startApplication('picking');
         await PickingJobsListScreen.waitForScreen();
@@ -111,12 +106,13 @@ test('DO_NOT_CREATE: completed order must NOT re-appear after a draft shipment i
 });
 
 // noinspection JSUnusedLocalSymbols
-test('DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list', async ({ page }) => {
+// AC2 — no regression: a partial pick leaves QtyToDeliver > 0, so the order stays in the launcher.
+test('DO_NOT_CREATE: a partially-picked order (qty still open) must STAY in the picking launcher', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('DO_NOT_CREATE picking — partial draft shipment keeps the order visible');
+    allure.story('DO_NOT_CREATE picking — partially-picked order stays in the launcher');
     allure.severity('critical');
 
     // allowCompletingPartialPickingJob=true so we can complete after picking a strict subset.
@@ -130,7 +126,7 @@ test('DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must S
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo });
+    await PickingJobsListScreen.startJob({ documentNo });
 
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
@@ -148,18 +144,59 @@ test('DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must S
     await PickingJobScreen.complete();
     await PickingJobsListScreen.waitForScreen();
 
-    // --- Create a DRAFT shipment for the picked subset (quantityType='P' ships the 4 PCE picked).
-    //     This binds the picked qty to a draft shipment line (IsPickQtyOnDraftShipment='Y'), but the
-    //     order still has 8 PCE open => QtyToDeliver > 0. This is the PARTIAL-draft case. ---
-    await Backend.createDraftShipmentForOrder({ orderIdentifier: 'SO1' });
-
-    // --- The order still has open qty to pick, so it MUST remain in the picking launcher.
-    //     This is the inverse of the fully-on-draft exclusion guarded by the first test. ---
-    await test.step("After the partial draft shipment, the order must STILL be in the picking list", async () => {
+    // The order still has 8 PCE open => QtyToDeliver > 0 => there is still qty left to pick, so it
+    // MUST remain in the picking launcher.
+    await test.step("The partially-picked order must STILL be in the picking list", async () => {
         await PickingJobsListScreen.goBack();
         await ApplicationsListScreen.startApplication('picking');
         await PickingJobsListScreen.waitForScreen();
         await PickingJobsListScreen.filterByDocumentNo(documentNo);
         await PickingJobsListScreen.expectJobButtons([{ salesOrderId }]);
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+// AC5 — the previously-merged fix's scenario: picked qty fully on a DRAFT shipment. Subsumed by the
+// general "nothing left to pick" rule, so it must also stay out of the launcher (passes on both
+// merged and fixed code — a regression guard, not RED).
+test('DO_NOT_CREATE: order with picked qty fully on a DRAFT shipment must NOT appear in the picking launcher', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('DO_NOT_CREATE picking — fully-on-draft-shipment order leaves the launcher');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+    const documentNo = masterdata.salesOrders.SO1.documentNo;
+
+    // --- Pick all qty and complete in the mobileUI. ---
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(documentNo);
+    await PickingJobsListScreen.startJob({ documentNo });
+
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+    await PickingJobScreen.complete();
+    await PickingJobsListScreen.waitForScreen();
+
+    // --- Bind all picked qty to a DRAFT shipment line (quantityType='P', complete=false). ---
+    await Backend.createDraftShipmentForOrder({ orderIdentifier: 'SO1' });
+
+    // QtyToDeliver=0 and the picked qty is fully bound to a draft shipment => nothing left to pick =>
+    // the order MUST NOT be listed in the picking launcher.
+    await test.step("With the picked qty fully on a draft shipment, the order must NOT be in the picking list", async () => {
+        await PickingJobsListScreen.goBack();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(documentNo);
+        await PickingJobsListScreen.expectJobButtons([]);
     });
 });
