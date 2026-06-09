@@ -300,6 +300,68 @@ public class ExternalSystemExportStatusServiceTest
 		assertThat(byConfig.get(0).getStatus()).isEqualTo(ExternalSystemExportStatus.Enqueued);
 	}
 
+	// -----------------------------------------------------------------------
+	// getConfigsWithNonSentAttemptBySourceRecord — Error/Invalid-only filter
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A config with an in-flight (Pending) status must NOT be returned by the re-send
+	 * selection, to prevent double-sending a record that is already queued.
+	 */
+	@Test
+	void getConfigsWithNonSentAttempt_excludes_pendingConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordPending(configId, ref); // stays Pending
+
+		final List<ExternalSystemScriptedExportConversionConfigId> result =
+				service.getConfigsWithNonSentAttemptBySourceRecord(ref);
+
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * A config with an Error status must be returned so the re-send process can retry it.
+	 */
+	@Test
+	void getConfigsWithNonSentAttempt_includes_errorConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1101);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markError(pInstanceId, AdIssueId.ofRepoId(99), "connection refused");
+
+		final List<ExternalSystemScriptedExportConversionConfigId> result =
+				service.getConfigsWithNonSentAttemptBySourceRecord(ref);
+
+		assertThat(result).containsExactly(configId);
+	}
+
+	/**
+	 * A config with an Invalid status must be returned so the re-send process can retry it.
+	 */
+	@Test
+	void getConfigsWithNonSentAttempt_includes_invalidConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+		final PInstanceId pInstanceId = PInstanceId.ofRepoId(1201);
+
+		service.recordPending(configId, ref);
+		service.markEnqueued(configId, ref, pInstanceId);
+		service.markInvalid(pInstanceId, "bad data");
+
+		final List<ExternalSystemScriptedExportConversionConfigId> result =
+				service.getConfigsWithNonSentAttemptBySourceRecord(ref);
+
+		assertThat(result).containsExactly(configId);
+	}
+
 	private int getM_InOutTableId()
 	{
 		return Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);

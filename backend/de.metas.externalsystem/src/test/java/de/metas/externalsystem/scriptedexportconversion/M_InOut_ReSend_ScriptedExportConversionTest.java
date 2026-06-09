@@ -52,9 +52,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Covers:
  * <ul>
- *   <li>getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) that have a non-Sent log row</li>
- *   <li>recordPendingAsResend: creates a NEW row with IsResend=Y, does NOT mutate prior rows</li>
- *   <li>multi-config: both configs returned when both have non-Sent attempts</li>
+ *   <li>getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) that have an Error or Invalid status</li>
+ *   <li>recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate row)</li>
+ *   <li>multi-config: both configs returned when both have Error or Invalid status</li>
  *   <li>sent-only: config not returned when latest attempt is Sent</li>
  *   <li>RESEND error context value: exists and returns non-null code</li>
  * </ul>
@@ -193,10 +193,10 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 4. recordPendingAsResend: creates NEW row with IsResend=Y, prior row NOT mutated
+	// 4. recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate)
 	// -----------------------------------------------------------------------
 	@Test
-	void recordPendingAsResend_createsNewRowWithIsResendTrue_withoutMutatingPriorRow()
+	void recordPendingAsResend_flipsSingleRowToPendingResend_noDuplicate()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -213,35 +213,21 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 		service.markEnqueued(configId, ref, pInstance);
 		service.markError(pInstance, null, "prior error");
 
-		// Assert: only 1 row initially
+		// Exactly 1 row, in Error state before re-send
 		assertThat(repo.getByConfigId(configId)).hasSize(1);
-		final ScriptedExportConversionStatus priorRow = repo.getByConfigId(configId).get(0);
-		assertThat(priorRow.getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
-		assertThat(priorRow.isResend()).isFalse();
+		assertThat(repo.getByConfigId(configId).get(0).getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
 
 		// Call recordPendingAsResend
 		service.recordPendingAsResend(configId, ref);
 
-		// Assert: 2 rows now
+		// Single-row contract: STILL exactly 1 row — the row was flipped in place, not duplicated
 		final List<ScriptedExportConversionStatus> rows = repo.getByConfigId(configId);
-		assertThat(rows).hasSize(2);
+		assertThat(rows).hasSize(1);
 
-		// Find the new resend row (Pending + IsResend=Y)
-		final ScriptedExportConversionStatus newRow = rows.stream()
-				.filter(ScriptedExportConversionStatus::isResend)
-				.findFirst()
-				.orElse(null);
-		assertThat(newRow).isNotNull();
-		assertThat(newRow.getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
-		assertThat(newRow.isResend()).isTrue();
-
-		// Prior row NOT mutated
-		final ScriptedExportConversionStatus priorRowAfter = rows.stream()
-				.filter(r -> !r.isResend())
-				.findFirst()
-				.orElse(null);
-		assertThat(priorRowAfter).isNotNull();
-		assertThat(priorRowAfter.getStatus()).isEqualTo(ExternalSystemExportStatus.Error);
+		// The single row is now Pending + IsResend=Y
+		final ScriptedExportConversionStatus flippedRow = rows.get(0);
+		assertThat(flippedRow.getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
+		assertThat(flippedRow.isResend()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------

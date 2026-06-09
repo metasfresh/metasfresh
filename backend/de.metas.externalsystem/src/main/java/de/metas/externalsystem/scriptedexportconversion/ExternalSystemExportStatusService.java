@@ -23,6 +23,7 @@
 package de.metas.externalsystem.scriptedexportconversion;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
@@ -101,13 +102,16 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Records a {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y}, as a fresh row.
+	 * Flips the (config, record) status row back to {@link ExternalSystemExportStatus#Pending} with
+	 * {@code IsResend=Y} using an in-place upsert — matching the single-row-per-key design.
+	 * Creates the row if somehow absent; otherwise updates the existing row so no duplicate key
+	 * can arise.
 	 */
 	public void recordPendingAsResend(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.insert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)
@@ -115,11 +119,21 @@ public class ExternalSystemExportStatusService
 				.build());
 	}
 
+	/**
+	 * Returns the config IDs whose status row for the given source record is in a terminal-failure
+	 * state ({@link ExternalSystemExportStatus#Error} or {@link ExternalSystemExportStatus#Invalid}).
+	 * In-flight rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
+	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		return repo.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
+		return repo.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord)
+				.stream()
+				.filter(configId -> repo.getLatestByConfigAndRecord(configId, sourceRecord)
+						.map(s -> s.getStatus().isErrorOrInvalid())
+						.orElse(false))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
