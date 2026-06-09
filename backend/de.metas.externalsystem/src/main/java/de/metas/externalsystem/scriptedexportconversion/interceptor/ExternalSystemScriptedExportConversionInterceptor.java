@@ -146,20 +146,9 @@ import org.slf4j.Logger;
 		{
 			// After commit because it might be a postgrest process that is executed here, so on complete changes need to be present in db
 			final int recordId = po.get_ID();
-			externalSystemScriptedExportConversionService
-					.getMatchingTriggerOnCompleteConfigsByTableAndClientId(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())), recordId)
-					.forEach(config -> {
-						// (a) Pending — written at complete time, before the after-commit invocation
-						try
-						{
-							externalSystemScriptedExportConversionService.recordPendingForConfig(config, recordId);
-						}
-						catch (final Exception e)
-						{
-							log.warn("Failed to record Pending status for config={}, recordId={} — continuing", config.getId(), recordId, e);
-						}
-						externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAfterCommit(config, recordId);
-					});
+			externalSystemScriptedExportConversionService.recordCompleteTimeEligibilityAndScheduleInvocation(
+					AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())),
+					recordId);
 		}
 
 		return null;

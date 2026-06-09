@@ -324,6 +324,87 @@ public class ExternalSystemScriptedExportConversionService
 		exportStatusService.recordPending(config.getId(), sourceRecord);
 	}
 
+	/**
+	 * At document complete-time, records an eligibility status for EVERY trigger-on-complete config
+	 * of the record's table, then schedules the after-commit invocation for matching configs only.
+	 *
+	 * <ul>
+	 *   <li>WhereClause MATCHES → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}
+	 *       + schedules the after-commit invocation (existing behaviour).</li>
+	 *   <li>WhereClause does NOT match → {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}
+	 *       (new, R2.3 — EDI-consistency: DontSend is always persisted).</li>
+	 * </ul>
+	 *
+	 * <p>Status writes run in the same transaction (no InNewTrx). The invocation scheduling
+	 * stays after-commit. A status-write failure for one config is logged and swallowed so that
+	 * document completion is never aborted (corpus-#6 pattern).
+	 */
+	public void recordCompleteTimeEligibilityAndScheduleInvocation(
+			@NonNull final AdTableAndClientId tableAndClientId,
+			final int recordId)
+	{
+		final ImmutableList<ExternalSystemScriptedExportConversionConfig> allConfigs =
+				externalSystemScriptedExportConversionRepository.getTriggerOnCompleteConfigsByTableAndClientIds(tableAndClientId);
+
+		final ImmutableList<ExternalSystemScriptedExportConversionConfig> matchingConfigs = allConfigs.stream()
+				.filter(config -> isConfigMatchingRecord(config, recordId))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<ExternalSystemScriptedExportConversionConfig> nonMatchingConfigs = allConfigs.stream()
+				.filter(config -> !isConfigMatchingRecord(config, recordId))
+				.collect(ImmutableList.toImmutableList());
+
+		recordCompleteTimeEligibilityStatusesOnly(matchingConfigs, nonMatchingConfigs, recordId);
+
+		// Schedule after-commit invocation only for matching configs
+		matchingConfigs.forEach(config -> executeInvokeScriptedExportConversionActionAfterCommit(config, recordId));
+	}
+
+	/**
+	 * Pure inner method: given a pre-partitioned list of configs, writes the eligibility statuses
+	 * in the current transaction.
+	 *
+	 * <p>This method is intentionally separated from the DB-matching logic so it can be unit-tested
+	 * without a live DB (R2.3 TDD seam — the DB-driven partitioning is deferred to R8 cucumber coverage).
+	 *
+	 * <p>Each status write is individually guarded: a failure for one config is logged and swallowed
+	 * so that document completion is never aborted (corpus-#6 pattern).
+	 *
+	 * @param matchingConfigs    configs whose WhereClause matches the record → written as Pending
+	 * @param nonMatchingConfigs configs whose WhereClause does NOT match the record → written as DontSend
+	 * @param recordId           the source record ID (table is taken from each config)
+	 */
+	/* package-private for testing */ void recordCompleteTimeEligibilityStatusesOnly(
+			@NonNull final ImmutableList<ExternalSystemScriptedExportConversionConfig> matchingConfigs,
+			@NonNull final ImmutableList<ExternalSystemScriptedExportConversionConfig> nonMatchingConfigs,
+			final int recordId)
+	{
+		for (final ExternalSystemScriptedExportConversionConfig config : matchingConfigs)
+		{
+			try
+			{
+				recordPendingForConfig(config, recordId);
+			}
+			catch (final Exception e)
+			{
+				log.warn("Failed to record Pending status for config={}, recordId={} — continuing", config.getId(), recordId, e);
+			}
+		}
+
+		for (final ExternalSystemScriptedExportConversionConfig config : nonMatchingConfigs)
+		{
+			try
+			{
+				final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
+				exportStatusService.recordDontSend(config.getId(), sourceRecord);
+			}
+			catch (final Exception e)
+			{
+				log.warn("Failed to record DontSend status for config={}, recordId={} — continuing", config.getId(), recordId, e);
+			}
+		}
+	}
+
 	@NonNull
 	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
