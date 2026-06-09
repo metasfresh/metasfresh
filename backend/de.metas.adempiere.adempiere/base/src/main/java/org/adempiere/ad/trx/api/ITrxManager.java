@@ -159,15 +159,34 @@ public interface ITrxManager extends ISingletonService
 	 */
 	String createTrxName(String prefix, boolean createTrx);
 
+	/**
+	 * @deprecated <b>Avoid by all means.</b> This opens a BRAND-NEW transaction, which breaks the caller's
+	 * atomicity and releases any row locks before the caller's own work commits; writes made here are also
+	 * invisible to — and can lock-collide with — code running in the caller's still-open transaction.
+	 * Prefer {@code callInThreadInheritedTrx} / {@code runInThreadInheritedTrx}.
+	 * <p>Not slated for automatic removal — some uses are legitimate (e.g. committing an async-batch
+	 * assignment so a separate async consumer can read it). Policy: (a) every NEW use must carry an inline
+	 * {@code //} comment justifying why isolation from the caller's transaction is genuinely required;
+	 * (b) REMOVING an existing use must be investigated very carefully — a careless change broke EDI
+	 * (me03 https://github.com/metasfresh/me03/issues/29942: dropping the new transaction left the
+	 * async-batch assignment uncommitted → DESADV-pack null), and if it cannot be removed a full
+	 * {@code //} comment above the call must explain why and how it could be removed in future. See the
+	 * {@code metasfresh-coding-gotchas} skill for the full policy.
+	 */
+	@Deprecated
 	<T> T callInNewTrx(Callable<T> callable);
 
+	/** @deprecated Avoid — opens a new transaction. See {@link #callInNewTrx(Callable)} for the policy. */
+	@Deprecated
 	void runInNewTrx(Runnable runnable);
 
 	/**
 	 * Same as calling {@link #run(String, TrxRunnable)} with trxName=null
 	 *
 	 * @see #run(String, TrxRunnable)
+	 * @deprecated Avoid — opens a new transaction. See {@link #callInNewTrx(Callable)} for the policy.
 	 */
+	@Deprecated
 	void runInNewTrx(TrxRunnable runnable);
 
 	/**
@@ -175,7 +194,9 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * @return callable's return value
 	 * @see #call(String, TrxCallable)
+	 * @deprecated Avoid — opens a new transaction. See {@link #callInNewTrx(Callable)} for the policy.
 	 */
+	@Deprecated
 	<T> T callInNewTrx(TrxCallable<T> callable);
 
 	/**
