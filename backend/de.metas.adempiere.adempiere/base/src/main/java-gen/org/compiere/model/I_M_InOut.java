@@ -917,8 +917,10 @@ public interface I_M_InOut
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setEPCIS_ExportStatus (@Nullable java.lang.String EPCIS_ExportStatus);
 
 	/**
@@ -926,7 +928,7 @@ public interface I_M_InOut
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
 	@Nullable java.lang.String getEPCIS_ExportStatus();
 

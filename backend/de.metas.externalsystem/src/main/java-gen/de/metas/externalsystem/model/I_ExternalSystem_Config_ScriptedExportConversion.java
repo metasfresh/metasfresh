@@ -318,27 +318,6 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	String COLUMNNAME_ScriptIdentifier = "ScriptIdentifier";
 
 	/**
-	 * Set Status Column.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setStatus_AD_Column_ID (int Status_AD_Column_ID);
-
-	/**
-	 * Get Status Column.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getStatus_AD_Column_ID();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, org.compiere.model.I_AD_Column> COLUMN_Status_AD_Column_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "Status_AD_Column_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_Status_AD_Column_ID = "Status_AD_Column_ID";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

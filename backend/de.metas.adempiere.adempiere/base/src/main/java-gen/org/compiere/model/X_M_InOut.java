@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -711049260L;
+	private static final long serialVersionUID = 858145598L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -728,8 +728,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	@Override
 	public void setEPCIS_ExportStatus (final @Nullable java.lang.String EPCIS_ExportStatus)
 	{
-		set_Value (COLUMNNAME_EPCIS_ExportStatus, EPCIS_ExportStatus);
-	}
+		throw new IllegalArgumentException ("EPCIS_ExportStatus is virtual column");	}
 
 	@Override
 	public java.lang.String getEPCIS_ExportStatus() 

@@ -3,16 +3,16 @@ package de.metas.externalsystem.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for ExternalSystem_ScriptedExportConversion_Log
+/** Generated Interface for ExternalSystem_ScriptedExportConversion_Status
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_ScriptedExportConversion_Log 
+public interface I_ExternalSystem_ScriptedExportConversion_Status 
 {
 
-	String Table_Name = "ExternalSystem_ScriptedExportConversion_Log";
+	String Table_Name = "ExternalSystem_ScriptedExportConversion_Status";
 
-//	/** AD_Table_ID=542614 */
+//	/** AD_Table_ID=542617 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -90,7 +90,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	int getAD_PInstance_ID();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
@@ -98,7 +98,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 * Database Table information
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Table_ID (int AD_Table_ID);
@@ -108,7 +108,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 * Database Table information
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Table_ID();
@@ -125,7 +125,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_Created = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "Created", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_Created = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -158,7 +158,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	java.lang.String getExportStatus();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_ExportStatus = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "ExportStatus", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_ExportStatus = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "ExportStatus", null);
 	String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
@@ -179,29 +179,29 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	int getExternalSystem_Config_ScriptedExportConversion_ID();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion> COLUMN_ExternalSystem_Config_ScriptedExportConversion_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "ExternalSystem_Config_ScriptedExportConversion_ID", de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion.class);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion> COLUMN_ExternalSystem_Config_ScriptedExportConversion_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "ExternalSystem_Config_ScriptedExportConversion_ID", de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion.class);
 	String COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID = "ExternalSystem_Config_ScriptedExportConversion_ID";
 
 	/**
-	 * Set ExternalSystem_ScriptedExportConversion_Log.
+	 * Set ExternalSystem Scripted Export Conversion Status.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem_ScriptedExportConversion_Log_ID (int ExternalSystem_ScriptedExportConversion_Log_ID);
+	void setExternalSystem_ScriptedExportConversion_Status_ID (int ExternalSystem_ScriptedExportConversion_Status_ID);
 
 	/**
-	 * Get ExternalSystem_ScriptedExportConversion_Log.
+	 * Get ExternalSystem Scripted Export Conversion Status.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getExternalSystem_ScriptedExportConversion_Log_ID();
+	int getExternalSystem_ScriptedExportConversion_Status_ID();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_ExternalSystem_ScriptedExportConversion_Log_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "ExternalSystem_ScriptedExportConversion_Log_ID", null);
-	String COLUMNNAME_ExternalSystem_ScriptedExportConversion_Log_ID = "ExternalSystem_ScriptedExportConversion_Log_ID";
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_ExternalSystem_ScriptedExportConversion_Status_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "ExternalSystem_ScriptedExportConversion_Status_ID", null);
+	String COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID = "ExternalSystem_ScriptedExportConversion_Status_ID";
 
 	/**
 	 * Set HTTP Response Code.
@@ -221,7 +221,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	int getHttpResponseCode();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_HttpResponseCode = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "HttpResponseCode", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_HttpResponseCode = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "HttpResponseCode", null);
 	String COLUMNNAME_HttpResponseCode = "HttpResponseCode";
 
 	/**
@@ -244,7 +244,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	boolean isActive();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "IsActive", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
@@ -265,7 +265,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	boolean isResend();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_IsResend = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "IsResend", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_IsResend = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "IsResend", null);
 	String COLUMNNAME_IsResend = "IsResend";
 
 	/**
@@ -273,7 +273,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setRecord_ID (int Record_ID);
@@ -283,12 +283,12 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getRecord_ID();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "Record_ID", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_Record_ID = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
@@ -309,7 +309,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	@Nullable java.lang.String getStatusMessage();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_StatusMessage = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "StatusMessage", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_StatusMessage = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "StatusMessage", null);
 	String COLUMNNAME_StatusMessage = "StatusMessage";
 
 	/**
@@ -322,7 +322,7 @@ public interface I_ExternalSystem_ScriptedExportConversion_Log
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Log, Object> COLUMN_Updated = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Log.class, "Updated", null);
+	ModelColumn<I_ExternalSystem_ScriptedExportConversion_Status, Object> COLUMN_Updated = new ModelColumn<>(I_ExternalSystem_ScriptedExportConversion_Status.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

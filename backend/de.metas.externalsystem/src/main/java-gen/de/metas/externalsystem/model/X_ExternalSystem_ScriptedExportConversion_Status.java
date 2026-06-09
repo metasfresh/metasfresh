@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for ExternalSystem_ScriptedExportConversion_Log
+/** Generated Model for ExternalSystem_ScriptedExportConversion_Status
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_ExternalSystem_ScriptedExportConversion_Log extends org.compiere.model.PO implements I_ExternalSystem_ScriptedExportConversion_Log, org.compiere.model.I_Persistent 
+public class X_ExternalSystem_ScriptedExportConversion_Status extends org.compiere.model.PO implements I_ExternalSystem_ScriptedExportConversion_Status, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 410173821L;
+	private static final long serialVersionUID = -106460927L;
 
     /** Standard Constructor */
-    public X_ExternalSystem_ScriptedExportConversion_Log (final Properties ctx, final int ExternalSystem_ScriptedExportConversion_Log_ID, @Nullable final String trxName)
+    public X_ExternalSystem_ScriptedExportConversion_Status (final Properties ctx, final int ExternalSystem_ScriptedExportConversion_Status_ID, @Nullable final String trxName)
     {
-      super (ctx, ExternalSystem_ScriptedExportConversion_Log_ID, trxName);
+      super (ctx, ExternalSystem_ScriptedExportConversion_Status_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_ExternalSystem_ScriptedExportConversion_Log (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_ExternalSystem_ScriptedExportConversion_Status (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -126,18 +126,18 @@ public class X_ExternalSystem_ScriptedExportConversion_Log extends org.compiere.
 	}
 
 	@Override
-	public void setExternalSystem_ScriptedExportConversion_Log_ID (final int ExternalSystem_ScriptedExportConversion_Log_ID)
+	public void setExternalSystem_ScriptedExportConversion_Status_ID (final int ExternalSystem_ScriptedExportConversion_Status_ID)
 	{
-		if (ExternalSystem_ScriptedExportConversion_Log_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_ExternalSystem_ScriptedExportConversion_Log_ID, null);
+		if (ExternalSystem_ScriptedExportConversion_Status_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_ExternalSystem_ScriptedExportConversion_Log_ID, ExternalSystem_ScriptedExportConversion_Log_ID);
+			set_ValueNoCheck (COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID, ExternalSystem_ScriptedExportConversion_Status_ID);
 	}
 
 	@Override
-	public int getExternalSystem_ScriptedExportConversion_Log_ID() 
+	public int getExternalSystem_ScriptedExportConversion_Status_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ScriptedExportConversion_Log_ID);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID);
 	}
 
 	@Override
