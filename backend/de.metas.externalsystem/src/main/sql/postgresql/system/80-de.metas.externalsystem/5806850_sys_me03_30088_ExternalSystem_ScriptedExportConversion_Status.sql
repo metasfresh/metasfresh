@@ -20,6 +20,9 @@
 -- UNIQUE constraint on (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Table_ID, Record_ID)
 -- uses short index name ExtSysScriptedExpConv_Status_uq to stay within Postgres's 63-char limit.
 --
+-- WebUI window / child tab: intentionally deferred to phase R7 of the 30088 rework
+-- (see ai-work/30088/PLAN-REWORK.md). This table is framework-internal until then.
+--
 -- Reused system AD_Element_IDs:
 --   102  AD_Client_ID  | 113  AD_Org_ID     | 348 IsActive
 --   245  Created       | 246  CreatedBy      | 607 Updated  | 608 UpdatedBy
@@ -72,6 +75,16 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',
   Updated=TO_TIMESTAMP('2026-06-09 09:00:15','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
   WHERE AD_Language IN ('de_DE','de_CH')
     AND AD_Element_ID=584965;
+-- Set proper en_US English translation (R1-cleanup: fix missing English name)
+UPDATE AD_Element_Trl
+  SET IsTranslated='Y',
+      Name='ExternalSystem Scripted Export Conversion Status',
+      PrintName='ExternalSystem Scripted Export Conversion Status',
+      Updated=TO_TIMESTAMP('2026-06-09 09:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+  WHERE AD_Language='en_US'
+    AND AD_Element_ID=584965;
+-- Propagate translations to AD_Column_Trl and any other _Trl tables linked to this element
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584965);
 
 -- ============================================================================
 -- 3) AD_Columns
