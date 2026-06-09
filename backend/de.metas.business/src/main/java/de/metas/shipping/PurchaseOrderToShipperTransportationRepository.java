@@ -36,12 +36,9 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -153,18 +150,13 @@ public class PurchaseOrderToShipperTransportationRepository
 	{
 		return toPackageSqlQuery(query)
 				.stream()
-				.map(PurchaseOrderToShipperTransportationRepository::fromPO)
+				.map(this::toPackage)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean anyMatch(@NonNull final ShippingPackageQuery query)
+	private Package toPackage(@NonNull final I_M_Package mPackage)
 	{
-		return toPackageSqlQuery(query).anyMatch();
-	}
-
-	public Package getPackageById(@NonNull final PackageId packageId)
-	{
-		final I_M_Package mPackage = load(packageId, I_M_Package.class);
+		final PackageId packageId = PackageId.ofRepoId(mPackage.getM_Package_ID());
 		final InOutId inOutId = InOutId.ofRepoIdOrNull(mPackage.getM_InOut_ID());
 		return Package.builder()
 				.id(packageId)
@@ -174,6 +166,16 @@ public class PurchaseOrderToShipperTransportationRepository
 				.sscc(mPackage.getIPA_SSCC18())
 				.packageContents(getPackageContents(packageId, inOutId))
 				.build();
+	}
+
+	public boolean anyMatch(@NonNull final ShippingPackageQuery query)
+	{
+		return toPackageSqlQuery(query).anyMatch();
+	}
+
+	public Package getPackageById(@NonNull final PackageId packageId)
+	{
+		return toPackage(load(packageId, I_M_Package.class));
 	}
 
 	private List<PackageItem> getPackageContents(@NonNull final PackageId packageId, @Nullable final InOutId inOutId)
@@ -195,37 +197,6 @@ public class PurchaseOrderToShipperTransportationRepository
 		}
 
 		return builder.create()
-				.stream()
-				.map(inOutLine -> toPackageItem(inOutLine, inOutId))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public static Package fromPO(final I_M_Package mPackage)
-	{
-		final InOutId inOutId = InOutId.ofRepoIdOrNull(mPackage.getM_InOut_ID());
-		return Package.builder()
-				.id(PackageId.ofRepoId(mPackage.getM_Package_ID()))
-				.inOutId(inOutId)
-				.weightInKg(mPackage.getPackageWeight())
-				.orgId(OrgId.ofRepoId(mPackage.getAD_Org_ID()))
-				.sscc(mPackage.getIPA_SSCC18())
-				.packageContents(getInOutLinesAsPackageItems(inOutId))
-				.build();
-	}
-
-	@Nullable
-	private static List<PackageItem> getInOutLinesAsPackageItems(@Nullable final InOutId inOutId)
-	{
-		if (inOutId == null)
-		{
-			return ImmutableList.of();
-		}
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
-				.create()
 				.stream()
 				.map(inOutLine -> toPackageItem(inOutLine, inOutId))
 				.filter(Objects::nonNull)
