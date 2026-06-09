@@ -24,6 +24,14 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
 /* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(566)
 ;
 
+-- AD_Element_Trl for element 566 has IsTranslated='N' for de_DE/de_CH (shared standard element).
+-- update_FieldTranslation_From_AD_Name_Element only propagates IsTranslated='Y' rows, so
+-- de_DE and de_CH land with IsTranslated='N' above. Explicitly set them to match siblings.
+UPDATE AD_Field_Trl
+SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-09 08:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Field_ID=780739 AND AD_Language IN ('de_DE','de_CH')
+;
+
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=780739
 ;
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(780739)
