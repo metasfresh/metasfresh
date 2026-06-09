@@ -27,3 +27,9 @@ UPDATE AD_UI_Element SET AD_Name_ID=1383, Name='Geschäftspartnergruppe', Update
 -- Document Type -> C_DocType_ID (196: Belegart / Document Type)
 UPDATE AD_UI_Element SET AD_Name_ID=196, Name='Belegart', Updated=TO_TIMESTAMP('2026-06-09 10:00:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=652033
 ;
+
+-- Carrier_Product_ID (584116) had en_US IsTranslated='N', so its English caption fell back to the German base name. Mark it translated (the en_US text 'Carrier Product' is already correct).
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-09 10:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=584116 AND AD_Language='en_US'
+;
+UPDATE AD_Field_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-09 10:00:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID=756177 AND AD_Language='en_US'
+;
