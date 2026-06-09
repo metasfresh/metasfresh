@@ -39,7 +39,7 @@ SELECT COALESCE(pt.Name, p.name) AS ProductName,
        loc_to.value              AS locator_to,
        pp.documentno             AS production_order_no,
        pp.datestartschedule      AS datestartschedule,
-       bomline.pickinginstruction AS pickinginstruction,
+       COALESCE(bomline.pickinginstruction, piip.description) AS pickinginstruction,
        qr.renderedqrcode         AS renderedqrcode,
        hu.m_hu_id                AS m_hu_id
 
@@ -76,7 +76,8 @@ FROM M_HU hu
              LIMIT 1
          ) cand ON true
          LEFT JOIN pp_order pp ON cand.Forward_PP_Order_ID = pp.pp_order_id
-         LEFT JOIN PP_Product_BOMLine bomline ON cand.Forward_PP_Order_BOMLine_ID = bomline.PP_Product_BOMLine_ID
+         LEFT JOIN PP_Order_BOMLine bomline ON cand.Forward_PP_Order_BOMLine_ID = bomline.PP_Order_BOMLine_ID
+         LEFT JOIN M_HU_PI_Item_Product piip ON ddol.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID
 
          INNER JOIN m_hu_qrcode_assignment qr_assign ON qr_assign.m_hu_id = hu.m_hu_id
          INNER JOIN M_HU_QRCode qr ON qr_assign.m_hu_qrcode_id = qr.m_hu_qrcode_id
