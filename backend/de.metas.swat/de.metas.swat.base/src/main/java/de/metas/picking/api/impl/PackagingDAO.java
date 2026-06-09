@@ -230,8 +230,7 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Exclude schedules that have nothing left to pick (QtyToDeliver<=0): the qty is already fully
-		// picked (completed/shipped/on a draft shipment), so there is nothing for the picker to do.
+		// Nothing left to pick: keep only QtyToDeliver > 0 (it is already net of picked/shipped/on-draft qty).
 		if (query.isExcludeNothingToPick())
 		{
 			queryBuilder.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);

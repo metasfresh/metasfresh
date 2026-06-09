@@ -12,7 +12,7 @@ import { QTY_NOT_FOUND_REASON_NOT_FOUND } from "../../utils/screens/picking/GetQ
  * pick it must NOT appear in the mobileUI picking launcher — there is nothing for the picker to do.
  * "Nothing left to pick" means QtyToDeliver <= 0, regardless of whether a shipment was ever created.
  *
- * - AC1 (the reported bug, me03 29437): pick FULLY + complete the job + NO shipment => launcher empty.
+ * - AC1 (the reported bug): pick FULLY + complete the job + NO shipment => launcher empty.
  * - AC2: a PARTIALLY-picked order (qty still open, QtyToDeliver > 0) => stays in the launcher.
  * - AC5: picked qty fully bound to a DRAFT shipment (the previously-merged fix's case) => not listed,
  *        subsumed by the general "nothing left to pick" rule.
@@ -76,7 +76,7 @@ test('DO_NOT_CREATE: fully-picked completed order with NO shipment must NOT appe
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
 
-    // --- Pick all qty and complete in the mobileUI (mirrors the customer's manual flow exactly). ---
+    // --- Pick all qty and complete in the mobileUI (mirrors the reported manual flow exactly). ---
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
