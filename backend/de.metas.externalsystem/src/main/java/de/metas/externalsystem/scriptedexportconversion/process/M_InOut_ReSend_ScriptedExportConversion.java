@@ -23,7 +23,6 @@
 package de.metas.externalsystem.scriptedexportconversion.process;
 
 import de.metas.externalsystem.ExternalSystemInvocationContext;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
@@ -39,27 +38,10 @@ import org.compiere.model.I_M_InOut;
 import java.util.List;
 
 /**
- * Per-record AD process that re-triggers the scripted-export-conversion for any config
- * that has a non-Sent (e.g. Error, Invalid, Pending) latest attempt for this M_InOut.
- *
- * <p>For each qualifying config:
- * <ol>
- *   <li>A new log row is created via {@link ExternalSystemScriptedExportConversionService#resolveConfigAndRecordPendingAsResend}
- *       with {@code IsResend=Y} and status {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}.
- *       The config is resolved (fail-fast) before creating the Pending row to prevent orphan rows.</li>
- *   <li>The scripted-export-conversion action is invoked via
- *       {@link ExternalSystemScriptedExportConversionService#executeInvokeScriptedExportConversionActionAndGetResult}
- *       with {@link ExternalSystemInvocationContext#RESEND}.</li>
- * </ol>
- * Prior attempt rows are <em>never</em> mutated.
- *
- * <p>AD_Process_ID: 585633 (allocated from ID server 2026-06-09).
+ * Re-triggers the scripted-export-conversion for any config with a non-Sent attempt for this M_InOut.
  */
 public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
-	private final ExternalSystemExportStatusService exportStatusService =
-			SpringContextHolder.instance.getBean(ExternalSystemExportStatusService.class);
-
 	private final ExternalSystemScriptedExportConversionService scriptedExportService =
 			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
 
@@ -80,18 +62,11 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
 
 		final List<ExternalSystemScriptedExportConversionConfigId> configIds =
-				exportStatusService.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
-
-		if (configIds.isEmpty())
-		{
-			return "No non-Sent scripted-export-conversion attempts found for this record — nothing to re-send.";
-		}
+				scriptedExportService.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
 
 		int triggered = 0;
 		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 		{
-			// Resolve config + create Pending row with IsResend=Y — getById throws for inactive
-			// configs (fail-fast); keeps the Pending row from being created without an invocation.
 			final ExternalSystemScriptedExportConversionConfig config =
 					scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
 
@@ -103,6 +78,6 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 			triggered++;
 		}
 
-		return "@Processed@: " + triggered + " scripted-export-conversion config(s) re-triggered.";
+		return "@Processed@ #" + triggered;
 	}
 }

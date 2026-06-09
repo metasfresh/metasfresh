@@ -315,6 +315,13 @@ public class ExternalSystemScriptedExportConversionService
 		return config;
 	}
 
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return exportStatusService.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
+	}
+
 	/**
 	 * Records a {@link ExternalSystemExportStatus#Pending} log entry for the given config and source record.
 	 * Called by the interceptor's AFTER_COMPLETE branch for each matching config, before scheduling

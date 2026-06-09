@@ -242,7 +242,7 @@ public class ExternalSystemService
 				}
 				catch (final Exception e)
 				{
-					logger.error("Error listener {} threw exception while handling error for PInstance {}",
+					logger.warn("Error listener {} threw exception while handling error for PInstance {}",
 							listener.getClass().getSimpleName(), pInstanceId, e);
 				}
 			}
@@ -278,7 +278,7 @@ public class ExternalSystemService
 				}
 				catch (final Exception e)
 				{
-					logger.error("Success listener {} threw exception while handling success for PInstance {}",
+					logger.warn("Success listener {} threw exception while handling success for PInstance {}",
 							listener.getClass().getSimpleName(), pInstanceId, e);
 				}
 			}

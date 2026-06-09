@@ -84,7 +84,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(AdempiereTestWatcher.class)
 public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 {
-	private ExternalSystemExportStatusService exportStatusServiceMock;
 	private ExternalSystemScriptedExportConversionService scriptedExportServiceMock;
 
 	@BeforeEach
@@ -94,11 +93,9 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		// ProcessInfo builder requires a valid logged-in user ID in context
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(100));
 
-		exportStatusServiceMock = mock(ExternalSystemExportStatusService.class);
 		scriptedExportServiceMock = mock(ExternalSystemScriptedExportConversionService.class);
 
-		// Register mocks BEFORE instantiating the process (fields are resolved at construction time)
-		SpringContextHolder.registerJUnitBean(ExternalSystemExportStatusService.class, exportStatusServiceMock);
+		// Register mock BEFORE instantiating the process (field is resolved at construction time)
 		SpringContextHolder.registerJUnitBean(ExternalSystemScriptedExportConversionService.class, scriptedExportServiceMock);
 	}
 
@@ -123,8 +120,8 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final ExternalSystemScriptedExportConversionConfig configA = buildDummyConfig(configIdA, tableId);
 		final ExternalSystemScriptedExportConversionConfig configB = buildDummyConfig(configIdB, tableId);
 
-		// Status service returns two qualifying configs
-		when(exportStatusServiceMock.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord))
+		// Service returns two qualifying configs
+		when(scriptedExportServiceMock.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord))
 				.thenReturn(qualifyingConfigIds);
 
 		// resolveConfigAndRecordPendingAsResend returns the resolved config for each
@@ -164,12 +161,12 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final int inoutId = inout.getM_InOut_ID();
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
 
-		when(exportStatusServiceMock.getConfigsWithNonSentAttemptBySourceRecord(any()))
+		when(scriptedExportServiceMock.getConfigsWithNonSentAttemptBySourceRecord(any()))
 				.thenReturn(Collections.emptyList());
 
 		final String result = runProcess(inoutId, tableId);
 
-		assertThat(result).containsIgnoringCase("nothing to re-send");
+		assertThat(result).contains("0");
 		verify(scriptedExportServiceMock, times(0)).resolveConfigAndRecordPendingAsResend(any(), any());
 		verify(scriptedExportServiceMock, times(0)).executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), any());
 	}
