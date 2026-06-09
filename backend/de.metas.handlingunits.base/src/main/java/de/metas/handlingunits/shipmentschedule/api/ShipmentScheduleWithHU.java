@@ -64,6 +64,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -80,6 +81,8 @@ import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -90,6 +93,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.math.BigDecimal.ONE;
@@ -104,27 +108,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public class ShipmentScheduleWithHU
 {
-	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@NonNull final IHUContext huContext)
-	{
-		return ofShipmentScheduleQtyPickedWithHuContext(
-				shipmentScheduleQtyPicked,
-				huContext,
-				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was an we don't have great test coverage */);
-	}
-
-	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@NonNull final IHUContext huContext,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
-	{
-		return new ShipmentScheduleWithHU(
-				huContext,
-				shipmentScheduleQtyPicked,
-				qtyTypeToUse);
-	}
-
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
@@ -206,6 +189,55 @@ public class ShipmentScheduleWithHU
 
 		this.adviseManualPackingMaterial = false;
 		this.qtyTypeToUse = qtyTypeToUse;
+	}
+
+	/**
+	 * Creates an expanded candidate from a QtyPicked record with an overridden VHU and qty.
+	 * Used when a non-virtual TU with mixed-Country-of-Origin VHUs is expanded into per-VHU candidates.
+	 */
+	private ShipmentScheduleWithHU(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked allocRecord,
+			@NonNull final I_M_HU overrideVHU,
+			@NonNull final Quantity overrideQty,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		this.huContext = huContext;
+		this.shipmentScheduleQtyPicked = allocRecord;
+		this.shipmentSchedule = create(allocRecord.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
+		this.pickedQty = overrideQty;
+		this.catchQty = Optional.empty();
+		this.vhu = overrideVHU;
+		this.tuHU = allocRecord.getM_TU_HU_ID() > 0 ? allocRecord.getM_TU_HU() : null;
+		this.luHU = allocRecord.getM_LU_HU_ID() > 0 ? allocRecord.getM_LU_HU() : null;
+		this.adviseManualPackingMaterial = false;
+		this.qtyTypeToUse = qtyTypeToUse;
+	}
+
+	public static List<ShipmentScheduleWithHU> ofShipmentScheduleQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext)
+	{
+		return ImmutableList.of(new ShipmentScheduleWithHU(huContext, qtyPicked, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+	}
+
+	public static List<ShipmentScheduleWithHU> ofShipmentScheduleQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		return ImmutableList.of(new ShipmentScheduleWithHU(huContext, qtyPicked, qtyTypeToUse));
+	}
+
+	/** Creates a single candidate with an explicit VHU and qty override. Used by the expansion logic in {@link IHUShipmentScheduleBL}. */
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU vhu,
+			@NonNull final Quantity qty,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		return new ShipmentScheduleWithHU(huContext, qtyPicked, vhu, qty, qtyTypeToUse);
 	}
 
 	/**

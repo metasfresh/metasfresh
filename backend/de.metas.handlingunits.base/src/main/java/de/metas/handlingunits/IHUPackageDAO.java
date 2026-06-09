@@ -25,9 +25,10 @@ package de.metas.handlingunits;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.inout.InOutId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.ISingletonService;
-import org.compiere.model.I_M_InOut;
+import lombok.NonNull;
 import org.compiere.model.I_M_Package;
 
 import java.util.Collection;
@@ -38,6 +39,9 @@ public interface IHUPackageDAO extends ISingletonService
 {
 
 	List<I_M_Package_HU> retrievePackageHUs(org.compiere.model.I_M_Package mpackage);
+
+	List<I_M_Package_HU> retrievePackageHUs(@NonNull PackageId packageId);
+
 
 	List<I_M_Package_HU> retrievePackageHUs(Set<HuId> huIds);
 
@@ -72,12 +76,10 @@ public interface IHUPackageDAO extends ISingletonService
 	I_M_Package retrievePackage(I_M_HU hu);
 
 	/**
-	 * Retrieve all packages which are assigned to given shipment.
-	 *
-	 * @param shipment
-	 * @return packages
+	 * Retrieve all packages that are assigned to a given shipment.
 	 */
-	List<I_M_Package> retrievePackagesForShipment(I_M_InOut shipment);
+	List<I_M_Package> retrievePackagesForShipment(@NonNull InOutId inOutId);
+
 
 	Collection<PackageId> retainPackageIdsWithHUs(Collection<PackageId> packageIds);
 

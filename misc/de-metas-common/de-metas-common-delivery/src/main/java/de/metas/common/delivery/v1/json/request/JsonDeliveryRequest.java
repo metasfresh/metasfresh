@@ -121,7 +121,7 @@ public class JsonDeliveryRequest
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
 				return getPickupAddress().getAttention();
 			default:
-				throw new IllegalArgumentException("Unknown attributeValue: " + attributeValue);
+				return null; // attribute not available at request level — filtered out by caller
 		}
 	}
 }

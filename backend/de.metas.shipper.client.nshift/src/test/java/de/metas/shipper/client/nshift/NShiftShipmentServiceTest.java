@@ -174,6 +174,7 @@ public class NShiftShipmentServiceTest
 							.productName("Test Product 2")
 							.productValue("Test Product 2")
 							.customsTariff("Test Customs Tariff 2")
+							.countryOfOrigin("IT")
 							.totalWeightInKg(BigDecimal.TEN)
 							.shippedQuantity(JsonQuantity.builder()
 									.value(BigDecimal.TEN)
@@ -228,4 +229,5 @@ public class NShiftShipmentServiceTest
 		final JsonShipmentRequest request = NShiftShipmentService.buildShipmentRequest(DELIVERY_REQUEST);
 		expect.serializer("orderedJson").toMatchSnapshot(request);
 	}
+
 }

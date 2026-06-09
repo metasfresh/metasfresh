@@ -91,6 +91,7 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -455,6 +456,27 @@ public class M_HU_StepDef
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(request));
 		});
+	}
+
+	/**
+	 * Moves a quantity from a source CU into an existing target TU.
+	 *
+	 * <ul>
+	 *   <li><b>sourceCU</b>: identifier of the source CU</li>
+	 *   <li><b>targetTU</b>: identifier of the target TU</li>
+	 *   <li><b>qty</b>: quantity to move</li>
+	 *   <li><b>OPT.UOM.X12DE355</b>: unit of measure X12 code; defaults to PCE</li>
+	 * </ul>
+	 */
+	@And("move CU to existing TU")
+	public void moveCUtoExistingTU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> huTrxBL.process(huContext -> {
+			final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupNotNullIn(huTable);
+			final I_M_HU targetTU = row.getAsIdentifier("targetTU").lookupNotNullIn(huTable);
+			final Quantity qty = row.getAsQuantity("qty", "UOM.X12DE355", X12DE355.EACH, uomDAO::getByX12DE355);
+			HUTransformService.newInstance(huContext).cuToExistingTU(sourceCU, qty, targetTU);
+		}));
 	}
 
 	/**

@@ -700,7 +700,6 @@ public class PickingJobPickCommand
 		if (qtyToPickCUs.isZero() && !isPickWholeTU)
 		{
 			throw new AdempiereException("qtyToPickCUs shall not be zero if isPickWholeTU is false");
-			// return ImmutableList.of();
 		}
 
 		final PickingJobStep step = getStep();
@@ -805,6 +804,7 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
+		// Record the destination TU; createCandidatesForQtyPicked expands it into per-VHU COO candidates at shipment generation time.
 		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
 	}
 
