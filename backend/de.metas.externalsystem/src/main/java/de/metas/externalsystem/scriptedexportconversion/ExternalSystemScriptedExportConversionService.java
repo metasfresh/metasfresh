@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CONVERT_MESSAGE_FROM_METASFRESH;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
@@ -346,13 +347,15 @@ public class ExternalSystemScriptedExportConversionService
 		final ImmutableList<ExternalSystemScriptedExportConversionConfig> allConfigs =
 				externalSystemScriptedExportConversionRepository.getTriggerOnCompleteConfigsByTableAndClientIds(tableAndClientId);
 
-		final ImmutableList<ExternalSystemScriptedExportConversionConfig> matchingConfigs = allConfigs.stream()
-				.filter(config -> isConfigMatchingRecord(config, recordId))
-				.collect(ImmutableList.toImmutableList());
+		// Partition in a single pass — isConfigMatchingRecord issues a SQL query per config,
+		// so we must not call it twice for the same config.
+		final Map<Boolean, List<ExternalSystemScriptedExportConversionConfig>> partitioned = allConfigs.stream()
+				.collect(Collectors.partitioningBy(config -> isConfigMatchingRecord(config, recordId)));
 
-		final ImmutableList<ExternalSystemScriptedExportConversionConfig> nonMatchingConfigs = allConfigs.stream()
-				.filter(config -> !isConfigMatchingRecord(config, recordId))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<ExternalSystemScriptedExportConversionConfig> matchingConfigs =
+				ImmutableList.copyOf(partitioned.get(Boolean.TRUE));
+		final ImmutableList<ExternalSystemScriptedExportConversionConfig> nonMatchingConfigs =
+				ImmutableList.copyOf(partitioned.get(Boolean.FALSE));
 
 		recordCompleteTimeEligibilityStatusesOnly(matchingConfigs, nonMatchingConfigs, recordId);
 

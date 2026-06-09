@@ -25,7 +25,6 @@ package de.metas.externalsystem.scriptedexportconversion.interceptor;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,15 +39,12 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 /**
  * Interceptor which listens to a table specified in {@link I_ExternalSystem_Config_ScriptedExportConversion}.
  */
 /* package */ class ExternalSystemScriptedExportConversionInterceptor implements ModelValidator
 {
-	private static final Logger log = LogManager.getLogger(ExternalSystemScriptedExportConversionInterceptor.class);
-
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
