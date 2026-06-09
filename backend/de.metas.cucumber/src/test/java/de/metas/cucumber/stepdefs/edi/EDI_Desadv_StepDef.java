@@ -163,6 +163,35 @@ public class EDI_Desadv_StepDef
 		}
 	}
 
+	/**
+	 * Asserts that a replication-interface-exported DESADV XML (captured earlier via
+	 * "RabbitMQ receives a EDI_Exp_Desadv") still carries an expected set of business-critical
+	 * elements — a superset check that catches a whole class of regressions where an export
+	 * {@code EXP_FormatLine} is silently lost (e.g. cascade-deleted by a {@code DROP COLUMN}),
+	 * not just a single field. Tolerant of newly-added elements.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *   <li>{@code EDI_Exp_Desadv_ID.Identifier} (required) — the captured DESADV document.</li>
+	 *   <li>{@code TagName} (required) — XML element that MUST be present.</li>
+	 *   <li>{@code OPT.UnderTag} (optional) — restrict the search to the first occurrence of this
+	 *       ancestor element (e.g. {@code C_BPartner_ID}); empty = search the whole document.</li>
+	 *   <li>{@code OPT.Value} (optional) — when set, the element's text content must equal it.</li>
+	 * </ul>
+	 * Example:
+	 * <pre>
+	 * Then the following EDI_Exp_Desadv XML carries the expected elements:
+	 *   | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName         | OPT.Value     |
+	 *   | e_d_1                        | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
+	 *   | e_d_1                        |               | MovementDate    |               |
+	 * </pre>
+	 */
+	@Then("the following EDI_Exp_Desadv XML carries the expected elements:")
+	public void validate_EDI_Exp_Desadv_elements(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateEDIExpDesadvElement);
+	}
+
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -276,6 +305,38 @@ public class EDI_Desadv_StepDef
 			final Element qtyTu = getElement(desadvPackElement, QTY_TU_TAGNAME);
 			assertThat(qtyTu).as(QTY_TU_TAGNAME).isNotNull();
 			assertThat(qtyTu.getTextContent()).as(QTY_TU_TAGNAME).isEqualTo(qtyTuExpected);
+		}
+	}
+
+	private void validateEDIExpDesadvElement(@NonNull final DataTableRow row)
+	{
+		final Document ediExpDesadv = row.getAsIdentifier("EDI_Exp_Desadv_ID").lookupNotNullIn(ediExpDesadvTable);
+
+		final String tagName = row.getAsString("TagName");
+		final String underTag = row.getAsOptionalString("UnderTag").orElse(null);
+		final String expectedValue = row.getAsOptionalString("Value").orElse(null);
+
+		final Node scope;
+		if (Check.isNotBlank(underTag))
+		{
+			final Element parent = getElement(ediExpDesadv, underTag);
+			assertThat(parent).as("the exported DESADV XML must contain element <%s>", underTag).isNotNull();
+			scope = parent;
+		}
+		else
+		{
+			scope = ediExpDesadv;
+		}
+
+		final Element element = getElement(scope, tagName);
+		assertThat(element)
+				.as("the exported DESADV XML must carry element <%s>%s",
+						tagName, Check.isNotBlank(underTag) ? " under <" + underTag + ">" : "")
+				.isNotNull();
+
+		if (Check.isNotBlank(expectedValue))
+		{
+			assertThat(element.getTextContent()).as("<%s> value", tagName).isEqualTo(expectedValue);
 		}
 	}
 
