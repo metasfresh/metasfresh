@@ -1,6 +1,10 @@
--- Function: add_missing_translations()
-
--- DROP FUNCTION add_missing_translations();
+-- me03#30032: add_missing_translations() failed in customer builds with
+-- "duplicate key value violates unique constraint ad_window_trl_name_uc"
+-- when two windows share the same base-language name and the function tried
+-- to INSERT a missing translation row for one of them.
+--
+-- Fix: append ON CONFLICT DO NOTHING so name collisions are skipped instead
+-- of aborting the migration.
 
 CREATE OR REPLACE FUNCTION add_missing_translations()
 RETURNS void AS
@@ -50,16 +54,16 @@ BEGIN
 			|| ' from ' || t.tablename || ' t, ad_language l '
 			|| ' WHERE (l.issystemlanguage=''Y'' OR (''AD_Element''=''' ||t.tablename ||''' AND l.isbaselanguage = ''Y''))' -- this will change in task #4672
 			|| ' AND NOT EXISTS (SELECT 1 FROM ' || t.tablename || '_TRL b WHERE b.' || t.tablename || '_id=t.' || t.tablename || '_id AND b.AD_LANGUAGE=l.AD_LANGUAGE)';
-			
+
 		inssel := TRIM (ins) || ' ' || TRIM (sel) || ' ON CONFLICT DO NOTHING';
 
 		EXECUTE inssel;
 		v_TrlTablesCount := v_TrlTablesCount + 1;
-		
+
 		GET DIAGNOSTICS v_InsertCount = ROW_COUNT;
 		raise notice 'Inserted % rows into %_Trl (%)', v_InsertCount, t.tablename, trlColumnNames;
 	END LOOP;
-	
+
 	raise notice 'Done. Checked/Updated % translation tables', v_TrlTablesCount;
 END;
 $BODY$
