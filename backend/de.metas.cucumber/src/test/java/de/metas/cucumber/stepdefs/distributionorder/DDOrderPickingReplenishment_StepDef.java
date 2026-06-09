@@ -24,21 +24,18 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDef;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -47,13 +44,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,95 +85,42 @@ public class DDOrderPickingReplenishment_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final DDOrderPickingReplenishmentService replenishmentService = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 
-	@NonNull private final M_ShipmentSchedule_StepDef shipmentScheduleStepDef;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	@NonNull private final de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 
 	/**
-	 * Changes a shipment schedule's effective quantity by setting {@code QtyOrdered_Override} and saving.
-	 * The save fires the {@code M_ShipmentSchedule} interceptor (sync picker-busy guard + after-commit reconcile),
-	 * which on a packing warehouse with no busy picker voids the old DD_Order and recreates a fresh one with the
-	 * new quantity.
-	 *
-	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyOrdered_Override} (new quantity).</p>
-	 */
-	@When("the M_ShipmentSchedule quantity is changed:")
-	public void change_M_ShipmentSchedule_qty(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				.forEach(shipmentScheduleStepDef::alterShipmentSchedule);
-	}
-
-	/**
-	 * Attempts to change a shipment schedule quantity and asserts the {@code beforeSave} interceptor REJECTS the
-	 * save (picker-busy guard). Asserts the thrown exception is an
-	 * {@link AdempiereException} containing the German picker-busy AD_Message text "Kommissionierung läuft bereits".
-	 * The schedule record is reloaded and asserted unchanged.
-	 *
-	 * <p>Columns: {@code M_ShipmentSchedule_ID} (identifier), {@code QtyOrdered_Override} (attempted quantity).</p>
-	 */
-	@Then("changing the M_ShipmentSchedule quantity is rejected:")
-	public void change_M_ShipmentSchedule_qty_is_rejected(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				.forEach(row -> {
-					final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(row.getAsIdentifier().getAsString());
-					final BigDecimal originalQtyOverride = schedule.getQtyOrdered_Override();
-					final BigDecimal newQty = row.getAsBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override);
-
-					assertThatThrownBy(() -> {
-								schedule.setQtyOrdered_Override(newQty);
-								InterfaceWrapperHelper.saveRecord(schedule);
-							})
-							.as("Changing the schedule while the picker is busy must be rejected by the beforeSave interceptor")
-							.isInstanceOf(AdempiereException.class)
-							// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
-							.hasMessageContaining("Kommissionierung läuft bereits");
-
-					// Reload and assert the persisted value is unchanged (the rolled-back save left no mark).
-					final I_M_ShipmentSchedule reloaded = shipmentSchedulePA.getById(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
-					assertThat(reloaded.getQtyOrdered_Override())
-							.as("M_ShipmentSchedule.QtyOrdered_Override must be unchanged after the rejected save")
-							.isEqualByComparingTo(originalQtyOverride == null ? BigDecimal.ZERO : originalQtyOverride);
-				});
-	}
-
-	/**
-	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(ShipmentScheduleId)} in
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(PickingJobScheduleId)} in
 	 * {@code runInThreadInheritedTrx}, matching the transaction wrapping used by
 	 * {@code DDOrderReplenishmentEventHandler}.
 	 *
 	 * <p>Real-world trigger: in production this reconcile runs asynchronously when the
-	 * {@code M_ShipmentSchedule} interceptor publishes the after-commit {@code DDOrderPickingReconcile}
-	 * event (on a relevant column change), or when the {@code DD_Order_Picking_Rebuild} watchdog reposts it.
-	 * The step calls the service directly only to control ordering for the deterministic race scenario —
-	 * driving it through the real async bus would make the picker-grabs-the-job-in-the-race-window timing
-	 * non-deterministic and the test flaky.</p>
+	 * {@code M_Picking_Job_Schedule} interceptor publishes the after-commit {@code DDOrderPickingReconcile}
+	 * event (on a new / changed / deleted assignment), or when the {@code DD_Order_Picking_Rebuild} watchdog
+	 * reposts it. The step calls the service directly only to control ordering for the deterministic race
+	 * scenario — driving it through the real async bus would make the picker-grabs-the-job-in-the-race-window
+	 * timing non-deterministic and the test flaky.</p>
 	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule to reconcile.</p>
+	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment to reconcile.</p>
 	 */
-	@When("^the reconcile event for M_ShipmentSchedule (.*) is processed$")
-	public void process_reconcile_event(@NonNull final String shipmentScheduleIdentifier)
+	@When("^the reconcile event for M_Picking_Job_Schedule (.*) is processed$")
+	public void process_reconcile_event(@NonNull final String pickingJobScheduleIdentifier)
 	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-		trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId));
+		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
+		trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(jobScheduleId));
 	}
 
 	/**
-	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(ShipmentScheduleId)} and asserts it
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(PickingJobScheduleId)} and asserts it
 	 * FAILS while the picker is busy (the service-side definitive guard). Asserts the thrown exception is an
 	 * {@link AdempiereException} containing the German picker-busy AD_Message text "Kommissionierung läuft bereits".
 	 * The DD_Order is left unchanged.
 	 *
 	 * <p>Real-world trigger: same async reconcile as {@code process_reconcile_event} — in production the
-	 * {@code M_ShipmentSchedule} interceptor ({@code M_ShipmentSchedule_DDOrderPickingInterceptor#scheduleReconcileAfterCommit})
+	 * {@code M_Picking_Job_Schedule} interceptor ({@code M_Picking_Job_Schedule_DDOrderPickingInterceptor#scheduleReconcileAfterCommit})
 	 * publishes the after-commit reconcile event, the {@code DDOrderReplenishmentEventHandler} picks it up and calls
-	 * {@code replenishmentService.reconcile(scheduleId)}; this step asserts the service-side picker-busy guard rejects
+	 * {@code replenishmentService.reconcile(jobScheduleId)}; this step asserts the service-side picker-busy guard rejects
 	 * that reconcile when a picker has grabbed the job in the meantime. The step calls the service directly only to
 	 * control ordering for the deterministic race scenario — driving it through the real async bus would make the
 	 * picker-grabs-the-job-in-the-race-window timing non-deterministic and the test flaky.</p>
@@ -187,15 +129,14 @@ public class DDOrderPickingReplenishment_StepDef
 	 * {@code AD_EventLog_Entry} is produced. The handler-level error-recording path (IsError=true in
 	 * AD_EventLog_Entry) is covered by the scenario that goes through the real async event flow.</p>
 	 *
-	 * <p>Column: {@code M_ShipmentSchedule_ID} — identifier of the schedule.</p>
+	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment.</p>
 	 */
-	@Then("^processing the reconcile event for M_ShipmentSchedule (.*) is rejected$")
-	public void process_reconcile_event_is_rejected(@NonNull final String shipmentScheduleIdentifier)
+	@Then("^processing the reconcile event for M_Picking_Job_Schedule (.*) is rejected$")
+	public void process_reconcile_event_is_rejected(@NonNull final String pickingJobScheduleIdentifier)
 	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
 
-		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId)))
+		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(jobScheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
 				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
@@ -256,14 +197,20 @@ public class DDOrderPickingReplenishment_StepDef
 	public void assert_reconcile_event_log_entry(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final String shipmentScheduleIdentifier = row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).getAsString();
-			final int shipmentScheduleId = shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID();
 			final boolean expectedError = row.getAsBoolean(I_AD_EventLog_Entry.COLUMNNAME_IsError);
 			final String msgTextFragment = row.getAsOptionalString(I_AD_EventLog_Entry.COLUMNNAME_MsgText).orElse(null);
 
+			// The entry is pinned to its originating record via the parent AD_EventLog's source record reference
+			// (set by DDOrderReplenishmentEventPublisher). The trigger record is the workstation assignment
+			// (M_Picking_Job_Schedule) for the assignment-driven flow, or the shipment schedule for the legacy flow.
+			final IQuery<I_AD_EventLog> eventLogsSubQuery = row.getAsOptionalIdentifier(de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+					.map(identifier -> eventLogsForPickingJobSchedule(identifier.lookupNotNullIdIn(pickingJobScheduleTable).getRepoId()))
+					.orElseGet(() -> {
+						final int shipmentScheduleId = row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIn(shipmentScheduleTable).getM_ShipmentSchedule_ID();
+						return eventLogsForSchedule(shipmentScheduleId);
+					});
+
 			final Supplier<Boolean> entryFound = () -> {
-				// AD_EventLog_Entry has no direct link to the schedule; pin it via the parent AD_EventLog's
-				// source record reference (set by DDOrderReplenishmentEventPublisher).
 				final IQueryBuilder<I_AD_EventLog_Entry> queryBuilder = queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
 						.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_IsError, expectedError);
@@ -274,7 +221,7 @@ public class DDOrderPickingReplenishment_StepDef
 				queryBuilder.addInSubQueryFilter(
 						I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_ID,
 						I_AD_EventLog.COLUMNNAME_AD_EventLog_ID,
-						eventLogsForSchedule(shipmentScheduleId));
+						eventLogsSubQuery);
 				return queryBuilder.create().anyMatch();
 			};
 
@@ -288,6 +235,20 @@ public class DDOrderPickingReplenishment_StepDef
 				throw new RuntimeException(e);
 			}
 		});
+	}
+
+	/**
+	 * Builds the sub-query selecting the {@code AD_EventLog} records whose source record reference points to the
+	 * given workstation assignment (set by {@code DDOrderReplenishmentEventPublisher}).
+	 */
+	private IQuery<I_AD_EventLog> eventLogsForPickingJobSchedule(final int pickingJobScheduleId)
+	{
+		final TableRecordReference ref =
+				TableRecordReference.of(de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule.Table_Name, pickingJobScheduleId);
+		return queryBL.createQueryBuilder(I_AD_EventLog.class)
+				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_AD_Table_ID, ref.getAD_Table_ID())
+				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_Record_ID, ref.getRecord_ID())
+				.create();
 	}
 
 	/**
@@ -306,25 +267,25 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Polls for an Error {@code AD_EventLog_Entry} from the reconcile handler that has an {@code AD_Issue} attached
-	 * (network-gap soft-fail logs an AD_Issue), pinned to a SPECIFIC shipment schedule.
+	 * (network-gap soft-fail logs an AD_Issue), pinned to a SPECIFIC workstation assignment.
 	 *
-	 * <p>The entry is tied to its originating schedule via the parent {@code AD_EventLog}'s source record
-	 * reference ({@code AD_Table_ID}=M_ShipmentSchedule + {@code Record_ID}=the schedule), which the
+	 * <p>The entry is tied to its originating assignment via the parent {@code AD_EventLog}'s source record
+	 * reference ({@code AD_Table_ID}=M_Picking_Job_Schedule + {@code Record_ID}=the assignment), which the
 	 * {@code DDOrderReplenishmentEventPublisher} sets. This prevents matching a stale Error+AD_Issue entry left
 	 * behind by a previous scenario on a multi-scenario DB run (false-green isolation bug).</p>
 	 *
-	 * <p>Param: the identifier (from {@code M_ShipmentSchedule_StepDefData}) of the schedule that triggered the
-	 * reconcile (required).</p>
+	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment that triggered
+	 * the reconcile (required).</p>
 	 *
 	 * <p>Example:</p>
 	 * <pre>
-	 * And after not more than 10s, an AD_Issue is logged for the replenishment network gap of M_ShipmentSchedule shipmentSchedule
+	 * And after not more than 10s, an AD_Issue is logged for the replenishment network gap of M_Picking_Job_Schedule jobSchedule
 	 * </pre>
 	 */
-	@Then("^after not more than (.*)s, an AD_Issue is logged for the replenishment network gap of M_ShipmentSchedule (.*)$")
-	public void assert_reconcile_AD_Issue_logged(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	@Then("^after not more than (.*)s, an AD_Issue is logged for the replenishment network gap of M_Picking_Job_Schedule (.*)$")
+	public void assert_reconcile_AD_Issue_logged(final int timeoutSec, @NonNull final String pickingJobScheduleIdentifier) throws InterruptedException
 	{
-		final int shipmentScheduleId = shipmentScheduleTable.get(shipmentScheduleIdentifier).getM_ShipmentSchedule_ID();
+		final int pickingJobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier).getRepoId();
 
 		final Supplier<Boolean> issueLogged = () -> queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
 				.addEqualsFilter(I_AD_EventLog_Entry.COLUMNNAME_Classname, REPLENISHMENT_HANDLER_CLASSNAME)
@@ -333,7 +294,7 @@ public class DDOrderPickingReplenishment_StepDef
 				.addInSubQueryFilter(
 						I_AD_EventLog_Entry.COLUMNNAME_AD_EventLog_ID,
 						I_AD_EventLog.COLUMNNAME_AD_EventLog_ID,
-						eventLogsForSchedule(shipmentScheduleId))
+						eventLogsForPickingJobSchedule(pickingJobScheduleId))
 				.create()
 				.anyMatch();
 

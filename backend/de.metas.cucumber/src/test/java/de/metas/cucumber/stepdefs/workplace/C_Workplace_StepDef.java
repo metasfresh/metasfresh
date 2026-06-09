@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.workplace;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
@@ -41,6 +42,7 @@ public class C_Workplace_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
     @NonNull private final Carrier_Product_StepDefData carrierProductTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 
 	@Given("metasfresh contains C_Workplaces")
 	public void createWorkplaces(final DataTable dataTable)
@@ -58,6 +60,10 @@ public class C_Workplace_StepDef
 		final WorkplaceCreateRequest.WorkplaceCreateRequestBuilder builder = WorkplaceCreateRequest.builder()
 				.name(name)
 				.warehouseId(warehouseId);
+
+		row.getAsOptionalIdentifier(I_C_Workplace.COLUMNNAME_PickFrom_Locator_ID)
+				.map(locatorTable::getId)
+				.ifPresent(builder::pickFromLocatorId);
 
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_MaxPickingJobs).ifPresent(builder::maxPickingJobs);
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_SeqNo).ifPresent(seqNo -> builder.seqNo(SeqNo.ofInt(seqNo)));

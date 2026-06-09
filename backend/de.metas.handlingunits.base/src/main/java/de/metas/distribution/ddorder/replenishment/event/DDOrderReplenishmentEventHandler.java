@@ -7,19 +7,18 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.log.EventLogUserService;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.util.Properties;
 
@@ -44,29 +43,30 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 	{
 		try (final IAutoCloseable ignored = switchCtx(event))
 		{
-			final ShipmentScheduleId scheduleId = extractShipmentScheduleId(event);
+			final PickingJobScheduleId pickingJobScheduleId = extractPickingJobScheduleId(event);
 
 			eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 					.handlerClass(DDOrderReplenishmentEventHandler.class)
-					.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId)))
+					.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(pickingJobScheduleId)))
 					.build());
 		}
 	}
 
-	private static @NonNull ShipmentScheduleId extractShipmentScheduleId(final @NonNull Event event)
+	private static @NonNull PickingJobScheduleId extractPickingJobScheduleId(final @NonNull Event event)
 	{
-		return ShipmentScheduleId.ofRepoId(event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_shipmentScheduleId, -1));
+		return PickingJobScheduleId.ofRepoId(event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_pickingJobScheduleId, -1));
 	}
 
-	private static @NonNull ClientAndOrgId extractClientAndOrgId(final @NonNull Event event)
+	@Nullable
+	private static ClientAndOrgId extractClientAndOrgId(final @NonNull Event event)
 	{
 		final int adClientId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Client_ID, -1);
 		final int adOrgId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Org_ID, -1);
+		// On afterDelete the assignment row is already gone, so the publisher could not resolve its client/org.
+		// Fall through with no context switch in that case; the reconcile (VOID path) does not need a client/org.
 		if (adClientId <= 0 || adOrgId < 0)
 		{
-			throw new AdempiereException(StringUtils.formatMessage(
-					"DD_Order replenishment event is missing AD_Client_ID/AD_Org_ID (old publisher?): clientId={0}, orgId={1}",
-					adClientId, adOrgId));
+			return null;
 		}
 
 		return ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId);
@@ -75,7 +75,11 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 	private IAutoCloseable switchCtx(final @NonNull Event event)
 	{
 		final Properties ctx = Env.newTemporaryCtx();
-		Env.setClientAndOrgId(ctx, extractClientAndOrgId(event));
+		final ClientAndOrgId clientAndOrgId = extractClientAndOrgId(event);
+		if (clientAndOrgId != null)
+		{
+			Env.setClientAndOrgId(ctx, clientAndOrgId);
+		}
 		return Env.switchContext(ctx);
 	}
 

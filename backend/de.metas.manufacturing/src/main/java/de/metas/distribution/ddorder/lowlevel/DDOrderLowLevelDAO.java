@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternativ
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -113,6 +114,23 @@ public class DDOrderLowLevelDAO
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.firstOptional(I_DD_Order.class)
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Returns the ID of the first active (Completed) DD_Order linked to the given workstation assignment
+	 * ({@code M_Picking_Job_Schedule}), or empty if none exists.
+	 */
+	public Optional<DDOrderId> findActiveDDOrderForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)

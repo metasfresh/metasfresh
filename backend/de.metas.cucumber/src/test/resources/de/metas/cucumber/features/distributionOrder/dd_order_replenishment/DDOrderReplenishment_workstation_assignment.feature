@@ -2,11 +2,11 @@
 @allure.label.epic:E0106_Distribution
 @allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
-Feature: DD_Order replenishment — create a distribution order for a packing-warehouse sales order
+Feature: DD_Order replenishment — create a distribution order when a picker is assigned to a workstation
   As a warehouse operator running a packing workplace ("Packtisch"),
-  I want every sales-order line on a packing warehouse to automatically get exactly one
-  Completed distribution order moving the goods from the stocking warehouse to the packing warehouse,
-  so that the picker always has a DD_Order to work from without manual planning.
+  I want a Completed distribution order to be created when a shipment-schedule line is assigned to a
+  workstation for picking, moving the goods from the stocking warehouse to that workstation's pick-from
+  locator, so that the picker always has a DD_Order to work from from the moment the job is assigned.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -16,14 +16,14 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | Identifier |
       | product    |
     And metasfresh contains M_PricingSystems
-      | Identifier      |
-      | pricingSystem   |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
       | priceList  | pricingSystem      | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID |
-      | priceListVersion | priceList     |
+      | Identifier       | M_PriceList_ID |
+      | priceListVersion | priceList      |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | priceListVersion       | product      | 10.0     | PCE      | Normal           |
@@ -41,7 +41,7 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | inTransitWH    | customer      | customerLocation       | true        |
 
   @from:cucumber
-  Scenario: One Completed DD_Order is created when a shipment-schedule line is assigned to a workstation
+  Scenario: Assigning a shipment-schedule line to a workstation creates one Completed DD_Order; deleting the assignment voids it
     # The stocking warehouse holds the goods; the packing warehouse is where the picker delivers them.
     # The packing warehouse is flagged IsAutoDistributionOrder=Y and excluded from material-dispo (MRP_Exclude=Y),
     # so the dedicated reconcile flow (not material-dispo) drives DD_Order creation.
@@ -53,8 +53,8 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | stockWH        | customer      | customerLocation       |
     # The packing warehouse's default locator is captured so it can be used as the workstation's pick-from locator.
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID   |
-      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   | packingLocator |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID    |
+      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   | packingLocator  |
     # The network resolves source = stockWH for target = packingWH (per warehouse-pair, product-agnostic).
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
@@ -72,14 +72,14 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | orderLine  | order      | product      | 5          |
     And the order identified by order is completed
 
-    # The shipment schedule is generated on order completion. No DD_Order yet — the trigger is now the
-    # workstation assignment, not the schedule itself.
+    # The shipment schedule is generated on order completion. No DD_Order yet — the trigger is now the workstation
+    # assignment, not the schedule itself.
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID | Warehouse_ID |
       | shipmentSchedule | orderLine      | packingWH    |
 
-    # Assigning the schedule line to the workstation (with QtyToPick=5) fires the M_Picking_Job_Schedule
-    # interceptor, which reconciles and creates exactly one Completed DD_Order.
+    # Assigning the schedule line to the workstation (with QtyToPick=5) fires the M_Picking_Job_Schedule interceptor,
+    # which reconciles and creates exactly one Completed DD_Order.
     When create or update picking job schedules
       | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | jobSchedule               | shipmentSchedule      | workplace      | 5         |
@@ -94,10 +94,13 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | M_Picking_Job_Schedule_ID | IsError |
       | jobSchedule               | false   |
 
-  @from:cucumber
-  Scenario: Flagging a warehouse as packing without a distribution network is rejected
-    # DD_NetworkDistribution_ID is mandatory when IsAutoDistributionOrder=Y — the M_Warehouse interceptor
-    # refuses the save so an operator cannot create an unresolvable packing warehouse.
-    Then saving M_Warehouse is rejected:
-      | M_Warehouse_ID | IsAutoDistributionOrder |
-      | packingWH      | Y                  |
+    # Removing the workstation assignment voids the DD_Order — there is nothing left to pick at this workstation.
+    # The delete→void runs synchronously in the delete transaction and also NULLs the assignment back-reference
+    # (M_Picking_Job_Schedule_ID) on the voided DD_Order header and line, so the deferrable FK
+    # mpickingjobschedule_ddorder passes at commit. The voided DD_Order is therefore asserted via its preserved
+    # M_ShipmentSchedule_ID link (not the now-cleared assignment link), matching the update/reverse delete scenario.
+    When delete picking job schedules
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+    Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
+    And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule

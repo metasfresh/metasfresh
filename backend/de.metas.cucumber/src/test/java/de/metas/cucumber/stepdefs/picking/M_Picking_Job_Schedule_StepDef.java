@@ -35,7 +35,7 @@ public class M_Picking_Job_Schedule_StepDef
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	// @NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
+	@NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
 
@@ -59,6 +59,105 @@ public class M_Picking_Job_Schedule_StepDef
 						.qtyToPickBD(row.getAsBigDecimal(I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick))
 						.build()
 		);
+
+		// Store the just-created/updated assignment under its row identifier so later steps can reference it.
+		row.getAsOptionalIdentifier().ifPresent(identifier -> {
+			final PickingJobSchedule jobSchedule = pickingJobScheduleService.stream(PickingJobScheduleQuery.builder()
+							.onlyShipmentScheduleId(shipmentScheduleId)
+							.workplaceId(workplaceId)
+							.build())
+					.findFirst()
+					.orElseThrow(() -> new RuntimeException("No M_Picking_Job_Schedule found for shipmentScheduleId=" + shipmentScheduleId + ", workplaceId=" + workplaceId));
+			jobScheduleTable.putOrReplace(identifier, jobSchedule);
+		});
+	}
+
+	/**
+	 * @cucumber.stepdef Changes an existing workstation assignment's {@code QtyToPick} in place (keyed by the
+	 * assignment's stored identifier), so the {@code M_Picking_Job_Schedule} interceptor fires
+	 * ({@code beforeChange} picker-busy guard + {@code afterChange} after-commit reconcile). On a packing
+	 * warehouse with no busy picker the reconcile voids the old DD_Order and recreates a fresh one with the new
+	 * quantity (single-locator RECREATE); {@code QtyToPick=0} downgrades to a VOID with no replacement.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment to change</li>
+	 *   <li>{@code QtyToPick} — the new quantity</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * When the picking job schedule quantity is changed:
+	 *   | M_Picking_Job_Schedule_ID | QtyToPick |
+	 *   | jobSchedule               | 8         |
+	 * </pre>
+	 */
+	@And("^the picking job schedule quantity is changed:$")
+	public void changeQty(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::changeQty);
+	}
+
+	private void changeQty(final DataTableRow row)
+	{
+		updateQtyInPlace(row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable),
+				row.getAsBigDecimal(I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick));
+	}
+
+	/**
+	 * @cucumber.stepdef Attempts to change an existing assignment's {@code QtyToPick} and asserts the
+	 * {@code beforeChange} interceptor REJECTS the save (the picker-busy guard). Asserts the thrown exception is
+	 * an {@link org.adempiere.exceptions.AdempiereException} carrying the German picker-busy AD_Message text
+	 * "Kommissionierung läuft bereits". The assignment is reloaded and asserted unchanged.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment</li>
+	 *   <li>{@code QtyToPick} — the attempted new quantity</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * Then changing the picking job schedule quantity is rejected:
+	 *   | M_Picking_Job_Schedule_ID | QtyToPick |
+	 *   | jobSchedule               | 8         |
+	 * </pre>
+	 */
+	@And("^changing the picking job schedule quantity is rejected:$")
+	public void changeQtyIsRejected(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::changeQtyIsRejected);
+	}
+
+	private void changeQtyIsRejected(final DataTableRow row)
+	{
+		final PickingJobSchedule jobSchedule = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable);
+		final PickingJobScheduleId jobScheduleId = jobSchedule.getId();
+		final BigDecimal originalQty = pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal();
+		final BigDecimal newQty = row.getAsBigDecimal(I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick);
+
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> updateQtyInPlace(jobSchedule, newQty))
+				.as("Changing the assignment while the picker is busy must be rejected by the beforeChange interceptor")
+				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
+				.hasMessageContaining("Kommissionierung läuft bereits");
+
+		// Reload and assert the persisted QtyToPick is unchanged (the rolled-back save left no mark).
+		org.assertj.core.api.Assertions.assertThat(pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal())
+				.as("M_Picking_Job_Schedule.QtyToPick must be unchanged after the rejected save")
+				.isEqualByComparingTo(originalQty);
+	}
+
+	/**
+	 * Updates an existing assignment's QtyToPick in place by passing its {@link PickingJobScheduleId} (not just
+	 * the shipment-schedule id) into {@code createOrUpdate}, so the command takes the UPDATE branch
+	 * ({@code updateByIds}) rather than creating a second assignment.
+	 */
+	private void updateQtyInPlace(@NonNull final PickingJobSchedule jobSchedule, @NonNull final BigDecimal newQtyToPick)
+	{
+		pickingJobScheduleService.createOrUpdate(
+				CreateOrUpdatePickingJobSchedulesRequest.builder()
+						.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(jobSchedule.getShipmentScheduleAndJobScheduleId()))
+						.workplaceId(jobSchedule.getWorkplaceId())
+						.qtyToPickBD(newQtyToPick)
+						.build());
 	}
 
 	@And("^delete picking job schedules$")
