@@ -70,12 +70,14 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 		repo = ExternalSystemExportStatusRepository.newInstanceForUnitTesting();
 		exportStatusService = ExternalSystemExportStatusService.newInstanceForUnitTesting();
 
-		// Service is constructed with the real exportStatusService; repo and endpoint dependencies
-		// are mocked because recordCompleteTimeEligibilityStatusesOnly does not call them.
+		// Service is constructed with the real exportStatusService; audit/config repo and endpoint
+		// dependencies are mocked because recordCompleteTimeEligibilityStatusesOnly does not call them.
 		service = new ExternalSystemScriptedExportConversionService(
 				exportStatusService,
 				Mockito.mock(ExternalSystemScriptedExportConversionRepository.class),
-				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class));
+				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class),
+				Mockito.mock(de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.class),
+				Mockito.mock(de.metas.externalsystem.ExternalSystemConfigRepo.class));
 	}
 
 	// -----------------------------------------------------------------------
@@ -282,7 +284,9 @@ public class ExternalSystemScriptedExportConversionServiceCompleteTimeTest
 		final ExternalSystemScriptedExportConversionService serviceWithSpy = new ExternalSystemScriptedExportConversionService(
 				spyExportStatusService,
 				Mockito.mock(ExternalSystemScriptedExportConversionRepository.class),
-				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class));
+				Mockito.mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class),
+				Mockito.mock(de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.class),
+				Mockito.mock(de.metas.externalsystem.ExternalSystemConfigRepo.class));
 
 		// Must not throw even though the first config causes a status-write failure
 		serviceWithSpy.recordCompleteTimeEligibilityStatusesOnly(

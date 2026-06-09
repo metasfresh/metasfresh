@@ -28,17 +28,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.audit.CreateExportAuditRequest;
+import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -49,6 +57,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -93,6 +102,8 @@ public class ExternalSystemScriptedExportConversionService
 
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
+	@NonNull private final ExternalSystemExportAuditRepo exportAuditRepo;
+	@NonNull private final ExternalSystemConfigRepo externalSystemConfigRepo;
 
 	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
@@ -435,6 +446,7 @@ public class ExternalSystemScriptedExportConversionService
 			{
 				// (b) Enqueued — successfully dispatched to RabbitMQ
 				exportStatusService.markEnqueued(config.getId(), sourceRecord, processInfo.getPinstanceId());
+				writeExportAudit(config, sourceRecord, processInfo.getPinstanceId());
 			}
 			else
 			{
@@ -467,5 +479,49 @@ public class ExternalSystemScriptedExportConversionService
 		return externalSystemScriptedExportConversionRepository.getByParentConfigId(parentConfigId).stream()
 				.filter(config -> config.isMatching(tableAndClientId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Writes one {@code ExternalSystem_ExportAudit} row for a successfully enqueued send.
+	 *
+	 * <p>The audit row carries the pinstance that was returned by the enqueue step, the source
+	 * record reference, and the external-system type resolved from the config's parent.
+	 * Both the status row (written by {@link ExternalSystemExportStatusService#markEnqueued}) and
+	 * this audit row carry the same {@code pInstanceId}, establishing the correlation between the
+	 * two tables.
+	 *
+	 * <p>Separated into its own method so the audit write can be exercised in a unit test without
+	 * driving the full ProcessInfo/DB send path.
+	 *
+	 * <p>A failure to write the audit row is logged and swallowed so that a non-critical audit
+	 * failure never rolls back the enqueue.
+	 */
+	/* package-private for testing */ void writeExportAudit(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			@NonNull final TableRecordReference sourceRecord,
+			@NonNull final PInstanceId pInstanceId)
+	{
+		try
+		{
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(
+					externalSystemConfigRepo.getParentTypeById(config.getParentId()));
+
+			final UserId exportUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
+			final RoleId exportRoleId = Env.getLoggedRoleIdIfExists(getCtx()).orElse(RoleId.SYSTEM);
+
+			exportAuditRepo.createESExportAudit(CreateExportAuditRequest.builder()
+					.tableRecordReference(sourceRecord)
+					.exportTime(SystemTime.asInstant())
+					.exportUserId(exportUserId)
+					.exportRoleId(exportRoleId)
+					.externalSystemType(externalSystemType)
+					.pInstanceId(pInstanceId)
+					.build());
+		}
+		catch (final Exception e)
+		{
+			log.warn("Failed to write export audit for config={}, sourceRecord={}, pInstanceId={} — continuing",
+					config.getId(), sourceRecord, pInstanceId, e);
+		}
 	}
 }
