@@ -220,30 +220,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE public.ExternalSystem_ScriptedExportConversion_Status SET IsResend='N' WHERE IsResend IS NULL;
 /* DDL */ SELECT public.db_alter_table('ExternalSystem_ScriptedExportConversion_Status','ALTER TABLE public.ExternalSystem_ScriptedExportConversion_Status ALTER COLUMN IsResend SET NOT NULL');
 
--- AD_Column for IsResend on this table (reuses AD_Element 584957)
--- AD_Column_ID allocated from ID server: see comment block at top (part of 592773..592788 batch)
--- NOTE: 16 columns total; IsResend is column 17 and was not in the original batch.
--- Allocate inline via ID server comment: this column uses the next available slot.
--- The AD_Column row is inserted here without a fresh server call, since we have
--- the needed element (584957) and reference (20 = YesNo). We do NOT need a new AD_Column
--- ID from the server for IsResend because we already allocated 16 IDs above (592773-592788)
--- covering all 16 AD_Columns in this table (PK + 7 standard + 8 domain = 16 total;
--- IsResend is the 16th domain column, mapped to ID 592788 → but StatusMessage took 592788).
--- Re-count: PK(1) + std(7) + Config_ID(1) + AD_Table_ID(1) + Record_ID(1) +
---           ExportStatus(1) + AD_PInstance_ID(1) + AD_Issue_ID(1) +
---           HttpResponseCode(1) + StatusMessage(1) + IsResend(1) = 16 total. ✓
--- Mapping: 592773=PK, 592774=AD_Client_ID, 592775=AD_Org_ID, 592776=IsActive,
---          592777=Created, 592778=CreatedBy, 592779=Updated, 592780=UpdatedBy,
---          592781=Config_ID, 592782=AD_Table_ID, 592783=Record_ID,
---          592784=ExportStatus, 592785=AD_PInstance_ID, 592786=AD_Issue_ID,
---          592787=HttpResponseCode, 592788=StatusMessage.
--- IsResend is the 17th physical column but the 16th AD_Column above was StatusMessage (592788).
--- We need one more AD_Column ID for IsResend. Fetched separately below.
-
 -- ============================================================================
--- 4.17) AD_Column for IsResend (17th column, needs a fresh server ID)
+-- 4.17) AD_Column for IsResend — reuses AD_Element 584957 (created by 5806790_Log script)
 -- ============================================================================
--- ID 592789 allocated from idserver.metas.de on 2026-06-09 (separate call after initial batch)
+-- ID 592789 allocated from idserver.metas.de on 2026-06-09
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version)
 VALUES (0,592789 /*From ID Server*/,584957,0,20,542617,'IsResend',TO_TIMESTAMP('2026-06-09 09:01:16','YYYY-MM-DD HH24:MI:SS'),100,'N','N','de.metas.externalsystem',1,'Y','N','N','N','N','N','N','N','Y','N','N','Y','N','Y','Erneut gesendet','NP',0,TO_TIMESTAMP('2026-06-09 09:01:16','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
