@@ -301,7 +301,7 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getConfigsWithNonSentAttemptBySourceRecord — Error/Invalid-only filter
+	// getResendableConfigsBySourceRecord — Error/Invalid-only filter
 	// -----------------------------------------------------------------------
 
 	/**
@@ -309,7 +309,7 @@ public class ExternalSystemExportStatusServiceTest
 	 * selection, to prevent double-sending a record that is already queued.
 	 */
 	@Test
-	void getConfigsWithNonSentAttempt_excludes_pendingConfig()
+	void getResendableConfigs_excludes_pendingConfig()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
@@ -317,7 +317,7 @@ public class ExternalSystemExportStatusServiceTest
 		service.recordPending(configId, ref); // stays Pending
 
 		final List<ExternalSystemScriptedExportConversionConfigId> result =
-				service.getConfigsWithNonSentAttemptBySourceRecord(ref);
+				service.getResendableConfigsBySourceRecord(ref);
 
 		assertThat(result).isEmpty();
 	}
@@ -326,7 +326,7 @@ public class ExternalSystemExportStatusServiceTest
 	 * A config with an Error status must be returned so the re-send process can retry it.
 	 */
 	@Test
-	void getConfigsWithNonSentAttempt_includes_errorConfig()
+	void getResendableConfigs_includes_errorConfig()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
@@ -337,7 +337,7 @@ public class ExternalSystemExportStatusServiceTest
 		service.markError(pInstanceId, AdIssueId.ofRepoId(99), "connection refused");
 
 		final List<ExternalSystemScriptedExportConversionConfigId> result =
-				service.getConfigsWithNonSentAttemptBySourceRecord(ref);
+				service.getResendableConfigsBySourceRecord(ref);
 
 		assertThat(result).containsExactly(configId);
 	}
@@ -346,7 +346,7 @@ public class ExternalSystemExportStatusServiceTest
 	 * A config with an Invalid status must be returned so the re-send process can retry it.
 	 */
 	@Test
-	void getConfigsWithNonSentAttempt_includes_invalidConfig()
+	void getResendableConfigs_includes_invalidConfig()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
@@ -357,7 +357,7 @@ public class ExternalSystemExportStatusServiceTest
 		service.markInvalid(pInstanceId, "bad data");
 
 		final List<ExternalSystemScriptedExportConversionConfigId> result =
-				service.getConfigsWithNonSentAttemptBySourceRecord(ref);
+				service.getResendableConfigsBySourceRecord(ref);
 
 		assertThat(result).containsExactly(configId);
 	}

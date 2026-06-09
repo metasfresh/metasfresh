@@ -316,10 +316,10 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	@NonNull
-	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
+	public List<ExternalSystemScriptedExportConversionConfigId> getResendableConfigsBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		return exportStatusService.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
+		return exportStatusService.getResendableConfigsBySourceRecord(sourceRecord);
 	}
 
 	/**

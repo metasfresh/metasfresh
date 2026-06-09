@@ -125,14 +125,14 @@ public class ExternalSystemExportStatusService
 	 * In-flight rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
 	 */
 	@NonNull
-	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
+	public List<ExternalSystemScriptedExportConversionConfigId> getResendableConfigsBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		return repo.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord)
+		return repo.getLatestBySourceRecord(sourceRecord)
 				.stream()
-				.filter(configId -> repo.getLatestByConfigAndRecord(configId, sourceRecord)
-						.map(s -> s.getStatus().isErrorOrInvalid())
-						.orElse(false))
+				.filter(s -> s.getStatus().isErrorOrInvalid())
+				.map(ScriptedExportConversionStatus::getConfigId)
+				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
 

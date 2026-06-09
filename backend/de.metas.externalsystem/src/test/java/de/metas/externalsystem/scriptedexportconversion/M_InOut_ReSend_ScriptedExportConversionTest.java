@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Covers:
  * <ul>
- *   <li>getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) that have an Error or Invalid status</li>
+ *   <li>repo.getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) with a non-sent attempt (status not Sent/DontSend); the Error/Invalid-only narrowing for re-send is covered at the service layer in ExternalSystemExportStatusServiceTest</li>
  *   <li>recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate row)</li>
  *   <li>multi-config: both configs returned when both have Error or Invalid status</li>
  *   <li>sent-only: config not returned when latest attempt is Sent</li>

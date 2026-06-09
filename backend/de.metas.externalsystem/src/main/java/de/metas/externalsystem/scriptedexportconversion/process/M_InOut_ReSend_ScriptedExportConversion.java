@@ -62,7 +62,7 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
 
 		final List<ExternalSystemScriptedExportConversionConfigId> configIds =
-				scriptedExportService.getConfigsWithNonSentAttemptBySourceRecord(sourceRecord);
+				scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord);
 
 		int triggered = 0;
 		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)

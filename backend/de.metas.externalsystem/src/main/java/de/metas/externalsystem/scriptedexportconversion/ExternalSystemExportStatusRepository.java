@@ -87,20 +87,6 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
-	 * Inserts a new status row, for callers that explicitly need a fresh row (e.g. re-send
-	 * creates a new row to preserve history).
-	 */
-	@NonNull
-	public ScriptedExportConversionStatus insert(@NonNull final ScriptedExportConversionStatusCreateRequest request)
-	{
-		final I_ExternalSystem_ScriptedExportConversion_Status record =
-				InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class);
-		updateRecord(record, request);
-		InterfaceWrapperHelper.saveRecord(record);
-		return fromRecord(record);
-	}
-
-	/**
 	 * Persists the loaded status identified by its (config, sourceRecord) key.
 	 * No-op (no throw) when no row exists for that key.
 	 */
