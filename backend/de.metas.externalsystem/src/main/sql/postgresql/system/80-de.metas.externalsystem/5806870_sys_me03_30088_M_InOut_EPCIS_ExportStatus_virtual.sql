@@ -65,10 +65,10 @@ VALUES (592790 /*From ID Server*/, 0, 0, 'Y',
   'N', 'N', 'Y' /*IsForceIncludeInGeneratedModel: must be Y so the model generator includes
                   this non-D entity-type column in the base I_M_InOut interface*/,
   'N', 'N',
-  '(SELECT s.ExportStatus FROM ExternalSystem_ScriptedExportConversion_Status s
- WHERE s.AD_Table_ID=319 AND s.Record_ID=M_InOut.M_InOut_ID AND s.IsActive=''Y''
- ORDER BY CASE s.ExportStatus WHEN ''E'' THEN 1 WHEN ''I'' THEN 1 WHEN ''P'' THEN 2 WHEN ''U'' THEN 2 WHEN ''D'' THEN 2 WHEN ''S'' THEN 3 WHEN ''N'' THEN 3 ELSE 4 END, s.Updated DESC
- LIMIT 1)',
+  '(select s.ExportStatus from ExternalSystem_ScriptedExportConversion_Status s
+ where s.AD_Table_ID=319 and s.Record_ID=@JoinTableNameOrAliasIncludingDot@M_InOut_ID and s.IsActive=''Y''
+ order by case s.ExportStatus when ''E'' then 1 when ''I'' then 1 when ''P'' then 2 when ''U'' then 2 when ''D'' then 2 when ''S'' then 3 when ''N'' then 3 else 4 end, s.Updated desc
+ limit 1)',
   'N', 'N' /*IsSyncDatabase=N → virtual, no physical column sync*/)
 ON CONFLICT (AD_Column_ID) DO NOTHING;
 

@@ -506,11 +506,15 @@ INSERT INTO AD_SQLColumn_SourceTableColumn
      AD_Table_ID,
      Created, CreatedBy, IsActive,
      Source_Table_ID,
+     FetchTargetRecordsMethod, SQL_GetTargetRecordIdBySourceRecordId,
      Updated, UpdatedBy)
 VALUES
     (0, 592790 /*M_InOut.EPCIS_ExportStatus virtual column*/, 0, 540199 /*From ID Server*/,
      319 /*M_InOut — host table of the virtual column*/,
      TO_TIMESTAMP('2026-06-09 10:13:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y',
      542617 /*ExternalSystem_ScriptedExportConversion_Status — source of the aggregate*/,
+     -- polymorphic link (source carries AD_Table_ID+Record_ID, no direct FK): use SQL method
+     -- to map a changed status row back to its host M_InOut_ID (its Record_ID, filtered to this table)
+     'S', 'select Record_ID from ExternalSystem_ScriptedExportConversion_Status where ExternalSystem_ScriptedExportConversion_Status_ID=@Record_ID/-1@ and AD_Table_ID=319',
      TO_TIMESTAMP('2026-06-09 10:13:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
