@@ -111,7 +111,9 @@ VALUES (
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID,
                             Created, CreatedBy, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',
-       t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+       t.AD_Client_ID, t.AD_Org_ID,
+       TO_TIMESTAMP('2026-06-09 09:01:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-06-09 09:01:01', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y'
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive = 'Y'
   AND l.IsSystemLanguage = 'Y'
