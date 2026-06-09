@@ -1005,6 +1005,27 @@ public interface I_DD_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_DD_Order.class, "M_Picking_Job_Schedule_ID", null);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
+
+	/**
 	 * Set MRP Allow Cleanup.
 	 * MRP is allowed to remove this document
 	 *
