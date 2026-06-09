@@ -64,6 +64,7 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_PRODUCT_NAME = "ProductName";
 	public static final String ATTRIBUTE_VALUE_PRODUCT_VALUE = "ProductValue";
 	public static final String ATTRIBUTE_VALUE_CUSTOMS_TARIFF = "CustomsTariff";
+	public static final String ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN = "CountryOfOrigin";
 	public static final String ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID = "ShipmentOrderItemId";
 	public static final String ATTRIBUTE_VALUE_UNIT_PRICE = "UnitPrice";
 	public static final String ATTRIBUTE_VALUE_TOTAL_VALUE = "TotalValue";

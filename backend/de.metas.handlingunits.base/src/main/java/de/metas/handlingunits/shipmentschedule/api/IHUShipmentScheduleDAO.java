@@ -45,5 +45,5 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 
 	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(I_M_HU vhu);
 
-	List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(List<I_M_HU> hus);
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull I_M_HU topLevelHU);
 }

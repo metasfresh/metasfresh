@@ -79,7 +79,7 @@ public class CarrierGoodsTypeRepository
 				queryBL.createQueryBuilder(I_Carrier_Goods_Type.class)
 						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_M_Shipper_ID, shipperId)
 						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_ExternalId, externalId)
-						.firstOptional()
+						.firstOnlyOptional()
 						.map(CarrierGoodsTypeRepository::fromRecord)
 						.orElse(null));
 	}
