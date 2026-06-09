@@ -25,10 +25,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_InOut;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -42,7 +40,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
@@ -60,14 +57,19 @@ class AssertHUExpectationsCommand
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 
 	/**
-	 * How long to poll for async-generated shipment line assignments before failing.
+	 * How long to poll for the async-generated shipment-line assignment before failing.
 	 * Shipment generation runs in a background workpackage (PickingShipmentService uses
-	 * {@code waitForShipments(false)}), so the M_HU_Assignment linking the packed HU to its
-	 * shipment line only appears once that workpackage completes. Locally this is a few seconds,
-	 * but under loaded CI the workpackage queue can back up well past a minute — hence the
-	 * generous ceiling (a too-short value caused the mass-printing CREATE_* specs to flake on CI).
+	 * {@code waitForShipments(false)}), so the {@code M_HU_Assignment} linking the packed HU to its
+	 * shipment line only appears once that workpackage commits. Each poll iteration reads the
+	 * assignment in a FRESH transaction (see
+	 * {@link AssertExpectationsCommandServices#getSalesShipmentLinesForHUInTrx(HuId)}), so it observes
+	 * the committed row immediately — within ~1s of the workpackage finishing. A previous revision
+	 * polled out-of-trx and never saw the committed assignment, then masked it by raising this ceiling
+	 * to 240s — which can never be reached because Playwright kills the test at its 120s cap.
+	 * This ceiling only needs to cover the workpackage's run time and MUST stay below that 120s cap so a
+	 * genuine "shipment never generated" failure fails here with a clear message, not as a test timeout.
 	 */
-	private static final Duration SHIPPED_ASSERTION_TIMEOUT = Duration.ofSeconds(240);
+	private static final Duration SHIPPED_ASSERTION_TIMEOUT = Duration.ofSeconds(60);
 
 	void execute()
 	{
@@ -418,21 +420,22 @@ class AssertHUExpectationsCommand
 	 * Asserts whether the given HU is (or is not) assigned to a sales-shipment line.
 	 *
 	 * <p>When {@code expectedShipped=true}: polls (up to {@link #SHIPPED_ASSERTION_TIMEOUT}) until
-	 * {@link #getSalesShipmentLinesForHU(I_M_HU)} returns at least one line belonging to a
-	 * sales shipment ({@code M_InOut.IsSOTrx=Y}).  Shipment assignment is async, so polling is required.
+	 * {@link AssertExpectationsCommandServices#getSalesShipmentLinesForHUInTrx(HuId)} returns at least one
+	 * line belonging to a sales shipment ({@code M_InOut.IsSOTrx=Y}). Shipment generation is async, so the
+	 * assignment appears only once the background workpackage commits — and each poll iteration reads it in
+	 * a fresh transaction so it sees the committed row immediately (a plain out-of-trx read returns a stale
+	 * cached empty result and would poll forever).
 	 *
-	 * <p>When {@code expectedShipped=false}: a single check is performed (no polling); asserts
-	 * the HU is NOT on any sales-shipment line.
+	 * <p>When {@code expectedShipped=false}: a single fresh in-trx check (no polling); asserts the HU is NOT
+	 * on any sales-shipment line.
 	 */
 	private void assertShipped(@NonNull final HuId huId, final boolean expectedShipped)
 	{
-		final I_M_HU hu = getHUById(huId);
-
 		if (expectedShipped)
 		{
 			// Poll until the HU appears on a sales-shipment line (assignment is async).
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu);
+			List<I_M_InOutLine> salesShipmentLines = services.getSalesShipmentLinesForHUInTrx(huId);
 			while (salesShipmentLines.isEmpty() && stopwatch.elapsed().compareTo(SHIPPED_ASSERTION_TIMEOUT) < 0)
 			{
 				logger.info("Waiting for HU {} to appear on a sales-shipment line (elapsed: {})", huId, stopwatch);
@@ -446,7 +449,7 @@ class AssertHUExpectationsCommand
 					Thread.currentThread().interrupt();
 					throw new AdempiereException("Interrupted while waiting for HU " + huId + " to be shipped", e);
 				}
-				salesShipmentLines = getSalesShipmentLinesForHU(hu);
+				salesShipmentLines = services.getSalesShipmentLinesForHUInTrx(huId);
 			}
 
 			if (salesShipmentLines.isEmpty())
@@ -456,40 +459,13 @@ class AssertHUExpectationsCommand
 		}
 		else
 		{
-			// shipped=false: assert NOT on any sales-shipment line (single check, no poll needed).
-			// Refresh to avoid a stale husCache entry yielding a wrong-clean result.
-			InterfaceWrapperHelper.refresh(hu);
-			final List<I_M_InOutLine> salesShipmentLines = getSalesShipmentLinesForHU(hu);
+			// shipped=false: assert NOT on any sales-shipment line. The in-trx read is fresh, so no
+			// stale-cache refresh dance is needed.
+			final List<I_M_InOutLine> salesShipmentLines = services.getSalesShipmentLinesForHUInTrx(huId);
 			assertThat(salesShipmentLines)
 					.as("sales-shipment lines for HU " + huId + " (expected none)")
 					.isEmpty();
 		}
-	}
-
-	/**
-	 * Returns all {@link I_M_InOutLine} records that belong to a <em>sales</em> shipment
-	 * ({@code M_InOut.IsSOTrx=Y}) and are associated with the given HU.
-	 */
-	private List<I_M_InOutLine> getSalesShipmentLinesForHU(@NonNull final I_M_HU hu)
-	{
-		final List<I_M_InOutLine> lines = services.getInOutLinesForHU(hu);
-
-		// Load each distinct M_InOut_ID at most once to avoid redundant DB round-trips
-		// in the hot polling loop (up to 60 iterations × N HUs).
-		// Use a HashMap (not Collectors.toMap) because load() may return null,
-		// and Collectors.toMap throws NPE on null values.
-		final Map<Integer, I_M_InOut> inOutById = new HashMap<>();
-		lines.stream()
-				.map(I_M_InOutLine::getM_InOut_ID)
-				.distinct()
-				.forEach(id -> inOutById.put(id, InterfaceWrapperHelper.load(id, I_M_InOut.class)));
-
-		return lines.stream()
-				.filter(line -> {
-					final I_M_InOut inOut = inOutById.get(line.getM_InOut_ID());
-					return inOut != null && inOut.isSOTrx();
-				})
-				.collect(Collectors.toList());
 	}
 
 }
