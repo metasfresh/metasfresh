@@ -230,14 +230,11 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Exclude schedules fully covered by a draft shipment (QtyToDeliver<=0 AND IsPickQtyOnDraftShipment='Y').
-		if (query.isExcludeFullyOnDraftShipment())
+		// Exclude schedules that have nothing left to pick (QtyToDeliver<=0): the qty is already fully
+		// picked (completed/shipped/on a draft shipment), so there is nothing for the picker to do.
+		if (query.isExcludeNothingToPick())
 		{
-			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-					.setJoinOr()
-					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
-					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsPickQtyOnDraftShipment, false)
-			);
+			queryBuilder.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
 		}
 
 		// Filter: Handover Location
