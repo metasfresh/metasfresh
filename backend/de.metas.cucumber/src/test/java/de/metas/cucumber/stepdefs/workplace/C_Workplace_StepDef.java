@@ -68,7 +68,6 @@ import org.compiere.model.I_C_Workplace_ProductCategory;
 @RequiredArgsConstructor
 public class C_Workplace_StepDef
 {
-	// Spring beans must be fetched via SpringContextHolder — PicoContainer does not inject Spring beans.
 	@NonNull private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
