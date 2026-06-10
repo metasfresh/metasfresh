@@ -246,6 +246,23 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void syncCurrencyFromPriceList(@NonNull final I_C_Order order)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
+		final I_M_PriceList priceList = priceListId != null
+				? Services.get(IPriceListDAO.class).getById(priceListId)
+				: null;
+		if (priceList != null)
+		{
+			order.setC_Currency_ID(priceList.getC_Currency_ID());
+		}
+		else if (order.getC_Currency_ID() <= 0)
+		{
+			order.setC_Currency_ID(Env.getContextAsInt(Env.getCtx(), "#C_Currency_ID"));
+		}
+	}
+
+	@Override
 	public void setPriceList(@NonNull final I_C_Order order)
 	{
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
