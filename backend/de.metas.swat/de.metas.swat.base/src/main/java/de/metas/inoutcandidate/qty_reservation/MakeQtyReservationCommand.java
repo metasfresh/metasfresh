@@ -73,8 +73,15 @@ public class MakeQtyReservationCommand
 	 * row's on-hand stock -- is what lets a planned-supply row (which has zero on-hand stock)
 	 * reserve a non-zero CU quantity.
 	 * <p>
-	 * For an {@link SupplyType#ON_HAND} row the result is capped at the row's on-hand stock
-	 * ({@code qtyStock}); for {@link SupplyType#PLANNED_SUPPLY} it is not capped.
+	 * The result is then capped by up to two upper bounds:
+	 * <ul>
+	 *   <li>on-hand stock — for an {@link SupplyType#ON_HAND} row the result is capped at the row's
+	 *       on-hand {@code qtyStock}; a {@link SupplyType#PLANNED_SUPPLY} row is not stock-capped;</li>
+	 *   <li>remaining ordered qty (OH + PS) — the result is capped at the order line's remaining
+	 *       unreserved ordered qty ({@code QtyOrdered − already-reserved}), so the line's total reserved
+	 *       CU never exceeds {@code QtyOrdered}. If nothing remains, the reservation is rejected with a
+	 *       user-validation error rather than minting a {@code Qty = 0} reservation.</li>
+	 * </ul>
 	 */
 	private Quantity computeQtyCUToReserve()
 	{
@@ -91,6 +98,19 @@ public class MakeQtyReservationCommand
 		{
 			qty = qty.min(rowVO.getQtyStock());
 		}
+
+		// Order-need cap (OH + PS): never reserve more CU than the order line still needs, so the
+		// line's TOTAL reserved CU never exceeds its QtyOrdered. The bound is the line's REMAINING
+		// unreserved ordered qty (QtyOrdered − already-reserved), which supports multiple reservations
+		// per line. The cockpit's reservable-TU count is bounded only by available stock, not by the
+		// order's need, so this bound must be enforced here at creation.
+		final Quantity remainingOrdered = qtyReservationService.computeRemainingOrderedQty(salesOrderAndLineId, stockUomId);
+		if (remainingOrdered.signum() <= 0)
+		{
+			throw new AdempiereException("Cannot reserve: the sales order line is already fully reserved")
+					.markAsUserValidationError();
+		}
+		qty = qty.min(remainingOrdered);
 
 		return qty;
 	}
