@@ -71,6 +71,7 @@ import java.util.Optional;
 public class DDOrderPickingReplenishmentService
 {
 	private static final AdMessageKey MSG_DDOrderPickingReplenishment_PickerBusy = AdMessageKey.of("DDOrderPickingReconcile_PickerBusy");
+	private static final AdMessageKey MSG_DDOrderPickingReplenishment_MovementStarted = AdMessageKey.of("DDOrderPickingReconcile_MovementStarted");
 	private static final AdMessageKey MSG_DDOrderPickingReplenishment_NetworkGap = AdMessageKey.of("DDOrderPickingReconcile_NetworkGap");
 	private static final AdMessageKey MSG_DDOrderPickingReplenishment_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
 	@VisibleForTesting
@@ -113,6 +114,13 @@ public class DDOrderPickingReplenishmentService
 			if (isPickerBusy(ddOrderId))
 			{
 				throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, ddOrderId);
+			}
+			for (final I_DD_OrderLine line : ddOrderLowLevelDAO.retrieveLines(ddOrder))
+			{
+				if (line.getQtyInTransit().signum() > 0 || line.getQtyDelivered().signum() > 0)
+				{
+					throw new AdempiereException(MSG_DDOrderPickingReplenishment_MovementStarted, ddOrderId);
+				}
 			}
 		}
 	}
