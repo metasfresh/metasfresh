@@ -143,6 +143,15 @@ public class MobileUIPickingUserProfile_StepDef
 	@And("set per-customer mobile UI shipment policy:")
 	public void setPerCustomerShipmentPolicy(@NonNull final DataTable dataTable)
 	{
+		// Capture on first change so @After restoreProfile() can restore the original profile.
+		// MUST mirror the guard in updateProfile(): this step also mutates the profile (adds
+		// per-customer configs), so without capturing here a scenario that calls only this step
+		// would leak its mutation into later scenarios.
+		if (profileBeforeScenario == null)
+		{
+			profileBeforeScenario = profileService.getProfile();
+		}
+
 		// Snapshot the profile's current default options before the loop — all per-customer
 		// job records copy the profile's boolean flags from here, overriding only CreateShipmentPolicy.
 		// This is necessary because PickingJobOptions.fallbackTo() only falls back for a few structured
