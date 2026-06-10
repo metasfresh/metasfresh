@@ -11,7 +11,6 @@
 
 -- ==============================================================================================
 -- M_InOut_Export_EDI_DESADV_JSON_V
--- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/desadv_json/M_InOut_Export_EDI_DESADV_JSON_V.sql
 -- ==============================================================================================
 
 DROP VIEW IF EXISTS m_inout_export_edi_desadv_json_v$new;
