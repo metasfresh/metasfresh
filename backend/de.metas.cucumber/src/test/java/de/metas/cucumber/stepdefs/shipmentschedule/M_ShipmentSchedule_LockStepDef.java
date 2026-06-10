@@ -38,22 +38,19 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class M_ShipmentSchedule_LockStepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final ShipmentScheduleLockRepository lockRepository = SpringContextHolder.instance.getBean(ShipmentScheduleLockRepository.class);
 
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
-
-	public M_ShipmentSchedule_LockStepDef(final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
-	{
-		this.shipmentScheduleTable = shipmentScheduleTable;
-	}
+	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	/**
 	 * Creates a PICKING lock on the given shipment schedule(s) on behalf of the specified user.
@@ -92,6 +89,23 @@ public class M_ShipmentSchedule_LockStepDef
 		});
 	}
 
+	/**
+	 * Asserts whether a PICKING lock exists (or does not exist) for the given shipment schedule and user.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule</li>
+	 *   <li>{@code Login} — login of the user expected to hold (or not hold) the lock</li>
+	 *   <li>{@code Exists} — {@code true} if the lock is expected to exist; {@code false} if it should be absent</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then validate M_ShipmentSchedule_Lock record for:
+	 *   | M_ShipmentSchedule_ID | Login   | Exists |
+	 *   | sched1                | picker2 | true   |
+	 * </pre>
+	 */
 	@Then("validate M_ShipmentSchedule_Lock record for:")
 	public void validateLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
