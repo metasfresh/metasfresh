@@ -166,7 +166,7 @@ final class OrderLinePriceCalculator
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
-		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
+		orderLine.setC_Currency_ID(orderLine.getC_Order().getC_Currency_ID());
 		orderLine.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 
 		orderLine.setIsCampaignPrice(pricingResult.isCampaignPrice());
