@@ -23,6 +23,7 @@
 package de.metas.common.delivery.v1.json.request;
 
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -75,5 +76,46 @@ class JsonDeliveryAdvisorRequestItemTest
 				.build();
 
 		assertThat(withoutCountry.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN)).isEmpty();
+	}
+
+	@Test
+	void getValue_packageDimensions_present()
+	{
+		final JsonDeliveryAdvisorRequestItem item = JsonDeliveryAdvisorRequestItem.builder()
+				.numberOfItems(1)
+				.grossWeightKg(BigDecimal.ONE)
+				.productName("Prod")
+				.productValue("P-1")
+				.packageDimensions(JsonPackageDimensions.builder()
+						.lengthInCM(60)
+						.widthInCM(40)
+						.heightInCM(30)
+						.build())
+				.build();
+
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM)).contains("60");
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_MM)).contains("600");
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_CM)).contains("40");
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_MM)).contains("400");
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_CM)).contains("30");
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_MM)).contains("300");
+	}
+
+	@Test
+	void getValue_packageDimensions_null()
+	{
+		final JsonDeliveryAdvisorRequestItem item = JsonDeliveryAdvisorRequestItem.builder()
+				.numberOfItems(1)
+				.grossWeightKg(BigDecimal.ONE)
+				.productName("Prod")
+				.productValue("P-1")
+				.build();
+
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM)).isEmpty();
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_MM)).isEmpty();
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_CM)).isEmpty();
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_MM)).isEmpty();
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_CM)).isEmpty();
+		assertThat(item.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_MM)).isEmpty();
 	}
 }

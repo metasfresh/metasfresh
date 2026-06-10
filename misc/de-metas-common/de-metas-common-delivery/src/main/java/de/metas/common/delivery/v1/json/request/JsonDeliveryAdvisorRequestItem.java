@@ -62,6 +62,18 @@ public class JsonDeliveryAdvisorRequestItem
 				return Optional.ofNullable(topLevelType);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
 				return Optional.ofNullable(countryOfOrigin);
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM:
+				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getLengthInCM())) : Optional.empty();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_MM:
+				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getLengthInCM() * 10)) : Optional.empty();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_CM:
+				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getWidthInCM())) : Optional.empty();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_MM:
+				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getWidthInCM() * 10)) : Optional.empty();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_CM:
+				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getHeightInCM())) : Optional.empty();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_MM:
+				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getHeightInCM() * 10)) : Optional.empty();
 			default:
 				return Optional.empty();
 		}
