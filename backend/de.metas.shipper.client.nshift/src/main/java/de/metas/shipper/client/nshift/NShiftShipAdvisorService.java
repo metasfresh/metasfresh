@@ -155,7 +155,7 @@ public class NShiftShipAdvisorService
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
 			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
 			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(1); // on advice, it's always 1, as we combine the dimensions via @link de.metas.product.PackageDimensions.ofProductDimensionsAndQty()
+			lineBuilder.number(1); // always 1: the item represents a single physical HU or a per-unit product baseline
 			lineBuilder.length(lengthMM);
 			lineBuilder.width(widthMM);
 			lineBuilder.height(heightMM);
