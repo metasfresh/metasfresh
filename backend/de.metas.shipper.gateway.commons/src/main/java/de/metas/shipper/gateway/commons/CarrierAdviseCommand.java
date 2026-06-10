@@ -195,6 +195,17 @@ public class CarrierAdviseCommand
 
 	private JsonDeliveryAdvisorRequest createAdvisorRequest(@NonNull final ShipperId shipperId, @NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
 	{
+		final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder requestBuilder = JsonDeliveryAdvisorRequest.builder()
+				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule));
+		return applyAdvisorContext(requestBuilder, shipperId, shipmentSchedule, client).build();
+	}
+
+	private JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder applyAdvisorContext(
+			@NonNull final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder builder,
+			@NonNull final ShipperId shipperId,
+			@NonNull final ShipmentSchedule shipmentSchedule,
+			@NonNull final ShipperGatewayClient client)
+	{
 		if (shipmentSchedule.getDateOrdered() == null)
 		{
 			throw new AdempiereException("shipmentSchedule.dateOrdered is null");
@@ -215,34 +226,32 @@ public class CarrierAdviseCommand
 				.ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_DEFAULT_CONTACT)
 				.build());
 
-		final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder requestBuilder = JsonDeliveryAdvisorRequest.builder()
-				.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
+		builder.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()).toString())
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()).toString())
 				.pickupAddress(getJsonAddress(pickupFromBPartner, pickupFromBPLocation))
 				.pickupContact(getJsonContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.deliveryAddress(getJsonAddress(deliverToBPartner, deliverToBPLocation))
-				.deliveryContact(getJsonContact(deliverToBPartner, deliverToBPLocation, deliverToContact))
-				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule));
+				.deliveryContact(getJsonContact(deliverToBPartner, deliverToBPLocation, deliverToContact));
 
 		@Nullable ExternalSystemId externalSystemId = null;
 		final OrderAndLineId orderAndLineId = shipmentSchedule.getOrderAndLineId();
 		if (orderAndLineId != null)
 		{
 			final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
-			requestBuilder.customerReference(order.getPOReference());
+			builder.customerReference(order.getPOReference());
 
 			final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
 			if (incotermsId != null)
 			{
 				final Incoterms incoterms = incotermsRepository.getById(incotermsId);
-				requestBuilder.incotermsValue(incoterms.getValue());
+				builder.incotermsValue(incoterms.getValue());
 			}
 
 			externalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
 			if (externalSystemId != null)
 			{
-				requestBuilder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
+				builder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
 			}
 		}
 
@@ -252,13 +261,13 @@ public class CarrierAdviseCommand
 		final JsonShipperConfig effectiveShipperConfig = client.getJsonShipperConfigEffective(shipperConfigRequest);
 		if (effectiveShipperConfig != null)
 		{
-			requestBuilder.shipperConfig(effectiveShipperConfig);
+			builder.shipperConfig(effectiveShipperConfig);
 		}
 
 		final ShipperMappingConfigList mappingConfigs = shipperMappingConfigRepository.getByShipperId(shipperId);
-		requestBuilder.mappingConfigs(jsonShipperConverter.toJsonMappingConfigList(mappingConfigs));
+		builder.mappingConfigs(jsonShipperConverter.toJsonMappingConfigList(mappingConfigs));
 
-		return requestBuilder.build();
+		return builder;
 	}
 
 	@NonNull
