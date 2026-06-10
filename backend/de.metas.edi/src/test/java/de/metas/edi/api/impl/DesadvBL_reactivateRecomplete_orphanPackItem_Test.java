@@ -5,14 +5,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
-import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
-import de.metas.edi.sscc18.IPrintableDesadvLineSSCC18Labels;
-import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
-import lombok.NonNull;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
+import de.metas.edi.sscc18.IPrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
@@ -21,6 +19,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -41,6 +40,7 @@ import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -281,7 +281,7 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 			public I_EDI_DesadvLine getEDI_DesadvLine() { return desadvLine; }
 
 			@Override
-			public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getTuPIItemProduct() { return huPIItemProductRecord; }
+			public I_M_HU_PI_Item_Product getTuPIItemProduct() { return huPIItemProductRecord; }
 
 			@Override
 			public Integer getLineNo() { return 10; }
