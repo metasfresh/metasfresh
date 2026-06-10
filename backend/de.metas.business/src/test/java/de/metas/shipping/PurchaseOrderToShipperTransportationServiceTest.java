@@ -513,7 +513,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("PartnerSkipSome", "addressSkipSome");
 		final OrderId orderId = createOrder(bpartnerAndLocation);
 
-		final I_C_OrderLine line1 = createOrderLine(
+		createOrderLine(
 				orderId,
 				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
 				Money.of(10, chf)
