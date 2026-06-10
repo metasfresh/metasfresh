@@ -42,24 +42,20 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.Instant;
 
 /**
  * Obtains and caches OAuth2 access tokens via the resource-owner-password grant (grant_type=password).
  * <p>
- * Mirrors {@code OAuthTokenManager} in structure: Guava cache, RestTemplate, same cache TTL strategy.
+ * Mirrors {@code OAuthTokenManager} in structure: Guava cache, RestTemplate, 24 h expireAfterAccess TTL.
  * Differences: uses {@code application/x-www-form-urlencoded} form POST and reads {@code access_token}
- * from the response, honouring {@code expires_in} when present (with a safety margin).
+ * from the response (the {@code expires_in} field in the response is not used; cache TTL is fixed).
  */
 @Component
 public class OAuth2TokenManager
 {
 	private static final Logger log = LoggerFactory.getLogger(OAuth2TokenManager.class);
 
-	/** Safety margin subtracted from {@code expires_in} to avoid using a token right as it expires. */
-	private static final Duration EXPIRY_SAFETY_MARGIN = Duration.ofSeconds(30);
-
-	/** Fallback TTL used when the server does not return {@code expires_in}. Mirrors the legacy manager's 24 h. */
+	/** Cache TTL. Mirrors the legacy manager's 24 h expireAfterAccess strategy. */
 	private static final Duration DEFAULT_EXPIRING_DURATION = Duration.ofHours(24);
 
 	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
