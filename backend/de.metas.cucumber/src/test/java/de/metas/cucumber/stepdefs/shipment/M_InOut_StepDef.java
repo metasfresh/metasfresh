@@ -49,6 +49,7 @@ import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.tourplanning.M_Tour_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
@@ -146,6 +147,7 @@ public class M_InOut_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final M_Tour_StepDefData tourTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -503,6 +505,35 @@ public class M_InOut_StepDef
 			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 			inoutTable.putOrReplace(shipmentIdentifier, shipment);
 		}
+	}
+
+	/**
+	 * Updates existing {@link I_M_InOut} records (e.g. to set a non-quantity field before reactivation).
+	 * <p>
+	 * Columns:
+	 * <ul>
+	 *     <li>M_InOut_ID (required): identifier of the shipment to update.</li>
+	 *     <li>OPT.M_Tour_ID (optional): identifier of an {@link de.metas.tourplanning.model.I_M_Tour} to set on the shipment.</li>
+	 * </ul>
+	 * Example:
+	 * <pre>
+	 * And update M_InOut:
+	 *   | M_InOut_ID | OPT.M_Tour_ID |
+	 *   | shipment   | tour          |
+	 * </pre>
+	 */
+	@And("update M_InOut:")
+	public void update_M_InOut(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_InOut shipment = inoutTable.get(row.getAsIdentifier(COLUMNNAME_M_InOut_ID));
+			InterfaceWrapperHelper.refresh(shipment);
+
+			row.getAsOptionalIdentifier("M_Tour_ID")
+					.ifPresent(tourIdentifier -> shipment.setM_Tour_ID(tourTable.get(tourIdentifier).getM_Tour_ID()));
+
+			InterfaceWrapperHelper.saveRecord(shipment);
+		});
 	}
 
 	@And("perform shipment document action")
