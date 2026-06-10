@@ -151,7 +151,6 @@ Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-
     # 2) RE-COMPLETE the shipment
     And the shipment identified by shipment is completed
 
-    # Re-completion deletes packMain's real item (it had an M_InOutLine_ID) and re-creates the real
     # Reactivation removes the old pack (its item was linked by M_InOutLine_ID); re-completion
     # creates a single fresh manual pack. We don't pin SeqNo (it is an implementation detail of
     # the pack sequence) — we just locate the active manual pack so we can assert its item below.
