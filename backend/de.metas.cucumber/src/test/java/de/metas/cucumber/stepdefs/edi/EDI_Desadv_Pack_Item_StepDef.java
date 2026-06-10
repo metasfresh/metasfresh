@@ -142,6 +142,9 @@ public class EDI_Desadv_Pack_Item_StepDef
 		packItemRecord.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
 		packItemRecord.setMovementQty(movementQty);
 		packItemRecord.setQtyCUsPerLU(qtyCUsPerLU);
+		// Line is mandatory (NOT NULL). The injected item only needs a non-null, distinct line value;
+		// 9999 won't collide with the generator's low sequential line numbers within the same pack.
+		packItemRecord.setLine(row.getAsOptionalInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line).orElse(9999));
 
 		row.getAsOptionalIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID)
 				.filter(id -> !id.isNullPlaceholder())
@@ -333,7 +336,9 @@ public class EDI_Desadv_Pack_Item_StepDef
 		softly.assertAll();
 
 		final StepDefDataIdentifier packItemIdentifier = dataTableRow.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID);
-		packItemTable.put(packItemIdentifier, desadvPackItemRecord);
+		// putOrReplace (not put): a scenario may assert the same pack item at multiple checkpoints
+		// (e.g. after complete, then again after re-complete) using the same identifier.
+		packItemTable.putOrReplace(packItemIdentifier, desadvPackItemRecord);
 	}
 
 	private void logCurrentContext(
