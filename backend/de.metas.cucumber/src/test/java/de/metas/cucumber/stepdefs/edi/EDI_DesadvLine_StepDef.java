@@ -135,7 +135,7 @@ public class EDI_DesadvLine_StepDef
 		final I_EDI_DesadvLine desadvLine = queryBuilder.create().firstOnlyNotNull(I_EDI_DesadvLine.class);
 
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
-		desadvLineTable.put(lineIdentifier, desadvLine);
+		desadvLineTable.putOrReplace(lineIdentifier, desadvLine);
 	}
 
 	/**

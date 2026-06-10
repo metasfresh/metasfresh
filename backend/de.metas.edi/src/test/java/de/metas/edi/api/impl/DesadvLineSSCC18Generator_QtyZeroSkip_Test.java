@@ -94,17 +94,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 /**
- * Reproduce the orphan Qty-0 pack item bug.
+ * Tests {@link DesadvLineSSCC18Generator}'s Qty-0 skip guard.
  * <p>
- * Models the production cycle (M_InOut validator timings):
- * BEFORE_COMPLETE -> {@link DesadvBL#addToDesadvCreateForInOutIfNotExist(I_M_InOut)}
- * BEFORE_REACTIVATE -> {@link DesadvBL#removeInOutFromDesadv(I_M_InOut)}
- * then re-complete.
- * <p>
- * After the cycle there must be NO EDI_Desadv_Pack_Item with (MovementQty==0 AND M_InOutLine_ID==null).
+ * Verifies that the generator skips any LU whose breakdown yields {@code qtyCUsPerLU=0}
+ * so no orphan {@code EDI_Desadv_Pack_Item} with {@code MovementQty=0} / {@code M_InOutLine_ID=null}
+ * is ever persisted, even after a complete → reactivate → re-complete cycle.
  */
 @ExtendWith(AdempiereTestWatcher.class)
-class DesadvBL_reactivateRecomplete_orphanPackItem_Test
+class DesadvLineSSCC18Generator_QtyZeroSkip_Test
 {
 	private int sscc18SerialNo = 0;
 	private I_M_HU_PI_Item_Product huPIItemProductRecord;
@@ -320,7 +317,7 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 		final List<I_EDI_Desadv_Pack_Item> orphans = POJOLookupMap.get()
 				.getRecords(I_EDI_Desadv_Pack_Item.class)
 				.stream()
-				.filter(pi -> pi.getMovementQty() != null && pi.getMovementQty().signum() == 0)
+				.filter(pi -> pi.getMovementQty().signum() == 0) // MovementQty is NOT NULL in EDI_Desadv_Pack_Item
 				.filter(pi -> pi.getM_InOutLine_ID() <= 0)
 				.collect(Collectors.toList());
 

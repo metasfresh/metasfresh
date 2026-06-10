@@ -12,7 +12,9 @@ UPDATE EXP_Format SET WhereClause=
 WHERE EXP_Format_ID=540418
 ;
 
--- EDI_Exp_Desadv_Pack (540419): a pack qualifies only if it has >=1 item with MovementQty>0 on a qty>0 line
+-- EDI_Exp_Desadv_Pack (540419): a pack qualifies only if it has >=1 item with MovementQty>0 on a qty>0 line.
+-- The pack-item subquery is deliberate: it checks individual item qty, not the pack header.
+-- A full scan is acceptable here — EDI DESADV data volumes are small (dozens to hundreds of rows).
 UPDATE EXP_Format SET WhereClause=
 'IsActive=''Y'' and EDI_Desadv_Pack_ID in (select pi.EDI_Desadv_Pack_ID from EDI_Desadv_Pack_Item pi join EDI_DesadvLine dl on pi.EDI_DesadvLine_ID=dl.EDI_DesadvLine_ID where pi.IsActive=''Y'' and pi.MovementQty>0 and dl.IsActive=''Y'' and dl.QtyDeliveredInUOM>0)',
  Updated=TO_TIMESTAMP('2026-06-10 10:10:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100

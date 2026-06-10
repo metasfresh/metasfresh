@@ -97,13 +97,22 @@ public class EDI_Desadv_Export_Format_StepDef
 		final String whereClause = expFormat.getWhereClause();
 		assertThat(whereClause).as("EXP_Format '%s' WhereClause must not be blank", EXP_FORMAT_NAME_PACK_ITEM).isNotBlank();
 
-		final DataTableRow firstRow = DataTableRows.of(dataTable).getFirstRow();
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		// Guard: all DataTable rows must reference the same DESADV; a caller passing rows for
+		// different DESADVs would be silently broken (only the first row's DESADV is used).
+		final Set<StepDefDataIdentifier> distinctDesadvIdentifiers = rows.stream()
+				.map(row -> row.getAsIdentifier(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID))
+				.collect(ImmutableSet.toImmutableSet());
+		assertThat(distinctDesadvIdentifiers)
+				.as("All DataTable rows must reference the same EDI_Desadv_ID identifier, but found multiple: %s", distinctDesadvIdentifiers)
+				.hasSize(1);
+
+		final DataTableRow firstRow = rows.getFirstRow();
 		final StepDefDataIdentifier desadvIdentifier = firstRow.getAsIdentifier(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID);
 		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
 		final int desadvId = desadvRecord.getEDI_Desadv_ID();
 
-		final Set<StepDefDataIdentifier> expectedIdentifiers = DataTableRows.of(dataTable)
-				.stream()
+		final Set<StepDefDataIdentifier> expectedIdentifiers = rows.stream()
 				.map(row -> row.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID))
 				.collect(ImmutableSet.toImmutableSet());
 

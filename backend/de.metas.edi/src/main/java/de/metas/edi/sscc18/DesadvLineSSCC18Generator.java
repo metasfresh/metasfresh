@@ -168,10 +168,8 @@ public class DesadvLineSSCC18Generator
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
-				// A Qty-0 / null LU means the calculator is exhausted or misconfigured. A pack item with
-				// MovementQty=0 is meaningless (nothing to label) and would become an orphan that can
-				// never be reclaimed after reactivate/re-complete. LUQtys.NULL is the only zero-qty case
-				// (the builder collapses any qty<=0 to the NULL singleton), so isNull() covers it.
+				// Skip a 0-qty / null LU (exhausted or misconfigured calculator): persisting a MovementQty=0
+				// pack item would create an un-reclaimable orphan.
 				if (luQtys.isNull())
 				{
 					logger.warn("Skipping SSCC pack-item creation for desadvLine={} because LU breakdown returned Qty-0 (luQtys={}). "
