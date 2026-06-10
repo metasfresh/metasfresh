@@ -85,10 +85,15 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
       | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | M_InOutLine_ID | BestBeforeDate | LotNumber | M_HU_PackagingCode_TU_ID | GTIN_TU_PackingMaterial |
       | pi_nonzero              | packMain           | 10          | 10          | 10                       | 10          | 10                       | 0               | 1         | shipment                  | shipmentLine   | null           | null      | null                     | null                    |
 
-    # Find and register the EDI_Desadv so we can capture the desadv line
+    # Validate the auto-created EDI_Desadv sums
     Then validate created edi desadv
-      | C_Order_ID.Identifier | SumDeliveredInStockingUOM | SumOrderedInStockingUOM | EDI_Desadv_ID.Identifier |
-      | order_main            | 10                        | 10                      | desadv                   |
+      | C_Order_ID.Identifier | SumDeliveredInStockingUOM | SumOrderedInStockingUOM |
+      | order_main            | 10                        | 10                      |
+
+    # Register the EDI_Desadv under the 'desadv' identifier so subsequent steps can reference it
+    Then EDI_Desadv is found:
+      | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier |
+      | endcustomer              | order_main            | desadv                   |
 
     # Capture the auto-created EDI_DesadvLine under an identifier
     # Precondition: this DESADV has exactly one line (the scenario creates a single order line)
