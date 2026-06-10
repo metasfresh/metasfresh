@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
@@ -29,6 +30,9 @@ import java.math.BigDecimal;
 @Builder
 public class MakeQtyReservationCommand
 {
+	private static final AdMessageKey MSG_LineFullyReserved = AdMessageKey.of("ERR_QTY_RESERVATION_LINE_FULLY_RESERVED");
+	private static final AdMessageKey MSG_NoPackingCapacity = AdMessageKey.of("ERR_QTY_RESERVATION_NO_PACKING_CAPACITY");
+
 	@NonNull IOrderLineBL orderLineBL;
 	@NonNull IProductBL productBL;
 	@NonNull QtyReservationService qtyReservationService;
@@ -107,8 +111,7 @@ public class MakeQtyReservationCommand
 		final Quantity remainingOrdered = qtyReservationService.computeRemainingOrderedQty(salesOrderAndLineId, stockUomId);
 		if (remainingOrdered.signum() <= 0)
 		{
-			throw new AdempiereException("Cannot reserve: the sales order line is already fully reserved")
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_LineFullyReserved);
 		}
 		qty = qty.min(remainingOrdered);
 
@@ -141,8 +144,7 @@ public class MakeQtyReservationCommand
 			return capacityPerTUFallback;
 		}
 
-		throw new AdempiereException("Cannot reserve in TUs: order line has no packing-item capacity")
-				.markAsUserValidationError();
+		throw new AdempiereException(MSG_NoPackingCapacity);
 	}
 
 	@Nullable
