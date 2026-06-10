@@ -61,6 +61,7 @@ public class PickingJobRepository
 	{
 		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
 				.addNotInArrayFilter(
 						I_M_Picking_Job.COLUMNNAME_DocStatus,
 						ImmutableList.of(PickingJobDocStatus.Voided.getCode(), PickingJobDocStatus.Completed.getCode()))

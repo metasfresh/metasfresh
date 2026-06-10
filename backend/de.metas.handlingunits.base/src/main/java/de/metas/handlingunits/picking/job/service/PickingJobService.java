@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
@@ -76,6 +77,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -91,7 +93,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class PickingJobService implements PickingSlotListener
 {
-	private static final org.slf4j.Logger logger = de.metas.logging.LogManager.getLogger(PickingJobService.class);
+	private static final Logger logger = LogManager.getLogger(PickingJobService.class);
 
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");

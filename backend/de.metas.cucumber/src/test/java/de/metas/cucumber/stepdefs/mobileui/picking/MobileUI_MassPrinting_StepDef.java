@@ -45,6 +45,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for the MobileUI mass-printing flow.
+ *
+ * <p>Triggers a mass-printing LU scan and asserts the result.
+ * Results are stored by LU identifier and can be asserted after scanning.
+ *
+ * @see MassPrintingService
+ */
 @RequiredArgsConstructor
 public class MobileUI_MassPrinting_StepDef
 {
