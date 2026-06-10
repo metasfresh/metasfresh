@@ -98,12 +98,18 @@ public class NShiftShipmentService
 	@VisibleForTesting
 	public static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
+		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
+		final String useShippingRulesStr = config.getAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES);
+		final Boolean useShippingRules = useShippingRulesStr != null ? Boolean.valueOf(useShippingRulesStr) : null;
+		final String serviceLevel = config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
+
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)
 				.trackingURL(true)
+				.useShippingRules(useShippingRules)
+				.serviceLevel(serviceLevel)
 				.build();
 
-		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
 		final String actorId = config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID);
 
 		final int prodConceptId = Integer.parseInt(deliveryRequest.getShipperProduct().getCode());
