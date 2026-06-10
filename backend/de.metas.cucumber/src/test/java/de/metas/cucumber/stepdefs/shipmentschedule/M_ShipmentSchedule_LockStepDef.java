@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
@@ -114,14 +113,10 @@ public class M_ShipmentSchedule_LockStepDef
 					.lookupIdIn(shipmentScheduleTable);
 
 			final String username = tableRow.getAsString(I_AD_User.COLUMNNAME_Login);
-			SharedTestContext.put("username", username);
-
 			final UserId userId = userDAO.retrieveUserIdByLogin(username);
 			assertThat(userId).as("User exists for login=" + username).isNotNull();
-			SharedTestContext.put("userId", userId);
 
 			final ShipmentScheduleLocksMap locks = lockRepository.getByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
-			SharedTestContext.put("locks", locks);
 
 			final boolean lockExists = locks.isLockedBy(userId);
 			final boolean expecting_lockExists = tableRow.getAsBoolean("Exists");
