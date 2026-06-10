@@ -195,7 +195,7 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     # ABORT the picking job through the real REST endpoint -> the picking job becomes Voided, releasing the
     # picker. Then reprocessing the event now SUCCEEDS (the picker-busy guard no longer fires). The reconcile
     # re-runs the per-locator diff: the same single source locator still contributes the same qty (5), so the
-    # existing DD_Order is reconciled in place (AC5 update-in-place) and left as the correct, live DD_Order — no
+    # existing DD_Order is reconciled in place (update-in-place) and left as the correct, live DD_Order — no
     # void, no churn. The point of the scenario is that aborting the job unblocks the reconcile.
     Given store workflow endpointPath api/v2/userWorkflows/wfProcess/@pickingWF@/abort in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code

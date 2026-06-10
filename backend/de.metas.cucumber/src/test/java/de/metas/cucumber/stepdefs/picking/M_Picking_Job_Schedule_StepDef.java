@@ -24,21 +24,47 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
 import java.util.function.Supplier;
 
+/**
+ * Step definitions for {@code M_Picking_Job_Schedule} — workstation assignment lifecycle.
+ *
+ * <p>Covers creating/updating assignments, changing or attempting to change quantities (including
+ * the picker-busy rejection path), deleting assignments, and polling for persisted assignment records.</p>
+ *
+ * @see de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService
+ */
 @RequiredArgsConstructor
 public class M_Picking_Job_Schedule_StepDef
 {
-	@NonNull private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final PickingJobScheduleService pickingJobScheduleService;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
 
+	/**
+	 * @cucumber.stepdef Creates or updates a {@code M_Picking_Job_Schedule} workstation assignment for the given
+	 * shipment schedule and workplace. If a matching assignment already exists it is updated in place; otherwise a new
+	 * one is created. Triggers the {@code afterNew}/{@code afterChange} interceptor (async reconcile → DD_Order create
+	 * or void+recreate).
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule to assign</li>
+	 *   <li>{@code C_Workplace_ID} — identifier of the target workplace</li>
+	 *   <li>{@code QtyToPick} — quantity to pick at this workplace</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And create or update picking job schedules
+	 *   | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+	 *   | shipmentSchedule      | workplace      | 5         |
+	 * </pre>
+	 */
 	@And("^create or update picking job schedules$")
 	public void createOrUpdate(final DataTable dataTable)
 	{
@@ -160,6 +186,22 @@ public class M_Picking_Job_Schedule_StepDef
 						.build());
 	}
 
+	/**
+	 * @cucumber.stepdef Deletes all {@code M_Picking_Job_Schedule} records for the given shipment schedule. Triggers
+	 * the {@code afterDelete} interceptor which synchronously voids and unlinks any live DD_Orders linked to the
+	 * deleted assignments (satisfying the deferrable FK constraint within the same transaction).
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule whose assignments to delete</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And delete picking job schedules
+	 *   | M_ShipmentSchedule_ID |
+	 *   | shipmentSchedule      |
+	 * </pre>
+	 */
 	@And("^delete picking job schedules$")
 	public void delete(final DataTable dataTable)
 	{
@@ -180,6 +222,25 @@ public class M_Picking_Job_Schedule_StepDef
 		pickingJobScheduleService.deleteJobSchedulesById(jobScheduleIds);
 	}
 
+	/**
+	 * @cucumber.stepdef Polls until a {@code M_Picking_Job_Schedule} with the given attributes is found, or the
+	 * timeout is exceeded. Used to assert that an assignment has been persisted (e.g. after the interceptor fires
+	 * asynchronously).
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule</li>
+	 *   <li>{@code C_Workplace_ID} — identifier of the workplace</li>
+	 *   <li>{@code QtyToPick} — expected quantity</li>
+	 * </ul>
+	 * Optional columns: {@code Processed}.
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 5s, picking job schedules are found:
+	 *   | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+	 *   | shipmentSchedule      | workplace      | 5         |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, picking job schedules are found:$")
 	public void findPickingJobSchedules(final int timeoutSec, @NonNull final DataTable dataTable)
 	{

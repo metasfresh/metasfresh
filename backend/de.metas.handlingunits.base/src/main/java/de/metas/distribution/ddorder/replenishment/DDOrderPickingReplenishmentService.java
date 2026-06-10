@@ -193,7 +193,7 @@ public class DDOrderPickingReplenishmentService
 	@Nullable
 	private I_M_Picking_Job_Schedule loadAssignmentOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		return InterfaceWrapperHelper.load(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
+		return ddOrderLowLevelDAO.findPickingJobScheduleOrNull(jobScheduleId);
 	}
 
 	/**

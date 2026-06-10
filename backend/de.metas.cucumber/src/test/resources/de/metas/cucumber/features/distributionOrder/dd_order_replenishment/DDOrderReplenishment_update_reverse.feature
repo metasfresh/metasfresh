@@ -92,7 +92,7 @@ Feature: DD_Order replenishment — update (in place) and reverse (void only)
   @from:cucumber
   Scenario: Changing the assignment quantity updates the existing DD_Order line in place (single contributing locator, picker not busy)
     # Raise the assignment's QtyToPick to 8; the M_Picking_Job_Schedule afterChange reconcile fires.
-    # AC5: the contributing-locator set is unchanged (still the one source locator), so the reconcile UPDATES the
+    # The contributing-locator set is unchanged (still the one source locator), so the reconcile UPDATES the
     # existing DD_Order line qty IN PLACE — it does NOT void+recreate. ddOrder_v1 stays the same live DD_Order, now
     # carrying qty 8 (its qty change is reflected without churning the document).
     When the picking job schedule quantity is changed:

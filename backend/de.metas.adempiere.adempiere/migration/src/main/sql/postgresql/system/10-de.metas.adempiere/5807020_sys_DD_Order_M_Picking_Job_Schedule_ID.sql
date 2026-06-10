@@ -5,8 +5,8 @@
 --   AD_MigrationScript  5807020 (this script)
 --   AD_Column           592792  (DD_Order.M_Picking_Job_Schedule_ID)
 --
--- The AD_Field / AD_UI_Element that surface this column on the DD_Order window are added by the
--- companion window-expose script (mirroring 5804750 for M_ShipmentSchedule_ID) — not in this script.
+-- This column is used purely programmatically (service-to-service linking and void/diff queries).
+-- No AD_Field / AD_UI_Element is registered for it — the back-reference is not surfaced on the DD_Order window.
 
 -- =============================================================================
 -- 1. AD_Column (DD_Order — lookup AD_Table_ID by name)

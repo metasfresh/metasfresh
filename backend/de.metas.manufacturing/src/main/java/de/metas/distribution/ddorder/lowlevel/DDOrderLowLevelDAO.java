@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternativ
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -140,6 +141,16 @@ public class DDOrderLowLevelDAO
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
 				.list(I_DD_Order.class);
+	}
+
+	/**
+	 * Loads the {@link I_M_Picking_Job_Schedule} record for the given ID, or returns {@code null} if the record no
+	 * longer exists (e.g. deleted between the async event being queued and being processed).
+	 */
+	@Nullable
+	public I_M_Picking_Job_Schedule findPickingJobScheduleOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
+	{
+		return InterfaceWrapperHelper.load(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
 	}
 
 	/**
