@@ -22,6 +22,7 @@
 
 package de.metas.ordercandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
@@ -30,6 +31,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.user.UserRepository;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
@@ -79,6 +82,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -124,6 +128,17 @@ public class OLCandBL implements IOLCandBL
 		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
 		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
+	}
+
+	@VisibleForTesting
+	public static OLCandBL newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(OLCandBL.class, () -> new OLCandBL(
+				SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
+				BPartnerOrderParamsRepository.newInstanceForUnitTesting(),
+				BPartnerAddressEffectiveBL.newInstanceForUnitTesting()));
 	}
 
 	@Override
