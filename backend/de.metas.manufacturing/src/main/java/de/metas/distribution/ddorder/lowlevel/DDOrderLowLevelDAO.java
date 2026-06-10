@@ -8,7 +8,6 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternativ
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -71,7 +70,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 /**
- * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative, M_Picking_Job_Schedule
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative
  * Repository Cluster: DDOrderLowLevelDAO
  */
 @Repository
@@ -141,25 +140,6 @@ public class DDOrderLowLevelDAO
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
 				.list(I_DD_Order.class);
-	}
-
-	/**
-	 * Loads the {@link I_M_Picking_Job_Schedule} record for the given ID (in-transaction), or {@code null} if gone.
-	 */
-	@Nullable
-	public I_M_Picking_Job_Schedule findPickingJobScheduleOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
-	{
-		return InterfaceWrapperHelper.load(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
-	}
-
-	/**
-	 * Out-of-transaction variant — used by the async event publisher which runs after commit on a pool thread.
-	 * Returns {@code null} if the record no longer exists.
-	 */
-	@Nullable
-	public I_M_Picking_Job_Schedule findPickingJobScheduleOutOfTrxOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
-	{
-		return InterfaceWrapperHelper.loadOutOfTrx(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
 	}
 
 	/**
