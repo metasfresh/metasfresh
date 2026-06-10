@@ -3,7 +3,6 @@
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00353_EDI
 Feature: EDI DESADV export must not include pack items whose own MovementQty is zero
-## me03 #29278 — Fehler bei EDI Coop
 ## The EXP_Format_ID=540418 WhereClause currently filters on the PARENT LINE's QtyDeliveredInUOM
 ## rather than the pack item's own MovementQty. A pack item with MovementQty=0 on a line whose
 ## total QtyDeliveredInUOM>0 is therefore wrongly included in the export.
@@ -25,7 +24,7 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
 
   @from:cucumber
   @Id:S0353_010
-  Scenario: S0353_010 - Export format must skip pack items with MovementQty=0 (RED test for me03 29278)
+  Scenario: S0353_010 - Export format must skip pack items with MovementQty=0
   Setup: one valid DESADV with a qty>0 pack item is created via the normal flow.
   Then a second pack item with MovementQty=0 is injected directly into the same pack.
   The assertion checks that the EXP_Format WhereClause (EXP_Format_ID=540418) only

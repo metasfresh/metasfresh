@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
@@ -131,7 +132,7 @@ public class EDI_Desadv_Pack_Item_StepDef
 		final EDIDesadvPackId packId = packTable.getId(packIdentifier);
 
 		final StepDefDataIdentifier desadvLineIdentifier = row.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_DesadvLine_ID);
-		final de.metas.esb.edi.model.I_EDI_DesadvLine desadvLine = desadvLineTable.get(desadvLineIdentifier);
+		final I_EDI_DesadvLine desadvLine = desadvLineTable.get(desadvLineIdentifier);
 
 		final BigDecimal movementQty = row.getAsBigDecimal(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty);
 		final BigDecimal qtyCUsPerLU = row.getAsBigDecimal(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU);

@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code EXP_Format_ID=540418} (Name: {@code EDI_Exp_Desadv_Pack_Item}) WhereClause
  * would select for a given DESADV.
  *
- * <p>This is used by the RED test for me03 #29278 to prove that the current WhereClause
+ * <p>This is used by the RED test to prove that the current WhereClause
  * (which filters on the <em>parent line's</em> QtyDeliveredInUOM>0 rather than the
  * pack item's own MovementQty>0) incorrectly includes pack items with MovementQty=0.
  */
