@@ -24,6 +24,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,9 +44,6 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class M_Picking_Job_Schedule_StepDef
 {
-	// PickingJobScheduleService's dependency chain includes ModelCacheInvalidationService →
-	// IEventBusFactory, which is not registered in PicoContainer — so it must be fetched via
-	// SpringContextHolder rather than let PicoContainer inject it.
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -138,20 +136,21 @@ public class M_Picking_Job_Schedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Attempts to change an existing assignment's {@code QtyToPick} and asserts the
-	 * {@code beforeChange} interceptor REJECTS the save (the picker-busy guard). Asserts the thrown exception is
-	 * an {@link org.adempiere.exceptions.AdempiereException} carrying the German picker-busy AD_Message text
-	 * "Kommissionierung läuft bereits". The assignment is reloaded and asserted unchanged.
+	 * {@code beforeChange} interceptor REJECTS the save. Asserts the thrown exception is an
+	 * {@link org.adempiere.exceptions.AdempiereException} whose {@code ErrorCode} matches the expected value.
+	 * The assignment is reloaded and asserted unchanged.
 	 * <p>
 	 * Required columns:
 	 * <ul>
 	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment</li>
 	 *   <li>{@code QtyToPick} — the attempted new quantity</li>
+	 *   <li>{@code ErrorCode} — expected {@code AdempiereException} error code (e.g. {@code DDOrderPickingReconcile_PickerBusy})</li>
 	 * </ul>
 	 * @cucumber.example
 	 * <pre>
 	 * Then changing the picking job schedule quantity is rejected:
-	 *   | M_Picking_Job_Schedule_ID | QtyToPick |
-	 *   | jobSchedule               | 8         |
+	 *   | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                           |
+	 *   | jobSchedule               | 8         | DDOrderPickingReconcile_PickerBusy  |
 	 * </pre>
 	 */
 	@And("^changing the picking job schedule quantity is rejected:$")
@@ -166,11 +165,14 @@ public class M_Picking_Job_Schedule_StepDef
 		final PickingJobScheduleId jobScheduleId = jobSchedule.getId();
 		final BigDecimal originalQty = pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal();
 		final BigDecimal newQty = row.getAsBigDecimal(I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick);
+		final String expectedErrorCode = row.getAsString("ErrorCode");
 
 		assertThatThrownBy(() -> updateQtyInPlace(jobSchedule, newQty))
-				.as("Changing the assignment while the picker is busy must be rejected by the beforeChange interceptor")
-				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
-				.hasMessageContaining("Kommissionierung läuft bereits");
+				.as("Changing the assignment must be rejected by the beforeChange interceptor")
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
+						.as("AdempiereException.ErrorCode")
+						.isEqualTo(expectedErrorCode));
 
 		// Reload and assert the persisted QtyToPick is unchanged (the rolled-back save left no mark).
 		assertThat(pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal())

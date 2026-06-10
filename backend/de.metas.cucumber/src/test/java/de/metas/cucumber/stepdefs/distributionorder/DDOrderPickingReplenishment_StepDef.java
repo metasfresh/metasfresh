@@ -114,7 +114,7 @@ public class DDOrderPickingReplenishment_StepDef
 	/**
 	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(PickingJobScheduleId)} and asserts it
 	 * FAILS while the picker is busy (the service-side definitive guard). Asserts the thrown exception is an
-	 * {@link AdempiereException} containing the German picker-busy AD_Message text "Kommissionierung läuft bereits".
+	 * {@link AdempiereException} with {@code ErrorCode = DDOrderPickingReconcile_PickerBusy}.
 	 * The DD_Order is left unchanged.
 	 *
 	 * <p>Real-world trigger: same async reconcile as {@code process_reconcile_event} — in production the
@@ -139,8 +139,9 @@ public class DDOrderPickingReplenishment_StepDef
 		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(jobScheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
-				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
-				.hasMessageContaining("Kommissionierung läuft bereits");
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
+						.as("AdempiereException.ErrorCode")
+						.isEqualTo("DDOrderPickingReconcile_PickerBusy"));
 	}
 
 	/**

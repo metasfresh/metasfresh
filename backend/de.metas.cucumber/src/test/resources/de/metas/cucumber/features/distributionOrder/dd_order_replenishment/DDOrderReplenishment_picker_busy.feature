@@ -150,8 +150,8 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     # Attempting to change the assignment qty is rejected by the M_Picking_Job_Schedule.beforeChange guard
     # (the tx rolls back; the assignment's persisted value stays unchanged and no event is published).
     Then changing the picking job schedule quantity is rejected:
-      | M_Picking_Job_Schedule_ID | QtyToPick |
-      | jobSchedule               | 8         |
+      | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                          |
+      | jobSchedule               | 8         | DDOrderPickingReconcile_PickerBusy |
 
     # ABORT the picking job through the real REST endpoint -> the picking job becomes Voided, so the
     # (voided-aware) busy guard reports the picker as free again.
