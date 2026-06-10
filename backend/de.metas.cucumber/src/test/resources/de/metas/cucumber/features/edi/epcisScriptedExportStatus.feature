@@ -16,6 +16,13 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh is configured for One-DESADV-Per-ORDERS
 
+    # Process the /ok and /error scripted-export callbacks SYNCHRONOUSLY (HTTP 200, not async 202) so the
+    # status row is visible right after the POST. Self-contained — do not rely on a sibling feature having
+    # created this config on the shared executor (SeqNo=9 takes precedence).
+    And the following API_Audit_Config records are created:
+      | Identifier  | SeqNo | OPT.Method | OPT.PathPrefix                       | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | wait4result | 9     | POST       | api/v2/externalsystem/externalstatus | N                     | Y                                | N                 |
+
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
       | warehouseStd   | StdWarehouse |
