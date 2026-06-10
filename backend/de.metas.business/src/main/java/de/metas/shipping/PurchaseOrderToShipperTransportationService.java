@@ -97,7 +97,7 @@ public class PurchaseOrderToShipperTransportationService
 	}
 
 	@VisibleForTesting
-	static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting(@NonNull final ILUQtyProvider luQtyProvider)
+	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting(@NonNull final ILUQtyProvider luQtyProvider)
 	{
 		Adempiere.assertUnitTestMode();
 
@@ -225,6 +225,7 @@ public class PurchaseOrderToShipperTransportationService
 		{
 			if (addedCount == 0)
 			{
+				// TODO: replace literal with AdMessageKey once a migration script adds the AD_Message entry
 				throw new AdempiereException("Cannot add PO lines to Transport Order: no LU packing configuration found for "
 						+ formatSkippedLines(skippedLines))
 						.markAsUserValidationError();

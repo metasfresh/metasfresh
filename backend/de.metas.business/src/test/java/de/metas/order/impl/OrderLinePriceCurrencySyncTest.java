@@ -22,9 +22,11 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -43,6 +45,7 @@ import static org.mockito.Mockito.when;
  * <p>Before the fix, {@code setC_Currency_ID} was called with {@code pricingResult.getCurrencyId()}
  * (EUR in this test), overwriting the header currency (USD).  After the fix the header value must win.
  */
+@ExtendWith(AdempiereTestWatcher.class)
 class OrderLinePriceCurrencySyncTest
 {
 	private IPricingBL pricingBL;

@@ -258,6 +258,9 @@ public class OrderBL implements IOrderBL
 		}
 		else if (order.getC_Currency_ID() <= 0)
 		{
+			// No price list and no currency set yet: fall back to the session's client default.
+			// Env access is intentional here — this is the same fallback MOrder.beforeSave() used before the extraction,
+			// and there is no domain-level alternative for an unset currency with no price list.
 			order.setC_Currency_ID(Env.getContextAsInt(InterfaceWrapperHelper.getCtx(order), "#C_Currency_ID"));
 		}
 	}
