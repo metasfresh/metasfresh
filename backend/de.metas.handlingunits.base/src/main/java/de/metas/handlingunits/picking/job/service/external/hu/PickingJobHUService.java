@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUContextHolder;
@@ -203,6 +204,20 @@ public class PickingJobHUService
 
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds) {return handlingUnitsBL.getByIds(huIds);}
 
+	/**
+	 * Returns all non-empty product storages on the given HU (e.g. an LU).
+	 */
+	@NonNull
+	public List<IHUProductStorage> getProductStorages(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		return storageFactory.getStorage(hu).getProductStorages()
+				.stream()
+				.filter(s -> !s.isEmpty())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo) {return handlingUnitsBL.getFirstHuIdByExternalLotNo(externalLotNo);}
 
 	public Optional<HuId> getFirstHUIdByQRCodeAttribute(
@@ -300,6 +315,43 @@ public class PickingJobHUService
 		return huPIItemProductBL.retrieveForProducts(productIdSet, partnerId);
 	}
 
+	/**
+	 * Collects the leaf shippable HUs at or below each of the given HUs by descending the HU hierarchy.
+	 * Returns one entry per picked unit, regardless of packing-instruction type:
+	 * <ul>
+	 *   <li>Finite PI (1-CU/TU): each top-level TU has no children → itself is the leaf → one entry per TU.</li>
+	 *   <li>Virtual PI / null PackTo PI (CU path): the mass-printing flow fires one pick event per unit,
+	 *       so each VHU is already a single-unit leaf → one entry per VHU.</li>
+	 *   <li>TU nested under a target LU: descends past the LU wrapper to the leaf TU → one entry per TU.</li>
+	 * </ul>
+	 * The count of returned HU ids equals the number of shippable units packed (one HU = one unit = one label).
+	 */
+	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		final List<I_M_HU> topLevelHUs = getByIds(huIds);
+		for (final I_M_HU hu : topLevelHUs)
+		{
+			collectBoxHUs(hu, result);
+		}
+		return result.build();
+	}
+
+	private void collectBoxHUs(@NonNull final I_M_HU hu, @NonNull final ImmutableSet.Builder<HuId> result)
+	{
+		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(hu);
+		if (includedHUs.isEmpty())
+		{
+			// Leaf HU: the actual product-holding unit (TU box for finite PI, VHU/CU for Virtual PI).
+			result.add(HuId.ofRepoId(hu.getM_HU_ID()));
+			return;
+		}
+		for (final I_M_HU includedHU : includedHUs)
+		{
+			collectBoxHUs(includedHU, result);
+		}
+	}
+
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);
@@ -369,6 +421,34 @@ public class PickingJobHUService
 				.hus(HUToReportWrapper.ofList(lus))
 				.onlyIfAutoPrint(true)
 				.failOnMissingLabelConfig(false)
+				.build());
+	}
+
+	/**
+	 * Prints one HU/shipping label for the given shippable HU (produced by the mass-printing pick).
+	 * The HU may be a TU box (finite PI) or a VHU/CU (Virtual PI).
+	 *
+	 * <p>Uses source-doc-type {@link HULabelSourceDocType#Picking} and
+	 * {@code failOnMissingLabelConfig=true} so a missing label configuration is reported as a
+	 * clean {@link org.adempiere.exceptions.AdempiereException} that the caller can catch and count
+	 * as a label-print failure — best-effort: the caller counts it but does not roll back the picked HUs.
+	 *
+	 * <p>The print is scheduled via {@code ITrxManager.runAfterClose} (inside {@link HULabelService#print}'s
+	 * delegate command); the physical job is enqueued after the caller's transaction commits, so it does
+	 * not participate in the pick+ship rollback boundary.
+	 *
+	 * @param pickedHuId the HU id of the shippable HU to label (one call per picked HU)
+	 * @throws org.adempiere.exceptions.AdempiereException if no matching {@code M_HU_Label_Config}
+	 *                                                      is found (captured by the caller for the
+	 *                                                      per-product result summary)
+	 */
+	public void printHULabel(@NonNull final HuId pickedHuId)
+	{
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.huId(pickedHuId)
+				.onlyIfAutoPrint(false)
+				.failOnMissingLabelConfig(true)
 				.build());
 	}
 

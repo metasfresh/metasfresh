@@ -2,6 +2,7 @@ package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.inout.InOutId;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -225,8 +226,8 @@ public class HUPackageBL implements IHUPackageBL
 	@Override
 	public void unassignShipmentFromPackages(final I_M_InOut shipment)
 	{
-		final int inoutId = shipment.getM_InOut_ID();
-		final List<I_M_Package> mpackages = huPackageDAO.retrievePackagesForShipment(shipment);
+		final InOutId inoutId = InOutId.ofRepoId(shipment.getM_InOut_ID());
+		final List<I_M_Package> mpackages = huPackageDAO.retrievePackagesForShipment(inoutId);
 		for (final I_M_Package mpackage : mpackages)
 		{
 			//
@@ -236,7 +237,7 @@ public class HUPackageBL implements IHUPackageBL
 			{
 				// Skip Shipping packages which are not about our shipment
 				// shall not happen, but better prevent it
-				if (shippingPackage.getM_InOut_ID() != inoutId)
+				if (!InOutId.equals(InOutId.ofRepoIdOrNull(shippingPackage.getM_InOut_ID()), inoutId))
 				{
 					continue;
 				}
@@ -247,7 +248,7 @@ public class HUPackageBL implements IHUPackageBL
 					throw new HUException("@M_ShipperTransportation_ID@ @Processed@=@Y@: " + shippingPackage.getM_ShipperTransportation());
 				}
 
-				shippingPackage.setM_InOut_ID(-1);
+				shippingPackage.setM_InOut_ID(InOutId.toRepoId(null));
 				save(shippingPackage);
 			}
 

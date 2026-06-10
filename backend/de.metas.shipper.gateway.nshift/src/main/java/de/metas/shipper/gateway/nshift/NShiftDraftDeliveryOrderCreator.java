@@ -34,6 +34,10 @@ import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -58,6 +62,7 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -67,6 +72,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -99,6 +105,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
@@ -194,7 +201,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.map(packageInfo -> {
 					final ImmutableList<DeliveryOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
 							.stream()
-							.map(this::createDeliveryOrderItems)
+							.map(this::createDeliveryOrderItem)
 							.collect(ImmutableList.toImmutableList());
 					return DeliveryOrderParcel.builder()
 							.packageDimensions(packageInfo.getPackageDimension())
@@ -208,7 +215,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	}
 
 	@NonNull
-	private DeliveryOrderItem createDeliveryOrderItems(@NonNull final PackageItem packageItem)
+	private DeliveryOrderItem createDeliveryOrderItem(@NonNull final PackageItem packageItem)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
@@ -225,15 +232,36 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
+		final String countryOfOrigin = readCountryOfOrigin(packageItem);
+
 		return DeliveryOrderItem.builder()
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
 				.customsTariff(customsTariff)
+				.countryOfOrigin(countryOfOrigin)
 				.totalWeightInKg(weightInKg)
 				.shippedQuantity(packageItem.getQuantity())
 				.unitPrice(unitPrice)
 				.totalValue(totalPackageValue)
 				.build();
+	}
+
+	private static final AttributeCode ATTR_COUNTRY_OF_ORIGIN = HUAttributeConstants.ATTR_CountryOfOrigin;
+
+	@Nullable
+	private String readCountryOfOrigin(@NonNull final PackageItem packageItem)
+	{
+		final AttributeSetInstanceId asiId = packageItem.getInOutLineASIId();
+		if (asiId.isNone())
+		{
+			return null;
+		}
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
+		if (!attributeSet.hasAttribute(ATTR_COUNTRY_OF_ORIGIN))
+		{
+			return null;
+		}
+		return attributeSet.getValueAsStringOrNull(ATTR_COUNTRY_OF_ORIGIN);
 	}
 
 	@NonNull

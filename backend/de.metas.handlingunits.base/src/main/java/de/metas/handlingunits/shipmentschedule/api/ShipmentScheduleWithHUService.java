@@ -851,10 +851,8 @@ public class ShipmentScheduleWithHUService
 			}
 
 			//
-			// Create a ShipmentSchedule+HU candidate and add it to our list
 			final IHUContext huContext = request.getHuContext();
-			final ShipmentScheduleWithHU candidate = ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext, quantityType);
-			candidatesForPick.add(candidate);
+			candidatesForPick.addAll(huShipmentScheduleBL.createCandidatesForQtyPicked(qtyPickedRecordHU, huContext, quantityType));
 		}
 
 		return candidatesForPick;
@@ -1143,7 +1141,7 @@ public class ShipmentScheduleWithHUService
 	{
 		return shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
-				.map(pickedLine -> ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(pickedLine, huContext))
+				.flatMap(pickedLine -> huShipmentScheduleBL.createCandidatesForQtyPicked(pickedLine, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).stream())
 				.collect(ImmutableList.toImmutableList());
 	}
 

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
@@ -80,13 +81,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "inOutDAO", "shipmentService" })
+@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "inOutDAO", "shipmentService" })
 public class HUShippingFacade
 {
 	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -136,7 +137,7 @@ public class HUShippingFacade
 	{
 		if (_candidates == null)
 		{
-			_candidates = huShipmentScheduleDAO.retrieveShipmentSchedulesWithHUsFromHUs(hus);
+			_candidates = huShipmentScheduleBL.retrieveShipmentSchedulesWithHUsFromHUs(hus);
 		}
 		return _candidates;
 	}

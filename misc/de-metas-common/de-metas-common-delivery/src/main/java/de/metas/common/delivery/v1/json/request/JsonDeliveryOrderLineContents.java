@@ -47,6 +47,7 @@ public class JsonDeliveryOrderLineContents
 	@NonNull String productName;
 	@NonNull String productValue;
 	@Nullable String customsTariff;
+	@Nullable String countryOfOrigin;
 	@NonNull BigDecimal totalWeightInKg;
 	@NonNull JsonQuantity shippedQuantity;
 
@@ -65,6 +66,8 @@ public class JsonDeliveryOrderLineContents
 				return Optional.of(getProductValue());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMS_TARIFF:
 				return Optional.ofNullable(getCustomsTariff());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
+				return Optional.ofNullable(getCountryOfOrigin());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID:
 				return Optional.of(getShipmentOrderItemId());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE:
