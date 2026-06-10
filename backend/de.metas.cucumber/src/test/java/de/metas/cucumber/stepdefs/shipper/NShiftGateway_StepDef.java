@@ -214,19 +214,44 @@ public class NShiftGateway_StepDef
 	}
 
 	/**
-	 * Asserts address and contact fields on the most-recently-captured {@link JsonDeliveryAdvisorRequest}.
+	 * Asserts address, contact, and item fields on the most-recently-captured {@link JsonDeliveryAdvisorRequest}.
 	 * All columns are optional. {@code Sender*} columns target the pickup address/contact;
 	 * {@code Receiver*} columns target the delivery address/contact.
 	 * Supported columns: {@code SenderCompanyName}, {@code SenderCountryCode}, {@code SenderAttention},
 	 * {@code ReceiverCompanyName}, {@code ReceiverCompanyName2}, {@code ReceiverStreet},
 	 * {@code ReceiverAdditionalAddressInfo}, {@code ReceiverHouseNo}, {@code ReceiverZip},
 	 * {@code ReceiverCity}, {@code ReceiverCountryCode}, {@code ReceiverAttention},
-	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail}.
+	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail},
+	 * {@code numberOfItems} (item.numberOfItems — the per-unit baseline sent to the advisor).
 	 * <p>
 	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
 	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by
 	 * {@link de.metas.shipper.client.nshift.NShiftShipAdvisorService#buildRequest}, which is
 	 * verified by {@code NShiftShipAdvisorServiceTest}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>SenderCompanyName</b>              — (optional) pickup address company name<br>
+	 *   <b>SenderCountryCode</b>              — (optional) pickup address country code<br>
+	 *   <b>ReceiverCompanyName</b>            — (optional) delivery address company name<br>
+	 *   <b>ReceiverCompanyName2</b>           — (optional) delivery address company name 2<br>
+	 *   <b>ReceiverStreet</b>                 — (optional) delivery address street<br>
+	 *   <b>ReceiverAdditionalAddressInfo</b>  — (optional) delivery address additional info<br>
+	 *   <b>ReceiverHouseNo</b>                — (optional) delivery address house number<br>
+	 *   <b>ReceiverZip</b>                    — (optional) delivery address zip code<br>
+	 *   <b>ReceiverCity</b>                   — (optional) delivery address city<br>
+	 *   <b>ReceiverCountryCode</b>            — (optional) delivery address country code<br>
+	 *   <b>ReceiverAttention</b>              — (optional) delivery address attention<br>
+	 *   <b>ReceiverContactName</b>            — (optional) delivery contact name<br>
+	 *   <b>ReceiverContactPhone</b>           — (optional) delivery contact phone<br>
+	 *   <b>ReceiverContactEmail</b>           — (optional) delivery contact e-mail<br>
+	 *   <b>numberOfItems</b>                  — (optional) expected item.numberOfItems in the advisor request
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the captured nShift advisor request:
+	 *   | numberOfItems |
+	 *   | 1             |
+	 * </pre>
 	 */
 	@And("validate the captured nShift advisor request:")
 	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
@@ -242,6 +267,66 @@ public class NShiftGateway_StepDef
 		assertContact(softly, capturedAdvisorRequest.getPickupContact(), row, "Sender", "pickupContact");
 		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), row, "Receiver", "deliveryAddress");
 		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
+
+		row.getAsOptionalInt("numberOfItems").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getNumberOfItems())
+				.as("item.numberOfItems")
+				.isEqualTo(expected));
+
+		softly.assertAll();
+	}
+
+	/**
+	 * Asserts {@code UseShippingRules} and {@code ServiceLevel} in the shipper config of the
+	 * most-recently-captured {@link de.metas.common.delivery.v1.json.request.JsonDeliveryRequest}.
+	 * Both columns are optional; when present they assert the corresponding additional-property
+	 * values set by the nShift gateway when {@code M_Shipper.IsApiCarrierAdvise='Y'} and the
+	 * carrier-advising status is not {@code Manual}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>UseShippingRules</b> — (optional) expected boolean value (true/false/null-means-unset)<br>
+	 *   <b>ServiceLevel</b>     — (optional) expected service-level string, e.g. "EXPRESS"
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the captured nShift shipment request options:
+	 *   | UseShippingRules | ServiceLevel |
+	 *   | true             | EXPRESS      |
+	 * </pre>
+	 */
+	@And("validate the captured nShift shipment request options:")
+	public void validateCapturedNShiftShipmentRequestOptions(@NonNull final DataTable dataTable)
+	{
+		assertThat(capturedShipmentRequest)
+				.as("nShift shipment service was not called — make sure the delivery order creation scenario ran")
+				.isNotNull();
+
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final SoftAssertions softly = new SoftAssertions();
+
+		row.getAsOptionalString("UseShippingRules").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("UseShippingRules");
+			if ("null".equalsIgnoreCase(expected) || "-".equals(expected))
+			{
+				softly.assertThat(actual).as("shipperConfig.UseShippingRules should be absent").isNull();
+			}
+			else
+			{
+				softly.assertThat(actual).as("shipperConfig.UseShippingRules").isEqualTo(expected);
+			}
+		});
+
+		row.getAsOptionalString("ServiceLevel").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("ServiceLevel");
+			if ("null".equalsIgnoreCase(expected) || "-".equals(expected))
+			{
+				softly.assertThat(actual).as("shipperConfig.ServiceLevel should be absent").isNull();
+			}
+			else
+			{
+				softly.assertThat(actual).as("shipperConfig.ServiceLevel").isEqualTo(expected);
+			}
+		});
 
 		softly.assertAll();
 	}
