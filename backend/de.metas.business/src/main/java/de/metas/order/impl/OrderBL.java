@@ -250,7 +250,7 @@ public class OrderBL implements IOrderBL
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
 		final I_M_PriceList priceList = priceListId != null
-				? Services.get(IPriceListDAO.class).getById(priceListId)
+				? priceListDAO.getById(priceListId)
 				: null;
 		if (priceList != null)
 		{
@@ -258,7 +258,7 @@ public class OrderBL implements IOrderBL
 		}
 		else if (order.getC_Currency_ID() <= 0)
 		{
-			order.setC_Currency_ID(Env.getContextAsInt(Env.getCtx(), "#C_Currency_ID"));
+			order.setC_Currency_ID(Env.getContextAsInt(InterfaceWrapperHelper.getCtx(order), "#C_Currency_ID"));
 		}
 	}
 
