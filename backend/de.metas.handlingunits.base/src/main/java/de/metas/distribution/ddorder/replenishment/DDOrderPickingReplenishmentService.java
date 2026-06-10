@@ -1,7 +1,6 @@
 package de.metas.distribution.ddorder.replenishment;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -490,9 +489,6 @@ public class DDOrderPickingReplenishmentService
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
 		final ShipmentScheduleId scheduleId = ddOrderLowLevelDAO.getShipmentScheduleId(ddOrderId);
-		// Abort stale Draft picking jobs before checking — avoids false "picker busy" from orphaned jobs
-		// left by crashed scan sessions (same resilience pattern as MassPrintingService.processProduct).
-		pickingJobService.abortOrphanedPickingJobsForSchedules(ImmutableSet.of(scheduleId));
 		return pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId);
 	}
 
