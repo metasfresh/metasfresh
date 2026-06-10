@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 class MakeQtyReservationCommandTest
 {
+	/** A remaining-ordered qty large enough that the order-need cap (AC3a) never bites in a given test. */
+	private static final BigDecimal REMAINING_UNBOUNDED = new BigDecimal("100000");
+
 	private I_C_UOM uom;
 	private UomId uomId;
 	private ProductId productId;
@@ -46,6 +49,16 @@ class MakeQtyReservationCommandTest
 		// the product's stock UOM is the same "Each" UOM used for the rowVO qty and the capacity
 		productBL = mock(IProductBL.class);
 		when(productBL.getStockUOMId(productId)).thenReturn(uomId);
+	}
+
+	/** Stubs the order-need remaining-qty (AC3a) on the mocked service for the standard order line/UOM. */
+	private void stubRemainingOrderedQty(
+			final QtyReservationService qtyReservationService,
+			final OrderAndLineId salesOrderAndLineId,
+			final BigDecimal remaining)
+	{
+		when(qtyReservationService.computeRemainingOrderedQty(salesOrderAndLineId, uomId))
+				.thenReturn(Quantitys.of(remaining, uomId));
 	}
 
 	/**
@@ -82,6 +95,7 @@ class MakeQtyReservationCommandTest
 
 		// --- mock QtyReservationService: no-op makeReservation, capture the request ---
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, REMAINING_UNBOUNDED);
 		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
 				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
 
@@ -130,6 +144,7 @@ class MakeQtyReservationCommandTest
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
 
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, REMAINING_UNBOUNDED);
 		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
 				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
 
@@ -178,6 +193,7 @@ class MakeQtyReservationCommandTest
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
 
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, REMAINING_UNBOUNDED);
 		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
 				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
 
@@ -202,7 +218,7 @@ class MakeQtyReservationCommandTest
 	/**
 	 * Planned-supply reservation with NO order-line {@code QtyItemCapacity}: the command falls back to
 	 * the caller-supplied {@code capacityPerTUFallback} (13 CU/TU). 10 TU x 13 CU/TU = 130 CU, not
-	 * capped (planned supply).
+	 * capped (planned supply, and the order line still needs more than 130).
 	 */
 	@Test
 	void plannedSupply_usesFallbackCapacity_whenNoQtyItemCapacity()
@@ -227,6 +243,7 @@ class MakeQtyReservationCommandTest
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
 
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, REMAINING_UNBOUNDED);
 		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
 				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
 
@@ -254,7 +271,8 @@ class MakeQtyReservationCommandTest
 
 	/**
 	 * Neither the order line's {@code QtyItemCapacity} nor a {@code capacityPerTUFallback} yields a
-	 * positive capacity: the command cannot derive a CU qty and raises a user-validation error.
+	 * positive capacity: the command cannot derive a CU qty and raises a user-validation error
+	 * (before the order-need cap is even consulted).
 	 */
 	@Test
 	void noCapacity_throwsUserError()
@@ -278,6 +296,8 @@ class MakeQtyReservationCommandTest
 		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
 
+		// computeRemainingOrderedQty is intentionally NOT stubbed — the capacity error fires first,
+		// before the order-need cap is consulted, so the mock is never reached here.
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
 
 		final MakeQtyReservationCommand command = MakeQtyReservationCommand.builder()
@@ -296,12 +316,13 @@ class MakeQtyReservationCommandTest
 	}
 
 	/**
-	 * Whole-TU reservation is intentional: for a planned-supply row the reserved CU qty is
-	 * {@code qtyToReserveTU x capacity} and is NOT capped at the order line's QtyOrdered (the TU count
-	 * is already bounded upstream). 10 TU x 10 CU/TU = 100 CU even though the order line's CU is 95.
+	 * Order-need cap (AC3a), planned supply: {@code qtyToReserveTU x capacity} (10 x 10 = 100) exceeds
+	 * the order line's remaining unreserved ordered qty (95), so the reserved CU qty is capped at 95.
+	 * The TU count is unchanged (10) — TU reconciliation happens later at SO completion. PS is NOT
+	 * exempt from the order-need cap (only from the on-hand stock cap).
 	 */
 	@Test
-	void plannedSupply_reservesWholeTUs_evenWhenExceedingQtyOrdered()
+	void plannedSupply_cappedAtRemainingOrderedQty()
 	{
 		final Quantity qtyStockZero = Quantitys.of(BigDecimal.ZERO, uomId);
 		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
@@ -315,7 +336,7 @@ class MakeQtyReservationCommandTest
 
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
 
-		// capacity = 10 CU/TU; order line's CU (QtyOrdered) = 95 -> 10 x 10 = 100 > 95
+		// capacity = 10 CU/TU; raw = 10 x 10 = 100
 		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
 		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("10"));
 		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
@@ -324,6 +345,8 @@ class MakeQtyReservationCommandTest
 		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
 
 		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		// order line still needs only 95 CU (e.g. QtyOrdered 95, nothing reserved yet)
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, new BigDecimal("95"));
 		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
 				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
 
@@ -340,8 +363,156 @@ class MakeQtyReservationCommandTest
 		verify(qtyReservationService).makeReservation(requestCaptor.capture());
 		final CreateQtyReservationRequest request = requestCaptor.getValue();
 
-		// 10 TU x 10 CU/TU = 100 CU; intentionally NOT capped at the order line's CU of 95
-		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("100"));
+		// 10 TU x 10 CU/TU = 100, capped at the remaining ordered qty of 95
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("95"));
 		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
+	}
+
+	/**
+	 * Order-need cap (AC3a), on-hand, below the stock cap: {@code qtyToReserveTU x capacity}
+	 * (10 x 11 = 110) is first capped at on-hand stock (50), then further capped at the order line's
+	 * remaining ordered qty (30) — the order-need cap can bite below the stock cap. Result = 30.
+	 */
+	@Test
+	void onHand_cappedAtRemainingOrderedQty()
+	{
+		final Quantity qtyStock = Quantitys.of(new BigDecimal("50"), uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.ON_HAND)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStock)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
+		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		// order line still needs only 30 CU (less than both 110 and the 50 stock cap)
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, new BigDecimal("30"));
+		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
+				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.productBL(productBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.build()
+				.execute();
+
+		verify(qtyReservationService).makeReservation(requestCaptor.capture());
+		final CreateQtyReservationRequest request = requestCaptor.getValue();
+
+		// min(10x11=110, stock 50, remaining 30) = 30
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
+	}
+
+	/**
+	 * Order-need cap (AC3a) is slack, on-hand stock cap binds: {@code qtyToReserveTU x capacity}
+	 * (10 x 11 = 110) is capped at on-hand stock (30); the remaining ordered qty (50) is larger, so it
+	 * does not reduce further. Result = 30. Exercises the interaction direction where the stock cap is
+	 * tighter than the order-need cap.
+	 */
+	@Test
+	void onHand_cappedAtStock_whenStockCapTighterThanOrderNeed()
+	{
+		final Quantity qtyStock = Quantitys.of(new BigDecimal("30"), uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.ON_HAND)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStock)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("11"));
+		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		// order line still needs 50 CU — larger than the 30 stock cap, so the order-need cap does not bite
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, new BigDecimal("50"));
+		final ArgumentCaptor<CreateQtyReservationRequest> requestCaptor =
+				ArgumentCaptor.forClass(CreateQtyReservationRequest.class);
+
+		MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.productBL(productBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.build()
+				.execute();
+
+		verify(qtyReservationService).makeReservation(requestCaptor.capture());
+		final CreateQtyReservationRequest request = requestCaptor.getValue();
+
+		// min(10x11=110, stock 30, remaining 50) = 30 (stock cap binds)
+		assertThat(request.getQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(request.getQtyTU().toInt()).isEqualTo(10);
+	}
+
+	/**
+	 * Order-need cap (AC3b): when the order line is already fully reserved (remaining ordered qty = 0),
+	 * the command rejects the reservation with a user-validation error rather than minting a
+	 * {@code Qty = 0} reservation (the original defect this feature fixes).
+	 */
+	@Test
+	void rejectsWhenLineFullyReserved()
+	{
+		final Quantity qtyStockZero = Quantitys.of(BigDecimal.ZERO, uomId);
+		final MaterialCockpitV2RowVO rowVO = MaterialCockpitV2RowVO.builder()
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.supplyType(SupplyType.PLANNED_SUPPLY)
+				.availabilityType(AvailabilityType.AVAILABLE)
+				.qtyTU(QtyTU.ofInt(10))
+				.qtyStock(qtyStockZero)
+				.build();
+
+		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(1, 1);
+
+		final I_C_OrderLine orderLineRecord = mock(I_C_OrderLine.class);
+		when(orderLineRecord.getQtyItemCapacity()).thenReturn(new BigDecimal("10"));
+		when(orderLineRecord.getC_UOM_ID()).thenReturn(uomId.getRepoId());
+
+		final IOrderLineBL orderLineBL = mock(IOrderLineBL.class);
+		when(orderLineBL.getOrderLineById(salesOrderAndLineId)).thenReturn(orderLineRecord);
+
+		final QtyReservationService qtyReservationService = mock(QtyReservationService.class);
+		// the line is already fully reserved -> remaining = 0
+		stubRemainingOrderedQty(qtyReservationService, salesOrderAndLineId, BigDecimal.ZERO);
+
+		final MakeQtyReservationCommand command = MakeQtyReservationCommand.builder()
+				.orderLineBL(orderLineBL)
+				.productBL(productBL)
+				.qtyReservationService(qtyReservationService)
+				.rowVO(rowVO)
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.qtyToReserveTU(QtyTU.ofInt(10))
+				.build();
+
+		assertThatThrownBy(command::execute)
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(e -> assertThat(((AdempiereException)e).isUserValidationError()).isTrue());
 	}
 }
