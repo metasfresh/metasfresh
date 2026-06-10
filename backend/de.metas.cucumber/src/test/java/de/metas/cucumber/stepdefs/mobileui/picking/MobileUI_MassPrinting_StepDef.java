@@ -59,7 +59,7 @@ public class MobileUI_MassPrinting_StepDef
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final MassPrintingService massPrintingService = SpringContextHolder.instance.getBean(MassPrintingService.class);
 
-	private final M_HU_StepDefData huTable;
+	@NonNull private final M_HU_StepDefData huTable;
 
 	/** last scan result per LU identifier */
 	private final Map<String, MassPrintingResult> resultsByLuIdentifier = new HashMap<>();

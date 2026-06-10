@@ -22,6 +22,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class PickingJobLockService
@@ -86,7 +88,7 @@ public class PickingJobLockService
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getScheduleIdsLockedByOtherUser(
-			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
+			@NonNull final Set<ShipmentScheduleId> scheduleIds,
 			@NonNull final UserId pickerId)
 	{
 		if (scheduleIds.isEmpty())
