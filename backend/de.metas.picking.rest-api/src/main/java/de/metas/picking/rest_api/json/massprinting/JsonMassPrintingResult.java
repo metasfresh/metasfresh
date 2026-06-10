@@ -50,8 +50,6 @@ public class JsonMassPrintingResult
 						.packedHUIds(pr.getPackedHUIds().stream()
 								.map(HuId::getRepoId)
 								.collect(ImmutableList.toImmutableList()))
-						.labelsPrinted(pr.getLabelsPrinted())
-						.labelPrintFailures(pr.getLabelPrintFailures())
 						.unitsLeftOnLU(pr.getUnitsLeftOnLU())
 						.unitsOfOpenDemandRemaining(pr.getUnitsOfOpenDemandRemaining())
 						.build())

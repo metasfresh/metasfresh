@@ -40,12 +40,6 @@ public class MassPrintingResult
 		 */
 		@NonNull @Singular ImmutableSet<HuId> packedHUIds;
 
-		/** Number of labels printed successfully. */
-		int labelsPrinted;
-
-		/** Number of label print failures (labels not printed). */
-		int labelPrintFailures;
-
 		/** Units remaining on the LU after packing (leftover). */
 		int unitsLeftOnLU;
 

@@ -102,7 +102,6 @@ public class MobileUI_MassPrinting_StepDef
 
 	/**
 	 * Validates the mass printing result for a specific LU.
-	 * Checks the total number of boxes packed across all products and optionally the total label-print attempts.
 	 *
 	 * <p>Required columns:
 	 * <ul>
@@ -110,19 +109,11 @@ public class MobileUI_MassPrinting_StepDef
 	 *   <li>{@code UnitsPacked} — total units packed across all products (in product UOM)</li>
 	 * </ul>
 	 *
-	 * <p>Optional columns:
-	 * <ul>
-	 *   <li>{@code OPT.LabelPrintAttempts} — total label print attempts across all products
-	 *       ({@code labelsPrinted + labelPrintFailures}); environment-agnostic: equals the
-	 *       number of shippable HUs the system tried to print a label for, regardless of
-	 *       whether Jasper or an M_HU_Label_Config was available</li>
-	 * </ul>
-	 *
 	 * <p>Example:
 	 * <pre>
 	 * Then validate mass printing result:
-	 *   | M_HU_ID | UnitsPacked | OPT.LabelPrintAttempts |
-	 *   | lu      | 4           | 1                      |
+	 *   | M_HU_ID | UnitsPacked |
+	 *   | lu      | 4           |
 	 * </pre>
 	 */
 	@Then("validate mass printing result:")
@@ -140,15 +131,6 @@ public class MobileUI_MassPrinting_StepDef
 			assertThat(actualUnitsPacked)
 					.as("UnitsPacked for LU=" + luIdentifier)
 					.isEqualTo(expectedUnitsPacked);
-
-			row.getAsOptionalInt("LabelPrintAttempts").ifPresent(expectedAttempts -> {
-				final int actualAttempts = result.getProductResults().stream()
-						.mapToInt(pr -> pr.getLabelsPrinted() + pr.getLabelPrintFailures())
-						.sum();
-				assertThat(actualAttempts)
-						.as("LabelPrintAttempts for LU=" + luIdentifier)
-						.isEqualTo(expectedAttempts);
-			});
 		});
 	}
 

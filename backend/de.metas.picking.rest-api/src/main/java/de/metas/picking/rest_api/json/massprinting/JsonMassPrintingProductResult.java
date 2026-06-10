@@ -30,12 +30,6 @@ public class JsonMassPrintingProductResult
 	 */
 	@NonNull @lombok.Builder.Default ImmutableList<Integer> packedHUIds = ImmutableList.of();
 
-	/** Number of HU labels printed successfully. */
-	int labelsPrinted;
-
-	/** Number of label print failures (labels not printed due to an error). */
-	int labelPrintFailures;
-
 	/** Units remaining on the LU after packing (demand was fully satisfied before LU was exhausted). */
 	int unitsLeftOnLU;
 

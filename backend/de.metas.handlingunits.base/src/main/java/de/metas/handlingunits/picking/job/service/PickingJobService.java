@@ -753,13 +753,16 @@ public class PickingJobService implements PickingSlotListener
 					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
 			final ImmutableSet<HuId> closedLUIds = closedHUIdsCollector.getLUIds();
-			huService.printLULabels(closedHUIdsCollector.getLUIds());
+			huService.printLULabels(closedLUIds);
+			huService.printTULabels(closedHUIdsCollector.getTopLevelTUIds());
 
 			if (isShipClosedHUs)
 			{
 				if (!closedHUIdsCollector.getTopLevelTUIds().isEmpty())
 				{
-					throw new AdempiereException("Shipping on close top level TUs is not supported yet. Found TUIds: " + closedHUIdsCollector.getTopLevelTUIds() + ". PickingJob: " + pickingJobChanged.getId() + ".");
+					// Auto-ship on TU-close is not yet implemented; shipment will be created at complete-job time.
+					logger.warn("Shipping on close not supported for top-level TUs; skipping shipment for TU IDs={}. PickingJob={}",
+							closedHUIdsCollector.getTopLevelTUIds(), pickingJobChanged.getId());
 				}
 
 				if (!closedLUIds.isEmpty())
