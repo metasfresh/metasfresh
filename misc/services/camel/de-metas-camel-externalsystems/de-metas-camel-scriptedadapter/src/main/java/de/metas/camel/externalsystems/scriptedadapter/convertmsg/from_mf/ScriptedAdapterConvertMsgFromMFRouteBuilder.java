@@ -128,6 +128,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@NonNull
 	private final SftpDeliveryProcessor sftpDeliveryProcessor;
 
+	private final FileUploadProcessor fileUploadProcessor = new FileUploadProcessor();
+
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final JavaScriptExecutorService javaScriptExecutorService = new JavaScriptExecutorService();
@@ -196,15 +198,18 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 							.end()
 
 							// Make the rest-call and handle the case of a stale OAuth/OAuth2 token
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 							.choice()
 								.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 									.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 									.process(this::forceRefreshOAuthToken)
+									.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
 								.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth2'"))
 									.log(LoggingLevel.WARN, "Received 401, refreshing OAuth2 token and retrying once...")
 									.process(this::forceRefreshOAuth2Token)
+									.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_OAUTH2_RETRY")
 							.end()
 
@@ -245,15 +250,18 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 						.otherwise()
 							.throwException(new RuntimeCamelException("Unsupported authentication type"))
 					.end()
+					.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 					.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT")
 					.choice()
 						.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 							.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 							.process(this::forceRefreshOAuthToken)
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_RETRY")
 						.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth2'"))
 							.log(LoggingLevel.WARN, "Received 401, refreshing OAuth2 token and retrying once...")
 							.process(this::forceRefreshOAuth2Token)
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_OAUTH2_RETRY")
 					.end()
 					.process(this::prepareJsonAttachmentRequest)
