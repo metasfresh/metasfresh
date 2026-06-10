@@ -30,13 +30,17 @@ import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import com.google.common.annotations.VisibleForTesting;
+import org.compiere.Adempiere;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -47,6 +51,16 @@ public class BPartnerAddressEffectiveBL
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
 	@NonNull private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry;
+
+	@VisibleForTesting
+	public static BPartnerAddressEffectiveBL newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(BPartnerAddressEffectiveBL.class, () -> new BPartnerAddressEffectiveBL(
+				BPartnerEffectiveBL.newInstanceForUnitTesting(),
+				new DocumentLocationAdaptersRegistry(Collections.emptyList())));
+	}
 
 	/**
 	 * Resolves effective address values for any document model using the universal adapter registry.
