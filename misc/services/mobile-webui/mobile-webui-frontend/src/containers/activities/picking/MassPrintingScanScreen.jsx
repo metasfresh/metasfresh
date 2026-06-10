@@ -86,7 +86,7 @@ const MassPrintingResult = ({ result, onDone }) => {
             {trl('activities.picking.massPrinting.product')} {pr.productId}
           </p>
           <p data-testid="mass-printing-boxes-packed">
-            {trl('activities.picking.massPrinting.boxesPacked')}: {pr.boxesPacked}
+            {trl('activities.picking.massPrinting.unitsPacked')}: {pr.unitsPacked}
           </p>
           <p data-testid="mass-printing-labels-printed">
             {trl('activities.picking.massPrinting.labelsPrinted')}: {pr.labelsPrinted}
@@ -134,7 +134,7 @@ MassPrintingResult.propTypes = {
     productResults: PropTypes.arrayOf(
       PropTypes.shape({
         productId: PropTypes.number.isRequired,
-        boxesPacked: PropTypes.number.isRequired,
+        unitsPacked: PropTypes.number.isRequired,
         labelsPrinted: PropTypes.number.isRequired,
         labelPrintFailures: PropTypes.number.isRequired,
         unitsLeftOnLU: PropTypes.number.isRequired,

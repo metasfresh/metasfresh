@@ -107,7 +107,7 @@ public class MobileUI_MassPrinting_StepDef
 	 * <p>Required columns:
 	 * <ul>
 	 *   <li>{@code M_HU_ID} — identifier of the LU scanned (to look up the result)</li>
-	 *   <li>{@code BoxesPacked} — total boxes packed across all products (counted in product UOM units)</li>
+	 *   <li>{@code UnitsPacked} — total units packed across all products (in product UOM)</li>
 	 * </ul>
 	 *
 	 * <p>Optional columns:
@@ -121,7 +121,7 @@ public class MobileUI_MassPrinting_StepDef
 	 * <p>Example:
 	 * <pre>
 	 * Then validate mass printing result:
-	 *   | M_HU_ID | BoxesPacked | OPT.LabelPrintAttempts |
+	 *   | M_HU_ID | UnitsPacked | OPT.LabelPrintAttempts |
 	 *   | lu      | 4           | 1                      |
 	 * </pre>
 	 */
@@ -133,13 +133,13 @@ public class MobileUI_MassPrinting_StepDef
 			final MassPrintingResult result = resultsByLuIdentifier.get(luIdentifier);
 			assertThat(result).as("Mass printing result must exist for LU=" + luIdentifier + ". Was 'mass printing scan:' called?").isNotNull();
 
-			final int expectedBoxesPacked = row.getAsInt("BoxesPacked");
-			final int actualBoxesPacked = result.getProductResults().stream()
-					.mapToInt(ProductResult::getBoxesPacked)
+			final int expectedUnitsPacked = row.getAsInt("UnitsPacked");
+			final int actualUnitsPacked = result.getProductResults().stream()
+					.mapToInt(ProductResult::getUnitsPacked)
 					.sum();
-			assertThat(actualBoxesPacked)
-					.as("BoxesPacked for LU=" + luIdentifier)
-					.isEqualTo(expectedBoxesPacked);
+			assertThat(actualUnitsPacked)
+					.as("UnitsPacked for LU=" + luIdentifier)
+					.isEqualTo(expectedUnitsPacked);
 
 			row.getAsOptionalInt("LabelPrintAttempts").ifPresent(expectedAttempts -> {
 				final int actualAttempts = result.getProductResults().stream()

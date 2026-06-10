@@ -135,7 +135,7 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
     # The attempt count is asserted rather than labelsPrinted directly, so the test passes regardless of whether
     # a Jasper report or M_HU_Label_Config is available in this environment (the print call was made either way).
     Then validate mass printing result:
-      | M_HU_ID | BoxesPacked | OPT.LabelPrintAttempts |
+      | M_HU_ID | UnitsPacked | OPT.LabelPrintAttempts |
       | lu      | 4           | 1                      |
 
     # schedLocked was skipped: lock still held by picker2 (not unlocked/processed by mass printing)

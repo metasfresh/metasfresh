@@ -237,10 +237,10 @@ public class MassPrintingService
 	{
 		final ScheduleSelection selection = selectSchedulesFifo(packageables, unitsOnLU);
 
-		if (selection.getSelectedScheduleIds().isEmpty() || selection.getBoxesToPack() <= 0)
+		if (selection.getSelectedScheduleIds().isEmpty() || selection.getUnitsToPack() <= 0)
 		{
 			return PackAndPickResult.builder()
-					.boxesPacked(0)
+					.unitsPacked(0)
 					.unitsLeftOnLU(unitsOnLU)
 					.openDemandRemaining(selection.getTotalDemand())
 					.build();
@@ -257,11 +257,11 @@ public class MassPrintingService
 		pickingJobService.complete(pickedJob);
 
 		return PackAndPickResult.builder()
-				.boxesPacked(selection.getBoxesToPack())
+				.unitsPacked(selection.getUnitsToPack())
 				.pickedHuIds(pickedHuIds)
 				.packedHUIds(packedHUIds)
 				.unitsLeftOnLU(selection.getUnitsLeftOnLU())
-				.openDemandRemaining(Math.max(0, selection.getTotalDemand() - selection.getBoxesToPack()))
+				.openDemandRemaining(Math.max(0, selection.getTotalDemand() - selection.getUnitsToPack()))
 				.build();
 	}
 
@@ -291,7 +291,7 @@ public class MassPrintingService
 
 		return ProductResult.builder()
 				.productId(productId)
-				.boxesPacked(packAndPickResult.getBoxesPacked())
+				.unitsPacked(packAndPickResult.getUnitsPacked())
 				.packedHUIds(packAndPickResult.getPackedHUIds())
 				.labelsPrinted(labelsPrinted)
 				.labelPrintFailures(labelPrintFailures)
@@ -316,7 +316,14 @@ public class MassPrintingService
 
 		for (final Packageable packageable : packageables)
 		{
-			final int scheduleDemand = packageable.getQtyToPick().toBigDecimal().intValueExact();
+			final BigDecimal qtyBD = packageable.getQtyToPick().toBigDecimal();
+			if (qtyBD.stripTrailingZeros().scale() > 0)
+			{
+				logger.warn("Skipping schedule {} — fractional QtyToPick={} is not supported for mass printing",
+						packageable.getShipmentScheduleId(), qtyBD);
+				continue;
+			}
+			final int scheduleDemand = qtyBD.intValueExact();
 			if (scheduleDemand <= 0)
 			{
 				continue;
@@ -460,13 +467,13 @@ public class MassPrintingService
 		/** Ordered list of the keys of {@link #selectedScheduleQtys} (insertion-order preserved). */
 		@NonNull ImmutableList<ShipmentScheduleId> selectedScheduleIds;
 		int totalDemand;
-		int boxesToPack;
+		int unitsToPack;
 		int unitsLeftOnLU;
 
 		static ScheduleSelection of(
 				@NonNull final Map<ShipmentScheduleId, Integer> selectedScheduleQtys,
 				final int totalDemand,
-				final int boxesToPack,
+				final int unitsToPack,
 				final int unitsLeftOnLU)
 		{
 			final ImmutableMap<ShipmentScheduleId, Integer> qtysMap = ImmutableMap.copyOf(selectedScheduleQtys);
@@ -474,7 +481,7 @@ public class MassPrintingService
 					.selectedScheduleQtys(qtysMap)
 					.selectedScheduleIds(ImmutableList.copyOf(qtysMap.keySet()))
 					.totalDemand(totalDemand)
-					.boxesToPack(boxesToPack)
+					.unitsToPack(unitsToPack)
 					.unitsLeftOnLU(unitsLeftOnLU)
 					.build();
 		}
@@ -488,8 +495,8 @@ public class MassPrintingService
 	@Builder
 	private static class PackAndPickResult
 	{
-		/** Number of shippable HUs packed (one per picked unit). */
-		int boxesPacked;
+		/** Number of product units packed (in product UOM). */
+		int unitsPacked;
 
 		/**
 		 * Top-level picked HU ids — used for post-commit label printing.

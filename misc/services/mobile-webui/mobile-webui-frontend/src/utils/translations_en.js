@@ -152,7 +152,7 @@ const translations = {
         doneButton: 'Done',
         noResults: 'No eligible products found on this LU',
         product: 'Product',
-        boxesPacked: 'Boxes packed',
+        unitsPacked: 'Units packed',
         labelsPrinted: 'Labels printed',
         labelPrintFailures: 'Print failures',
         unitsLeftOnLU: 'Units left on LU',

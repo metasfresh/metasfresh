@@ -157,7 +157,7 @@ const translations = {
         doneButton: 'Fertig',
         noResults: 'Keine passenden Produkte auf dieser LU gefunden',
         product: 'Produkt',
-        boxesPacked: 'Verpackte Kartons',
+        unitsPacked: 'Verpackte Einheiten',
         labelsPrinted: 'Gedruckte Etiketten',
         labelPrintFailures: 'Druckfehler',
         unitsLeftOnLU: 'Restmengen auf LU',

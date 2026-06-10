@@ -46,7 +46,7 @@ public class JsonMassPrintingResult
 		final List<JsonMassPrintingProductResult> productResults = result.getProductResults().stream()
 				.map(pr -> JsonMassPrintingProductResult.builder()
 						.productId(pr.getProductId().getRepoId())
-						.boxesPacked(pr.getBoxesPacked())
+						.unitsPacked(pr.getUnitsPacked())
 						.packedHUIds(pr.getPackedHUIds().stream()
 								.map(HuId::getRepoId)
 								.collect(ImmutableList.toImmutableList()))
