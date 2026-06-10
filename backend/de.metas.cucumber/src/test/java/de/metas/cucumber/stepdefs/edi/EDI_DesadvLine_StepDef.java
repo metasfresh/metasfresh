@@ -22,8 +22,11 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.uom.IUOMDAO;
@@ -60,6 +63,45 @@ public class EDI_DesadvLine_StepDef
 		this.desadvLineTable = desadvLineTable;
 		this.desadvTable = desadvTable;
 		this.productTable = productTable;
+	}
+
+	/**
+	 * Finds an EDI_DesadvLine record by EDI_Desadv_ID and registers it under the given identifier.
+	 * Useful when a test needs to reference the auto-created DESADV line by identifier,
+	 * e.g. to inject pack items referencing that line.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code EDI_DesadvLine_ID} – identifier under which the found record is registered</li>
+	 *   <li>{@code EDI_Desadv_ID} – identifier of the parent DESADV (must be registered in {@link EDI_Desadv_StepDefData})</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then EDI_DesadvLine records are found:
+	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID |
+	 *   | desadvLine        | myDesadv      |
+	 * </pre>
+	 */
+	@Then("EDI_DesadvLine records are found:")
+	public void edi_desadv_line_records_are_found(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::findAndRegisterDesadvLine);
+	}
+
+	private void findAndRegisterDesadvLine(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier desadvIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID);
+		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
+
+		final I_EDI_DesadvLine desadvLine = queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvRecord.getEDI_Desadv_ID())
+				.create()
+				.firstOnlyNotNull(I_EDI_DesadvLine.class);
+
+		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
+		desadvLineTable.put(lineIdentifier, desadvLine);
 	}
 
 	@Then("validate created edi desadv line")
