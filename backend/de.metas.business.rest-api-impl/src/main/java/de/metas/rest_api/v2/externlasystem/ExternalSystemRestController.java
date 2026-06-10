@@ -138,7 +138,7 @@ public class ExternalSystemRestController
 	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/error", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonCreateIssueResponse> handleError(
 			@RequestBody @NonNull final JsonError request,
-			@PathVariable final Integer AD_PInstance_ID)
+			@PathVariable final int AD_PInstance_ID)
 	{
 		final JsonCreateIssueResponse issueResponse = externalSystemService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok(issueResponse);
@@ -154,7 +154,7 @@ public class ExternalSystemRestController
 	})
 	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/ok")
 	public ResponseEntity<?> handleSuccess(
-			@PathVariable final Integer AD_PInstance_ID,
+			@PathVariable final int AD_PInstance_ID,
 			@RequestParam(required = false, defaultValue = "200") final int httpResponseCode)
 	{
 		externalSystemService.handleExportSuccess(PInstanceId.ofRepoId(AD_PInstance_ID), httpResponseCode);
