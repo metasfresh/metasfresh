@@ -356,6 +356,24 @@ public class ExternalSystem_Config_StepDef
 		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row));
 	}
 
+	/**
+	 * Variant of {@code metasfresh contains ExternalSystem_Config with ScriptedExportConversion} that also
+	 * enables {@code IsTriggerOnComplete} on the scripted-export config, so completing a document of the
+	 * configured table records an {@code ExternalSystem_ScriptedExportConversion_Status} row. Use this when
+	 * the scenario verifies the status-table lifecycle (Pending/DontSend/Sent/Error/Invalid).
+	 *
+	 * <p>Accepts the same columns as the base step:
+	 * <b>ExternalSystem_Config_ID</b> (identifier), <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> (identifier),
+	 * <b>AD_Process_OutboundData_ID.Value</b> (the outbound data process producing the export payload),
+	 * <b>TableName</b> (the document table the config triggers on).
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+	 *   | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
+	 *   | esConfig_es              | scriptedCfg_es                                    | M_InOut_EDI_Export_JSON          | M_InOut   |
+	 * </pre>
+	 */
 	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:")
 	public void add_externalSystemConfigWithScriptedExportConversionAndStatusColumn(@NonNull final DataTable dataTable)
 	{
