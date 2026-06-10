@@ -87,18 +87,13 @@ public class ExternalSystemEndpoint
 	 */
 	@Default boolean isArrayFanOut = false;
 
-	// OAuth2 auth fields (used with authType=OAuth2)
-
 	/** OAuth2 token endpoint URL the password-grant request is POSTed to. */
 	@Nullable String oauthTokenUrl;
 
-	/** Optional OAuth2 scope sent with the token request (e.g. "docuware.platform"). */
+	/** Optional OAuth2 scope, e.g. "docuware.platform". */
 	@Nullable String oauthScope;
 
-	/**
-	 * If TRUE the payload is uploaded as multipart/form-data.
-	 * Default FALSE - plain-body request.
-	 */
+	/** If TRUE the payload is uploaded as multipart/form-data. */
 	@Default boolean isFileUpload = false;
 
 	/**

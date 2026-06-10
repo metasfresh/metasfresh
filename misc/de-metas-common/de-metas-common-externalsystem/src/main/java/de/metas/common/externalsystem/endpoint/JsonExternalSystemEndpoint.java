@@ -104,22 +104,15 @@ public class JsonExternalSystemEndpoint
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean arrayFanOut;
 
-	// OAuth2 auth fields (used with authType=OAuth2)
-
 	/** Token endpoint URL the OAuth2 password-grant request is POSTed to. */
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String oauthTokenUrl;
 
-	/** Optional OAuth2 scope sent with the token request (e.g. "docuware.platform"). */
+	/** Optional OAuth2 scope, e.g. "docuware.platform". */
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String oauthScope;
 
-	// Multipart file-upload flag
-
-	/**
-	 * If TRUE, the request body is sent as multipart/form-data (document + binary file).
-	 * Boxed Boolean so the field is omitted from the wire format when unset.
-	 */
+	/** If TRUE, the request body is sent as multipart/form-data (document + binary file). */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isFileUpload;
 }

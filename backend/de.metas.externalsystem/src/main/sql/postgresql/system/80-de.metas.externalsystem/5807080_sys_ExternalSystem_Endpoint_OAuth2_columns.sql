@@ -51,20 +51,25 @@ SET Name='OAuth2', IsTranslated='Y',
     Updated=TO_TIMESTAMP('2026-06-10 08:00:01', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544260 AND AD_Language='en_US';
 
+UPDATE AD_Ref_List_Trl
+SET IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-10 08:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID=544260 AND AD_Language IN ('de_DE', 'de_CH');
+
 -- ============================================================
 -- 2. Fix SftpFilenamePattern element help text (AD_Element 584677)
 -- ============================================================
 UPDATE AD_Element
-SET Description = 'Muster fuer ausgehende Dateinamen; {...}-Platzhalter werden beim Senden ersetzt.',
-    Help        = 'Platzhalter in geschweiften Klammern werden beim Senden der Datei ersetzt: {documentno} (Belegnummer des exportierten Datensatzes), {table} (dessen Tabellenname, z.B. M_InOut), {recordid} (dessen Datenbankschluessel), {timestamp} (Sendezeitpunkt, Format yyyyMMdd_HHmmss). Unbekannte Platzhalter bleiben unveraendert. Beispiel: DESADV_{documentno}_{timestamp}.json',
+SET Description = 'Muster für ausgehende Dateinamen; {...}-Platzhalter werden beim Senden ersetzt.',
+    Help        = 'Platzhalter in geschweiften Klammern werden beim Senden der Datei ersetzt: {documentno} (Belegnummer des exportierten Datensatzes), {table} (dessen Tabellenname, z.B. M_InOut), {recordid} (dessen Datenbankschlüssel), {timestamp} (Sendezeitpunkt, Format yyyyMMdd_HHmmss). Unbekannte Platzhalter bleiben unverändert. Beispiel: DESADV_{documentno}_{timestamp}.json',
     Updated     = TO_TIMESTAMP('2026-06-10 08:00:02', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Element_ID = 584677;
 
 -- German trl rows (de_DE, de_CH) - mirror the base German text
 UPDATE AD_Element_Trl
-SET Description = 'Muster fuer ausgehende Dateinamen; {...}-Platzhalter werden beim Senden ersetzt.',
-    Help        = 'Platzhalter in geschweiften Klammern werden beim Senden der Datei ersetzt: {documentno} (Belegnummer des exportierten Datensatzes), {table} (dessen Tabellenname, z.B. M_InOut), {recordid} (dessen Datenbankschluessel), {timestamp} (Sendezeitpunkt, Format yyyyMMdd_HHmmss). Unbekannte Platzhalter bleiben unveraendert. Beispiel: DESADV_{documentno}_{timestamp}.json',
+SET Description = 'Muster für ausgehende Dateinamen; {...}-Platzhalter werden beim Senden ersetzt.',
+    Help        = 'Platzhalter in geschweiften Klammern werden beim Senden der Datei ersetzt: {documentno} (Belegnummer des exportierten Datensatzes), {table} (dessen Tabellenname, z.B. M_InOut), {recordid} (dessen Datenbankschlüssel), {timestamp} (Sendezeitpunkt, Format yyyyMMdd_HHmmss). Unbekannte Platzhalter bleiben unverändert. Beispiel: DESADV_{documentno}_{timestamp}.json',
     IsTranslated= 'Y',
     Updated     = TO_TIMESTAMP('2026-06-10 08:00:03', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -74,7 +79,7 @@ UPDATE AD_Element_Trl
 SET Description = 'Pattern for outbound file names; {...} placeholders are replaced at send time.',
     Help        = 'Placeholders in curly braces are replaced when the file is sent: {documentno} (document number of the exported record), {table} (its table name, e.g. M_InOut), {recordid} (its database ID), {timestamp} (send time, format yyyyMMdd_HHmmss). Unknown placeholders are left unchanged. Example: DESADV_{documentno}_{timestamp}.json',
     IsTranslated= 'Y',
-    Updated     = TO_TIMESTAMP('2026-06-10 08:00:03', 'YYYY-MM-DD HH24:MI:SS'),
+    Updated     = TO_TIMESTAMP('2026-06-10 08:00:04', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Element_ID = 584677 AND AD_Language = 'en_US';
 
@@ -190,7 +195,7 @@ VALUES (0, 0, 'Y',
     TO_TIMESTAMP('2026-06-10 08:03:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     584969 /*From ID Server*/, 'IsFileUpload', 'Datei-Upload', 'Datei-Upload',
     'Anfrage-Body als multipart/form-data senden (Dokument + Datei).',
-    'Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binaerdatei als separate Teile, anstatt als einfachen Body. Wird fuer DMS-Upload-Ziele wie DocuWare verwendet.',
+    'Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binärdatei als separate Teile, anstatt als einfachen Body. Wird für DMS-Upload-Ziele wie DocuWare verwendet.',
     'de.metas.externalsystem')
 ON CONFLICT (AD_Element_ID) DO NOTHING;
 
@@ -208,7 +213,7 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Element_ID=584969
 UPDATE AD_Element_Trl
 SET Name='Datei-Upload', PrintName='Datei-Upload',
     Description='Anfrage-Body als multipart/form-data senden (Dokument + Datei).',
-    Help='Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binaerdatei als separate Teile, anstatt als einfachen Body. Wird fuer DMS-Upload-Ziele wie DocuWare verwendet.',
+    Help='Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binärdatei als separate Teile, anstatt als einfachen Body. Wird für DMS-Upload-Ziele wie DocuWare verwendet.',
     IsTranslated='Y',
     Updated=TO_TIMESTAMP('2026-06-10 08:03:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=584969 AND AD_Language IN ('de_DE', 'de_CH');
@@ -357,7 +362,7 @@ VALUES (592796 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-06-10 08:06:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     584969, 542551, 'IsFileUpload', 'Datei-Upload',
     'Anfrage-Body als multipart/form-data senden (Dokument + Datei).',
-    'Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binaerdatei als separate Teile, anstatt als einfachen Body. Wird fuer DMS-Upload-Ziele wie DocuWare verwendet.',
+    'Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binärdatei als separate Teile, anstatt als einfachen Body. Wird für DMS-Upload-Ziele wie DocuWare verwendet.',
     0, 'de.metas.externalsystem', 20,
     'Y', 'N', 'Y', 'N', 'N', 'N', 'N',
     1, 'N', 'N',
@@ -465,7 +470,7 @@ VALUES (0, 0, 'Y',
     780750 /*From ID Server*/, 548506, 592796,
     'Datei-Upload',
     'Anfrage-Body als multipart/form-data senden (Dokument + Datei).',
-    'Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binaerdatei als separate Teile, anstatt als einfachen Body. Wird fuer DMS-Upload-Ziele wie DocuWare verwendet.',
+    'Wenn gesetzt, wird die Nutzlast als multipart/form-data hochgeladen, mit den JSON-Metadaten und der Binärdatei als separate Teile, anstatt als einfachen Body. Wird für DMS-Upload-Ziele wie DocuWare verwendet.',
     'Y', 'N', 'N', 'N',
     0, 0, 'de.metas.externalsystem', 'N')
 ON CONFLICT (AD_Field_ID) DO NOTHING;
