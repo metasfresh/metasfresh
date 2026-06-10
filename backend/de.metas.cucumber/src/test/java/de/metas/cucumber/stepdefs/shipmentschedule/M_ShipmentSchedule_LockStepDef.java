@@ -92,7 +92,7 @@ public class M_ShipmentSchedule_LockStepDef
 		});
 	}
 
-	@Then("validate M_ShipmentSchedule_Lock record for")
+	@Then("validate M_ShipmentSchedule_Lock record for:")
 	public void validateLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((tableRow) -> {
