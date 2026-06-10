@@ -57,16 +57,16 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
  *
  * <p>When {@code isFileUpload} is absent/false the processor is a no-op.
  *
- * <p>DocuWare contract: part name {@value #PART_NAME_DOCUMENT} (application/json) and
- * part name {@value #PART_NAME_FILE} (binary, disposition filename = {@code fileName}).
+ * <p>Multipart part names follow the receiving system's upload contract
+ * (e.g. a DMS such as DocuWare expects "Document" and "File[]").
  * Header {@value #HEADER_X_FILE_MODIFIED_DATE} is set to the current ISO-8601 timestamp.
  */
 public class FileUploadProcessor
 {
-	/** DocuWare multipart part name for the document JSON. */
+	/** Multipart part name for the document JSON. */
 	public static final String PART_NAME_DOCUMENT = "Document";
 
-	/** DocuWare multipart part name for the binary file. */
+	/** Multipart part name for the binary file. */
 	public static final String PART_NAME_FILE = "File[]";
 
 	/** Header carrying the file's modification date (ISO-8601). */

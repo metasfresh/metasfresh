@@ -11,35 +11,40 @@
 
 -- ============================================================
 -- 1. Update AD_Element 578728 (ExternalSystem_Config_ID) with
---    description and help texts (base element has these empty).
---    This element is shared; description/help are generic enough
---    to apply to all existing usages.
+--    generic description and help texts.
+--    IMPORTANT: this element is SHARED across many tables — only
+--    generic, context-neutral text belongs here.  Context-specific
+--    documentation (e.g. what DocuWare does with this field) belongs
+--    in user documentation, not in the shared element.
+--    ORDERING NOTE: base AND trl rows must be set to the same text
+--    BEFORE any propagation call; setting the base row alone is not
+--    enough because the cascade from stale trl rows overwrites it.
 -- ============================================================
 UPDATE AD_Element
-SET Description = 'Externes-System-Konfiguration, mit der diese Belege-Ausgangs-Konfiguration verknüpft ist.',
-    Help        = 'Wenn gesetzt, werden archivierte PDFs von abgeschlossenen Belegen dieser Ausgangs-Konfiguration in das verknüpfte externe System exportiert (z.B. ein DMS wie DocuWare).',
+SET Description = 'Konfiguration des externen Systems, mit der dieser Datensatz verknüpft ist.',
+    Help        = 'Verknüpft diesen Datensatz mit einer externen System-Konfiguration (ExternalSystem_Config).',
     Updated     = TO_TIMESTAMP('2026-06-10 09:00:00', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Element_ID = 578728;
 
--- German translations (de_DE, de_CH)
+-- German translations (de_DE, de_CH) — must be set before propagation calls
 UPDATE AD_Element_Trl
-SET Description = 'Externes-System-Konfiguration, mit der diese Belege-Ausgangs-Konfiguration verknüpft ist.',
-    Help        = 'Wenn gesetzt, werden archivierte PDFs von abgeschlossenen Belegen dieser Ausgangs-Konfiguration in das verknüpfte externe System exportiert (z.B. ein DMS wie DocuWare).',
-    IsTranslated= 'Y',
-    Updated     = TO_TIMESTAMP('2026-06-10 09:00:10', 'YYYY-MM-DD HH24:MI:SS'),
-    UpdatedBy   = 100
+SET Description  = 'Konfiguration des externen Systems, mit der dieser Datensatz verknüpft ist.',
+    Help         = 'Verknüpft diesen Datensatz mit einer externen System-Konfiguration (ExternalSystem_Config).',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-10 09:00:10', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
 WHERE AD_Element_ID = 578728 AND AD_Language IN ('de_DE', 'de_CH');
 
--- English translation
+-- English translation — must be set before propagation calls
 UPDATE AD_Element_Trl
-SET Name        = 'External System Config',
-    PrintName   = 'External System Config',
-    Description = 'External-system configuration this outbound config is linked to.',
-    Help        = 'If set, archived PDFs of completed documents covered by this outbound config are exported to the linked external system (e.g. a DMS).',
-    IsTranslated= 'Y',
-    Updated     = TO_TIMESTAMP('2026-06-10 09:00:12', 'YYYY-MM-DD HH24:MI:SS'),
-    UpdatedBy   = 100
+SET Name         = 'External System Config',
+    PrintName    = 'External System Config',
+    Description  = 'External-system configuration this record is linked to.',
+    Help         = 'Links this record to an external-system configuration (ExternalSystem_Config).',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-10 09:00:12', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
 WHERE AD_Element_ID = 578728 AND AD_Language = 'en_US';
 
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(578728, 'de_DE');
@@ -79,8 +84,8 @@ VALUES (592799 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-06-10 09:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-06-10 09:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     578728, 540434, 'ExternalSystem_Config_ID', 'External System Config',
-    'Externes-System-Konfiguration, mit der diese Belege-Ausgangs-Konfiguration verknüpft ist.',
-    'Wenn gesetzt, werden archivierte PDFs von abgeschlossenen Belegen dieser Ausgangs-Konfiguration in das verknüpfte externe System exportiert (z.B. ein DMS wie DocuWare).',
+    'Konfiguration des externen Systems, mit der dieser Datensatz verknüpft ist.',
+    'Verknüpft diesen Datensatz mit einer externen System-Konfiguration (ExternalSystem_Config).',
     0, 'D', 19,
     'N', 'Y', 'N', 'N', 'N', 'N',
     10, 'N', 'N',
@@ -93,6 +98,15 @@ VALUES (592799 /*From ID Server*/, 0, 0, 'Y',
     'N', 'N', 'N', 'N', 0,
     0, 0)
 ON CONFLICT (AD_Column_ID) DO NOTHING;
+
+-- Ensure Description/Help on the column use the generic shared-element texts
+-- (ON CONFLICT DO NOTHING above leaves the row untouched on re-run).
+UPDATE AD_Column
+SET Description = 'Konfiguration des externen Systems, mit der dieser Datensatz verknüpft ist.',
+    Help        = 'Verknüpft diesen Datensatz mit einer externen System-Konfiguration (ExternalSystem_Config).',
+    Updated     = TO_TIMESTAMP('2026-06-10 09:01:01', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy   = 100
+WHERE AD_Column_ID = 592799;
 
 -- Skeleton _Trl rows for all active system languages
 INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated,
@@ -124,11 +138,21 @@ VALUES (0, 0, 'Y',
     TO_TIMESTAMP('2026-06-10 09:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     780753 /*From ID Server*/, 540477, 592799,
     'External System Config',
-    'Externes-System-Konfiguration, mit der diese Belege-Ausgangs-Konfiguration verknüpft ist.',
-    'Wenn gesetzt, werden archivierte PDFs von abgeschlossenen Belegen dieser Ausgangs-Konfiguration in das verknüpfte externe System exportiert (z.B. ein DMS wie DocuWare).',
+    'Konfiguration des externen Systems, mit der dieser Datensatz verknüpft ist.',
+    'Verknüpft diesen Datensatz mit einer externen System-Konfiguration (ExternalSystem_Config).',
     'Y', 'N', 'N', 'N',
     0, 0, 'D', 'N')
 ON CONFLICT (AD_Field_ID) DO NOTHING;
+
+-- Ensure Description/Help on the field use the generic shared-element texts
+-- (ON CONFLICT DO NOTHING above leaves the row untouched on re-run; this UPDATE
+-- corrects any pre-existing row that still held context-specific text).
+UPDATE AD_Field
+SET Description = 'Konfiguration des externen Systems, mit der dieser Datensatz verknüpft ist.',
+    Help        = 'Verknüpft diesen Datensatz mit einer externen System-Konfiguration (ExternalSystem_Config).',
+    Updated     = TO_TIMESTAMP('2026-06-10 09:02:01', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy   = 100
+WHERE AD_Field_ID = 780753;
 
 -- Skeleton _Trl rows
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated,

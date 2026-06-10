@@ -594,7 +594,7 @@ SET DisplayLogic='(@TransportType/X@=''HTTP'' & @AuthType/X@=''Basic'') | (@Tran
     Updated=TO_TIMESTAMP('2026-06-10 08:13:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Field_ID=755950 /*Password*/;
 
--- Password is REQUIRED for the OAuth2 password grant (the camel OAuth2TokenManager always sends it):
+-- Password is REQUIRED for the OAuth2 password grant (grant_type=password always sends the resource-owner password):
 -- extend the column mandatory logic by the same OAuth2 HTTP branch the display logic gained above.
 UPDATE AD_Column
 SET MandatoryLogic='(@TransportType/X@=''HTTP'' & @AuthType/X@=''Basic'') | (@TransportType/X@=''SFTP'' & @SftpAuthType/X@=''PASSWORD'') | (@TransportType/X@=''HTTP'' & @AuthType/X@=''OAuth2'')',
