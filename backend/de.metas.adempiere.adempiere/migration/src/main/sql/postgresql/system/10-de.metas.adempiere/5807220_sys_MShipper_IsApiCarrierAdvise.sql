@@ -63,13 +63,6 @@ SET Name='API Carrier Advise', PrintName='API Carrier Advise',
 WHERE AD_Element_ID=584972 AND AD_Language='en_US'
 ;
 
--- 5. Mark de_DE and de_CH as actively translated
-UPDATE AD_Element_Trl
-SET IsTranslated='Y',
-    Updated=TO_TIMESTAMP('2026-06-10 10:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Element_ID=584972 AND AD_Language IN ('de_DE','de_CH')
-;
-
 -- =============================================================================
 -- 6. AD_Column
 -- =============================================================================
