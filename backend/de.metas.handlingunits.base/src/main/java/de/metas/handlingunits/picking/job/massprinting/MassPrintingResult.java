@@ -36,6 +36,7 @@ public class MassPrintingResult
 		/**
 		 * The shippable HUs produced — one per picked unit, regardless of packing-instruction type
 		 * (one VHU per unit for the Virtual/null-PI path; one TU box per unit for finite-PI).
+		 * Size equals {@link #unitsPacked}.
 		 */
 		@NonNull @Singular ImmutableSet<HuId> packedHUIds;
 

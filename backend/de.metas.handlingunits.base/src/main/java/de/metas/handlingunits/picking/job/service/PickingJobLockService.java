@@ -95,6 +95,7 @@ public class PickingJobLockService
 		{
 			return ImmutableSet.of();
 		}
+		// ShipmentScheduleLockType has only PICKING, so all locks returned here are picking locks.
 		final ShipmentScheduleLocksMap locks = shipmentScheduleLockRepository.getByShipmentScheduleIds(scheduleIds);
 		return locks.getShipmentScheduleIdsLockedByOtherUser(pickerId);
 	}

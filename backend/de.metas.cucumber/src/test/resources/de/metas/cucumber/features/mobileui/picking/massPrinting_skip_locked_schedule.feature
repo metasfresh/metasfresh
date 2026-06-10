@@ -91,11 +91,6 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | lu      | A        |
 
 
-  # ################################################################################################################
-  # Scenario: Scanner (metasfresh) scans an LU while another picker (picker2) has locked one of the two open
-  # shipment schedules. The locked schedule must be silently skipped; the non-locked one must be processed
-  # normally (picking job created, completed, shipment generated and completed).
-  # ################################################################################################################
   @from:cucumber
   Scenario: Mass printing skips schedule locked by another picker and ships the non-locked one
 
