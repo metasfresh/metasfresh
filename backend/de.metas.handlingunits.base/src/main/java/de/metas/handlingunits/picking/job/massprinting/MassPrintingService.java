@@ -21,6 +21,8 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLocksMap;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -28,6 +30,7 @@ import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +63,7 @@ public class MassPrintingService
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
+	@NonNull private final ShipmentScheduleLockRepository lockRepository;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -89,7 +93,7 @@ public class MassPrintingService
 		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productsById.values());
 
 		// Batch-load all packageables for self-packed products in one query (avoids N+1 per product).
-		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds);
+		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds, request.getPickerId());
 
 		final ImmutableList.Builder<ProductResult> productResults = ImmutableList.builder();
 		final ImmutableList.Builder<ProductId> skippedNonSelfPacked = ImmutableList.builder();
@@ -144,7 +148,8 @@ public class MassPrintingService
 	/** Loads all packageables for the given products in one query, grouped by product. */
 	private Map<ProductId, List<Packageable>> loadPackageablesGroupedByProduct(
 			@NonNull final WarehouseId warehouseId,
-			@NonNull final ImmutableSet<ProductId> selfPackedProductIds)
+			@NonNull final ImmutableSet<ProductId> selfPackedProductIds,
+			@NonNull final UserId pickerId)
 	{
 		if (selfPackedProductIds.isEmpty())
 		{
@@ -158,8 +163,57 @@ public class MassPrintingService
 				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
 				.build();
 
-		return shipmentScheduleService.stream(query)
+		final ImmutableList<Packageable> allPackageables = shipmentScheduleService.stream(query)
+				.collect(ImmutableList.toImmutableList());
+
+		return filterSkipLockedByOtherUser(allPackageables, pickerId)
+				.stream()
 				.collect(Collectors.groupingBy(Packageable::getProductId));
+	}
+
+	/**
+	 * Filters out packageables whose shipment schedule is already locked by a picker other than {@code pickerId}.
+	 * Logs a warning for each skipped schedule so the operator knows why demand was not processed.
+	 */
+	private ImmutableList<Packageable> filterSkipLockedByOtherUser(
+			@NonNull final ImmutableList<Packageable> packageables,
+			@NonNull final UserId pickerId)
+	{
+		if (packageables.isEmpty())
+		{
+			return packageables;
+		}
+
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = packageables.stream()
+				.map(Packageable::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ShipmentScheduleLocksMap existingLocks = lockRepository.getByShipmentScheduleIds(scheduleIds);
+		if (existingLocks.isEmpty())
+		{
+			return packageables;
+		}
+
+		final ImmutableSet<ShipmentScheduleId> lockedByOtherUser = existingLocks.getShipmentScheduleIdsLockedByOtherUser(pickerId);
+		if (lockedByOtherUser.isEmpty())
+		{
+			return packageables;
+		}
+
+		final ImmutableList.Builder<Packageable> result = ImmutableList.builder();
+		for (final Packageable packageable : packageables)
+		{
+			if (lockedByOtherUser.contains(packageable.getShipmentScheduleId()))
+			{
+				logger.warn("Skipping shipment schedule {} for product {} — locked by another picker",
+						packageable.getShipmentScheduleId(), packageable.getProductId());
+			}
+			else
+			{
+				result.add(packageable);
+			}
+		}
+		return result.build();
 	}
 
 	@NonNull
@@ -197,6 +251,11 @@ public class MassPrintingService
 					.openDemandRemaining(selection.getTotalDemand())
 					.build();
 		}
+
+		// Abort any orphaned (non-completed/non-voided) picking jobs for the selected schedules before
+		// creating a new job. This prevents DDOrderPickingReconcile_PickerBusy errors caused by stale jobs
+		// left behind when a previous scan's shipment creation failed and rolled back.
+		pickingJobService.abortOrphanedPickingJobsForSchedules(ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
 
 		final PickingJob pickedJob = createAndPickJob(request, luId, selection);
 		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();

@@ -75,6 +75,35 @@ public class PickingJobRepository
 				.anyMatch();
 	}
 
+	/**
+	 * Returns IDs of all non-voided/non-completed picking jobs that reference any of the given schedule IDs.
+	 * Used by mass printing to locate orphaned jobs (from previous failed scan attempts) before creating a new one.
+	 */
+	public ImmutableSet<PickingJobId> getActivePickingJobIdsByScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	{
+		if (scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addNotInArrayFilter(
+						I_M_Picking_Job.COLUMNNAME_DocStatus,
+						ImmutableList.of(PickingJobDocStatus.Voided.getCode(), PickingJobDocStatus.Completed.getCode()))
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, inProgressJobsQuery)
+				.create()
+				.stream()
+				.map(line -> PickingJobId.ofRepoId(line.getM_Picking_Job_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public PickingJob createNewAndGet(
 			@NonNull final PickingJobCreateRepoRequest request,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)

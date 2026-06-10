@@ -91,6 +91,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class PickingJobService implements PickingSlotListener
 {
+	private static final org.slf4j.Logger logger = de.metas.logging.LogManager.getLogger(PickingJobService.class);
+
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
 	private final static AdMessageKey ONGOING_PICKING_JOBS_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.ONGOING_PICKING_JOBS_ERR_MSG");
@@ -191,6 +193,36 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobs(pickingJobs)
 				.build()
 				.execute();
+	}
+
+	/**
+	 * Aborts all non-completed/non-voided picking jobs that reference any of the given schedule IDs.
+	 * Called by mass printing before creating a new picking job, to clean up orphaned jobs left by
+	 * previous failed scan attempts (e.g. when shipment creation rolled back but the job remained in Draft).
+	 */
+	public void abortOrphanedPickingJobsForSchedules(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	{
+		final ImmutableSet<PickingJobId> orphanedJobIds = pickingJobRepository.getActivePickingJobIdsByScheduleIds(scheduleIds);
+		if (orphanedJobIds.isEmpty())
+		{
+			return;
+		}
+
+		logger.warn("Mass printing: aborting {} orphaned picking job(s) for schedules {} before creating a new job", orphanedJobIds.size(), scheduleIds);
+
+		final PickingJobLoaderSupportingServices loadingSupportServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		for (final PickingJobId jobId : orphanedJobIds)
+		{
+			try
+			{
+				final PickingJob job = pickingJobRepository.getById(jobId, loadingSupportServices);
+				abort(job);
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed to abort orphaned picking job {}: {}", jobId, ex.getMessage(), ex);
+			}
+		}
 	}
 
 	private PickingJobAbortCommand.PickingJobAbortCommandBuilder abort()

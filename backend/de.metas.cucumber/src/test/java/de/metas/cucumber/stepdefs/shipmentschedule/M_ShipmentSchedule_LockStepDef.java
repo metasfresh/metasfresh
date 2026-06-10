@@ -27,12 +27,15 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLocksMap;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -50,6 +53,43 @@ public class M_ShipmentSchedule_LockStepDef
 	public M_ShipmentSchedule_LockStepDef(final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
+	}
+
+	/**
+	 * Creates a PICKING lock on the given shipment schedule(s) on behalf of the specified user.
+	 * Used to simulate a concurrent picker already holding the lock, e.g. to verify that
+	 * mass printing skips schedules locked by another user.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule to lock</li>
+	 *   <li>{@code Login} — login of the user who should own the lock</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Given M_ShipmentSchedule_Lock exists for:
+	 *   | M_ShipmentSchedule_ID | Login   |
+	 *   | sched1                | picker2 |
+	 * </pre>
+	 */
+	@Given("M_ShipmentSchedule_Lock exists for:")
+	public void createLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach((tableRow) -> {
+			final ShipmentScheduleId shipmentScheduleId = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+					.lookupIdIn(shipmentScheduleTable);
+
+			final String login = tableRow.getAsString(I_AD_User.COLUMNNAME_Login);
+			final UserId userId = userDAO.retrieveUserIdByLogin(login);
+			assertThat(userId).as("User exists for login=" + login).isNotNull();
+
+			lockRepository.lock(ShipmentScheduleLockRequest.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.lockedBy(userId)
+					.lockType(ShipmentScheduleLockType.PICKING)
+					.build());
+		});
 	}
 
 	@Then("validate M_ShipmentSchedule_Lock record for")
