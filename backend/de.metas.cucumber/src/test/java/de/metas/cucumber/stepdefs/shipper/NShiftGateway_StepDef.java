@@ -221,7 +221,8 @@ public class NShiftGateway_StepDef
 	 * {@code ReceiverCompanyName}, {@code ReceiverCompanyName2}, {@code ReceiverStreet},
 	 * {@code ReceiverAdditionalAddressInfo}, {@code ReceiverHouseNo}, {@code ReceiverZip},
 	 * {@code ReceiverCity}, {@code ReceiverCountryCode}, {@code ReceiverAttention},
-	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail}.
+	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail},
+	 * {@code IsPreAdviceRequired}.
 	 * <p>
 	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
 	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by

@@ -16,7 +16,7 @@ INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID,
                        IsMandatory, IsParent, IsKey, IsTranslated,
                        IsUpdateable, Name, Updated, UpdatedBy, Version,
                        PersonalDataCategory)
-VALUES (0, 592705 /*From ID Server*/, 584937 /*From ID Server*/, 1000000,
+VALUES (0, 592705 /*From ID Server*/, 584937 /*From ID Server*/, 0,
         17 /*List*/, 319 /*YesNoNull*/, 394 /*C_BP_Group*/,
         'IsPreAdviceRequired',
         TO_TIMESTAMP('2026-06-03 10:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
