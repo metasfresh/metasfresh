@@ -1,24 +1,8 @@
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Source DDL: backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/ddl/de_metas_inoutcandidate/M_Packageable_v.sql
+-- gh29437: recreate m_packageable_v WITHOUT the IsPickQtyOnDraftShipment column.
+-- The picking-launcher exclusion is now QtyToDeliver>0 (PackagingDAO/PackageableQuery.excludeNothingToPick),
+-- so the view-level draft-shipment flag is no longer read by anyone. The admission branch
+-- (s.QtyToDeliver > 0 OR s.qtypicklist > 0) is intentionally UNCHANGED (ship-again, 25383).
 
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
@@ -195,4 +179,3 @@ SELECT db_alter_view(
 
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
-
