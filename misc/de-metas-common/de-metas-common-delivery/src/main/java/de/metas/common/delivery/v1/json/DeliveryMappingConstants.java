@@ -75,6 +75,7 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_TOTAL_WEIGHT_G = "TotalWeightG";
 
 	// attributeValuesParcel
+	public static final String ATTRIBUTE_VALUE_TOP_LEVEL_TYPE = "TopLevelType";
 	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_KG = "GrossWeightKg";
 	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_G = "GrossWeightG";
 	public static final String ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM = "PackageLengthCm";
