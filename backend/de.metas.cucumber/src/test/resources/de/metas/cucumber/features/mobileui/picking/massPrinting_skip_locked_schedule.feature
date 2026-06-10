@@ -101,9 +101,9 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
 
     # Create 2 sales orders for the same product. Each order demands 1 TU (4 PCE).
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | PreparationDate             |
-      | SO_locked  | true    | customer                 | 2024-03-26  | 2024-03-27T06:00:00+01:00   |
-      | SO_open    | true    | customer                 | 2024-03-26  | 2024-03-27T07:00:00+01:00   |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | PreparationDate      |
+      | SO_locked  | true    | customer                 | 2024-03-26  | 2024-03-27T05:00:00Z |
+      | SO_open    | true    | customer                 | 2024-03-26  | 2024-03-27T06:00:00Z |
     And metasfresh contains C_OrderLines:
       | C_Order_ID.Identifier | Identifier       | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | SO_locked             | OL_locked        | product                 | 4          | TUx4                                   |
