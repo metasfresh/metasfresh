@@ -17,7 +17,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        DefaultValue, EntityType, IsKey, IsParent,
                        IsSelectionColumn, IsTranslated, IsIdentifier, IsEncrypted,
                        IsAllowLogging, IsLazyLoading, IsExcludeFromZoomTargets,
-                       IsSyncDatabase, IsYesNo, PersonalDataCategory)
+                       IsSyncDatabase, PersonalDataCategory)
 VALUES (592704 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-06-03 10:00:39', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
         TO_TIMESTAMP('2026-06-03 10:00:39', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -27,7 +27,7 @@ VALUES (592704 /*From ID Server*/, 0, 0, 'Y',
         'N', 'D', 'N', 'N',
         'N', 'N', 'N', 'N',
         'Y', 'Y', 'Y',
-        'N', 'Y', 'NP');
+        'N', 'NP');
 
 -- 2026-06-03T10:00:40.000Z
 UPDATE AD_Column SET DefaultValue = 'N'
