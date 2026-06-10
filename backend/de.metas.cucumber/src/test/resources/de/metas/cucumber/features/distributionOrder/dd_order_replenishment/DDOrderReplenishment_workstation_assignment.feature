@@ -64,6 +64,19 @@ Feature: DD_Order replenishment — create a distribution order when a picker is
       | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
       | workplace  | packingWH      | packingLocator      |
 
+    # On-hand stock in the source warehouse (single locator, qty 5). The stock-aware split pulls from the locators
+    # that actually hold the product; with all stock on one source locator the split produces exactly one DD_Order.
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | product                 | 0       | 5        | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockProductHU     |
+
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | order      | true    | customer      | 2022-05-17  | packingWH      |

@@ -2,11 +2,12 @@
 @allure.label.epic:E0106_Distribution
 @allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
-Feature: DD_Order replenishment — update (void + recreate) and reverse (void only)
+Feature: DD_Order replenishment — update (in place) and reverse (void only)
   As a warehouse operator running a packing workplace ("Packtisch"),
-  I want a changed sales-order / shipment-schedule quantity to void the old distribution order and
-  recreate a fresh one with the new quantity, and a cancelled schedule to void the distribution order
-  without recreating it, so the picker always works from a single up-to-date DD_Order.
+  I want a changed assignment quantity to be reflected on the distribution order without churning it (the
+  existing per-locator DD_Order line is updated in place while the same source locator keeps contributing),
+  a quantity of zero to void the distribution order, and a cancelled / removed assignment to void the
+  distribution order without recreating it, so the picker always works from up-to-date DD_Orders.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -57,6 +58,19 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
       | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
       | workplace  | packingWH      | packingLocator      |
 
+    # On-hand stock in the source warehouse (single locator, qty 10 — enough to cover the qty-8 update below). The
+    # stock-aware split pulls from the locators that hold the product; all stock on one source locator => one DD_Order.
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | product                 | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockProductHU     |
+
     # One completed sales order on the packing warehouse + a workstation assignment is the starting state for every scenario.
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
@@ -76,23 +90,23 @@ Feature: DD_Order replenishment — update (void + recreate) and reverse (void o
       | ddOrder_v1 | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
 
   @from:cucumber
-  Scenario: Changing the assignment quantity voids the old DD_Order and recreates a fresh one (picker not busy)
+  Scenario: Changing the assignment quantity updates the existing DD_Order line in place (single contributing locator, picker not busy)
     # Raise the assignment's QtyToPick to 8; the M_Picking_Job_Schedule afterChange reconcile fires.
-    # NOTE: under the single-source-locator design the reconcile RECREATEs (voids the old DD_Order and creates a
-    # fresh one with the new qty). The per-locator diff (update-in-place / partial void+recreate across multiple
-    # source locators) is a later task; here a single source locator is always fully voided and recreated.
+    # AC5: the contributing-locator set is unchanged (still the one source locator), so the reconcile UPDATES the
+    # existing DD_Order line qty IN PLACE — it does NOT void+recreate. ddOrder_v1 stays the same live DD_Order, now
+    # carrying qty 8 (its qty change is reflected without churning the document).
     When the picking job schedule quantity is changed:
       | M_Picking_Job_Schedule_ID | QtyToPick |
       | jobSchedule               | 8         |
 
-    # The new live DD_Order carries qty 8 and the assignment linkage; the old one is voided.
+    # The same DD_Order (ddOrder_v1) is still live and now carries qty 8 — updated in place, not voided/recreated.
     Then after not more than 120s, the DD_Order linked to picking job schedule is found:
       | Identifier | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
-      | ddOrder_v2 | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 8          |
-    # The original DD_Order (captured in Background as ddOrder_v1) must now be Voided.
+      | ddOrder_v1 | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 8          |
+    # And it is still Completed (NOT voided) — the in-place update did not void the original DD_Order.
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
-      | ddOrder_v1 | VO        |
+      | ddOrder_v1 | CO        |
 
   @from:cucumber
   Scenario: Setting the assignment quantity to zero voids the DD_Order and creates no replacement (picker not busy)

@@ -71,6 +71,20 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
       | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
       | workplace  | packingWH      | packingLocator      |
 
+    # On-hand stock in the SOURCE warehouse (single locator, qty 5) so the stock-aware split can build the DD_Order
+    # this scenario operates on. (The packing-warehouse inventory below is separate: it feeds the picking job that
+    # makes the picker busy.)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | product                 | 0       | 5        | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockSourceHU      |
+
     # --- Picking prerequisites on the packing warehouse (where the schedule, and thus the picking job,
     #     sources its HUs from): stock via inventory -> HU, a picking slot, and the mobile picking profile.
     And load S_Resource:
@@ -179,16 +193,18 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
       | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
 
     # ABORT the picking job through the real REST endpoint -> the picking job becomes Voided, releasing the
-    # picker. Then reprocessing the event succeeds: the reconcile classifies as RECREATE (active assignment +
-    # existing live DD_Order) — the old DD_Order is voided and a fresh one is created. Capturing a new
-    # Identifier pins that recreate actually happened.
+    # picker. Then reprocessing the event now SUCCEEDS (the picker-busy guard no longer fires). The reconcile
+    # re-runs the per-locator diff: the same single source locator still contributes the same qty (5), so the
+    # existing DD_Order is reconciled in place (AC5 update-in-place) and left as the correct, live DD_Order — no
+    # void, no churn. The point of the scenario is that aborting the job unblocks the reconcile.
     Given store workflow endpointPath api/v2/userWorkflows/wfProcess/@pickingWF@/abort in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     And the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
     Then after not more than 10s, the DD_Order linked to picking job schedule is found:
-      | Identifier | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
-      | ddOrderV2  | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
-    # The original DD_Order (captured in Background as ddOrder) must now be Voided — RECREATE voided it.
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
+    # The original DD_Order (captured in Background as ddOrder) is still the live, Completed one — the unblocked
+    # reconcile left it in place (single contributing locator, unchanged qty => update-in-place no-op).
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
-      | ddOrder    | VO        |
+      | ddOrder    | CO        |

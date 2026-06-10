@@ -1,6 +1,8 @@
 package de.metas.distribution.ddorder.replenishment;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -10,7 +12,9 @@ import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEve
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -26,6 +30,8 @@ import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -36,10 +42,12 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -51,6 +59,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -81,7 +93,10 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public void assertCanChange(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
@@ -91,14 +106,13 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		final PickingJobScheduleId jobScheduleId = PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID());
-		final DDOrderId ddOrderId = ddOrderLowLevelDAO.findActiveDDOrderForPickingJobSchedule(jobScheduleId).orElse(null);
-		if (ddOrderId == null)
+		for (final I_DD_Order ddOrder : ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(jobScheduleId))
 		{
-			return;
-		}
-		if (isPickerBusy(ddOrderId))
-		{
-			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, ddOrderId);
+			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+			if (isPickerBusy(ddOrderId))
+			{
+				throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, ddOrderId);
+			}
 		}
 	}
 
@@ -132,11 +146,12 @@ public class DDOrderPickingReplenishmentService
 	public void reconcile(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
 		final I_M_Picking_Job_Schedule jobSchedule = loadAssignmentOrNull(jobScheduleId);
-		final DDOrderId existingDDOrderId = ddOrderLowLevelDAO.findActiveDDOrderForPickingJobSchedule(jobScheduleId).orElse(null);
-		DDOrderReplenishmentAction action = classifyAction(jobSchedule, existingDDOrderId);
+		final List<I_DD_Order> existingDDOrders = ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(jobScheduleId);
+		final boolean hasExistingDDOrder = !existingDDOrders.isEmpty();
+		DDOrderReplenishmentAction action = classifyAction(jobSchedule, hasExistingDDOrder);
 
 		// Zero-qty soft no-op: if the assignment's QtyToPick is <= 0 there is no demand to plan. For CREATE we
-		// downgrade to NONE; for RECREATE the existing DD_Order must be voided — downgrade to VOID. An
+		// downgrade to NONE; for RECREATE the existing DD_Order(s) must be voided — downgrade to VOID. An
 		// informational entry is written to the Event Log so operators can see why no DD_Order was produced.
 		if (action == DDOrderReplenishmentAction.CREATE || action == DDOrderReplenishmentAction.RECREATE)
 		{
@@ -149,7 +164,7 @@ public class DDOrderPickingReplenishmentService
 						MSG_DDOrderPickingReplenishment_QtyZero.toAD_Message(),
 						qtyToPick,
 						jobScheduleId.getRepoId(),
-						willVoidExisting ? " and the existing DD_Order will be voided" : "");
+						willVoidExisting ? " and the existing DD_Order(s) will be voided" : "");
 				action = willVoidExisting
 						? DDOrderReplenishmentAction.VOID
 						: DDOrderReplenishmentAction.NONE;
@@ -161,13 +176,14 @@ public class DDOrderPickingReplenishmentService
 			case NONE:
 				return;
 			case CREATE:
-				createDDOrderFor(jobScheduleId, jobSchedule);
-				return;
 			case RECREATE:
-				recreateDDOrderFor(jobScheduleId, jobSchedule, existingDDOrderId);
+				// Both CREATE (no existing DD_Orders) and RECREATE (some exist) are handled by the same per-locator
+				// reconcile: compute the required (source locator -> qty) split from current stock, then update /
+				// void / create per locator. With no existing DD_Orders this degenerates to pure creation.
+				reconcileRequiredVsExisting(jobScheduleId, jobSchedule, existingDDOrders);
 				return;
 			case VOID:
-				voidDDOrderFor(existingDDOrderId);
+				voidAllDDOrders(existingDDOrders);
 				return;
 			default:
 				throw new AdempiereException("Unexpected action: " + action);
@@ -200,10 +216,8 @@ public class DDOrderPickingReplenishmentService
 	@VisibleForTesting
 	DDOrderReplenishmentAction classifyAction(
 			@Nullable final I_M_Picking_Job_Schedule jobSchedule,
-			@Nullable final DDOrderId existingDDOrderId)
+			final boolean hasExistingDDOrder)
 	{
-		final boolean hasExistingDDOrder = existingDDOrderId != null;
-
 		if (jobSchedule == null || !isOnAutoDistributionOrder(jobSchedule))
 		{
 			// Not on a packing warehouse (or assignment gone): void any existing DD_Order, else no-op.
@@ -241,14 +255,23 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Builds exactly one Completed DD_Order for the given (active, packing-warehouse) workstation assignment.
-	 * Demand qty = the assignment's {@code QtyToPick} (in the assignment's UOM); target locator = the
-	 * workstation's pick-from locator; source warehouse via the packing warehouse's distribution network.
-	 * If the workstation has no pick-from locator the DD_Order is skipped (informational log, no DD_Order).
+	 * Reconciles the required per-locator stock-aware split against the assignment's existing live DD_Orders.
+	 *
+	 * <p>Computes the required {@code (source locator -> qty)} allocation from current on-hand stock (greedy by
+	 * {@code M_Locator.Value}), then for each locator:</p>
+	 * <ul>
+	 *   <li>in BOTH required and existing → <b>update the existing DD_Order line qty in place</b> (no void/recreate);</li>
+	 *   <li>in EXISTING only (no longer contributes) → <b>void</b> that DD_Order (+ unlink back-ref);</li>
+	 *   <li>in REQUIRED only (newly contributes) → <b>create</b> a new Completed DD_Order + line.</li>
+	 * </ul>
+	 *
+	 * <p>The picker-busy guard is checked once up front: if any existing DD_Order's picker is busy, the whole
+	 * reconcile is refused (nothing is mutated).</p>
 	 */
-	private void createDDOrderFor(
+	private void reconcileRequiredVsExisting(
 			@NonNull final PickingJobScheduleId jobScheduleId,
-			@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+			@NonNull final I_M_Picking_Job_Schedule jobSchedule,
+			@NonNull final List<I_DD_Order> existingDDOrders)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(jobSchedule.getM_ShipmentSchedule_ID()));
 
@@ -275,13 +298,26 @@ public class DDOrderPickingReplenishmentService
 		final WarehouseId sourceWarehouseId = getFirstSourceWarehouseIdOrThrow(networkId, targetWarehouseId, productId);
 
 		// Demand qty = the assignment's QtyToPick in the assignment's UOM. The zero/negative case is intercepted
-		// up in #reconcile, so the DD_Order code path is never reached with a non-positive qty.
+		// up in #reconcile, so this code path is never reached with a non-positive qty.
 		final UomId qtyUomId = UomId.ofRepoId(jobSchedule.getC_UOM_ID());
-		final Quantity qty = Quantitys.of(jobSchedule.getQtyToPick(), qtyUomId);
+		final Quantity demandQty = Quantitys.of(jobSchedule.getQtyToPick(), qtyUomId);
 
-		// Single source locator: the source warehouse's default locator (multi-locator split is a later task).
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(sourceWarehouseId);
-		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(orgId);
+		// Stock-aware split: required (source locator -> qty), greedy by M_Locator.Value, partial coverage allowed.
+		final Map<LocatorId, Quantity> requiredByLocator = computeRequiredAllocation(jobScheduleId, sourceWarehouseId, productId, demandQty);
+
+		// Picker-busy guard: refuse the whole reconcile before mutating anything if any existing DD_Order is busy.
+		for (final I_DD_Order existingDDOrder : existingDDOrders)
+		{
+			final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(existingDDOrder.getDD_Order_ID());
+			if (isPickerBusy(existingDDOrderId))
+			{
+				throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
+			}
+		}
+
+		// Index the existing live DD_Orders' (single) lines by their source locator. The line is kept (not just the
+		// header) so the update-in-place path does not re-fetch it.
+		final Map<LocatorId, I_DD_OrderLine> existingLineByLocator = indexExistingBySourceLocator(existingDDOrders);
 
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
@@ -289,23 +325,251 @@ public class DDOrderPickingReplenishmentService
 						.adClientId(schedule.getAD_Client_ID())
 						.adOrgId(orgId.getRepoId())
 						.build());
+		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(orgId);
 
-		final I_DD_Order ddOrder = saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
-				.pickingJobScheduleId(jobScheduleId)
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
-				.sourceWarehouseId(sourceWarehouseId)
-				.targetWarehouseId(targetWarehouseId)
-				.inTransitWarehouseId(inTransitWarehouseId)
-				.locatorFromId(locatorFromId)
-				.locatorToId(locatorToId)
-				.docTypeId(docTypeId)
-				.productId(productId)
-				.qty(qty)
-				.orgId(orgId)
-				.datePromised(SystemTime.asInstant())
-				.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
-				.build());
-		ddOrderService.complete(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+		// EXISTING-only locators (no longer contribute) → void.
+		for (final Map.Entry<LocatorId, I_DD_OrderLine> entry : existingLineByLocator.entrySet())
+		{
+			if (!requiredByLocator.containsKey(entry.getKey()))
+			{
+				voidDDOrderFor(DDOrderId.ofRepoId(entry.getValue().getDD_Order_ID()));
+			}
+		}
+
+		// REQUIRED locators → update-in-place (if still contributing) or create (if newly contributing).
+		for (final Map.Entry<LocatorId, Quantity> entry : requiredByLocator.entrySet())
+		{
+			final LocatorId sourceLocatorId = entry.getKey();
+			final Quantity locatorQty = entry.getValue();
+			final I_DD_OrderLine existingLine = existingLineByLocator.get(sourceLocatorId);
+			if (existingLine != null)
+			{
+				updateDDOrderLineQtyInPlace(existingLine, locatorQty);
+			}
+			else
+			{
+				final I_DD_Order ddOrder = saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
+						.pickingJobScheduleId(jobScheduleId)
+						.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
+						.sourceWarehouseId(sourceWarehouseId)
+						.targetWarehouseId(targetWarehouseId)
+						.inTransitWarehouseId(inTransitWarehouseId)
+						.locatorFromId(sourceLocatorId)
+						.locatorToId(locatorToId)
+						.docTypeId(docTypeId)
+						.productId(productId)
+						.qty(locatorQty)
+						.orgId(orgId)
+						.datePromised(SystemTime.asInstant())
+						.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
+						.build());
+				ddOrderService.complete(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+			}
+		}
+	}
+
+	/**
+	 * Computes the stock-aware per-locator allocation of {@code demandQty}.
+	 *
+	 * <p>Gets the source warehouse's locators, queries Active on-hand per locator via the shared
+	 * {@link ProductAvailableStockPerLocator} helper, keeps the contributing locators (qty &gt; 0) ordered by
+	 * {@code M_Locator.Value} ascending, and greedily allocates the demand across them. Returns an insertion-ordered
+	 * map {@code (source locator -> allocated qty)}. Partial coverage is allowed: if total on-hand &lt; demand, the
+	 * uncovered remainder is logged and left unfulfilled (no fallback default-locator line). Empty map if no locator
+	 * has stock.</p>
+	 *
+	 * <p>The on-hand quantities returned by {@link ProductAvailableStockPerLocator} are in the product's stocking UOM,
+	 * whereas {@code demandQty} is in the assignment's UOM. Each locator's available qty is therefore converted into
+	 * the demand UOM (via the product UOM conversion) before it is compared/subtracted, so the allocation and the
+	 * created lines stay in the demand UOM. When the two UOMs already match the conversion is a no-op. A locator whose
+	 * available qty cannot be converted is skipped (logged, treated as non-contributing) rather than aborting the whole
+	 * reconcile.</p>
+	 */
+	private Map<LocatorId, Quantity> computeRequiredAllocation(
+			@NonNull final PickingJobScheduleId jobScheduleId,
+			@NonNull final WarehouseId sourceWarehouseId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity demandQty)
+	{
+		final List<LocatorId> sourceLocatorIds = warehouseDAO.getLocatorIds(sourceWarehouseId);
+		final Map<LocatorId, Quantity> qtyOnHandByLocator = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
+				.getQtyOnHandByLocator(productId, ImmutableSet.copyOf(sourceLocatorIds));
+
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+
+		final AllocationResult result = greedyAllocate(
+				demandQty,
+				qtyOnHandByLocator,
+				this::getLocatorValue,
+				availableStockingUom -> uomConversionBL.convertQuantityTo(availableStockingUom, conversionCtx, demandQty.getUomId()),
+				(locatorId, availableStockingUom) -> Loggables.addLog(
+						"DD_Order picking replenishment: skipping source M_Locator_ID={0} for M_Product_ID={1}:"
+								+ " its on-hand qty {2} cannot be converted to the demand UOM (UomId={3}); treated as non-contributing",
+						locatorId.getRepoId(),
+						productId.getRepoId(),
+						availableStockingUom,
+						demandQty.getUomId().getRepoId()));
+
+		if (result.getUncovered().signum() > 0)
+		{
+			// Partial coverage: the uncovered remainder is left unfulfilled (no fallback default-locator line);
+			// the drift watchdog retries the assignment as stock becomes available.
+			Loggables.addLog(
+					"DD_Order picking replenishment: on-hand stock for M_Product_ID={0} in source M_Warehouse_ID={1}"
+							+ " covers only part of the demand for M_Picking_Job_Schedule_ID={2}; uncovered remainder={3}"
+							+ " left unfulfilled (watchdog will retry)",
+					productId.getRepoId(),
+					sourceWarehouseId.getRepoId(),
+					jobScheduleId.getRepoId(),
+					result.getUncovered().toBigDecimal());
+		}
+
+		return result.getAllocation();
+	}
+
+	/**
+	 * Pure greedy allocation of {@code demandQty} across the contributing locators of {@code qtyOnHandByLocator}.
+	 *
+	 * <p>Keeps the positive-on-hand locators ordered by their {@code M_Locator.Value} (ascending, nulls last),
+	 * converts each locator's on-hand qty (in the product stocking UOM) into the demand UOM via {@code convertToDemandUom}
+	 * (a no-op when the UOMs already match), and greedily fills the demand. A locator whose qty cannot be converted
+	 * ({@link NoUOMConversionException}) is skipped (reported via {@code onSkippedLocator}, treated as non-contributing).
+	 * Returns the insertion-ordered allocation and the uncovered remainder. Pure: no DB / service access — the conversion
+	 * and the locator-Value lookup are injected so this can be unit-tested deterministically.</p>
+	 */
+	@VisibleForTesting
+	static AllocationResult greedyAllocate(
+			@NonNull final Quantity demandQty,
+			@NonNull final Map<LocatorId, Quantity> qtyOnHandByLocator,
+			@NonNull final java.util.function.Function<LocatorId, String> locatorValueResolver,
+			@NonNull final ConvertToDemandUom convertToDemandUom,
+			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
+	{
+		// Contributing locators (positive on-hand) ordered by M_Locator.Value ascending.
+		final List<LocatorId> contributingOrdered = qtyOnHandByLocator.entrySet().stream()
+				.filter(e -> e.getValue().signum() > 0)
+				.map(Map.Entry::getKey)
+				.sorted(Comparator.comparing(locatorValueResolver, Comparator.nullsLast(String::compareTo)))
+				.collect(ImmutableList.toImmutableList());
+
+		final LinkedHashMap<LocatorId, Quantity> allocation = new LinkedHashMap<>();
+		Quantity remaining = demandQty;
+		for (final LocatorId locatorId : contributingOrdered)
+		{
+			if (remaining.signum() <= 0)
+			{
+				break;
+			}
+
+			// Convert the locator's on-hand qty (product stocking UOM) into the demand UOM before comparing/allocating.
+			// A no-op when the UOMs already match. If no conversion exists, skip this locator (non-contributing).
+			final Quantity availableStockingUom = qtyOnHandByLocator.get(locatorId);
+			final Quantity available;
+			try
+			{
+				available = convertToDemandUom.convert(availableStockingUom);
+			}
+			catch (final NoUOMConversionException ex)
+			{
+				onSkippedLocator.accept(locatorId, availableStockingUom);
+				continue;
+			}
+
+			final Quantity allocated = remaining.min(available);
+			allocation.put(locatorId, allocated);
+			remaining = remaining.subtract(allocated);
+		}
+
+		return new AllocationResult(allocation, remaining);
+	}
+
+	/** Converts a locator's on-hand qty (product stocking UOM) into the demand UOM; may throw {@link NoUOMConversionException}. */
+	@FunctionalInterface
+	interface ConvertToDemandUom
+	{
+		Quantity convert(@NonNull Quantity availableStockingUom);
+	}
+
+	/** Result of {@link #greedyAllocate}: the per-locator allocation (insertion-ordered) and the uncovered demand remainder. */
+	@lombok.Value
+	@VisibleForTesting
+	static class AllocationResult
+	{
+		@NonNull Map<LocatorId, Quantity> allocation;
+		@NonNull Quantity uncovered;
+	}
+
+	@Nullable
+	private String getLocatorValue(@NonNull final LocatorId locatorId)
+	{
+		return warehouseBL.getLocatorById(locatorId).getValue();
+	}
+
+	/**
+	 * Indexes the given live DD_Orders' single line by its source locator ({@code DD_OrderLine.M_Locator_ID}).
+	 * Each reconcile DD_Order has exactly one line, so the mapping is 1:1. The line (which carries its parent
+	 * {@code DD_Order} via {@link DDOrderLowLevelDAO#retrieveLines}) is kept so the update path does not re-fetch it.
+	 */
+	private Map<LocatorId, I_DD_OrderLine> indexExistingBySourceLocator(@NonNull final List<I_DD_Order> existingDDOrders)
+	{
+		final LinkedHashMap<LocatorId, I_DD_OrderLine> byLocator = new LinkedHashMap<>();
+		for (final I_DD_Order ddOrder : existingDDOrders)
+		{
+			final List<I_DD_OrderLine> lines = ddOrderLowLevelDAO.retrieveLines(ddOrder);
+			if (lines.isEmpty())
+			{
+				continue;
+			}
+			final I_DD_OrderLine line = lines.get(0);
+			// Resolve the source LocatorId from the locator record (authoritative warehouse) rather than the line's
+			// M_Warehouse_ID, which is not reliably populated on a programmatically-built DD_OrderLine.
+			final LocatorId sourceLocatorId = LocatorId.ofRecordOrNull(warehouseDAO.getLocatorByRepoId(line.getM_Locator_ID()));
+			if (sourceLocatorId != null)
+			{
+				byLocator.put(sourceLocatorId, line);
+			}
+		}
+		return byLocator;
+	}
+
+	/**
+	 * Updates the given existing (Completed) DD_Order line's quantity in place to {@code newQty}: a still-contributing
+	 * locator keeps its DD_Order, only the qty is adjusted — no void/recreate. Header quantities live on the line;
+	 * {@code QtyEntered == QtyOrdered == TargetQty} as in the create path.
+	 *
+	 * <p>Data-consistency guard: if the line already has a positive {@code QtyDelivered} (goods have started moving),
+	 * the qty is NOT shrunk in place — that would silently strand the already-delivered surplus. Such a line is left
+	 * untouched and the situation is logged; the operator resolves it (the watchdog/reconcile retries once delivery
+	 * progresses or the demand is restored).</p>
+	 */
+	private void updateDDOrderLineQtyInPlace(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
+	{
+		final BigDecimal newQtyBD = newQty.toBigDecimal();
+		if (line.getQtyEntered().compareTo(newQtyBD) == 0
+				&& line.getQtyOrdered().compareTo(newQtyBD) == 0
+				&& line.getTargetQty().compareTo(newQtyBD) == 0)
+		{
+			return; // already at the target qty; nothing to do
+		}
+
+		// Guard: never shrink a line that already has delivered qty in place — leave it untouched and log.
+		if (line.getQtyDelivered().signum() > 0 && newQtyBD.compareTo(line.getQtyOrdered()) < 0)
+		{
+			Loggables.addLog(
+					"DD_Order picking replenishment: not shrinking DD_OrderLine_ID={0} (DD_Order_ID={1}) in place:"
+							+ " QtyDelivered={2} > 0 and the new qty {3} is lower than the ordered qty {4}; left untouched",
+					line.getDD_OrderLine_ID(),
+					line.getDD_Order_ID(),
+					line.getQtyDelivered(),
+					newQtyBD,
+					line.getQtyOrdered());
+			return;
+		}
+
+		line.setQtyEntered(newQtyBD);
+		line.setQtyOrdered(newQtyBD);
+		line.setTargetQty(newQtyBD);
+		ddOrderLowLevelDAO.save(line);
 	}
 
 	/**
@@ -403,31 +667,20 @@ public class DDOrderPickingReplenishmentService
 	 */
 	public void voidDDOrdersForDeletedAssignment(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		final DDOrderId existingDDOrderId = ddOrderLowLevelDAO.findActiveDDOrderForPickingJobSchedule(jobScheduleId).orElse(null);
-		if (existingDDOrderId == null)
-		{
-			return;
-		}
-		voidDDOrderFor(existingDDOrderId);
+		voidAllDDOrders(ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(jobScheduleId));
 	}
 
 	/**
-	 * RECREATE: the assignment is still active but has changed (e.g. qty changed) while a live DD_Order exists.
-	 * Picker-busy guard first: if busy, throw without touching anything. Then void the existing DD_Order and
-	 * create a fresh one from the current assignment data.
+	 * Voids every DD_Order in the given list (and unlinks each one's {@code M_Picking_Job_Schedule_ID} back-ref on
+	 * header + lines, so the deferrable FK passes when this runs synchronously inside the assignment's delete trx).
+	 * Empty list → clean no-op.
 	 */
-	private void recreateDDOrderFor(
-			@NonNull final PickingJobScheduleId jobScheduleId,
-			@NonNull final I_M_Picking_Job_Schedule jobSchedule,
-			@NonNull final DDOrderId existingDDOrderId)
+	private void voidAllDDOrders(@NonNull final List<I_DD_Order> ddOrders)
 	{
-		if (isPickerBusy(existingDDOrderId))
+		for (final I_DD_Order ddOrder : ddOrders)
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
+			voidDDOrderFor(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 		}
-
-		ddOrderService.voidIt(existingDDOrderId);
-		createDDOrderFor(jobScheduleId, jobSchedule);
 	}
 
 	public void rebuildDrift()

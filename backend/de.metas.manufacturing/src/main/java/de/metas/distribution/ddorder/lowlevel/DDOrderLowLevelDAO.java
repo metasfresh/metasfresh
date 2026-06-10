@@ -123,10 +123,14 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Returns the ID of the first active (Completed) DD_Order linked to the given workstation assignment
-	 * ({@code M_Picking_Job_Schedule}), or empty if none exists.
+	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
+	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
+	 *
+	 * <p>The stock-aware split creates one DD_Order per contributing source locator, so an assignment can have
+	 * several live DD_Orders. The per-locator diff matches each returned DD_Order to a required source locator via
+	 * its line's {@code DD_OrderLine.M_Locator_ID}.</p>
 	 */
-	public Optional<DDOrderId> findActiveDDOrderForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
+	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
 	{
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
@@ -135,8 +139,7 @@ public class DDOrderLowLevelDAO
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
-				.firstOptional(I_DD_Order.class)
-				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+				.list(I_DD_Order.class);
 	}
 
 	/**

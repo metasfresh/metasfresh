@@ -849,6 +849,28 @@ public class M_HU_StepDef
 		}
 	}
 
+	/**
+	 * @cucumber.stepdef Destroys a single HU identified by its step-internal identifier (sets it to
+	 * {@code HUStatus=Destroyed} / inactive), so its on-hand stock no longer counts as available at its
+	 * locator. Used to change the per-locator stock picture between reconcile passes.
+	 * @cucumber.example
+	 * <pre>
+	 * When the HU identified by huA is destroyed
+	 * </pre>
+	 */
+	@And("^the HU identified by (.*) is destroyed$")
+	public void destroy_hu_by_identifier(@NonNull final String huIdentifier)
+	{
+		final I_M_HU hu = huTable.get(huIdentifier);
+
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newOutOfTrx());
+
+		handlingUnitsBL.markDestroyed(huContext, hu);
+
+		huTable.putOrReplace(huIdentifier, hu);
+	}
+
 	@And("destroy existing M_HUs")
 	public void destroy_existing_hus()
 	{

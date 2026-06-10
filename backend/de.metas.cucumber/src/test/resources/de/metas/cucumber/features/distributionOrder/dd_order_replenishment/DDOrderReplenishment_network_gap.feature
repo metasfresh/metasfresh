@@ -56,6 +56,19 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
       | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
       | workplace  | packingWH      | packingLocator      |
 
+    # On-hand stock in the source warehouse (single locator, qty 5) so that — once the network gap is fixed and a
+    # source warehouse resolves — the stock-aware split has stock to pull and creates the DD_Order.
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | productQ                | 0       | 5        | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockProductHU     |
+
   @from:cucumber
   Scenario: A missing source line makes the reconcile event fail softly, then succeeds after the network is fixed
     When metasfresh contains C_Orders:

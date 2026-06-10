@@ -41,9 +41,11 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -53,6 +55,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ResourceId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -65,7 +68,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
@@ -82,7 +87,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 
@@ -98,6 +107,8 @@ public class DD_Order_StepDef
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO = SpringContextHolder.instance.getBean(DDOrderLowLevelDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
@@ -109,7 +120,7 @@ public class DD_Order_StepDef
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
-	@NonNull private final de.metas.cucumber.stepdefs.M_Locator_StepDefData locatorTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 
 	/**
 	 * @cucumber.stepdef Creates DD_Order header records.
@@ -553,7 +564,7 @@ public class DD_Order_StepDef
 
 	private void validateDDOrderLinkedToPickingJobSchedule(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final de.metas.picking.api.PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 
 		// Validate header AND line inside the retry so an in-flight RECREATE (transient stale header) cannot be
 		// grabbed before the fully-matching DD_Order exists.
@@ -568,7 +579,7 @@ public class DD_Order_StepDef
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
 	}
 
-	private IQuery<I_DD_Order> liveDDOrderForPickingJobScheduleQuery(@NonNull final de.metas.picking.api.PickingJobScheduleId jobScheduleId)
+	private IQuery<I_DD_Order> liveDDOrderForPickingJobScheduleQuery(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
 		return queryBL.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
@@ -578,7 +589,7 @@ public class DD_Order_StepDef
 
 	private void validatePickingJobScheduleLine(
 			@NonNull final I_DD_Order ddOrder,
-			@NonNull final de.metas.picking.api.PickingJobScheduleId jobScheduleId,
+			@NonNull final PickingJobScheduleId jobScheduleId,
 			@NonNull final DataTableRow expected)
 	{
 		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
@@ -600,7 +611,7 @@ public class DD_Order_StepDef
 				.isEqualTo(jobScheduleId.getRepoId());
 
 		expected.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID)
-				.ifPresent(identifier -> softly.assertThat(org.adempiere.warehouse.LocatorId.ofRepoIdOrNull(WarehouseId.ofRepoIdOrNull(line.getM_WarehouseTo_ID()), line.getM_LocatorTo_ID()))
+				.ifPresent(identifier -> softly.assertThat(LocatorId.ofRepoIdOrNull(WarehouseId.ofRepoIdOrNull(line.getM_WarehouseTo_ID()), line.getM_LocatorTo_ID()))
 						.as("DD_OrderLine.M_LocatorTo_ID")
 						.isEqualTo(identifier.lookupNotNullIdIn(locatorTable)));
 
@@ -625,7 +636,7 @@ public class DD_Order_StepDef
 	public void assert_DD_Order_voided_for_picking_job_schedule(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final de.metas.picking.api.PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 
 			final Supplier<Boolean> isVoided = () -> {
 				final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
@@ -653,6 +664,143 @@ public class DD_Order_StepDef
 				throw new RuntimeException(e);
 			}
 		});
+	}
+
+	/**
+	 * @cucumber.stepdef Polls for the live (DocStatus != Voided) per-locator DD_Orders linked to a workstation
+	 * assignment via {@code DD_Order.M_Picking_Job_Schedule_ID}, matching each expected row to the DD_Order whose
+	 * single line's source locator ({@code DD_OrderLine.M_Locator_ID}) equals the row's {@code M_Locator_ID}.
+	 * <p>
+	 * This is the assertion for the stock-aware multi-locator split flow: the demand is split greedily across the
+	 * contributing source locators, one Completed DD_Order (one line) per locator. The step asserts, per expected
+	 * row, that exactly one live DD_Order exists sourcing from that locator (with the expected qty / target locator /
+	 * doc status), AND that the set of contributing source locators is EXACTLY the expected set (no extra live
+	 * DD_Orders for other locators).
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the assignment the DD_Orders must be linked to</li>
+	 *   <li>{@code M_Locator_ID} — identifier of the source locator the matching DD_Order line sources from</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — stores the matched DD_Order for later reference (e.g. to assert it was later voided)</li>
+	 *   <li>{@code DocStatus} — expected header doc status (e.g. {@code CO})</li>
+	 *   <li>{@code M_Warehouse_From_ID} — expected source warehouse identifier (header)</li>
+	 *   <li>{@code M_Warehouse_To_ID} — expected target warehouse identifier (header)</li>
+	 *   <li>{@code M_LocatorTo_ID} — expected line target locator identifier (the workstation's pick-from locator)</li>
+	 *   <li>{@code QtyEntered} — expected line quantity (the portion allocated to this source locator)</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 120s, the per-locator DD_Orders linked to picking job schedule are found:
+	 *   | M_Picking_Job_Schedule_ID | M_Locator_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+	 *   | jobSchedule               | locatorA     | CO        | stockWH             | packingWH         | packingLocator | 10         |
+	 *   | jobSchedule               | locatorB     | CO        | stockWH             | packingWH         | packingLocator | 5          |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the per-locator DD_Orders linked to picking job schedule are found:$")
+	public void validatePerLocatorDDOrdersLinkedToPickingJobSchedule(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.toList();
+
+		// All rows of a single invocation describe the SAME assignment's complete set of per-locator DD_Orders.
+		final PickingJobScheduleId jobScheduleId = rows.get(0)
+				.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+
+		final Map<LocatorId, DataTableRow> expectedBySourceLocator = new LinkedHashMap<>();
+		for (final DataTableRow row : rows)
+		{
+			final LocatorId sourceLocatorId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Locator_ID).lookupNotNullIdIn(locatorTable);
+			expectedBySourceLocator.put(sourceLocatorId, row);
+		}
+
+		// Poll until the live DD_Orders' source-locator set EXACTLY matches the expected set, then validate each
+		// matched DD_Order's header + single line. Polling on the whole set (not row-by-row) avoids binding to a
+		// transient in-flight state where a void/create/update has only partially landed.
+		final Supplier<Boolean> exactSetReady = () -> liveSourceLocatorsForPickingJobSchedule(jobScheduleId).equals(expectedBySourceLocator.keySet());
+		StepDefUtil.tryAndWait(timeoutSec, 1000, exactSetReady, () -> logCurrentDDOrdersForPickingJobSchedule(jobScheduleId));
+
+		for (final Map.Entry<LocatorId, DataTableRow> entry : expectedBySourceLocator.entrySet())
+		{
+			final I_DD_Order ddOrder = liveDDOrderForPickingJobScheduleAndSourceLocator(jobScheduleId, entry.getKey());
+			assertThat(ddOrder).as("live DD_Order for assignment %s sourcing from locator %s", jobScheduleId, entry.getKey()).isNotNull();
+
+			final DataTableRow row = entry.getValue();
+			validateDDOrderHeader(ddOrder, row);
+			validatePickingJobScheduleLine(ddOrder, jobScheduleId, row);
+
+			row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
+		}
+	}
+
+	/**
+	 * Returns the set of source locators ({@code DD_OrderLine.M_Locator_ID}) of all live (non-voided) DD_Orders
+	 * linked to the given assignment. Each reconcile DD_Order has exactly one line, so this is the set of
+	 * contributing source locators.
+	 */
+	private Set<LocatorId> liveSourceLocatorsForPickingJobSchedule(@NonNull final PickingJobScheduleId jobScheduleId)
+	{
+		// Collect the live DD_Order ids, then fetch all their lines in a single batched query (no per-DD_Order query).
+		final List<DDOrderId> liveDDOrderIds = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.create()
+				.stream(I_DD_Order.class)
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.collect(java.util.stream.Collectors.toList());
+
+		final Set<LocatorId> sourceLocatorIds = new LinkedHashSet<>();
+		ddOrderLowLevelDAO.streamLinesByDDOrderIds(liveDDOrderIds)
+				.forEach(line -> {
+					// Resolve the source LocatorId from the locator record (authoritative warehouse), not the
+					// line's M_Warehouse_ID (not reliably set on a programmatically-built DD_OrderLine).
+					final LocatorId sourceLocatorId = LocatorId.ofRecordOrNull(warehouseDAO.getLocatorByRepoId(line.getM_Locator_ID()));
+					if (sourceLocatorId != null)
+					{
+						sourceLocatorIds.add(sourceLocatorId);
+					}
+				});
+		return sourceLocatorIds;
+	}
+
+	@Nullable
+	private I_DD_Order liveDDOrderForPickingJobScheduleAndSourceLocator(
+			@NonNull final PickingJobScheduleId jobScheduleId,
+			@NonNull final LocatorId sourceLocatorId)
+	{
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.andCollectChildren(I_DD_OrderLine.COLUMN_DD_Order_ID)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Locator_ID, sourceLocatorId.getRepoId())
+				.create()
+				.firstOptional(I_DD_OrderLine.class)
+				.map(line -> InterfaceWrapperHelper.load(line.getDD_Order_ID(), I_DD_Order.class))
+				.orElse(null);
+	}
+
+	private void logCurrentDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId jobScheduleId)
+	{
+		final StringBuilder sb = new StringBuilder("DD_Orders linked to M_Picking_Job_Schedule_ID=").append(jobScheduleId).append(":\n");
+		queryBL.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.create()
+				.stream(I_DD_Order.class)
+				.forEach(ddOrder -> {
+					sb.append(" DD_Order_ID=").append(ddOrder.getDD_Order_ID())
+							.append(" DocStatus=").append(ddOrder.getDocStatus());
+					queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
+							.create()
+							.stream(I_DD_OrderLine.class)
+							.forEach(line -> sb.append(" [line M_Locator_ID=").append(line.getM_Locator_ID())
+									.append(" QtyEntered=").append(line.getQtyEntered()).append("]"));
+					sb.append("\n");
+				});
+		logger.error("*** Waiting for per-locator DD_Orders, current context:\n{}", sb);
 	}
 
 	private void logCurrentDDOrders(@NonNull final ShipmentScheduleId scheduleId)
