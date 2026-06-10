@@ -265,9 +265,9 @@ public class CarrierAdviseCommand
 	private JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final Product product = productRepository.getById(shipmentSchedule.getProductId());
-		final PackageDimensions dimensions = PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), shipmentSchedule.getQuantityToDeliver());
+		final PackageDimensions dimensions = product.getPackageDimensions();
 		return JsonDeliveryAdvisorRequestItem.builder()
-				.numberOfItems(shipmentSchedule.getQuantityToDeliver().toBigDecimal().intValue())
+				.numberOfItems(1)
 				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
