@@ -353,10 +353,21 @@ public class ExternalSystem_Config_StepDef
 	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion")
 	public void add_externalSystemConfigWithScriptedExportConversion(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::saveExternalSystemConfigWithScriptedExportConversion);
+		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row));
+	}
+
+	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:")
+	public void add_externalSystemConfigWithScriptedExportConversionAndStatusColumn(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row, true));
 	}
 
 	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row)
+	{
+		saveExternalSystemConfigWithScriptedExportConversion(row, false);
+	}
+
+	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row, final boolean readStatusColumn)
 	{
 		final StepDefDataIdentifier parentConfigIdentifier = row.getAsIdentifier(COLUMNNAME_ExternalSystem_Config_ID);
 		final StepDefDataIdentifier scriptedConfigIdentifier = row.getAsIdentifier(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID);
@@ -397,6 +408,34 @@ public class ExternalSystem_Config_StepDef
 
 		scriptedExportConversionConfig.setExternalSystemValue(valueAndName.getValue());
 
+		if (readStatusColumn)
+		{
+			// Status_AD_Column_ID was removed from the model when the per-record status design was
+			// consolidated into ExternalSystem_ScriptedExportConversion_Status (a single-row-upsert table
+			// that carries the export lifecycle).  IsTriggerOnComplete is still required to tell the
+			// complete-interceptor to start the export.
+			scriptedExportConversionConfig.setIsTriggerOnComplete(true);
+
+			// Deactivate any pre-existing IsTriggerOnComplete configs for the same AD_Table_ID
+			// to avoid roll-up interference between test runs.
+			queryBL
+					.createQueryBuilder(I_ExternalSystem_Config_ScriptedExportConversion.class)
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_AD_Table_ID, tableId.getRepoId())
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsTriggerOnComplete, true)
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsActive, true)
+					.create()
+					.list()
+					.forEach(existing -> {
+						existing.setIsActive(false);
+						InterfaceWrapperHelper.save(existing);
+					});
+		}
+
+		// The DDL default "IsActive=Y" is not valid PostgreSQL SQL (Y is treated as a column name by
+		// the JDBC driver). Overwrite with the syntactically correct form so that
+		// ExternalSystemScriptedExportConversionService.isConfigMatchingRecord() can run the WHERE
+		// clause successfully.
+		scriptedExportConversionConfig.setWhereClause("IsActive='Y'");
 
 		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
 
