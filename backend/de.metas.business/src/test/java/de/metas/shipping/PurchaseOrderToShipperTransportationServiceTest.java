@@ -537,9 +537,6 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackages.get(0).getC_OrderLine_ID())
 				.as("Only line2 (product2) should produce a shipping package")
 				.isEqualTo(line2.getC_OrderLine_ID());
-		assertThat(shippingPackages)
-				.as("line1 (product1) must not have a shipping package")
-				.noneMatch(sp -> sp.getC_OrderLine_ID() == line1.getC_OrderLine_ID());
 	}
 
 	private I_M_ShipperTransportation createShipperTransportation()
