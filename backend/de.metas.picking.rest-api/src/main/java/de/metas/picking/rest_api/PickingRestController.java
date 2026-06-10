@@ -26,6 +26,9 @@ import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingScanRequest;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingService;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
@@ -38,6 +41,8 @@ import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingResult;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingScanRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
@@ -89,6 +94,7 @@ public class PickingRestController
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final MassPrintingService massPrintingService;
 
 	private void assertApplicationAccess()
 	{
@@ -314,6 +320,23 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
+	}
+
+	@PostMapping("/massPrinting/scan")
+	public @NonNull JsonMassPrintingResult massPrintingScan(@RequestBody @NonNull final JsonMassPrintingScanRequest request)
+	{
+		assertApplicationAccess();
+
+		final HUQRCode luQRCode = toHUQRCode(request.getScannedCode());
+		final HuId luId = huQRCodesService.getHuIdByQRCode(luQRCode);
+
+		final MassPrintingResult result = massPrintingService.scan(
+				MassPrintingScanRequest.builder()
+						.luId(luId)
+						.pickerId(getLoggedUserId())
+						.build());
+
+		return JsonMassPrintingResult.of(result);
 	}
 
 	@PostMapping("/job/{wfProcessId}/pickAll")
