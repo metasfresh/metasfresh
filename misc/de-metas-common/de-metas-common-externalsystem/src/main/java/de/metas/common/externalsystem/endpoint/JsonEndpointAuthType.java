@@ -33,7 +33,7 @@ public enum JsonEndpointAuthType
 	OAuth,
 	SAS,
 	Basic,
-	CookieLogon
+	OAuth2
 }
 
 

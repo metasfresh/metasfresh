@@ -29,8 +29,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.Map;
-
 @Builder
 @Value
 @Jacksonized
@@ -106,15 +104,15 @@ public class JsonExternalSystemEndpoint
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean arrayFanOut;
 
-	// Cookie-logon auth fields (used with authType=CookieLogon)
+	// OAuth2 auth fields (used with authType=OAuth2)
 
-	/** URL to POST the logon form to. */
+	/** Token endpoint URL the OAuth2 password-grant request is POSTed to. */
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String logonUrl;
+	String oauthTokenUrl;
 
-	/** JSON form fields POSTed to the logon URL; {user} and {password} are substituted at send time. */
+	/** Optional OAuth2 scope sent with the token request (e.g. "docuware.platform"). */
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	Map<String, String> logonFormParams;
+	String oauthScope;
 
 	// Multipart file-upload flag
 

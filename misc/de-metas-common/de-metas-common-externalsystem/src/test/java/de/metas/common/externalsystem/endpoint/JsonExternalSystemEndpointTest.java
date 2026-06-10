@@ -26,8 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,18 +57,16 @@ class JsonExternalSystemEndpointTest
 	}
 
 	@Test
-	void cookieLogonAndFileUpload_serializeDeserialize() throws Exception
+	void oauth2AndFileUpload_serializeDeserialize() throws Exception
 	{
-		final Map<String, String> logonParams = new HashMap<>();
-		logonParams.put("UserName", "{user}");
-		logonParams.put("Password", "{password}");
-		logonParams.put("Organization", "PEERS");
-
 		final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
-				.value("cookie-upload-test")
-				.authType(JsonEndpointAuthType.CookieLogon)
-				.logonUrl("https://example.com/logon")
-				.logonFormParams(logonParams)
+				.value("oauth2-upload-test")
+				.authType(JsonEndpointAuthType.OAuth2)
+				.oauthTokenUrl("https://example.com/oauth/token")
+				.oauthScope("docuware.platform")
+				.clientId("example.client")
+				.user("user")
+				.password("password")
 				.endpointUrl("https://example.com/upload")
 				.method("POST")
 				.isFileUpload(true)

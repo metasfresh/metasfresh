@@ -290,46 +290,50 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_LoginUsername = "LoginUsername";
 
 	/**
-	 * Set Logon URL.
+	 * Set OAuth2 Token URL.
+	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLogonUrl (@Nullable java.lang.String LogonUrl);
+	void setOAuthTokenUrl (@Nullable java.lang.String OAuthTokenUrl);
 
 	/**
-	 * Get Logon URL.
+	 * Get OAuth2 Token URL.
+	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getLogonUrl();
+	@Nullable java.lang.String getOAuthTokenUrl();
 
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LogonUrl = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LogonUrl", null);
-	String COLUMNNAME_LogonUrl = "LogonUrl";
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthTokenUrl = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthTokenUrl", null);
+	String COLUMNNAME_OAuthTokenUrl = "OAuthTokenUrl";
 
 	/**
-	 * Set Logon Form Params.
+	 * Set OAuth2 Scope.
+	 * Optional OAuth2 scope sent with the token request (e.g. "docuware.platform").
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLogonFormParams (@Nullable java.lang.String LogonFormParams);
+	void setOAuthScope (@Nullable java.lang.String OAuthScope);
 
 	/**
-	 * Get Logon Form Params.
+	 * Get OAuth2 Scope.
+	 * Optional OAuth2 scope sent with the token request (e.g. "docuware.platform").
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getLogonFormParams();
+	@Nullable java.lang.String getOAuthScope();
 
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LogonFormParams = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LogonFormParams", null);
-	String COLUMNNAME_LogonFormParams = "LogonFormParams";
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthScope = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthScope", null);
+	String COLUMNNAME_OAuthScope = "OAuthScope";
 
 	/**
 	 * Set File Upload.
