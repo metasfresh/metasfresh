@@ -3,6 +3,11 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.edi.api.EDIDesadvId;
+import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -36,6 +41,7 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,6 +61,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.HUTestHelper.NAME_IFCO_Product;
 import static java.math.BigDecimal.TEN;
@@ -221,12 +228,12 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
 		// ASSERT — no orphan pack item: (MovementQty == 0 AND M_InOutLine_ID == null)
-		final List<I_EDI_Desadv_Pack_Item> orphans = org.adempiere.ad.wrapper.POJOLookupMap.get()
+		final List<I_EDI_Desadv_Pack_Item> orphans = POJOLookupMap.get()
 				.getRecords(I_EDI_Desadv_Pack_Item.class)
 				.stream()
 				.filter(pi -> pi.getMovementQty() != null && pi.getMovementQty().signum() == 0)
 				.filter(pi -> pi.getM_InOutLine_ID() <= 0)
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 
 		assertThat(orphans)
 				.as("orphan Qty-0 pack item with NULL M_InOutLine_ID (me03 #29278) must not exist after reactivate->re-complete")
@@ -239,13 +246,13 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 	 */
 	private void seedDraftedSSCCPackItem(final BigDecimal qtyCUsPerLU)
 	{
-		final de.metas.edi.api.impl.pack.EDIDesadvPackService packService = de.metas.edi.api.impl.pack.EDIDesadvPackService.newInstanceForUnitTesting();
-		final de.metas.edi.api.impl.pack.EDIDesadvPackService.Sequences sequences =
-				packService.createSequences(de.metas.edi.api.EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()));
+		final EDIDesadvPackService packService = EDIDesadvPackService.newInstanceForUnitTesting();
+		final EDIDesadvPackService.Sequences sequences =
+				packService.createSequences(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()));
 
-		final de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest packItemRequest =
-				de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest.builder()
-						.ediDesadvLineId(de.metas.edi.api.EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
+		final CreateEDIDesadvPackItemRequest packItemRequest =
+				CreateEDIDesadvPackItemRequest.builder()
+						.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
 						.line(sequences.getPackItemLineSequence().next())
 						.qtyTu(0)
 						.qtyCUsPerLU(qtyCUsPerLU)
@@ -253,11 +260,11 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 						// note: NO inOutId / inOutLineId -> M_InOutLine_ID stays null -> "drafted"
 						.build();
 
-		final de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest packRequest =
-				de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest.builder()
+		final CreateEDIDesadvPackRequest packRequest =
+				CreateEDIDesadvPackRequest.builder()
 						.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
 						.seqNo(sequences.getPackSeqNoSequence().next())
-						.ediDesadvId(de.metas.edi.api.EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
+						.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 						.sscc18("000000000000000099")
 						.isManualIpaSSCC(true)
 						.createEDIDesadvPackItemRequest(packItemRequest)
@@ -292,7 +299,7 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 		huAttrRecord.setM_HU_PI_Attribute_ID(sscc18HUPIAttributeRecord.getM_HU_PI_Attribute_ID());
 		saveRecord(huAttrRecord);
 
-		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = org.adempiere.ad.wrapper.POJOLookupMap.get()
+		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = POJOLookupMap.get()
 				.getRecords(I_M_HU_PI_Attribute.class,
 						record -> record.getM_Attribute_ID() == bestBeforeAttrRecord.getM_Attribute_ID())
 				.stream()
