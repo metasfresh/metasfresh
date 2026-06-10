@@ -93,19 +93,7 @@ public class PurchaseOrderToShipperTransportationService
 	@VisibleForTesting
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
 	{
-		Adempiere.assertUnitTestMode();
-
-		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
-		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> {
-			final ArrayList<BigDecimal> tuDistribution = new ArrayList<>(luCount);
-			for (int i = 0; i < luCount; i++)
-			{
-				tuDistribution.add(BigDecimal.ZERO);
-			}
-			return tuDistribution;
-		};
-		final IPackageWeightProvider weightProvider = (order, orderLine, tuQtyForPackage) -> null;
-		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider, tuProvider, weightProvider);
+		return newInstanceForUnitTesting((o, ol) -> 1);
 	}
 
 	@VisibleForTesting
