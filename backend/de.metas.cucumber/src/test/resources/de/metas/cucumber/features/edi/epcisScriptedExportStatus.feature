@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-@ghActions:run_on_executor5
+@ghActions:run_on_executor7
 Feature: EPCIS scripted-export status — success, error and re-send flows
 ## Verifies the ExternalSystem_ScriptedExportConversion_Status lifecycle for the EPCIS export config:
 ## (a) shipment completed → invocation enqueued → /ok callback → status row Sent + roll-up M_InOut.EPCIS_ExportStatus=Sent
