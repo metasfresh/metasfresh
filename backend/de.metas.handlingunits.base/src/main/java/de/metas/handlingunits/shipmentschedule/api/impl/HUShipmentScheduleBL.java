@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -9,6 +10,7 @@ import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -26,8 +28,9 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TULoader;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -38,24 +41,17 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.AttributesKeyPart;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeValueType;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
@@ -69,16 +65,19 @@ import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -88,6 +87,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -229,6 +230,101 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		huContext.flush();
 
 		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecord, huContext);
+	}
+
+	@Override
+	public boolean tryMergeQtyPickedIntoExistingForVHU(@NonNull final AddQtyPickedRequest request)
+	{
+		// Eligibility — only HU-trx-listener-shaped picks may be merged.
+		// Order: cheapest request-shape guards first; HU lookup last.
+		final ShipmentScheduleAndJobScheduleId scheduleId = request.getScheduleId();
+		if (scheduleId.getJobScheduleId() != null)
+		{
+			return false;
+		}
+		if (request.isAnonymousHuPickedOnTheFly())
+		{
+			return false;
+		}
+
+		// Catch-weight merging is not supported here — fall through to create-new so each
+		// catch reading keeps its own row.
+		final StockQtyAndUOMQty qtyToAdd = request.getQtyPicked();
+		if (qtyToAdd.isUOMQtySet())
+		{
+			return false;
+		}
+
+		// Only merge strictly positive allocations. Negative qty represents an un-allocation
+		// (see ShipmentScheduleHUTrxListener#trxLineProcessed Javadoc) and must remain its own
+		// audit row so the netting is visible — silently subtracting from a sibling can drive
+		// a row to zero/negative and mask a stock discrepancy.
+		if (qtyToAdd.getStockQty().signum() <= 0)
+		{
+			return false;
+		}
+
+		final I_M_HU vhu = request.getHu();
+		if (!handlingUnitsBL.isVirtual(vhu))
+		{
+			return false;
+		}
+
+		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
+		final List<I_M_ShipmentSchedule_QtyPicked> candidates = huShipmentScheduleDAO.retrieveMergeableListenerQtyPickedForVHU(
+				scheduleId.getShipmentScheduleId(),
+				vhuId);
+
+		if (candidates.isEmpty())
+		{
+			return false;
+		}
+		if (candidates.size() > 1)
+		{
+			// Pre-existing duplicates — not our job to silently collapse them. Log and fall through;
+			// the new-row path will leave the duplicates intact for human inspection.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"tryMergeQtyPickedIntoExistingForVHU: found {} pre-existing un-shipped QtyPicked rows for shipmentScheduleId={} vhuId={} — falling through to create-new",
+					candidates.size(), scheduleId.getShipmentScheduleId(), vhuId);
+			return false;
+		}
+
+		final I_M_ShipmentSchedule_QtyPicked existing = candidates.get(0);
+		// Defensive: even though the request carries no catch UOM (guard above), reject merging
+		// into a row that was previously written with one. Could only happen if a different code
+		// path bypassed the request-side guard; better to fall through than risk arithmetic that
+		// loses the catch reading.
+		final BigDecimal existingCatchQty = existing.getQtyDeliveredCatch();
+		if (existing.getCatch_UOM_ID() > 0 || (existingCatchQty != null && existingCatchQty.signum() != 0))
+		{
+			return false;
+		}
+
+		existing.setQtyPicked(existing.getQtyPicked().add(qtyToAdd.getStockQty().toBigDecimal()));
+		final IHUContext huContext = request.getHuContext();
+		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(existing, huContext)
+				.forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
+		saveRecord(existing);
+
+		// Drive the same HU side-effects as the create-new path. On the well-formed reversal
+		// flow the topLevelHU is already Picked with the right partner/location (the FIRST
+		// trx-line in the same transaction went through addQtyPickedAndUpdateHU), so each call
+		// is a verified no-op:
+		//   - HUStatusBL.setHUStatus returns early when status is unchanged
+		//   - PO setters with equal values do not produce an UPDATE
+		// Re-running them here is a safety net for edge cases where the first row's flow
+		// didn't reach this point (e.g. a row pre-existed from a prior session).
+		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
+		final I_M_HU topLevelHU = husPair.getTopLevelHU();
+		setHUStatusToPicked(topLevelHU);
+		setHUPartnerAndLocationFromSched(topLevelHU, getShipmentSchedule(request));
+		handlingUnitsDAO.saveHU(topLevelHU);
+		huContext.flush();
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog(
+				"tryMergeQtyPickedIntoExistingForVHU: merged qty={} into M_ShipmentSchedule_QtyPicked_ID={} (shipmentScheduleId={} vhuId={})",
+				qtyToAdd.getStockQty(), existing.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId.getShipmentScheduleId(), vhuId);
+		return true;
 	}
 
 	private de.metas.inoutcandidate.model.I_M_ShipmentSchedule getShipmentSchedule(final AddQtyPickedRequest request)

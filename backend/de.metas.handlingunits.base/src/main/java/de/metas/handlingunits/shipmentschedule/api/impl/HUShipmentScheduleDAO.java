@@ -1,24 +1,34 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.base.Preconditions;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}
 
@@ -141,4 +151,87 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
 	}
 
+	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveMergeableListenerQtyPickedForVHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId vhuId)
+	{
+		// Run in the thread-inherited transaction. This method is called from
+		// ShipmentScheduleHUTrxListener#trxLineProcessed during an aggregate-HU snapshot replay
+		// (e.g. shipment reversal): the sibling QtyPicked rows we need to merge into are created
+		// earlier in the SAME, not-yet-committed transaction. A context-less query would run
+		// out-of-trx (committed data only) and never see them, defeating the merge.
+		final Properties ctx = Env.getCtx();
+		final String trxName = trxManager.getThreadInheritedTrxName();
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_Picking_Job_Schedule_ID, null)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_IsAnonymousHuPickedOnTheFly, false)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
+	{
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
+
+		//
+		// Iterate HUs and collect candidates from them
+		final IHandlingUnitsBL handlingUnitsBL = handlingUnitsBL();
+		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
+		for (final I_M_HU hu : hus)
+		{
+			// Make sure we are dealing with an top level HU
+			if (!handlingUnitsBL.isTopLevel(hu))
+			{
+				throw new HUException("HU " + hu + " shall be top level");
+			}
+
+			//
+			// Retrieve and create candidates from shipment schedule QtyPicked assignments
+			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
+			final List<I_M_ShipmentSchedule_QtyPicked> shipmentSchedulesQtyPicked = retrieveQtyPickedNotDeliveredForTopLevelHU(hu);
+			for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentSchedulesQtyPicked)
+			{
+				if (!shipmentScheduleQtyPicked.isActive())
+				{
+					continue;
+				}
+
+				// NOTE: we allow negative Qtys too because they shall be part of a bigger transfer and overall qty can be positive
+				// if (ssQtyPicked.getQtyPicked().signum() <= 0)
+				// {
+				// continue;
+				// }
+
+				final ShipmentScheduleWithHU candidate = ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
+				candidatesForHU.add(candidate);
+			}
+
+			//
+			// Add the candidates for current HU to the list of all collected candidates
+			result.addAll(candidatesForHU);
+
+			// Log if there were no candidates created for current HU.
+			if (candidatesForHU.isEmpty())
+			{
+				Loggables.addLog("No eligible {} records found for hu {}",
+						I_M_ShipmentSchedule_QtyPicked.Table_Name,
+						handlingUnitsBL().getDisplayName(hu));
+			}
+		}
+
+		//
+		// Sort result
+		result.sort(new ShipmentScheduleWithHUComparator());
+
+		// TODO: make sure all shipment schedules are valid
+
+		return result;
+	}
 }
