@@ -8,7 +8,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipping.impl.HUShipperTransportationBL;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
-import de.metas.product.PackageDimensions;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -17,7 +16,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 @Service
 public class PackedHUShippingInfoService
@@ -27,25 +25,20 @@ public class PackedHUShippingInfoService
 	@NonNull
 	public PackedHUShippingInfo of(@NonNull final I_M_HU hu)
 	{
-		final Quantity weightInKg = calculateWeightInKg(hu);
-		final PackageDimensions dimensions = Services.get(IHUPackageBL.class).getPackageDimensions(hu);
-		final String topLevelType = deriveTopLevelType(hu);
-		final String countryOfOrigin = readCountryOfOrigin(hu);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		return PackedHUShippingInfo.builder()
-				.weightInKg(weightInKg)
-				.dimensions(dimensions)
-				.topLevelType(topLevelType)
-				.countryOfOrigin(countryOfOrigin)
+				.weightInKg(calculateWeightInKg(hu))
+				.dimensions(Services.get(IHUPackageBL.class).getPackageDimensions(hu))
+				.topLevelType(deriveTopLevelType(hu, handlingUnitsBL))
+				.countryOfOrigin(readCountryOfOrigin(hu, handlingUnitsBL))
 				.build();
 	}
 
 	@Nullable
 	private Quantity calculateWeightInKg(@NonNull final I_M_HU hu)
 	{
-		final ShippingWeightCalculator calculator = newWeightCalculator();
-		final Optional<Quantity> weight = calculator.calculateWeightInKg(hu);
-		return weight.orElse(null);
+		return newWeightCalculator().calculateWeightInKg(hu).orElse(null);
 	}
 
 	private ShippingWeightCalculator newWeightCalculator()
@@ -61,9 +54,8 @@ public class PackedHUShippingInfoService
 	}
 
 	@NonNull
-	private String deriveTopLevelType(@NonNull final I_M_HU hu)
+	private String deriveTopLevelType(@NonNull final I_M_HU hu, @NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final String huUnitType = handlingUnitsBL.getHU_UnitType(hu);
 
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
@@ -82,13 +74,9 @@ public class PackedHUShippingInfoService
 	}
 
 	@Nullable
-	private String readCountryOfOrigin(@NonNull final I_M_HU hu)
+	private String readCountryOfOrigin(@NonNull final I_M_HU hu, @NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IAttributeStorage huAttributes = handlingUnitsBL
-				.createMutableHUContext()
-				.getHUAttributeStorageFactory()
-				.getAttributeStorage(hu);
+		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(hu);
 
 		if (!huAttributes.hasAttribute(ATTR_COUNTRY_OF_ORIGIN))
 		{
