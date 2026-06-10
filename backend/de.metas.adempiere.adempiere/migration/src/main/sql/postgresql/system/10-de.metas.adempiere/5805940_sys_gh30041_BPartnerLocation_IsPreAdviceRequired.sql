@@ -3,11 +3,7 @@
 --   AD_Element_ID:     584937 (shared element for all three tables)
 --   AD_Column_ID:      592702 (C_BPartner_Location.IsPreAdviceRequired)
 --   AD_Field_ID:       780679 (Tab 222 BPartner Location)
---   AD_Field_ID:       780680 (Tab 540874 Dist-Orgs Location)
---   AD_Field_ID:       780681 (Tab 541854 Organisation Stammdaten Location)
 --   AD_UI_Element_ID:  651979 (Tab 222)
---   AD_UI_Element_ID:  651980 (Tab 540874)
---   AD_UI_Element_ID:  651981 (Tab 541854)
 
 -- =============================================================================
 -- 1. AD_Element for IsPreAdviceRequired
@@ -131,54 +127,7 @@ FROM AD_Language l, AD_Field t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 780679 /*From ID Server*/
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
 
--- =============================================================================
--- 5. AD_Field in Tab 540874 (Dist-Orgs window 540366)
--- =============================================================================
--- 2026-06-03T10:00:13.000Z
-INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
-                      Created, CreatedBy, Description, DisplayLength, EntityType,
-                      IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly,
-                      IsHeading, IsReadOnly, IsSameLine, Name, Updated, UpdatedBy)
-VALUES (0, 592702 /*From ID Server*/, 780680 /*From ID Server*/, 0, 540874,
-        TO_TIMESTAMP('2026-06-03 10:00:13', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100, NULL,
-        1, 'D',
-        'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Voranmeldung erforderlich',
-        TO_TIMESTAMP('2026-06-03 10:00:13', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100);
-
--- 2026-06-03T10:00:14.000Z
-INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
-SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy, 'Y'
-FROM AD_Language l, AD_Field t
-WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 780680 /*From ID Server*/
-  AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
-
--- =============================================================================
--- 6. AD_Field in Tab 541854 (Organisation Stammdaten window 540676)
--- =============================================================================
--- 2026-06-03T10:00:15.000Z
-INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
-                      Created, CreatedBy, Description, DisplayLength, EntityType,
-                      IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly,
-                      IsHeading, IsReadOnly, IsSameLine, Name, Updated, UpdatedBy)
-VALUES (0, 592702 /*From ID Server*/, 780681 /*From ID Server*/, 0, 541854,
-        TO_TIMESTAMP('2026-06-03 10:00:15', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100, NULL,
-        1, 'D',
-        'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Voranmeldung erforderlich',
-        TO_TIMESTAMP('2026-06-03 10:00:15', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100);
-
--- 2026-06-03T10:00:16.000Z
-INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
-SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy, 'Y'
-FROM AD_Language l, AD_Field t
-WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Field_ID = 780681 /*From ID Server*/
-  AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
-
 -- 2026-06-03T10:00:17.000Z
--- Sync field names from element for all three fields
 /* DDL */ select update_FieldTranslation_From_AD_Name_Element(584937 /*From ID Server*/)
 ;
 
@@ -187,21 +136,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780679 /*From ID Server*/;
 -- 2026-06-03T10:00:19.000Z
 /* DDL */ select AD_Element_Link_Create_Missing_Field(780679 /*From ID Server*/);
 
--- 2026-06-03T10:00:20.000Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780680 /*From ID Server*/;
--- 2026-06-03T10:00:21.000Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(780680 /*From ID Server*/);
-
--- 2026-06-03T10:00:22.000Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID = 780681 /*From ID Server*/;
--- 2026-06-03T10:00:23.000Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(780681 /*From ID Server*/);
-
 -- =============================================================================
--- 7. AD_UI_Element entries (all IsAdvancedField='Y')
+-- 5. AD_UI_Element in Tab 222 (IsAdvancedField='Y')
+-- AD_UI_ElementGroup_ID=1000034, SeqNo=200 (after Attention at 190)
 -- =============================================================================
-
--- Tab 222: AD_UI_ElementGroup_ID=1000034, SeqNo=200 (after Attention at 190)
 -- 2026-06-03T10:00:24.000Z
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID,
                            Created, CreatedBy,
@@ -214,34 +152,4 @@ VALUES (0, 780679 /*From ID Server*/, 0, 222, 1000034, 651979 /*From ID Server*/
         'Y', 'Y', 'Y', 'N', 'N',
         'Voranmeldung erforderlich', 200, 0, 0,
         TO_TIMESTAMP('2026-06-03 10:00:24', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100);
-
--- Tab 540874: AD_UI_ElementGroup_ID=541147, SeqNo=48 (after Attention at 47)
--- 2026-06-03T10:00:25.000Z
-INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID,
-                           Created, CreatedBy,
-                           IsActive, IsAdvancedField, IsDisplayed,
-                           IsDisplayedGrid, IsDisplayed_SideList,
-                           Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
-VALUES (0, 780680 /*From ID Server*/, 0, 540874, 541147, 651980 /*From ID Server*/,
-        TO_TIMESTAMP('2026-06-03 10:00:25', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100,
-        'Y', 'Y', 'Y', 'N', 'N',
-        'Voranmeldung erforderlich', 48, 0, 0,
-        TO_TIMESTAMP('2026-06-03 10:00:25', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100);
-
--- Tab 541854: AD_UI_ElementGroup_ID=542736, SeqNo=49
--- 2026-06-03T10:00:26.000Z
-INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID,
-                           Created, CreatedBy,
-                           IsActive, IsAdvancedField, IsDisplayed,
-                           IsDisplayedGrid, IsDisplayed_SideList,
-                           Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
-VALUES (0, 780681 /*From ID Server*/, 0, 541854, 542736, 651981 /*From ID Server*/,
-        TO_TIMESTAMP('2026-06-03 10:00:26', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-        100,
-        'Y', 'Y', 'Y', 'N', 'N',
-        'Voranmeldung erforderlich', 49, 0, 0,
-        TO_TIMESTAMP('2026-06-03 10:00:26', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
         100);
