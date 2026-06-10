@@ -35,12 +35,7 @@ public class PackedHUShippingInfoService
 	@Nullable
 	private Quantity calculateWeightInKg(@NonNull final I_M_HU hu)
 	{
-		return newWeightCalculator().calculateWeightInKg(hu).orElse(null);
-	}
-
-	private ShippingWeightCalculator newWeightCalculator()
-	{
-		return ShippingWeightCalculator.newInstanceFromSysConfig();
+		return ShippingWeightCalculator.newInstanceFromSysConfig().calculateWeightInKg(hu).orElse(null);
 	}
 
 	@NonNull
