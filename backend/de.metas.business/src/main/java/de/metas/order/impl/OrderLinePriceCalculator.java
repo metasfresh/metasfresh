@@ -120,7 +120,7 @@ final class OrderLinePriceCalculator
 			return;
 		}
 
-		// Load order once here; reused below to avoid a second implicit DB load via getC_Order()
+		// Load the order header once; C_Currency_ID is taken from the header (not the pricing result) below.
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		
 		//
