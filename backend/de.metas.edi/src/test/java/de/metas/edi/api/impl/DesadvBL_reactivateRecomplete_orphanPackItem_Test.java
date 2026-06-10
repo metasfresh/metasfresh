@@ -67,9 +67,9 @@ import java.util.stream.Collectors;
 import static de.metas.handlingunits.HUTestHelper.NAME_IFCO_Product;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 
 /*
  * #%L
