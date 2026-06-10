@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.Map;
+
 @Builder
 @Value
 @Jacksonized
@@ -103,4 +105,35 @@ public class JsonExternalSystemEndpoint
 	 */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean arrayFanOut;
+
+	// Cookie-logon auth fields (used with authType=CookieLogon)
+
+	/** URL to POST the logon form to. */
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String logonUrl;
+
+	/** Form-encoded parameters submitted to the logon URL (e.g. username, password field names). */
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	Map<String, String> logonFormParams;
+
+	/** Name of the Set-Cookie header value to capture from the logon response and resend on subsequent requests. */
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String capturedCookieName;
+
+	// Multipart file-upload fields
+
+	/**
+	 * If TRUE, the request body is sent as multipart/form-data.
+	 * Boxed Boolean so the field is omitted from the wire format when unset.
+	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isFileUpload;
+
+	/** Name of the multipart part carrying the document (metadata / JSON). Defaults to "document" when absent. */
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String documentPartName;
+
+	/** Name of the multipart part carrying the binary file. Defaults to "file[]" when absent. */
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String filePartName;
 }

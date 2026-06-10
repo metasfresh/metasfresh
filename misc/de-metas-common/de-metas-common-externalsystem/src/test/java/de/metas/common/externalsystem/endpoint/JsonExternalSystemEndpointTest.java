@@ -26,6 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,6 +56,31 @@ class JsonExternalSystemEndpointTest
 		final JsonExternalSystemEndpoint result = objectMapper.readValue(string, JsonExternalSystemEndpoint.class);
 
 		assertThat(result).isEqualTo(request);
+	}
+
+	@Test
+	void cookieLogonAndFileUpload_serializeDeserialize() throws Exception
+	{
+		final Map<String, String> logonParams = new HashMap<>();
+		logonParams.put("username", "admin");
+		logonParams.put("password", "secret");
+
+		final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
+				.value("cookie-upload-test")
+				.authType(JsonEndpointAuthType.CookieLogon)
+				.logonUrl("https://example.com/logon")
+				.logonFormParams(logonParams)
+				.capturedCookieName("JSESSIONID")
+				.endpointUrl("https://example.com/upload")
+				.method("POST")
+				.isFileUpload(true)
+				.documentPartName("document")
+				.filePartName("file[]")
+				.build();
+
+		final String json = objectMapper.writeValueAsString(endpoint);
+		final JsonExternalSystemEndpoint deserialized = objectMapper.readValue(json, JsonExternalSystemEndpoint.class);
+		assertThat(deserialized).isEqualTo(endpoint);
 	}
 
 	@Test
