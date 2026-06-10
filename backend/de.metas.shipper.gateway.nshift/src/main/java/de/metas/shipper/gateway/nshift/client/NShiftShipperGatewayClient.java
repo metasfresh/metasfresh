@@ -66,7 +66,6 @@ import org.slf4j.Logger;
 
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -89,7 +88,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull private final ShipperServiceLevelConfigList serviceLevelConfigs;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@Override
 	@NonNull
@@ -154,8 +153,12 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.flatMap(packageId -> shipmentScheduleRepository.loadByPackageId(packageId).stream())
 				.collect(Collectors.toList());
 
-		final boolean allManual = !schedules.isEmpty()
-				&& schedules.stream().allMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
+		if (schedules.isEmpty())
+		{
+			return request;
+		}
+		final boolean allManual = schedules.stream()
+				.allMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
 		if (allManual)
 		{
 			return request;
@@ -167,14 +170,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.findFirst()
 				.orElse(null);
 
-		final Optional<String> serviceLevel = serviceLevelConfigs.getEffectiveServiceLevel(
-				ShipperConfigRequest.builder().externalSystemId(externalSystemId).build());
+		final String serviceLevel = serviceLevelConfigs.getEffectiveServiceLevel(
+				ShipperConfigRequest.builder().externalSystemId(externalSystemId).build()).orElse(null);
 
 		JsonShipperConfig patchedConfig = request.getShipperConfig()
-				.withAdditionalProperty(de.metas.shipper.client.nshift.NShiftConstants.USE_SHIPPING_RULES, Boolean.TRUE.toString());
-		if (serviceLevel.isPresent())
+				.withAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES, Boolean.TRUE.toString());
+		if (serviceLevel != null)
 		{
-			patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel.get());
+			patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel);
 		}
 		return request.toBuilder().shipperConfig(patchedConfig).build();
 	}
