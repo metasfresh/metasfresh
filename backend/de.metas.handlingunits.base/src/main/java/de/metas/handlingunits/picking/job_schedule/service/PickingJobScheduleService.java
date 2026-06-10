@@ -25,6 +25,8 @@ import de.metas.workplace.WorkplaceRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
+
+import javax.annotation.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
@@ -63,6 +65,12 @@ public class PickingJobScheduleService
 	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
 	{
 		return pickingJobScheduleRepository.getById(id);
+	}
+
+	@Nullable
+	public PickingJobSchedule findByIdOrNull(@NonNull final PickingJobScheduleId id)
+	{
+		return pickingJobScheduleRepository.findByIdOrNull(id);
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)

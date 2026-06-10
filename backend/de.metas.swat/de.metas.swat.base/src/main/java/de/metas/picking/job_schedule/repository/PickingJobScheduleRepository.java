@@ -24,6 +24,8 @@ import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -97,8 +99,16 @@ public class PickingJobScheduleRepository
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.workplaceId(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.active(record.isActive())
 				.processed(record.isProcessed())
 				.build();
+	}
+
+	@Nullable
+	public PickingJobSchedule findByIdOrNull(@NonNull final PickingJobScheduleId id)
+	{
+		final I_M_Picking_Job_Schedule record = load(id, I_M_Picking_Job_Schedule.class);
+		return record != null ? fromRecord(record) : null;
 	}
 
 	public void updateByIds(@NonNull final Set<PickingJobScheduleId> ids, @NonNull final UnaryOperator<PickingJobSchedule> updater)

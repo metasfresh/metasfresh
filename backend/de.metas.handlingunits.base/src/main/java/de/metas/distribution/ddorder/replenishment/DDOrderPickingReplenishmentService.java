@@ -27,9 +27,9 @@ import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -63,6 +63,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -116,16 +117,8 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	public void scheduleReconcileAfterCommit(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		// Wired to afterNew/afterChange only (the delete→void runs synchronously in-trx via
-		// voidDDOrdersForDeletedAssignment, NOT through this after-commit path). We always schedule and let
-		// reconcile() classify, so a non-packing assignment (or one with no DD_Order) simply no-ops.
-		final PickingJobScheduleId jobScheduleId = PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID());
-
-		// Accumulate the assignment id per-trx: exactly ONE reconcile event per distinct id is published
-		// after the current transaction commits (the collector deduplicates equal items).
-		// If there is no active trx, the processor runs inline immediately.
 		trxManager.accumulateAndProcessAfterCommit(
 				TRX_PROPERTY_ScheduleReconcile,
 				Collections.singletonList(jobScheduleId),
@@ -145,7 +138,7 @@ public class DDOrderPickingReplenishmentService
 	 */
 	public void reconcile(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		final I_M_Picking_Job_Schedule jobSchedule = loadAssignmentOrNull(jobScheduleId);
+		final PickingJobSchedule jobSchedule = loadAssignmentOrNull(jobScheduleId);
 		final List<I_DD_Order> existingDDOrders = ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(jobScheduleId);
 		final boolean hasExistingDDOrder = !existingDDOrders.isEmpty();
 		DDOrderReplenishmentAction action = classifyAction(jobSchedule, hasExistingDDOrder);
@@ -155,7 +148,7 @@ public class DDOrderPickingReplenishmentService
 		// informational entry is written to the Event Log so operators can see why no DD_Order was produced.
 		if (action == DDOrderReplenishmentAction.CREATE || action == DDOrderReplenishmentAction.RECREATE)
 		{
-			final BigDecimal qtyToPick = jobSchedule != null ? jobSchedule.getQtyToPick() : null;
+			final BigDecimal qtyToPick = jobSchedule != null ? jobSchedule.getQtyToPick().toBigDecimal() : null;
 			if (qtyToPick == null || qtyToPick.signum() <= 0)
 			{
 				final boolean willVoidExisting = (action == DDOrderReplenishmentAction.RECREATE);
@@ -180,7 +173,8 @@ public class DDOrderPickingReplenishmentService
 				// Both CREATE (no existing DD_Orders) and RECREATE (some exist) are handled by the same per-locator
 				// reconcile: compute the required (source locator -> qty) split from current stock, then update /
 				// void / create per locator. With no existing DD_Orders this degenerates to pure creation.
-				reconcileRequiredVsExisting(jobScheduleId, jobSchedule, existingDDOrders);
+				// jobSchedule is guaranteed non-null here: classifyAction returns CREATE/RECREATE only when jobSchedule != null.
+				reconcileRequiredVsExisting(jobScheduleId, Objects.requireNonNull(jobSchedule), existingDDOrders);
 				return;
 			case VOID:
 				voidAllDDOrders(existingDDOrders);
@@ -191,9 +185,9 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	@Nullable
-	private I_M_Picking_Job_Schedule loadAssignmentOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
+	private PickingJobSchedule loadAssignmentOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		return InterfaceWrapperHelper.load(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
+		return pickingJobScheduleService.findByIdOrNull(jobScheduleId);
 	}
 
 	/**
@@ -215,7 +209,7 @@ public class DDOrderPickingReplenishmentService
 	 */
 	@VisibleForTesting
 	DDOrderReplenishmentAction classifyAction(
-			@Nullable final I_M_Picking_Job_Schedule jobSchedule,
+			@Nullable final PickingJobSchedule jobSchedule,
 			final boolean hasExistingDDOrder)
 	{
 		if (jobSchedule == null || !isOnAutoDistributionOrder(jobSchedule))
@@ -246,9 +240,17 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	private boolean isOnAutoDistributionOrder(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	private boolean isOnAutoDistributionOrder(@NonNull final PickingJobSchedule jobSchedule)
 	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(jobSchedule.getM_ShipmentSchedule_ID()));
+		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(jobSchedule.getShipmentScheduleId());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
+		final I_M_Warehouse warehouse = warehouseBL.getById(warehouseId);
+		return warehouse.isAutoDistributionOrder();
+	}
+
+	private boolean isOnAutoDistributionOrder(@NonNull final I_M_Picking_Job_Schedule jobScheduleRecord)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(jobScheduleRecord.getM_ShipmentSchedule_ID()));
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
 		final I_M_Warehouse warehouse = warehouseBL.getById(warehouseId);
 		return warehouse.isAutoDistributionOrder();
@@ -270,10 +272,10 @@ public class DDOrderPickingReplenishmentService
 	 */
 	private void reconcileRequiredVsExisting(
 			@NonNull final PickingJobScheduleId jobScheduleId,
-			@NonNull final I_M_Picking_Job_Schedule jobSchedule,
+			@NonNull final PickingJobSchedule jobSchedule,
 			@NonNull final List<I_DD_Order> existingDDOrders)
 	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(jobSchedule.getM_ShipmentSchedule_ID()));
+		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(jobSchedule.getShipmentScheduleId());
 
 		final OrgId orgId = OrgId.ofRepoId(schedule.getAD_Org_ID());
 		final WarehouseId targetWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
@@ -282,14 +284,14 @@ public class DDOrderPickingReplenishmentService
 
 		// Target locator = the workstation's configured pick-from locator. If unset there is nowhere to deliver
 		// to → skip (informational log, no DD_Order). Mirrors the network-gap soft-fail.
-		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(jobSchedule.getC_Workplace_ID());
+		final WorkplaceId workplaceId = jobSchedule.getWorkplaceId();
 		final LocatorId locatorToId = workplaceService.getById(workplaceId).getPickFromLocatorId();
 		if (locatorToId == null)
 		{
 			Loggables.addLog(
 					"{0}: C_Workplace_ID={1} has no PickFrom_Locator_ID for M_Picking_Job_Schedule_ID={2}; no DD_Order will be created",
 					MSG_DDOrderPickingReplenishment_NoPickFromLocator.toAD_Message(),
-					jobSchedule.getC_Workplace_ID(),
+					workplaceId.getRepoId(),
 					jobScheduleId.getRepoId());
 			return;
 		}
@@ -299,8 +301,7 @@ public class DDOrderPickingReplenishmentService
 
 		// Demand qty = the assignment's QtyToPick in the assignment's UOM. The zero/negative case is intercepted
 		// up in #reconcile, so this code path is never reached with a non-positive qty.
-		final UomId qtyUomId = UomId.ofRepoId(jobSchedule.getC_UOM_ID());
-		final Quantity demandQty = Quantitys.of(jobSchedule.getQtyToPick(), qtyUomId);
+		final Quantity demandQty = jobSchedule.getQtyToPick();
 
 		// Stock-aware split: required (source locator -> qty), greedy by M_Locator.Value, partial coverage allowed.
 		final Map<LocatorId, Quantity> requiredByLocator = computeRequiredAllocation(jobScheduleId, sourceWarehouseId, productId, demandQty);
@@ -350,7 +351,7 @@ public class DDOrderPickingReplenishmentService
 			{
 				final I_DD_Order ddOrder = saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
 						.pickingJobScheduleId(jobScheduleId)
-						.shipmentScheduleId(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
+						.shipmentScheduleId(jobSchedule.getShipmentScheduleId())
 						.sourceWarehouseId(sourceWarehouseId)
 						.targetWarehouseId(targetWarehouseId)
 						.inTransitWarehouseId(inTransitWarehouseId)

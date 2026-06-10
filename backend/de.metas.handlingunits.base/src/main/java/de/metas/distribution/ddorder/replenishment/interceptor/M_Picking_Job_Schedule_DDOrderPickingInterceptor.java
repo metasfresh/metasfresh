@@ -67,7 +67,8 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
-		replenishmentService.scheduleReconcileAfterCommit(jobSchedule);
+		replenishmentService.scheduleReconcileAfterCommit(
+				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()));
 	}
 
 	// Delete: void + unlink the linked DD_Order SYNCHRONOUSLY in the current (delete) transaction. The record's PK

@@ -17,6 +17,7 @@ public class PickingJobSchedule
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@NonNull WorkplaceId workplaceId;
 	@NonNull Quantity qtyToPick;
+	boolean active;
 	boolean processed;
 
 	@NonNull
