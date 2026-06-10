@@ -46,16 +46,16 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | TUx4                               | TU                         | product                 | 4   | 2000-01-01 |
 
-    And metasfresh contains M_PricingSystems:
+    And metasfresh contains M_PricingSystems
       | Identifier |
       | PS         |
-    And metasfresh contains M_PriceLists:
+    And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | PL         | PS                 | DE                    | EUR                 | true  |
-    And metasfresh contains M_PriceList_Versions:
+    And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | PLV        | PL             |
-    And metasfresh contains M_ProductPrices:
+    And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
       | PLV                    | product      | 6.0      | PCE               | Nominal              | Normal                        |
 
