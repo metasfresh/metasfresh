@@ -114,7 +114,7 @@ public class FileUploadProcessor
 
 		// Validate required fields
 		final String fileBase64 = requireTextField(root, FIELD_FILE_BASE64);
-		final String fileName   = requireTextField(root, FIELD_FILE_NAME);
+		final String fileName = requireTextField(root, FIELD_FILE_NAME);
 		final String contentTypeValue = requireTextField(root, FIELD_CONTENT_TYPE);
 		final JsonNode documentNode = root.get(FIELD_DOCUMENT);
 		if (documentNode == null || documentNode.isNull() || documentNode.isMissingNode())

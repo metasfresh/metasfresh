@@ -22,8 +22,6 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessToken;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
@@ -34,7 +32,6 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -51,6 +48,7 @@ import java.util.Base64;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.FileUploadProcessor.HEADER_X_FILE_MODIFIED_DATE;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.FileUploadProcessor.PART_NAME_DOCUMENT;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.FileUploadProcessor.PART_NAME_FILE;
@@ -63,7 +61,6 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIP
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for the multipart/form-data file-upload dispatch path.
@@ -81,8 +78,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FileUploadProcessorTest extends CamelTestSupport
 {
 	private static final String MOCK_ATTACHMENT_ENDPOINT = "mock:AttachmentEndpoint";
-
-	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	// ----- test data -----
 	private static final byte[] PDF_BYTES = new byte[] { 0x25, 0x50, 0x44, 0x46, 0x2D }; // "%PDF-"
@@ -325,7 +320,7 @@ class FileUploadProcessorTest extends CamelTestSupport
 			@Override
 			public void configure()
 			{
-				from("direct:" + de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID)
+				from("direct:" + MF_ERROR_ROUTE_ID)
 						.routeId("mock-error-handler-for-file-upload-test")
 						.to(mockErrorRoute);
 			}
