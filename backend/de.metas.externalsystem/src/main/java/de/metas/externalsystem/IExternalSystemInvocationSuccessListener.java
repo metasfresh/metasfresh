@@ -24,39 +24,40 @@ package de.metas.externalsystem;
 
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
+import org.springframework.http.HttpStatus;
 
 /**
- * Listener interface for external system invocation errors.
- * Implementations can handle errors specific to their domain (e.g., EDI export status updates).
+ * Listener interface for external system invocation successes.
+ * Implementations can handle success callbacks specific to their domain (e.g., EDI export status updates).
  * <p>
- * This listener is invoked when the external system REST API receives an error callback
- * (e.g., from Camel route processing failures).
+ * This listener is invoked when the external system REST API receives a success callback
+ * (e.g., from Camel route processing completions).
  * <p>
- * Listeners should implement {@link #applies(ExternalSystemInvocationContext)} to check if they should handle errors
- * for a given invocation context.
+ * Listeners should implement {@link #applies(ExternalSystemInvocationContext)} to check if they should handle
+ * successes for a given context.
  */
-public interface IExternalSystemInvocationErrorListener
+public interface IExternalSystemInvocationSuccessListener
 {
 	/**
 	 * Checks if this listener applies to the given invocation context.
 	 *
 	 * @param context the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
-	 * @return true if this listener should handle errors for the given context
+	 * @return true if this listener should handle successes for the given context
 	 */
 	boolean applies(@NonNull ExternalSystemInvocationContext context);
 
 	/**
-	 * Called when external system invocation fails.
+	 * Called when external system invocation succeeds.
 	 * <p>
 	 * The listener queries its relevant tables (M_InOut, C_Invoice, etc.) by PInstance_ID
-	 * to find which record(s) are affected by this error.
+	 * to find which record(s) are affected by this success.
 	 *
-	 * @param pInstanceId the process instance ID of the external system invocation
-	 * @param context     the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
-	 * @param errorMessage the aggregated error message from external system
+	 * @param pInstanceId    the process instance ID of the external system invocation
+	 * @param context        the invocation context (EDI, Resend, etc.), never null (defaults to UNKNOWN)
+	 * @param httpStatus     the HTTP response status returned by the external system
 	 */
-	void onInvocationError(
+	void onInvocationSuccess(
 			@NonNull PInstanceId pInstanceId,
 			@NonNull ExternalSystemInvocationContext context,
-			@NonNull String errorMessage);
+			@NonNull HttpStatus httpStatus);
 }
