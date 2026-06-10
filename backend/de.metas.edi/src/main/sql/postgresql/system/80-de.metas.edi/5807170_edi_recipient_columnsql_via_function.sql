@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/EDI_BPartner_RecipientFlag.sql
 -- Migration ID: 5807170
 -- EDI derived recipient columns — rewrite the 4 virtual ColumnSQL expressions to use
 -- a dedicated DB function (EDI_BPartner_RecipientFlag) instead of doubly-nested subqueries.
