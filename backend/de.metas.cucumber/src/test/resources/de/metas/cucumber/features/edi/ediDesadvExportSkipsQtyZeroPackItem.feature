@@ -3,10 +3,10 @@
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00353_EDI
 Feature: EDI DESADV export must not include pack items whose own MovementQty is zero
-## The EXP_Format_ID=540418 WhereClause currently filters on the PARENT LINE's QtyDeliveredInUOM
-## rather than the pack item's own MovementQty. A pack item with MovementQty=0 on a line whose
-## total QtyDeliveredInUOM>0 is therefore wrongly included in the export.
-## This feature documents that bug (RED test): it must FAIL before the production fix is applied.
+# The EXP_Format (Name: EDI_Exp_Desadv_Pack_Item) WhereClause must filter on the pack
+# item's own MovementQty>0, not the parent line's QtyDeliveredInUOM.
+# A pack item with MovementQty=0 on a line whose total QtyDeliveredInUOM>0 must be
+# excluded from the export.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -24,28 +24,23 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
 
   @from:cucumber
   @Id:S0353_010
-  Scenario: S0353_010 - Export format must skip pack items with MovementQty=0
-  Setup: one valid DESADV with a qty>0 pack item is created via the normal flow.
-  Then a second pack item with MovementQty=0 is injected directly into the same pack.
-  The assertion checks that the EXP_Format WhereClause (EXP_Format_ID=540418) only
-  selects the qty>0 item — this FAILS before the fix because the current WhereClause
-  filters on the parent line qty, not the pack item own qty.
+  Scenario: Export format must skip pack items with MovementQty=0
 
     Given metasfresh contains M_Products:
       | Identifier   |
       | product_main |
     And metasfresh contains M_PricingSystems
-      | Identifier    |
-      | ps_S0353_010  |
+      | Identifier   |
+      | ps_S0353_010 |
     And metasfresh contains M_PriceLists
-      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_S0353_010  | ps_S0353_010       | DE           | EUR           | true  | false         | 2              |
+      | Identifier   | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S0353_010 | ps_S0353_010       | DE           | EUR           | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier     | M_PriceList_ID |
-      | plv_S0353_010  | pl_S0353_010   |
+      | Identifier    | M_PriceList_ID |
+      | plv_S0353_010 | pl_S0353_010   |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | pp_S0353_010  | plv_S0353_010          | product_main | 10.0     | PCE      | Normal           |
+      | Identifier   | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | pp_S0353_010 | plv_S0353_010          | product_main | 10.0     | PCE      | Normal           |
     And metasfresh contains C_BPartners:
       | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
       | endcustomer | Y          | ps_S0353_010       | location_gln |
@@ -57,18 +52,18 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
       | endcustomer              | product_main            |
 
     And metasfresh contains C_Orders:
-      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
-      | order_main   | true    | endcustomer   | 2024-06-10  | po_ref_@Date@ |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
+      | order_main | true    | endcustomer   | 2024-06-10  | po_ref_@Date@ |
 
     And metasfresh contains C_OrderLines:
-      | Identifier      | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine_main  | order_main | product_main | 10         |
+      | Identifier     | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_main | order_main | product_main | 10         |
 
     When the order identified by order_main is completed
 
     And after not more than 30s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
-      | shipSched     | orderLine_main            | N             |
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipSched  | orderLine_main            | N             |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -96,6 +91,7 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
       | order_main            | 10                        | 10                      | desadv                   |
 
     # Capture the auto-created EDI_DesadvLine under an identifier
+    # Precondition: this DESADV has exactly one line (the scenario creates a single order line)
     Then EDI_DesadvLine records are found:
       | EDI_DesadvLine_ID | EDI_Desadv_ID |
       | desadvLine        | desadv        |
@@ -105,11 +101,9 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
       | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | EDI_DesadvLine_ID | MovementQty | QtyCUsPerLU | M_InOutLine_ID |
       | pi_zero                 | packMain           | desadvLine        | 0           | 0           | -              |
 
-    # This assertion MUST FAIL (RED) before the fix:
-    # The current WhereClause filters on the parent line's QtyDeliveredInUOM>0, so pi_zero
-    # is wrongly included (because its parent line has QtyDeliveredInUOM=10 > 0).
-    # After the fix the WhereClause will also require the pack item's own MovementQty>0,
-    # and only pi_nonzero will be selected.
+    # The export format WhereClause must select only the qty>0 item.
+    # This assertion FAILS (RED) until the EXP_Format WhereClause is fixed to require
+    # MovementQty>0 on the pack item itself.
     Then the DESADV pack-item export-format selects only:
       | EDI_Desadv_ID | EDI_Desadv_Pack_Item_ID |
       | desadv        | pi_nonzero              |

@@ -37,6 +37,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -66,8 +67,8 @@ public class EDI_DesadvLine_StepDef
 	}
 
 	/**
-	 * Finds an EDI_DesadvLine record by EDI_Desadv_ID and registers it under the given identifier.
-	 * Useful when a test needs to reference the auto-created DESADV line by identifier,
+	 * Finds EDI_DesadvLine records by EDI_Desadv_ID and registers each under the given identifier.
+	 * Useful when a test needs to reference an auto-created DESADV line by identifier,
 	 * e.g. to inject pack items referencing that line.
 	 *
 	 * <p>Required columns:
@@ -76,11 +77,28 @@ public class EDI_DesadvLine_StepDef
 	 *   <li>{@code EDI_Desadv_ID} – identifier of the parent DESADV (must be registered in {@link EDI_Desadv_StepDefData})</li>
 	 * </ul>
 	 *
-	 * <p>Example:
+	 * <p>Optional disambiguator columns (use when the DESADV has more than one line):
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – narrows the match to the line with this product</li>
+	 *   <li>{@code OPT.Line} – narrows the match to the line with this line number</li>
+	 * </ul>
+	 * When no disambiguator is provided the query must return exactly one result
+	 * ({@code firstOnlyNotNull} throws if the DESADV has more than one line).
+	 * Use a disambiguator column whenever the DESADV has multiple lines.
+	 *
+	 * <p>Example (single-line DESADV):
 	 * <pre>
 	 * Then EDI_DesadvLine records are found:
 	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID |
 	 *   | desadvLine        | myDesadv      |
+	 * </pre>
+	 *
+	 * <p>Example (multi-line DESADV, disambiguated by product):
+	 * <pre>
+	 * Then EDI_DesadvLine records are found:
+	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID | OPT.M_Product_ID.Identifier |
+	 *   | lineA             | myDesadv      | productA                    |
+	 *   | lineB             | myDesadv      | productB                    |
 	 * </pre>
 	 */
 	@Then("EDI_DesadvLine records are found:")
@@ -94,11 +112,22 @@ public class EDI_DesadvLine_StepDef
 		final StepDefDataIdentifier desadvIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID);
 		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
 
-		final I_EDI_DesadvLine desadvLine = queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
+		final IQueryBuilder<I_EDI_DesadvLine> queryBuilder = queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvRecord.getEDI_Desadv_ID())
-				.create()
-				.firstOnlyNotNull(I_EDI_DesadvLine.class);
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvRecord.getEDI_Desadv_ID());
+
+		// Optional disambiguator: filter by product identifier when provided
+		row.getAsOptionalIdentifier(I_EDI_DesadvLine.COLUMNNAME_M_Product_ID)
+				.ifPresent(productIdentifier -> {
+					final I_M_Product productRecord = productTable.get(productIdentifier);
+					queryBuilder.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID());
+				});
+
+		// Optional disambiguator: filter by line number when provided
+		row.getAsOptionalInt(I_EDI_DesadvLine.COLUMNNAME_Line)
+				.ifPresent(line -> queryBuilder.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_Line, line));
+
+		final I_EDI_DesadvLine desadvLine = queryBuilder.create().firstOnlyNotNull(I_EDI_DesadvLine.class);
 
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
 		desadvLineTable.put(lineIdentifier, desadvLine);
