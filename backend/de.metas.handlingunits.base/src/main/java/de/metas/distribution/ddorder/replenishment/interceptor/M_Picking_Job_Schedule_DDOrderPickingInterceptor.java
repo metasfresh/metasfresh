@@ -63,7 +63,6 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 		replenishmentService.assertCanChange(jobSchedule);
 	}
 
-	// Create / update: the DD_Order create-or-recreate runs after the current transaction commits.
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
@@ -71,10 +70,6 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()));
 	}
 
-	// Delete: void + unlink the linked DD_Order SYNCHRONOUSLY in the current (delete) transaction. The record's PK
-	// is still readable at AFTER_DELETE, so we can resolve the (now-deleted) assignment id. This must NOT be
-	// deferred to after-commit: the deferrable FK mpickingjobschedule_ddorder is checked at the delete-trx commit,
-	// so the DD_Order must be voided and unlinked before the assignment row is flushed.
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void voidDDOrderOnDelete(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{

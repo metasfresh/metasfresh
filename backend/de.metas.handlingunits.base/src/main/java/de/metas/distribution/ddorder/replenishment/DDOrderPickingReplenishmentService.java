@@ -218,9 +218,7 @@ public class DDOrderPickingReplenishmentService
 			return hasExistingDDOrder ? DDOrderReplenishmentAction.VOID : DDOrderReplenishmentAction.NONE;
 		}
 
-		final boolean assignmentActive = jobSchedule.isActive();
-		final boolean assignmentTerminated = assignmentActive && jobSchedule.isProcessed();
-		final boolean assignmentRelevant = assignmentActive && !assignmentTerminated;
+		final boolean assignmentRelevant = jobSchedule.isActive() && !jobSchedule.isProcessed();
 
 		if (!assignmentRelevant && !hasExistingDDOrder)
 		{

@@ -34,6 +34,10 @@ import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+/**
+ * Repository Tables: M_Picking_Job_Schedule
+ * Repository Cluster: PickingJobScheduleRepository
+ */
 @Repository
 public class PickingJobScheduleRepository
 {
