@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Workplace;
 import org.compiere.model.I_C_Workplace_Carrier_Product;
 import org.compiere.model.I_C_Workplace_Product;
@@ -67,8 +68,9 @@ import org.compiere.model.I_C_Workplace_ProductCategory;
 @RequiredArgsConstructor
 public class C_Workplace_StepDef
 {
-	@NonNull private final WorkplaceService workplaceService;
-	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	// Spring beans must be fetched via SpringContextHolder — PicoContainer does not inject Spring beans.
+	@NonNull private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
+	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
