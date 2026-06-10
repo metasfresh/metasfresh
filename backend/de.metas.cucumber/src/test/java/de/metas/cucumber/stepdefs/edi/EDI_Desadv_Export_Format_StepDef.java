@@ -61,7 +61,7 @@ public class EDI_Desadv_Export_Format_StepDef
 	 */
 	private static final String EXP_FORMAT_NAME_PACK_ITEM = "EDI_Exp_Desadv_Pack_Item";
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final EDI_Desadv_StepDefData desadvTable;
 	@NonNull private final EDI_Desadv_Pack_Item_StepDefData packItemTable;
@@ -89,7 +89,6 @@ public class EDI_Desadv_Export_Format_StepDef
 	@Then("the DESADV pack-item export-format selects only:")
 	public void desadv_pack_item_export_format_selects_only(@NonNull final DataTable dataTable)
 	{
-		// Load the WhereClause from the live EXP_Format record (looked up by Name)
 		final I_EXP_Format expFormat = queryBL.createQueryBuilder(I_EXP_Format.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EXP_Format.COLUMNNAME_Name, EXP_FORMAT_NAME_PACK_ITEM)
@@ -103,18 +102,15 @@ public class EDI_Desadv_Export_Format_StepDef
 		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
 		final int desadvId = desadvRecord.getEDI_Desadv_ID();
 
-		// Collect all expected pack-item identifiers from every row in the table
 		final Set<StepDefDataIdentifier> expectedIdentifiers = DataTableRows.of(dataTable)
 				.stream()
 				.map(row -> row.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID))
 				.collect(ImmutableSet.toImmutableSet());
 
-		// Resolve expected IDs from the StepDefData registry
 		final Set<Integer> expectedPackItemIds = expectedIdentifiers.stream()
 				.map(id -> packItemTable.get(id).getEDI_Desadv_Pack_Item_ID())
 				.collect(ImmutableSet.toImmutableSet());
 
-		// Find all packs that belong to the given DESADV
 		final Set<Integer> packIdsForDesadv = queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
@@ -128,7 +124,6 @@ public class EDI_Desadv_Export_Format_StepDef
 				.as("There must be at least one EDI_Desadv_Pack for EDI_Desadv_ID=%s", desadvId)
 				.isNotEmpty();
 
-		// Apply the live WhereClause filter to pack items that are in those packs
 		final Set<Integer> actualPackItemIds = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, packIdsForDesadv)

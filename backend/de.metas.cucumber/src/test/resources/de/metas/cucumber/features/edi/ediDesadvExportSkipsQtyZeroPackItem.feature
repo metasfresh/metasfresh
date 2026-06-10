@@ -101,9 +101,8 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
       | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | EDI_DesadvLine_ID | MovementQty | QtyCUsPerLU | M_InOutLine_ID |
       | pi_zero                 | packMain           | desadvLine        | 0           | 0           | -              |
 
-    # The export format WhereClause must select only the qty>0 item.
-    # This assertion FAILS (RED) until the EXP_Format WhereClause is fixed to require
-    # MovementQty>0 on the pack item itself.
+    # The export format WhereClause must select pack items by the item's own MovementQty>0,
+    # not by the parent line's QtyDeliveredInUOM, so only the qty>0 item is exported.
     Then the DESADV pack-item export-format selects only:
       | EDI_Desadv_ID | EDI_Desadv_Pack_Item_ID |
       | desadv        | pi_nonzero              |
