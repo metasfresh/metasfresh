@@ -1,12 +1,12 @@
 package de.metas.distribution.ddorder.replenishment.event;
 
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +23,13 @@ public class DDOrderReplenishmentEventPublisher
 	private static final String EVENT_NAME = "DDOrderPickingReconcile";
 
 	@NonNull private final IEventBusFactory eventBusFactory;
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 
 	public void publishOne(@NonNull final PickingJobScheduleId pickingJobScheduleId)
 	{
 		// The assignment's AD_Client_ID/AD_Org_ID are carried into the async handler (which runs on an EventBus pool thread with no AD context).
-		// The assignment may already be deleted (afterDelete reconcile) — loadOutOfTrx so a deleted-but-committed row is still readable for its client/org.
-		final I_M_Picking_Job_Schedule jobSchedule = InterfaceWrapperHelper.loadOutOfTrx(pickingJobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
+		// loadOutOfTrx: called after commit, so the in-trx load context is gone; the assignment may also have been deleted since the event was queued.
+		final I_M_Picking_Job_Schedule jobSchedule = ddOrderLowLevelDAO.findPickingJobScheduleOutOfTrxOrNull(pickingJobScheduleId);
 
 		// shallBeLogged() is required: without it the event-bus never sets up the EventLogEntryCollector
 		// thread-local, the handler throws "Missing thread-local EventLogEntryCollector", and no AD_EventLog is recorded.

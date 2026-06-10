@@ -71,7 +71,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 /**
- * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative, M_Picking_Job_Schedule
  * Repository Cluster: DDOrderLowLevelDAO
  */
 @Repository
@@ -144,13 +144,22 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Loads the {@link I_M_Picking_Job_Schedule} record for the given ID, or returns {@code null} if the record no
-	 * longer exists (e.g. deleted between the async event being queued and being processed).
+	 * Loads the {@link I_M_Picking_Job_Schedule} record for the given ID (in-transaction), or {@code null} if gone.
 	 */
 	@Nullable
 	public I_M_Picking_Job_Schedule findPickingJobScheduleOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
 		return InterfaceWrapperHelper.load(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
+	}
+
+	/**
+	 * Out-of-transaction variant — used by the async event publisher which runs after commit on a pool thread.
+	 * Returns {@code null} if the record no longer exists.
+	 */
+	@Nullable
+	public I_M_Picking_Job_Schedule findPickingJobScheduleOutOfTrxOrNull(@NonNull final PickingJobScheduleId jobScheduleId)
+	{
+		return InterfaceWrapperHelper.loadOutOfTrx(jobScheduleId.getRepoId(), I_M_Picking_Job_Schedule.class);
 	}
 
 	/**
