@@ -66,7 +66,7 @@ VALUES (592790 /*From ID Server*/, 0, 0, 'Y',
                   this non-D entity-type column in the base I_M_InOut interface*/,
   'N', 'N',
   '(select s.ExportStatus from ExternalSystem_ScriptedExportConversion_Status s
- where s.AD_Table_ID=319 and s.Record_ID=@JoinTableNameOrAliasIncludingDot@M_InOut_ID and s.IsActive=''Y''
+ where s.AD_Table_ID=319 and s.Record_ID=M_InOut.M_InOut_ID and s.IsActive=''Y''
  order by case s.ExportStatus when ''E'' then 1 when ''I'' then 1 when ''P'' then 2 when ''U'' then 2 when ''D'' then 2 when ''S'' then 3 when ''N'' then 3 else 4 end, s.Updated desc
  limit 1)',
   'N', 'N' /*IsSyncDatabase=N → virtual, no physical column sync*/)

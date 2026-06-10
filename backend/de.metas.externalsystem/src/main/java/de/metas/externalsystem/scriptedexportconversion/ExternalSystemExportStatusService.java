@@ -56,15 +56,17 @@ public class ExternalSystemExportStatusService
 	private static final Logger log = LogManager.getLogger(ExternalSystemExportStatusService.class);
 
 	@NonNull private final ExternalSystemExportStatusRepository repo;
-	@NonNull private final IErrorManager errorManager;
+
+	// IErrorManager is an ISingletonService (obtained via Services.get), not a Spring bean — it must NOT be a
+	// constructor parameter, else this @Service fails to wire at context boot with NoSuchBeanDefinitionException.
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	@VisibleForTesting
 	public static ExternalSystemExportStatusService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		return new ExternalSystemExportStatusService(
-				SpringContextHolder.getBeanOrSupply(ExternalSystemExportStatusRepository.class, ExternalSystemExportStatusRepository::newInstanceForUnitTesting),
-				SpringContextHolder.getBeanOrSupply(IErrorManager.class, () -> Services.get(IErrorManager.class)));
+				SpringContextHolder.getBeanOrSupply(ExternalSystemExportStatusRepository.class, ExternalSystemExportStatusRepository::newInstanceForUnitTesting));
 	}
 
 	// ------------------------------------------------------------------

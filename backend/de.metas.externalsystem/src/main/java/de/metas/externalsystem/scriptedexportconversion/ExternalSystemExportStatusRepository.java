@@ -219,6 +219,9 @@ public class ExternalSystemExportStatusRepository
 						configId.getRepoId())
 				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, sourceRecord.getAD_Table_ID())
 				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, sourceRecord.getRecord_ID())
+				// the unique index guarantees at most one row per (config, table, record); the explicit
+				// orderBy satisfies the framework's "first() without ORDER BY" developer-guard (which throws otherwise)
+				.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
 				.create()
 				.firstOptional(I_ExternalSystem_ScriptedExportConversion_Status.class);
 	}
