@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
@@ -63,6 +62,7 @@ import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;

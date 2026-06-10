@@ -31,6 +31,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -450,8 +451,8 @@ public class MassPrintingService
 	}
 
 	/** Result of FIFO schedule selection: which schedules to pick and how many units from each. */
-	@lombok.Value
-	@lombok.Builder
+	@Value
+	@Builder
 	private static class ScheduleSelection
 	{
 		/** Map from selected shipment-schedule ID to the capped qty to pick from it. */
@@ -484,7 +485,7 @@ public class MassPrintingService
 	 * and the resolved leaf HU ids (for the HU-shape assertion).
 	 */
 	@Value
-	@lombok.Builder
+	@Builder
 	private static class PackAndPickResult
 	{
 		/** Number of shippable HUs packed (one per picked unit). */
@@ -496,14 +497,14 @@ public class MassPrintingService
 		 * (the CU pick-loop fires one event per unit so each unit gets its own VHU).
 		 * May be empty when nothing was packed.
 		 */
-		@lombok.Builder.Default
+		@Builder.Default
 		@NonNull ImmutableSet<HuId> pickedHuIds = ImmutableSet.of();
 
 		/**
 		 * Leaf shippable HU ids (descend any target-LU wrapper) — one per picked unit.
 		 * May be empty when nothing was packed.
 		 */
-		@lombok.Builder.Default
+		@Builder.Default
 		@NonNull ImmutableSet<HuId> packedHUIds = ImmutableSet.of();
 
 		/** Units remaining on the LU after packing. */

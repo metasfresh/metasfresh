@@ -96,6 +96,7 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
   # shipment schedules. The locked schedule must be silently skipped; the non-locked one must be processed
   # normally (picking job created, completed, shipment generated and completed).
   # ################################################################################################################
+  @from:cucumber
   Scenario: Mass printing skips schedule locked by another picker and ships the non-locked one
 
     # Create 2 sales orders for the same product. Each order demands 1 TU (4 PCE).
