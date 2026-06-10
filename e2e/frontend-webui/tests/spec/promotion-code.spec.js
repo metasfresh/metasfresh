@@ -225,7 +225,7 @@ Full O2C chain (IC -> Invoice) is covered by the Cucumber test.
             await page.waitForTimeout(5000);
 
             // Step 9: Navigate to invoice candidates to verify propagation
-            await SalesOrderPage.openRelatedInvoiceCandidate(5000);
+            await SalesOrderPage.openRelatedInvoiceCandidate({ retryDelay: 5000 });
             await InvoiceCandidatePage.expectVisibleForSalesOrder();
 
             const screenshotIC = await page.screenshot();
