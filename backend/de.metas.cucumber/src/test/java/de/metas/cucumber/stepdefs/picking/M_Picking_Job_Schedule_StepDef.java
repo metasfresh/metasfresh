@@ -26,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.math.BigDecimal;
 import java.util.function.Supplier;
 
@@ -44,7 +47,7 @@ public class M_Picking_Job_Schedule_StepDef
 	// IEventBusFactory, which is not registered in PicoContainer — so it must be fetched via
 	// SpringContextHolder rather than let PicoContainer inject it.
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
@@ -164,13 +167,13 @@ public class M_Picking_Job_Schedule_StepDef
 		final BigDecimal originalQty = pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal();
 		final BigDecimal newQty = row.getAsBigDecimal(I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick);
 
-		org.assertj.core.api.Assertions.assertThatThrownBy(() -> updateQtyInPlace(jobSchedule, newQty))
+		assertThatThrownBy(() -> updateQtyInPlace(jobSchedule, newQty))
 				.as("Changing the assignment while the picker is busy must be rejected by the beforeChange interceptor")
 				// PickerBusy AD_Message resolves in the system base language (de_DE): "... die Kommissionierung läuft bereits ...".
 				.hasMessageContaining("Kommissionierung läuft bereits");
 
 		// Reload and assert the persisted QtyToPick is unchanged (the rolled-back save left no mark).
-		org.assertj.core.api.Assertions.assertThat(pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal())
+		assertThat(pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal())
 				.as("M_Picking_Job_Schedule.QtyToPick must be unchanged after the rejected save")
 				.isEqualByComparingTo(originalQty);
 	}
