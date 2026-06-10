@@ -3,7 +3,7 @@
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00353_EDI
 Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-0 DESADV pack item
-# me03 #29278: a shipment is COMPLETED, then REACTIVATED (only a non-quantity field such as M_Tour_ID changed),
+# A shipment is COMPLETED,then REACTIVATED (only a non-quantity field such as M_Tour_ID changed),
 # then RE-COMPLETED.
 #
 # The bug (birth mechanism, DesadvLineSSCC18Generator): when the SSCC generator is invoked with more labels
@@ -24,7 +24,7 @@ Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-
 # After the fix, the generator skips the 0-qty LU -> no orphan is created.
 # Then reactivate (M_Tour_ID change) -> re-complete -> assert only the 1 real qty>0 item survives.
 # This scenario is RED before the fix and GREEN after — it is the authoritative cucumber
-# reproduction of me03 #29278 (birth-prevention path).
+# reproduction of the orphan birth-prevention path.
 
   Background:
     Given infrastructure and metasfresh are running

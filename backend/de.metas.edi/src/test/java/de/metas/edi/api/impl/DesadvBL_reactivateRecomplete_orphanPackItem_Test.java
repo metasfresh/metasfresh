@@ -94,7 +94,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
  */
 
 /**
- * me03 #29278 — reproduce the orphan Qty-0 pack item bug.
+ * Reproduce the orphan Qty-0 pack item bug.
  * <p>
  * Models the production cycle (M_InOut validator timings):
  * BEFORE_COMPLETE -> {@link DesadvBL#addToDesadvCreateForInOutIfNotExist(I_M_InOut)}
@@ -207,7 +207,7 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 	}
 
 	/**
-	 * Birth-prevention test (me03 #29278, fix part B).
+	 * Birth-prevention test (fix part B).
 	 *
 	 * <p>BEFORE the fix: {@link DesadvLineSSCC18Generator} would call
 	 * {@code buildCreateEDIDesadvPackItemRequest} even when {@link TotalQtyCUBreakdownCalculator#subtractOneLU()}
@@ -325,7 +325,7 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 				.collect(Collectors.toList());
 
 		assertThat(orphans)
-				.as("orphan Qty-0 pack item with NULL M_InOutLine_ID (me03 #29278) must not exist " + context)
+				.as("orphan Qty-0 pack item with NULL M_InOutLine_ID must not exist " + context)
 				.isEmpty();
 	}
 

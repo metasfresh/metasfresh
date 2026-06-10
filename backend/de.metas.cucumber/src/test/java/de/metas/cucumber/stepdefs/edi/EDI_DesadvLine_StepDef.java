@@ -44,6 +44,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.SpringContextHolder;
@@ -56,6 +57,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class EDI_DesadvLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -65,19 +67,9 @@ public class EDI_DesadvLine_StepDef
 	private final SSCC18CodeBL sscc18CodeBL = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
 	private final EDIDesadvPackService ediDesadvPackService = SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
 
-	private final EDI_DesadvLine_StepDefData desadvLineTable;
-	private final EDI_Desadv_StepDefData desadvTable;
-	private final M_Product_StepDefData productTable;
-
-	public EDI_DesadvLine_StepDef(
-			@NonNull final EDI_DesadvLine_StepDefData desadvLineTable,
-			@NonNull final EDI_Desadv_StepDefData desadvTable,
-			@NonNull final M_Product_StepDefData productTable)
-	{
-		this.desadvLineTable = desadvLineTable;
-		this.desadvTable = desadvTable;
-		this.productTable = productTable;
-	}
+	@NonNull private final EDI_DesadvLine_StepDefData desadvLineTable;
+	@NonNull private final EDI_Desadv_StepDefData desadvTable;
+	@NonNull private final M_Product_StepDefData productTable;
 
 	/**
 	 * Finds EDI_DesadvLine records by EDI_Desadv_ID and registers each under the given identifier.
@@ -158,7 +150,7 @@ public class EDI_DesadvLine_StepDef
 	 * {@link de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator#NULL},
 	 * and every {@code subtractOneLU()} call returns {@code LUQtys.NULL} (qtyCUsPerLU=0).
 	 * Requesting more labels than the breakdown supports is the birth mechanism of an
-	 * orphan Qty-0/NULL-M_InOutLine pack item (me03 #29278).
+	 * orphan Qty-0/NULL-M_InOutLine pack item.
 	 * After the fix, the generator skips Qty-0 LUs so no orphan is ever created.
 	 *
 	 * <p>Required columns:
@@ -204,7 +196,7 @@ public class EDI_DesadvLine_StepDef
 		// When the order-line has no proper packing instructions (e.g. "No Packing Item" / 101),
 		// the builder falls back to TotalQtyCUBreakdownCalculator.NULL, so every subtractOneLU()
 		// returns LUQtys.NULL (qtyCUsPerLU=0).  With labelCount > available LUs the generator
-		// exhausts the calculator — this is the orphan birth mechanism (me03 #29278).
+		// exhausts the calculator — this is the orphan birth mechanism.
 		final PrintableDesadvLineSSCC18Labels labelsSpec = PrintableDesadvLineSSCC18Labels.builder()
 				.setEDI_DesadvLine(desadvLine)
 				.setRequiredSSCC18Count(labelCount)
