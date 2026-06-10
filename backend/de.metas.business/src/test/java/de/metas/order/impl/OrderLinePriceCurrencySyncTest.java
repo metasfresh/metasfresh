@@ -24,7 +24,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -32,6 +32,7 @@ import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -95,13 +96,13 @@ class OrderLinePriceCurrencySyncTest
 		when(pricingCtx.isConvertPriceToContextUOM()).thenReturn(false);
 		// fluent setters return self
 		when(pricingCtx.setReferencedObject(any())).thenReturn(pricingCtx);
-		when(pricingCtx.setConvertPriceToContextUOM(Mockito.anyBoolean())).thenReturn(pricingCtx);
+		when(pricingCtx.setConvertPriceToContextUOM(anyBoolean())).thenReturn(pricingCtx);
 		when(pricingCtx.setPricingSystemId(any())).thenReturn(pricingCtx);
 		when(pricingCtx.setPriceListId(any())).thenReturn(pricingCtx);
 		when(pricingCtx.setPriceListVersionId(any())).thenReturn(pricingCtx);
 		when(pricingCtx.setCountryId(any())).thenReturn(pricingCtx);
 		when(pricingCtx.setPriceDate(any())).thenReturn(pricingCtx);
-		when(pricingCtx.setDisallowDiscount(Mockito.anyBoolean())).thenReturn(pricingCtx);
+		when(pricingCtx.setDisallowDiscount(anyBoolean())).thenReturn(pricingCtx);
 		when(pricingCtx.setForcePricingConditionsBreak(any())).thenReturn(pricingCtx);
 
 		when(pricingBL.createInitialContext(any(), any(), any(), any(), any()))
