@@ -55,6 +55,7 @@ import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_EdiINVO
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_EdiInvoicRecipientGLN;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_IsEdiDesadvRecipient;
 import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_IsEdiInvoicRecipient;
+import static de.metas.esb.edi.model.I_C_BPartner_EDI_Setting.COLUMNNAME_SeqNo;
 
 /**
  * Step definitions for creating and managing {@link I_C_BPartner_EDI_Setting} records.
@@ -85,6 +86,7 @@ public class C_BPartner_EDI_Setting_StepDef
 	 *   <b>EdiInvoicRecipientGLN</b> — (optional) GLN for INVOIC recipient<br>
 	 *   <b>EdiINVOICSendingMode</b> — (optional) sending mode code, default R (ReplicationInterface)<br>
 	 *   <b>EdiINVOIC_ExternalSystem_Config_ID</b> — (optional, identifier-ref) external system config for INVOIC<br>
+	 *   <b>SeqNo</b> — (optional) sequence number used for tie-breaking; lowest SeqNo wins when multiple rows match; defaults to 10<br>
 	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
 	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, C_BPartner_Location_StepDefData, ExternalSystem_Config_StepDefData
 	 * @cucumber.example
@@ -164,6 +166,8 @@ public class C_BPartner_EDI_Setting_StepDef
 				.getCode());
 		row.getAsOptionalIdentifier(COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID)
 				.ifPresent(id -> record.setEdiINVOIC_ExternalSystem_Config_ID(id.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
+
+		record.setSeqNo(row.getAsOptionalInt(COLUMNNAME_SeqNo).orElse(10));
 
 		InterfaceWrapperHelper.saveRecord(record);
 
