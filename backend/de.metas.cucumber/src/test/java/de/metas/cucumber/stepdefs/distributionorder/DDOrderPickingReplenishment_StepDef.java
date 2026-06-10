@@ -27,6 +27,8 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.eevolution.model.I_DD_OrderLine;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -49,6 +51,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -142,6 +146,37 @@ public class DDOrderPickingReplenishment_StepDef
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
 						.as("AdempiereException.ErrorCode")
 						.isEqualTo("DDOrderPickingReconcile_PickerBusy"));
+	}
+
+	/**
+	 * Test seam: directly sets {@code QtyInTransit=1} on every {@code DD_OrderLine} linked to the given
+	 * picking job schedule, simulating the state after a movement document has been dispatched from the
+	 * DD_Order (goods are in transit from the source warehouse toward the target warehouse) without running
+	 * the full movement-processing flow. Used to exercise the movement-started guard in
+	 * {@code DDOrderPickingReplenishmentService.assertCanChange}.
+	 *
+	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment whose
+	 * DD_OrderLines should be marked in transit.</p>
+	 */
+	@When("^simulate goods in transit on DD_Order linked to picking job schedule (.*)$")
+	public void simulate_goods_in_transit(@NonNull final String pickingJobScheduleIdentifier)
+	{
+		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
+
+		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.create()
+				.list(I_DD_OrderLine.class);
+
+		assertThat(lines)
+				.as("DD_OrderLines for picking job schedule %s (must exist before simulating goods-in-transit)", pickingJobScheduleIdentifier)
+				.isNotEmpty();
+
+		for (final I_DD_OrderLine line : lines)
+		{
+			line.setQtyInTransit(BigDecimal.ONE);
+			InterfaceWrapperHelper.save(line);
+		}
 	}
 
 	/**

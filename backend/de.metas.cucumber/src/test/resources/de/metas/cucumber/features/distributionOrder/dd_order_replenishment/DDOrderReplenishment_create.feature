@@ -108,6 +108,50 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | jobSchedule               | false   |
 
   @from:cucumber
+  Scenario: No DD_Order is created when the initial assignment has QtyToPick=0 (CREATE→NONE soft no-op)
+    # A brand-new assignment with QtyToPick=0 fires the M_Picking_Job_Schedule afterNew reconcile, but
+    # the zero-qty soft no-op guard sees REQUIRED=∅ (nothing to plan) and EXISTING=∅ (no DD_Order yet),
+    # so the reconcile completes as a no-op — no DD_Order is created and no error is recorded.
+    Given metasfresh contains DD_NetworkDistribution
+      | DD_NetworkDistribution_ID |
+      | network                   |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | stockWH        | customer      | customerLocation       |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID   |
+      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   | packingLocator |
+    And metasfresh contains DD_NetworkDistributionLine
+      | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
+      | network                   | packingWH      | stockWH              | shipper      |
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
+      | workplace  | packingWH      | packingLocator      |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order      | true    | customer      | 2022-05-17  | packingWH      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | Warehouse_ID |
+      | shipmentSchedule | orderLine      | packingWH    |
+
+    # Assigning with QtyToPick=0: reconcile sees REQUIRED=∅ and EXISTING=∅ → no action (CREATE→NONE).
+    When create or update picking job schedules
+      | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | jobSchedule               | shipmentSchedule      | workplace      | 0         |
+
+    # No DD_Order is created — there was nothing to plan.
+    Then there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
+    # The async reconcile event handler records a Done AD_EventLog_Entry on success (no error).
+    And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
+      | M_Picking_Job_Schedule_ID | IsError |
+      | jobSchedule               | false   |
+
+  @from:cucumber
   Scenario: Flagging a warehouse as packing without a distribution network is rejected
     # DD_NetworkDistribution_ID is mandatory when IsAutoDistributionOrder=Y — the M_Warehouse interceptor
     # refuses the save so an operator cannot create an unresolvable packing warehouse.

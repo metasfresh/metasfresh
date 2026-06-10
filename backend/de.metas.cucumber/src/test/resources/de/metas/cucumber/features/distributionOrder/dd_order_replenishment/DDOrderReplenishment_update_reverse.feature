@@ -141,3 +141,23 @@ Feature: DD_Order replenishment — update (in place) and reverse (void only)
     # The existing DD_Order is voided and NO new live DD_Order is created.
     Then after not more than 120s, the DD_Order linked to M_ShipmentSchedule shipmentSchedule is Voided
     And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
+
+  @from:cucumber
+  Scenario: Movement-started guard blocks assignment change when goods are already in transit
+    # The beforeChange interceptor (assertCanChange) checks whether any DD_OrderLine linked to the schedule
+    # has QtyInTransit > 0 or QtyDelivered > 0 — indicating the movement is already in progress.
+    # When the condition holds, a change to QtyToPick is rejected (DDOrderPickingReconcile_MovementStarted).
+    # The QtyInTransit is set directly on the DB record (test seam) to simulate the state after a movement
+    # document was dispatched from the DD_Order, without running the full movement-processing flow.
+    When simulate goods in transit on DD_Order linked to picking job schedule jobSchedule
+
+    # Any attempted qty change is blocked by the beforeChange movement-started guard.
+    Then changing the picking job schedule quantity is rejected:
+      | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                              |
+      | jobSchedule               | 8         | DDOrderPickingReconcile_MovementStarted |
+
+    # The DD_Order is untouched — the rejected save rolled back, afterChange never published a reconcile
+    # event, so no void/recreate happened. The original DD_Order (ddOrder_v1, qty 5) is still Completed.
+    Then after not more than 5s, following DD_Orders are found
+      | Identifier | DocStatus |
+      | ddOrder_v1 | CO        |
