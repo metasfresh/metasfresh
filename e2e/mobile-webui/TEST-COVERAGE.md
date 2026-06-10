@@ -163,9 +163,11 @@
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
-| DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
+| DO_NOT_CREATE: fully-picked order completed with no shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
+| DO_NOT_CREATE: partially-picked order (qty still open) → must STAY in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
+| DO_NOT_CREATE: picked qty fully bound to a draft shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | Reverse (void) an aggregate-HU shipment → recreate must not collide on duplicate QtyPicked rows | `picking/recreate_shipment_after_void.spec.js` |
+
 
 **8/8 — 100%**
 
