@@ -3,11 +3,12 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.edi.api.EDIDesadvId;
-import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
-import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
+import de.metas.edi.api.impl.pack.EDIDesadvPack;
 import de.metas.edi.api.impl.pack.EDIDesadvPackService;
+import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
+import de.metas.edi.sscc18.IPrintableDesadvLineSSCC18Labels;
+import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
+import lombok.NonNull;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -205,14 +206,36 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 		setupHandlingUnit(); // HU with 49 CUs assigned to inOutLineRecord
 	}
 
+	/**
+	 * Birth-prevention test (me03 #29278, fix part B).
+	 *
+	 * <p>BEFORE the fix: {@link DesadvLineSSCC18Generator} would call
+	 * {@code buildCreateEDIDesadvPackItemRequest} even when {@link TotalQtyCUBreakdownCalculator#subtractOneLU()}
+	 * returned {@code LUQtys.NULL} (exhausted/misconfigured calculator), producing a
+	 * {@code EDI_Desadv_Pack_Item} with {@code MovementQty=0} and {@code M_InOutLine_ID=NULL}.
+	 * That item could never be reclaimed after reactivate→re-complete (exact-qty match required,
+	 * and reactivation cleanup is keyed on {@code M_InOutLine_ID}).
+	 *
+	 * <p>AFTER the fix: the generator skips any LU whose breakdown yields {@code qtyCUsPerLU=0},
+	 * so no such orphan is ever persisted.  This test drives the REAL generator with an exhausted
+	 * calculator (1 label requested, calculator returns NULL for every subtractOneLU call) and
+	 * then runs the full complete→reactivate→re-complete cycle, asserting no Qty-0/NULL-inoutline
+	 * pack item exists at any point.
+	 */
 	@Test
-	void reactivate_recomplete_doesNotLeaveOrphanQtyZeroPackItem()
+	void generatorSkipsQtyZeroLU_andCycleIsClean()
 	{
-		// 0) SSCC labels generated up-front for this DESADV line (production: EDI_Desadv_GenerateSSCCLabels).
-		//    This creates a "drafted" pack item: M_InOutLine_ID = NULL (see DesadvLineSSCC18Generator#buildCreateEDIDesadvPackItemRequest).
-		//    We model a label whose LU breakdown ended up with qtyCUsPerLU=0 (e.g. labels printed before the qty was firmed up),
-		//    so movementQty=0 and it can never be reclaimed by popFirstMatching (no real shipment line has movementQty 0).
-		seedDraftedSSCCPackItem(BigDecimal.ZERO);
+		// 0) SSCC labels "generated" via the real DesadvLineSSCC18Generator with an exhausted
+		//    TotalQtyCUBreakdownCalculator (returns LUQtys.NULL for every subtractOneLU call).
+		//    This models production: EDI_Desadv_GenerateSSCCLabels invoked when the LU breakdown
+		//    cannot supply a qty (e.g. labels printed before the shipment qty was firmed up, or
+		//    the calculator is misconfigured).
+		//    Pre-fix: one EDI_Desadv_Pack + EDI_Desadv_Pack_Item (MovementQty=0, M_InOutLine_ID=NULL) created.
+		//    Post-fix: the generator skips the 0-qty LU → no pack/pack-item created.
+		invokeGeneratorWithExhaustedCalculator();
+
+		// Assert birth-prevention: no Qty-0/NULL-inoutline pack item was born.
+		assertNoQtyZeroOrphanPackItems("after SSCC generation with exhausted calculator");
 
 		// 1) COMPLETE
 		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
@@ -227,7 +250,73 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 		saveRecord(inOutRecord);
 		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
-		// ASSERT — no orphan pack item: (MovementQty == 0 AND M_InOutLine_ID == null)
+		// ASSERT — no orphan pack item survived the full cycle
+		assertNoQtyZeroOrphanPackItems("after reactivate→re-complete cycle");
+	}
+
+	/**
+	 * Invokes {@link DesadvLineSSCC18Generator} with an {@link IPrintableDesadvLineSSCC18Labels} that
+	 * requests 1 label but whose {@link TotalQtyCUBreakdownCalculator} is exhausted
+	 * ({@link TotalQtyCUBreakdownCalculator#NULL} always returns {@code LUQtys.NULL} from
+	 * {@code subtractOneLU}).  Before the fix this created a Qty-0 pack item; after the fix it
+	 * produces nothing.
+	 */
+	private void invokeGeneratorWithExhaustedCalculator()
+	{
+		final EDIDesadvPackService packService = EDIDesadvPackService.newInstanceForUnitTesting();
+
+		final DesadvLineSSCC18Generator generator = DesadvLineSSCC18Generator.builder()
+				.sscc18CodeService(sscc18CodeBL)
+				.desadvBL(desadvBL)
+				.ediDesadvPackService(packService)
+				.printExistingLabels(false)
+				.bpartnerId(recipientBPartnerId)
+				.build();
+
+		// IPrintableDesadvLineSSCC18Labels with 1 label requested but exhausted (NULL) calculator.
+		// subtractOneLU() on TotalQtyCUBreakdownCalculator.NULL returns LUQtys.NULL (qty=0).
+		final IPrintableDesadvLineSSCC18Labels labelsSpec = new IPrintableDesadvLineSSCC18Labels()
+		{
+			@Override
+			public I_EDI_DesadvLine getEDI_DesadvLine() { return desadvLine; }
+
+			@Override
+			public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getTuPIItemProduct() { return huPIItemProductRecord; }
+
+			@Override
+			public Integer getLineNo() { return 10; }
+
+			@Override
+			public String getProductValue() { return "TESTPROD"; }
+
+			@Override
+			public String getProductName() { return "Test Product"; }
+
+			@Override
+			public Integer getExistingSSCC18sCount() { return 0; }
+
+			@Override
+			public List<EDIDesadvPack> getExistingSSCC18s() { return ImmutableList.of(); }
+
+			@Override
+			public BigDecimal getRequiredSSCC18sCount() { return BigDecimal.ONE; }
+
+			@Override
+			public void setRequiredSSCC18sCount(final BigDecimal requiredSSCC18sCount) { /* no-op */ }
+
+			@Override
+			public TotalQtyCUBreakdownCalculator breakdownTotalQtyCUsToLUs()
+			{
+				// NULL calculator: every subtractOneLU() call returns LUQtys.NULL (qtyCUsPerLU=0)
+				return TotalQtyCUBreakdownCalculator.NULL.copy();
+			}
+		};
+
+		generator.generateAndEnqueuePrinting(labelsSpec);
+	}
+
+	private void assertNoQtyZeroOrphanPackItems(@NonNull final String context)
+	{
 		final List<I_EDI_Desadv_Pack_Item> orphans = POJOLookupMap.get()
 				.getRecords(I_EDI_Desadv_Pack_Item.class)
 				.stream()
@@ -236,41 +325,8 @@ class DesadvBL_reactivateRecomplete_orphanPackItem_Test
 				.collect(Collectors.toList());
 
 		assertThat(orphans)
-				.as("orphan Qty-0 pack item with NULL M_InOutLine_ID (me03 #29278) must not exist after reactivate->re-complete")
+				.as("orphan Qty-0 pack item with NULL M_InOutLine_ID (me03 #29278) must not exist " + context)
 				.isEmpty();
-	}
-
-	/**
-	 * Models {@link de.metas.edi.sscc18.DesadvLineSSCC18Generator}: creates an EDI_Desadv_Pack with a single
-	 * "drafted" pack item that has NO M_InOutLine_ID (null) and movementQty = the given qtyCUsPerLU.
-	 */
-	private void seedDraftedSSCCPackItem(final BigDecimal qtyCUsPerLU)
-	{
-		final EDIDesadvPackService packService = EDIDesadvPackService.newInstanceForUnitTesting();
-		final EDIDesadvPackService.Sequences sequences =
-				packService.createSequences(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()));
-
-		final CreateEDIDesadvPackItemRequest packItemRequest =
-				CreateEDIDesadvPackItemRequest.builder()
-						.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
-						.line(sequences.getPackItemLineSequence().next())
-						.qtyTu(0)
-						.qtyCUsPerLU(qtyCUsPerLU)
-						.movementQtyInStockUOM(qtyCUsPerLU) // exactly how the generator sets it
-						// note: NO inOutId / inOutLineId -> M_InOutLine_ID stays null -> "drafted"
-						.build();
-
-		final CreateEDIDesadvPackRequest packRequest =
-				CreateEDIDesadvPackRequest.builder()
-						.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-						.seqNo(sequences.getPackSeqNoSequence().next())
-						.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
-						.sscc18("000000000000000099")
-						.isManualIpaSSCC(true)
-						.createEDIDesadvPackItemRequest(packItemRequest)
-						.build();
-
-		packService.createDesadvPack(packRequest);
 	}
 
 	private void setupHandlingUnit()

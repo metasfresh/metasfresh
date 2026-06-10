@@ -4,10 +4,19 @@
 @allure.label.feature:F00353_EDI
 Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-0 DESADV pack item
 # me03 #29278: a shipment is COMPLETED, then REACTIVATED (only a non-quantity field such as M_Tour_ID changed),
-# then RE-COMPLETED. A pre-existing "drafted" pack item (created by SSCC-label generation, with M_InOutLine_ID=NULL)
-# whose MovementQty is 0 can never be reclaimed (no real shipment line has MovementQty 0) and is invisible to the
-# reactivation cleanup (which deletes pack items filtered by M_InOutLine_ID). It therefore survives forever as an
-# orphan Qty-0 pack item in its own phantom pack, which then breaks the EDI export.
+# then RE-COMPLETED.
+#
+# Birth-prevention fix (DesadvLineSSCC18Generator): the SSCC generator now skips any LU whose breakdown
+# yields qtyCUsPerLU=0 — no pack/pack-item is created for that slot. This is the primary fix and is
+# covered by the JUnit RED test DesadvBL_reactivateRecomplete_orphanPackItem_Test (rigorous unit reproduction).
+#
+# Defense-in-depth (this scenario): even if a Qty-0/NULL-InOutLine pack item were present in the DB
+# (e.g. from a pre-fix deployment, data migration, or another tool), the reactivate→re-complete cycle
+# must not silently strand it as a permanent orphan. The scenario below injects such an item directly and
+# asserts it does not survive the cycle.
+# NOTE: driving the REAL SSCC generator to produce a 0-qty item via cucumber is not feasible without a
+# dedicated process-invocation step definition — the generator post-fix produces no Qty-0 items. The JUnit
+# is the authoritative birth-prevention reproduction; this cucumber validates cleanup-side resilience.
 
   Background:
     Given infrastructure and metasfresh are running
