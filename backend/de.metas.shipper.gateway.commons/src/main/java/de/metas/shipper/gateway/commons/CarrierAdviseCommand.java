@@ -127,10 +127,30 @@ public class CarrierAdviseCommand
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final ShipmentScheduleId shipmentScheduleId;
+	/**
+	 * When non-null, this item (built from a packed top-level HU) replaces the per-product item
+	 * derived from the shipment schedule.  All other request context (addresses, incoterms,
+	 * externalSystem, shipperConfig, mappingConfigs) is still taken from the schedule.
+	 */
+	@Nullable private final JsonDeliveryAdvisorRequestItem packedHUItem;
 
 	public static CarrierAdviseCommand of(final @NonNull ShipmentScheduleId id)
 	{
-		return new CarrierAdviseCommand(id);
+		return new CarrierAdviseCommand(id, null);
+	}
+
+	/**
+	 * Entry point for the packed-HU pre-advice path.
+	 * The caller (in a module that can access HandlingUnits) resolves the HU to a
+	 * {@link JsonDeliveryAdvisorRequestItem} (weight/dims/topLevelType/countryOfOrigin from the
+	 * packed HU) and passes it here; this command fills the rest of the request from the
+	 * shipment schedule context.
+	 */
+	public static CarrierAdviseCommand ofPackedHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final JsonDeliveryAdvisorRequestItem packedHUItem)
+	{
+		return new CarrierAdviseCommand(shipmentScheduleId, packedHUItem);
 	}
 
 	public void execute()
@@ -195,8 +215,11 @@ public class CarrierAdviseCommand
 
 	private JsonDeliveryAdvisorRequest createAdvisorRequest(@NonNull final ShipperId shipperId, @NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
 	{
+		final JsonDeliveryAdvisorRequestItem item = packedHUItem != null
+				? packedHUItem
+				: getJsonDeliveryAdvisorRequestItem(shipmentSchedule);
 		final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder requestBuilder = JsonDeliveryAdvisorRequest.builder()
-				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule));
+				.item(item);
 		return applyAdvisorContext(requestBuilder, shipperId, shipmentSchedule, client).build();
 	}
 
