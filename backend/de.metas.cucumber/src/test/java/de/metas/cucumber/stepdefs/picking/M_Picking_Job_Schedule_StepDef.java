@@ -24,6 +24,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
 import java.util.function.Supplier;
@@ -39,7 +40,10 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class M_Picking_Job_Schedule_StepDef
 {
-	private final PickingJobScheduleService pickingJobScheduleService;
+	// PickingJobScheduleService's dependency chain includes ModelCacheInvalidationService →
+	// IEventBusFactory, which is not registered in PicoContainer — so it must be fetched via
+	// SpringContextHolder rather than let PicoContainer inject it.
+	private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
