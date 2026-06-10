@@ -85,7 +85,7 @@ const MassPrintingResult = ({ result, onDone }) => {
           <p className="mass-printing-product-id" data-testid="mass-printing-product-id">
             {trl('activities.picking.massPrinting.product')} {pr.productId}
           </p>
-          <p data-testid="mass-printing-boxes-packed">
+          <p data-testid="mass-printing-units-packed">
             {trl('activities.picking.massPrinting.unitsPacked')}: {pr.unitsPacked}
           </p>
           <p data-testid="mass-printing-labels-printed">
