@@ -6,17 +6,25 @@ Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-
 # me03 #29278: a shipment is COMPLETED, then REACTIVATED (only a non-quantity field such as M_Tour_ID changed),
 # then RE-COMPLETED.
 #
-# Birth-prevention fix (DesadvLineSSCC18Generator): the SSCC generator now skips any LU whose breakdown
-# yields qtyCUsPerLU=0 — no pack/pack-item is created for that slot. This is the primary fix and is
-# covered by the JUnit RED test DesadvBL_reactivateRecomplete_orphanPackItem_Test (rigorous unit reproduction).
+# The bug (birth mechanism, DesadvLineSSCC18Generator): when the SSCC generator is invoked with more labels
+# than the LU/TU breakdown can supply (e.g. no packing instructions configured — "No Packing Item" / 101),
+# TotalQtyCUBreakdownCalculator.NULL is used.  Every subtractOneLU() call returns LUQtys.NULL
+# (qtyCUsPerLU=0), so a pack item with MovementQty=0 and M_InOutLine_ID=NULL is created.
+# That item becomes a permanent orphan after reactivate->re-complete because:
+#   - reactivation cleanup is keyed on M_InOutLine_ID (NULL items are invisible to it)
+#   - re-completion cannot reclaim a Qty-0 item (no real shipment line has MovementQty=0)
 #
-# Defense-in-depth (this scenario): even if a Qty-0/NULL-InOutLine pack item were present in the DB
-# (e.g. from a pre-fix deployment, data migration, or another tool), the reactivate→re-complete cycle
-# must not silently strand it as a permanent orphan. The scenario below injects such an item directly and
-# asserts it does not survive the cycle.
-# NOTE: driving the REAL SSCC generator to produce a 0-qty item via cucumber is not feasible without a
-# dedicated process-invocation step definition — the generator post-fix produces no Qty-0 items. The JUnit
-# is the authoritative birth-prevention reproduction; this cucumber validates cleanup-side resilience.
+# The fix (DesadvLineSSCC18Generator.generateAndEnqueuePrinting): skip any LU whose breakdown yields
+# qtyCUsPerLU=0 — no pack/pack-item is created for that slot, so no orphan is ever born.
+#
+# This scenario reproduces the BIRTH by invoking real SSCC generation via
+# "When SSCC labels are generated for EDI_DesadvLine:" with LabelCount=2 on an order-line that uses
+# "No Packing Item" (M_HU_PI_Item_Product_ID=101).  The LU/TU config lookup falls back to
+# TotalQtyCUBreakdownCalculator.NULL -> subtractOneLU() returns LUQtys.NULL (qtyCUsPerLU=0).
+# After the fix, the generator skips the 0-qty LU -> no orphan is created.
+# Then reactivate (M_Tour_ID change) -> re-complete -> assert only the 1 real qty>0 item survives.
+# This scenario is RED before the fix and GREEN after — it is the authoritative cucumber
+# reproduction of me03 #29278 (birth-prevention path).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -109,13 +117,23 @@ Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-
       | EDI_DesadvLine_ID | EDI_Desadv_ID |
       | desadvLine        | desadv        |
 
-    # Pre-existing "drafted" pack item from SSCC-label generation: M_InOutLine_ID=NULL and MovementQty=0.
-    # It sits in the existing pack (packMain). Because its M_InOutLine_ID is NULL it is invisible to the
-    # reactivation cleanup (which deletes pack items filtered by M_InOutLine_ID), and because its MovementQty
-    # is 0 it can never be reclaimed on re-completion (no real shipment line has MovementQty 0).
-    Given metasfresh contains EDI_Desadv_Pack_Item:
-      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | EDI_DesadvLine_ID | MovementQty | QtyCUsPerLU | M_InOutLine_ID |
-      | pi_orphan               | packMain           | desadvLine        | 0           | 0           | -              |
+    # Invoke real SSCC label generation with LabelCount=2 on the desadv line.
+    # The order-line uses "No Packing Item" (M_HU_PI_Item_Product_ID=101), so
+    # PrintableDesadvLineSSCC18Labels falls back to TotalQtyCUBreakdownCalculator.NULL.
+    # Each subtractOneLU() returns LUQtys.NULL (qtyCUsPerLU=0).
+    # PRE-FIX: the generator would create 2 pack items with MovementQty=0, M_InOutLine_ID=NULL
+    #          (one for each requested label slot that exhausts the calculator).
+    # POST-FIX: the generator skips Qty-0 LUs — no orphan pack item is created.
+    # The total EDI_Desadv_Pack_Item count MUST remain exactly 1 (the real qty=10 item).
+    When SSCC labels are generated for EDI_DesadvLine:
+      | EDI_DesadvLine_ID | LabelCount |
+      | desadvLine        | 2          |
+
+    # After SSCC generation: the fix ensures no Qty-0 orphan was born.
+    # Still exactly 1 pack item (the real qty=10 item from shipment completion).
+    Then after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerLU | M_InOutLine_ID |
+      | pi_nonzero              | packMain           | 10          | 10          | shipmentLine   |
 
     # 1) REACTIVATE the shipment (production: a non-quantity field changed)
     When the shipment identified by shipment is reactivated
@@ -135,7 +153,9 @@ Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-
       | packRecompleted               | true                | null                   | 2         |
 
     # After the cycle, only the legitimate qty>0 pack item must remain.
-    # If the orphan Qty-0 / NULL-M_InOutLine_ID item (pi_orphan) survives, the total-count assertion fails.
+    # If a Qty-0/NULL-M_InOutLine_ID orphan had been created by the SSCC generator (pre-fix),
+    # it would survive here (it cannot be cleaned up by reactivation or reclaimed on re-complete)
+    # and the total-count assertion would fail with 2 items instead of 1.
     Then after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerLU | M_InOutLine_ID |
       | pi_recompleted          | packRecompleted    | 10          | 10          | shipmentLine   |

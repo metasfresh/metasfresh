@@ -22,22 +22,31 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.edi.api.impl.DesadvBL;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
+import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
+import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -51,6 +60,10 @@ public class EDI_DesadvLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
+	private final SSCC18CodeBL sscc18CodeBL = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
+	private final EDIDesadvPackService ediDesadvPackService = SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
 
 	private final EDI_DesadvLine_StepDefData desadvLineTable;
 	private final EDI_Desadv_StepDefData desadvTable;
@@ -131,6 +144,73 @@ public class EDI_DesadvLine_StepDef
 
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
 		desadvLineTable.put(lineIdentifier, desadvLine);
+	}
+
+	/**
+	 * Generates SSCC labels for a single EDI_DesadvLine by invoking the real
+	 * {@link DesadvLineSSCC18Generator} with an explicit label count.
+	 *
+	 * <p>This reproduces the production path of {@code EDI_Desadv_GenerateSSCCLabels}:
+	 * it calls {@link PrintableDesadvLineSSCC18Labels} which internally builds a
+	 * {@link de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator}.
+	 * When the desadv line has no proper LU/TU configuration (e.g. the order-line uses
+	 * "No Packing Item" / M_HU_PI_Item_Product_ID=101), the calculator falls back to
+	 * {@link de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator#NULL},
+	 * and every {@code subtractOneLU()} call returns {@code LUQtys.NULL} (qtyCUsPerLU=0).
+	 * Requesting more labels than the breakdown supports is the birth mechanism of an
+	 * orphan Qty-0/NULL-M_InOutLine pack item (me03 #29278).
+	 * After the fix, the generator skips Qty-0 LUs so no orphan is ever created.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code EDI_DesadvLine_ID} – identifier of the desadv line (registered via
+	 *       {@link #edi_desadv_line_records_are_found})</li>
+	 *   <li>{@code LabelCount} – explicit number of SSCC labels (i.e. LUs) to generate</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When SSCC labels are generated for EDI_DesadvLine:
+	 *   | EDI_DesadvLine_ID | LabelCount |
+	 *   | desadvLine        | 2          |
+	 * </pre>
+	 */
+	@When("SSCC labels are generated for EDI_DesadvLine:")
+	public void generate_sscc_labels_for_desadv_line(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::generateSSCCLabelsForDesadvLine);
+	}
+
+	private void generateSSCCLabelsForDesadvLine(@NonNull final DataTableRow row)
+	{
+		final I_EDI_DesadvLine desadvLine = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID).lookupNotNullIn(desadvLineTable);
+		final int labelCount = row.getAsInt("LabelCount");
+
+		final I_EDI_Desadv desadvRecord = desadvLine.getEDI_Desadv();
+		final int bpartnerRepoId = CoalesceUtil.firstGreaterThanZero(
+				desadvRecord.getDropShip_BPartner_ID(),
+				desadvRecord.getC_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRepoId);
+
+		final DesadvLineSSCC18Generator generator = DesadvLineSSCC18Generator.builder()
+				.sscc18CodeService(sscc18CodeBL)
+				.desadvBL(desadvBL)
+				.ediDesadvPackService(ediDesadvPackService)
+				.printExistingLabels(false)
+				.bpartnerId(bpartnerId)
+				.build();
+
+		// PrintableDesadvLineSSCC18Labels uses the real shipment-schedule / LU-TU config lookup.
+		// When the order-line has no proper packing instructions (e.g. "No Packing Item" / 101),
+		// the builder falls back to TotalQtyCUBreakdownCalculator.NULL, so every subtractOneLU()
+		// returns LUQtys.NULL (qtyCUsPerLU=0).  With labelCount > available LUs the generator
+		// exhausts the calculator — this is the orphan birth mechanism (me03 #29278).
+		final PrintableDesadvLineSSCC18Labels labelsSpec = PrintableDesadvLineSSCC18Labels.builder()
+				.setEDI_DesadvLine(desadvLine)
+				.setRequiredSSCC18Count(labelCount)
+				.build();
+
+		generator.generateAndEnqueuePrinting(labelsSpec);
 	}
 
 	@Then("validate created edi desadv line")
