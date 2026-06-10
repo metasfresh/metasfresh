@@ -21,7 +21,6 @@ import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
-import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
@@ -41,7 +40,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
@@ -85,7 +83,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
 	private final static AdMessageKey MSG_CANNOT_DETERMINE_HU_PACKAGE_DIMENSIONS = AdMessageKey.of("CannotDetermineHUPackageDimensions");
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
@@ -95,7 +92,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@VisibleForTesting
-	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
+	public static final String SYSCONFIG_WeightSourceTypes = ShippingWeightCalculator.SYSCONFIG_WeightSourceTypes;
 	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
 
 	@Override
@@ -465,14 +462,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 	private ShippingWeightCalculator newWeightCalculator()
 	{
-		return ShippingWeightCalculator.builder()
-				.weightSourceTypes(getWeightsSourceTypes())
-				.build();
-	}
-
-	private ShippingWeightSourceTypes getWeightsSourceTypes()
-	{
-		return ShippingWeightSourceTypes.ofCommaSeparatedString(sysConfigBL.getValue(SYSCONFIG_WeightSourceTypes)).orElse(ShippingWeightSourceTypes.DEFAULT);
+		return ShippingWeightCalculator.newInstanceFromSysConfig();
 	}
 
 }

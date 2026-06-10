@@ -5,14 +5,11 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.shipping.impl.HUShipperTransportationBL;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
-import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -43,14 +40,7 @@ public class PackedHUShippingInfoService
 
 	private ShippingWeightCalculator newWeightCalculator()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final ShippingWeightSourceTypes weightSourceTypes = ShippingWeightSourceTypes
-				.ofCommaSeparatedString(sysConfigBL.getValue(HUShipperTransportationBL.SYSCONFIG_WeightSourceTypes))
-				.orElse(ShippingWeightSourceTypes.DEFAULT);
-
-		return ShippingWeightCalculator.builder()
-				.weightSourceTypes(weightSourceTypes)
-				.build();
+		return ShippingWeightCalculator.newInstanceFromSysConfig();
 	}
 
 	@NonNull
