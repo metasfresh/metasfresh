@@ -581,7 +581,10 @@ public class DDOrderPickingReplenishmentService
 		final OrgId orgId = request.getOrgId();
 
 		//
-		// Header
+		// Header — newInstance() is here (not in DDOrderLowLevelDAO) because this service is in
+		// de.metas.handlingunits.base (which has de.metas.swat.base and can see I_M_Picking_Job_Schedule),
+		// while DDOrderLowLevelDAO is in de.metas.manufacturing (which does NOT have that dependency).
+		// The creation half stays here; save() is delegated to the DAO.
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		if (request.getBpartnerId() != null)
@@ -698,6 +701,9 @@ public class DDOrderPickingReplenishmentService
 	 * {@link I_DD_Order} linked. Packing-warehouse relevance is decided downstream by {@link #classifyAction}
 	 * (a non-packing assignment no-ops), so this scan does not pre-filter on the warehouse.
 	 */
+	// Note: this query lives here rather than in PickingJobScheduleService because it is a cross-entity
+	// query (M_Picking_Job_Schedule LEFT-anti-JOIN DD_Order) whose result is only meaningful in the
+	// context of the DD_Order reconcile flow — it is not a general "schedule" query.
 	private java.util.stream.Stream<PickingJobScheduleId> streamAssignmentsNeedingDDOrder()
 	{
 		final org.compiere.model.IQuery<I_DD_Order> liveDDOrderSubQuery = ddOrderLowLevelDAO.queryCompletedDDOrders();

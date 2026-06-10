@@ -97,6 +97,19 @@ import org.slf4j.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for {@code DD_Order} (distribution order) lifecycle — creation, completion,
+ * voiding, and picking-replenishment reconcile assertions.
+ *
+ * <p>Covers:
+ * <ul>
+ *   <li>Creating DD_Orders via {@code metasfresh contains DD_Orders}</li>
+ *   <li>Completing, voiding, and asserting DocStatus</li>
+ *   <li>Waiting for the DD_Order linked to a {@code M_Picking_Job_Schedule} to appear (reconcile)</li>
+ *   <li>Asserting that a DD_Order linked to a {@code M_ShipmentSchedule} is voided</li>
+ *   <li>Driving the reconcile event handler directly (bypass async) for unit-like Cucumber assertions</li>
+ * </ul>
+ */
 @RequiredArgsConstructor
 public class DD_Order_StepDef
 {
