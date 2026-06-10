@@ -61,7 +61,7 @@ SET Description = 'Muster fuer ausgehende Dateinamen; {...}-Platzhalter werden b
     UpdatedBy   = 100
 WHERE AD_Element_ID = 584677;
 
--- German trl rows (de_DE, de_CH) — mirror the base German text
+-- German trl rows (de_DE, de_CH) - mirror the base German text
 UPDATE AD_Element_Trl
 SET Description = 'Muster fuer ausgehende Dateinamen; {...}-Platzhalter werden beim Senden ersetzt.',
     Help        = 'Platzhalter in geschweiften Klammern werden beim Senden der Datei ersetzt: {documentno} (Belegnummer des exportierten Datensatzes), {table} (dessen Tabellenname, z.B. M_InOut), {recordid} (dessen Datenbankschluessel), {timestamp} (Sendezeitpunkt, Format yyyyMMdd_HHmmss). Unbekannte Platzhalter bleiben unveraendert. Beispiel: DESADV_{documentno}_{timestamp}.json',
@@ -234,6 +234,8 @@ ALTER TABLE ExternalSystem_Endpoint ADD COLUMN IF NOT EXISTS OAuthScope VARCHAR(
 ALTER TABLE ExternalSystem_Endpoint ADD COLUMN IF NOT EXISTS IsFileUpload CHAR(1) DEFAULT 'N';
 UPDATE ExternalSystem_Endpoint SET IsFileUpload = 'N' WHERE IsFileUpload IS NULL;
 ALTER TABLE ExternalSystem_Endpoint ALTER COLUMN IsFileUpload SET NOT NULL;
+ALTER TABLE ExternalSystem_Endpoint DROP CONSTRAINT IF EXISTS ck_endpoint_isfileupload;
+ALTER TABLE ExternalSystem_Endpoint ADD CONSTRAINT ck_endpoint_isfileupload CHECK (IsFileUpload IN ('Y','N'));
 
 -- ============================================================
 -- 7. AD_Column: OAuthTokenUrl (592797)
@@ -535,7 +537,7 @@ ON CONFLICT (AD_UI_Element_ID) DO NOTHING;
 -- ============================================================
 -- 16. Display logic on new OAuth2 fields
 --     OAuthTokenUrl: show + mandatory only for HTTP + OAuth2.
---     OAuthScope: show only for HTTP + OAuth2 (no mandatory — scope is optional per spec).
+--     OAuthScope: show only for HTTP + OAuth2 (no mandatory - scope is optional per spec).
 --     IsFileUpload: show for HTTP transport (unchanged from cookie template).
 -- ============================================================
 UPDATE AD_Field
