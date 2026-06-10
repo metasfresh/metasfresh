@@ -103,12 +103,6 @@ public class MobileUI_MassPrinting_StepDef
 	 *   <li>{@code BoxesPacked} — total boxes packed across all products</li>
 	 * </ul>
 	 *
-	 * <p>Optional columns:
-	 * <ul>
-	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of a schedule; used together with {@code WasPicked} to assert pick status</li>
-	 *   <li>{@code WasPicked} — Y/N: whether the given shipment schedule should have been picked</li>
-	 * </ul>
-	 *
 	 * <p>Example:
 	 * <pre>
 	 * Then validate mass printing result:

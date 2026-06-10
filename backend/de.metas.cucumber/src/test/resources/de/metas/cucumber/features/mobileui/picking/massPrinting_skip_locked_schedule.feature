@@ -10,7 +10,7 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
   ## must be silently skipped (with a warning logged) and the remaining unlocked
   ## schedules must still be processed normally.
   ##
-  ## Regression for: gh29942 "Mass Printing Labels" (dt204).
+  ## Covers the resilience case: a locked schedule must never block the whole scan.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -96,9 +96,6 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
   # shipment schedules. The locked schedule must be silently skipped; the non-locked one must be processed
   # normally (picking job created, completed, shipment generated and completed).
   # ################################################################################################################
-  @from:cucumber
-  @allure.label.epic:E0105_Picking
-  @allure.label.feature:F00230_MobileUI_Picking
   Scenario: Mass printing skips schedule locked by another picker and ships the non-locked one
 
     # Create 2 sales orders for the same product. Each order demands 1 TU (4 PCE).

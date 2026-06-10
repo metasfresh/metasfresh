@@ -10,7 +10,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
@@ -70,6 +72,7 @@ public class DDOrderPickingReplenishmentService
 	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishment";
 
 	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull private final DDOrderService ddOrderService;
@@ -487,6 +490,9 @@ public class DDOrderPickingReplenishmentService
 	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
 	{
 		final ShipmentScheduleId scheduleId = ddOrderLowLevelDAO.getShipmentScheduleId(ddOrderId);
+		// Abort stale Draft picking jobs before checking — avoids false "picker busy" from orphaned jobs
+		// left by crashed scan sessions (same resilience pattern as MassPrintingService.processProduct).
+		pickingJobService.abortOrphanedPickingJobsForSchedules(ImmutableSet.of(scheduleId));
 		return pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId);
 	}
 

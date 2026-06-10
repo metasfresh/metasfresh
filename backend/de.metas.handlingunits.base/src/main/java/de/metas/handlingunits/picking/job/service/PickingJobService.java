@@ -208,7 +208,7 @@ public class PickingJobService implements PickingSlotListener
 			return;
 		}
 
-		logger.warn("Mass printing: aborting {} orphaned picking job(s) for schedules {} before creating a new job", orphanedJobIds.size(), scheduleIds);
+		logger.warn("Aborting {} orphaned picking job(s) for schedules {} before proceeding", orphanedJobIds.size(), scheduleIds);
 
 		final PickingJobLoaderSupportingServices loadingSupportServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
 		for (final PickingJobId jobId : orphanedJobIds)
