@@ -605,6 +605,10 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.OAuth2);
+		Check.assumeNotEmpty(endpointParameters.getOauthTokenUrl(), "oauthTokenUrl must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getClientId(), "clientId must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getUser(), "user must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getPassword(), "password must not be empty for OAuth2 auth");
 
 		final String accessToken = oauth2TokenManager.getAccessToken(
 				endpointParameters.getOauthTokenUrl(),
