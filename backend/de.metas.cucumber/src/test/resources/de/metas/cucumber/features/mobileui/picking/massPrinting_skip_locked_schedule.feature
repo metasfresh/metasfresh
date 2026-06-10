@@ -143,6 +143,6 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | schedLocked           | picker2 | true   |
 
     # schedOpen was processed: a completed shipment exists for it
-    Then after not more than 60s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | schedOpen                        | shipment              | CO            |

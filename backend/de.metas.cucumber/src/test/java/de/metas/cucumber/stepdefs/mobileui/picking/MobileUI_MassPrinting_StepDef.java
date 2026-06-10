@@ -64,7 +64,6 @@ public class MobileUI_MassPrinting_StepDef
 	/** last scan result per LU identifier */
 	private final Map<String, MassPrintingResult> resultsByLuIdentifier = new HashMap<>();
 
-
 	/**
 	 * Triggers a mass-printing scan for the given LU as the specified user.
 	 * Stores the result for later assertion via {@link #validateMassPrintingResult(DataTable)}.
@@ -103,7 +102,7 @@ public class MobileUI_MassPrinting_StepDef
 
 	/**
 	 * Validates the mass printing result for a specific LU.
-	 * Checks that the expected number of boxes were packed and that given schedules were or were not processed.
+	 * Checks the total number of boxes packed across all products and optionally the total label-print attempts.
 	 *
 	 * <p>Required columns:
 	 * <ul>
