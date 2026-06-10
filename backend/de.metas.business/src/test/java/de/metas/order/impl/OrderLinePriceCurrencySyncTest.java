@@ -1,6 +1,9 @@
 package de.metas.order.impl;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -11,14 +14,12 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.util.lang.Percent;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
@@ -115,7 +116,7 @@ class OrderLinePriceCurrencySyncTest
 		when(pricingResult.getPriceList()).thenReturn(BigDecimal.TEN);
 		when(pricingResult.getPriceStd()).thenReturn(BigDecimal.TEN);
 		when(pricingResult.getPriceLimit()).thenReturn(BigDecimal.ZERO);
-		when(pricingResult.getDiscount()).thenReturn(de.metas.util.lang.Percent.ZERO);
+		when(pricingResult.getDiscount()).thenReturn(Percent.ZERO);
 		when(pricingResult.getPrecision()).thenReturn(CurrencyPrecision.TWO);
 		when(pricingResult.getEnforcePriceLimit()).thenReturn(BooleanWithReason.falseBecause("test"));
 		when(pricingResult.getPricingConditions()).thenReturn(null);
