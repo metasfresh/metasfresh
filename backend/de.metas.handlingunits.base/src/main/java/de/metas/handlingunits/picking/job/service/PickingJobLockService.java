@@ -1,14 +1,17 @@
 package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLocksMap;
 import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.lock.api.ILockManager;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -80,6 +83,18 @@ public class PickingJobLockService
 						.lockType(ShipmentScheduleLockType.PICKING)
 						.lockedBy(lockedBy)
 						.build());
+	}
+
+	public ImmutableSet<ShipmentScheduleId> getScheduleIdsLockedByOtherUser(
+			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
+			@NonNull final UserId pickerId)
+	{
+		if (scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		final ShipmentScheduleLocksMap locks = shipmentScheduleLockRepository.getByShipmentScheduleIds(scheduleIds);
+		return locks.getShipmentScheduleIdsLockedByOtherUser(pickerId);
 	}
 
 }

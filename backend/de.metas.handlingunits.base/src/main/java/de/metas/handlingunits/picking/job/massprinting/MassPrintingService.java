@@ -21,8 +21,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
-import de.metas.inoutcandidate.lock.ShipmentScheduleLocksMap;
+import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -63,7 +62,7 @@ public class MassPrintingService
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
-	@NonNull private final ShipmentScheduleLockRepository lockRepository;
+	@NonNull private final PickingJobLockService pickingJobLockService;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -188,13 +187,7 @@ public class MassPrintingService
 				.map(Packageable::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ShipmentScheduleLocksMap existingLocks = lockRepository.getByShipmentScheduleIds(scheduleIds);
-		if (existingLocks.isEmpty())
-		{
-			return packageables;
-		}
-
-		final ImmutableSet<ShipmentScheduleId> lockedByOtherUser = existingLocks.getShipmentScheduleIdsLockedByOtherUser(pickerId);
+		final ImmutableSet<ShipmentScheduleId> lockedByOtherUser = pickingJobLockService.getScheduleIdsLockedByOtherUser(scheduleIds, pickerId);
 		if (lockedByOtherUser.isEmpty())
 		{
 			return packageables;
