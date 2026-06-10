@@ -45,6 +45,7 @@ public class JsonDeliveryAdvisorRequestItem
 	@NonNull String productValue;
 	@Nullable JsonPackageDimensions packageDimensions;
 	@Nullable String topLevelType;
+	@Nullable String countryOfOrigin;
 
 	@JsonIgnore
 	public Optional<String> getValue(@NonNull final String attributeValue)
@@ -59,6 +60,8 @@ public class JsonDeliveryAdvisorRequestItem
 				return Optional.of(grossWeightKg.toPlainString());
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE:
 				return Optional.ofNullable(topLevelType);
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
+				return Optional.ofNullable(countryOfOrigin);
 			default:
 				return Optional.empty();
 		}

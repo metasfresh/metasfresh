@@ -53,4 +53,27 @@ class JsonDeliveryAdvisorRequestItemTest
 
 		assertThat(withoutType.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE)).isEmpty();
 	}
+
+	@Test
+	void getValue_countryOfOrigin()
+	{
+		final JsonDeliveryAdvisorRequestItem withCountry = JsonDeliveryAdvisorRequestItem.builder()
+				.numberOfItems(1)
+				.grossWeightKg(BigDecimal.ONE)
+				.productName("Prod")
+				.productValue("P-1")
+				.countryOfOrigin("DE")
+				.build();
+
+		assertThat(withCountry.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN)).contains("DE");
+
+		final JsonDeliveryAdvisorRequestItem withoutCountry = JsonDeliveryAdvisorRequestItem.builder()
+				.numberOfItems(1)
+				.grossWeightKg(BigDecimal.ONE)
+				.productName("Prod")
+				.productValue("P-1")
+				.build();
+
+		assertThat(withoutCountry.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN)).isEmpty();
+	}
 }
