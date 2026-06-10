@@ -59,6 +59,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	PRODUCT_NAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductName),
 	PRODUCT_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductValue),
 	CUSTOMS_TARIFF(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomsTariff),
+	COUNTRY_OF_ORIGIN(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CountryOfOrigin),
 	SHIPMENT_ORDER_ITEM_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipmentOrderItemId),
 	UNIT_PRICE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UnitPrice),
 	TOTAL_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TotalValue),

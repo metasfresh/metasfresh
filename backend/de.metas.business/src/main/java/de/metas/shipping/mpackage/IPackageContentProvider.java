@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,27 +22,25 @@
 
 package de.metas.shipping.mpackage;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.inout.InOutAndLineId;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
+import de.metas.inout.InOutId;
 import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder(toBuilder = true)
-public class PackageItem
+/**
+ * Optionally restricts which InOutLines are included as content items for a given package.
+ * <p>
+ * Implemented in de.metas.handlingunits to apply HU-based filtering when multiple packages
+ * share the same InOut.
+ */
+@FunctionalInterface
+public interface IPackageContentProvider
 {
-	@NonNull ProductId productId;
-	@Nullable Quantity quantity;
-	@NonNull OrderAndLineId orderAndLineId;
-	@NonNull InOutAndLineId inOutAndLineId;
-	@NonNull AttributeSetInstanceId inOutLineASIId;
-
-	public OrderLineId getOrderLineId() {return orderAndLineId.getOrderLineId();}
+	/**
+	 * @return the {@link InOutAndLineId}s to include for this package,
+	 * or an empty set if all InOutLines of the InOut should be included.
+	 */
+	ImmutableSet<InOutAndLineId> getInOutLineIdsForPackage(
+			@NonNull PackageId packageId,
+			@NonNull InOutId inOutId);
 }

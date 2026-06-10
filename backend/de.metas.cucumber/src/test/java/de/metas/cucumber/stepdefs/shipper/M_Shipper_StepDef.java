@@ -102,6 +102,10 @@ public class M_Shipper_StepDef
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setInternalName);
 
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_ShipperGateway)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setShipperGateway);
+
 		InterfaceWrapperHelper.save(record);
 
 		row.getAsOptionalIdentifier()

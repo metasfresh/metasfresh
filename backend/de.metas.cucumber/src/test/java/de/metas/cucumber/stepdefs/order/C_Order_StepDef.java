@@ -293,12 +293,10 @@ public class C_Order_StepDef
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 
-		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(userIdentifier))
-		{
-			final I_AD_User user = userTable.get(userIdentifier);
-			order.setAD_User_ID(user.getAD_User_ID());
-		}
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(user -> order.setAD_User_ID(user.getAD_User_ID()));
 
 		final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(billBPartnerIdentifier))

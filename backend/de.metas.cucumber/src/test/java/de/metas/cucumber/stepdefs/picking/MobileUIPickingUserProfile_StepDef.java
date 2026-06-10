@@ -37,6 +37,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,18 @@ public class MobileUIPickingUserProfile_StepDef
 	private static final Logger logger = LogManager.getLogger(MobileUIPickingUserProfile_StepDef.class);
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	private final MobileUIPickingUserProfileService profileService = SpringContextHolder.instance.getBean(MobileUIPickingUserProfileService.class);
+
+	private MobileUIPickingUserProfile profileBeforeScenario = null;
+
+	@After
+	public void restoreProfile()
+	{
+		if (profileBeforeScenario != null)
+		{
+			profileService.update(ignored -> profileBeforeScenario);
+			profileBeforeScenario = null;
+		}
+	}
 
 	/**
 	 * Sets or updates fields on the (default) mobile UI picking profile in-memory (single-row DataTable).
@@ -81,6 +94,12 @@ public class MobileUIPickingUserProfile_StepDef
 	@And("set mobile UI picking profile")
 	public void updateProfile(@NonNull final DataTable dataTable)
 	{
+		// Capture on first change so @After can restore the original value
+		if (profileBeforeScenario == null)
+		{
+			profileBeforeScenario = profileService.getProfile();
+		}
+
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		profileService.update((profile) -> {

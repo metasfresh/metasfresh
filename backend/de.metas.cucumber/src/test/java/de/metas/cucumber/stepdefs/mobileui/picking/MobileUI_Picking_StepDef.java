@@ -18,6 +18,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
@@ -27,15 +28,19 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.When;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
@@ -52,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MobileUI_Picking_StepDef
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final MobileUIPickingClient mobileUIPickingClient = new MobileUIPickingClient();
 
@@ -69,6 +75,12 @@ public class MobileUI_Picking_StepDef
 		final I_C_Order salesOrder = ordersTable.get(salesOrderIdentifier);
 		final JsonWFProcess wfProcess = mobileUIPickingClient.startJobBySalesDocumentNo(salesOrder.getDocumentNo());
 		context.setWfProcess(wfProcess);
+		context.setScheduleIds(queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, salesOrder.getC_Order_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId));
 	}
 
 	@When("^scan picking slot identified by (.*)$")
@@ -211,10 +223,31 @@ public class MobileUI_Picking_StepDef
 	}
 
 	@When("complete picking job")
-	public void complete()
+	public void complete() throws InterruptedException
 	{
+		waitUntilPickingJobSchedulesValid();
 		final JsonWFProcess wfProcess = mobileUIPickingClient.complete(context.getWfProcessIdNotNull());
 		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Waits until all shipment schedules for the current picking job's sales order
+	 * have no pending recompute entries. This ensures retrieveNotShippedRecords
+	 * (which uses TRXNAME_None) sees a consistent state when shipment generation runs.
+	 */
+	private void waitUntilPickingJobSchedulesValid() throws InterruptedException
+	{
+		final List<ShipmentScheduleId> scheduleIds = context.getScheduleIds();
+		if (scheduleIds == null || scheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		StepDefUtil.tryAndWait(30, 500, () -> queryBL
+				.createQueryBuilder(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
+				.create()
+				.noneMatch());
 	}
 
 	//
@@ -226,6 +259,7 @@ public class MobileUI_Picking_StepDef
 	private static class Context
 	{
 		@Nullable JsonWFProcess wfProcess;
+		@Nullable @Getter List<ShipmentScheduleId> scheduleIds;
 
 		public String getWfProcessIdNotNull()
 		{
