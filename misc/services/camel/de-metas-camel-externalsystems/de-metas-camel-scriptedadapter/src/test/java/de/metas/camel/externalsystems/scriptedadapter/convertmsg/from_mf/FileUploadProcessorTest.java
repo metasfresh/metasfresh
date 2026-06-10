@@ -44,7 +44,10 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
@@ -418,15 +421,15 @@ class FileUploadProcessorTest extends CamelTestSupport
 			return; // found
 		}
 		throw new AssertionError(
-				"Expected body to contain bytes " + java.util.Arrays.toString(needle)
+				"Expected body to contain bytes " + Arrays.toString(needle)
 						+ " but they were not found in the " + haystack.length + "-byte body");
 	}
 
 	/** Walks the cause chain collecting all messages. */
 	@NonNull
-	private static java.util.List<String> collectMessages(@NonNull final Throwable root)
+	private static List<String> collectMessages(@NonNull final Throwable root)
 	{
-		final java.util.List<String> messages = new java.util.ArrayList<>();
+		final List<String> messages = new ArrayList<>();
 		Throwable current = root;
 		while (current != null)
 		{
