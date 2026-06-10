@@ -490,8 +490,12 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				transportationId,
 				Collections.singletonList(orderId)))
 				.isInstanceOf(AdempiereException.class)
-				.extracting(Throwable::getMessage)
-				.satisfies(msg -> assertThat((String) msg).isNotEmpty());
+				.satisfies(ex -> {
+					assertThat(ex.getMessage()).isNotEmpty();
+					assertThat(((AdempiereException) ex).isUserValidationError())
+							.as("Exception must be marked as user-validation error so the UI shows it as a user message")
+							.isTrue();
+				});
 	}
 
 	/**
@@ -533,9 +537,9 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackages.get(0).getC_OrderLine_ID())
 				.as("Only line2 (product2) should produce a shipping package")
 				.isEqualTo(line2.getC_OrderLine_ID());
-		assertThat(shippingPackages.stream().noneMatch(sp -> sp.getC_OrderLine_ID() == line1.getC_OrderLine_ID()))
+		assertThat(shippingPackages)
 				.as("line1 (product1) must not have a shipping package")
-				.isTrue();
+				.noneMatch(sp -> sp.getC_OrderLine_ID() == line1.getC_OrderLine_ID());
 	}
 
 	private I_M_ShipperTransportation createShipperTransportation()

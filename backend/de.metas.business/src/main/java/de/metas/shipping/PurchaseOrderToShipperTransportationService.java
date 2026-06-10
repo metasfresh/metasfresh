@@ -253,7 +253,7 @@ public class PurchaseOrderToShipperTransportationService
 	{
 		return orderLines.stream()
 				.map(ol -> "OrderLine[id=" + ol.getC_OrderLine_ID() + ", product=" + ol.getM_Product_ID() + "]")
-				.collect(java.util.stream.Collectors.joining(", "));
+				.collect(Collectors.joining(", "));
 	}
 
 	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLines)
