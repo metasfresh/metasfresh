@@ -10,7 +10,7 @@
 -- This file: EDI_Cctop_INVOIC_v  — ReceiverGLN (EdiInvoicRecipientGLN with rl.GLN fallback)
 
 -- ==============================================================================================
--- Step 3: EDI_Cctop_INVOIC_v
+-- EDI_Cctop_INVOIC_v
 -- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_v_view.sql
 -- ==============================================================================================
 

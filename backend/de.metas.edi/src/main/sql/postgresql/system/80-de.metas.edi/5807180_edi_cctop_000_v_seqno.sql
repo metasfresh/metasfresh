@@ -10,7 +10,7 @@
 -- This file: edi_cctop_000_v  — EdiInvoicRecipientGLN
 
 -- ==============================================================================================
--- Step 2: edi_cctop_000_v
+-- edi_cctop_000_v
 -- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_000_v_view.sql
 -- ==============================================================================================
 

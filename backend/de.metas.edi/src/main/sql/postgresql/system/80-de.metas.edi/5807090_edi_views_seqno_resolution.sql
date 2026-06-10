@@ -10,7 +10,7 @@
 -- This file: M_InOut_Export_EDI_DESADV_JSON_V  — TechnicalRecipientGLN (EdiDesadvRecipientGLN)
 
 -- ==============================================================================================
--- Step 1: M_InOut_Export_EDI_DESADV_JSON_V
+-- M_InOut_Export_EDI_DESADV_JSON_V
 -- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/desadv_json/M_InOut_Export_EDI_DESADV_JSON_V.sql
 -- ==============================================================================================
 
