@@ -64,7 +64,7 @@ WHERE AD_Element_ID=584972 AND AD_Language='en_US'
 ;
 
 -- =============================================================================
--- 6. AD_Column
+-- 5. AD_Column
 -- =============================================================================
 INSERT INTO AD_Column
   (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -88,7 +88,7 @@ VALUES
 ;
 
 -- =============================================================================
--- 7. AD_Column_Trl — seed skeleton rows
+-- 6. AD_Column_Trl — seed skeleton rows
 -- =============================================================================
 INSERT INTO AD_Column_Trl
   (AD_Language, AD_Column_ID, Name, IsTranslated,
@@ -109,7 +109,7 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y'
 ;
 
 -- =============================================================================
--- 8. AD_Field on Shipper window main tab (tab 185)
+-- 7. AD_Field on Shipper window main tab (tab 185)
 -- =============================================================================
 INSERT INTO AD_Field
   (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -129,7 +129,7 @@ VALUES
 ;
 
 -- =============================================================================
--- 9. AD_Field_Trl — seed skeleton rows
+-- 8. AD_Field_Trl — seed skeleton rows
 -- =============================================================================
 INSERT INTO AD_Field_Trl
   (AD_Language, AD_Field_ID, Name, IsTranslated,
@@ -150,18 +150,18 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y'
 ;
 
 -- =============================================================================
--- 10. Propagate element translations → field (element-id, not field-id)
+-- 9. Propagate element translations → field (element-id, not field-id)
 -- =============================================================================
 /* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(584972);
 
 -- =============================================================================
--- 11. Rebuild element links for the new field
+-- 10. Rebuild element links for the new field
 -- =============================================================================
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=780754;
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(780754);
 
 -- =============================================================================
--- 12. AD_UI_Element — place field in the flags group (541020), form+grid
+-- 11. AD_UI_Element — place field in the flags group (541020), form+grid
 --     SeqNo=30 (after IsActive=10, IsDefault=20)
 --     SeqNoGrid=75 (between IsDefault=70 and AD_Org_ID=80)
 -- =============================================================================
@@ -181,6 +181,6 @@ VALUES
 ;
 
 -- =============================================================================
--- 13. Propagate element translations to TRL tables
+-- 12. Propagate element translations to TRL tables
 -- =============================================================================
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584972);
