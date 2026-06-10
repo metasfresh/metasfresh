@@ -86,6 +86,10 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss_010                | io_010     |
 
+    # Drain async material/DESADV workpackages from shipment generation so they don't spill into
+    # the next scenario in this executor (would de-calibrate sibling DESADV-aggregation tests).
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     # After invocation the status row reaches Enqueued; simulate /ok success callback
     Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
       | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
@@ -123,6 +127,9 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss_020                | io_020     |
+
+    # Drain async material/DESADV workpackages from shipment generation (avoid spilling into sibling executor tests).
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # Wait for invocation to be Enqueued (AD_PInstance_ID is set) before sending error callback
     Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
@@ -164,6 +171,9 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss_030                | io_030     |
+
+    # Drain async material/DESADV workpackages from shipment generation (avoid spilling into sibling executor tests).
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # Wait for invocation to be Enqueued before sending error callback
     Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
