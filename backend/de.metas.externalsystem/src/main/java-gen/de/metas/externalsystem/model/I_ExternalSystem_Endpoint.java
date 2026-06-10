@@ -290,6 +290,69 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_LoginUsername = "LoginUsername";
 
 	/**
+	 * Set Logon URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLogonUrl (@Nullable java.lang.String LogonUrl);
+
+	/**
+	 * Get Logon URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLogonUrl();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LogonUrl = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LogonUrl", null);
+	String COLUMNNAME_LogonUrl = "LogonUrl";
+
+	/**
+	 * Set Logon Form Params.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLogonFormParams (@Nullable java.lang.String LogonFormParams);
+
+	/**
+	 * Get Logon Form Params.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLogonFormParams();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LogonFormParams = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LogonFormParams", null);
+	String COLUMNNAME_LogonFormParams = "LogonFormParams";
+
+	/**
+	 * Set File Upload.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFileUpload (boolean IsFileUpload);
+
+	/**
+	 * Get File Upload.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFileUpload();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_IsFileUpload = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "IsFileUpload", null);
+	String COLUMNNAME_IsFileUpload = "IsFileUpload";
+
+	/**
 	 * Set Outbound HTTP Endpoint.
 	 * URL to which the data will be sent
 	 *

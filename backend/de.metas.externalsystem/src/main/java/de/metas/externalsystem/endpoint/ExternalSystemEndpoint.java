@@ -22,15 +22,20 @@
 
 package de.metas.externalsystem.endpoint;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.Value;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Builder
 @Value
@@ -87,6 +92,41 @@ public class ExternalSystemEndpoint
 	 */
 	@Default boolean isArrayFanOut = false;
 
+	// Cookie-logon auth fields (used with authType=CookieLogon)
+
+	/** URL the logon form is POSTed to in order to obtain the session cookie. */
+	@Nullable String logonUrl;
+
+	/**
+	 * Form fields sent to the logon URL as a Map.
+	 * Stored in the DB as a JSON text column (LogonFormParams); parsed on load.
+	 */
+	@Nullable Map<String, String> logonFormParams;
+
+	/**
+	 * If TRUE the payload is uploaded as multipart/form-data.
+	 * Default FALSE — plain-body request.
+	 */
+	@Default boolean isFileUpload = false;
+
+	private static final ObjectMapper JSON = new ObjectMapper();
+	private static final TypeReference<Map<String, String>> MAP_TYPE = new TypeReference<Map<String, String>>() {};
+
+	/**
+	 * Parse a JSON text column value into a Map<String,String>.
+	 * Returns null when the input is blank.
+	 */
+	@Nullable
+	@SneakyThrows
+	public static Map<String, String> parseLogonFormParams(@Nullable final String json)
+	{
+		if (Check.isBlank(json))
+		{
+			return null;
+		}
+		return JSON.readValue(json, MAP_TYPE);
+	}
+
 	/**
 	 * Converts this endpoint to a JSON DTO.
 	 * Supports both HTTP and SFTP transport types.
@@ -115,6 +155,9 @@ public class ExternalSystemEndpoint
 				.sftpRemotePath(sftpRemotePath)
 				.sftpFilenamePattern(sftpFilenamePattern)
 				.arrayFanOut(isArrayFanOut ? Boolean.TRUE : null)
+				.logonUrl(logonUrl)
+				.logonFormParams(logonFormParams)
+				.isFileUpload(isFileUpload ? Boolean.TRUE : null)
 				.build();
 	}
 }

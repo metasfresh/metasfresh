@@ -85,6 +85,10 @@ public class ExternalSystemEndpointRepository
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
 				.isArrayFanOut(endpointRecord.isArrayFanOut())
+				// Cookie-logon + file-upload fields
+				.logonUrl(endpointRecord.getLogonUrl())
+				.logonFormParams(ExternalSystemEndpoint.parseLogonFormParams(endpointRecord.getLogonFormParams()))
+				.isFileUpload(endpointRecord.isFileUpload())
 				.build();
 	}
 

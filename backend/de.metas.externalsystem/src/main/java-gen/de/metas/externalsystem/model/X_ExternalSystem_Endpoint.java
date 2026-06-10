@@ -59,6 +59,8 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public static final String AUTHTYPE_OAuth = "OAuth";
 	/** SAS = SAS */
 	public static final String AUTHTYPE_SAS = "SAS";
+	/** CookieLogon = CookieLogon */
+	public static final String AUTHTYPE_CookieLogon = "CookieLogon";
 	@Override
 	public void setAuthType (final java.lang.String AuthType)
 	{
@@ -167,6 +169,42 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public java.lang.String getLoginUsername()
 	{
 		return get_ValueAsString(COLUMNNAME_LoginUsername);
+	}
+
+	@Override
+	public void setLogonUrl (final @Nullable java.lang.String LogonUrl)
+	{
+		set_Value (COLUMNNAME_LogonUrl, LogonUrl);
+	}
+
+	@Override
+	public java.lang.String getLogonUrl()
+	{
+		return get_ValueAsString(COLUMNNAME_LogonUrl);
+	}
+
+	@Override
+	public void setLogonFormParams (final @Nullable java.lang.String LogonFormParams)
+	{
+		set_Value (COLUMNNAME_LogonFormParams, LogonFormParams);
+	}
+
+	@Override
+	public java.lang.String getLogonFormParams()
+	{
+		return get_ValueAsString(COLUMNNAME_LogonFormParams);
+	}
+
+	@Override
+	public void setIsFileUpload (final boolean IsFileUpload)
+	{
+		set_Value (COLUMNNAME_IsFileUpload, IsFileUpload);
+	}
+
+	@Override
+	public boolean isFileUpload()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFileUpload);
 	}
 
 	@Override

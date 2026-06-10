@@ -62,20 +62,18 @@ class JsonExternalSystemEndpointTest
 	void cookieLogonAndFileUpload_serializeDeserialize() throws Exception
 	{
 		final Map<String, String> logonParams = new HashMap<>();
-		logonParams.put("username", "admin");
-		logonParams.put("password", "secret");
+		logonParams.put("UserName", "{user}");
+		logonParams.put("Password", "{password}");
+		logonParams.put("Organization", "PEERS");
 
 		final JsonExternalSystemEndpoint endpoint = JsonExternalSystemEndpoint.builder()
 				.value("cookie-upload-test")
 				.authType(JsonEndpointAuthType.CookieLogon)
 				.logonUrl("https://example.com/logon")
 				.logonFormParams(logonParams)
-				.capturedCookieName("JSESSIONID")
 				.endpointUrl("https://example.com/upload")
 				.method("POST")
 				.isFileUpload(true)
-				.documentPartName("document")
-				.filePartName("file[]")
 				.build();
 
 		final String json = objectMapper.writeValueAsString(endpoint);
