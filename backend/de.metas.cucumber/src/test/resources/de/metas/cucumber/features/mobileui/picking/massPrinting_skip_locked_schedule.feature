@@ -78,7 +78,7 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | stockLine                     | product                 | 0       | 80       | PCE          |
     And complete inventory with inventoryIdentifier 'inventory'
-    And after not more than 60s, there are added M_HUs for inventory:
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID | M_HU_ID |
       | stockLine          | stockCU |
 
