@@ -104,7 +104,8 @@ public class C_BPartner_EDI_Setting_StepDef
 
 	private void createEdiSetting(@NonNull final DataTableRow row)
 	{
-		// Fix B: accept raw repo-IDs as well as registered step-def identifiers
+		// Resolve by step-def identifier first, falling back to a raw repo-ID so partners that
+		// were never registered in the step-def table (e.g. pre-existing seed partners) still work.
 		final I_C_BPartner bPartner = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID)
 				.lookupOrLoadById(bPartnerTable, id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_C_BPartner.class));
 		final int bPartnerId = bPartner.getC_BPartner_ID();
@@ -123,8 +124,8 @@ public class C_BPartner_EDI_Setting_StepDef
 			locationId = null;
 		}
 
-		// Fix A: upsert — find existing row for (C_BPartner_ID, C_BPartner_Location_ID) to stay idempotent
-		// across Background re-runs and pre-existing partner rows.
+		// Upsert: reuse an existing row for (C_BPartner_ID, C_BPartner_Location_ID) so the step stays
+		// idempotent across Background re-runs and pre-existing partner rows.
 		final I_C_BPartner_EDI_Setting record = CoalesceUtil.coalesceSuppliers(
 				() -> {
 					final IQueryBuilder<I_C_BPartner_EDI_Setting> qb = queryBL

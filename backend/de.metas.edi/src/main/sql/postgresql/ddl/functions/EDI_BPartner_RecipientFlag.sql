@@ -20,6 +20,9 @@ SELECT COALESCE(
     (SELECT CASE WHEN p_message_type = 'D' THEN s.IsEdiDesadvRecipient ELSE s.IsEdiInvoicRecipient END
        FROM C_BPartner_EDI_Setting s
       WHERE s.C_BPartner_ID = p_c_bpartner_id
+        -- match the exact-location row OR the partner-default (NULL-location) row.
+        -- A passed location of 0 ("no location" on some documents) matches no exact row
+        -- (the FK never stores 0), so only the NULL-default branch applies — which is intended.
         AND (s.C_BPartner_Location_ID = p_c_bpartner_location_id OR s.C_BPartner_Location_ID IS NULL)
         AND s.IsActive = 'Y'
       ORDER BY s.SeqNo, s.C_BPartner_EDI_Setting_ID
