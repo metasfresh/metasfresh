@@ -913,6 +913,29 @@ public interface I_M_InOut
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set EPCIS Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setEPCIS_ExportStatus (@Nullable java.lang.String EPCIS_ExportStatus);
+
+	/**
+	 * Get EPCIS Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getEPCIS_ExportStatus();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_EPCIS_ExportStatus = new ModelColumn<>(I_M_InOut.class, "EPCIS_ExportStatus", null);
+	String COLUMNNAME_EPCIS_ExportStatus = "EPCIS_ExportStatus";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
