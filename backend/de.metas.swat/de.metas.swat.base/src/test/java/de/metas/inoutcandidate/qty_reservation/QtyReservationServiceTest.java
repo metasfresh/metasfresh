@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.qty_reservation;
 import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.CreateUOMConversionRequest;

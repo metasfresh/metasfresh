@@ -135,10 +135,12 @@ public class QtyReservationService
 			@NonNull final OrderAndLineId orderAndLineId,
 			@NonNull final UomId targetUomId)
 	{
-		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderAndLineId);
+		// de.metas.interfaces.I_C_OrderLine (the richer type getOrderLineById returns) so the already-loaded
+		// record can be passed to getQtyOrdered(I_C_OrderLine) — the OrderAndLineId overload would re-fetch it.
+		final de.metas.interfaces.I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderAndLineId);
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 
-		final Quantity qtyOrdered = orderLineBL.getQtyOrdered(orderAndLineId);
+		final Quantity qtyOrdered = orderLineBL.getQtyOrdered(orderLine);
 		Quantity remaining = uomConversionBL.convertQuantityTo(qtyOrdered, productId, targetUomId);
 
 		for (final QtyReservation reservation : repository.getActiveByOrderLineId(orderAndLineId.getOrderLineId()))
@@ -149,7 +151,7 @@ public class QtyReservationService
 		}
 
 		// floor at 0: a fully/over-reserved line has no remaining ordered qty
-		return remaining.signum() < 0 ? remaining.toZero() : remaining;
+		return remaining.toZeroIfNegative();
 	}
 
 	/**
