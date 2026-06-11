@@ -94,6 +94,10 @@ public class JsonDeliveryAdvisorRequest
 				return deliveryAddress.getAttention();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
 				return pickupAddress.getAttention();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE:
+				return incotermsValue;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE:
+				return externalSystemValue;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID:
 				// Must return "" not null: JsonMappingConfig.isConfigForShipperProduct() takes @NonNull.
 				// "" → general configs apply, product-scoped configs are skipped (no product selected at advise time).

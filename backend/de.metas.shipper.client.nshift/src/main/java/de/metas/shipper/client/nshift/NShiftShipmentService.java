@@ -39,7 +39,6 @@ import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLabelType;
 import de.metas.shipper.client.nshift.json.JsonLine;
-import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonPackage;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
@@ -133,21 +132,6 @@ public class NShiftShipmentService
 				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
-
-		if (deliveryRequest.getIncotermsValue() != null)
-		{
-			dataBuilder.reference(JsonReference.builder()
-					.kind(63) // eSrkCustomField1 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-					.value(deliveryRequest.getIncotermsValue())
-					.build());
-		}
-		if (deliveryRequest.getExternalSystemValue() != null)
-		{
-			dataBuilder.reference(JsonReference.builder()
-					.kind(64) // eSrkCustomField2 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
-					.value(deliveryRequest.getExternalSystemValue())
-					.build());
-		}
 
 		// 1. Add shipment-level detail groups (processed once)
 		final List<JsonDetailGroup> allDetailGroups = new ArrayList<>(buildShipmentDetailGroups(mappingConfigs, deliveryRequest::getValue));
