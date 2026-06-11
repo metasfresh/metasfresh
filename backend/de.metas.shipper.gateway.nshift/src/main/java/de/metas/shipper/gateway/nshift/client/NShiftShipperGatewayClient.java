@@ -33,7 +33,6 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
@@ -112,9 +111,13 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryRequest deliveryRequestJson = applyShippingRuleOptions(
-				jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
-				deliveryOrder);
+		final List<ShipmentSchedule> schedules = loadSchedules(deliveryOrder);
+		final JsonDeliveryRequest deliveryRequestJson = applyOrderContext(
+				applyShippingRuleOptions(
+						jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
+						deliveryOrder,
+						schedules),
+				schedules);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
 		try
@@ -143,27 +146,30 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		return updateDeliveryOrder(deliveryOrder, response);
 	}
 
+	private List<ShipmentSchedule> loadSchedules(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		return deliveryOrder.getDeliveryOrderParcels()
+				.stream()
+				.map(DeliveryOrderParcel::getPackageId)
+				.distinct()
+				.flatMap(packageId -> shipmentScheduleRepository.loadByPackageId(packageId).stream())
+				.collect(Collectors.toList());
+	}
+
 	/**
 	 * Patches the shipper config of the given request with UseShippingRules and ServiceLevel
 	 * when the shipper is configured for API carrier advising and not all schedules are Manual.
 	 */
 	private JsonDeliveryRequest applyShippingRuleOptions(
 			@NonNull final JsonDeliveryRequest request,
-			@NonNull final DeliveryOrder deliveryOrder)
+			@NonNull final DeliveryOrder deliveryOrder,
+			@NonNull final List<ShipmentSchedule> schedules)
 	{
 		final I_M_Shipper shipper = shipperDAO.getById(deliveryOrder.getShipperId());
 		if (!shipper.isApiCarrierAdvise())
 		{
 			return request;
 		}
-
-		final List<ShipmentSchedule> schedules = deliveryOrder.getDeliveryOrderParcels()
-				.stream()
-				.map(DeliveryOrderParcel::getPackageId)
-				.distinct()
-				.flatMap(packageId -> shipmentScheduleRepository.loadByPackageId(packageId).stream())
-				.collect(Collectors.toList());
-
 		if (schedules.isEmpty())
 		{
 			return request;
@@ -191,33 +197,48 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 			patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel);
 		}
 
-		String incotermsValue = null;
-		String extSystemValue = null;
+		return request.toBuilder().shipperConfig(patchedConfig).build();
+	}
+
+	/**
+	 * Sets incoterms + external-system context on the request from the order, mirroring the advise side
+	 * ({@code CarrierAdviseCommand.applyAdvisorContext} / {@code NShiftShipAdvisorService}, both nShift reference
+	 * kinds 63/64). Applied unconditionally — independent of the shipping-rule gating — so the ship request
+	 * carries the same context as the advise request (AC10b parity).
+	 */
+	private JsonDeliveryRequest applyOrderContext(
+			@NonNull final JsonDeliveryRequest request,
+			@NonNull final List<ShipmentSchedule> schedules)
+	{
 		final OrderAndLineId orderAndLineId = schedules.stream()
 				.map(ShipmentSchedule::getOrderAndLineId)
 				.filter(id -> id != null)
 				.findFirst()
 				.orElse(null);
-		if (orderAndLineId != null)
+		if (orderAndLineId == null)
 		{
-			final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
-			final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
-			if (incotermsId != null)
-			{
-				final Incoterms incoterms = incotermsRepository.getById(incotermsId);
-				incotermsValue = incoterms.getValue();
-			}
-			final ExternalSystemId orderExternalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
-			if (orderExternalSystemId != null)
-			{
-				extSystemValue = externalSystemRepository.getById(orderExternalSystemId).getType().getValue();
-			}
+			return request;
+		}
+
+		final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
+
+		String incotermsValue = null;
+		final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
+		if (incotermsId != null)
+		{
+			incotermsValue = incotermsRepository.getById(incotermsId).getValue();
+		}
+
+		String externalSystemValue = null;
+		final ExternalSystemId orderExternalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
+		if (orderExternalSystemId != null)
+		{
+			externalSystemValue = externalSystemRepository.getById(orderExternalSystemId).getType().getValue();
 		}
 
 		return request.toBuilder()
-				.shipperConfig(patchedConfig)
 				.incotermsValue(incotermsValue)
-				.externalSystemValue(extSystemValue)
+				.externalSystemValue(externalSystemValue)
 				.build();
 	}
 
