@@ -49,22 +49,18 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- Key column element ---------------------------------------------------------
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584962 /*From ID Server*/,0,'C_Workplace_DocType_ID',TO_TIMESTAMP('2026-06-09 09:10:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Workplace Document Type','Workplace Document Type',TO_TIMESTAMP('2026-06-09 09:10:07','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584962 /*From ID Server*/,0,'C_Workplace_DocType_ID',TO_TIMESTAMP('2026-06-09 09:10:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Arbeitsplatz Belegart','Arbeitsplatz Belegart',TO_TIMESTAMP('2026-06-09 09:10:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584962 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
--- Base language is German; translate the German label and propagate.
-UPDATE AD_Element_Trl SET Name='Arbeitsplatz Belegart', PrintName='Arbeitsplatz Belegart',Updated=TO_TIMESTAMP('2026-06-09 09:10:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=584962 AND AD_Language IN ('de_DE','de_CH')
+-- German base name; English via the en_US override.
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Workplace Document Type', PrintName='Workplace Document Type',Updated=TO_TIMESTAMP('2026-06-09 09:10:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=584962 AND AD_Language='en_US'
 ;
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(584962,'de_DE')
-;
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(584962,'de_CH')
-;
-/* DDL */ select update_ad_element_on_ad_element_trl_update(584962,'de_DE')
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(584962,'en_US')
 ;
 
 -- Key column: C_Workplace_DocType_ID (ID, reference 13)
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592765 /*From ID Server*/,584962,0,13,542616,'C_Workplace_DocType_ID',TO_TIMESTAMP('2026-06-09 09:10:09','YYYY-MM-DD HH24:MI:SS'),100,'D',10,'Y','N','N','N','N','Y','Y','N','N','Y','N','N','Workplace Document Type','NP',0,TO_TIMESTAMP('2026-06-09 09:10:09','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592765 /*From ID Server*/,584962,0,13,542616,'C_Workplace_DocType_ID',TO_TIMESTAMP('2026-06-09 09:10:09','YYYY-MM-DD HH24:MI:SS'),100,'D',10,'Y','N','N','N','N','Y','Y','N','N','Y','N','N','Arbeitsplatz Belegart','NP',0,TO_TIMESTAMP('2026-06-09 09:10:09','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=592765 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
