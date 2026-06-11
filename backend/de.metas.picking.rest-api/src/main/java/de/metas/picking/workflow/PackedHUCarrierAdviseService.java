@@ -1,5 +1,8 @@
 package de.metas.picking.workflow;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -72,11 +75,19 @@ public class PackedHUCarrierAdviseService
 			throw new AdempiereException("No undelivered qty-picked records found for HU " + topLevelHU.getM_HU_ID());
 		}
 
-		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : qtyPickedRecords)
+		final ImmutableList<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
+				.map(r -> ShipmentScheduleId.ofRepoId(r.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = shipmentScheduleService
+				.getByIds(ImmutableSet.copyOf(scheduleIds))
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, s -> s));
+
+		for (final ShipmentScheduleId scheduleId : scheduleIds)
 		{
-			final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(qtyPicked.getM_ShipmentSchedule_ID());
-			final ShipmentSchedule schedule = shipmentScheduleService.getById(scheduleId);
-			if (schedule.getCarrierAdvisingStatus().isManual())
+			final ShipmentSchedule schedule = schedulesById.get(scheduleId);
+			if (schedule == null || schedule.getCarrierAdvisingStatus().isManual())
 			{
 				continue;
 			}
