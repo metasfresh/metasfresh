@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { assertRecordIsValid } from '../utils/WebAPIValidation';
 
 /**
  * ExternalSystem_Endpoint — SFTP Transport Type E2E test suite.
@@ -75,6 +76,7 @@ test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
   test('TransportType field visibility toggles SFTP/HTTP fields', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('TransportType field display logic');
     allure.severity('critical');
 
@@ -132,6 +134,7 @@ and hides HTTP fields, and vice versa.
   test('SftpAuthType toggles Password vs SSH key fields', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('SftpAuthType field display logic');
     allure.severity('critical');
 
@@ -175,6 +178,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
   test('Create and save full SFTP endpoint configuration', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('Full SFTP Configuration Flow');
     allure.severity('critical');
 
@@ -237,6 +241,11 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
       { timeout: SLOW_ACTION_TIMEOUT }
     );
 
+    // The URL change alone does not prove persistence (a NEW record gets a cached id even when invalid).
+    // Assert the record is actually valid/saved via the WebAPI.
+    const sftpRecordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, sftpRecordId, 'after saving the SFTP endpoint');
+
     // Verify the saved field values are still present
     const sftpHostField = page.locator('.form-field-SftpHost input[type="text"]');
     const sftpUsernameField = page.locator('.form-field-SftpUsername input[type="text"]');
@@ -247,5 +256,115 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await expect(sftpUsernameField).toHaveValue('testuser');
     await expect(remotePathField).toHaveValue('/outbound/edi');
     await expect(filenamePatternField).toHaveValue('export_{timestamp}.json');
+  });
+
+  test('AuthType=OAuth2 reveals OAuth2 token URL + scope + credential fields', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
+    allure.story('AuthType OAuth2 display logic');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — AuthType=OAuth2 Display Logic
+
+Tests that for an HTTP endpoint, selecting AuthType=OAuth2 reveals the OAuth2
+token-endpoint URL + optional scope and the reused credential fields, and that
+switching to a non-OAuth2 auth type (Token) hides the OAuth2-specific fields.
+
+1. New record, TransportType=HTTP
+2. AuthType=OAuth2 -> OAuthTokenUrl, OAuthScope, ClientId, LoginUsername, Password, IsFileUpload visible
+3. AuthType=Token -> OAuthTokenUrl + OAuthScope hidden (AuthType-gated)
+    `);
+
+    test.setTimeout(120000);
+
+    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+    await page.waitForTimeout(2000);
+    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // HTTP transport, then OAuth2 auth
+    await selectListValue(page, 'TransportType', 'HTTP');
+    await selectListValue(page, 'AuthType', 'OAuth2');
+
+    // OAuth2-specific fields appear
+    await expect(page.locator('.form-field-OAuthTokenUrl input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(page.locator('.form-field-OAuthScope input[type="text"]')).toBeVisible({ timeout: 5000 });
+
+    // Reused credential fields show for OAuth2 (password grant needs client id + user + password)
+    await expect(page.locator('.form-field-ClientId input[type="text"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-LoginUsername input[type="text"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.form-field-Password input')).toBeVisible({ timeout: 5000 });
+
+    // IsFileUpload is HTTP-gated, so visible here
+    await expect(page.locator('.form-field-IsFileUpload')).toBeVisible({ timeout: 5000 });
+
+    // Switch to a non-OAuth2 HTTP auth type -> OAuth2 fields hide (proves AuthType-gating, not just HTTP-gating)
+    await selectListValue(page, 'AuthType', 'Token');
+    await expect(page.locator('.form-field-OAuthTokenUrl')).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('.form-field-OAuthScope')).toBeHidden({ timeout: 3000 });
+  });
+
+  test('Create and save full OAuth2 HTTP endpoint configuration', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
+    allure.story('Full OAuth2 Configuration Flow');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — Full OAuth2 Configuration
+
+Creates a complete HTTP + OAuth2 endpoint and verifies it saves (the mandatory
+OAuthTokenUrl is accepted and the record persists).
+    `);
+
+    test.setTimeout(120000);
+
+    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+    await page.waitForTimeout(2000);
+    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // Value is auto-generated (IsUseDocSequence=Y) — skip it
+    await selectListValue(page, 'Type', 'HTTP');
+    await selectListValue(page, 'TransportType', 'HTTP');
+    await selectListValue(page, 'AuthType', 'OAuth2');
+    // OutboundHttpMethod is mandatory under HTTP and has NO default — must be set or the record stays invalid (never persists)
+    await selectListValue(page, 'OutboundHttpMethod', 'POST');
+
+    // Fill the HTTP endpoint URL (mandatory for HTTP)
+    await fillTextField(page, 'OutboundHttpEP', 'https://dw.example.com/DocuWare/Platform/FileCabinets/abc/Documents');
+
+    // OAuth2 mandatory: token URL; plus the password-grant credentials
+    await fillTextField(page, 'OAuthTokenUrl', 'https://dw.example.com/DocuWare/Platform/Identity/connect/token');
+    await fillTextField(page, 'OAuthScope', 'docuware.platform');
+    await fillTextField(page, 'ClientId', 'docuware.platform.net.client');
+    await fillTextField(page, 'LoginUsername', 'svc-user');
+    const pwd = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
+    await pwd.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await pwd.fill('svc-secret');
+    await page.waitForTimeout(300);
+
+    // Tab out to trigger save
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(2000);
+
+    // URL changes from /NEW to a record ID => saved (mandatory logic satisfied)
+    await page.waitForURL(
+      (url) => {
+        const urlStr = url.toString();
+        return urlStr.includes(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) && !urlStr.includes('/NEW');
+      },
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+
+    // A NEW record is assigned a cached id (URL leaves /NEW) even when validStatus.valid=false, so the
+    // URL change alone does NOT prove the row persisted. Assert real persistence via the WebAPI.
+    const oauthRecordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, oauthRecordId, 'after saving the OAuth2 HTTP endpoint');
+
+    // Saved OAuth2 values persist
+    await expect(page.locator('.form-field-OAuthTokenUrl input[type="text"]')).toHaveValue('https://dw.example.com/DocuWare/Platform/Identity/connect/token');
+    await expect(page.locator('.form-field-OAuthScope input[type="text"]')).toHaveValue('docuware.platform');
   });
 });
