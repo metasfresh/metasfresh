@@ -56,6 +56,13 @@
       font-size: 6rem;
       margin-bottom: 1rem;
       color: $base-mf-green;
+
+      // Slow opacity pulse — signals "ready / waiting for scan" without competing with the
+      // hardware scanner input. Opacity-only (not scale/rotation) so the icon doesn't read as
+      // a loading spinner. Respects the user's reduced-motion preference (accessibility).
+      @media (prefers-reduced-motion: no-preference) {
+        animation: scan-prompt-pulse 2.4s ease-in-out infinite alternate;
+      }
     }
 
     .scan-prompt-text {
@@ -100,5 +107,14 @@
 
   // .scan-prompt + .input-text stack vertically (prompt above input).
   // flex-grow on the input would stretch it vertically — leave it at its natural height.
+}
+
+@keyframes scan-prompt-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
