@@ -107,6 +107,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           testId="carrier-product-readonly"
           caption={trl('activities.picking.carrierProduct') + ': ' + carrierProductCaption}
           disabled={true}
+          onClick={() => {}}
         />
       )}
     </>
