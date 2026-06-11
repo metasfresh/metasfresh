@@ -34,6 +34,7 @@ import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -94,14 +95,14 @@ public class PP_Order_Candidate
 				 ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
 	public void defaultWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		final int ppProductPlanningId = ppOrderCandidateRecord.getPP_Product_Planning_ID();
-		if (ppProductPlanningId <= 0)
+		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
+		if (ppProductPlanningId == null)
 		{
 			ppOrderCandidateRecord.setWorkStation_ID(-1);
 			return;
 		}
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.load(ppProductPlanningId, I_PP_Product_Planning.class);
-		ppOrderCandidateRecord.setWorkStation_ID(productPlanning != null ? productPlanning.getWorkStation_ID() : -1);
+		ppOrderCandidateRecord.setWorkStation_ID(productPlanning.getWorkStation_ID());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
