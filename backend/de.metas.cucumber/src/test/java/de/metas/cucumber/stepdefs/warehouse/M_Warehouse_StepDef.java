@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.warehouse;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -51,6 +52,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
 
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -89,6 +91,62 @@ public class M_Warehouse_StepDef
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});
+	}
+
+	/**
+	 * Creates one {@code M_Warehouse_PickingGroup} and assigns every listed warehouse to it
+	 * (sets {@code M_Warehouse.M_Warehouse_PickingGroup_ID}).
+	 *
+	 * <p>Warehouses sharing a picking group are treated as a single picking scope: a picker working at a
+	 * workplace in one warehouse of the group may pick demand and stock located in any warehouse of the
+	 * same group. This mirrors the real-life setup where a storage warehouse and a packing/workplace
+	 * warehouse belong to the same physical picking area.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code Name} — the picking group's name (one group is created for the whole DataTable;
+	 *       the {@code Name} of the first row is used).</li>
+	 *   <li>{@code M_Warehouse_ID} — (identifier-ref) a previously created/loaded warehouse to assign to the
+	 *       group. One row per warehouse.</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And the following warehouses share one M_Warehouse_PickingGroup:
+	 *   | Name        | M_Warehouse_ID |
+	 *   | pickingArea | warehouseStock |
+	 *   | pickingArea | warehouseWork  |
+	 * </pre>
+	 */
+	@And("the following warehouses share one M_Warehouse_PickingGroup:")
+	public void assign_warehouses_to_picking_group(@NonNull final DataTable dataTable)
+	{
+		final DataTableRows rows = DataTableRows.of(dataTable);
+
+		final String groupName = rows.stream()
+				.map(row -> row.getAsString(I_M_Warehouse_PickingGroup.COLUMNNAME_Name))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("At least one row with a Name is required"));
+
+		final I_M_Warehouse_PickingGroup pickingGroup = InterfaceWrapperHelper.newInstance(I_M_Warehouse_PickingGroup.class);
+		pickingGroup.setName(groupName);
+		saveRecord(pickingGroup);
+
+		rows.forEach(row -> {
+			final WarehouseId warehouseId = warehouseTable.getId(row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID));
+
+			final org.compiere.model.I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.load(
+					warehouseId.getRepoId(), org.compiere.model.I_M_Warehouse.class);
+			warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroup.getM_Warehouse_PickingGroup_ID());
+			saveRecord(warehouseRecord);
+		});
+
+		// The picking-group → warehouses index is cached (WarehouseDAO.allWarehousePickingGroups). The bulk
+		// save fires a CacheInvalidation event, but in the shared single-JVM executor that event may not be
+		// processed before the next step reads the index. Reset the relevant caches synchronously so the
+		// freshly-assigned picking group is visible immediately (same trap handled in C_Workplace_StepDef).
+		CacheMgt.get().reset(I_M_Warehouse.Table_Name);
+		CacheMgt.get().reset(I_M_Warehouse_PickingGroup.Table_Name);
 	}
 
 	/**
