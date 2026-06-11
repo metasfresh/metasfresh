@@ -95,10 +95,6 @@ public class JsonDeliveryAdvisorRequest
 				return deliveryAddress.getAttention();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
 				return pickupAddress.getAttention();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE:
-				return incotermsValue;
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE:
-				return externalSystemValue;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED:
 				return preAdviceRequired;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID:

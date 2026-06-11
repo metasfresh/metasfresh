@@ -98,11 +98,14 @@ FROM AD_Language l, AD_Column t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 592702 /*From ID Server*/
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
 
+/* DDL */ select update_Column_Translation_From_AD_Element(584937 /*From ID Server*/);
+
 -- =============================================================================
 -- 3. Physical column DDL
 -- =============================================================================
 -- 2026-06-03T10:00:08.000Z
 ALTER TABLE C_BPartner_Location ADD COLUMN IF NOT EXISTS IsPreAdviceRequired CHAR(1);
+ALTER TABLE C_BPartner_Location ADD CONSTRAINT IsPreAdviceRequired_check CHECK (IsPreAdviceRequired IN ('Y','N'));
 
 -- =============================================================================
 -- 4. AD_Field in Tab 222 (BPartner Location, standard BPartner window)

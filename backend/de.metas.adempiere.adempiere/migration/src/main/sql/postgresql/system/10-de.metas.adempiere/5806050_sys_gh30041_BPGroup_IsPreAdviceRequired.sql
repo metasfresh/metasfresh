@@ -42,8 +42,9 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
 ;
 
 -- 2026-06-03T10:00:03.000000Z
-ALTER TABLE C_BP_Group ADD COLUMN IF NOT EXISTS IsPreAdviceRequired CHAR(1)
-;
+ALTER TABLE C_BP_Group ADD COLUMN IF NOT EXISTS IsPreAdviceRequired CHAR(1);
+ALTER TABLE C_BP_Group ADD CONSTRAINT IsPreAdviceRequired_check CHECK (IsPreAdviceRequired IN ('Y','N'));
+
 
 -- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Voranmeldung erforderlich
 -- 2026-06-03T10:00:04.000000Z

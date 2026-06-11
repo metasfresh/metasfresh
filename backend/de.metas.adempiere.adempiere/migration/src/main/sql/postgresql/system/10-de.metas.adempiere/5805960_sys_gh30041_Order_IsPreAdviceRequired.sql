@@ -23,7 +23,7 @@ VALUES (592704 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-06-03 10:00:39', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
         0, 259 /*C_Order*/, 584937 /*From ID Server*/, 20 /*YesNo*/,
         'IsPreAdviceRequired', 'Voranmeldung erforderlich', NULL, NULL,
-        1, 'N', 'Y', 'N',
+        1, 'Y', 'Y', 'N',
         'N', 'D', 'N', 'N',
         'N', 'N', 'N', 'N',
         'Y', 'Y', 'Y',
@@ -40,6 +40,8 @@ SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, 
 FROM AD_Language l, AD_Column t
 WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Column_ID = 592704 /*From ID Server*/
   AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
+
+/* DDL */ select update_Column_Translation_From_AD_Element(584937 /*From ID Server*/);
 
 -- =============================================================================
 -- 2. Physical column DDL

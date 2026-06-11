@@ -21,8 +21,6 @@ public class NShiftTestMappingConfigs
 	public static final String REFERENCE_KIND_PICKUP_END = "109";
 	public static final String REFERENCE_KIND_DELIVERY_DATE = "9";
 	public static final String REFERENCE_KIND_CUSTOMER_REFERENCE = "7";
-	public static final String REFERENCE_KIND_INCOTERMS = "63";
-	public static final String REFERENCE_KIND_EXTERNAL_SYSTEM = "64";
 	public static final String REFERENCE_KIND_PRE_ADVICE = "65";
 	public static final String LINE_REFERENCE_KIND_CONTENTS = "23";
 	public static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_1 = "129";
@@ -73,18 +71,6 @@ public class NShiftTestMappingConfigs
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
 					.attributeKey(REFERENCE_KIND_CUSTOMER_REFERENCE)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE)
-					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(42)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
-					.attributeKey(REFERENCE_KIND_INCOTERMS)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE)
-					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(43)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
-					.attributeKey(REFERENCE_KIND_EXTERNAL_SYSTEM)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE)
 					.build(),
 			JsonMappingConfig.builder()
 					.seqNo(44)
