@@ -1,6 +1,6 @@
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { trl } from '../../../utils/translations';
-import React from 'react';
+import React, { useState } from 'react';
 import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import PropTypes from 'prop-types';
 import { reopenClosedLUScreenLocation, selectPickingTargetScreenLocation } from '../../../routes/picking';
@@ -12,9 +12,15 @@ import {
   PICKTO_STRUCTURE_TU,
 } from '../../../reducers/wfProcesses/picking/PickToStructure';
 import { useHasClosedHUs } from './useClosedHUs';
+import { useDispatch } from 'react-redux';
+import { advisePickingTarget } from '../../../api/picking';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { toastError } from '../../../utils/toast';
 
 const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, lineId, isUserEditable = true }) => {
   const history = useMobileNavigation();
+  const dispatch = useDispatch();
+  const [isAdvising, setIsAdvising] = useState(false);
 
   const { luPickingTarget, tuPickingTarget, allowedPickToStructures, isAllowReopeningLU } = useCurrentPickingTargetInfo(
     { wfProcessId, activityId, lineId }
@@ -41,6 +47,18 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
   const onSelectTUPickingTargetClick = () => {
     history.push(selectPickingTargetScreenLocation({ applicationId, wfProcessId, activityId, lineId, type: 'tu' }));
   };
+
+  const onAdviseCarrierClick = () => {
+    setIsAdvising(true);
+    advisePickingTarget({ wfProcessId, lineId })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setIsAdvising(false));
+  };
+
+  const isCarrierAdviseAvailable = luPickingTarget?.carrierAdviseAvailable === true;
+  const isCarrierAdviseReadOnly = luPickingTarget?.carrierAdviseReadOnly === true;
+  const carrierProductCaption = luPickingTarget?.carrierProductCaption;
 
   return (
     <>
@@ -74,6 +92,21 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           }
           disabled={!isUserEditable}
           onClick={onSelectTUPickingTargetClick}
+        />
+      )}
+      {isCarrierAdviseAvailable && !isCarrierAdviseReadOnly && (
+        <ButtonWithIndicator
+          testId="advise-carrier-button"
+          captionKey="activities.picking.adviseCarrier"
+          disabled={!isUserEditable || isAdvising}
+          onClick={onAdviseCarrierClick}
+        />
+      )}
+      {isCarrierAdviseAvailable && isCarrierAdviseReadOnly && carrierProductCaption && (
+        <ButtonWithIndicator
+          testId="carrier-product-readonly"
+          caption={trl('activities.picking.carrierProduct') + ': ' + carrierProductCaption}
+          disabled={true}
         />
       )}
     </>

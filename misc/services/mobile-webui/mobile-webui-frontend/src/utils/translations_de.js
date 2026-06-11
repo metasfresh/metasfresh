@@ -164,6 +164,8 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      adviseCarrier: 'Frachtführer anfragen',
+      carrierProduct: 'Frachtführer',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
