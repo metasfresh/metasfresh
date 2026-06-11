@@ -129,7 +129,10 @@
   color: $indicator-yellow;
 
   @media (prefers-reduced-motion: no-preference) {
-    animation-duration: 0.7s;
+    // Floored at 0.3s — at smaller durations the alternate-pulse crest rate approaches the
+    // WCAG 2.3.1 3Hz photosensitivity threshold (~0.17s duration). Smooth ease-in-out keeps
+    // the transition non-abrupt, but stay conservative.
+    animation-duration: 0.3s;
   }
 }
 
