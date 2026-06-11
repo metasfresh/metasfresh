@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.workplace;
 
+import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -34,6 +35,7 @@ import org.compiere.model.I_C_Workplace;
 import org.compiere.model.I_C_Workplace_Carrier_Product;
 import org.compiere.model.I_C_Workplace_Product;
 import org.compiere.model.I_C_Workplace_ProductCategory;
+import org.compiere.model.I_C_Workplace_User_Assign;
 
 /**
  * Step definitions for creating and managing {@code C_Workplace} records in Cucumber scenarios.
@@ -43,6 +45,7 @@ import org.compiere.model.I_C_Workplace_ProductCategory;
  *   <li>Create workplaces (including picking slots, product/category/carrier restrictions, external systems)</li>
  *   <li>Assign workplaces to users (mirroring a picker being logged in at a workplace)</li>
  *   <li>Deactivate all workplace records (setup/teardown)</li>
+ *   <li>Delete all {@code C_Workplace_User_Assign} rows — leak-safe teardown of user&rarr;workplace links</li>
  * </ul>
  *
  * <p>Required DataTable columns for {@code metasfresh contains C_Workplaces}:
@@ -164,5 +167,47 @@ public class C_Workplace_StepDef
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.update(updater);
+
+		// Bulk SQL update fires a CacheInvalidation event, but that event may not be processed in time for the
+		// next step / feature in the shared single-JVM executor (same trap as AD_SysConfig_StepDef). Reset the
+		// WorkplaceRepository cache (keyed on C_Workplace) synchronously so a stale workplace map cannot leak.
+		CacheMgt.get().reset(I_C_Workplace.Table_Name);
+	}
+
+	/**
+	 * Deletes all {@code C_Workplace_User_Assign} records (the user&rarr;workplace links created by
+	 * {@code assign C_Workplace to user}).
+	 *
+	 * <p><b>Leak-safety / teardown.</b> {@code assignWorkplace} persists a {@code C_Workplace_User_Assign}
+	 * row that survives the scenario in the shared single-JVM sequential executor. When the assignment is
+	 * made to the shared {@code metasfresh} login it would otherwise leak into later scenarios/features:
+	 * {@code WorkplaceService.getWorkplaceByUserId} resolves the assign row and then calls
+	 * {@code WorkplaceRepository.getById(...)}, which throws {@code "No workplace found for ..."} once the
+	 * referenced {@code C_Workplace} has been deactivated (the prior HTTP 422 regression).
+	 *
+	 * <p><b>Why DELETE and not deactivate.</b> The table has a unique index {@code one_user_per_org} on
+	 * {@code (AD_User_ID, AD_Org_ID)} that ignores {@code IsActive}. {@code WorkplaceUserAssignRepository.create}
+	 * only re-uses an <i>active</i> row, so a left-behind <i>inactive</i> row would permanently block any future
+	 * re-assignment of that user with a {@code duplicate key value violates unique constraint "one_user_per_org"}
+	 * error. Deleting the row clears both the leak and that constraint trap.
+	 *
+	 * <p>Takes no DataTable. Pair it with {@code deactivate all C_Workplace records} around any scenario that
+	 * assigns a workplace to the shared {@code metasfresh} user.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And delete all C_Workplace_User_Assign records
+	 * And deactivate all C_Workplace records
+	 * </pre>
+	 */
+	@Given("delete all C_Workplace_User_Assign records")
+	public void delete_C_Workplace_User_Assign()
+	{
+		queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
+				.create()
+				.deleteDirectly();
+
+		// Synchronous cache reset — see Javadoc above (bulk SQL delete's async invalidation is not timely enough).
+		CacheMgt.get().reset(I_C_Workplace_User_Assign.Table_Name);
 	}
 }

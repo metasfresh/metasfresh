@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult.ProductResult;
@@ -12,6 +13,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
@@ -28,7 +31,9 @@ import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -60,6 +65,7 @@ public class MassPrintingService
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
+	@NonNull private final PickingJobLockService pickingJobLockService;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -89,7 +95,7 @@ public class MassPrintingService
 		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productsById.values());
 
 		// Batch-load all packageables for self-packed products in one query (avoids N+1 per product).
-		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds);
+		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds, request.getPickerId());
 
 		final ImmutableList.Builder<ProductResult> productResults = ImmutableList.builder();
 		final ImmutableList.Builder<ProductId> skippedNonSelfPacked = ImmutableList.builder();
@@ -112,8 +118,8 @@ public class MassPrintingService
 
 			final List<Packageable> packageables = packageablesByProduct.getOrDefault(productId, ImmutableList.of());
 
-			// Pack+ship inside a transaction; label printing happens AFTER the transaction commits
-			// (best-effort: failures are counted but do not roll back the packed boxes).
+			// Pack+ship inside a transaction. Labels print through the standard picking close path during the
+			// pick (the physical print job is enqueued after the transaction commits, like a regular picking job).
 			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, productId, productStorage.getQtyAsInt(), packageables);
 
 			productResults.add(buildProductResult(productId, packAndPickResult));
@@ -144,7 +150,8 @@ public class MassPrintingService
 	/** Loads all packageables for the given products in one query, grouped by product. */
 	private Map<ProductId, List<Packageable>> loadPackageablesGroupedByProduct(
 			@NonNull final WarehouseId warehouseId,
-			@NonNull final ImmutableSet<ProductId> selfPackedProductIds)
+			@NonNull final ImmutableSet<ProductId> selfPackedProductIds,
+			@NonNull final UserId pickerId)
 	{
 		if (selfPackedProductIds.isEmpty())
 		{
@@ -158,8 +165,51 @@ public class MassPrintingService
 				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
 				.build();
 
-		return shipmentScheduleService.stream(query)
+		final ImmutableList<Packageable> allPackageables = shipmentScheduleService.stream(query)
+				.collect(ImmutableList.toImmutableList());
+
+		return filterSkipLockedByOtherUser(allPackageables, pickerId)
+				.stream()
 				.collect(Collectors.groupingBy(Packageable::getProductId));
+	}
+
+	/**
+	 * Filters out packageables whose shipment schedule is already locked by a picker other than {@code pickerId}.
+	 * Logs a warning for each skipped schedule so the operator knows why demand was not processed.
+	 */
+	private ImmutableList<Packageable> filterSkipLockedByOtherUser(
+			@NonNull final ImmutableList<Packageable> packageables,
+			@NonNull final UserId pickerId)
+	{
+		if (packageables.isEmpty())
+		{
+			return packageables;
+		}
+
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = packageables.stream()
+				.map(Packageable::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<ShipmentScheduleId> lockedByOtherUser = pickingJobLockService.getScheduleIdsLockedByOtherUser(scheduleIds, pickerId);
+		if (lockedByOtherUser.isEmpty())
+		{
+			return packageables;
+		}
+
+		final ImmutableList.Builder<Packageable> result = ImmutableList.builder();
+		for (final Packageable packageable : packageables)
+		{
+			if (lockedByOtherUser.contains(packageable.getShipmentScheduleId()))
+			{
+				logger.warn("Skipping shipment schedule {} for product {} — locked by another picker",
+						packageable.getShipmentScheduleId(), packageable.getProductId());
+			}
+			else
+			{
+				result.add(packageable);
+			}
+		}
+		return result.build();
 	}
 
 	@NonNull
@@ -170,12 +220,9 @@ public class MassPrintingService
 			final int unitsOnLU,
 			@NonNull final List<Packageable> packageables)
 	{
-		// callInThreadInheritedTrx: run this product's whole pack+pick+complete atomically in one
-		// transaction (the picking-job-command convention). NOTE: shipment generation inside
-		// PickingJobCompleteCommand still opens its OWN new transaction (ShipmentService.groupSchedulesByAsyncBatch
-		// uses callInNewTrx) so the async-batch assignment is committed for the async shipment / EDI consumers.
-		// There is NO M_ShipmentSchedule row-lock self-deadlock here (an earlier comment claimed one) —
-		// verified by local reproduction.
+		// Shipment generation inside PickingJobCompleteCommand opens its own nested transaction
+		// (callInNewTrx), so the async-batch assignment commits independently from the outer
+		// picking transaction — no M_ShipmentSchedule row-lock deadlock is possible.
 		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, productId, unitsOnLU, packageables));
 	}
 
@@ -189,26 +236,39 @@ public class MassPrintingService
 	{
 		final ScheduleSelection selection = selectSchedulesFifo(packageables, unitsOnLU);
 
-		if (selection.getSelectedScheduleIds().isEmpty() || selection.getBoxesToPack() <= 0)
+		if (selection.getSelectedScheduleIds().isEmpty() || selection.getUnitsToPack() <= 0)
 		{
 			return PackAndPickResult.builder()
-					.boxesPacked(0)
+					.unitsPacked(0)
 					.unitsLeftOnLU(unitsOnLU)
 					.openDemandRemaining(selection.getTotalDemand())
 					.build();
 		}
 
+		// Abort any abortable pre-existing Draft picking job that already covers this product's selected
+		// schedules, before creating our own job. A job that is unassigned or assigned to this mass-printing
+		// picker is a leftover from a previous failed scan and is aborted here (self-cleanup; also prevents
+		// DDOrderPickingReconcile_PickerBusy errors). A job held by a different picker is left untouched — its
+		// schedules were already dropped before selection by filterSkipLockedByOtherUser (the picking-job
+		// schedule lock), so they do not reach this point.
+		pickingJobService.abortAbortablePickingJobsForSchedules(
+				ImmutableSet.of(productId),
+				ImmutableSet.copyOf(selection.getSelectedScheduleIds()),
+				request.getPickerId());
+
+		// Each line is picked-and-closed through the standard picking close path (see pickTuLine / pickCuLine),
+		// so labels print exactly like a regular picking job — closeLUAndTUPickingTargets() collects every
+		// top-level TU/VHU via addTopLevelTUId() and prints its label. No bespoke side-channel print here.
 		final PickingJob pickedJob = createAndPickJob(request, luId, selection);
 		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
 		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedHuIds);
 		pickingJobService.complete(pickedJob);
 
 		return PackAndPickResult.builder()
-				.boxesPacked(selection.getBoxesToPack())
-				.pickedHuIds(pickedHuIds)
+				.unitsPacked(selection.getUnitsToPack())
 				.packedHUIds(packedHUIds)
 				.unitsLeftOnLU(selection.getUnitsLeftOnLU())
-				.openDemandRemaining(Math.max(0, selection.getTotalDemand() - selection.getBoxesToPack()))
+				.openDemandRemaining(Math.max(0, selection.getTotalDemand() - selection.getUnitsToPack()))
 				.build();
 	}
 
@@ -217,31 +277,10 @@ public class MassPrintingService
 			@NonNull final ProductId productId,
 			@NonNull final PackAndPickResult packAndPickResult)
 	{
-		int labelsPrinted = 0;
-		int labelPrintFailures = 0;
-		for (final HuId pickedHuId : packAndPickResult.getPickedHuIds())
-		{
-			try
-			{
-				huService.printHULabel(pickedHuId);
-				labelsPrinted++;
-			}
-			catch (final Exception e)
-			{
-				// Label printing is best-effort: the pick is already committed, so we cannot roll back.
-				// Recovery: the caller receives labelPrintFailures in ProductResult and surfaces it
-				// to the operator via the JSON response, who can then reprint labels manually.
-				logger.warn("Failed to print label for HU {}", pickedHuId, e);
-				labelPrintFailures++;
-			}
-		}
-
 		return ProductResult.builder()
 				.productId(productId)
-				.boxesPacked(packAndPickResult.getBoxesPacked())
+				.unitsPacked(packAndPickResult.getUnitsPacked())
 				.packedHUIds(packAndPickResult.getPackedHUIds())
-				.labelsPrinted(labelsPrinted)
-				.labelPrintFailures(labelPrintFailures)
 				.unitsLeftOnLU(packAndPickResult.getUnitsLeftOnLU())
 				.unitsOfOpenDemandRemaining(packAndPickResult.getOpenDemandRemaining())
 				.build();
@@ -263,7 +302,14 @@ public class MassPrintingService
 
 		for (final Packageable packageable : packageables)
 		{
-			final int scheduleDemand = packageable.getQtyToPick().toBigDecimal().intValueExact();
+			final BigDecimal qtyBD = packageable.getQtyToPick().toBigDecimal();
+			if (qtyBD.stripTrailingZeros().scale() > 0)
+			{
+				logger.warn("Skipping schedule {} — fractional QtyToPick={} is not supported for mass printing",
+						packageable.getShipmentScheduleId(), qtyBD);
+				continue;
+			}
+			final int scheduleDemand = qtyBD.intValueExact();
 			if (scheduleDemand <= 0)
 			{
 				continue;
@@ -293,8 +339,9 @@ public class MassPrintingService
 	/**
 	 * Creates a PRODUCT picking job for the selected schedules, then picks each line from the scanned LU.
 	 *
-	 * <p>CU (Virtual PI) lines: one pick event per unit → one VHU per unit → one label per unit.
-	 * TU (finite PI) lines: one event with full capped qty; PI capacity=1 forces one box per unit.
+	 * <p>Both cases route each picked HU through the standard picking close path so labels print like a
+	 * regular picking job: CU (Virtual PI) lines pick one VHU per unit and close it as an existing-TU target;
+	 * TU (finite PI) lines pick-and-close one box per iteration (PI capacity=1 forces one box per unit).
 	 */
 	@NonNull
 	private PickingJob createAndPickJob(
@@ -350,7 +397,16 @@ public class MassPrintingService
 		}
 	}
 
-	/** VHU/CU path: one event per unit → one VHU per unit → one label per unit. */
+	/**
+	 * VHU/CU path: one VHU per unit, each routed through the standard close path so its label prints
+	 * like a regular picking job.
+	 *
+	 * <p>A bare/CU line cannot set a TU target during the pick (the TU-target machinery in
+	 * {@code PickingJobPickCommand} is gated on {@code pickingUnit.isTU()}), so per unit we: (1) PICK one
+	 * unit → one VHU, (2) set that materialized VHU as an existing-TU target, (3) close the line's target
+	 * → {@code addTopLevelTUId(vhuId)} → label printed. The close resets the target to null, so the next
+	 * unit's pick (target null) does not trip {@code PickingJobPickCommand}'s "block picking into existing TU".
+	 */
 	@NonNull
 	private PickingJob pickCuLine(
 			@NonNull final PickingJob pickedJob,
@@ -372,11 +428,30 @@ public class MassPrintingService
 					.isPickWholeTU(false)
 					.checkIfAlreadyPacked(true)
 					.build());
+
+			final HuId vhuId = result.getLineById(line.getId()).getLastPickedHUId()
+					.orElseThrow(() -> new AdempiereException("No VHU materialized by the CU pick")
+							.appendParametersToMessage()
+							.setParameter("lineId", line.getId())
+							.setParameter("productId", line.getProductId()));
+
+			// Set the just-materialized VHU as an existing-TU target, then close it so the standard close path
+			// collects (addTopLevelTUId) and prints its label. The close also resets the target to null.
+			result = pickingJobService.setTUPickingTarget(result, line.getId(), TUPickingTarget.ofExistingHU(vhuId, huService.getQRCodeByHuId(vhuId)));
+			result = pickingJobService.closeLUAndTUPickingTargets(result, line.getId());
 		}
 		return result;
 	}
 
-	/** TU path: one event with full qty; PI capacity=1 produces one TU per unit. */
+	/**
+	 * TU path: one box per iteration so each close sees exactly one materialized top-level TU.
+	 *
+	 * <p>Per box: set a new-TU target carrying the line's TU PI, then fire a PICK event with
+	 * {@code isCloseTarget=true}. The framework materializes the box and rewrites the new-TU target to an
+	 * existing-TU target on it ({@code PickingJobPickCommand.updatePickingTarget}); the close then collects
+	 * it via {@code addTopLevelTUId} and prints its label through the standard close path — same as a regular
+	 * picking job. With capacity-1 PIs (the customer case) one TU = one unit, so {@code cappedQtyInt} boxes.
+	 */
 	@NonNull
 	private PickingJob pickTuLine(
 			@NonNull final PickingJob pickedJob,
@@ -384,22 +459,53 @@ public class MassPrintingService
 			@NonNull final HUQRCode luQRCode,
 			final int cappedQtyInt)
 	{
+		final TUPickingTarget tuTarget = newTuPickingTargetForLine(line);
+
+		PickingJob result = pickedJob;
 		// cappedQtyInt is already capped to schedule demand by selectSchedulesFifo (Math.min(scheduleDemand, capacityRemaining)),
 		// so the total qty never exceeds the schedule's open QtyToDeliver — overpick is prevented at source.
 		// checkIfAlreadyPacked=true (the default) additionally guards against re-picking an already-packed HU.
-		return pickingJobService.processStepEvent(pickedJob, PickingJobStepEvent.builder()
-				.pickingLineId(line.getId())
-				.eventType(PickingJobStepEventType.PICK)
-				.qrCode(luQRCode.toScannedCode())
-				.qtyPicked(BigDecimal.valueOf(cappedQtyInt))
-				.isPickWholeTU(false)
-				.checkIfAlreadyPacked(true)
-				.build());
+		for (int box = 0; box < cappedQtyInt; box++)
+		{
+			// Re-set the new-TU target before each box: the previous iteration's close reset the target to null.
+			result = pickingJobService.setTUPickingTarget(result, line.getId(), tuTarget);
+			result = pickingJobService.processStepEvent(result, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.eventType(PickingJobStepEventType.PICK)
+					.qrCode(luQRCode.toScannedCode())
+					.qtyPicked(BigDecimal.ONE)
+					.isPickWholeTU(false)
+					.checkIfAlreadyPacked(true)
+					.isCloseTarget(true)
+					.build());
+		}
+		return result;
+	}
+
+	/** Resolves the line's TU PI (and caption) from its packing info and builds a new-TU picking target. */
+	@NonNull
+	private TUPickingTarget newTuPickingTargetForLine(@NonNull final PickingJobLine line)
+	{
+		final ImmutableSet<HuPackingInstructionsIdAndCaption> piInfos = huService.retrievePIInfo(ImmutableSet.of(line.getPackingInfo().getPiItemId()));
+		if (piInfos.size() != 1)
+		{
+			// A self-packed finite-TU line resolves to exactly one TU PI; anything else means the packing setup is
+			// ambiguous and we cannot pick a single deterministic box type.
+			throw new AdempiereException("Expected exactly one TU packing instruction for mass-printing line")
+					.appendParametersToMessage()
+					.setParameter("lineId", line.getId())
+					.setParameter("productId", line.getProductId())
+					.setParameter("piItemId", line.getPackingInfo().getPiItemId())
+					.setParameter("piInfos", piInfos);
+		}
+
+		final HuPackingInstructionsIdAndCaption piInfo = piInfos.iterator().next();
+		return TUPickingTarget.ofPackingInstructions(piInfo.getId(), piInfo.getCaption());
 	}
 
 	/** Result of FIFO schedule selection: which schedules to pick and how many units from each. */
-	@lombok.Value
-	@lombok.Builder
+	@Value
+	@Builder
 	private static class ScheduleSelection
 	{
 		/** Map from selected shipment-schedule ID to the capped qty to pick from it. */
@@ -407,13 +513,13 @@ public class MassPrintingService
 		/** Ordered list of the keys of {@link #selectedScheduleQtys} (insertion-order preserved). */
 		@NonNull ImmutableList<ShipmentScheduleId> selectedScheduleIds;
 		int totalDemand;
-		int boxesToPack;
+		int unitsToPack;
 		int unitsLeftOnLU;
 
 		static ScheduleSelection of(
 				@NonNull final Map<ShipmentScheduleId, Integer> selectedScheduleQtys,
 				final int totalDemand,
-				final int boxesToPack,
+				final int unitsToPack,
 				final int unitsLeftOnLU)
 		{
 			final ImmutableMap<ShipmentScheduleId, Integer> qtysMap = ImmutableMap.copyOf(selectedScheduleQtys);
@@ -421,37 +527,28 @@ public class MassPrintingService
 					.selectedScheduleQtys(qtysMap)
 					.selectedScheduleIds(ImmutableList.copyOf(qtysMap.keySet()))
 					.totalDemand(totalDemand)
-					.boxesToPack(boxesToPack)
+					.unitsToPack(unitsToPack)
 					.unitsLeftOnLU(unitsLeftOnLU)
 					.build();
 		}
 	}
 
 	/**
-	 * Internal result of {@link #processProduct} holding both the picked shippable HU ids (for label printing after commit)
-	 * and the resolved leaf HU ids (for the HU-shape assertion).
+	 * Internal result of {@link #processProduct} holding the resolved leaf shippable HU ids
+	 * (for the HU-shape / unit-count assertion).
 	 */
 	@Value
-	@lombok.Builder
+	@Builder
 	private static class PackAndPickResult
 	{
-		/** Number of shippable HUs packed (one per picked unit). */
-		int boxesPacked;
-
-		/**
-		 * Top-level picked HU ids — used for post-commit label printing.
-		 * One per picked unit: TU boxes for finite-PI lines; one VHU per unit for VHU/CU lines
-		 * (the CU pick-loop fires one event per unit so each unit gets its own VHU).
-		 * May be empty when nothing was packed.
-		 */
-		@lombok.Builder.Default
-		@NonNull ImmutableSet<HuId> pickedHuIds = ImmutableSet.of();
+		/** Number of product units packed (in product UOM). */
+		int unitsPacked;
 
 		/**
 		 * Leaf shippable HU ids (descend any target-LU wrapper) — one per picked unit.
 		 * May be empty when nothing was packed.
 		 */
-		@lombok.Builder.Default
+		@Builder.Default
 		@NonNull ImmutableSet<HuId> packedHUIds = ImmutableSet.of();
 
 		/** Units remaining on the LU after packing. */

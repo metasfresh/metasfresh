@@ -60,11 +60,11 @@ export const MassPrintingScanScreen = {
     }),
 
     /**
-     * Assert the boxes-packed value of the product-result block at the given index (0-based).
+     * Assert the units-packed value of the product-result block at the given index (0-based).
      * The block renders the value as `<caption>: <number>`, so we match the trailing number.
      */
-    expectBoxesPacked: async ({ index = 0, expected }) => await step(`${NAME} - Expect boxesPacked='${expected}' (block ${index})`, async () => {
-        const field = page.getByTestId('mass-printing-product-result').nth(index).getByTestId('mass-printing-boxes-packed');
+    expectUnitsPacked: async ({ index = 0, expected }) => await step(`${NAME} - Expect unitsPacked='${expected}' (block ${index})`, async () => {
+        const field = page.getByTestId('mass-printing-product-result').nth(index).getByTestId('mass-printing-units-packed');
         await field.waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
         await expect(field).toContainText(new RegExp(`:\\s*${expected}\\s*$`));
     }),
