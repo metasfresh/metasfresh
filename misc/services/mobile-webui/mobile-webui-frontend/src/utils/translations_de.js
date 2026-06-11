@@ -158,8 +158,6 @@ const translations = {
         noResults: 'Keine passenden Produkte auf dieser LU gefunden',
         product: 'Produkt',
         unitsPacked: 'Verpackte Einheiten',
-        labelsPrinted: 'Gedruckte Etiketten',
-        labelPrintFailures: 'Druckfehler',
         unitsLeftOnLU: 'Restmengen auf LU',
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',

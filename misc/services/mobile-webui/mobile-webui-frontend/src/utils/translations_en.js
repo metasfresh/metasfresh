@@ -153,8 +153,6 @@ const translations = {
         noResults: 'No eligible products found on this LU',
         product: 'Product',
         unitsPacked: 'Units packed',
-        labelsPrinted: 'Labels printed',
-        labelPrintFailures: 'Print failures',
         unitsLeftOnLU: 'Units left on LU',
         unitsOfOpenDemandRemaining: 'Open demand remaining',
         skippedProducts: 'Skipped products',

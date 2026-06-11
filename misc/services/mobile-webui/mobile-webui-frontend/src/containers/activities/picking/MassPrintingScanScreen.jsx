@@ -88,14 +88,6 @@ const MassPrintingResult = ({ result, onDone }) => {
           <p data-testid="mass-printing-units-packed">
             {trl('activities.picking.massPrinting.unitsPacked')}: {pr.unitsPacked}
           </p>
-          <p data-testid="mass-printing-labels-printed">
-            {trl('activities.picking.massPrinting.labelsPrinted')}: {pr.labelsPrinted}
-          </p>
-          {pr.labelPrintFailures > 0 && (
-            <p className="has-text-danger" data-testid="mass-printing-label-failures">
-              {trl('activities.picking.massPrinting.labelPrintFailures')}: {pr.labelPrintFailures}
-            </p>
-          )}
           {pr.unitsLeftOnLU > 0 && (
             <p data-testid="mass-printing-units-left">
               {trl('activities.picking.massPrinting.unitsLeftOnLU')}: {pr.unitsLeftOnLU}
@@ -135,8 +127,6 @@ MassPrintingResult.propTypes = {
       PropTypes.shape({
         productId: PropTypes.number.isRequired,
         unitsPacked: PropTypes.number.isRequired,
-        labelsPrinted: PropTypes.number.isRequired,
-        labelPrintFailures: PropTypes.number.isRequired,
         unitsLeftOnLU: PropTypes.number.isRequired,
         unitsOfOpenDemandRemaining: PropTypes.number.isRequired,
       })
