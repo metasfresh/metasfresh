@@ -332,22 +332,36 @@ const BarcodeScannerComponent = ({
       {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
           compositing issue where the native video layer covers CSS-overlaid content.
           (https://github.com/metasfresh/me03/issues/28964) */}
-      {/* ⚠️ HARDWARE CONTRACT — Zebra MC3300x DataWedge IME. The exact combination below lets scans
-          inject WITHOUT popping the virtual keyboard:
-            • type="text"                    — Android InputConnection (type="hidden" cannot focus)
-            • inputMode="none" (isInputModeNone)— suppresses the virtual keyboard (soft hint, keeps the IME alive)
-            • the focus useEffects above     — establish / recover the InputConnection on the device
-          The `readOnly` attribute is intentionally NOT set by default (it would break DataWedge IME);
-          it is enabled per-instance via the per-mode knobs `barcodeScanner.offscreenInput.readOnly`
-          (off-screen) and `barcodeScanner.visibleInput.readOnly` (visible) — per the design in
-          https://github.com/metasfresh/me03/issues/29246. Use on keystroke-mode devices (e.g.
-          Honeywell CT60) where inputMode="none" is not honoured. The visible-input knob is the
-          right one for screens like /huManager whose only content is the scan field (hiding it
-          leaves the screen blank); it also blocks manual typing — intentional opt-in.
-          Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
-          regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
-          CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
-          on a physical Zebra MC3300x (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
+      {/* ⚠️ HARDWARE CONTRACT — TWO device classes; each has its own #input-text attribute combo.
+          Any edit to type / inputMode / readOnly / the focus useEffects MUST preserve BOTH.
+
+                                  │ DataWedge IME             │ Keystroke-wedge
+                                  │ (e.g. Zebra MC3300x)      │ (e.g. Honeywell CT60 / Android 11)
+          ────────────────────────┼───────────────────────────┼──────────────────────────────────────
+          type                    │ "text"                    │ "text"
+          inputMode               │ "none"                    │ "none" (ignored on Android 11)
+          readOnly                │ ABSENT (else kills the    │ PRESENT (load-bearing keyboard
+                                  │ InputConnection — text    │ suppression — Android 11 ignores
+                                  │ injection silently fails) │ inputMode="none")
+          Focus useEffects        │ Establish the IME         │ N/A — keystroke hook listens on document
+          ────────────────────────┼───────────────────────────┼──────────────────────────────────────
+          Sysconfig — off-screen  │ offscreenInput.readOnly=N │ offscreenInput.readOnly=Y
+          Sysconfig — visible     │ visibleInput.readOnly=N   │ visibleInput.readOnly=Y (when visible)
+
+          The `readOnly` attribute is per-mode (offscreenInput vs visibleInput) and driven by
+          sysconfigs per the framework design (https://github.com/metasfresh/me03/issues/29246).
+          DataWedge IME requires readOnly ABSENT or InputConnection breaks
+          (https://github.com/metasfresh/me03/issues/28834). Keystroke-wedge devices that ignore
+          inputMode="none" require readOnly PRESENT — first deployed on dt204 / CT60 via
+          https://github.com/metasfresh/me03/issues/30363.
+
+          Regression guards (BOTH must stay green — `e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js`):
+            • DataWedge IME:        "#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden"
+            • CT60 keystroke-wedge: "Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no camera"
+
+          Do NOT relax either test to make a change land. A red test means the CODE broke a
+          contract — fix the code, not the test. Any change here MUST be re-validated on physical
+          hardware for BOTH device classes (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
       {!isProcessing && (
         <input
           id="input-text"
