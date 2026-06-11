@@ -2,12 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import BarcodeReader from './BarcodeReader';
 import { trl } from '../../../../utils/translations';
+import { useBooleanSetting } from '../../../../reducers/settings';
 import './ProductSearchBar.scss';
 
 const _ = (key) => trl(`pos.products.searchBar.${key}`);
 
 const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
   const [isBarcodeScannerDisplayed, setBarcodeScannerDisplayed] = useState(false);
+  // Camera scanning is hidden when the device camera is disabled (e.g. handheld hardware-scanner
+  // deployments). Shares the global barcodeScanner.useCamera switch. (me03 #30363)
+  const isCameraEnabled = useBooleanSetting('barcodeScanner.useCamera', true);
   const queryStringRef = useRef();
 
   useEffect(() => {
@@ -56,11 +60,15 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
           onBlur={handleQueryStringBlur}
           onChange={handleQueryStringChanged}
         />
-        <button className="button" disabled={!isEnabled} onClick={handleScannerButtonClicked}>
-          <i className="fa-solid fa-barcode"></i>
-        </button>
+        {isCameraEnabled && (
+          <button className="button" disabled={!isEnabled} onClick={handleScannerButtonClicked}>
+            <i className="fa-solid fa-barcode"></i>
+          </button>
+        )}
       </div>
-      {isBarcodeScannerDisplayed && <BarcodeReader onBarcodeScanned={handleBarcodeScanned} />}
+      {isCameraEnabled && isBarcodeScannerDisplayed && (
+        <BarcodeReader onBarcodeScanned={handleBarcodeScanned} />
+      )}
     </div>
   );
 };

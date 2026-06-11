@@ -31,6 +31,14 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
     ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
     : true;
 
+  // Off-screen (DataWedge) mode only: when enabled, set the HTML `readOnly` attribute on the scan
+  // input to suppress the on-screen keyboard *unconditionally* — for devices where `inputMode="none"`
+  // is not honoured (e.g. Honeywell / Zebra keystroke-mode firmware). Default off ⇒ today's behaviour.
+  // Design: me03 #29246 (`barcodeScanner.offscreenInput.readOnly`). Keystroke-wedge scans are read at
+  // window level so they still work; DataWedge IME injection does not (documented, opt-in trade-off).
+  const offscreenInputReadOnlyEnabled = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
+  const offscreenInputReadOnly = !isShowInputText && offscreenInputReadOnlyEnabled;
+
   const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
 
   const continuousRunning = continuousRunningParam != null ? continuousRunningParam : true;
@@ -52,6 +60,7 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
     },
     isShowInputText,
     isInputTextReadonly,
+    offscreenInputReadOnly,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
@@ -77,6 +86,7 @@ const BarcodeScannerComponent = ({
     errorBeepParams,
     isShowInputText,
     isInputTextReadonly,
+    offscreenInputReadOnly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
@@ -292,6 +302,9 @@ const BarcodeScannerComponent = ({
             • type="text"                    — Android InputConnection (type="hidden" cannot focus)
             • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
             • the focus useEffects above     — establish / recover the InputConnection on the device
+          The `readOnly` attribute is intentionally NOT set by default (it would break DataWedge IME);
+          it can be enabled per-instance via `barcodeScanner.offscreenInput.readOnly` (me03 #29246) for
+          keystroke-mode devices (e.g. Honeywell) where inputMode="none" fails to suppress the keyboard.
           Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
           regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
           CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
@@ -305,6 +318,7 @@ const BarcodeScannerComponent = ({
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           inputMode={isInputTextReadonly ? 'none' : undefined}
+          readOnly={offscreenInputReadOnly}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
@@ -312,7 +326,7 @@ const BarcodeScannerComponent = ({
           data-testid={testId ?? 'qrCode-input'}
         />
       )}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
+      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
     </div>
   );
 };
