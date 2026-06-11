@@ -61,6 +61,8 @@ class JsonDeliveryAdvisorRequestTest {
     private static JsonDeliveryAdvisorRequestItem anItem() {
         return JsonDeliveryAdvisorRequestItem.builder()
                 .numberOfItems(2)
+				.productName("P-1")
+				.productValue("P-1")
                 .grossWeightKg(new BigDecimal("7.5"))
                 .packageDimensions(JsonPackageDimensions.builder().lengthInCM(40).widthInCM(20).heightInCM(15).build())
                 .build();
@@ -92,6 +94,7 @@ class JsonDeliveryAdvisorRequestTest {
         final JsonDeliveryAdvisorRequest req = JsonDeliveryAdvisorRequest.builder()
                 .id("ADV-1")
                 .pickupAddress(aPickupAddress())
+				.pickupContact(JsonContact.builder().name("John").language("en").build())
                 .pickupDate("2025-10-01")
                 .pickupTimeFrom("10:00")
                 .pickupTimeTo("18:00")

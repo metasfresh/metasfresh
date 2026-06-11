@@ -50,6 +50,9 @@ const translations = {
     workplace: 'Workplace',
     workstation: 'Workstation',
     trolley: 'Trolley',
+    releaseTrolley: {
+      buttonCaption: 'Release trolley',
+    },
   },
   login: {
     submitButton: 'Login',
@@ -117,7 +120,7 @@ const translations = {
       switchToQrCodeInput: 'Scan',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
-      qtyRejectedIgnoreReason: 'Do not record a reason',
+      qtyRejectedIgnoreReason: 'Without reason',
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
@@ -135,11 +138,25 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      graiScan: {
+        multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
+      },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
       noMatchingLines: 'No matching lines found',
+      massPrinting: {
+        triggerButton: 'Mass Print Labels',
+        scanCaption: 'Scan LU',
+        doneButton: 'Done',
+        noResults: 'No eligible products found on this LU',
+        product: 'Product',
+        unitsPacked: 'Units packed',
+        unitsLeftOnLU: 'Units left on LU',
+        unitsOfOpenDemandRemaining: 'Open demand remaining',
+        skippedProducts: 'Skipped products',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -148,6 +165,7 @@ const translations = {
       scanHU: 'Scan pick from HU',
       scanProduct: 'Scan Product',
       scanDropToLocator: 'Scan drop to Locator',
+      switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
       qrcode: {

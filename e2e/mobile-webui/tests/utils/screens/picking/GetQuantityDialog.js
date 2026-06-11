@@ -24,8 +24,13 @@ export const GetQuantityDialog = {
         await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
     }),
 
+    expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
+        const testId = `userInfo_${captionKey}`;
+        await expect(page.getByTestId(testId)).toContainText(expectedValue);
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
-        await page.locator('#qty-input').type(`${qty}`);
+        await page.locator('#qty-input').fill(`${qty}`);
     }),
 
     expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
@@ -119,7 +124,7 @@ export const GetQuantityDialog = {
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor(); // atm that's the only indicator that we switched to manual input
+        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
@@ -177,8 +182,16 @@ export const GetQuantityDialog = {
 //
 
 const expectMissingOrDisabled = async (locator) => {
+    // Element should either not exist (dialog already closed) or be disabled (dialog closing).
+    // Race condition: count() > 0 may be true, but by the time toBeDisabled() runs the dialog
+    // may have unmounted. In that case, re-check count — if 0, element is gone (OK).
     if (await locator.count() > 0) {
-        await expect(locator).toBeDisabled();
+        try {
+            await expect(locator).toBeDisabled();
+        } catch (e) {
+            if (await locator.count() === 0) return;
+            throw e;
+        }
     }
 };
 

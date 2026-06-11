@@ -85,6 +85,7 @@ import java.util.stream.Stream;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_PreparationDate;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override;
@@ -287,6 +288,11 @@ public class ShipmentScheduleRepository
 					.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, null)
 					.addInSubQueryFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, completedOrClosedOrdersQuery)
 			);
+		}
+
+		if (query.getIsScheduledForPicking() != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_IsScheduledForPicking, query.getIsScheduledForPicking());
 		}
 
 		if (query.getLimit().isLimited())

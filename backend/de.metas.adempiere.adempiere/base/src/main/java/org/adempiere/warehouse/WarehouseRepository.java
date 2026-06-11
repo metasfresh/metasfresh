@@ -46,6 +46,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig
+ * Repository Cluster: WarehouseRepository, WarehouseDAO
+ */
 @Repository
 public class WarehouseRepository
 {
@@ -132,6 +136,7 @@ public class WarehouseRepository
 				.name(warehouse.getName())
 				.resourceId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
 				.isReceiveAsSourceHU(warehouse.isReceiveAsSourceHU())
+				.isAutoDistributionOrder(warehouse.isAutoDistributionOrder())
 				.warehouseSourceHUConfigs(new WarehouseSourceHUConfigList(configs))
 				.active(warehouse.isActive())
 				.build();
@@ -143,6 +148,15 @@ public class WarehouseRepository
 		return getWarehouseMap().allActive.stream()
 				.map(Warehouse::getWarehouseId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * Returns the IDs of all active warehouses that have {@code IsAutoDistributionOrder=Y}.
+	 */
+	@NonNull
+	public ImmutableSet<WarehouseId> getAutoDistributionWarehouseIds()
+	{
+		return getWarehouseMap().getAutoDistributionWarehouseIds();
 	}
 
 	//
@@ -171,6 +185,15 @@ public class WarehouseRepository
 				throw new AdempiereException("Warehouse not found by ID: " + id);
 			}
 			return warehouse;
+		}
+
+		@NonNull
+		public ImmutableSet<WarehouseId> getAutoDistributionWarehouseIds()
+		{
+			return allActive.stream()
+					.filter(Warehouse::isAutoDistributionOrder)
+					.map(Warehouse::getWarehouseId)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

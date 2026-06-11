@@ -35,7 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends JavaProcess implements IProcessPrecondition
 {
@@ -45,7 +45,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	private static final AdMessageKey MSG_NO_UNPROCESSED_LINES = AdMessageKey.of("receiptschedule.noUnprocessedLines");
 
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
-	private LocalDate datePromisedOverride;
+	private LocalDateTime datePromisedOverride;
 
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_POReference)
 	private String poReference;

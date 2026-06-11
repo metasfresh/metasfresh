@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDef;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -47,8 +48,6 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -60,12 +59,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
@@ -81,7 +78,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -95,7 +91,6 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 public class M_PriceList_StepDef
 {
 	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -108,6 +103,7 @@ public class M_PriceList_StepDef
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
 
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
@@ -347,7 +343,7 @@ public class M_PriceList_StepDef
 		productPrice.setM_Product_ID(productId);
 		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
-		productPrice.setC_TaxCategory_ID(extractTaxCategoryId(row).getRepoId());
+		productPrice.setC_TaxCategory_ID(taxCategoryStepDef.extractTaxCategoryIdOrDefault(row).getRepoId());
 
 		row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_UseScalePrice).ifPresent(productPrice::setUseScalePrice);
 		row.getAsOptionalEnum(I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn.class).ifPresent(invoiceableQtyBasedOn -> productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn.getCode()));
@@ -367,18 +363,6 @@ public class M_PriceList_StepDef
 
 		saveRecord(productPrice);
 		row.getAsOptionalIdentifier().ifPresent(id -> id.putOrReplace(productPriceTable, productPrice));
-	}
-
-	private TaxCategoryId extractTaxCategoryId(final @NonNull DataTableRow row)
-	{
-		final String taxCategoryInternalName = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID).orElse(null),
-				() -> row.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName).orElse(null),
-				() -> DEFAULT_TaxCategory_InternalName
-		);
-
-		return taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
-				.orElseThrow(() -> new AdempiereException("Missing C_TaxCategory for internalName `" + taxCategoryInternalName + "` of row " + row));
 	}
 
 	private I_M_ProductPrice lookupForProductPrice(@NonNull final DataTableRow row)

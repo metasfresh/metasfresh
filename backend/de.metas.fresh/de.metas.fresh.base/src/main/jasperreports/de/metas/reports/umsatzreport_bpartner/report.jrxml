@@ -117,14 +117,14 @@
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{base_period_start} + " - " + $F{base_period_end}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{base_period_start} != null ? $F{base_period_start} : "") + " - " + ($F{base_period_end} != null ? $F{base_period_end} : "")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="181" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{comp_period_start} + " - " + $F{comp_period_end}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{comp_period_start} != null ? $F{comp_period_start} : "") + " - " + ($F{comp_period_end} != null ? $F{comp_period_end} : "")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="181" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -134,11 +134,11 @@
 					<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{purchase} : ($P{IsSOTrx}.equals("Y") ? $R{sales} : $R{all} )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="181" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="181" y="48" width="95" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{bp_name}!=null ? $F{bp_name} : $R{all}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="425" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -316,7 +316,7 @@
 		<groupHeader>
 			<band height="24">
 				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null )]]></printWhenExpression>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="37" y="12" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
@@ -342,12 +342,12 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{compperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{total} + " " + $F{pc_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{total} + " " + ($F{pc_name} != null ? $F{pc_name} : "")]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="495" y="0" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -383,7 +383,7 @@
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 1 )
 &&  ($F{sameperiodsum}.signum() !=0
 || $F{compperiodsum}.signum() !=0)]]></printWhenExpression>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="8" isBold="false"/>

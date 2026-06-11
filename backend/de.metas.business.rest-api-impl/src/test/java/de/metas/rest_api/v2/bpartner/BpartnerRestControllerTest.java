@@ -48,6 +48,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestContact;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
@@ -858,5 +859,24 @@ class BpartnerRestControllerTest
 		assertThat(responseProductBPartner.getBPartnerProducts()).hasSize(1);
 
 		expect.serializer("orderedJson").toMatchSnapshot(responseProductBPartner);
+	}
+
+	@Test
+	void retrieveBPartnerLocation_attention_is_returned()
+	{
+		final I_C_BPartner_Location locationRecord = load(C_BBPARTNER_LOCATION_ID, I_C_BPartner_Location.class);
+		locationRecord.setAttention("Attn Value");
+		saveRecord(locationRecord);
+
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+		final String bPartnerLocationExternalIdentifier = String.valueOf(C_BBPARTNER_LOCATION_ID);
+
+		final ResponseEntity<JsonResponseLocation> result = bpartnerRestController.retrieveBPartnerLocation(
+				bPartnerExternalIdentifier,
+				bPartnerLocationExternalIdentifier);
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getAttention()).isEqualTo("Attn Value");
 	}
 }

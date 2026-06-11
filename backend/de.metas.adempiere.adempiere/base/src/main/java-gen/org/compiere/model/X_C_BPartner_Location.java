@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1966330028L;
+	private static final long serialVersionUID = -1185353059L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -74,6 +74,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setAttention (final @Nullable java.lang.String Attention)
+	{
+		set_Value (COLUMNNAME_Attention, Attention);
+	}
+
+	@Override
+	public java.lang.String getAttention() 
+	{
+		return get_ValueAsString(COLUMNNAME_Attention);
+	}
+
+	@Override
 	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
 	{
 		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
@@ -83,6 +95,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
+	public void setBPartnerName2 (final @Nullable java.lang.String BPartnerName2)
+	{
+		set_Value (COLUMNNAME_BPartnerName2, BPartnerName2);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName2() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName2);
 	}
 
 	@Override
@@ -242,6 +266,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setGLN_GCPLength (final int GLN_GCPLength)
+	{
+		set_Value (COLUMNNAME_GLN_GCPLength, GLN_GCPLength);
+	}
+
+	@Override
+	public int getGLN_GCPLength() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GLN_GCPLength);
+	}
+
+	@Override
 	public void setIsBillTo (final boolean IsBillTo)
 	{
 		set_Value (COLUMNNAME_IsBillTo, IsBillTo);
@@ -290,13 +326,13 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsDefaultVisitorAddress(final boolean IsDefaultVisitorAddress)
+	public void setIsDefaultVisitorAddress (final boolean IsDefaultVisitorAddress)
 	{
 		set_Value (COLUMNNAME_IsDefaultVisitorAddress, IsDefaultVisitorAddress);
 	}
 
 	@Override
-	public boolean isDefaultVisitorAddress()
+	public boolean isDefaultVisitorAddress() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefaultVisitorAddress);
 	}

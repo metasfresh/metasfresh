@@ -285,9 +285,28 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public java.lang.String getDietType() 
+	public java.lang.String getDietType()
 	{
 		return get_ValueAsString(COLUMNNAME_DietType);
+	}
+
+	/** DepositType AD_Reference_ID=542089 */
+	public static final int DEPOSITTYPE_AD_Reference_ID = 542089;
+	/** Einwegpfand = NRC */
+	public static final String DEPOSITTYPE_Einwegpfand = "NRC";
+	/** Mehrwegpfand = RC */
+	public static final String DEPOSITTYPE_Mehrwegpfand = "RC";
+
+	@Override
+	public void setDepositType (final @Nullable java.lang.String DepositType)
+	{
+		set_Value (COLUMNNAME_DepositType, DepositType);
+	}
+
+	@Override
+	public java.lang.String getDepositType()
+	{
+		return get_ValueAsString(COLUMNNAME_DepositType);
 	}
 
 	@Override

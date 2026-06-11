@@ -1,5 +1,6 @@
 package de.metas.inout.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
@@ -9,13 +10,16 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
@@ -79,6 +83,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -125,7 +130,7 @@ public class InOutBL implements IInOutBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -164,8 +169,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final InOutId inoutId)
 	{
-		final I_M_InOut inout = getById(inoutId);
-		return getLines(inout);
+		return inOutDAO.retrieveLinesByInOutId(inoutId);
 	}
 
 	@Override
@@ -181,15 +185,51 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId, modelClass);
+	}
+
+	@Override
 	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
 	{
 		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);
 	}
 
 	@Override
+	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
+	{
+		return inOutDAO.retrieveLines(inOut);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut, final Class<T> inoutLineClass)
+	{
+		return inOutDAO.retrieveLines(inOut, inoutLineClass);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(final I_M_InOut inOut, final Class<T> clazz)
+	{
+		return inOutDAO.retrieveLinesWithoutOrderLine(inOut, clazz);
+	}
+
+	@Override
+	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
+	{
+		return inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
+	}
+
+	@Override
 	public Set<InOutAndLineId> getLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
 	{
 		return inOutDAO.retrieveLineIdsByOrderLineIds(orderLineIds);
+	}
+
+	@Override
+	public List<I_M_InOutLine> getLinesByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.streamLinesByOrderLineIds(orderLineIds).collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -243,6 +283,7 @@ public class InOutBL implements IInOutBL
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(inOut.getDateOrdered()));
+		pricingCtx.setReferencedObject(inOutLine);
 
 		pricingCtx.setFailIfNotCalculated();
 
@@ -357,7 +398,7 @@ public class InOutBL implements IInOutBL
 			return priceListDAO.getPricingSystemById(pricingSystemId);
 		}
 
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		final PricingSystemId pricingSystemId = bpartnerBL.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
 		if (pricingSystemId == null)
 		{
 			return null;
@@ -588,7 +629,7 @@ public class InOutBL implements IInOutBL
 		if (inout.isSOTrx())
 		{
 			final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
-			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLinesForInOutId(shipmentId);
+			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLineIdsByInOutId(shipmentId);
 			if (!shipmentAndLineIds.isEmpty())
 			{
 				CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
@@ -669,7 +710,7 @@ public class InOutBL implements IInOutBL
 		final I_M_InOut inout = inOutDAO.getById(inOutId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpartnerLocation = bpartnerBL.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
 
 		final String locationEmail = bpartnerLocation.getEMail();
 		if (!Check.isEmpty(locationEmail))
@@ -682,7 +723,7 @@ public class InOutBL implements IInOutBL
 		{
 			return null;
 		}
-		return bpartnerDAO.getContactLocationEmail(contactId);
+		return bpartnerBL.getContactLocationEmail(contactId);
 	}
 
 	@Override
@@ -751,7 +792,7 @@ public class InOutBL implements IInOutBL
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID());
 
 		return bPartnerId != null
-				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
+				? bpartnerBL.getById(bPartnerId, I_C_BPartner.class)
 				: null;
 	}
 
@@ -765,13 +806,12 @@ public class InOutBL implements IInOutBL
 	@Override
 	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_InOut inout)
 	{
-		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+
+		return currencyBL.createCurrencyConversionContext(
 				inout.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(inout.getAD_Client_ID()),
 				OrgId.ofRepoId(inout.getAD_Org_ID()));
-
-		return conversionCtx;
 	}
 
 	@Override
@@ -810,19 +850,12 @@ public class InOutBL implements IInOutBL
 		inout.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(inout)));
 	}
 
+	@Nullable
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		final BPartnerLocationId dropShipLocationId = getEffectiveDropshipBPartnerLocationId(inout);
-		final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(dropShipLocationId);
-
-		return deliveryAddressShipperId.orElseGet(() -> bpartnerDAO.getShipperId(getEffectiveDropshipPartnerId(inout)));
-	}
-
-	private BPartnerLocationId getEffectiveDropshipBPartnerLocationId(@NonNull final I_M_InOut inout)
-	{
-		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
-				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
+		return bpartnerBL.getEffectiveShipperId(
+				BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				BPartnerLocationId.ofRepoId(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
 		);
 	}
 
@@ -834,5 +867,63 @@ public class InOutBL implements IInOutBL
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
 				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())
 		);
+	}
+
+	@Override
+	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_M_InOut inout)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
+		);
+	}
+
+	@Override
+	public boolean isCustomerReturn(@NonNull final I_M_InOutLine inOutLine)
+	{
+		return isCustomerReturn(getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID())));
+	}
+
+	@Override
+	public boolean isCustomerReturn(@NonNull final I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubTypeAny()
+				.isSOTrx(true)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	@Override
+	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.isSOTrx(false)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	@Override
+	public boolean isEmptiesReturn(final I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubType(DocSubType.EmptiesReceipt)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	private DocTypeQuery.DocTypeQueryBuilder createDocTypeQueryBuilder(@NonNull final I_M_InOut inOut)
+	{
+		return DocTypeQuery.builder()
+				.docSubTypeNone() // in the case of returns the docSubType is null
+				.adClientId(inOut.getAD_Client_ID())
+				.adOrgId(inOut.getAD_Org_ID());
 	}
 }

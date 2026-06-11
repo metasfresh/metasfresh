@@ -2854,26 +2854,53 @@ public interface I_C_Order
 
 	/**
 	 * Set Promotion Code.
-	 * User entered promotion code at sales time
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPromotionCode (@Nullable java.lang.String PromotionCode);
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
 
 	/**
 	 * Get Promotion Code.
-	 * User entered promotion code at sales time
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPromotionCode();
+	int getC_PromotionCode_ID();
 
-	ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new ModelColumn<>(I_C_Order.class, "PromotionCode", null);
-	String COLUMNNAME_PromotionCode = "PromotionCode";
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
+
+	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
 
 	/**
 	 * Set Qty without Trading Unit.
@@ -3085,6 +3112,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_SendEMail = new ModelColumn<>(I_C_Order.class, "SendEMail", null);
 	String COLUMNNAME_SendEMail = "SendEMail";
+
+	/**
+	 * Set Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalGrossWeightKg (BigDecimal TotalGrossWeightKg);
+
+	/**
+	 * Get Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalGrossWeightKg();
+
+	ModelColumn<I_C_Order, Object> COLUMN_TotalGrossWeightKg = new ModelColumn<>(I_C_Order.class, "TotalGrossWeightKg", null);
+	String COLUMNNAME_TotalGrossWeightKg = "TotalGrossWeightKg";
 
 	/**
 	 * Set Total Lines.

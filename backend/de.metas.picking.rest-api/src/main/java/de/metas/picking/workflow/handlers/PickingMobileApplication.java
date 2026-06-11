@@ -146,6 +146,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilterByQRCode(profile.isFilterByBarcode())
 				.showFilterByQtyAvailableAtPickFromLocator(true)
 				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
+				.applicationParameter("massPrinting", profile.isMassPrinting())
 				.build();
 	}
 
@@ -552,6 +553,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.stream()
 						.map(JsonTUPickingTarget::of)
 						.collect(ImmutableList.toImmutableList()))
+				.graiScanEnabled(pickingJobRestService.isGraiScanEnabled(pickingJob))
 				.build();
 	}
 
@@ -583,6 +585,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					return pickingJobRestService.setTUPickingTarget(pickingJob, lineId, target);
 				});
 
+	}
+
+	public WFProcess setTUPickingTargetFromGRAI(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedGrai,
+			@NonNull final UserId callerId)
+	{
+		return changeWFProcessById(
+				wfProcessId,
+				(wfProcess, pickingJob) -> {
+					wfProcess.assertHasAccess(callerId);
+					return pickingJobRestService.setTUPickingTargetFromGRAI(pickingJob, lineId, scannedGrai);
+				});
 	}
 
 	public WFProcess closeLUPickingTarget(

@@ -54,6 +54,9 @@ const translations = {
     workplace: 'Arbeitsplatz',
     workstation: 'Arbeitsstation',
     trolley: 'Wagen',
+    releaseTrolley: {
+      buttonCaption: 'Wagen freigeben',
+    },
   },
   login: {
     submitButton: 'Login',
@@ -121,7 +124,7 @@ const translations = {
       switchToQrCodeInput: 'Scannen',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
-      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
+      qtyRejectedIgnoreReason: 'Ohne Grund',
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -139,11 +142,26 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Schließen',
       },
+      graiScan: {
+        multipleScanned:
+          'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+      },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
       noMatchingLines: 'Keine passende Packzeile gefunden',
+      massPrinting: {
+        triggerButton: 'Massendruck Etiketten',
+        scanCaption: 'LU scannen',
+        doneButton: 'Fertig',
+        noResults: 'Keine passenden Produkte auf dieser LU gefunden',
+        product: 'Produkt',
+        unitsPacked: 'Verpackte Einheiten',
+        unitsLeftOnLU: 'Restmengen auf LU',
+        unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
+        skippedProducts: 'Übersprungene Produkte',
+      },
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
@@ -152,6 +170,7 @@ const translations = {
       scanHU: 'Scan HU',
       scanProduct: 'Artikel scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
+      switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
       qrcode: {

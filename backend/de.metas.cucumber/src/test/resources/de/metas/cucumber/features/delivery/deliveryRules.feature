@@ -8,6 +8,7 @@ Feature: Delivery rules with and without quantity in stock
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And metasfresh has date and time 2022-08-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value              | OPT.IsActive |
@@ -512,7 +513,6 @@ Feature: Delivery rules with and without quantity in stock
       | shipmentScheduleQtyPicked_2                | 5         | true      | true                        | hu_fifo_second        |
       | shipmentScheduleQtyPicked_3                | 5         | true      | true                        | hu_fifo_third         |
 
-  @flaky
   @from:cucumber
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
@@ -546,6 +546,7 @@ Feature: Delivery rules with and without quantity in stock
     And the inventory identified by inventory_FIFO2_1 is completed
     And the inventory identified by inventory_FIFO2_2 is completed
     And the inventory identified by inventory_FIFO2_3 is completed
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_FIFO_2          | 20        |

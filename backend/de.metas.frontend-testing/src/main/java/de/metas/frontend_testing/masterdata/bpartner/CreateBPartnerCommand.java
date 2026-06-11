@@ -11,11 +11,13 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
@@ -24,6 +26,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -106,12 +109,18 @@ public class CreateBPartnerCommand
 		final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
 		bpartner.setName(bpName);
 		bpartner.setIsCompany(true);
-		bpartner.setCompanyName(request.getName());
+		bpartner.setCompanyName(bpName);
 		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
 		bpartner.setIsVendor(request.isVendor());
 		bpartner.setIsCustomer(request.isCustomer());
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
+
+		final GRAIRequired graiRequired = request.getGraiRequired();
+		if (graiRequired != null)
+		{
+			bpartner.setGRAIRequired(graiRequired.getCode());
+		}
 
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())
@@ -173,12 +182,40 @@ public class CreateBPartnerCommand
 			}
 		}
 
+		// Create contacts (AD_User records) if provided
+		final Map<String, JsonCreateBPartnerResponse.Contact> responseContacts;
+		if (request.getContacts() != null && !request.getContacts().isEmpty())
+		{
+			responseContacts = new HashMap<>();
+			for (final String contactIdentifierStr : request.getContacts().keySet())
+			{
+				final JsonCreateBPartnerRequest.Contact contactRequest = request.getContacts().get(contactIdentifierStr);
+				final I_AD_User contactRecord = createContact(contactRequest, bpartnerId);
+
+				@NonNull final Identifier contactIdentifier = Identifier.ofString(contactIdentifierStr);
+				final UserId contactId = UserId.ofRepoId(contactRecord.getAD_User_ID());
+				context.putIdentifier(contactIdentifier, contactId);
+
+				responseContacts.put(contactIdentifierStr, JsonCreateBPartnerResponse.Contact.builder()
+						.id(contactId.getRepoId())
+						.firstName(contactRecord.getFirstname())
+						.lastName(contactRecord.getLastname())
+						.email(contactRecord.getEMail())
+						.build());
+			}
+		}
+		else
+		{
+			responseContacts = null;
+		}
+
 		return JsonCreateBPartnerResponse.builder()
 				.id(bpartnerId)
 				.bpartnerCode(bpartner.getValue())
 				.bpartnerLocationId(singleBPLocationId != null ? singleBPLocationId.getRepoId() : null)
 				.gln(singleGLN)
 				.locations(responseLocations)
+				.contacts(responseContacts)
 				.build();
 	}
 
@@ -201,6 +238,59 @@ public class CreateBPartnerCommand
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
 		return bPartnerLocationRecord;
+	}
+
+	private I_AD_User createContact(
+			@NonNull final JsonCreateBPartnerRequest.Contact request,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		final I_AD_User contactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		contactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		contactRecord.setAD_Org_ID(orgId.getRepoId());
+
+		// Set name - use lastName or firstName, or generate a default
+		final String firstName = StringUtils.trimBlankToNull(request.getFirstName());
+		final String lastName = StringUtils.trimBlankToNull(request.getLastName());
+
+		if (lastName != null)
+		{
+			contactRecord.setLastname(lastName);
+			contactRecord.setName(lastName + (firstName != null ? ", " + firstName : ""));
+		}
+		else if (firstName != null)
+		{
+			contactRecord.setName(firstName);
+		}
+		else
+		{
+			contactRecord.setName("Contact-" + System.currentTimeMillis());
+		}
+
+		if (firstName != null)
+		{
+			contactRecord.setFirstname(firstName);
+		}
+
+		final String email = StringUtils.trimBlankToNull(request.getEmail());
+		if (email != null)
+		{
+			contactRecord.setEMail(email);
+		}
+
+		final String phone = StringUtils.trimBlankToNull(request.getPhone());
+		if (phone != null)
+		{
+			contactRecord.setPhone(phone);
+		}
+
+		final String description = StringUtils.trimBlankToNull(request.getDescription());
+		if (description != null)
+		{
+			contactRecord.setDescription(description);
+		}
+
+		InterfaceWrapperHelper.saveRecord(contactRecord);
+		return contactRecord;
 	}
 
 	@Nullable

@@ -25,7 +25,7 @@ package de.metas.edi.process.export;
 
 import java.util.List;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.model.I_EDI_Document;
 import lombok.NonNull;
@@ -56,7 +56,7 @@ public interface IExport<T extends I_EDI_Document>
 	String getTableIdentifier();
 
 	@NonNull
-	BPartnerId getBPartnerId();
+	BPartnerLocationId getBPartnerLocationId();
 
 	@NonNull
 	EDIType getEDIType();

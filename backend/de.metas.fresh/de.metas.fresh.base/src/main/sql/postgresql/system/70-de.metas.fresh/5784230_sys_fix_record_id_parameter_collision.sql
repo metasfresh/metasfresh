@@ -7,8 +7,6 @@
 --              with table columns named 'record_id'. Uses this branch's own function versions.
 -- Issue: https://github.com/metasfresh/metasfresh/pull/22016
 -- 2026-01-18
--- Branch-specific migration generated for intensive_care_hotfix
-
 
 -- ===========================================================================
 -- Docs_Purchase_InOut_Customs_Root

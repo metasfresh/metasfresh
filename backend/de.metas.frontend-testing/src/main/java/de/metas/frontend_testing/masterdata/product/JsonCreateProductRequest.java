@@ -26,6 +26,29 @@ public class JsonCreateProductRequest
 	@Nullable String value;
 	@Nullable String name;
 
+	/**
+	 * Product type — either the enum name ({@code "Item"}, {@code "Service"}, …) or the
+	 * AD ref-list code ({@code "I"}, {@code "S"}, …). Defaults to {@code Item} when omitted.
+	 * Non-item types (Service, Resource, ExpenseType, …) are NOT stocked by default — useful
+	 * for "bracket" / "header" products that carry a price but are not physically shipped.
+	 */
+	@Nullable String type;
+
+	/**
+	 * Explicit {@code M_Product.IsStocked} override. When {@code null} the value is derived
+	 * from {@link #type} ({@code Item} → stocked, anything else → not stocked).
+	 * Set to {@code false} on an {@code Item} product when you want a "bracket" / bundle
+	 * line that participates in the order flow but should not be tracked as stock.
+	 */
+	@Nullable Boolean isStocked;
+
+	/**
+	 * Explicit {@code M_Product.IsSelfPacked} override. When {@code null} the column keeps its
+	 * default ({@code false}). Set to {@code true} to mark the product as self-packed — required by
+	 * the mobileUI mass-printing flow, which only packs self-packed products and skips the rest.
+	 */
+	@Nullable Boolean isSelfPacked;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
@@ -39,6 +62,22 @@ public class JsonCreateProductRequest
 	@Nullable List<BPartner> bpartners;
 
 	@Nullable BOM bom;
+
+	/**
+	 * Attribute Set name to associate with the product.
+	 * If set, the product will have this M_AttributeSet_ID assigned,
+	 * enabling the Attributes button in the Test Window.
+	 * Example values: "Lot", "Serial", "LotSerial"
+	 */
+	@Nullable String attributeSetName;
+
+	/**
+	 * Identifier of a {@link de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest}
+	 * created in the same request. When set, the product is linked via
+	 * {@code M_Product.C_CompensationGroup_Schema_ID} after the schema is created — this turns the
+	 * product into a "trigger product" that materialises the schema's template lines on an order.
+	 */
+	@Nullable Identifier compensationGroupSchema;
 
 	//
 	//
@@ -104,5 +143,6 @@ public class JsonCreateProductRequest
 		@Nullable BOMComponentType componentType;
 		@Nullable BOMComponentIssueMethod issueMethod;
 		@Nullable String pickingInstruction;
+		@Nullable BigDecimal issuingTolerancePerc;
 	}
 }

@@ -337,6 +337,7 @@ final class BPartnerCompositesLoader
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
 				.salesRepContact(getSalesRepContact(bpartnerRecord))
+				.discountPrinted(bpartnerRecord.isDiscountPrinted())
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
@@ -400,6 +401,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.attention(trimBlankToNull(bPartnerLocationRecord.getAttention()))
 				.vatTaxId(VATIdentifier.ofNullable(bPartnerLocationRecord.getVATaxID()))
 				.build();
 

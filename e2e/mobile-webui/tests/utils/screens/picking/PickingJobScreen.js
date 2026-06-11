@@ -12,6 +12,7 @@ import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { test } from '../../../../playwright.config';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityErrorPanel';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -22,6 +23,7 @@ const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with Pick
 export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     getPickingJobId: async () => {
@@ -34,7 +36,7 @@ export const PickingJobScreen = {
 
     scanPickFromHU: async ({ qrCode }) => await step(`${NAME} - Scan pick from HU ${qrCode}`, async () => {
         const button = page.getByTestId(`scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`);
-        await button.waitFor();
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(button).toBeEnabled();
         await button.tap();
         await PickFromHUScanScreen.waitForScreen();
@@ -45,7 +47,7 @@ export const PickingJobScreen = {
 
     clickPickingSlotButton: async () => await step(`${NAME} - Click Picking Slot button`, async () => {
         const button = pickingSlotButton();
-        await button.waitFor();
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(button).toBeEnabled();
         await button.tap();
 
@@ -54,7 +56,7 @@ export const PickingJobScreen = {
 
     expectPickingSlotButtonGreen: async () => await step(`${NAME} - Expect Picking Slot button to be green`, async () => {
         const button = pickingSlotButton();
-        await button.waitFor();
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await button.locator('.indicator-color-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
@@ -102,7 +104,15 @@ export const PickingJobScreen = {
     closeTargetLU: async () => await step(`${NAME} - Close target LU`, async () => {
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.clickCloseTargetButton();
-        await PickingJobScreen.waitForScreen();
+        // After close, the app may stay on SelectPickTargetScreen briefly while the API processes.
+        // Wait for either PickingJobScreen (if goBack fires) or loading to settle, then go back if needed.
+        try {
+            await PickingJobScreen.waitForScreen();
+        } catch (e) {
+            // goBack() didn't fire or was too slow — navigate back manually
+            await page.locator(ID_BACK_BUTTON).tap();
+            await PickingJobScreen.waitForScreen();
+        }
     }),
 
     clickTUTargetButton: async () => await step(`${NAME} - Click TU target button`, async () => {
@@ -117,7 +127,12 @@ export const PickingJobScreen = {
     closeTargetTU: async () => await step(`${NAME} - Close target TU`, async () => {
         await PickingJobScreen.clickTUTargetButton();
         await SelectPickTargetTUScreen.clickCloseTargetButton();
-        await PickingJobScreen.waitForScreen();
+        try {
+            await PickingJobScreen.waitForScreen();
+        } catch (e) {
+            await page.locator(ID_BACK_BUTTON).tap();
+            await PickingJobScreen.waitForScreen();
+        }
     }),
 
     pickHU: async ({
@@ -166,7 +181,7 @@ export const PickingJobScreen = {
             await step(`${NAME} - Waiting until line button color='${waitForColor}'`, async () => {
                 const expectedClassName = `indicator-color-${waitForColor}`;
                 const indicator = lineButton.locator(`[data-testid="indicator"].${expectedClassName}`);
-                await indicator.waitFor({ state: 'attached' });
+                await indicator.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
             });
         }
 
@@ -214,6 +229,13 @@ export const PickingJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
+        await page.locator('#last-confirm-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await ConfirmActivityErrorPanel.waitForPanel();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

@@ -182,6 +182,12 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	@Override
+	public LocalDate getDateAcct()
+	{
+		return creditMemoPayableDoc.getDateAcct();
+	}
+
+	@Override
 	public PaymentCurrencyContext getPaymentCurrencyContext()
 	{
 		return PaymentCurrencyContext.builder()

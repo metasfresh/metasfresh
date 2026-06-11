@@ -54,4 +54,15 @@ describe('computeStepScanPropsFromActivity', () => {
     expect(result.qtyToIssueMax).toEqual(15 - 3);
     expect(result.isIssueWholeHU).toEqual(false);
   });
+
+  it('qtyToIssueTarget is capped at qtyHUCapacity when step has more planned qty than actual HU capacity', () => {
+    const result = call_computeStepScanPropsFromActivity({
+      line: { qtyToIssue: 20, qtyToIssueMax: 20 },
+      step: { qtyToIssue: 20, qtyHUCapacity: 5 },
+    });
+    // Bug: Math.min(20, 20, 20) = 20 — qtyHUCapacity not in min, dialog suggests 20 when HU only has 5
+    // Fix: Math.min(20, 20, 20, 5) = 5
+    expect(result.qtyToIssueTarget).toEqual(5);
+    expect(result.isIssueWholeHU).toEqual(true); // 5 >= 5
+  });
 });

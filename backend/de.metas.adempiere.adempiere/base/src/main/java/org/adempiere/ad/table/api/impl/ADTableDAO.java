@@ -210,7 +210,8 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public AdTableId retrieveAdTableId(@Nullable final String tableName)
+	@NonNull
+	public AdTableId retrieveAdTableId(@NonNull final String tableName)
 	{
 		return AdTableId.ofRepoId(retrieveTableId(tableName));
 	}

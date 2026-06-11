@@ -38,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
+import org.compiere.model.X_AD_SysConfig;
 import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
@@ -218,6 +219,29 @@ public class SysConfigBL implements ISysConfigBL
 			@NonNull final OrgId orgId)
 	{
 		sysConfigDAO.setValue(name, value, ClientAndOrgId.ofClientAndOrg(clientId, orgId));
+	}
+
+	@Override
+	public void setValueAtConfigLevel(@NonNull final String name, @NonNull final String value)
+	{
+		sysConfigDAO.setValue(name, value, computeConfigLevelTarget(name));
+	}
+
+	private ClientAndOrgId computeConfigLevelTarget(@NonNull final String name)
+	{
+		final String level = sysConfigDAO.getConfigurationLevel(name).orElse(null);
+		if (X_AD_SysConfig.CONFIGURATIONLEVEL_System.equals(level))
+		{
+			return ClientAndOrgId.SYSTEM;
+		}
+		else if (X_AD_SysConfig.CONFIGURATIONLEVEL_Client.equals(level))
+		{
+			return ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY);
+		}
+		else
+		{
+			return ClientAndOrgId.MAIN;
+		}
 	}
 
 	private Set<String> getNamesForPrefix(final String prefix, final ClientAndOrgId clientAndOrgId)

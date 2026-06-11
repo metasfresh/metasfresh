@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
+import de.metas.handlingunits.grai.GRAIRequired;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -18,6 +19,19 @@ public class JsonCreateBPartnerRequest
 
 	@Nullable String gln;
 	@Nullable Map<String, Location> locations;
+
+	/**
+	 * Sets {@code C_BPartner.GRAIRequired}.
+	 * (De)serialized by its code: {@code 'Y'}=Yes, {@code 'N'}=No, {@code 'D'}=YesWithDummyGRAIs.
+	 * If null, the business partner is left unchanged.
+	 */
+	@Nullable GRAIRequired graiRequired;
+
+	/**
+	 * Contacts (AD_User records) to create for this business partner.
+	 * Each contact is linked to the business partner via C_BPartner_ID.
+	 */
+	@Nullable Map<String, Contact> contacts;
 
 	/**
 	 * Whether this business partner is a vendor (purchase side).
@@ -45,5 +59,20 @@ public class JsonCreateBPartnerRequest
 	public static class Location
 	{
 		@Nullable String gln;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Contact
+	{
+		@Nullable String firstName;
+		@Nullable String lastName;
+		@Nullable String email;
+		@Nullable String phone;
+		/**
+		 * Description or title for the contact.
+		 */
+		@Nullable String description;
 	}
 }

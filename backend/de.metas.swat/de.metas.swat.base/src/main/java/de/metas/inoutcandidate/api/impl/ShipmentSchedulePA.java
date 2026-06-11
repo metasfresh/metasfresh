@@ -74,6 +74,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * NOTE: this ordering is VERY important because that's the order in which the available QtyOnHand will be allocated.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
+ 			// If the qty was actively scheduled for picking, the qtyToDeliver should have the highest priority
+			// as this qty is fix planned and this should prevent it from decreasing because of other changes
+			+ "\n " + I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking + " DESC,"
 			//
 			// Priority
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule + ")," //
@@ -100,6 +103,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
+			+ "\n THEN FALSE ELSE TRUE END,"
+			//
+			// Reservation 1b - look at scheds for which there is a Qty reservation (from Material Cockpit V2)
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM M_QtyReservation qres"
+			+ "\n                  WHERE qres.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID"
+			+ "\n                        AND qres.IsActive = 'Y'"
+			+ "\n                        AND qres.QtyTU > 0)"
 			+ "\n THEN FALSE ELSE TRUE END,"
 			//
 			// Reservation 2 - look at scheds for whose bpartners there are *dedicated* HUs.

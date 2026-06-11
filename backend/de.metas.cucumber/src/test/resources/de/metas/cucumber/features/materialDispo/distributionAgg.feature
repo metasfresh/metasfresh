@@ -87,9 +87,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -140,9 +140,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -192,9 +192,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
@@ -243,9 +243,9 @@ Feature: create distribution order based on aggregation sysconfig
       | ol_3       | SO2        | p_1          | 4          |
       | ol_4       | SO2        | p_1          | 5          |
     And the order identified by SO1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by SO2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 30s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |

@@ -94,6 +94,16 @@ public class DistributionJobLoaderSupportingServices
 				.collect(Collectors.groupingBy(ddOrderLine -> DDOrderId.ofRepoId(ddOrderLine.getDD_Order_ID()), Collectors.toList()));
 	}
 
+	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
+	{
+		return ddOrderService.retrieveLines(ddOrder);
+	}
+
+	public void saveLine(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		ddOrderService.saveLine(ddOrderLine);
+	}
+
 	public Map<DDOrderLineId, List<DDOrderMoveSchedule>> getSchedulesByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds)
 	{
 		if (ddOrderLineIds.isEmpty()) {return ImmutableMap.of();}

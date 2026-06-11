@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
@@ -82,6 +83,7 @@ import de.metas.project.service.ProjectRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -114,6 +116,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -197,6 +200,7 @@ public class C_Order_StepDef
 	@NonNull private final C_PaymentTerm_StepDef paymentTermStepDef;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final C_PromotionCode_StepDefData promotionCodeTable;
 
 	@Given("simple completed order with one line")
 	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
@@ -219,6 +223,15 @@ public class C_Order_StepDef
 		completeOrder(order);
 	}
 
+	/**
+	 * Creates {@code C_Order} records.
+	 * <p>
+	 * gh#28565: Added support for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
 	{
@@ -280,12 +293,10 @@ public class C_Order_StepDef
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 
-		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(userIdentifier))
-		{
-			final I_AD_User user = userTable.get(userIdentifier);
-			order.setAD_User_ID(user.getAD_User_ID());
-		}
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(user -> order.setAD_User_ID(user.getAD_User_ID()));
 
 		final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(billBPartnerIdentifier))
@@ -338,10 +349,9 @@ public class C_Order_StepDef
 		final Instant preparationDate = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_PreparationDate).orElse(null);
 		final Instant datePromised = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised).orElse(null);
 
-		final Instant preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
-		if (preparationDateToBeSet != null)
+		if (preparationDate != null)
 		{
-			order.setPreparationDate(Timestamp.from(preparationDateToBeSet));
+			order.setPreparationDate(Timestamp.from(preparationDate));
 		}
 
 		final Instant datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
@@ -425,8 +435,28 @@ public class C_Order_StepDef
 				.map(shipperTable::extractIdFromRecord)
 				.map(ShipperId::getRepoId)
 				.ifPresent(order::setM_Shipper_ID);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
+				.map(projectTable::get)
+				.map(projectTable::extractIdFromRecord)
+				.map(ProjectId::getRepoId)
+				.ifPresent(order::setC_Project_ID);
+
+		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> order.setC_PromotionCode_ID(promoCode.getC_PromotionCode_ID()));
+		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> order.setC_PromotionCode2_ID(promoCode.getC_PromotionCode_ID()));
 
 		saveRecord(order);
+
+		//
+		// Set the values again to make sure they are permanent and not overriden by some beforeSave BLs
+		{
+			tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).map(StringUtils::trimBlankToNull).ifPresent(order::setDeliveryRule);
+
+			saveRecord(order);
+		}
 
 		tableRow.getAsOptionalIdentifier()
 				.ifPresent(identifier -> orderTable.putOrReplace(identifier, order));
@@ -536,12 +566,23 @@ public class C_Order_StepDef
 		{
 			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
 			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
-			final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
+
+			final org.adempiere.ad.dao.IQueryBuilder<I_C_Order> poQueryBuilder = queryBL
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId)
-					.create()
-					.firstOnly(I_C_Order.class);
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId);
+
+			// Optional disambiguation by vendor — needed for multi-vendor SOs where N POs
+			// share the same Link_Order_ID but differ by C_BPartner_ID. Backward compatible:
+			// callers that omit the column get the original firstOnly behaviour.
+			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_ID);
+			if (EmptyUtil.isNotBlank(bpartnerIdentifier))
+			{
+				final int bpartnerRepoId = bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID();
+				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
+			}
+
+			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
 			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
@@ -564,12 +605,18 @@ public class C_Order_StepDef
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 			// TODO: introduce DataTableRows for this whole stepdef
-			DataTableRow.singleRow(tableRow)
-					.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+			final DataTableRow singleRow = DataTableRow.singleRow(tableRow);
+			singleRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
 					.map(bpartnerTable::getId)
 					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
 							.as("DropShip_BPartner_ID")
 							.isEqualTo(dropShipId.getRepoId()));
+
+			// Optional `Identifier` column: register the looked-up PO in orderTable so subsequent
+			// steps (validate the created orders, validate C_OrderLine:, etc.) can reference it by
+			// its feature-file identifier.
+			singleRow.getAsOptionalIdentifier()
+					.ifPresent(identifier -> orderTable.putOrReplace(identifier, purchaseOrder));
 		}
 	}
 
@@ -635,6 +682,15 @@ public class C_Order_StepDef
 				.ifPresent(orderIdentifier -> orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord));
 	}
 
+	/**
+	 * Validates {@code C_Order} records against expected values.
+	 * <p>
+	 * gh#28565: Added validation for promotion code columns:
+	 * <ul>
+	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
+	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 * </ul>
+	 */
 	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
@@ -726,7 +782,8 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocBaseType)
 				.ifPresent(docBaseType -> {
-					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+					final int docTypeRepoId = CoalesceUtil.firstGreaterThanZero(order.getC_DocType_ID(), order.getC_DocTypeTarget_ID());
+					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(docTypeRepoId));
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 
@@ -842,6 +899,17 @@ public class C_Order_StepDef
 						.as("C_Incoterms_ID for value %s", incotermValue).isTrue());
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(incotermLocation -> softly.assertThat(order.getIncotermLocation()).as(COLUMNNAME_IncotermLocation).isEqualTo(incotermLocation));
 
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(order.getC_PromotionCode_ID())
+						.as("C_PromotionCode_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
+		row.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
+				.map(promotionCodeTable::get)
+				.ifPresent(promoCode -> softly.assertThat(order.getC_PromotionCode2_ID())
+						.as("C_PromotionCode2_ID for Identifier=%s", identifierStr)
+						.isEqualTo(promoCode.getC_PromotionCode_ID()));
+
 		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
 		if (projectIdentifier != null)
 		{
@@ -864,6 +932,35 @@ public class C_Order_StepDef
 				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", order.getC_Order_ID());
 			}
 		}
+
+		// LC_Date: "null" in the feature means assert NULL; a date string (yyyy-MM-dd) asserts exact equality.
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_LC_Date)
+				.ifPresent(rawValue -> {
+					if (DataTableUtil.isNullPlaceholder(rawValue))
+					{
+						softly.assertThat(order.getLC_Date())
+								.as("LC_Date should be NULL for Identifier=%s", identifierStr)
+								.isNull();
+					}
+					else
+					{
+						final LocalDate expectedDate = LocalDate.parse(rawValue);
+						// Wall-clock interpretation (no zoneId): matches the production read at
+						// OrderPayScheduleService#toOrderSchedulingContext (TimeUtil.asLocalDate(getLC_Date())).
+						// LC_Date is on a deprecation path; don't introduce a new instant-based read here.
+						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date()))
+								.as("LC_Date for Identifier=%s", identifierStr)
+								.isEqualTo(expectedDate);
+					}
+				});
+
+		row.getAsOptionalLocalDate(COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getPreparationDate(), zoneId))
+							.as("PreparationDate for Identifier=%s", identifierStr)
+							.isEqualTo(preparationDate);
+				});
 
 		softly.assertAll();
 	}

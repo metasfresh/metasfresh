@@ -51,6 +51,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -89,9 +90,9 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: Product
-		if (query.getProductId() != null)
+		if (!query.getProductIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductId());
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductIds());
 		}
 
 		//
@@ -226,6 +227,13 @@ public class PackagingDAO implements IPackagingDAO
 		if (query.getExcludeShipmentScheduleIds() != null && !query.getExcludeShipmentScheduleIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
+		}
+
+		//
+		// Nothing left to pick: keep only QtyToDeliver > 0 (it is already net of picked/shipped/on-draft qty).
+		if (query.isExcludeNothingToPick())
+		{
+			queryBuilder.addCompareFilter(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
 		}
 
 		// Filter: Handover Location

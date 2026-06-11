@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.material.interceptor;
 
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
@@ -18,32 +40,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @Interceptor(I_M_Transaction.class)
 @Component
 public class M_Transaction_PostTransactionEvent
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final PostMaterialEventService materialEventService;
 	private final TransactionEventFactory transactionEventCreator;
 	private final TransactionDescriptorFactory transactionDescriptorFactory;
@@ -80,9 +82,13 @@ public class M_Transaction_PostTransactionEvent
 	private void createAndPostEventsNow(@NonNull final TransactionDescriptor transaction, final boolean deleted)
 	{
 		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
+
 		for (final MaterialEvent event : events)
 		{
-			materialEventService.enqueueEventAfterNextCommit(event);
+			// Use enqueueEventNow because this method runs inside a runAfterCommit callback,
+			// meaning data is already committed. Using enqueueEventAfterNextCommit here would
+			// nest two after-commit registrations, unnecessarily delaying event posting.
+			materialEventService.enqueueEventNow(event);
 		}
 	}
 }

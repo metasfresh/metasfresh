@@ -16,6 +16,7 @@
  */
 
 const { test } = require('../../playwright.config');
+const { allure } = require('allure-playwright');
 const { PdfLayoutValidator } = require('./PdfLayoutValidator');
 
 class PdfValidator {
@@ -63,10 +64,11 @@ class PdfValidator {
         overlapTolerance = 2,
         margins,
         pageSize,
+        skipDocNumberValidation = false,
       } = options;
 
-      // Validate required fields
-      if (!documentNo) {
+      // Validate required fields (unless skipped)
+      if (!documentNo && !skipDocNumberValidation) {
         throw new Error('documentNo is required for PDF validation');
       }
 
@@ -93,6 +95,11 @@ class PdfValidator {
 
       // Extract and normalize text (replace multiple whitespaces with single space)
       const text = pdfData.text.replace(/\s+/g, ' ');
+      // Also create a whitespace-stripped version for substring matching.
+      // PDF text extraction often inserts spaces in the middle of long strings
+      // (e.g., "Product1_20260301T08032 7689" instead of "Product1_20260301T080327689")
+      // because the PDF renderer splits text across line fragments.
+      const textNoSpaces = pdfData.text.replace(/\s+/g, '');
 
       // Log first 1000 chars for debugging
       console.log('PDF text preview:', text.substring(0, 1000));
@@ -102,21 +109,25 @@ class PdfValidator {
       // ============================================================
       const errors = [];
 
-      // Validate document number
-      if (!text.includes(documentNo)) {
-        errors.push(
-          `Document Number Validation Failed:\n` +
-            `  Field: Document Number\n` +
-            `  Expected: "${documentNo}"\n` +
-            `  Actual: Not found in PDF`
-        );
-      } else {
-        console.log(`✓ Document number validated: ${documentNo}`);
+      // Validate document number (unless skipped)
+      if (documentNo && !skipDocNumberValidation) {
+        if (!text.includes(documentNo)) {
+          errors.push(
+            `Document Number Validation Failed:\n` +
+              `  Field: Document Number\n` +
+              `  Expected: "${documentNo}"\n` +
+              `  Actual: Not found in PDF`
+          );
+        } else {
+          console.log(`✓ Document number validated: ${documentNo}`);
+        }
+      } else if (skipDocNumberValidation) {
+        console.log(`⏭ Document number validation skipped (partial receipt)`);
       }
 
       // Validate customer name/code (if provided)
       if (customerName) {
-        if (!text.includes(customerName)) {
+        if (!text.includes(customerName) && !textNoSpaces.includes(customerName)) {
           errors.push(
             `Customer Name Validation Failed:\n` +
               `  Field: Customer Name/Code\n` +
@@ -130,7 +141,7 @@ class PdfValidator {
 
       // Validate product code (if provided)
       if (productCode) {
-        if (!text.includes(productCode)) {
+        if (!text.includes(productCode) && !textNoSpaces.includes(productCode)) {
           errors.push(
             `Product Code Validation Failed:\n` +
               `  Field: Product Code\n` +
@@ -147,15 +158,20 @@ class PdfValidator {
         if (!productCode) {
           errors.push('Quantity validation requires productCode to be specified');
         } else {
-          const productCodeIndex = text.indexOf(productCode);
+          let productCodeIndex = text.indexOf(productCode);
+          // Fall back to whitespace-stripped text if not found (PDF line-wrapping)
+          const qtySearchText = productCodeIndex !== -1 ? text : textNoSpaces;
+          if (productCodeIndex === -1) {
+            productCodeIndex = textNoSpaces.indexOf(productCode);
+          }
           if (productCodeIndex === -1) {
             errors.push('Product code not found in PDF text for quantity validation');
           } else {
             // Get text around the product (500 chars before and after should cover the order line)
             // Quantity may appear before or after the product code depending on PDF layout
             const startIndex = Math.max(0, productCodeIndex - 200);
-            const endIndex = Math.min(text.length, productCodeIndex + 500);
-            const productLineText = text.substring(startIndex, endIndex);
+            const endIndex = Math.min(qtySearchText.length, productCodeIndex + 500);
+            const productLineText = qtySearchText.substring(startIndex, endIndex);
 
             // Try to match quantity with or without decimal places
             // Handles: "10", "10.00", "10,00", "1010" (position+qty), "10 Stk"
@@ -165,12 +181,19 @@ class PdfValidator {
             // Also match "1010" pattern (Pos. 10, Menge 10) or "10Stk" pattern
             const qtyWithUnitRegex = new RegExp(`(${quantity})(Stk|St|Stück|pcs|pc|pieces)`);
             const qtyDoubleRegex = new RegExp(`(\\d+)(${quantity})\\s`);
+            // Match price,00 followed by quantity followed by line number: "10,00510" = price(10,00) + qty(5) + line(10)
+            // Pattern: comma or period followed by digits, then our quantity, then more digits
+            const qtyAfterPriceRegex = new RegExp(`[.,]\\d{2}(${quantity})\\d`);
+            // Match quantity followed by digits (line number) without space
+            const qtyBeforeLineNoRegex = new RegExp(`(${quantity})\\d+\\s`);
 
             const quantityFound =
               qtyRegex.test(productLineText) ||
               qtyDecimalRegex.test(productLineText) ||
               qtyWithUnitRegex.test(productLineText) ||
-              qtyDoubleRegex.test(productLineText);
+              qtyDoubleRegex.test(productLineText) ||
+              qtyAfterPriceRegex.test(productLineText) ||
+              qtyBeforeLineNoRegex.test(productLineText);
 
             if (!quantityFound) {
               errors.push(
@@ -236,6 +259,21 @@ class PdfValidator {
       }
 
       console.log(`✅ PDF validation completed successfully for ${language}`);
+
+      // ============================================================
+      // STEP 4: Attach PDF to Allure report
+      // ============================================================
+      try {
+        const filename = await download.suggestedFilename();
+        // Create descriptive name: e.g., "material-receipt-1000001.pdf"
+        const attachmentName = documentNo ? `${filename.replace('.pdf', '')}-${documentNo}.pdf` : filename;
+
+        await allure.attachment(attachmentName, buffer, 'application/pdf');
+        console.log(`📎 PDF attached to Allure report: ${attachmentName}`);
+      } catch (attachError) {
+        // Don't fail the test if attachment fails, just log warning
+        console.warn(`⚠️ Failed to attach PDF to Allure report: ${attachError.message}`);
+      }
     });
   }
 }

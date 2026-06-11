@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
@@ -67,6 +68,9 @@ import java.util.Set;
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
+
+	/** Returns max(PurchaseTransportDays across all order lines), or 0 if there are no lines or no transport days. */
+	int getMaxPurchaseTransportDays(I_C_Order order);
 
 	/**
 	 * Sets price list if there is a price list for the given order's location and pricing system.
@@ -111,10 +115,14 @@ public interface IOrderBL extends ISingletonService
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
 
-	@NonNull BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
+	@NonNull
+	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
 
 	@Nullable
 	BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull I_C_Order orderRecord);
+
+	@NonNull
+	BPartnerLocationId getEffectiveDropshipLocationId(@NonNull I_C_Order orderRecord);
 
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
@@ -266,7 +274,7 @@ public interface IOrderBL extends ISingletonService
 	boolean isSalesOrder(@NonNull I_C_Order order);
 
 	boolean isSalesOrder(@NonNull OrderId orderId);
-	
+
 	boolean isRequisition(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
@@ -369,6 +377,8 @@ public interface IOrderBL extends ISingletonService
 		return luQty != null && luQty.signum() > 0;
 	}
 
+	PaymentTermId getPaymentTermId(@NonNull OrderId orderId);
+
 	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
 
 	Money getGrandTotal(@NonNull I_C_Order order);
@@ -380,4 +390,6 @@ public interface IOrderBL extends ISingletonService
 	void syncDateInvoicedFromInvoice(@NonNull OrderId orderId, @NonNull I_C_Invoice invoice);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+
+	void updateASIFromProjectId(@NonNull de.metas.interfaces.I_C_OrderLine orderLine);
 }

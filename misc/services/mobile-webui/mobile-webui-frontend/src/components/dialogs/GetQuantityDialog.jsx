@@ -277,7 +277,7 @@ const GetQuantityDialog = ({
               userInfo.map((item) => (
                 <tr key={computeKeyFromUserInfoItem(item)}>
                   <th>{computeCaptionFromUserInfoItem(item)}</th>
-                  <td>{item.value}</td>
+                  <td data-testid={computeKeyFromUserInfoItem(item)}>{item.value}</td>
                 </tr>
               ))}
             <tr>
@@ -343,7 +343,7 @@ const GetQuantityDialog = ({
                     userInfo.map((item) => (
                       <tr key={computeKeyFromUserInfoItem(item)}>
                         <th>{computeCaptionFromUserInfoItem(item)}</th>
-                        <td>{item.value}</td>
+                        <td data-testid={computeKeyFromUserInfoItem(item)}>{item.value}</td>
                       </tr>
                     ))}
                   {!hideQtyInput && (

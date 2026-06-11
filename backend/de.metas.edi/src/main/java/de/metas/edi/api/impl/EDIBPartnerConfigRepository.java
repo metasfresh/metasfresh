@@ -25,29 +25,36 @@ package de.metas.edi.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
 import de.metas.edi.api.EDIBPartnerConfig;
 import de.metas.edi.api.EDISendingMode;
+import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import de.metas.edi.model.I_C_BPartner;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository Tables: C_BPartner_EDI_Setting
+ * Repository Cluster: EDIBPartnerConfigRepository (sole reader)
+ */
 @Repository
 public class EDIBPartnerConfigRepository
 {
+	private static final Logger logger = LogManager.getLogger(EDIBPartnerConfigRepository.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
@@ -59,22 +66,27 @@ public class EDIBPartnerConfigRepository
 	}
 
 	private final CCache<Integer, EDIBPartnerConfigMap> cache = CCache.<Integer, EDIBPartnerConfigMap>builder()
-			.tableName(I_C_BPartner.Table_Name)
+			.tableName(I_C_BPartner_EDI_Setting.Table_Name)
 			.maximumSize(1)
 			.build();
 
+	// BPartnerLocationId-based API
+
 	@Nullable
-	public EDIBPartnerConfig getByIdOrNull(@NonNull final BPartnerId bPartnerId)
+	public EDIBPartnerConfig getByIdOrNull(@NonNull final BPartnerLocationId bPartnerLocationId)
 	{
-		return getEDIBPartnerConfigMap().getById(bPartnerId);
+		return getEDIBPartnerConfigMap().resolve(bPartnerLocationId);
 	}
 
 	@NonNull
-	public EDIBPartnerConfig getById(@NonNull final BPartnerId bPartnerId)
+	public EDIBPartnerConfig getById(@NonNull final BPartnerLocationId bPartnerLocationId)
 	{
-		return Optional.ofNullable(getEDIBPartnerConfigMap().getById(bPartnerId))
-				.orElseThrow(() -> new AdempiereException("No active EdiBPartnerConfig found for BPartnerId " + bPartnerId.getRepoId()));
+		return Optional.ofNullable(getEDIBPartnerConfigMap().resolve(bPartnerLocationId))
+				.orElseThrow(() -> new AdempiereException("No active EDIBPartnerConfig found for BPartnerLocationId " + bPartnerLocationId));
 	}
+
+	//
+	// --- internal ---
 
 	private EDIBPartnerConfigMap getEDIBPartnerConfigMap()
 	{
@@ -83,48 +95,75 @@ public class EDIBPartnerConfigRepository
 
 	private EDIBPartnerConfigMap retrieveEDIBPartnerConfigMap()
 	{
-		// keep in sync with the index c_bpartner_isedidesadvrecipient_isediinvoicrecipient
-		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.addCompositeQueryFilter()
-				.setJoinOr()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, true)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient, true);
-
-		final ImmutableList<EDIBPartnerConfig> configs = queryBuilder.create()
+		final List<EDIBPartnerConfig> configs = queryBL.createQueryBuilder(I_C_BPartner_EDI_Setting.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.stream()
 				.map(EDIBPartnerConfigRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
-		return new EDIBPartnerConfigMap(configs);
+		final ImmutableMap<BPartnerLocationId, EDIBPartnerConfig> byLocation = configs.stream()
+				.filter(config -> config.getBpartnerLocationId() != null)
+				.collect(ImmutableMap.toImmutableMap(
+						EDIBPartnerConfig::getBpartnerLocationId,
+						config -> config,
+						(first, ignored) -> {
+							logger.warn("Ignoring duplicate active C_BPartner_EDI_Setting for location={}; keeping the first", first.getBpartnerLocationId());
+							return first;
+						}));
+
+		final ImmutableMap<BPartnerId, EDIBPartnerConfig> defaultByPartner = configs.stream()
+				.filter(config -> config.getBpartnerLocationId() == null)
+				.collect(ImmutableMap.toImmutableMap(
+						EDIBPartnerConfig::getBPartnerId,
+						config -> config,
+						(first, ignored) -> {
+							logger.warn("Ignoring duplicate active default C_BPartner_EDI_Setting for bPartnerId={}; keeping the first", first.getBPartnerId().getRepoId());
+							return first;
+						}));
+
+		return new EDIBPartnerConfigMap(byLocation, defaultByPartner);
 	}
 
-	private static EDIBPartnerConfig fromRecord(@NonNull final I_C_BPartner partner)
+	private static EDIBPartnerConfig fromRecord(@NonNull final I_C_BPartner_EDI_Setting record)
 	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(record.getC_BPartner_ID());
+		final BPartnerLocationId bpartnerLocationId = record.getC_BPartner_Location_ID() > 0
+				? BPartnerLocationId.ofRepoId(bPartnerId, record.getC_BPartner_Location_ID())
+				: null;
+
 		return EDIBPartnerConfig.builder()
-				.bPartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))
-				.isEdiDesadvRecipient(partner.isEdiDesadvRecipient())
-				.ediDesadvRecipientGLN(partner.getEdiDesadvRecipientGLN())
-				.ediDesadvSendingMode(EDISendingMode.ofCode(partner.getEdiDESADVSendingMode()))
-				.ediDesadvExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(partner.getEdiDESADV_ExternalSystem_Config_ID()))
-				.isEdiInvoicRecipient(partner.isEdiInvoicRecipient())
-				.ediInvoicRecipientGLN(partner.getEdiInvoicRecipientGLN())
-				.ediInvoicSendingMode(EDISendingMode.ofCode(partner.getEdiINVOICSendingMode()))
-				.ediInvoicExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(partner.getEdiINVOIC_ExternalSystem_Config_ID()))
+				.bPartnerId(bPartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.isEdiDesadvRecipient(record.isEdiDesadvRecipient())
+				.ediDesadvRecipientGLN(record.getEdiDesadvRecipientGLN())
+				.ediDesadvSendingMode(EDISendingMode.ofCode(record.getEdiDESADVSendingMode()))
+				.ediDesadvExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(record.getEdiDESADV_ExternalSystem_Config_ID()))
+				.isEdiInvoicRecipient(record.isEdiInvoicRecipient())
+				.ediInvoicRecipientGLN(record.getEdiInvoicRecipientGLN())
+				.ediInvoicSendingMode(EDISendingMode.ofCode(record.getEdiINVOICSendingMode()))
+				.ediInvoicExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(record.getEdiINVOIC_ExternalSystem_Config_ID()))
 				.build();
 	}
 
 	private static final class EDIBPartnerConfigMap
 	{
-		private final ImmutableMap<BPartnerId, EDIBPartnerConfig> allEnabledById;
+		private final ImmutableMap<BPartnerLocationId, EDIBPartnerConfig> byLocation;
+		private final ImmutableMap<BPartnerId, EDIBPartnerConfig> defaultByPartner;
 
-		EDIBPartnerConfigMap(final List<EDIBPartnerConfig> list)
+		EDIBPartnerConfigMap(
+				@NonNull final ImmutableMap<BPartnerLocationId, EDIBPartnerConfig> byLocation,
+				@NonNull final ImmutableMap<BPartnerId, EDIBPartnerConfig> defaultByPartner)
 		{
-			this.allEnabledById = Maps.uniqueIndex(list, EDIBPartnerConfig::getBPartnerId);
+			this.byLocation = byLocation;
+			this.defaultByPartner = defaultByPartner;
 		}
 
 		@Nullable
-		EDIBPartnerConfig getById(@NonNull final BPartnerId bPartnerId) {return allEnabledById.get(bPartnerId);}
+		EDIBPartnerConfig resolve(@NonNull final BPartnerLocationId bpl)
+		{
+			final EDIBPartnerConfig exact = byLocation.get(bpl);
+			return exact != null ? exact : defaultByPartner.get(bpl.getBpartnerId());
+		}
 	}
 }

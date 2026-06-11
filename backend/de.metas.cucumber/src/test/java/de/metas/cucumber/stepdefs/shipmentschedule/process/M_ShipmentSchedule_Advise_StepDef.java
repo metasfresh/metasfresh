@@ -75,9 +75,8 @@ public class M_ShipmentSchedule_Advise_StepDef
 
 		final List<CarrierServiceId> carrierServiceIds = new ArrayList<>();
 		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID)
-				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
-		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2")
-				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
+				.ifPresent(identifier -> identifier.toCommaSeparatedList()
+						.forEach(id -> carrierServiceIds.add(id.lookupNotNullIdIn(carrierServiceTable))));
 
 		carrierAdviseProcessService.updateEligibleShipmentSchedules(
 				CarrierAdviseUpdateRequest.builder()

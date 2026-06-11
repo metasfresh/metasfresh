@@ -48,6 +48,7 @@ public class JsonDeliveryRequest
 	@NonNull String id = UUID.randomUUID().toString();
 	int deliveryOrderId;
 	@NonNull JsonAddress pickupAddress;
+	@Nullable JsonContact pickupContact;
 	@NonNull String pickupDate;
 	@NonNull String timeFrom;
 	@NonNull String timeTo;
@@ -115,8 +116,12 @@ public class JsonDeliveryRequest
 				return getShipperProduct() != null ? getShipperProduct().getCode() : null;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI:
 				return getShipperEORI();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION:
+				return getDeliveryAddress().getAttention();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
+				return getPickupAddress().getAttention();
 			default:
-				throw new IllegalArgumentException("Unknown attributeValue: " + attributeValue);
+				return null; // attribute not available at request level — filtered out by caller
 		}
 	}
 }

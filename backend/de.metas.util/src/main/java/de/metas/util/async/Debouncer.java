@@ -222,17 +222,17 @@ public final class Debouncer<T>
 		}
 	}
 
+	public void shutdown()
+	{
+		executor.shutdown();
+	}
+
 	public void purgeBuffer()
 	{
 		synchronized (lock)
 		{
 			buffer.clear();
 		}
-	}
-
-	public void shutdown()
-	{
-		executor.shutdown();
 	}
 
 	/*

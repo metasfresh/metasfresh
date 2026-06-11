@@ -25,7 +25,8 @@ package de.metas.handlingunits.impl;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
+import de.metas.project.ProjectId;
+import lombok.NonNull;
 import lombok.Value;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,35 +43,52 @@ import java.util.List;
 @Value
 public class PlainPackingMaterialDocumentLineSource implements IPackingMaterialDocumentLineSource
 {
-	public static PlainPackingMaterialDocumentLineSource of(final I_M_HU_PackingMaterial packingMaterial, final int qty)
+	public static PlainPackingMaterialDocumentLineSource of(@NonNull final I_M_HU_PackingMaterial packingMaterial, final int qty)
 	{
 		return of(packingMaterial, qty, null, 0);
 	}
 
-	public static PlainPackingMaterialDocumentLineSource of(final I_M_HU_PackingMaterial packingMaterial,
+	public static PlainPackingMaterialDocumentLineSource of(@NonNull final I_M_HU_PackingMaterial packingMaterial,
 															final int qty,
-															final ProductId lUProductID,
+															@Nullable final ProductId lUProductID,
 															final int luQty)
 	{
-		return new PlainPackingMaterialDocumentLineSource(packingMaterial, qty, lUProductID, luQty);
+		return of(packingMaterial, qty, lUProductID, luQty, null);
+	}
+
+	public static PlainPackingMaterialDocumentLineSource of(@NonNull final I_M_HU_PackingMaterial packingMaterial,
+															final int qty,
+															@Nullable final ProductId lUProductID,
+															final int luQty,
+															@Nullable final ProjectId projectId)
+	{
+		return new PlainPackingMaterialDocumentLineSource(packingMaterial, qty, lUProductID, luQty, projectId);
 	}
 
 	List<I_M_HU_PackingMaterial> M_HU_PackingMaterials;
 	BigDecimal qty;
 	@Nullable ProductId lUProductId;
 	BigDecimal qtyLU;
+	@Nullable ProjectId projectId;
 
-	private PlainPackingMaterialDocumentLineSource(final I_M_HU_PackingMaterial packingMaterial,
+	private PlainPackingMaterialDocumentLineSource(@NonNull final I_M_HU_PackingMaterial packingMaterial,
 												   final int qty,
 												   @Nullable final ProductId lUProductId,
-												   final int qtyLU)
+												   final int qtyLU,
+												   @Nullable final ProjectId projectId)
 	{
 		super();
-		Check.assumeNotNull(packingMaterial, "packingMaterial not null");
 		M_HU_PackingMaterials = Collections.singletonList(packingMaterial);
 
 		this.qty = BigDecimal.valueOf(qty);
 		this.lUProductId = lUProductId;
 		this.qtyLU = BigDecimal.valueOf(qtyLU);
+		this.projectId = projectId;
+	}
+
+	@Override
+	public @Nullable ProjectId getProjectId()
+	{
+		return projectId;
 	}
 }

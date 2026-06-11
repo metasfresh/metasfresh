@@ -270,7 +270,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		final List<PaymentInstructionInformation3CH> pmtInf = xmlDocument.getCstmrCdtTrfInitn().getPmtInf();
 		final PaymentInstructionInformation3CH pmtInf1 = pmtInf.get(0);
 		assertThat(pmtInf1).isNotNull();
-		assertThat(pmtInf1.getNbOfTxs()).isNull();
+		assertThat(pmtInf1.getNbOfTxs()).isEqualTo("1");
 		assertThat(pmtInf1.getCtrlSum()).isEqualTo("10");
 
 		final List<CreditTransferTransactionInformation10CH> information3CH = pmtInf1.getCdtTrfTxInf();
@@ -285,7 +285,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		final PaymentInstructionInformation3CH groupedPmtInf1 = pmtInf.get(1);
 		assertThat(groupedPmtInf1).isNotNull();
 		// number of grouped invoices
-		assertThat(groupedPmtInf1.getNbOfTxs()).isEqualTo("2");
+		assertThat(groupedPmtInf1.getNbOfTxs()).isEqualTo("1");
 		// total of all aggregated amounts
 		assertThat(groupedPmtInf1.getCtrlSum()).isEqualTo("11");
 

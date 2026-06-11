@@ -94,7 +94,7 @@ Feature: Jasper Report Tests
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
       | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | LU            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
       | hu1     | rs1                  | receipt1   |

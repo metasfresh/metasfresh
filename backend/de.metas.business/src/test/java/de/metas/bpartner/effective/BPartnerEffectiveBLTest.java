@@ -344,6 +344,33 @@ public class BPartnerEffectiveBLTest
 		assertEquals("TestPoIncotermsLocation3", poIncoterms.getLocationEffective());
 	}
 
+	@Test
+	public void getPurchaseTransportDays_noValueOnBPartner_returns0()
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(0);
+	}
+
+	@Test
+	public void getPurchaseTransportDays_valueSetOnBPartner_returnsValue()
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		partner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		partner.setPO_TransportDays(5);
+		saveRecord(partner);
+
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(5);
+	}
+
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
 	private BPartnerId setupTest(
 			@Nullable final PricingSystemId bpartner_PricingSystemId,
@@ -444,6 +471,50 @@ public class BPartnerEffectiveBLTest
 		saveRecord(incotermsRecord);
 
 		return incotermsRecord.getC_Incoterms_ID();
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSet_returnsValue()
+	{
+		final BPartnerId vendorId = createVendor(5);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(5);
+	}
+
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnNotSet_returnsEmpty()
+	{
+		final BPartnerId vendorId = createVendor(null);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).isEmpty();
+	}
+
+	/**
+	 * Guards the zero-boundary at the BL layer: an explicit {@code PO_TransportDays = 0} on
+	 * the vendor must surface as {@code Optional.of(0)}, not collapse to {@code Optional.empty()}.
+	 * If the DAO's {@code InterfaceWrapperHelper.isNull} check regresses (e.g. POJOWrapper starts
+	 * treating int-zero as null), the candidate handler's three-tier chain would silently
+	 * fall through to {@code PP_Product_Planning.DeliveryTime_Promised} instead of using the
+	 * explicitly-configured 0 — a behavioural regression.
+	 */
+	@Test
+	public void getPurchaseTransportDaysIfSet_columnSetToZero_returnsZero()
+	{
+		final BPartnerId vendorId = createVendor(0);
+		assertThat(bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId)).contains(0);
+	}
+
+	private BPartnerId createVendor(final Integer poTransportDays)
+	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		saveRecord(bpGroup);
+
+		final I_C_BPartner vendor = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		vendor.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		if (poTransportDays != null)
+		{
+			vendor.setPO_TransportDays(poTransportDays);
+		}
+		saveRecord(vendor);
+		return BPartnerId.ofRepoId(vendor.getC_BPartner_ID());
 	}
 
 	@Nullable

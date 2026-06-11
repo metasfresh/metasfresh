@@ -511,7 +511,7 @@ public class CostingService implements ICostingService
 		//
 		// Restore current costs at the time before evaluation date
 		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(costSegmentAndElement);
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(costSegmentAndElement);
 		if (!costDetails.isEmpty())
 		{
 			final CostDetail firstCostDetail = costDetails.get(0);

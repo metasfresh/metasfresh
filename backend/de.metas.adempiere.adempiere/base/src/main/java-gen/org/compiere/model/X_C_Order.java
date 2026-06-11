@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -370267365L;
+	private static final long serialVersionUID = 761250792L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1324,6 +1324,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_Manual = "M";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
@@ -2001,15 +2003,57 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setPromotionCode (final @Nullable java.lang.String PromotionCode)
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
 	{
-		set_Value (COLUMNNAME_PromotionCode, PromotionCode);
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
 	}
 
 	@Override
-	public java.lang.String getPromotionCode() 
+	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
 	{
-		return get_ValueAsString(COLUMNNAME_PromotionCode);
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
+	}
+
+	@Override
+	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
+	{
+		if (C_PromotionCode_ID < 1)
+			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
+		else
+			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
+	}
+
+	@Override
+	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
+	{
+		if (C_PromotionCode2_ID < 1)
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
+		else
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode2_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
 	}
 
 	@Override
@@ -2171,6 +2215,19 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isSendEMail() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
+	}
+
+	@Override
+	public void setTotalGrossWeightKg (final BigDecimal TotalGrossWeightKg)
+	{
+		set_Value (COLUMNNAME_TotalGrossWeightKg, TotalGrossWeightKg);
+	}
+
+	@Override
+	public BigDecimal getTotalGrossWeightKg() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalGrossWeightKg);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUContextHolder;
@@ -9,8 +10,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -18,11 +19,20 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -43,10 +53,12 @@ import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -54,16 +66,23 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.jetbrains.annotations.NotNull;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -76,11 +95,31 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PickingJobHUService
 {
-	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	public static PickingJobHUService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				PickingJobHUService.class,
+				() -> new PickingJobHUService(
+						MobileUIPickingUserProfileService.newInstanceForUnitTesting(),
+						new PickingJobWarehouseService(new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository())),
+						PickingJobProductService.newInstanceForUnitTesting(),
+						HUQRCodesService.newInstanceForUnitTesting(),
+						HULabelService.newInstanceForUnitTesting(),
+						new HUReservationService(new HUReservationRepository()),
+						InventoryService.newInstanceForUnitTesting(),
+						new HUGraiService(new HUPIGraiRepository())));
+	}
+
+	private static final AdMessageKey MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE = AdMessageKey.of("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
+
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobProductService productService;
@@ -88,6 +127,68 @@ public class PickingJobHUService
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUGraiService huGraiService;
+
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
+	{
+		return huGraiService.getSnapshots(huIds);
+	}
+
+	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
+	{
+		huGraiService.generateMissingGRAIs(snapshots, nextGraiProvider);
+	}
+
+	/**
+	 * Stamps the scanned GRAI onto the freshly-materialised pick TU. Routed through the ambient pick HU context so the
+	 * attribute write commits with the pick transaction (see {@link HUGraiService#setGraisInAmbientContext}). MUST be
+	 * called inside the pick transaction (pick HU context set in {@link HUContextHolder}).
+	 */
+	public void setGrais(@NonNull final HuId huId, @NonNull final GRAISet graiSet) {huGraiService.setGraisInAmbientContext(huId, graiSet);}
+
+	/**
+	 * Returns the TU packing instruction configured for the given GRAI (matched by company-prefix and asset-type).
+	 *
+	 * @throws AdempiereException keyed on {@code de.metas.handlingunits.picking.GRAINoMatchingTUType}
+	 *                            when no active GRAI-to-TU mapping exists for the given GRAI.
+	 */
+	@NonNull
+	public HuPackingInstructionsId resolveHuPackingInstructionsId(@NonNull final GRAI grai)
+	{
+		return huGraiService.resolveHuPackingInstructionsId(grai);
+	}
+
+	/**
+	 * Fail-loud guard for the GRAI-scan flow: the resolved TU type's <i>current</i> PI version must declare the
+	 * {@code GRAI} HU-attribute slot. Without it, a materialised TU built from this type has no slot to store the
+	 * scanned GRAI; the GRAI would be silently dropped and only surface as a confusing GRAI_COUNT_MISMATCH at pick
+	 * completion. Throwing here surfaces the misconfiguration immediately at scan time.
+	 *
+	 * @param tuPIId the resolved TU packing-instruction id.
+	 * @param tuPI   the resolved TU packing instruction (used only for the error message caption).
+	 * @throws AdempiereException (keyed {@code GRAIAttributeNotSupportedByTUType}) if the GRAI attribute is not
+	 *         defined in the system, or the TU type's current PI version does not declare the GRAI slot.
+	 */
+	public void assertTUTypeSupportsGraiAttribute(
+			@NonNull final HuPackingInstructionsId tuPIId,
+			@NonNull final I_M_HU_PI tuPI)
+	{
+		// Two ways the scanned GRAI cannot be honoured, both reported with the same message:
+		//  - the GRAI M_Attribute is not defined in this system at all (graiAttributeId == null), or
+		//  - it exists but this TU type's current PI version does not declare the slot.
+		final AttributeId graiAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_GRAI);
+		if (graiAttributeId != null)
+		{
+			final HuPackingInstructionsVersionId tuPIVersionId = retrievePICurrentVersionId(tuPIId);
+			if (huPIAttributesDAO.retrievePIAttributes(tuPIVersionId).hasActiveAttribute(graiAttributeId))
+			{
+				return;
+			}
+		}
+
+		throw new AdempiereException(MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE, tuPI.getName());
+	}
 
 	public IAutoCloseable temporarySetNewHContextForProcessing()
 	{
@@ -102,6 +203,20 @@ public class PickingJobHUService
 	public I_M_HU getById(@NonNull final HuId huId) {return handlingUnitsBL.getById(huId);}
 
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds) {return handlingUnitsBL.getByIds(huIds);}
+
+	/**
+	 * Returns all non-empty product storages on the given HU (e.g. an LU).
+	 */
+	@NonNull
+	public List<IHUProductStorage> getProductStorages(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		return storageFactory.getStorage(hu).getProductStorages()
+				.stream()
+				.filter(s -> !s.isEmpty())
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo) {return handlingUnitsBL.getFirstHuIdByExternalLotNo(externalLotNo);}
 
@@ -163,6 +278,24 @@ public class PickingJobHUService
 
 	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsBL.getPI(id);}
 
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsBL.retrievePICurrentVersionId(piId);}
+
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId) {return handlingUnitsBL.retrievePICurrentVersion(piId);}
+
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version) {return handlingUnitsBL.retrievePIItemMaterial(version);}
+
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsBL.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
+	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(@NonNull final I_M_HU_PI_Item itemDef) {return huPIItemProductBL.retrievePIMaterialItemProducts(itemDef);}
+
+	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final I_M_HU hu) {return handlingUnitsBL.getPackingInstructionsId(hu);}
+
 	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
 			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
 			@Nullable final BPartnerId bpartnerId)
@@ -179,7 +312,44 @@ public class PickingJobHUService
 
 	public List<I_M_HU_PI_Item_Product> getPIItemProducts(@NonNull final Set<ProductId> productIdSet, @Nullable final BPartnerId partnerId)
 	{
-		return huPIItemProductDAO.retrieveForProducts(productIdSet, partnerId);
+		return huPIItemProductBL.retrieveForProducts(productIdSet, partnerId);
+	}
+
+	/**
+	 * Collects the leaf shippable HUs at or below each of the given HUs by descending the HU hierarchy.
+	 * Returns one entry per picked unit, regardless of packing-instruction type:
+	 * <ul>
+	 *   <li>Finite PI (1-CU/TU): each top-level TU has no children → itself is the leaf → one entry per TU.</li>
+	 *   <li>Virtual PI / null PackTo PI (CU path): the mass-printing flow fires one pick event per unit,
+	 *       so each VHU is already a single-unit leaf → one entry per VHU.</li>
+	 *   <li>TU nested under a target LU: descends past the LU wrapper to the leaf TU → one entry per TU.</li>
+	 * </ul>
+	 * The count of returned HU ids equals the number of shippable units packed (one HU = one unit = one label).
+	 */
+	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		final List<I_M_HU> topLevelHUs = getByIds(huIds);
+		for (final I_M_HU hu : topLevelHUs)
+		{
+			collectBoxHUs(hu, result);
+		}
+		return result.build();
+	}
+
+	private void collectBoxHUs(@NonNull final I_M_HU hu, @NonNull final ImmutableSet.Builder<HuId> result)
+	{
+		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(hu);
+		if (includedHUs.isEmpty())
+		{
+			// Leaf HU: the actual product-holding unit (TU box for finite PI, VHU/CU for Virtual PI).
+			result.add(HuId.ofRepoId(hu.getM_HU_ID()));
+			return;
+		}
+		for (final I_M_HU includedHU : includedHUs)
+		{
+			collectBoxHUs(includedHU, result);
+		}
 	}
 
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
@@ -254,10 +424,36 @@ public class PickingJobHUService
 				.build());
 	}
 
+	/** Prints HU labels for top-level TUs (boxes not under an LU). Mirrors {@link #printLULabels}: auto-print only, best-effort. */
+	public void printTULabels(@NonNull final Collection<HuId> tuIds)
+	{
+		final List<I_M_HU> tus = getByIds(tuIds);
+		if (tus.isEmpty())
+		{
+			return;
+		}
+
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.hus(HUToReportWrapper.ofList(tus))
+				.onlyIfAutoPrint(true)
+				.failOnMissingLabelConfig(false)
+				.build());
+	}
+
 	public HuId extractTopLevelCUIfNeeded(
 			@NonNull final HuId pickFromHUId,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToPick)
+	{
+		return extractTopLevelCUIfNeeded(pickFromHUId, productId, qtyToPick, ImmutableSet.of());
+	}
+
+	public HuId extractTopLevelCUIfNeeded(
+			@NonNull final HuId pickFromHUId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToPick,
+			@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
 	{
 		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
 
@@ -278,13 +474,17 @@ public class PickingJobHUService
 			return pickFromHUId;
 		}
 
-		final I_M_HU extractedCU = HUTransformService.newInstance()
+		final I_M_HU extractedCU = HUTransformService.builder()
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 						.sourceHU(pickFromHU)
 						.productId(productId)
 						.qtyCU(qtyToPick)
 						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
+								? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+								: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
@@ -325,6 +525,11 @@ public class PickingJobHUService
 		huReservationService.deleteReservationsByDocumentRefs(reservationDocRefs);
 	}
 
+	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	{
+		return huReservationService.getVHUIdsByDocumentRef(documentRef);
+	}
+
 	@Nullable
 	public ProductAvailableStocks newAvailableStocksProvider(@NonNull final Workplace workplace)
 	{
@@ -348,7 +553,7 @@ public class PickingJobHUService
 				.orElse(false);
 	}
 
-	private Optional<IHUProductStorage> getHUProductStorage(final @NotNull HuId huId, final @NotNull ProductId productId)
+	private Optional<IHUProductStorage> getHUProductStorage(final @NonNull HuId huId, final @NonNull ProductId productId)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 

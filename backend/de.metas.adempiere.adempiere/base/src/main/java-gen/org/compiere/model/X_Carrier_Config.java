@@ -98,6 +98,18 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	}
 
 	@Override
+	public void setIsCreateDraftShipmentOnly (final boolean IsCreateDraftShipmentOnly)
+	{
+		set_Value (COLUMNNAME_IsCreateDraftShipmentOnly, IsCreateDraftShipmentOnly);
+	}
+
+	@Override
+	public boolean isCreateDraftShipmentOnly()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateDraftShipmentOnly);
+	}
+
+	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 

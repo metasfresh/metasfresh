@@ -11,7 +11,6 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -39,14 +38,12 @@ import java.util.stream.Stream;
 @UtilityClass
 final class WEBUI_C_OrderLineSO_Util
 {
-	public Optional<SalesOrderLine> retrieveSalesOrderLine(
+	public SalesOrderLine retrieveSalesOrderLine(
 			@NonNull final HUEditorView huEditorView,
 			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
-		final Optional<OrderLineId> orderLineId = huEditorView
-				.getParameterAsId(WEBUI_C_OrderLineSO_Launch_HUEditor.VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID);
-
-		return orderLineId.map(salesOrderLineRepository::getById);
+		final OrderLineId salesOrderLineId = MaterialCockpitViewContext.of(huEditorView).getSalesOrderLineId();
+		return salesOrderLineRepository.getById(salesOrderLineId);
 	}
 
 	public RetrieveHUsQtyRequest createHuQuantityRequest(
@@ -60,4 +57,5 @@ final class WEBUI_C_OrderLineSO_Util
 				.productId(productId)
 				.build();
 	}
+
 }

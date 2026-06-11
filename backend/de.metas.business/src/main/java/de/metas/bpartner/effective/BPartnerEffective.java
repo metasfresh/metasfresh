@@ -50,6 +50,7 @@ public class BPartnerEffective
 	@Nullable Incoterms incoterms;
 	@Nullable Incoterms poIncoterms;
 	boolean isAutoInvoice;
+	@Getter int purchaseTransportDays;
 
 	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final SOTrx soTrx)

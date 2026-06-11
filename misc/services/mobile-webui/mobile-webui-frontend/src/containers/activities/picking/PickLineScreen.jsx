@@ -180,7 +180,9 @@ const PickLineScreen = () => {
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.pickingStepId}
-                pickFromAlternatives={stepItem.pickFromAlternatives}
+                pickFromAlternatives={
+                  stepItem.pickFromAlternatives ? Object.values(stepItem.pickFromAlternatives) : null
+                }
                 catchWeightUOM={catchWeightUOM}
                 //
                 uom={stepItem.uom}
