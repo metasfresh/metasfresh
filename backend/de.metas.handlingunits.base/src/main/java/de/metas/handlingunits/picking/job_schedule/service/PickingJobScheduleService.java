@@ -27,8 +27,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +66,12 @@ public class PickingJobScheduleService
 	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
 	{
 		return pickingJobScheduleRepository.getById(id);
+	}
+
+	@Nullable
+	public PickingJobSchedule findByIdOrNull(@NonNull final PickingJobScheduleId id)
+	{
+		return pickingJobScheduleRepository.findByIdOrNull(id);
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
@@ -138,7 +147,7 @@ public class PickingJobScheduleService
 		final Quantity qtyToDeliver = pickingJobShipmentScheduleService.getQtyToDeliver(shipmentSchedule);
 		final Quantity qtyScheduledForPicking = pickingJobShipmentScheduleService.getQtyScheduledForPicking(shipmentSchedule);
 		return qtyToDeliver.subtract(qtyScheduledForPicking);
-		
+
 	}
 
 	public void autoAssign(@NonNull final PickingJobScheduleAutoAssignRequest request)
@@ -152,5 +161,18 @@ public class PickingJobScheduleService
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	/**
+	 * Streams the active, not-yet-processed picking-job-schedule assignments that still need a DD_Order.
+	 * <p>
+	 * {@code completedDDOrdersQuery} is a sub-query reference (the set of DD_Orders whose schedule is already
+	 * covered), NOT a managed-entity query of this service — it is used as an anti-join filter against
+	 * {@code DD_Order.M_Picking_Job_Schedule_ID}. It is supplied by the DD_Order reconcile flow because the
+	 * "needs a DD_Order" predicate is only meaningful in that context.
+	 */
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	{
+		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(completedDDOrdersQuery);
 	}
 }

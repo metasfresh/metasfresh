@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.workplace;
 import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
@@ -72,13 +73,14 @@ public class C_Workplace_StepDef
 {
 	@NonNull private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
     @NonNull private final Carrier_Product_StepDefData carrierProductTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final PickingSlot_StepDefData pickingSlotTable;
 
 	@Given("metasfresh contains C_Workplaces")
@@ -97,6 +99,10 @@ public class C_Workplace_StepDef
 		final WorkplaceCreateRequest.WorkplaceCreateRequestBuilder builder = WorkplaceCreateRequest.builder()
 				.name(name)
 				.warehouseId(warehouseId);
+
+		row.getAsOptionalIdentifier(I_C_Workplace.COLUMNNAME_PickFrom_Locator_ID)
+				.map(locatorTable::getId)
+				.ifPresent(builder::pickFromLocatorId);
 
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_MaxPickingJobs).ifPresent(builder::maxPickingJobs);
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_SeqNo).ifPresent(seqNo -> builder.seqNo(SeqNo.ofInt(seqNo)));

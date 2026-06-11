@@ -44,14 +44,32 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
       | inTransitWH    | customer      | customerLocation       | true        |
+    # The packing warehouse's default locator is captured so it can be used as the workstation's pick-from locator.
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID |
-      | packingWH      | customer      | customerLocation       | Y           | Y                  | network                   |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID   |
+      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   | packingLocator |
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
       | network                   | packingWH      | stockWH              | shipper      |
+    # The picker's workstation is on the packing warehouse; its pick-from locator is where the goods must land.
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
+      | workplace  | packingWH      | packingLocator      |
 
-    # An order on the packing warehouse normally creates a DD_Order via the reconcile event.
+    # On-hand stock in the source warehouse (single locator, qty 5). The stock-aware split pulls from the locators
+    # that hold the product; all stock on one source locator => one DD_Order (re-creatable by the watchdog rebuild).
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | product                 | 0       | 5        | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockProductHU     |
+
+    # An order on the packing warehouse, then a workstation assignment, normally creates a DD_Order via the reconcile event.
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | order      | true    | customer      | 2022-05-17  | packingWH      |
@@ -62,12 +80,15 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID | Warehouse_ID |
       | shipmentSchedule | orderLine      | packingWH    |
-    And after not more than 120s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    And create or update picking job schedules
+      | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | jobSchedule               | shipmentSchedule      | workplace      | 5         |
+    And after not more than 120s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
 
-    # Simulate the "fell through" drift: the schedule's DD_Order is lost (voided outside the reconcile flow),
-    # so the active packing-warehouse schedule now has no live DD_Order — exactly the watchdog's input.
+    # Simulate the "fell through" drift: the assignment's DD_Order is lost (voided outside the reconcile flow),
+    # so the active packing-warehouse assignment now has no live DD_Order — exactly the watchdog's input.
     And the DD_Order linked to M_ShipmentSchedule shipmentSchedule is voided directly
     And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
 
@@ -75,14 +96,14 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
   Scenario: Running the rebuild process manually recreates the missing DD_Order
     When the DD_Order_Picking_Rebuild process is run
 
-    Then after not more than 30s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    Then after not more than 30s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | M_ShipmentSchedule_ID | IsError |
-      | shipmentSchedule      | false   |
+      | M_Picking_Job_Schedule_ID | IsError |
+      | jobSchedule               | false   |
 
   @from:cucumber
   Scenario: The hourly scheduler self-heals drift via the same rebuild process
@@ -92,11 +113,11 @@ Feature: DD_Order replenishment — drift watchdog (manual rebuild + hourly sche
     Given the DD_Order_Picking_Rebuild process exists
     When the DD_Order_Picking_Rebuild process is run
 
-    Then after not more than 30s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    Then after not more than 30s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
     # rebuildDrift publishes reconcile events consumed by the async handler; the handler records a Done
     # AD_EventLog_Entry on success.
     And after not more than 10s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | M_ShipmentSchedule_ID | IsError |
-      | shipmentSchedule      | false   |
+      | M_Picking_Job_Schedule_ID | IsError |
+      | jobSchedule               | false   |

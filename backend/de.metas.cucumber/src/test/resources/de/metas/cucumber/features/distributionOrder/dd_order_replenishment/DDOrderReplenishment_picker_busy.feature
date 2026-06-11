@@ -59,12 +59,31 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
       | inTransitWH    | customer      | customerLocation       | true        |
+    # The packing warehouse's default locator is captured so it can be used as the workstation's pick-from locator.
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID |
-      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID   |
+      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   | packingLocator |
     And metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
       | network                   | packingWH      | stockWH              | shipper      |
+    # The picker's workstation is on the packing warehouse; its pick-from locator is where the goods must land.
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
+      | workplace  | packingWH      | packingLocator      |
+
+    # On-hand stock in the SOURCE warehouse (single locator, qty 5) so the stock-aware split can build the DD_Order
+    # this scenario operates on. (The packing-warehouse inventory below is separate: it feeds the picking job that
+    # makes the picker busy.)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | product                 | 0       | 5        | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockSourceHU      |
 
     # --- Picking prerequisites on the packing warehouse (where the schedule, and thus the picking job,
     #     sources its HUs from): stock via inventory -> HU, a picking slot, and the mobile picking profile.
@@ -106,12 +125,16 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID | Warehouse_ID | QtyToDeliver |
       | shipmentSchedule | orderLine      | packingWH    | 5            |
-    And after not more than 120s, the DD_Order linked to shipment schedule is found:
-      | Identifier | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | ddOrder    | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    # Assigning the schedule line to the workstation triggers the reconcile that creates the DD_Order.
+    And create or update picking job schedules
+      | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | jobSchedule               | shipmentSchedule      | workplace      | 5         |
+    And after not more than 120s, the DD_Order linked to picking job schedule is found:
+      | Identifier | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | ddOrder    | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
 
   @from:cucumber
-  Scenario: A busy picker (real picking job) makes the beforeSave interceptor reject the schedule change
+  Scenario: A busy picker (real picking job) makes the beforeChange interceptor reject the assignment change
     # Start a REAL picking job for the order. With IsAllowPickingAnyHU=Y the start call creates an active
     # M_Picking_Job_Line referencing the same M_ShipmentSchedule_ID as the DD_Order (no pre-planned steps),
     # so the busy guard now reports the picker as busy. We only capture the WF process id from the start
@@ -124,11 +147,11 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
       | pickingWF                  | pickingActivity             | pickingLine            |
 
-    # Attempting to change the schedule qty is rejected by the M_ShipmentSchedule.beforeSave guard
-    # (the tx rolls back; the schedule's persisted value stays unchanged and no event is published).
-    Then changing the M_ShipmentSchedule quantity is rejected:
-      | M_ShipmentSchedule_ID | QtyOrdered_Override |
-      | shipmentSchedule      | 8                   |
+    # Attempting to change the assignment qty is rejected by the M_Picking_Job_Schedule.beforeChange guard
+    # (the tx rolls back; the assignment's persisted value stays unchanged and no event is published).
+    Then changing the picking job schedule quantity is rejected:
+      | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                          |
+      | jobSchedule               | 8         | DDOrderPickingReconcile_PickerBusy |
 
     # ABORT the picking job through the real REST endpoint -> the picking job becomes Voided, so the
     # (voided-aware) busy guard reports the picker as free again.
@@ -136,10 +159,10 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     # The DD_Order is untouched (still the original Completed one, qty 5) — because the rejected save
-    # rolled back, afterSave never published a reconcile event, so no void/recreate happened.
-    Then after not more than 10s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    # rolled back, afterChange never published a reconcile event, so no void/recreate happened.
+    Then after not more than 10s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
     # The original DD_Order identifier (captured in Background) must be unchanged (same ID, still Completed).
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
@@ -162,24 +185,26 @@ Feature: DD_Order replenishment — picker-busy guard (real picking flow: start 
     # NOTE: this step drives the BL directly (not via the async DDOrderReconciliationEventHandler) so
     # no AD_EventLog_Entry is produced here. The handler's error-recording path (IsError=true) is covered
     # by the async-flow scenario. This scenario focuses on the BL-level picker-busy guard.
-    Then processing the reconcile event for M_ShipmentSchedule shipmentSchedule is rejected
+    Then processing the reconcile event for M_Picking_Job_Schedule jobSchedule is rejected
 
     # The DD_Order is left unchanged by the failed reconcile.
-    And after not more than 5s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    And after not more than 5s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
 
     # ABORT the picking job through the real REST endpoint -> the picking job becomes Voided, releasing the
-    # picker. Then reprocessing the event succeeds: the reconcile classifies as RECREATE (active schedule +
-    # existing live DD_Order) — the old DD_Order is voided and a fresh one is created. Capturing a new
-    # Identifier pins that recreate actually happened.
+    # picker. Then reprocessing the event now SUCCEEDS (the picker-busy guard no longer fires). The reconcile
+    # re-runs the per-locator diff: the same single source locator still contributes the same qty (5), so the
+    # existing DD_Order is reconciled in place (update-in-place) and left as the correct, live DD_Order — no
+    # void, no churn. The point of the scenario is that aborting the job unblocks the reconcile.
     Given store workflow endpointPath api/v2/userWorkflows/wfProcess/@pickingWF@/abort in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
-    And the reconcile event for M_ShipmentSchedule shipmentSchedule is processed
-    Then after not more than 10s, the DD_Order linked to shipment schedule is found:
-      | Identifier | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | ddOrderV2  | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
-    # The original DD_Order (captured in Background as ddOrder) must now be Voided — RECREATE voided it.
+    And the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
+    Then after not more than 10s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
+    # The original DD_Order (captured in Background as ddOrder) is still the live, Completed one — the unblocked
+    # reconcile left it in place (single contributing locator, unchanged qty => update-in-place no-op).
     And after not more than 5s, following DD_Orders are found
       | Identifier | DocStatus |
-      | ddOrder    | VO        |
+      | ddOrder    | CO        |
