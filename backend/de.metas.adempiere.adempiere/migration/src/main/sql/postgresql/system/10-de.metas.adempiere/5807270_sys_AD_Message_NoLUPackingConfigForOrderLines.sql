@@ -1,7 +1,6 @@
 -- AD_Message shown when purchase order lines cannot be added to a transport order
 -- because no LU (loading unit) packing configuration was found for them.
--- Referenced from Java constant MSG_NoLUPackingConfigForOrderLines in
--- de.metas.shipping.PurchaseOrderToShipperTransportationService.
+-- The message key (Value 'NoLUPackingConfigForOrderLines') is the stable link to the Java code.
 --
 -- AD_Message base text is in German (DE). Rationale: most users are German-speakers; if a translation
 -- is missing the fallback (AD_Message.MsgText) shows German. en_US translation is provided below.
