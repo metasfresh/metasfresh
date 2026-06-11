@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { assertRecordIsValid } from '../utils/WebAPIValidation';
 
 /**
  * ExternalSystem_Endpoint — SFTP Transport Type E2E test suite.
@@ -240,6 +241,11 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
       { timeout: SLOW_ACTION_TIMEOUT }
     );
 
+    // The URL change alone does not prove persistence (a NEW record gets a cached id even when invalid).
+    // Assert the record is actually valid/saved via the WebAPI.
+    const sftpRecordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, sftpRecordId, 'after saving the SFTP endpoint');
+
     // Verify the saved field values are still present
     const sftpHostField = page.locator('.form-field-SftpHost input[type="text"]');
     const sftpUsernameField = page.locator('.form-field-SftpUsername input[type="text"]');
@@ -323,6 +329,8 @@ OAuthTokenUrl is accepted and the record persists).
     await selectListValue(page, 'Type', 'HTTP');
     await selectListValue(page, 'TransportType', 'HTTP');
     await selectListValue(page, 'AuthType', 'OAuth2');
+    // OutboundHttpMethod is mandatory under HTTP and has NO default — must be set or the record stays invalid (never persists)
+    await selectListValue(page, 'OutboundHttpMethod', 'POST');
 
     // Fill the HTTP endpoint URL (mandatory for HTTP)
     await fillTextField(page, 'OutboundHttpEP', 'https://dw.example.com/DocuWare/Platform/FileCabinets/abc/Documents');
@@ -349,6 +357,11 @@ OAuthTokenUrl is accepted and the record persists).
       },
       { timeout: SLOW_ACTION_TIMEOUT }
     );
+
+    // A NEW record is assigned a cached id (URL leaves /NEW) even when validStatus.valid=false, so the
+    // URL change alone does NOT prove the row persisted. Assert real persistence via the WebAPI.
+    const oauthRecordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, oauthRecordId, 'after saving the OAuth2 HTTP endpoint');
 
     // Saved OAuth2 values persist
     await expect(page.locator('.form-field-OAuthTokenUrl input[type="text"]')).toHaveValue('https://dw.example.com/DocuWare/Platform/Identity/connect/token');
