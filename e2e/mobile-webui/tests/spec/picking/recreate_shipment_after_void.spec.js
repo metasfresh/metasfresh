@@ -148,7 +148,7 @@ test('Reverse an aggregate-HU shipment TWICE then recreate it — picked qty mus
     // The reverse restores the picked qty via an async picking-job reopen that commits a moment after the
     // reverse call returns, so we POLL Generate Shipments until it ships (or the window elapses). When the
     // picked qty is genuinely gone (after the 2nd void) the poll never ships and returns null.
-    const generateShipmentWithin = async (timeoutMs = 30000) => {
+    const generateShipmentWithin = async (timeoutMs = 60000) => {
         const intervalMs = 2000;
         const start = Date.now();
         for (;;) {

@@ -359,11 +359,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			saveRecord(restored);
 
 			// The reverse reactivated the HU to Active; a picked row needs the HU to be Picked
-			// (retrieveNotShippedRecords keeps only Picked/Shipped HUs).
+			// (retrieveNotShippedRecords keeps only Picked/Shipped HUs). Also re-stamp BPartner/Location
+			// from the schedule, exactly like addQtyPickedAndUpdateHU / tryMergeQtyPickedIntoExistingForVHU —
+			// every pick-creation path must leave the top-level HU with the delivery partner/location set.
 			final I_M_HU vhu = handlingUnitsDAO.getById(vhuId);
 			final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
 			final I_M_HU topLevelHU = husPair.getTopLevelHU();
 			setHUStatusToPicked(topLevelHU);
+			setHUPartnerAndLocationFromSched(topLevelHU, shipmentScheduleBL.getById(scheduleId));
 			handlingUnitsDAO.saveHU(topLevelHU);
 
 			Loggables.withLogger(logger, Level.INFO).addLog(

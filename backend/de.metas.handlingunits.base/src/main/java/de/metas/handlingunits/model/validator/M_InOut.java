@@ -46,6 +46,7 @@ import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
@@ -83,7 +84,7 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
