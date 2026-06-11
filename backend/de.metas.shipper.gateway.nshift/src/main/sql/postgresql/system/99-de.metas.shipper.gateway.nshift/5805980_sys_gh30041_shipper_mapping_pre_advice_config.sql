@@ -11,7 +11,7 @@ INSERT INTO M_Shipper_Mapping_Config (AD_Client_ID, AD_Org_ID, M_Shipper_Mapping
                                       Created, CreatedBy, IsActive,
                                       M_Shipper_ID, MappingAttributeKey, MappingAttributeType, MappingAttributeValue,
                                       SeqNo, Updated, UpdatedBy)
-VALUES (1000000, 1000000, 540025 /*From ID Server*/,
+VALUES (0, 0, 540025 /*From ID Server*/,
         TO_TIMESTAMP('2026-06-03 10:01:02', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
         'Y',
         540019, '65', 'Reference', 'IsPreAdviceRequired',
