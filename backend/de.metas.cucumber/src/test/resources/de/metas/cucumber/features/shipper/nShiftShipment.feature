@@ -24,8 +24,8 @@ Feature: nShift Shipment
       | ct         | 12345678 |
     # Explicit Value+Name so reruns reuse the same product (upserts via productDAO.retrieveProductByValue).
     And metasfresh contains M_Products:
-      | Identifier | Value          | Name           | WeightNet | WeightGross | M_CustomsTariff_ID |
-      | product    | nshift_product | nShift Product | 2 KGM     | 2.1 KGM     | ct                 |
+      | Identifier | Value          | Name           | WeightNet | WeightGross | M_CustomsTariff_ID | LengthInCm | WidthInCm | HeightInCm |
+      | product    | nshift_product | nShift Product | 2 KGM     | 2.1 KGM     | ct                 | 30         | 20        | 10         |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
@@ -231,7 +231,7 @@ Feature: nShift Shipment
       | productName    | shippedQuantity | unitPrice | totalValue | totalWeightInKg | customsTariff |
       | nShift Product | 10              | 10        | 100        | 21              | 12345678      |
 
-  @Id:S0355_Advise_AC1
+  @Id:S0355_DeliveryOrder_160
   Scenario: nShift Carrier Advise — advisor request item always carries numberOfItems=1 regardless of order quantity
     # The advisor uses a per-unit baseline (1 item) regardless of the total ordered quantity.
     # This ensures the carrier advisor sees a single-unit weight/dimension, not the full shipment size.
@@ -251,13 +251,14 @@ Feature: nShift Shipment
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
       | ss_ac1                | true                         |
-    # grossWeightKg: product.WeightGross=2.1 KGM rounded UP (RoundingMode.UP) to 0 decimal places = 3
-    # lengthInCM/widthInCM/heightInCM: product has no explicit dimensions in Background, so all 0
+    # numberOfItems=1 and per-unit weight/dimensions prove the qty-1 baseline (not scaled by the order qty of 30):
+    # grossWeightKg: product.WeightGross=2.1 KGM rounded UP (RoundingMode.UP) to 0 decimals = 3
+    # length/width/height: the product's per-unit dimensions (30/20/10 cm), unscaled
     Then validate the captured nShift advisor request:
       | numberOfItems | grossWeightKg | lengthInCM | widthInCM | heightInCM |
-      | 1             | 3             | 0          | 0         | 0          |
+      | 1             | 3             | 30         | 20        | 10         |
 
-  @Id:S0355_Advise_AC6
+  @Id:S0355_DeliveryOrder_170
   Scenario: nShift Delivery Order — UseShippingRules=true when shipper has IsApiCarrierAdvise and schedule is non-Manual
     # When a schedule goes through the automatic advise flow (status Completed, not Manual),
     # the gateway patches the shipment request with UseShippingRules=true plus the effective ServiceLevel.
@@ -293,7 +294,7 @@ Feature: nShift Shipment
       | UseShippingRules | ServiceLevel |
       | true             | STANDARD     |
 
-  @Id:S0355_Advise_AC7
+  @Id:S0355_DeliveryOrder_180
   Scenario: nShift Delivery Order — UseShippingRules absent when all schedules have Manual advising status
     # When every schedule linked to the delivery order was advised manually,
     # the gateway must NOT set UseShippingRules, so nShift uses its own shipment rules.
