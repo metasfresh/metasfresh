@@ -17,21 +17,30 @@ import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
 import de.metas.product.ProductRepository;
 import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
+import de.metas.shipping.CarrierProductId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,10 +49,92 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
 	@NonNull private final ShipmentScheduleService shipmentScheduleService;
 	@NonNull private final ProductRepository productRepository;
+	@NonNull private final CarrierProductRepository carrierProductRepository;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+
+	public CarrierAdviseTargetInfo resolveTargetInfo(@NonNull final I_M_HU topLevelHU)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords =
+				huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(topLevelHU);
+
+		if (qtyPickedRecords.isEmpty())
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+
+		final ImmutableList<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
+				.map(r -> ShipmentScheduleId.ofRepoId(r.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = shipmentScheduleService
+				.getByIds(ImmutableSet.copyOf(scheduleIds))
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, s -> s));
+
+		boolean anyAdviseEnabled = false;
+		boolean allManual = true;
+		final List<String> productCaptionParts = new ArrayList<>();
+
+		for (final ShipmentScheduleId scheduleId : scheduleIds)
+		{
+			final ShipmentSchedule schedule = schedulesById.get(scheduleId);
+			if (schedule == null)
+			{
+				continue;
+			}
+
+			final ShipperId shipperId = schedule.getShipperId();
+			if (shipperId == null)
+			{
+				continue;
+			}
+
+			final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+			if (!shipper.isApiCarrierAdvise())
+			{
+				continue;
+			}
+
+			anyAdviseEnabled = true;
+
+			final CarrierAdviseStatus advisingStatus = schedule.getCarrierAdvisingStatus();
+			if (!advisingStatus.isManual())
+			{
+				allManual = false;
+			}
+
+			final CarrierProductId carrierProductId = schedule.getCarrierProductId();
+			if (carrierProductId != null)
+			{
+				final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+				if (carrierProduct != null)
+				{
+					final String name = carrierProduct.getName();
+					if (!productCaptionParts.contains(name))
+					{
+						productCaptionParts.add(name);
+					}
+				}
+			}
+		}
+
+		if (!anyAdviseEnabled)
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+
+		final String productCaption = productCaptionParts.isEmpty() ? null : String.join(", ", productCaptionParts);
+
+		return CarrierAdviseTargetInfo.builder()
+				.available(true)
+				.readOnly(allManual)
+				.productCaption(productCaption)
+				.build();
+	}
 
 	/**
 	 * Re-advises the currently open packed LU/TU target for the given picking job line.

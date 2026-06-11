@@ -26,6 +26,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.picking.workflow.CarrierAdviseTargetInfo;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,8 +45,18 @@ public class JsonLUPickingTarget
 	@Nullable HuPackingInstructionsId luPIId;
 	@Nullable HuId luId;
 	@Nullable String luQRCode;
+	boolean carrierAdviseAvailable;
+	boolean carrierAdviseReadOnly;
+	@Nullable String carrierProductCaption;
 
 	public static JsonLUPickingTarget of(@NonNull final LUPickingTarget target)
+	{
+		return of(target, CarrierAdviseTargetInfo.NONE);
+	}
+
+	public static JsonLUPickingTarget of(
+			@NonNull final LUPickingTarget target,
+			@NonNull final CarrierAdviseTargetInfo carrierAdviseInfo)
 	{
 		return builder()
 				.id(target.getId())
@@ -53,6 +64,9 @@ public class JsonLUPickingTarget
 				.luPIId(target.getLuPIId())
 				.luId(target.getLuId())
 				.luQRCode(target.getLuQRCode() != null ? target.getLuQRCode().toGlobalQRCodeString() : null)
+				.carrierAdviseAvailable(carrierAdviseInfo.isAvailable())
+				.carrierAdviseReadOnly(carrierAdviseInfo.isReadOnly())
+				.carrierProductCaption(carrierAdviseInfo.getProductCaption())
 				.build();
 	}
 
