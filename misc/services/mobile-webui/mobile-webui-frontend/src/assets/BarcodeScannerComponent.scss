@@ -70,17 +70,13 @@
       font-size: 1.5em;
       text-align: center;
       line-height: 1.3;
-    }
 
-    // In-progress sub-caption. Hidden by default; revealed by the in-progress :has() rule
-    // below when the input has content. Subordinate font size to the main caption.
-    .scan-prompt-progress-text {
-      font-size: 1em;
-      text-align: center;
-      line-height: 1.3;
-      margin-top: 0.75rem;
-      color: $indicator-yellow;
-      display: none;
+      // Caption swap: .scan-prompt-text-idle is shown by default; .scan-prompt-text-progress
+      // takes its place while the input has content (see in-progress :has() rule below).
+      // Both occupy the same DOM slot — no layout shift on the transition.
+      .scan-prompt-text-progress {
+        display: none;
+      }
     }
   }
 
@@ -148,8 +144,11 @@
     }
   }
 
-  .scan-prompt-progress-text {
-    display: block;
+  .scan-prompt-text-idle {
+    display: none;
+  }
+  .scan-prompt-text-progress {
+    display: inline;
   }
 }
 

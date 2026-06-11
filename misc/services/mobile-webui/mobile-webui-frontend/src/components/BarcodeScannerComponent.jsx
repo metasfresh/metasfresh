@@ -310,12 +310,16 @@ const BarcodeScannerComponent = ({
       {!isProcessing && isComponentHidden && !isComponentHiddenByParam && (
         <div className="scan-prompt">
           <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
+          {/* Caption swap — idle text by default, "Scanning in progress…" while the input
+              has content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
           <div className="scan-prompt-text">
-            {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
+            <span className="scan-prompt-text-idle">
+              {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
+            </span>
+            <span className="scan-prompt-text-progress">
+              {trl('components.BarcodeScannerComponent.scanInProgress')}
+            </span>
           </div>
-          {/* In-progress sub-caption. Always in DOM; CSS shows it only when the input has
-              chars (i.e. mid-burst) — see BarcodeScannerComponent.scss `:has(...not(:placeholder-shown))`. */}
-          <div className="scan-prompt-progress-text">{trl('components.BarcodeScannerComponent.scanInProgress')}</div>
         </div>
       )}
       {/* IMPORTANT: Always use type="text" — never type="hidden".
