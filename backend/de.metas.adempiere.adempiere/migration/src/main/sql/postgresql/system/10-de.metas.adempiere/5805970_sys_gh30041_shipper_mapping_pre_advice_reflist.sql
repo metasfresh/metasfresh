@@ -29,3 +29,9 @@ FROM AD_Language l WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
 UPDATE AD_Ref_List_Trl SET Name = 'Pre-Advice Required (Order)', IsTranslated = 'Y',
   Updated = TO_TIMESTAMP('2026-06-03 10:00:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
 WHERE AD_Ref_List_ID = 544243 AND AD_Language = 'en_US';
+
+-- German languages inherit base Name; mark as translated
+-- 2026-06-03T10:01:00.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated = 'Y',
+  Updated = TO_TIMESTAMP('2026-06-03 10:01:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
+WHERE AD_Ref_List_ID = 544243 AND AD_Language IN ('de_DE', 'de_CH');

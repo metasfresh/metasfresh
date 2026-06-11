@@ -22,6 +22,8 @@
 
 package de.metas.bpartner.effective;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -30,14 +32,15 @@ import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
-import com.google.common.annotations.VisibleForTesting;
-import org.compiere.Adempiere;
 import de.metas.util.StringUtils;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Service;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
