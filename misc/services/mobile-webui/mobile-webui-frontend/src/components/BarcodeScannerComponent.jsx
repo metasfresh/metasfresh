@@ -31,13 +31,16 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
     ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
     : true;
 
-  // Off-screen (DataWedge) mode only: when enabled, set the HTML `readOnly` attribute on the scan
-  // input to suppress the on-screen keyboard *unconditionally* — for devices where `inputMode="none"`
-  // is not honoured (e.g. Honeywell / Zebra keystroke-mode firmware). Default off ⇒ today's behaviour.
-  // Setting: `barcodeScanner.offscreenInput.readOnly`. Keystroke-wedge scans are read at
-  // window level so they still work; DataWedge IME injection does not (documented, opt-in trade-off).
-  const offscreenInputReadOnlyEnabled = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
-  const offscreenInputReadOnly = !isShowInputText && offscreenInputReadOnlyEnabled;
+  // When enabled, set the HTML `readOnly` attribute on the scan input to suppress the on-screen
+  // keyboard *unconditionally* — for devices where `inputMode="none"` is not honoured (e.g.
+  // Honeywell / Zebra keystroke-mode firmware). Default off ⇒ today's behaviour.
+  // Setting name is historical (`barcodeScanner.offscreenInput.readOnly`) but now applies to BOTH
+  // the off-screen and the visible scan input: the visible case is needed for screens like /huManager
+  // where the scan field is the screen's main content (`showInputText=Y`); without the visible
+  // input the screen renders blank. Keystroke-wedge scans are read at the window level so they
+  // still work; DataWedge IME injection breaks (documented opt-in trade-off — keep the knob off
+  // for IME deployments). Design: https://github.com/metasfresh/me03/issues/29246.
+  const scanInputReadOnly = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
 
   const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
 
@@ -60,7 +63,7 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
     },
     isShowInputText,
     isInputTextReadonly,
-    offscreenInputReadOnly,
+    scanInputReadOnly,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
@@ -86,7 +89,7 @@ const BarcodeScannerComponent = ({
     errorBeepParams,
     isShowInputText,
     isInputTextReadonly,
-    offscreenInputReadOnly,
+    scanInputReadOnly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
@@ -245,7 +248,7 @@ const BarcodeScannerComponent = ({
       scannedBarcode,
       isShowInputText,
       isInputTextReadonly,
-      offscreenInputReadOnly,
+      scanInputReadOnly,
       triggerOnChangeIfLengthGreaterThan,
       textChangedDebounceMillis,
       scanDuplicatesIntervalMillis,
@@ -304,8 +307,11 @@ const BarcodeScannerComponent = ({
             • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
             • the focus useEffects above     — establish / recover the InputConnection on the device
           The `readOnly` attribute is intentionally NOT set by default (it would break DataWedge IME);
-          it can be enabled per-instance via `barcodeScanner.offscreenInput.readOnly` for
-          keystroke-mode devices (e.g. Honeywell) where inputMode="none" fails to suppress the keyboard.
+          it can be enabled per-instance via `barcodeScanner.offscreenInput.readOnly`
+          (https://github.com/metasfresh/me03/issues/29246) for keystroke-mode devices (e.g. Honeywell)
+          where inputMode="none" fails to suppress the keyboard. The knob applies to BOTH the
+          off-screen input and the visible one (screens like /huManager use the visible input as
+          their only content; hiding it leaves the screen blank).
           Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
           regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
           CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
@@ -319,7 +325,7 @@ const BarcodeScannerComponent = ({
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           inputMode={isInputTextReadonly ? 'none' : undefined}
-          readOnly={offscreenInputReadOnly}
+          readOnly={scanInputReadOnly}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
