@@ -81,7 +81,12 @@
   }
 
   .loading {
-    position: absolute;
+    // Center on the VIEWPORT (position: fixed — same as the global .loading rule in
+    // spinner.scss), not within .barcode-scanner. When isProcessing=true the prompt and
+    // input are hidden so .barcode-scanner shrinks to a short container; if the spinner
+    // were absolute-positioned to that short container its centre would land in the upper
+    // portion of the screen, partially behind the top green bar.
+    position: fixed;
     z-index: 999;
     top: 0;
     left: 0;
