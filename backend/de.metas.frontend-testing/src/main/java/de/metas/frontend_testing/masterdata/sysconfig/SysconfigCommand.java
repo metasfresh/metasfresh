@@ -26,7 +26,7 @@ public class SysconfigCommand
 			.put("mobileui.frontend.barcodeScanner.showInputText", "Y")
 			.put("mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y")
 			// Reset the per-instance scanner-mode knobs too — a test that flips them (e.g. the
-			// dt204 / Honeywell CT60 keystroke-wedge contract test) must not leak readOnly=Y or
+			// Honeywell CT60 keystroke-wedge contract test) must not leak readOnly=Y or
 			// useCamera=N onto unrelated specs in the same run. Defaults match the framework
 			// fall-backs in BarcodeScannerComponent.jsx (useCamera=true, offscreen/visible
 			// readOnly=false) and the core seed migrations 5807370 / 5807430.
