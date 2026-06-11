@@ -13,6 +13,7 @@ import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleSer
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
@@ -48,6 +49,7 @@ public class SalesOrderCreateCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 
 	@NonNull private final JsonSalesOrderCreateRequest request;
@@ -59,13 +61,14 @@ public class SalesOrderCreateCommand
 	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	private static Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
-	private static Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
+	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
+	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
 	public JsonSalesOrderCreateResponse execute()
 	{
 		final JsonSalesOrderCreateResponse response = trxManager.callInThreadInheritedTrx(this::execute0);
 		trxManager.runInThreadInheritedTrx(this::createSchedules);
+		waitForShipmentSchedulesToBeValid();
 		return response;
 	}
 
@@ -172,6 +175,63 @@ public class SalesOrderCreateCommand
 		stopwatch.stop();
 
 		logger.info("Created job schedules for all {} order lines. Took {}", orderLineIds.size(), stopwatch);
+	}
+
+	/**
+	 * Waits until ALL shipment schedules for this order's lines are (a) created and (b) no longer flagged
+	 * for recompute (i.e. valid in {@code M_ShipmentSchedule_Recompute}).
+	 *
+	 * <p>Why this is needed: shipment-schedule creation and the subsequent recompute pass are asynchronous
+	 * (driven by background workpackage processors). The old mass-printing E2E flow incidentally triggered
+	 * a global {@code M_ShipmentSchedule_Recompute} pass by opening a picking job, which made freshly-created
+	 * self-packed orders' schedules valid before the test scanned. The new launcher-based flow skips that,
+	 * so without this wait the schedules may still be flagged when {@code MassPrintingService} queries
+	 * {@code M_Packageable_V} and no packageable lines are found (boxesPacked=0).
+	 *
+	 * <p>Reuses the existing {@link #JOB_SCHEDULE_CREATE_TIMEOUT} / {@link #JOB_SCHEDULE_CREATE_SLEEP_BETWEEN}
+	 * constants and {@link #sleep(Duration)} helper to keep the polling budget consistent.
+	 */
+	private void waitForShipmentSchedulesToBeValid()
+	{
+		final ImmutableSet<OrderLineId> allOrderLineIds = lineCreateRequestAndBuilders.stream()
+				.map(LineCreateRequestAndBuilder::getOrderLineId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (allOrderLineIds.isEmpty())
+		{
+			return;
+		}
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (true)
+		{
+			final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByOrderLineIds(allOrderLineIds);
+
+			if (shipmentSchedules.size() >= allOrderLineIds.size())
+			{
+				final ImmutableSet<ShipmentScheduleId> scheduleIds = shipmentSchedules.stream()
+						.map(ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()))
+						.collect(ImmutableSet.toImmutableSet());
+
+				if (shipmentScheduleInvalidateRepository.isAllValid(scheduleIds))
+				{
+					logger.info("All {} shipment schedules are valid. Took {}", scheduleIds.size(), stopwatch);
+					stopwatch.stop();
+					return;
+				}
+			}
+
+			if (stopwatch.elapsed().compareTo(JOB_SCHEDULE_CREATE_TIMEOUT) > 0)
+			{
+				throw new AdempiereException("Timeout waiting for shipment schedules to be created and valid. "
+						+ "Expected " + allOrderLineIds.size() + " schedule(s), found " + shipmentSchedules.size() + ". "
+						+ "Took " + stopwatch.elapsed());
+			}
+
+			logger.info("Waiting for shipment schedules to be created and valid ({}/{} found). Sleeping...",
+					shipmentSchedules.size(), allOrderLineIds.size());
+			sleep(JOB_SCHEDULE_CREATE_SLEEP_BETWEEN);
+		}
 	}
 
 	private static void sleep(@NonNull final Duration duration)

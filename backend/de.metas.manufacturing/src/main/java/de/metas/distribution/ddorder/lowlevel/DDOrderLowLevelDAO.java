@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternativ
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -119,6 +120,26 @@ public class DDOrderLowLevelDAO
 				.create()
 				.firstOptional(I_DD_Order.class)
 				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
+	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
+	 *
+	 * <p>The stock-aware split creates one DD_Order per contributing source locator, so an assignment can have
+	 * several live DD_Orders. The per-locator diff matches each returned DD_Order to a required source locator via
+	 * its line's {@code DD_OrderLine.M_Locator_ID}.</p>
+	 */
+	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.list(I_DD_Order.class);
 	}
 
 	/**

@@ -7,14 +7,11 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.log.EventLogUserService;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.organization.ClientAndOrgId;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -31,7 +28,8 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 	@NonNull private final DDOrderPickingReplenishmentService replenishmentService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 	@NonNull private final EventLogUserService eventLogUserService;
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	// Services.get(): legacy singleton lookup, not constructor-injected -> declared after the @RequiredArgsConstructor fields.
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@PostConstruct
 	public void subscribe()
@@ -42,40 +40,23 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 	@Override
 	public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 	{
-		try (final IAutoCloseable ignored = switchCtx(event))
+		final DDOrderReplenishmentRequest request = DDOrderReplenishmentRequestConverter.fromEvent(event);
+
+		try (final IAutoCloseable ignored = switchCtx(request))
 		{
-			final ShipmentScheduleId scheduleId = extractShipmentScheduleId(event);
+			final PickingJobScheduleId pickingJobScheduleId = request.getPickingJobScheduleId();
 
 			eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 					.handlerClass(DDOrderReplenishmentEventHandler.class)
-					.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(scheduleId)))
+					.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(pickingJobScheduleId)))
 					.build());
 		}
 	}
 
-	private static @NonNull ShipmentScheduleId extractShipmentScheduleId(final @NonNull Event event)
-	{
-		return ShipmentScheduleId.ofRepoId(event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_shipmentScheduleId, -1));
-	}
-
-	private static @NonNull ClientAndOrgId extractClientAndOrgId(final @NonNull Event event)
-	{
-		final int adClientId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Client_ID, -1);
-		final int adOrgId = event.getPropertyAsInt(DDOrderReplenishmentEventPublisher.PROPERTY_AD_Org_ID, -1);
-		if (adClientId <= 0 || adOrgId < 0)
-		{
-			throw new AdempiereException(StringUtils.formatMessage(
-					"DD_Order replenishment event is missing AD_Client_ID/AD_Org_ID (old publisher?): clientId={0}, orgId={1}",
-					adClientId, adOrgId));
-		}
-
-		return ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId);
-	}
-
-	private IAutoCloseable switchCtx(final @NonNull Event event)
+	private IAutoCloseable switchCtx(final @NonNull DDOrderReplenishmentRequest request)
 	{
 		final Properties ctx = Env.newTemporaryCtx();
-		Env.setClientAndOrgId(ctx, extractClientAndOrgId(event));
+		Env.setClientAndOrgId(ctx, request.getClientAndOrgId());
 		return Env.switchContext(ctx);
 	}
 
