@@ -231,6 +231,108 @@ Feature: nShift Shipment
       | productName    | shippedQuantity | unitPrice | totalValue | totalWeightInKg | customsTariff |
       | nShift Product | 10              | 10        | 100        | 21              | 12345678      |
 
+  @Id:S0355_Advise_AC1
+  Scenario: nShift Carrier Advise — advisor request item always carries numberOfItems=1 regardless of order quantity
+    # The advisor uses a per-unit baseline (1 item) regardless of the total ordered quantity.
+    # This ensures the carrier advisor sees a single-unit weight/dimension, not the full shipment size.
+    Given the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1, cs2           |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ac1     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_ac1_l1  | so_ac1     | product      | 30         |
+    When the order identified by so_ac1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_ac1     | so_ac1_l1      | N             |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
+      | ss_ac1                | true                         |
+    # grossWeightKg: product.WeightGross=2.1 KGM rounded UP (RoundingMode.UP) to 0 decimal places = 3
+    # lengthInCM/widthInCM/heightInCM: product has no explicit dimensions in Background, so all 0
+    Then validate the captured nShift advisor request:
+      | numberOfItems | grossWeightKg | lengthInCM | widthInCM | heightInCM |
+      | 1             | 3             | 0          | 0         | 0          |
+
+  @Id:S0355_Advise_AC6
+  Scenario: nShift Delivery Order — UseShippingRules=true when shipper has IsApiCarrierAdvise and schedule is non-Manual
+    # When a schedule goes through the automatic advise flow (status Completed, not Manual),
+    # the gateway patches the shipment request with UseShippingRules=true plus the effective ServiceLevel.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And metasfresh contains M_Shipper_ServiceLevel_Configs:
+      | M_Shipper_ID | SeqNo | ServiceLevel |
+      | nShift       | 10    | STANDARD     |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1, cs2           |
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ac6     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_ac6_l1  | so_ac6     | product      | 10         |
+    When the order identified by so_ac6 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_ac6     | so_ac6_l1      | N             | cp1                | cgt1                  |
+    And shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_ac6                | inout_ac6  |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | inout_ac6  | transpOrder_ac6            |
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier | M_InOut_ID |
+      | cso_ac6    | inout_ac6  |
+    Then validate the captured nShift shipment request options:
+      | UseShippingRules | ServiceLevel |
+      | true             | STANDARD     |
+
+  @Id:S0355_Advise_AC7
+  Scenario: nShift Delivery Order — UseShippingRules absent when all schedules have Manual advising status
+    # When every schedule linked to the delivery order was advised manually,
+    # the gateway must NOT set UseShippingRules, so nShift uses its own shipment rules.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1, cs2           |
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ac7     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_ac7_l1  | so_ac7     | product      | 10         |
+    When the order identified by so_ac7 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_ac7     | so_ac7_l1      | N             | cp1                | cgt1                  |
+    # Set the carrier-advising status to Manual via the manual-advise process
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_ac7                | cp2                | cgt2                  | cs3, cs4           |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_ac7     | so_ac7_l1      | N             | cp2                | cgt2                  |
+    And shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_ac7                | inout_ac7  |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | inout_ac7  | transpOrder_ac7            |
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier | M_InOut_ID |
+      | cso_ac7    | inout_ac7  |
+    Then validate the captured nShift shipment request options:
+      | UseShippingRules |
+      | -                |
+
   @Id:S0355_DeliveryOrder_TC1
   Scenario: nShift Delivery Order exported via Historical Shipments JSON includes parcel tracking
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
@@ -901,106 +1003,6 @@ Feature: nShift Shipment
       | nShift Product   | IT              | 9               | 10        | 90         | 18.9            | 12345678      |
       | nShift Product   | DE              | 7               | 10        | 70         | 14.7            | 12345678      |
       | nShift Product 2 | IT              | 6               | 5         | 30         | 7.2             | 12345678      |
-
-  @Id:S0355_Advise_AC1
-  Scenario: nShift Carrier Advise — advisor request item always carries numberOfItems=1 regardless of order quantity
-    # The advisor uses a per-unit baseline (1 item) regardless of the total ordered quantity.
-    # This ensures the carrier advisor sees a single-unit weight/dimension, not the full shipment size.
-    Given the nShift ship advisor service is stubbed to return a successful response based on the request
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
-      | cp1                | cgt1                  | cs1, cs2           |
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
-      | so_ac1     | true    | customer      | 2025-04-01  | wh             | nShift       |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_ac1_l1  | so_ac1     | product      | 30         |
-    When the order identified by so_ac1 is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_ac1     | so_ac1_l1      | N             |
-    And Process M_ShipmentSchedule_Advise is run
-      | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
-      | ss_ac1                | true                         |
-    Then validate the captured nShift advisor request:
-      | numberOfItems |
-      | 1             |
-
-  @Id:S0355_Advise_AC6
-  Scenario: nShift Delivery Order — UseShippingRules=true when shipper has IsApiCarrierAdvise and schedule is non-Manual
-    # When a schedule goes through the automatic advise flow (status Completed, not Manual),
-    # the gateway patches the shipment request with UseShippingRules=true plus the effective ServiceLevel.
-    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
-    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
-    And metasfresh contains M_Shipper_ServiceLevel_Configs:
-      | M_Shipper_ID | SeqNo | ServiceLevel |
-      | nShift       | 10    | STANDARD     |
-    And the nShift ship advisor service is stubbed to return a successful response based on the request
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
-      | cp1                | cgt1                  | cs1, cs2           |
-    And the nShift shipment service is stubbed to return a successful shipment creation response
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
-      | so_ac6     | true    | customer      | 2025-04-01  | wh             | nShift       |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_ac6_l1  | so_ac6     | product      | 10         |
-    When the order identified by so_ac6 is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_ac6     | so_ac6_l1      | N             | cp1                | cgt1                  |
-    And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_ac6                | inout_ac6  |
-    And after not more than 60s, Transportation Order is found for Shipment:
-      | M_InOut_ID | M_ShipperTransportation_ID |
-      | inout_ac6  | transpOrder_ac6            |
-    And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier | M_InOut_ID |
-      | cso_ac6    | inout_ac6  |
-    Then validate the captured nShift shipment request options:
-      | UseShippingRules | ServiceLevel |
-      | true             | STANDARD     |
-
-  @Id:S0355_Advise_AC7
-  Scenario: nShift Delivery Order — UseShippingRules absent when all schedules have Manual advising status
-    # When every schedule linked to the delivery order was advised manually,
-    # the gateway must NOT set UseShippingRules, so nShift uses its own shipment rules.
-    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
-    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
-    And the nShift ship advisor service is stubbed to return a successful response based on the request
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
-      | cp1                | cgt1                  | cs1, cs2           |
-    And the nShift shipment service is stubbed to return a successful shipment creation response
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
-      | so_ac7     | true    | customer      | 2025-04-01  | wh             | nShift       |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_ac7_l1  | so_ac7     | product      | 10         |
-    When the order identified by so_ac7 is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_ac7     | so_ac7_l1      | N             | cp1                | cgt1                  |
-    # Set the carrier-advising status to Manual via the manual-advise process
-    And Process M_ShipmentSchedule_Advise_Manual is run
-      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
-      | nShift       | ss_ac7                | cp2                | cgt2                  | cs3, cs4           |
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_ac7     | so_ac7_l1      | N             | cp2                | cgt2                  |
-    And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_ac7                | inout_ac7  |
-    And after not more than 60s, Transportation Order is found for Shipment:
-      | M_InOut_ID | M_ShipperTransportation_ID |
-      | inout_ac7  | transpOrder_ac7            |
-    And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier | M_InOut_ID |
-      | cso_ac7    | inout_ac7  |
-    Then validate the captured nShift shipment request options:
-      | UseShippingRules |
-      | -                |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

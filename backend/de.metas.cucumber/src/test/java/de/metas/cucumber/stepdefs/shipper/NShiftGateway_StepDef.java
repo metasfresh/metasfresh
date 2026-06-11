@@ -222,7 +222,9 @@ public class NShiftGateway_StepDef
 	 * {@code ReceiverAdditionalAddressInfo}, {@code ReceiverHouseNo}, {@code ReceiverZip},
 	 * {@code ReceiverCity}, {@code ReceiverCountryCode}, {@code ReceiverAttention},
 	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail},
-	 * {@code numberOfItems} (item.numberOfItems — the per-unit baseline sent to the advisor).
+	 * {@code numberOfItems} (item.numberOfItems — the per-unit baseline sent to the advisor),
+	 * {@code grossWeightKg} (item.grossWeightKg — per-unit gross weight in kg, rounded up),
+	 * {@code lengthInCM}, {@code widthInCM}, {@code heightInCM} (item.packageDimensions — per-unit package dimensions).
 	 * <p>
 	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
 	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by
@@ -245,13 +247,11 @@ public class NShiftGateway_StepDef
 	 *   <b>ReceiverContactName</b>            — (optional) delivery contact name<br>
 	 *   <b>ReceiverContactPhone</b>           — (optional) delivery contact phone<br>
 	 *   <b>ReceiverContactEmail</b>           — (optional) delivery contact e-mail<br>
-	 *   <b>numberOfItems</b>                  — (optional) expected item.numberOfItems in the advisor request
-	 * @cucumber.example
-	 * <pre>
-	 * And validate the captured nShift advisor request:
-	 *   | numberOfItems |
-	 *   | 1             |
-	 * </pre>
+	 *   <b>numberOfItems</b>  — (optional) expected item.numberOfItems<br>
+	 *   <b>grossWeightKg</b>  — (optional) expected item.grossWeightKg (per-unit, rounded up)<br>
+	 *   <b>lengthInCM</b>     — (optional) expected item.packageDimensions.lengthInCM<br>
+	 *   <b>widthInCM</b>      — (optional) expected item.packageDimensions.widthInCM<br>
+	 *   <b>heightInCM</b>     — (optional) expected item.packageDimensions.heightInCM
 	 */
 	@And("validate the captured nShift advisor request:")
 	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
@@ -271,6 +271,29 @@ public class NShiftGateway_StepDef
 		row.getAsOptionalInt("numberOfItems").ifPresent(expected -> softly
 				.assertThat(capturedAdvisorRequest.getItem().getNumberOfItems())
 				.as("item.numberOfItems")
+				.isEqualTo(expected));
+
+		row.getAsOptionalBigDecimal("grossWeightKg").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getGrossWeightKg())
+				.as("item.grossWeightKg")
+				.isEqualByComparingTo(expected));
+
+		row.getAsOptionalInt("lengthInCM").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getPackageDimensions() != null
+						? capturedAdvisorRequest.getItem().getPackageDimensions().getLengthInCM() : null)
+				.as("item.packageDimensions.lengthInCM")
+				.isEqualTo(expected));
+
+		row.getAsOptionalInt("widthInCM").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getPackageDimensions() != null
+						? capturedAdvisorRequest.getItem().getPackageDimensions().getWidthInCM() : null)
+				.as("item.packageDimensions.widthInCM")
+				.isEqualTo(expected));
+
+		row.getAsOptionalInt("heightInCM").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getPackageDimensions() != null
+						? capturedAdvisorRequest.getItem().getPackageDimensions().getHeightInCM() : null)
+				.as("item.packageDimensions.heightInCM")
 				.isEqualTo(expected));
 
 		softly.assertAll();
