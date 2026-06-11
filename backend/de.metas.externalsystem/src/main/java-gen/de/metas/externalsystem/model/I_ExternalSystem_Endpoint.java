@@ -337,6 +337,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set File Upload.
+	 * Send the request body as multipart/form-data (document + file).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -346,6 +347,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get File Upload.
+	 * Send the request body as multipart/form-data (document + file).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
