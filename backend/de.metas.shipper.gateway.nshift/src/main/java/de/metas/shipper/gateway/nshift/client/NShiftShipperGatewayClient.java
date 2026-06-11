@@ -32,7 +32,13 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.logging.LogManager;
@@ -60,6 +66,8 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Carrier_Config;
 import org.compiere.model.I_M_Shipper;
 import org.slf4j.Logger;
@@ -89,6 +97,9 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
+	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	@Override
 	@NonNull
@@ -179,7 +190,35 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		{
 			patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel);
 		}
-		return request.toBuilder().shipperConfig(patchedConfig).build();
+
+		String incotermsValue = null;
+		String extSystemValue = null;
+		final OrderAndLineId orderAndLineId = schedules.stream()
+				.map(ShipmentSchedule::getOrderAndLineId)
+				.filter(id -> id != null)
+				.findFirst()
+				.orElse(null);
+		if (orderAndLineId != null)
+		{
+			final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
+			final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
+			if (incotermsId != null)
+			{
+				final Incoterms incoterms = incotermsRepository.getById(incotermsId);
+				incotermsValue = incoterms.getValue();
+			}
+			final ExternalSystemId orderExternalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
+			if (orderExternalSystemId != null)
+			{
+				extSystemValue = externalSystemRepository.getById(orderExternalSystemId).getType().getValue();
+			}
+		}
+
+		return request.toBuilder()
+				.shipperConfig(patchedConfig)
+				.incotermsValue(incotermsValue)
+				.externalSystemValue(extSystemValue)
+				.build();
 	}
 
 	/**

@@ -124,6 +124,8 @@ public class NShiftShipmentServiceTest
 			.deliveryDate("2025-10-02")
 			.deliveryNote("Delivery note")
 			.customerReference("Customer reference")
+			.incotermsValue("DAP")
+			.externalSystemValue("Other")
 			.deliveryOrderParcel(JsonDeliveryOrderParcel.builder()
 					.id("1")
 					.grossWeightKg(BigDecimal.TEN)

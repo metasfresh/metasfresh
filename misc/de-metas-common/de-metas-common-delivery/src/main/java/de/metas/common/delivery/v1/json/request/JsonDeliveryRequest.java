@@ -58,6 +58,8 @@ public class JsonDeliveryRequest
 	@Nullable String deliveryDate;
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
+	@Nullable String incotermsValue;
+	@Nullable String externalSystemValue;
 	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels;
 	@Nullable JsonShipperProduct shipperProduct;
 	@Nullable String shipperEORI;
