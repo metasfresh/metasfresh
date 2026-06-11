@@ -2,13 +2,11 @@ package de.metas.distribution.ddorder.replenishment.event;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
-import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -29,7 +27,7 @@ public class DDOrderReplenishmentEventPublisher
 	public void publishOne(@NonNull final PickingJobScheduleId pickingJobScheduleId)
 	{
 		// The assignment's AD_Client_ID/AD_Org_ID are carried into the async handler (which runs on an EventBus pool thread with no AD context).
-		// Resolved out-of-trx via the owning repository: called after commit, so the in-trx load context is gone; the assignment may also have been deleted since the event was queued (then null).
+		// Called after commit, so the in-trx load context is gone; the assignment may also have been deleted since the event was queued (null → 0/0 fallback).
 		final ClientAndOrgId clientAndOrgId = pickingJobScheduleRepository.getClientAndOrgIdOutOfTrxOrNull(pickingJobScheduleId);
 
 		// shallBeLogged() is required: without it the event-bus never sets up the EventLogEntryCollector
@@ -43,7 +41,7 @@ public class DDOrderReplenishmentEventPublisher
 				// triggered the reconcile. EventLogService.saveEvent copies this into AD_EventLog.AD_Table_ID /
 				// Record_ID, which lets callers (incl. tests) pin a log entry to its originating assignment
 				// instead of matching any reconcile entry globally.
-				.setSourceRecordReference(TableRecordReference.of(I_M_Picking_Job_Schedule.Table_Name, pickingJobScheduleId.getRepoId()))
+				.setSourceRecordReference(pickingJobScheduleId.toTableRecordReference())
 				.shallBeLogged()
 				.build();
 		eventBusFactory.getEventBus(DDOrderReplenishmentConstants.TOPIC).enqueueEvent(event);
