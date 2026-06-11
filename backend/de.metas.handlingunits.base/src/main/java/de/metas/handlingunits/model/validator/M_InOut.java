@@ -298,7 +298,19 @@ public class M_InOut
 		// was recreated via "Generate Shipments" the job is left Drafted, so a subsequent reverse restores nothing
 		// and the shipment can no longer be recreated (me03#29561). Re-create the picked rows directly from the
 		// just-reversed allocations for any (schedule, VHU) the reopen did not restore.
-		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(assignedQuantities);
+		//
+		// Gate this to allocations whose VHU is covered by a picking job: a QtyToDeliver / on-the-fly shipment has
+		// NO picking job and its reverse must instead clear the HU's BPartner + return it to Active stock (so it
+		// can be shipped to a different customer) — that behaviour must stay untouched.
+		final ImmutableSet<HuId> huIdsCoveredByPickingJobs = pickingJobService.getHuIdsCoveredByPickingJobs(allShipmentSchedulesInvolved);
+		if (!huIdsCoveredByPickingJobs.isEmpty())
+		{
+			final List<I_M_ShipmentSchedule_QtyPicked> pickedJobAllocations = assignedQuantities.stream()
+					.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0
+							&& huIdsCoveredByPickingJobs.contains(HuId.ofRepoId(qtyPicked.getVHU_ID())))
+					.collect(ImmutableList.toImmutableList());
+			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(pickedJobAllocations);
+		}
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
