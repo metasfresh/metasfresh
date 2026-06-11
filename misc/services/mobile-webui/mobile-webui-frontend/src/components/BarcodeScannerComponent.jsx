@@ -352,8 +352,8 @@ const BarcodeScannerComponent = ({
           sysconfigs per the framework design (https://github.com/metasfresh/me03/issues/29246).
           DataWedge IME requires readOnly ABSENT or InputConnection breaks
           (https://github.com/metasfresh/me03/issues/28834). Keystroke-wedge devices that ignore
-          inputMode="none" require readOnly PRESENT — first deployed on dt204 / CT60 via
-          https://github.com/metasfresh/me03/issues/30363.
+          inputMode="none" require readOnly PRESENT — first deployed for Honeywell CT60 /
+          Android 11.
 
           Regression guards (BOTH must stay green — `e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js`):
             • DataWedge IME:        "#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden"

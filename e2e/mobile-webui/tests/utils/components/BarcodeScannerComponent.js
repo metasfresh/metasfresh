@@ -171,8 +171,13 @@ export const BarcodeScannerComponent = {
     // Asserts the device camera <video> element is NOT rendered inside .barcode-scanner.
     // Used by the hardware-scanner-only deployments (useCamera=N) to guard against a
     // regression that would silently re-enable the camera capture preview.
+    //
+    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — a
+    // <video> that doesn't appear within seconds is not going to appear, and falling back
+    // to the 120s global assertion timeout would silently consume the test budget on a
+    // genuine regression.
     expectCameraVideoAbsent: async () => await test.step(`${NAME} - Expect no camera <video> rendered`, async () => {
-        await expect(page.locator('.barcode-scanner video')).toHaveCount(0);
+        await expect(page.locator('.barcode-scanner video')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,

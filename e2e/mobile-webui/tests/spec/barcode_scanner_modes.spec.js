@@ -80,7 +80,7 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
     await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
 });
 
-// ⚠️ HARDWARE CONTRACT — Honeywell CT60 / Android 11 / Keyboard-wedge mode (dt204 instance).
+// ⚠️ HARDWARE CONTRACT — Honeywell CT60 / Android 11 / Keyboard-wedge mode.
 // DO NOT WEAKEN THIS TEST. The five conditions below must ALL hold simultaneously — any
 // single regression silently breaks scanning on the real CT60 hardware:
 //
@@ -93,13 +93,15 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 //                           but is visually hidden. The scan-prompt UI provides the visual anchor.
 //   no <video> element    — useCamera=N → device camera should never render
 //
+// Asserts on HU Manager so BarcodeScannerComponent renders from SysConfig (no hardcoded prop) —
+// ApplicationsListScreen hardcodes both isShowInputText={false} and isShowVideo={false}, which
+// would short-circuit the sysconfig path and make readOnly + camera-absent checks vacuously pass.
+//
 // IF THIS TEST FAILS after a change to BarcodeScannerComponent.jsx: the CODE broke the contract.
 // Fix the code, do NOT relax these expected values. Any change to readOnly / inputMode / type /
 // the off-screen class on #input-text MUST be re-validated on a physical Honeywell CT60 (see
 // e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). Automated tests cannot prove the
 // on-device behaviour.
-//
-// First validated on the dt204 instance, me03 https://github.com/metasfresh/me03/issues/30363.
 // noinspection JSUnusedLocalSymbols
 test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no camera', async ({ page }) => {
     await allure.epic('E0295: Frontend MobileUI');
@@ -107,15 +109,17 @@ test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no
     await allure.story('Barcode scanning modes');
     await allure.severity('critical');
 
-    // dt204 instance sysconfig combo (verified against the live deep_tundra_uat local stack
-    // 2026-06-12 and validated on the actual CT60 hardware).
-    const masterdata = await createLoginMasterdata({
+    // Sysconfig combo for the keystroke-wedge mode — captured from a live local stack and
+    // validated on physical CT60 hardware.
+    const masterdata = await createMasterdataWithHU({
         showInputText: 'N',
         useCamera: 'N',
         offscreenInputReadOnly: 'Y',
     });
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
 
     await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
     await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
