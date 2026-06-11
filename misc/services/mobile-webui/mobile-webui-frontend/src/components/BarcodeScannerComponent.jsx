@@ -245,6 +245,7 @@ const BarcodeScannerComponent = ({
       scannedBarcode,
       isShowInputText,
       isInputTextReadonly,
+      offscreenInputReadOnly,
       triggerOnChangeIfLengthGreaterThan,
       textChangedDebounceMillis,
       scanDuplicatesIntervalMillis,

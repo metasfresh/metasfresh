@@ -19,6 +19,14 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
     queryStringRef?.current?.focus();
   }, [isEnabled]);
 
+  // If the camera gets disabled while the scanner overlay is open, close it — otherwise it would
+  // stay visible with no button to dismiss it (the toggle button is hidden when the camera is off).
+  useEffect(() => {
+    if (!isCameraEnabled && isBarcodeScannerDisplayed) {
+      setBarcodeScannerDisplayed(false);
+    }
+  }, [isCameraEnabled, isBarcodeScannerDisplayed]);
+
   const handleQueryStringFocus = () => {
     queryStringRef?.current?.select();
   };
