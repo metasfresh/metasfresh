@@ -66,9 +66,7 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
           </button>
         )}
       </div>
-      {isCameraEnabled && isBarcodeScannerDisplayed && (
-        <BarcodeReader onBarcodeScanned={handleBarcodeScanned} />
-      )}
+      {isCameraEnabled && isBarcodeScannerDisplayed && <BarcodeReader onBarcodeScanned={handleBarcodeScanned} />}
     </div>
   );
 };
