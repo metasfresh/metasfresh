@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
- * Repository Tables: M_Picking_Job_Schedule
+ * Repository Tables: M_Picking_Job_Schedule (query owner); DD_Order (sub-query filter only — see {@link #streamAssignmentsNeedingDDOrder})
  * Repository Cluster: PickingJobScheduleRepository
  */
 @Repository
@@ -95,6 +95,13 @@ public class PickingJobScheduleRepository
 		record.setProcessed(from.isProcessed());
 	}
 
+	/**
+	 * Boundary factory: maps an already-loaded {@link I_M_Picking_Job_Schedule} record to its domain object.
+	 * <p>
+	 * Public so that a model interceptor that already holds the record (e.g. {@code M_Picking_Job_Schedule_DDOrderPickingInterceptor})
+	 * can build the domain object without a redundant {@link #getById} reload. Callers that do NOT already hold the record
+	 * must go through {@link #getById}/{@link #findByIdOrNull} rather than loading the record themselves.
+	 */
 	public static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
 	{
 		return PickingJobSchedule.builder()
@@ -219,6 +226,13 @@ public class PickingJobScheduleRepository
 		return queryBuilder.create();
 	}
 
+	/**
+	 * Cross-entity anti-join: streams active, not-yet-processed schedules that are NOT yet referenced by a completed
+	 * DD_Order ({@code M_Picking_Job_Schedule LEFT-anti-JOIN DD_Order} on {@code DD_Order.M_Picking_Job_Schedule_ID}).
+	 * <p>
+	 * {@code completedDDOrdersQuery} is passed in by the caller (the DD_Order reconcile flow) rather than built here,
+	 * so {@code DD_Order} stays a sub-query filter and not a table this repository owns.
+	 */
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
 	{
 		return queryBL

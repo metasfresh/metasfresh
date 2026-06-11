@@ -163,6 +163,14 @@ public class PickingJobScheduleService
 				.execute();
 	}
 
+	/**
+	 * Streams the active, not-yet-processed picking-job-schedule assignments that still need a DD_Order.
+	 * <p>
+	 * {@code completedDDOrdersQuery} is a sub-query reference (the set of DD_Orders whose schedule is already
+	 * covered), NOT a managed-entity query of this service — it is used as an anti-join filter against
+	 * {@code DD_Order.M_Picking_Job_Schedule_ID}. It is supplied by the DD_Order reconcile flow because the
+	 * "needs a DD_Order" predicate is only meaningful in that context.
+	 */
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
 	{
 		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(completedDDOrdersQuery);

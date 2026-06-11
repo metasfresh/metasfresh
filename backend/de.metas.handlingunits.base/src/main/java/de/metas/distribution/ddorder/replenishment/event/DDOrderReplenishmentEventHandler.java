@@ -25,10 +25,11 @@ import java.util.Properties;
 @RequiredArgsConstructor
 public class DDOrderReplenishmentEventHandler implements IEventListener
 {
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final DDOrderPickingReplenishmentService replenishmentService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 	@NonNull private final EventLogUserService eventLogUserService;
+	// Services.get(): legacy singleton lookup, not constructor-injected -> declared after the @RequiredArgsConstructor fields.
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@PostConstruct
 	public void subscribe()

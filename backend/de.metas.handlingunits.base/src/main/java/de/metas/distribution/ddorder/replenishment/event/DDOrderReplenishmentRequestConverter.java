@@ -15,7 +15,7 @@ class DDOrderReplenishmentRequestConverter
 	private static final String PROPERTY_AD_Org_ID = "AD_Org_ID";
 
 	@NonNull
-	public static Event toEvent(@NonNull final DDOrderReplenishmentRequest request)
+	public Event toEvent(@NonNull final DDOrderReplenishmentRequest request)
 	{
 		final PickingJobScheduleId pickingJobScheduleId = request.getPickingJobScheduleId();
 		final ClientAndOrgId clientAndOrgId = request.getClientAndOrgId();
@@ -36,7 +36,7 @@ class DDOrderReplenishmentRequestConverter
 				.build();
 	}
 
-	public static DDOrderReplenishmentRequest fromEvent(final @NonNull Event event)
+	public DDOrderReplenishmentRequest fromEvent(final @NonNull Event event)
 	{
 		return DDOrderReplenishmentRequest.builder()
 				.pickingJobScheduleId(PickingJobScheduleId.ofRepoId(event.getPropertyAsInt(PROPERTY_pickingJobScheduleId, -1)))
