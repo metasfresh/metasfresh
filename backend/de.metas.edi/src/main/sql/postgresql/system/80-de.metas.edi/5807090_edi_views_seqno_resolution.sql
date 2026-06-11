@@ -1,7 +1,21 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/desadv_json/M_InOut_Export_EDI_DESADV_JSON_V.sql
+-- EDI export views — resolve recipient config by lowest SeqNo
+--
+-- Replaces the two-LEFT-JOIN + COALESCE pattern (exact-location row / partner-default row)
+-- with a single LEFT JOIN LATERAL that picks the active C_BPartner_EDI_Setting row with the
+-- lowest SeqNo (ties broken by C_BPartner_EDI_Setting_ID), matching the resolution logic in
+-- Java EDIBPartnerConfigMap.resolve (Comparator: SeqNo asc, then ID asc, among rows where
+-- C_BPartner_Location_ID = <doc-location> OR C_BPartner_Location_ID IS NULL).
+--
+-- This file: M_InOut_Export_EDI_DESADV_JSON_V  — TechnicalRecipientGLN (EdiDesadvRecipientGLN)
 
--- Main view that uses the functions and other views
-drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
-CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
+-- ==============================================================================================
+-- M_InOut_Export_EDI_DESADV_JSON_V
+-- ==============================================================================================
+
+DROP VIEW IF EXISTS m_inout_export_edi_desadv_json_v$new;
+
+CREATE OR REPLACE VIEW m_inout_export_edi_desadv_json_v$new AS
 SELECT io.m_inout_id,
        -- Top-level column so PostgREST can filter by (m_inout_id, edi_desadv_id).
        -- A consolidated shipment links to N DESADVs via edi_desadv_m_inout; view emits N rows.
@@ -95,5 +109,11 @@ SELECT io.m_inout_id,
   AND io.docstatus IN ('CO', 'CL')
 ;
 
--- Example query
---select * from M_InOut_Export_EDI_DESADV_JSON_V where m_inout_id=1001857;
+SELECT public.db_alter_view(
+    'm_inout_export_edi_desadv_json_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('m_inout_export_edi_desadv_json_v$new'))
+);
+
+DROP VIEW IF EXISTS m_inout_export_edi_desadv_json_v$new;
