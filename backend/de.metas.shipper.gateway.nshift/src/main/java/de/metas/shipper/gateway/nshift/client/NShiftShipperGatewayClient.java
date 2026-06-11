@@ -204,7 +204,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	 * Sets incoterms + external-system context on the request from the order, mirroring the advise side
 	 * ({@code CarrierAdviseCommand.applyAdvisorContext} / {@code NShiftShipAdvisorService}, both nShift reference
 	 * kinds 63/64). Applied unconditionally — independent of the shipping-rule gating — so the ship request
-	 * carries the same context as the advise request (AC10b parity).
+	 * carries the same context as the advise request.
 	 */
 	private JsonDeliveryRequest applyOrderContext(
 			@NonNull final JsonDeliveryRequest request,
