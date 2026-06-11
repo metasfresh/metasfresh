@@ -69,6 +69,10 @@ import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
 
+/**
+ * Repository Tables: Carrier_ShipmentOrder, Carrier_ShipmentOrder_Parcel, Carrier_ShipmentOrder_Item
+ * Repository Cluster: ShipmentOrderRepository
+ */
 @Repository
 @RequiredArgsConstructor
 public class ShipmentOrderRepository

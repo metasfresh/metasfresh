@@ -158,6 +158,10 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Field_ID=780757
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
+SELECT update_FieldTranslation_From_AD_Name_Element(584983);
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=780757;
+SELECT AD_Element_Link_Create_Missing_Field(780757);
+
 -- AD_UI_Element: IncotermsValue (in group "main" = 553598)
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_UI_Element_ID,AD_Field_ID,AD_UI_ElementGroup_ID,AD_Tab_ID,
                            Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,
@@ -193,6 +197,10 @@ FROM AD_Language l, AD_Field t
 WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Field_ID=780758
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
+
+SELECT update_FieldTranslation_From_AD_Name_Element(577608);
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=780758;
+SELECT AD_Element_Link_Create_Missing_Field(780758);
 
 -- AD_UI_Element: ExternalSystem (in group "main" = 553598)
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_UI_Element_ID,AD_Field_ID,AD_UI_ElementGroup_ID,AD_Tab_ID,
