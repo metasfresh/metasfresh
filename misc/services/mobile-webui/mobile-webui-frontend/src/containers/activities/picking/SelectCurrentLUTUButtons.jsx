@@ -102,7 +102,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           onClick={onAdviseCarrierClick}
         />
       )}
-      {isCarrierAdviseAvailable && isCarrierAdviseReadOnly && carrierProductCaption && (
+      {isCarrierAdviseAvailable && carrierProductCaption && (
         <ButtonWithIndicator
           testId="carrier-product-readonly"
           caption={trl('activities.picking.carrierProduct') + ': ' + carrierProductCaption}
