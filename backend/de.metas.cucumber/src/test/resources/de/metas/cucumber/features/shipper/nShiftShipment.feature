@@ -251,6 +251,10 @@ Feature: nShift Shipment
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
       | ss_ac1                | true                         |
+    # the advise runs asynchronously — wait for the carrier product to be set so the advisor request has been captured before validating
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | Carrier_Product_ID |
+      | ss_ac1     | so_ac1_l1      | cp1                |
     # numberOfItems=1 and per-unit weight/dimensions prove the qty-1 baseline (not scaled by the order qty of 30):
     # grossWeightKg: product.WeightGross=2.1 KGM rounded UP (RoundingMode.UP) to 0 decimals = 3
     # length/width/height: the product's per-unit dimensions (30/20/10 cm), unscaled
