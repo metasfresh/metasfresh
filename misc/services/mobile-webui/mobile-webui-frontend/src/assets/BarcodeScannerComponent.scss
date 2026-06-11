@@ -41,6 +41,30 @@
     border: none;
   }
 
+  // Scan prompt — rendered when there is no camera preview and the visible input is the only
+  // content on screen (see BarcodeScannerComponent.jsx). Makes scan-only screens visually
+  // explicit (large barcode icon + the inputPlaceholderText caption).
+  .scan-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem 1rem;
+    color: $grey;
+
+    .scan-prompt-icon {
+      font-size: 6rem;
+      margin-bottom: 1rem;
+      color: $base-mf-green;
+    }
+
+    .scan-prompt-text {
+      font-size: 1.5em;
+      text-align: center;
+      line-height: 1.3;
+    }
+  }
+
   .loading {
     position: absolute;
     z-index: 999;
@@ -72,9 +96,9 @@
 // layer ignores CSS z-index and covers overlaid HTML content).
 .barcode-scanner:not(:has(video)) {
   display: flex;
+  flex-direction: column;
 
-  .input-text {
-    flex-grow: 1;
-  }
+  // .scan-prompt + .input-text stack vertically (prompt above input).
+  // flex-grow on the input would stretch it vertically — leave it at its natural height.
 }
 

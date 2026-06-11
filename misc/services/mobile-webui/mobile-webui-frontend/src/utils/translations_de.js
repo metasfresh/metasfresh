@@ -84,6 +84,7 @@ const translations = {
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
       scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
       scanTrolleyPlaceholder: 'Wagen scannen...',
+      scanPrompt: 'Barcode scannen',
     },
   },
   activities: {

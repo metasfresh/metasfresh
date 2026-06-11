@@ -298,6 +298,19 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
+      {/* Scan prompt — visible only on hardware-scanner deployments (no camera) where the visible
+          input is the screen's only content. Off-screen-input components (BarcodeScannerButton,
+          DistributionMoveActivity, ApplicationsListScreen) pass isShowInputText=false and stay
+          unaffected. Reuses inputPlaceholderText so callers control the prompt text (e.g. HUScanner
+          passes 'Scan LU or locator…'). See https://github.com/metasfresh/me03/issues/30363. */}
+      {!isShowVideo && !isProcessing && isShowInputText && (
+        <div className="scan-prompt">
+          <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
+          <div className="scan-prompt-text">
+            {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
+          </div>
+        </div>
+      )}
       {/* IMPORTANT: Always use type="text" — never type="hidden".
           When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
           instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
