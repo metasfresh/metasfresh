@@ -119,3 +119,17 @@
   }
 }
 
+// In-progress scan signal — when the visible/off-screen input has content (i.e. the hook is
+// mid-burst, chars are accumulating from the scanner), switch the prompt icon to a yellow
+// "scanning" hue and double the pulse rate. CSS-only — :placeholder-shown evaluates against
+// the input's current `value`, including imperative `inputTextRef.current.value = barcode`
+// writes from the hook's onReadInProgress. When the buffer is cleared on scan completion the
+// input falls back to placeholder-shown ⇒ icon returns to the idle green/slow pulse.
+.barcode-scanner:has(.input-text:not(:placeholder-shown)) .scan-prompt-icon {
+  color: $indicator-yellow;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation-duration: 0.7s;
+  }
+}
+
