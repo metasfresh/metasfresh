@@ -27,22 +27,25 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
   const isShowInputText =
     isShowInputTextParam != null ? isShowInputTextParam : useBooleanSetting('barcodeScanner.showInputText');
 
-  const isInputTextReadonly = isShowInputText
+  // Two orthogonal keyboard-suppression knobs feed the scan <input>. They are named after their
+  // mechanism (not their UX effect) so the two cannot be confused:
+  //   • inputModeNone  → sets `inputMode="none"` (a HINT — soft. Honoured by recent Chrome/Android,
+  //                       ignored by some firmware, e.g. Honeywell CT60 / Android 11).
+  //   • readOnlyAttr   → sets the HTML `readOnly` attribute (a HARD GUARANTEE — the browser never
+  //                       opens the soft keyboard on a readOnly input, AND manual typing is blocked).
+  // Per the scanner-framework design (https://github.com/metasfresh/me03/issues/29246), readOnly is
+  // controlled by per-mode knobs (`offscreenInput.readOnly` vs `visibleInput.readOnly`) so the two
+  // modes tune independently. Defaults OFF in both modes ⇒ byte-for-byte today's behaviour.
+  // DataWedge IME deployments MUST keep BOTH off — readOnly kills the InputConnection. Enabling
+  // visibleInput.readOnly also BLOCKS manual typing (Mode C3) — intentional opt-in for
+  // hardware-scanner-only deployments where the visible input must stay on screen (e.g. /huManager,
+  // whose only content is the scan field — hiding it leaves the screen blank).
+  const inputModeNone = isShowInputText
     ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
     : true;
-
-  // When enabled, set the HTML `readOnly` attribute on the scan input to suppress the on-screen
-  // keyboard *unconditionally* — for devices where `inputMode="none"` is not honoured (e.g.
-  // Honeywell / Zebra keystroke-mode firmware). Default off ⇒ today's behaviour.
-  // Setting name is historical (`barcodeScanner.offscreenInput.readOnly`) but now applies to BOTH
-  // the off-screen and the visible scan input: the visible case is needed for screens like /huManager
-  // where the scan field is the screen's main content (`showInputText=Y`); without the visible
-  // input the screen renders blank. Keystroke-wedge scans are read at the window level so they
-  // still work; DataWedge IME injection breaks (documented opt-in trade-off — keep the knob off
-  // for IME deployments). Manual typing (Mode C3: showInputText=Y, isInputTextReadonly=N) is also
-  // blocked when this knob is Y — the visible input renders but cannot be edited; intentional opt-in
-  // for hardware-scanner-only deployments. Design: https://github.com/metasfresh/me03/issues/29246.
-  const scanInputReadOnly = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
+  const offscreenInputReadOnly = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
+  const visibleInputReadOnly = useBooleanSetting('barcodeScanner.visibleInput.readOnly', false);
+  const readOnlyAttr = isShowInputText ? visibleInputReadOnly : offscreenInputReadOnly;
 
   const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
 
@@ -64,8 +67,8 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
       vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
     },
     isShowInputText,
-    isInputTextReadonly,
-    scanInputReadOnly,
+    inputModeNone,
+    readOnlyAttr,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
@@ -90,8 +93,8 @@ const BarcodeScannerComponent = ({
     okBeepParams,
     errorBeepParams,
     isShowInputText,
-    isInputTextReadonly,
-    scanInputReadOnly,
+    inputModeNone,
+    readOnlyAttr,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
@@ -136,7 +139,7 @@ const BarcodeScannerComponent = ({
       if (isShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      if (!isInputTextReadonly) {
+      if (!inputModeNone) {
         inputTextRef?.current?.focus();
       }
     } /* no deps, call it on each render */
@@ -145,7 +148,7 @@ const BarcodeScannerComponent = ({
   // DataWedge IME needs a focused editable input to establish InputConnection.
   // Focus once on mount; the window-level hook handles all subsequent scan events.
   useEffect(() => {
-    if (isInputTextReadonly) {
+    if (inputModeNone) {
       inputTextRef?.current?.focus();
     }
   }, []);
@@ -249,8 +252,8 @@ const BarcodeScannerComponent = ({
       eventName: 'barcodeScanned',
       scannedBarcode,
       isShowInputText,
-      isInputTextReadonly,
-      scanInputReadOnly,
+      inputModeNone,
+      readOnlyAttr,
       triggerOnChangeIfLengthGreaterThan,
       textChangedDebounceMillis,
       scanDuplicatesIntervalMillis,
@@ -311,11 +314,12 @@ const BarcodeScannerComponent = ({
             • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
             • the focus useEffects above     — establish / recover the InputConnection on the device
           The `readOnly` attribute is intentionally NOT set by default (it would break DataWedge IME);
-          it can be enabled per-instance via `barcodeScanner.offscreenInput.readOnly`
-          (https://github.com/metasfresh/me03/issues/29246) for keystroke-mode devices (e.g. Honeywell)
-          where inputMode="none" fails to suppress the keyboard. The knob applies to BOTH the
-          off-screen input and the visible one (screens like /huManager use the visible input as
-          their only content; hiding it leaves the screen blank).
+          it is enabled per-instance via the per-mode knobs `barcodeScanner.offscreenInput.readOnly`
+          (off-screen) and `barcodeScanner.visibleInput.readOnly` (visible) — per the design in
+          https://github.com/metasfresh/me03/issues/29246. Use on keystroke-mode devices (e.g.
+          Honeywell CT60) where inputMode="none" is not honoured. The visible-input knob is the
+          right one for screens like /huManager whose only content is the scan field (hiding it
+          leaves the screen blank); it also blocks manual typing — intentional opt-in.
           Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
           regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
           CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
@@ -328,8 +332,8 @@ const BarcodeScannerComponent = ({
           className={`input-text${isShowInputText ? '' : ' input-text-offscreen'}`}
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          inputMode={isInputTextReadonly ? 'none' : undefined}
-          readOnly={scanInputReadOnly}
+          inputMode={inputModeNone ? 'none' : undefined}
+          readOnly={readOnlyAttr}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
