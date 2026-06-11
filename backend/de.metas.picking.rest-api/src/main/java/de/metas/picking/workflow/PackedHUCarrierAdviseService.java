@@ -107,13 +107,17 @@ public class PackedHUCarrierAdviseService
 		{
 			throw new AdempiereException("HU " + topLevelHU.getM_HU_ID() + " has no product storage");
 		}
+		if (productStorages.size() > 1)
+		{
+			throw new AdempiereException("Carrier advise for multi-product HUs is not supported. HU_ID=" + topLevelHU.getM_HU_ID());
+		}
 		final IHUProductStorage singleProductStorage = productStorages.get(0);
 
 		final Product product = productRepository.getById(singleProductStorage.getProductId());
 		final int numberOfItems = singleProductStorage.getQtyInStockingUOM().intValueExact();
 
 		final PackageDimensions dimensions = shippingInfo.getDimensions();
-		final BigDecimal grossWeightKg = shippingInfo.getWeightInKg() != null
+		final BigDecimal grossWeightKgBD = shippingInfo.getWeightInKg() != null
 				? shippingInfo.getWeightInKg().toBigDecimal()
 				: BigDecimal.ZERO;
 
@@ -121,7 +125,7 @@ public class PackedHUCarrierAdviseService
 				.numberOfItems(numberOfItems)
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
-				.grossWeightKg(grossWeightKg)
+				.grossWeightKg(grossWeightKgBD)
 				.packageDimensions(JsonPackageDimensions.builder()
 						.heightInCM(dimensions.getHeightInCM())
 						.widthInCM(dimensions.getWidthInCM())
