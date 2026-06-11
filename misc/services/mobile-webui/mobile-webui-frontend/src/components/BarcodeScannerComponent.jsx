@@ -177,7 +177,15 @@ const BarcodeScannerComponent = ({
         inputTextRef.current.value = barcode;
       }
     },
-    rateMs: textChangedDebounceMillis,
+    // Scanner-rate threshold (inter-character gap that detects a scanner burst). Kept low and
+    // INDEPENDENT of textChangedDebounceMillis (which is the manual-input onChange debounce —
+    // Mode C3 needs that 300ms; the scanner does not). A low rateMs is the end-of-burst safety
+    // net for scanners that DON'T emit an Enter/Tab terminator: the hook flushes the buffer
+    // when no new char arrives within rateMs. Hardware scanners emit chars at ~ms-scale, so 50ms
+    // is a comfortable scanner-speed threshold while keeping perceived scan-to-submit lag well
+    // under the human reflex threshold. Cannot be 0 — that would disable the rate-based buffer
+    // accumulation and break barcode assembly (see useKeyboardBarcodeReader.js line 67).
+    rateMs: 50,
     minLength: triggerOnChangeIfLengthGreaterThan,
     disabled: isProcessing,
   });
