@@ -70,6 +70,9 @@ public class JsonPickingJobConverterCommand
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	/** Memoizes the per-HU carrier-advise resolution so lines sharing the same packed LU resolve it only once. */
+	private final Map<HuId, CarrierAdviseTargetInfo> carrierAdviseInfoByHuId = new ConcurrentHashMap<>();
+
 	@Builder
 	private JsonPickingJobConverterCommand(
 			@NonNull final PickingJobProductService productService,
@@ -116,8 +119,9 @@ public class JsonPickingJobConverterCommand
 
 	private CarrierAdviseTargetInfo resolveCarrierAdviseInfo(@NonNull final LUPickingTarget existingLuTarget)
 	{
-		final I_M_HU topLevelHU = handlingUnitsDAO.getById(existingLuTarget.getLuIdNotNull());
-		return packedHUCarrierAdviseService.resolveTargetInfo(topLevelHU);
+		return carrierAdviseInfoByHuId.computeIfAbsent(
+				existingLuTarget.getLuIdNotNull(),
+				huId -> packedHUCarrierAdviseService.resolveTargetInfo(handlingUnitsDAO.getById(huId)));
 	}
 
 	@NonNull
