@@ -30,6 +30,12 @@ UPDATE AD_Ref_List_Trl SET Name = 'Incoterms (Order)', IsTranslated = 'Y',
   Updated = TO_TIMESTAMP('2026-06-03 10:00:53', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
 WHERE AD_Ref_List_ID = 544241 AND AD_Language = 'en_US';
 
+-- mark German translations as actively translated (same text as the German base)
+-- 2026-06-03T10:00:57.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated = 'Y',
+  Updated = TO_TIMESTAMP('2026-06-03 10:00:57', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
+WHERE AD_Ref_List_ID = 544241 AND AD_Language IN ('de_DE', 'de_CH');
+
 -- AD_Ref_List: ExternalSystemValue
 -- 2026-06-03T10:00:54.000Z
 INSERT INTO AD_Ref_List (AD_Client_ID, AD_Org_ID, AD_Ref_List_ID, AD_Reference_ID,
@@ -58,3 +64,9 @@ FROM AD_Language l WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
 UPDATE AD_Ref_List_Trl SET Name = 'External System (Order)', IsTranslated = 'Y',
   Updated = TO_TIMESTAMP('2026-06-03 10:00:56', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
 WHERE AD_Ref_List_ID = 544242 AND AD_Language = 'en_US';
+
+-- mark German translations as actively translated (same text as the German base)
+-- 2026-06-03T10:00:58.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated = 'Y',
+  Updated = TO_TIMESTAMP('2026-06-03 10:00:58', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy = 100
+WHERE AD_Ref_List_ID = 544242 AND AD_Language IN ('de_DE', 'de_CH');
