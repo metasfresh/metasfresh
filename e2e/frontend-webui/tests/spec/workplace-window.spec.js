@@ -132,7 +132,7 @@ test.describe('Workplace window — auto-assign restriction fields', () => {
 
     // Record is persisted once mandatory fields are valid — the URL then carries the record id
     await page.waitForURL(
-      (url) => /\/window\/541744\/\d+/.test(url.toString()),
+      (url) => new RegExp(`/window/${WORKPLACE_WINDOW_ID}/\\d+`).test(url.toString()),
       { timeout: SLOW_ACTION_TIMEOUT }
     );
 
