@@ -35,6 +35,7 @@ import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import org.eevolution.model.I_PP_Product_Planning;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.pporder.ComputeQtyRequiredRequest;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -501,6 +502,18 @@ public class PPOrderCandidateService
 	public void deleteLines(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		ppOrderCandidateDAO.deleteLines(ppOrderCandidateId);
+	}
+
+	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
+		if (ppProductPlanningId == null)
+		{
+			ppOrderCandidateRecord.setWorkStation_ID(-1);
+			return;
+		}
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.getRecordById(ppProductPlanningId);
+		ppOrderCandidateRecord.setWorkStation_ID(productPlanning.getWorkStation_ID());
 	}
 
 	public void setWorkstationId(@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds, @Nullable final ResourceId workstationId)

@@ -34,8 +34,6 @@ import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanningId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,7 +52,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
@@ -79,7 +76,6 @@ public class PP_Order_Candidate
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 	private final PostMaterialEventService materialEventService;
@@ -95,16 +91,9 @@ public class PP_Order_Candidate
 	@CalloutMethod(columnNames = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 				 ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID)
-	public void defaultWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
-		if (ppProductPlanningId == null)
-		{
-			ppOrderCandidateRecord.setWorkStation_ID(-1);
-			return;
-		}
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.getRecordById(ppProductPlanningId);
-		ppOrderCandidateRecord.setWorkStation_ID(productPlanning.getWorkStation_ID());
+		ppOrderCandidateService.setWorkStationFromProductPlanning(ppOrderCandidateRecord);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
