@@ -74,6 +74,20 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	boolean tryMergeQtyPickedIntoExistingForVHU(AddQtyPickedRequest request);
 
 	/**
+	 * Shipment-reverse safety net. Given the (now-deactivated) consolidated {@code M_ShipmentSchedule_QtyPicked}
+	 * rows that were assigned to a just-reversed shipment, ensure each {@code (M_ShipmentSchedule_ID, VHU_ID)}
+	 * still has an active, not-yet-shipped picked row — re-creating one (a direct copy of the reversed
+	 * allocation, with the VHU set back to {@code Picked}) when none survives.
+	 * <p>
+	 * The picking-job reopen ({@code PickingJobReopenCommand}) only restores picked qty for a <b>Completed</b>
+	 * job. When a shipment was recreated via "Generate Shipments" the job is left <b>Drafted</b>, so a subsequent
+	 * reverse restores nothing and the shipment can no longer be recreated (me03#29561). This net closes that gap
+	 * without step-replay (so no {@code tryMerge} qty inflation) and only fires when nothing was restored, so the
+	 * Completed-job path and unrelated in-progress jobs are unaffected.
+	 */
+	void restoreUnshippedQtyPickedIfMissing(Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations);
+
+	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();

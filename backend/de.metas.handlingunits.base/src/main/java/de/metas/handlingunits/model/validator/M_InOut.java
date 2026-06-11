@@ -83,6 +83,7 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	private final de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
@@ -291,6 +292,12 @@ public class M_InOut
 				.build();
 
 		pickingJobService.reopenPickingJobs(request);
+
+		// Safety net: the reopen above only restores picked qty for a *Completed* picking job. When the shipment
+		// was recreated via "Generate Shipments" the job is left Drafted, so a subsequent reverse restores nothing
+		// and the shipment can no longer be recreated (me03#29561). Re-create the picked rows directly from the
+		// just-reversed allocations for any (schedule, VHU) the reopen did not restore.
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(assignedQuantities);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
