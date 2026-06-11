@@ -50,8 +50,6 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
 	RECEIVER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverBPartnerAttention),
 	SENDER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention),
-	INCOTERMS_VALUE(DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE),
-	EXTERNAL_SYSTEM_VALUE(DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE),
 	IS_PRE_ADVICE_REQUIRED(DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED),
 
 	// From parcel
