@@ -19,7 +19,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
@@ -31,16 +30,6 @@ import java.util.Optional;
 public class ShippingWeightCalculator
 {
 	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
-
-	public static ShippingWeightCalculator newInstanceFromSysConfig()
-	{
-		final ShippingWeightSourceTypes weightSourceTypes = ShippingWeightSourceTypes
-				.ofCommaSeparatedString(Services.get(ISysConfigBL.class).getValue(SYSCONFIG_WeightSourceTypes))
-				.orElse(ShippingWeightSourceTypes.DEFAULT);
-		return ShippingWeightCalculator.builder()
-				.weightSourceTypes(weightSourceTypes)
-				.build();
-	}
 
 	//
 	// Services

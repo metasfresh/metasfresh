@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipping;
 
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -81,7 +82,7 @@ public class PackedHUShippingInfoServiceTest
 
 		final PackedHUShippingInfo info = service.of(tu);
 
-		assertThat(info.getTopLevelType()).isEqualTo("TU");
+		assertThat(info.getTopLevelType()).isEqualTo(HuUnitType.TU);
 	}
 
 	@Test
@@ -91,7 +92,7 @@ public class PackedHUShippingInfoServiceTest
 
 		final PackedHUShippingInfo info = service.of(lu);
 
-		assertThat(info.getTopLevelType()).isEqualTo("LU");
+		assertThat(info.getTopLevelType()).isEqualTo(HuUnitType.LU);
 		assertThat(info.getDimensions().isUnspecified()).isFalse();
 	}
 
@@ -117,6 +118,6 @@ public class PackedHUShippingInfoServiceTest
 
 		final PackedHUShippingInfo info = service.of(cu);
 
-		assertThat(info.getTopLevelType()).isEqualTo("CU");
+		assertThat(info.getTopLevelType()).isEqualTo(HuUnitType.VHU);
 	}
 }

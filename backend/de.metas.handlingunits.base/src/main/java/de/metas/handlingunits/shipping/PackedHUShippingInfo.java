@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipping;
 
+import de.metas.handlingunits.HuUnitType;
 import de.metas.product.PackageDimensions;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -19,10 +20,7 @@ public class PackedHUShippingInfo
 
 	@NonNull PackageDimensions dimensions;
 
-	/**
-	 * "TU", "LU", or "CU" (self-packed product, no physical packing material).
-	 */
-	@NonNull String topLevelType;
+	@NonNull HuUnitType topLevelType;
 
 	@Nullable String countryOfOrigin;
 }

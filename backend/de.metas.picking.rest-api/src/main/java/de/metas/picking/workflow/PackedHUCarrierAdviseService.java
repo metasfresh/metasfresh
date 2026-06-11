@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -211,8 +212,21 @@ public class PackedHUCarrierAdviseService
 						.widthInCM(dimensions.getWidthInCM())
 						.lengthInCM(dimensions.getLengthInCM())
 						.build())
-				.topLevelType(shippingInfo.getTopLevelType())
+				.topLevelType(toTopLevelTypeWireString(shippingInfo.getTopLevelType()))
 				.countryOfOrigin(shippingInfo.getCountryOfOrigin())
 				.build();
+	}
+
+	private static String toTopLevelTypeWireString(@NonNull final HuUnitType huUnitType)
+	{
+		switch (huUnitType)
+		{
+			case LU:
+				return "LU";
+			case TU:
+				return "TU";
+			default:
+				return "CU";
+		}
 	}
 }

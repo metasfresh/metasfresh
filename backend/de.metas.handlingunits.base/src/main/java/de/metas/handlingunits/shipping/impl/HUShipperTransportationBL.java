@@ -21,6 +21,7 @@ import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
+import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
@@ -38,6 +39,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -90,6 +92,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@VisibleForTesting
 	public static final String SYSCONFIG_WeightSourceTypes = ShippingWeightCalculator.SYSCONFIG_WeightSourceTypes;
@@ -462,7 +465,12 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 	private ShippingWeightCalculator newWeightCalculator()
 	{
-		return ShippingWeightCalculator.newInstanceFromSysConfig();
+		final ShippingWeightSourceTypes weightSourceTypes = ShippingWeightSourceTypes
+				.ofCommaSeparatedString(sysConfigBL.getValue(ShippingWeightCalculator.SYSCONFIG_WeightSourceTypes))
+				.orElse(ShippingWeightSourceTypes.DEFAULT);
+		return ShippingWeightCalculator.builder()
+				.weightSourceTypes(weightSourceTypes)
+				.build();
 	}
 
 }
