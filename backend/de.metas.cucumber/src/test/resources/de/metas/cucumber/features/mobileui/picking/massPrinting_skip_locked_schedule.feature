@@ -25,10 +25,12 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
     And delete all C_Workplace_User_Assign records
     And deactivate all C_Workplace records
 
-    # picker2 is the concurrent user who will hold the lock on one schedule
+    # otherPicker simulates a SECOND warehouse worker who is already picking one of the orders on this LU:
+    # below they take a picking lock on that order's shipment schedule. The scenario then asserts that mass
+    # printing silently skips the locked schedule (it belongs to someone else) and still processes the other.
     And metasfresh contains AD_Users:
-      | Identifier | Name    | Login   |
-      | picker2    | picker2 | picker2 |
+      | Identifier  | Name        | Login       |
+      | otherPicker | otherPicker | otherPicker |
 
     And metasfresh contains M_Products:
       | Identifier | X12DE355 | IsSelfPacked |
@@ -154,14 +156,15 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | schedLocked  | OL_locked                 | N             |
       | schedOpen    | OL_open                   | N             |
 
-    # picker2 locks schedLocked before the scan — simulating a concurrent picker holding it
+    # otherPicker takes a picking lock on schedLocked before the scan — i.e. another worker is already
+    # picking that order, so its schedule is off-limits to mass printing.
     Given M_ShipmentSchedule_Lock exists for:
-      | M_ShipmentSchedule_ID | Login   |
-      | schedLocked           | picker2 |
+      | M_ShipmentSchedule_ID | Login       |
+      | schedLocked           | otherPicker |
 
     And validate M_ShipmentSchedule_Lock record for:
-      | M_ShipmentSchedule_ID | Login   | Exists |
-      | schedLocked           | picker2 | true   |
+      | M_ShipmentSchedule_ID | Login       | Exists |
+      | schedLocked           | otherPicker | true   |
 
     # metasfresh scans the LU — schedLocked must be silently skipped, schedOpen must be processed
     And mass printing scan:
@@ -173,10 +176,10 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | M_HU_ID | UnitsPacked |
       | lu      | 4           |
 
-    # schedLocked was skipped: lock still held by picker2 (not unlocked/processed by mass printing)
+    # schedLocked was skipped: its lock is still held by otherPicker (mass printing did not unlock or process it)
     And validate M_ShipmentSchedule_Lock record for:
-      | M_ShipmentSchedule_ID | Login   | Exists |
-      | schedLocked           | picker2 | true   |
+      | M_ShipmentSchedule_ID | Login       | Exists |
+      | schedLocked           | otherPicker | true   |
 
     # schedOpen was processed: a completed shipment exists for it
     And after not more than 60s, M_InOut is found:
