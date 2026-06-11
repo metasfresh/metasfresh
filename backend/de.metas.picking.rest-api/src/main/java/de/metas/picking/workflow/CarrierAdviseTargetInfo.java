@@ -9,7 +9,10 @@ import javax.annotation.Nullable;
 @Builder
 public class CarrierAdviseTargetInfo
 {
-	public static final CarrierAdviseTargetInfo NONE = CarrierAdviseTargetInfo.builder().build();
+	public static final CarrierAdviseTargetInfo NONE = CarrierAdviseTargetInfo.builder()
+			.available(false)
+			.readOnly(false)
+			.build();
 
 	boolean available;
 	boolean readOnly;

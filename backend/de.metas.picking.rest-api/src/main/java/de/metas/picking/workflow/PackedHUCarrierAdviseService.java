@@ -1,6 +1,5 @@
 package de.metas.picking.workflow;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
@@ -17,7 +16,6 @@ import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.product.PackageDimensions;
@@ -38,9 +36,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -58,51 +57,39 @@ public class PackedHUCarrierAdviseService
 
 	public CarrierAdviseTargetInfo resolveTargetInfo(@NonNull final I_M_HU topLevelHU)
 	{
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords =
-				huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(topLevelHU);
-
-		if (qtyPickedRecords.isEmpty())
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = resolveSchedulesByIdForHU(topLevelHU);
+		if (schedulesById.isEmpty())
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
 
-		final ImmutableList<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
-				.map(r -> ShipmentScheduleId.ofRepoId(r.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = shipmentScheduleService
-				.getByIds(ImmutableSet.copyOf(scheduleIds))
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, s -> s));
+		final ImmutableSet<ShipperId> shipperIds = schedulesById.values().stream()
+				.map(ShipmentSchedule::getShipperId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		final Map<ShipperId, I_M_Shipper> shippersById = shipperDAO.getByIds(shipperIds);
 
 		boolean anyAdviseEnabled = false;
 		boolean allManual = true;
-		final List<String> productCaptionParts = new ArrayList<>();
+		final LinkedHashSet<String> productCaptionNames = new LinkedHashSet<>();
 
-		for (final ShipmentScheduleId scheduleId : scheduleIds)
+		for (final ShipmentSchedule schedule : schedulesById.values())
 		{
-			final ShipmentSchedule schedule = schedulesById.get(scheduleId);
-			if (schedule == null)
-			{
-				continue;
-			}
-
 			final ShipperId shipperId = schedule.getShipperId();
 			if (shipperId == null)
 			{
 				continue;
 			}
 
-			final I_M_Shipper shipper = shipperDAO.getById(shipperId);
-			if (!shipper.isApiCarrierAdvise())
+			final I_M_Shipper shipper = shippersById.get(shipperId);
+			if (shipper == null || !shipper.isApiCarrierAdvise())
 			{
 				continue;
 			}
 
 			anyAdviseEnabled = true;
 
-			final CarrierAdviseStatus advisingStatus = schedule.getCarrierAdvisingStatus();
-			if (!advisingStatus.isManual())
+			if (!schedule.getCarrierAdvisingStatus().isManual())
 			{
 				allManual = false;
 			}
@@ -113,11 +100,7 @@ public class PackedHUCarrierAdviseService
 				final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
 				if (carrierProduct != null)
 				{
-					final String name = carrierProduct.getName();
-					if (!productCaptionParts.contains(name))
-					{
-						productCaptionParts.add(name);
-					}
+					productCaptionNames.add(carrierProduct.getName());
 				}
 			}
 		}
@@ -127,13 +110,31 @@ public class PackedHUCarrierAdviseService
 			return CarrierAdviseTargetInfo.NONE;
 		}
 
-		final String productCaption = productCaptionParts.isEmpty() ? null : String.join(", ", productCaptionParts);
+		final String productCaption = productCaptionNames.isEmpty() ? null : String.join(", ", productCaptionNames);
 
 		return CarrierAdviseTargetInfo.builder()
 				.available(true)
 				.readOnly(allManual)
 				.productCaption(productCaption)
 				.build();
+	}
+
+	private ImmutableMap<ShipmentScheduleId, ShipmentSchedule> resolveSchedulesByIdForHU(@NonNull final I_M_HU topLevelHU)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords =
+				huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(topLevelHU);
+		if (qtyPickedRecords.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
+				.map(r -> ShipmentScheduleId.ofRepoId(r.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return shipmentScheduleService.getByIds(scheduleIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, s -> s));
 	}
 
 	/**
@@ -158,31 +159,19 @@ public class PackedHUCarrierAdviseService
 
 		final JsonDeliveryAdvisorRequestItem item = buildRequestItem(topLevelHU);
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords =
-				huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(topLevelHU);
-
-		if (qtyPickedRecords.isEmpty())
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = resolveSchedulesByIdForHU(topLevelHU);
+		if (schedulesById.isEmpty())
 		{
 			throw new AdempiereException("No undelivered qty-picked records found for HU " + topLevelHU.getM_HU_ID());
 		}
 
-		final ImmutableList<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
-				.map(r -> ShipmentScheduleId.ofRepoId(r.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = shipmentScheduleService
-				.getByIds(ImmutableSet.copyOf(scheduleIds))
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, s -> s));
-
-		for (final ShipmentScheduleId scheduleId : scheduleIds)
+		for (final ShipmentSchedule schedule : schedulesById.values())
 		{
-			final ShipmentSchedule schedule = schedulesById.get(scheduleId);
-			if (schedule == null || schedule.getCarrierAdvisingStatus().isManual())
+			if (schedule.getCarrierAdvisingStatus().isManual())
 			{
 				continue;
 			}
-			CarrierAdviseCommand.ofPackedHU(scheduleId, item).execute();
+			CarrierAdviseCommand.ofPackedHU(schedule.getId(), item).execute();
 		}
 	}
 

@@ -114,13 +114,9 @@ public class JsonPickingJobConverterCommand
 		return builder.build();
 	}
 
-	private CarrierAdviseTargetInfo resolveCarrierAdviseInfo(@NonNull final LUPickingTarget target)
+	private CarrierAdviseTargetInfo resolveCarrierAdviseInfo(@NonNull final LUPickingTarget existingLuTarget)
 	{
-		if (!target.isExistingLU())
-		{
-			return CarrierAdviseTargetInfo.NONE;
-		}
-		final I_M_HU topLevelHU = handlingUnitsDAO.getById(target.getLuIdNotNull());
+		final I_M_HU topLevelHU = handlingUnitsDAO.getById(existingLuTarget.getLuIdNotNull());
 		return packedHUCarrierAdviseService.resolveTargetInfo(topLevelHU);
 	}
 
