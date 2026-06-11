@@ -75,6 +75,7 @@ test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
   test('TransportType field visibility toggles SFTP/HTTP fields', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('TransportType field display logic');
     allure.severity('critical');
 
@@ -132,6 +133,7 @@ and hides HTTP fields, and vice versa.
   test('SftpAuthType toggles Password vs SSH key fields', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('SftpAuthType field display logic');
     allure.severity('critical');
 
@@ -175,6 +177,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
   test('Create and save full SFTP endpoint configuration', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('Full SFTP Configuration Flow');
     allure.severity('critical');
 
