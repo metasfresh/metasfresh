@@ -41,9 +41,10 @@
     border: none;
   }
 
-  // Scan prompt — rendered when there is no camera preview and the visible input is the only
-  // content on screen (see BarcodeScannerComponent.jsx). Makes scan-only screens visually
-  // explicit (large barcode icon + the inputPlaceholderText caption).
+  // Scan prompt — rendered when there is no camera preview, the input is off-screen, and the
+  // caller is using BarcodeScannerComponent as the screen's main visible content (callers that
+  // mount it as a silent background capture opt out via isShowPrompt={false}). See
+  // BarcodeScannerComponent.jsx for the guard. Large barcode icon + inputPlaceholderText caption.
   .scan-prompt {
     display: flex;
     flex-direction: column;
