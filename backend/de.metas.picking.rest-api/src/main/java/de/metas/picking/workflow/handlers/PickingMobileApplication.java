@@ -62,6 +62,7 @@ import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
+import de.metas.picking.workflow.PackedHUCarrierAdviseService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
@@ -118,17 +119,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private final PickingJobRestService pickingJobRestService;
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final DisplayValueProviderService displayValueProviderService;
+	private final PackedHUCarrierAdviseService packedHUCarrierAdviseService;
 
 	public PickingMobileApplication(
 			@NonNull final MobileUIPickingUserProfileService profileService,
 			@NonNull final PickingJobRestService pickingJobRestService,
 			@NonNull final PickingWorkflowLaunchersProvider wfLaunchersProvider,
-			@NonNull final DisplayValueProviderService displayValueProviderService)
+			@NonNull final DisplayValueProviderService displayValueProviderService,
+			@NonNull final PackedHUCarrierAdviseService packedHUCarrierAdviseService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
 		this.wfLaunchersProvider = wfLaunchersProvider;
 		this.displayValueProviderService = displayValueProviderService;
 		this.profileService = profileService;
+		this.packedHUCarrierAdviseService = packedHUCarrierAdviseService;
 	}
 
 	@Override
@@ -613,6 +617,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					return pickingJobRestService.closeLUAndTUPickingTargets(pickingJob, lineId);
 				});
 
+	}
+
+	public WFProcess advisePackedHU(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UserId callerId)
+	{
+		return changeWFProcessById(
+				wfProcessId,
+				(wfProcess, pickingJob) -> {
+					wfProcess.assertHasAccess(callerId);
+					packedHUCarrierAdviseService.advise(pickingJob, lineId);
+					return pickingJob;
+				});
 	}
 
 	public WFProcess closeTUPickingTarget(

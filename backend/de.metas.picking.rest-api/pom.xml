@@ -34,6 +34,12 @@
             <artifactId>de.metas.handlingunits.mobileui</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.shipper.gateway</groupId>
+            <artifactId>de.metas.shipper.gateway.commons</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
         <dependency>
             <groupId>de.metas.handlingunits</groupId>
             <artifactId>de.metas.handlingunits.base</artifactId>
