@@ -30,21 +30,15 @@ public class MassPrintingResult
 	{
 		@NonNull ProductId productId;
 
-		/** Number of boxes packed (one box = one picked unit). */
-		int boxesPacked;
+		/** Number of product units packed (in product UOM). */
+		int unitsPacked;
 
 		/**
 		 * The shippable HUs produced — one per picked unit, regardless of packing-instruction type
 		 * (one VHU per unit for the Virtual/null-PI path; one TU box per unit for finite-PI).
-		 * Size must equal {@link #boxesPacked}.
+		 * Size equals {@link #unitsPacked}.
 		 */
 		@NonNull @Singular ImmutableSet<HuId> packedHUIds;
-
-		/** Number of labels printed successfully. */
-		int labelsPrinted;
-
-		/** Number of label print failures (labels not printed). */
-		int labelPrintFailures;
 
 		/** Units remaining on the LU after packing (leftover). */
 		int unitsLeftOnLU;

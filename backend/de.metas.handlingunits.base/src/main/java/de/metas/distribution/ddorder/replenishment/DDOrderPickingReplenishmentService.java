@@ -10,6 +10,7 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentRequest;
+import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;

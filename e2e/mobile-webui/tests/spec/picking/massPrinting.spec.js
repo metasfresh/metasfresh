@@ -88,7 +88,7 @@ test('Mass printing — scan LU packs one box per unit for open demand', async (
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
@@ -123,7 +123,7 @@ test('Mass printing — scan LU with leftover units when demand is smaller than 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 2 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
@@ -202,7 +202,7 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     // 3 boxes packed total (2 for SO_A, 1 for SO_B), 0 units left on LU, 1 unit demand remaining on SO_B
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 1 });
 
@@ -256,7 +256,7 @@ test('Mass printing — shipment created and completed when policy is CREATE_AND
 
     const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
@@ -304,7 +304,7 @@ test('Mass printing — shipment created in draft when policy is CREATE_DRAFT', 
 
     const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
@@ -348,7 +348,7 @@ test('Mass printing — no shipment created when policy is DO_NOT_CREATE', async
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
@@ -383,7 +383,7 @@ test('Mass printing — self-packed product on LU is packed; no skipped-products
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
     // No non-self-packed products on this LU — skipped section must not appear
     await MassPrintingScanScreen.expectNoSkippedProducts();
 
@@ -583,7 +583,7 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     // 3 units → 3 boxes (one VHU/CU each), nothing left over, no open demand remaining
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 

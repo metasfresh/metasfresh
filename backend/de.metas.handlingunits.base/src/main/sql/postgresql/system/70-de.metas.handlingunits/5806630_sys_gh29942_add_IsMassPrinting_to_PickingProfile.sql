@@ -30,7 +30,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Description=t
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584952,'de_CH');
 
 -- Element: IsMassPrinting — en_US translation — 2026-06-07T10:00:03Z
-UPDATE AD_Element_Trl SET Name='Mass Printing', PrintName='Mass Printing', Description='When enabled, the user can perform mass-printing of shipping labels for self-packed products by scanning one LU.', Help='When enabled, the user can perform mass-printing of shipping labels for self-packed products by scanning one LU.',Updated=TO_TIMESTAMP('2026-06-07 10:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584952 AND AD_Language='en_US';
+UPDATE AD_Element_Trl SET Name='Mass Printing', PrintName='Mass Printing', Description='When enabled, the user can perform mass-printing of shipping labels for self-packed products by scanning one LU.', Help='When enabled, the user can perform mass-printing of shipping labels for self-packed products by scanning one LU.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-07 10:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584952 AND AD_Language='en_US';
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Description=trl.Description, Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage();
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584952,'en_US');
 
