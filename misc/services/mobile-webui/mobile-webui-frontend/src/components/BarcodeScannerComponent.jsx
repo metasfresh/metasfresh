@@ -298,12 +298,13 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      {/* Scan prompt — visible only on hardware-scanner deployments (no camera) where the visible
-          input is the screen's only content. Off-screen-input components (BarcodeScannerButton,
-          DistributionMoveActivity, ApplicationsListScreen) pass isShowInputText=false and stay
-          unaffected. Reuses inputPlaceholderText so callers control the prompt text (e.g. HUScanner
-          passes 'Scan LU or locator…'). See https://github.com/metasfresh/me03/issues/30363. */}
-      {!isShowVideo && !isProcessing && isShowInputText && (
+      {/* Scan prompt — visible on hardware-scanner deployments (no camera) when the input is
+          OFF-SCREEN (the actual empty-screen case: the only thing the component otherwise renders
+          is the invisible off-screen input). Reuses inputPlaceholderText so callers control the
+          prompt text (e.g. HUScanner passes 'Scan LU or locator…'). When the input is on-screen
+          (isShowInputText=Y) the input itself is the visual anchor — no big prompt needed.
+          See https://github.com/metasfresh/me03/issues/30363. */}
+      {!isShowVideo && !isProcessing && !isShowInputText && (
         <div className="scan-prompt">
           <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
           <div className="scan-prompt-text">
