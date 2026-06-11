@@ -119,9 +119,6 @@ final class OrderLinePriceCalculator
 		{
 			return;
 		}
-
-		// Load the order header once; C_Currency_ID is taken from the header (not the pricing result) below.
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		
 		//
 		// Calculate Pricing Result
@@ -169,7 +166,7 @@ final class OrderLinePriceCalculator
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
-		orderLine.setC_Currency_ID(order.getC_Currency_ID());
+		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
 		orderLine.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 
 		orderLine.setIsCampaignPrice(pricingResult.isCampaignPrice());

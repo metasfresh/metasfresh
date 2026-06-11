@@ -491,8 +491,11 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Collections.singletonList(orderId)))
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> {
-					assertThat(ex.getMessage()).isNotEmpty();
-					assertThat(((AdempiereException) ex).isUserValidationError())
+					final AdempiereException adEx = (AdempiereException)ex;
+					assertThat(adEx.getErrorCode())
+							.as("Exception must carry the expected AD_Message key as error code")
+							.isEqualTo(PurchaseOrderToShipperTransportationService.MSG_NoLUPackingConfigForOrderLines.toAD_Message());
+					assertThat(adEx.isUserValidationError())
 							.as("Exception must be marked as user-validation error so the UI shows it as a user message")
 							.isTrue();
 				});

@@ -168,13 +168,6 @@ public interface IOrderBL extends ISingletonService
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
 
 	/**
-	 * Syncs {@code C_Currency_ID} on the order from its price list.
-	 * If the order has a price list, the currency is always taken from the price list.
-	 * If there is no price list and the currency is not yet set, it falls back to the session default.
-	 */
-	void syncCurrencyFromPriceList(I_C_Order order);
-
-	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 */
 	void setDefaultDocTypeTargetId(I_C_Order order);

@@ -64,6 +64,8 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.repository.PaymentTermQuery;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -954,8 +956,24 @@ public class MOrder extends X_C_Order implements IDocument
 		orderBL.setM_PricingSystem_ID(this, false); // overridePricingSystem=false
 
 		//
-		// Default Currency — always sync from price list when one is set
-		orderBL.syncCurrencyFromPriceList(InterfaceWrapperHelper.create(this, I_C_Order.class));
+		// Default Currency: take it from the price list when the currency is not set yet, or when the price list was just changed
+		if (getC_Currency_ID() <= 0 || is_ValueChanged(COLUMNNAME_M_PriceList_ID))
+		{
+			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(getM_PriceList_ID());
+			final I_M_PriceList priceList = priceListId != null
+					? Services.get(IPriceListDAO.class).getById(priceListId)
+					: null;
+
+			final int currencyId = priceList == null ? -1 : priceList.getC_Currency_ID();
+			if (currencyId > 0)
+			{
+				setC_Currency_ID(currencyId);
+			}
+			else if (getC_Currency_ID() <= 0)
+			{
+				setC_Currency_ID(Env.getContextAsInt(getCtx(), "#C_Currency_ID"));
+			}
+		}
 
 		// Default Sales Rep
 		// NOTE: we shall not set the SalesRep from context if is not set.

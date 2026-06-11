@@ -246,26 +246,6 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void syncCurrencyFromPriceList(@NonNull final I_C_Order order)
-	{
-		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
-		final I_M_PriceList priceList = priceListId != null
-				? priceListDAO.getById(priceListId)
-				: null;
-		if (priceList != null)
-		{
-			order.setC_Currency_ID(priceList.getC_Currency_ID());
-		}
-		else if (order.getC_Currency_ID() <= 0)
-		{
-			// No price list and no currency set yet: fall back to the session's client default.
-			// Env access is intentional here — this is the same fallback MOrder.beforeSave() used before the extraction,
-			// and there is no domain-level alternative for an unset currency with no price list.
-			order.setC_Currency_ID(Env.getContextAsInt(InterfaceWrapperHelper.getCtx(order), "#C_Currency_ID"));
-		}
-	}
-
-	@Override
 	public void setPriceList(@NonNull final I_C_Order order)
 	{
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());

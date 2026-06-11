@@ -79,6 +79,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
+	@VisibleForTesting
+	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
+
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -223,26 +226,21 @@ public class PurchaseOrderToShipperTransportationService
 
 		if (!skippedLines.isEmpty())
 		{
+			final String skippedLineNos = skippedLines.stream()
+					.map(ol -> String.valueOf(ol.getLine()))
+					.collect(Collectors.joining(", "));
+
 			if (addedCount == 0)
 			{
-				// TODO: replace literal with AdMessageKey once a migration script adds the AD_Message entry
-				throw new AdempiereException("Cannot add PO lines to Transport Order: no LU packing configuration found for "
-						+ formatSkippedLines(skippedLines))
+				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos)
 						.markAsUserValidationError();
 			}
 			else
 			{
-				Loggables.addLog("Skipped {} PO line(s) with no LU packing configuration: {}",
-						skippedLines.size(), formatSkippedLines(skippedLines));
+				Loggables.addLog("Skipped {} PO line(s) with no LU packing configuration (lines: {})",
+						skippedLines.size(), skippedLineNos);
 			}
 		}
-	}
-
-	private static String formatSkippedLines(@NonNull final List<I_C_OrderLine> orderLines)
-	{
-		return orderLines.stream()
-				.map(ol -> "OrderLine[id=" + ol.getC_OrderLine_ID() + ", product=" + ol.getM_Product_ID() + "]")
-				.collect(Collectors.joining(", "));
 	}
 
 	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLines)
