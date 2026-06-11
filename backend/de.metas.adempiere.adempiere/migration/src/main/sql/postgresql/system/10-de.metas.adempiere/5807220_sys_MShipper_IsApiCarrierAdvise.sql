@@ -11,15 +11,7 @@
 --   AD_UI_ElementGroup_ID 541020 (flags group, right column)
 
 -- =============================================================================
--- 1. DDL — add column to M_Shipper
--- =============================================================================
-ALTER TABLE M_Shipper ADD COLUMN IF NOT EXISTS IsApiCarrierAdvise CHAR(1) DEFAULT 'N';
-UPDATE M_Shipper SET IsApiCarrierAdvise = 'N' WHERE IsApiCarrierAdvise IS NULL;
-ALTER TABLE M_Shipper ALTER COLUMN IsApiCarrierAdvise SET NOT NULL;
-ALTER TABLE M_Shipper ADD CONSTRAINT IsApiCarrierAdvise_Check CHECK (IsApiCarrierAdvise IN ('Y','N'));
-
--- =============================================================================
--- 2. AD_Element (base = de_DE)
+-- 1. AD_Element (base language = de_DE: German in base column)
 -- =============================================================================
 INSERT INTO AD_Element
   (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -29,11 +21,11 @@ VALUES
   (584972 /*From ID Server*/, 0, 0, 'Y',
    TO_TIMESTAMP('2026-06-10 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
    TO_TIMESTAMP('2026-06-10 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
-   'IsApiCarrierAdvise', 'API Carrier Advise', 'API Carrier Advise', 'D')
+   'IsApiCarrierAdvise', 'API Lieferweg-Abfrage', 'API Lieferweg-Abfrage', 'D')
 ;
 
 -- =============================================================================
--- 3. AD_Element_Trl — seed all active system languages
+-- 2. AD_Element_Trl — seed all active system languages
 -- =============================================================================
 INSERT INTO AD_Element_Trl
   (AD_Language, AD_Element_ID, IsTranslated,
@@ -55,7 +47,23 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y'
   )
 ;
 
--- 4. Override en_US with English text
+-- 3. de_DE translation (matches base; mark IsTranslated='Y')
+UPDATE AD_Element_Trl
+SET Name='API Lieferweg-Abfrage', PrintName='API Lieferweg-Abfrage',
+    IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-10 10:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Element_ID=584972 AND AD_Language='de_DE'
+;
+
+-- 4. de_CH translation (same as de_DE; mark IsTranslated='Y')
+UPDATE AD_Element_Trl
+SET Name='API Lieferweg-Abfrage', PrintName='API Lieferweg-Abfrage',
+    IsTranslated='Y',
+    Updated=TO_TIMESTAMP('2026-06-10 10:00:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Element_ID=584972 AND AD_Language='de_CH'
+;
+
+-- 5. en_US translation override with English text
 UPDATE AD_Element_Trl
 SET Name='API Carrier Advise', PrintName='API Carrier Advise',
     IsTranslated='Y',
@@ -64,7 +72,7 @@ WHERE AD_Element_ID=584972 AND AD_Language='en_US'
 ;
 
 -- =============================================================================
--- 5. AD_Column
+-- 6. AD_Column
 -- =============================================================================
 INSERT INTO AD_Column
   (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -79,7 +87,7 @@ VALUES
   (592800 /*From ID Server*/, 0, 0, 'Y',
    TO_TIMESTAMP('2026-06-10 10:01:00','YYYY-MM-DD HH24:MI:SS'),100,
    TO_TIMESTAMP('2026-06-10 10:01:00','YYYY-MM-DD HH24:MI:SS'),100,
-   0, 'API Carrier Advise', 253 /*AD_Table_ID M_Shipper*/, 'IsApiCarrierAdvise',
+   0, 'API Lieferweg-Abfrage', 253 /*AD_Table_ID M_Shipper*/, 'IsApiCarrierAdvise',
    20 /*YesNo*/, 1, 'N', 'N', 'Y', 'N',
    'N', 'N', 'N', 'Y', 'N',
    584972, 'D', 'Y', 'Y',
@@ -88,7 +96,15 @@ VALUES
 ;
 
 -- =============================================================================
--- 6. AD_Column_Trl — seed skeleton rows
+-- 7. DDL — add column to M_Shipper (after AD_Column to follow metasfresh convention)
+--    DEFAULT 'N' backfills all existing rows; no separate UPDATE needed.
+-- =============================================================================
+ALTER TABLE M_Shipper ADD COLUMN IF NOT EXISTS IsApiCarrierAdvise CHAR(1) DEFAULT 'N';
+ALTER TABLE M_Shipper ALTER COLUMN IsApiCarrierAdvise SET NOT NULL;
+ALTER TABLE M_Shipper ADD CONSTRAINT IsApiCarrierAdvise_Check CHECK (IsApiCarrierAdvise IN ('Y','N'));
+
+-- =============================================================================
+-- 8. AD_Column_Trl — seed skeleton rows
 -- =============================================================================
 INSERT INTO AD_Column_Trl
   (AD_Language, AD_Column_ID, Name, IsTranslated,
@@ -109,7 +125,7 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y'
 ;
 
 -- =============================================================================
--- 7. AD_Field on Shipper window main tab (tab 185)
+-- 9. AD_Field on Shipper window main tab (tab 185)
 -- =============================================================================
 INSERT INTO AD_Field
   (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -122,14 +138,14 @@ VALUES
   (780754 /*From ID Server*/, 0, 0, 'Y',
    TO_TIMESTAMP('2026-06-10 10:02:00','YYYY-MM-DD HH24:MI:SS'),100,
    TO_TIMESTAMP('2026-06-10 10:02:00','YYYY-MM-DD HH24:MI:SS'),100,
-   'API Carrier Advise', 185 /*AD_Tab_ID Shipper main tab*/, 592800, 'Y',
+   'API Lieferweg-Abfrage', 185 /*AD_Tab_ID Shipper main tab*/, 592800, 'Y',
    100, 75, 'N', 'N', 'N',
    'N', 'N', 'N', 1,
    'D', 'Y', 0)
 ;
 
 -- =============================================================================
--- 8. AD_Field_Trl — seed skeleton rows
+-- 10. AD_Field_Trl — seed skeleton rows
 -- =============================================================================
 INSERT INTO AD_Field_Trl
   (AD_Language, AD_Field_ID, Name, IsTranslated,
@@ -150,18 +166,18 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y'
 ;
 
 -- =============================================================================
--- 9. Propagate element translations → field (element-id, not field-id)
+-- 11. Propagate element translations → field (element-id, not field-id)
 -- =============================================================================
 /* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(584972);
 
 -- =============================================================================
--- 10. Rebuild element links for the new field
+-- 12. Rebuild element links for the new field
 -- =============================================================================
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=780754;
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(780754);
 
 -- =============================================================================
--- 11. AD_UI_Element — place field in the flags group (541020), form+grid
+-- 13. AD_UI_Element — place field in the flags group (541020), form+grid
 --     SeqNo=30 (after IsActive=10, IsDefault=20)
 --     SeqNoGrid=75 (between IsDefault=70 and AD_Org_ID=80)
 -- =============================================================================
@@ -176,11 +192,11 @@ VALUES
    TO_TIMESTAMP('2026-06-10 10:02:30','YYYY-MM-DD HH24:MI:SS'),100,
    TO_TIMESTAMP('2026-06-10 10:02:30','YYYY-MM-DD HH24:MI:SS'),100,
    780754, 185 /*AD_Tab_ID*/, 541020 /*flags group*/, 'F',
-   'API Carrier Advise', 'Y', 'Y', 'N',
+   'API Lieferweg-Abfrage', 'Y', 'Y', 'N',
    30, 75, 0, 'N')
 ;
 
 -- =============================================================================
--- 12. Propagate element translations to TRL tables
+-- 14. Propagate element translations to TRL tables
 -- =============================================================================
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584972);

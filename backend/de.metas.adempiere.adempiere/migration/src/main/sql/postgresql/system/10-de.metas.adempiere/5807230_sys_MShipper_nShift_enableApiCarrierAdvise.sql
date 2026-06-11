@@ -6,8 +6,8 @@ SELECT backup_table('m_shipper', '_nshift_apicarrieradvise');
 
 UPDATE M_Shipper
 SET    IsApiCarrierAdvise = 'Y',
-       Updated            = now(),
-       UpdatedBy          = 100
+       Updated            = TO_TIMESTAMP('2026-06-10 10:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy          = 99
 WHERE  M_Shipper_ID       = 540019
   AND  IsApiCarrierAdvise <> 'Y'
 ;
