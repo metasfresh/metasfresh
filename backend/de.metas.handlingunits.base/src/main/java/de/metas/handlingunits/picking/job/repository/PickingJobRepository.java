@@ -176,6 +176,7 @@ public class PickingJobRepository
 				.loadById(pickingJobId);
 	}
 
+	/** Batch-loads the given picking jobs in a single pass. Used by mass-printing's pre-existing-job reconciliation ({@code PickingJobService.abortAbortablePickingJobsForSchedules}) to avoid a per-job load. */
 	public List<PickingJob> getByIds(
 			@NonNull final Set<PickingJobId> pickingJobIds,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
