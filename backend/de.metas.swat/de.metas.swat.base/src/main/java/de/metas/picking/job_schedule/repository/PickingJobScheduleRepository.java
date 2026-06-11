@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -33,6 +34,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Repository Tables: M_Picking_Job_Schedule
@@ -113,6 +115,18 @@ public class PickingJobScheduleRepository
 	{
 		final I_M_Picking_Job_Schedule record = load(id, I_M_Picking_Job_Schedule.class);
 		return record != null ? fromRecord(record) : null;
+	}
+
+	/**
+	 * Loads the assignment's owning client/org out-of-trx, for seeding the AD context of the
+	 * after-commit async reconcile event. Returns {@code null} if the assignment was deleted
+	 * since the event was queued.
+	 */
+	@Nullable
+	public ClientAndOrgId getClientAndOrgIdOutOfTrxOrNull(@NonNull final PickingJobScheduleId id)
+	{
+		final I_M_Picking_Job_Schedule record = loadOutOfTrx(id, I_M_Picking_Job_Schedule.class);
+		return record != null ? ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()) : null;
 	}
 
 	public void updateByIds(@NonNull final Set<PickingJobScheduleId> ids, @NonNull final UnaryOperator<PickingJobSchedule> updater)
