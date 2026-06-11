@@ -39,7 +39,9 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
   // where the scan field is the screen's main content (`showInputText=Y`); without the visible
   // input the screen renders blank. Keystroke-wedge scans are read at the window level so they
   // still work; DataWedge IME injection breaks (documented opt-in trade-off — keep the knob off
-  // for IME deployments). Design: https://github.com/metasfresh/me03/issues/29246.
+  // for IME deployments). Manual typing (Mode C3: showInputText=Y, isInputTextReadonly=N) is also
+  // blocked when this knob is Y — the visible input renders but cannot be edited; intentional opt-in
+  // for hardware-scanner-only deployments. Design: https://github.com/metasfresh/me03/issues/29246.
   const scanInputReadOnly = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
 
   const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
@@ -298,9 +300,11 @@ const BarcodeScannerComponent = ({
           instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
           type="hidden" inputs cannot receive focus, so Android InputConnection is never established
           and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
-          IME-compatible while remaining invisible to the user. (me03#28834) */}
+          IME-compatible while remaining invisible to the user.
+          (https://github.com/metasfresh/me03/issues/28834) */}
       {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
-          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
+          compositing issue where the native video layer covers CSS-overlaid content.
+          (https://github.com/metasfresh/me03/issues/28964) */}
       {/* ⚠️ HARDWARE CONTRACT — Zebra MC3300x DataWedge IME. The exact combination below lets scans
           inject WITHOUT popping the virtual keyboard:
             • type="text"                    — Android InputConnection (type="hidden" cannot focus)
