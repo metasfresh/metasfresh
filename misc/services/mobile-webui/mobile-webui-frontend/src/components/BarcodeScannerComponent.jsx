@@ -84,7 +84,6 @@ const BarcodeScannerComponent = ({
   testId,
   isShowInputText: isShowInputTextParam,
   isShowVideo: isShowVideoParam,
-  isShowPrompt = true,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
@@ -102,6 +101,8 @@ const BarcodeScannerComponent = ({
     isShowVideo,
     continuousRunning,
   } = useConfigParams({ isShowInputTextParam, isShowVideoParam, continuousRunningParam });
+  const isComponentHidden = !isShowInputText && !isShowVideo;
+  const isComponentHiddenByParam = isShowInputTextParam === false && isShowVideoParam === false;
 
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -300,16 +301,13 @@ const BarcodeScannerComponent = ({
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
       {/* Scan prompt — visible on hardware-scanner deployments (no camera) when the input is
-          OFF-SCREEN and this component is the screen's main visible content. Reuses
-          inputPlaceholderText so callers control the prompt text (e.g. HUScanner passes
-          'Scan LU or locator…'). When the input is on-screen (isShowInputText=Y) the input is
-          the anchor — no big prompt needed.
-          IMPORTANT: callers that mount this as a SILENT background capture (e.g.
-          BarcodeScannerButton, or screens that already have their own primary content like the
-          app-list launchers / distribution-move lines) MUST pass `isShowPrompt={false}` — the
-          6rem icon + caption would otherwise inject visible chrome where the component is meant
-          to be invisible. See https://github.com/metasfresh/me03/issues/30363. */}
-      {!isShowVideo && !isProcessing && !isShowInputText && isShowPrompt && (
+          OFF-SCREEN (the actual empty-screen case: the only thing the component otherwise renders
+          is the invisible off-screen input). When the input is on-screen (isShowInputText=Y) the
+          input itself is the visual anchor — no big prompt needed. Reuses inputPlaceholderText so
+          a caller can override the default caption (e.g. HUScanner's locator-scan branch passes
+          'Scan LU or locator…'); when the caller passes none, the default scanPrompt translation
+          is used. See https://github.com/metasfresh/me03/issues/30363. */}
+      {!isProcessing && isComponentHidden && !isComponentHiddenByParam && (
         <div className="scan-prompt">
           <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
           <div className="scan-prompt-text">
@@ -369,7 +367,6 @@ BarcodeScannerComponent.propTypes = {
   testId: PropTypes.string,
   isShowInputText: PropTypes.bool,
   isShowVideo: PropTypes.bool,
-  isShowPrompt: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
   inputPlaceholderText: PropTypes.string,
   continuousRunning: PropTypes.bool,
