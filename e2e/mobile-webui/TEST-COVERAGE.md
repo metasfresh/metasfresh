@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 55 | 58 | 95% |
+| Picking | 56 | 59 | 95% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -167,9 +167,10 @@
 | DO_NOT_CREATE: partially-picked order (qty still open) → must STAY in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | DO_NOT_CREATE: picked qty fully bound to a draft shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | Reverse (void) an aggregate-HU shipment → recreate must not collide on duplicate QtyPicked rows | `picking/recreate_shipment_after_void.spec.js` |
+| Reverse an aggregate-HU shipment TWICE (recreate via Generate Shipments between) → picked qty must survive every void so the shipment stays recreatable | `picking/recreate_shipment_after_void.spec.js` |
 
 
-**8/8 — 100%**
+**9/9 — 100%**
 
 ### Product-based picking
 
