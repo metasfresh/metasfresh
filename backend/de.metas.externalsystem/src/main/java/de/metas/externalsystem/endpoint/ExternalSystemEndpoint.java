@@ -87,6 +87,15 @@ public class ExternalSystemEndpoint
 	 */
 	@Default boolean isArrayFanOut = false;
 
+	/** OAuth2 token endpoint URL the password-grant request is POSTed to. */
+	@Nullable String oauthTokenUrl;
+
+	/** Optional OAuth2 scope, e.g. "docuware.platform". */
+	@Nullable String oauthScope;
+
+	/** If TRUE the payload is uploaded as multipart/form-data. */
+	@Default boolean isFileUpload = false;
+
 	/**
 	 * Converts this endpoint to a JSON DTO.
 	 * Supports both HTTP and SFTP transport types.
@@ -115,6 +124,9 @@ public class ExternalSystemEndpoint
 				.sftpRemotePath(sftpRemotePath)
 				.sftpFilenamePattern(sftpFilenamePattern)
 				.arrayFanOut(isArrayFanOut ? Boolean.TRUE : null)
+				.oauthTokenUrl(oauthTokenUrl)
+				.oauthScope(oauthScope)
+				.isFileUpload(isFileUpload ? Boolean.TRUE : null)
 				.build();
 	}
 }
