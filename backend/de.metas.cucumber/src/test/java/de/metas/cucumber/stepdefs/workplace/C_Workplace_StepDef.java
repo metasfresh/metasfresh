@@ -45,6 +45,7 @@ import org.compiere.model.I_C_Workplace_User_Assign;
  *   <li>Create workplaces (including picking slots, product/category/carrier restrictions, external systems)</li>
  *   <li>Assign workplaces to users (mirroring a picker being logged in at a workplace)</li>
  *   <li>Deactivate all workplace records (setup/teardown)</li>
+ *   <li>Delete all {@code C_Workplace_User_Assign} rows — leak-safe teardown of user&rarr;workplace links</li>
  * </ul>
  *
  * <p>Required DataTable columns for {@code metasfresh contains C_Workplaces}:
@@ -206,11 +207,7 @@ public class C_Workplace_StepDef
 				.create()
 				.deleteDirectly();
 
-		// CRITICAL: deleteDirectly is a bulk SQL delete; its CacheInvalidation event may not be processed before
-		// the next step / feature runs in the shared single-JVM executor. WorkplaceUserAssignRepository caches
-		// user->workplace per AD_User_ID (keyed on C_Workplace_User_Assign), so without a synchronous reset a
-		// stale 'metasfresh -> deactivated workplace' entry leaks and getWorkplaceByUserId then throws
-		// "No workplace found" (HTTP 422) — the exact regression that broke pickingWorkflows.feature.
+		// Synchronous cache reset — see Javadoc above (bulk SQL delete's async invalidation is not timely enough).
 		CacheMgt.get().reset(I_C_Workplace_User_Assign.Table_Name);
 	}
 }

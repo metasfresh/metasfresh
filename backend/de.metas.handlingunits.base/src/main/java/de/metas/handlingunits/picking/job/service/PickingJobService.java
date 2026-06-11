@@ -198,31 +198,57 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * Aborts all non-completed/non-voided picking jobs that reference any of the given schedule IDs.
-	 * Called by mass printing before creating a new picking job, to clean up orphaned jobs left by
-	 * previous failed scan attempts (e.g. when shipment creation rolled back but the job remained in Draft).
+	 * Aborts the pre-existing <b>Drafted</b> picking jobs that already cover the demand mass printing is about
+	 * to pick (a job has a line for one of {@code productIds} AND one of {@code scheduleIds}) and that are safe
+	 * to abort, before a new picking job is created.
+	 *
+	 * <p>A candidate job is aborted only when it is <b>unassigned</b> ({@code Picking_User_ID IS NULL}) or
+	 * <b>assigned to {@code pickerId}</b> (the current mass-printing picker). This self-cleans a failed prior
+	 * mass-printing scan's own leftover Draft job (whose lines are assigned to the mass-printing user) and
+	 * avoids the {@code DDOrderPickingReconcile_PickerBusy} error caused by such stale jobs.
+	 *
+	 * <p>A Draft job assigned to a <b>different</b> picker is never aborted. Under normal operation such a job
+	 * is never even a candidate here: a live Draft job holds a PICKING lock on its schedules
+	 * ({@link PickingJobLockService#lockSchedules}, acquired in {@code PickingJobCreateCommand}), and
+	 * {@code MassPrintingService.filterSkipLockedByOtherUser} drops schedules locked by another picker before
+	 * selection. Encountering one here means a lock/job inconsistency — it is logged as a tripwire and left
+	 * untouched (we do not duplicate the lock-based skip).
 	 */
-	public void abortOrphanedPickingJobsForSchedules(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	public void abortAbortablePickingJobsForSchedules(
+			@NonNull final Set<ProductId> productIds,
+			@NonNull final Set<ShipmentScheduleId> scheduleIds,
+			@NonNull final UserId pickerId)
 	{
-		final ImmutableSet<PickingJobId> orphanedJobIds = pickingJobRepository.getActivePickingJobIdsByScheduleIds(scheduleIds);
-		if (orphanedJobIds.isEmpty())
+		final ImmutableSet<PickingJobId> candidateJobIds = pickingJobRepository.getDraftedPickingJobIdsByProductsAndSchedules(productIds, scheduleIds);
+		if (candidateJobIds.isEmpty())
 		{
 			return;
 		}
 
-		logger.warn("Aborting {} orphaned picking job(s) for schedules {} before proceeding", orphanedJobIds.size(), scheduleIds);
-
 		final PickingJobLoaderSupportingServices loadingSupportServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		for (final PickingJobId jobId : orphanedJobIds)
+		// Single batch load of all candidate jobs (avoids a per-job getById round-trip in the loop below).
+		final List<PickingJob> candidateJobs = pickingJobRepository.getByIds(candidateJobIds, loadingSupportServices);
+
+		for (final PickingJob job : candidateJobs)
 		{
+			final UserId jobPickerId = job.getLockedBy();
+			if (jobPickerId != null && !UserId.equals(jobPickerId, pickerId))
+			{
+				// Tripwire: a Draft job of another picker should already have been excluded before selection by
+				// MassPrintingService.filterSkipLockedByOtherUser (via the picking-job schedule lock). Reaching
+				// here means a lock/job inconsistency; leave the job untouched and log it for investigation.
+				logger.warn("Not aborting Draft picking job {} of another picker {} (its schedules should have been lock-skipped before selection)",
+						job.getId(), jobPickerId);
+				continue;
+			}
+
 			try
 			{
-				final PickingJob job = pickingJobRepository.getById(jobId, loadingSupportServices);
 				abort(job);
 			}
 			catch (final Exception ex)
 			{
-				logger.warn("Failed to abort orphaned picking job {}: {}", jobId, ex.getMessage(), ex);
+				logger.warn("Failed to abort pre-existing picking job {}: {}", job.getId(), ex.getMessage(), ex);
 			}
 		}
 	}

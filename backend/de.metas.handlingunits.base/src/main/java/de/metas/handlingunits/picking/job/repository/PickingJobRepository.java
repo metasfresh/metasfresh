@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -77,29 +78,35 @@ public class PickingJobRepository
 	}
 
 	/**
-	 * Returns IDs of all non-voided/non-completed picking jobs that reference any of the given schedule IDs.
-	 * Used by mass printing to locate orphaned jobs (from previous failed scan attempts) before creating a new one.
+	 * Returns the IDs of all <b>Drafted</b> picking jobs that have a line for one of the given products AND
+	 * one of the given shipment schedules. Used by mass printing to locate pre-existing draft jobs covering the
+	 * demand it is about to pick, so they can be aborted (when abortable) before a new job is created.
+	 * <p>
+	 * The query is scoped to {@code Drafted} via an <i>inclusion</i> filter (rather than excluding
+	 * Voided/Completed): {@link PickingJobDocStatus} has only Drafted/Completed/Voided, so this is
+	 * behaviour-equivalent today but stays correct if a new doc-status is ever added.
 	 */
-	public ImmutableSet<PickingJobId> getActivePickingJobIdsByScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	public ImmutableSet<PickingJobId> getDraftedPickingJobIdsByProductsAndSchedules(
+			@NonNull final Set<ProductId> productIds,
+			@NonNull final Set<ShipmentScheduleId> scheduleIds)
 	{
-		if (scheduleIds.isEmpty())
+		if (productIds.isEmpty() || scheduleIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
+		final IQuery<I_M_Picking_Job> draftedJobsQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
 				.addOnlyActiveRecordsFilter()
-				.addNotInArrayFilter(
-						I_M_Picking_Job.COLUMNNAME_DocStatus,
-						ImmutableList.of(PickingJobDocStatus.Voided.getCode(), PickingJobDocStatus.Completed.getCode()))
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
 				.create();
 
 		return queryBL
 				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Product_ID, productIds)
 				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, inProgressJobsQuery)
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
 				.create()
 				.stream()
 				.map(line -> PickingJobId.ofRepoId(line.getM_Picking_Job_ID()))
@@ -167,6 +174,14 @@ public class PickingJobRepository
 	{
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.loadById(pickingJobId);
+	}
+
+	public List<PickingJob> getByIds(
+			@NonNull final Set<PickingJobId> pickingJobIds,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.loadByIds(pickingJobIds);
 	}
 
 	@NonNull

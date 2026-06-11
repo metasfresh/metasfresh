@@ -245,10 +245,16 @@ public class MassPrintingService
 					.build();
 		}
 
-		// Abort any orphaned (non-completed/non-voided) picking jobs for the selected schedules before
-		// creating a new job. This prevents DDOrderPickingReconcile_PickerBusy errors caused by stale jobs
-		// left behind when a previous scan's shipment creation failed and rolled back.
-		pickingJobService.abortOrphanedPickingJobsForSchedules(ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
+		// Abort any abortable pre-existing Draft picking job that already covers this product's selected
+		// schedules, before creating our own job. A job that is unassigned or assigned to this mass-printing
+		// picker is a leftover from a previous failed scan and is aborted here (self-cleanup; also prevents
+		// DDOrderPickingReconcile_PickerBusy errors). A job held by a different picker is left untouched — its
+		// schedules were already dropped before selection by filterSkipLockedByOtherUser (the picking-job
+		// schedule lock), so they do not reach this point.
+		pickingJobService.abortAbortablePickingJobsForSchedules(
+				ImmutableSet.of(productId),
+				ImmutableSet.copyOf(selection.getSelectedScheduleIds()),
+				request.getPickerId());
 
 		// Each line is picked-and-closed through the standard picking close path (see pickTuLine / pickCuLine),
 		// so labels print exactly like a regular picking job — closeLUAndTUPickingTargets() collects every
