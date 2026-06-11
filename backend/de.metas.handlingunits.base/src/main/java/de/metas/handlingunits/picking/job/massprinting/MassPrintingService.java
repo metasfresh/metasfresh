@@ -14,25 +14,24 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
-import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
-import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableQuery;
-import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,6 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +55,7 @@ import java.util.stream.Collectors;
 public class MassPrintingService
 {
 	private static final AdMessageKey MSG_MASS_PRINTING_NOT_ENABLED = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled");
+	private static final AdMessageKey MSG_LU_NOT_IN_PICKING_GROUP = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.LUNotInWorkplacePickingGroup");
 
 	private static final Logger logger = LogManager.getLogger(MassPrintingService.class);
 
@@ -64,8 +63,7 @@ public class MassPrintingService
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
-	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
-	@NonNull private final PickingJobLockService pickingJobLockService;
+	@NonNull private final PickingJobWarehouseService warehouseService;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -89,13 +87,39 @@ public class MassPrintingService
 		final ImmutableSet<ProductId> productIds = extractProductIds(productStorages);
 		final Map<ProductId, Product> productsById = productService.getByIdsAsMap(productIds);
 
-		final LocatorId locatorId = huService.getLocatorId(luId);
-		final WarehouseId warehouseId = locatorId.getWarehouseId();
-
 		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productsById.values());
 
-		// Batch-load all packageables for self-packed products in one query (avoids N+1 per product).
-		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds, request.getPickerId());
+		// Search demand exactly like the picking launcher: scope by the operator's workplace warehouse
+		// (which spans every locator of the same M_Warehouse_PickingGroup), not by the LU's own locator.
+		final Workplace workplace = warehouseService.getWorkplaceByUserId(request.getPickerId()).orElse(null);
+		final LocatorId luLocatorId = huService.getLocatorId(luId);
+
+		// AC3: the operator scanned a workplace; the LU must belong to its picking group.
+		if (workplace != null
+				&& !warehouseService.getLocatorIdsOfTheSamePickingGroup(workplace.getWarehouseId()).contains(luLocatorId))
+		{
+			throw new AdempiereException(MSG_LU_NOT_IN_PICKING_GROUP)
+					.appendParametersToMessage()
+					.setParameter("luId", luId)
+					.setParameter("luLocatorId", luLocatorId)
+					.setParameter("workplaceWarehouseId", workplace.getWarehouseId());
+		}
+
+		final MobileUIPickingUserProfile profile = profileService.getProfile();
+		final PickingJobQuery pickingJobQuery = PickingJobQuery.builder()
+				.userId(request.getPickerId())
+				.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
+				.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() && workplace != null ? workplace.getId() : null)
+				.onlyCustomerIds(profile.getPickOnlyCustomerIds())
+				.build();
+
+		// Reuse the launcher's eligibility seam: streamPackageable applies the same launcher filters
+		// (workplace warehouse, job-schedule branch, lockedBy(userId)+includeNotLocked → other-user-locked
+		// schedules are excluded, excludeLockedForProcessing, etc.). Keep only the self-packed products.
+		final Map<ProductId, List<Packageable>> packageablesByProduct =
+				pickingJobService.streamPackageable(pickingJobQuery)
+						.filter(p -> selfPackedProductIds.contains(p.getProductId()))
+						.collect(Collectors.groupingBy(Packageable::getProductId));
 
 		final ImmutableList.Builder<ProductResult> productResults = ImmutableList.builder();
 		final ImmutableList.Builder<ProductId> skippedNonSelfPacked = ImmutableList.builder();
@@ -145,71 +169,6 @@ public class MassPrintingService
 				.filter(Product::isSelfPacked)
 				.map(Product::getId)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	/** Loads all packageables for the given products in one query, grouped by product. */
-	private Map<ProductId, List<Packageable>> loadPackageablesGroupedByProduct(
-			@NonNull final WarehouseId warehouseId,
-			@NonNull final ImmutableSet<ProductId> selfPackedProductIds,
-			@NonNull final UserId pickerId)
-	{
-		if (selfPackedProductIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final PackageableQuery query = PackageableQuery.builder()
-				.warehouseId(warehouseId)
-				.onlyFromSalesOrder(true)
-				.productIds(selfPackedProductIds)
-				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
-				.build();
-
-		final ImmutableList<Packageable> allPackageables = shipmentScheduleService.stream(query)
-				.collect(ImmutableList.toImmutableList());
-
-		return filterSkipLockedByOtherUser(allPackageables, pickerId)
-				.stream()
-				.collect(Collectors.groupingBy(Packageable::getProductId));
-	}
-
-	/**
-	 * Filters out packageables whose shipment schedule is already locked by a picker other than {@code pickerId}.
-	 * Logs a warning for each skipped schedule so the operator knows why demand was not processed.
-	 */
-	private ImmutableList<Packageable> filterSkipLockedByOtherUser(
-			@NonNull final ImmutableList<Packageable> packageables,
-			@NonNull final UserId pickerId)
-	{
-		if (packageables.isEmpty())
-		{
-			return packageables;
-		}
-
-		final ImmutableSet<ShipmentScheduleId> scheduleIds = packageables.stream()
-				.map(Packageable::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableSet<ShipmentScheduleId> lockedByOtherUser = pickingJobLockService.getScheduleIdsLockedByOtherUser(scheduleIds, pickerId);
-		if (lockedByOtherUser.isEmpty())
-		{
-			return packageables;
-		}
-
-		final ImmutableList.Builder<Packageable> result = ImmutableList.builder();
-		for (final Packageable packageable : packageables)
-		{
-			if (lockedByOtherUser.contains(packageable.getShipmentScheduleId()))
-			{
-				logger.warn("Skipping shipment schedule {} for product {} — locked by another picker",
-						packageable.getShipmentScheduleId(), packageable.getProductId());
-			}
-			else
-			{
-				result.add(packageable);
-			}
-		}
-		return result.build();
 	}
 
 	@NonNull
