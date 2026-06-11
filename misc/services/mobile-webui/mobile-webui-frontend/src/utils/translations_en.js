@@ -146,6 +146,17 @@ const translations = {
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
       noMatchingLines: 'No matching lines found',
+      massPrinting: {
+        triggerButton: 'Mass Print Labels',
+        scanCaption: 'Scan LU',
+        doneButton: 'Done',
+        noResults: 'No eligible products found on this LU',
+        product: 'Product',
+        unitsPacked: 'Units packed',
+        unitsLeftOnLU: 'Units left on LU',
+        unitsOfOpenDemandRemaining: 'Open demand remaining',
+        skippedProducts: 'Skipped products',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',

@@ -956,8 +956,8 @@ public class MOrder extends X_C_Order implements IDocument
 		orderBL.setM_PricingSystem_ID(this, false); // overridePricingSystem=false
 
 		//
-		// Default Currency
-		if (getC_Currency_ID() <= 0)
+		// Default Currency: take it from the price list when the currency is not set yet, or when the price list was just changed
+		if (getC_Currency_ID() <= 0 || is_ValueChanged(COLUMNNAME_M_PriceList_ID))
 		{
 			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(getM_PriceList_ID());
 			final I_M_PriceList priceList = priceListId != null
@@ -969,7 +969,7 @@ public class MOrder extends X_C_Order implements IDocument
 			{
 				setC_Currency_ID(currencyId);
 			}
-			else
+			else if (getC_Currency_ID() <= 0)
 			{
 				setC_Currency_ID(Env.getContextAsInt(getCtx(), "#C_Currency_ID"));
 			}

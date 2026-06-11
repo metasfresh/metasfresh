@@ -49,6 +49,7 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
+		@Nullable Boolean massPrinting;
 
 		@Nullable List<PickingJobFacetGroup> filters;
 	}
