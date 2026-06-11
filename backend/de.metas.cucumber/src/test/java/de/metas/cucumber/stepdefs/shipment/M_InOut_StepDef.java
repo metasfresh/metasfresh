@@ -486,7 +486,7 @@ public class M_InOut_StepDef
 					.createQueryBuilder(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter();
 
-			docStatus.map(status -> shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, status));
+			docStatus.ifPresent(status -> shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, status));
 
 			final I_M_InOut shipment = shipmentQueryBuilder
 					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds.iterator().next().getRepoId())

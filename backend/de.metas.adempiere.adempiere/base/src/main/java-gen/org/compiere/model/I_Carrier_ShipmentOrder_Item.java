@@ -52,7 +52,7 @@ public interface I_Carrier_ShipmentOrder_Item
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set ArtikelNr.
+	 * Set Article Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -61,7 +61,7 @@ public interface I_Carrier_ShipmentOrder_Item
 	void setArticleValue (@Nullable java.lang.String ArticleValue);
 
 	/**
-	 * Get ArtikelNr.
+	 * Get Article Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -73,7 +73,7 @@ public interface I_Carrier_ShipmentOrder_Item
 	String COLUMNNAME_ArticleValue = "ArticleValue";
 
 	/**
-	 * Set Shipment Order Item.
+	 * Set Parcel Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -82,7 +82,7 @@ public interface I_Carrier_ShipmentOrder_Item
 	void setCarrier_ShipmentOrder_Item_ID (int Carrier_ShipmentOrder_Item_ID);
 
 	/**
-	 * Get Shipment Order Item.
+	 * Get Parcel Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -135,6 +135,27 @@ public interface I_Carrier_ShipmentOrder_Item
 	int getC_Currency_ID();
 
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Country of origin.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCountryOfOrigin (@Nullable java.lang.String CountryOfOrigin);
+
+	/**
+	 * Get Country of origin.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCountryOfOrigin();
+
+	ModelColumn<I_Carrier_ShipmentOrder_Item, Object> COLUMN_CountryOfOrigin = new ModelColumn<>(I_Carrier_ShipmentOrder_Item.class, "CountryOfOrigin", null);
+	String COLUMNNAME_CountryOfOrigin = "CountryOfOrigin";
 
 	/**
 	 * Get Created.

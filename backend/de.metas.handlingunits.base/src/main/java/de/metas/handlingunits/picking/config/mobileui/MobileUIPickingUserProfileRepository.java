@@ -51,6 +51,11 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: MobileUI_UserProfile_Picking, MobileUI_UserProfile_Picking_BPartner,
+ *     MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
+ * Repository Cluster: MobileUIPickingUserProfileRepository
+ */
 @Repository
 public class MobileUIPickingUserProfileRepository
 {
@@ -106,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
 				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
+				.isMassPrinting(profileRecord.isMassPrinting())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -327,6 +333,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsActiveWorkplaceRequired(from.isActiveWorkplaceRequired());
 		record.setIsConsideredOnlyScheduledJobs(from.isConsiderOnlyJobScheduledToWorkplace());
 		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
+		record.setIsMassPrinting(from.isMassPrinting());
 		updateRecord(record, from.getDefaultPickingJobOptions());
 	}
 

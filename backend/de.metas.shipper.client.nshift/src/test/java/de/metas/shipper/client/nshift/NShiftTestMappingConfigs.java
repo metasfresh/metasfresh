@@ -180,6 +180,13 @@ public class NShiftTestMappingConfigs
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE)
 					.build(),
 			JsonMappingConfig.builder()
+					.seqNo(195)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_COUNTRY_OF_ORIGIN)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN)
+					.build(),
+			JsonMappingConfig.builder()
 					.seqNo(200)
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
 					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)

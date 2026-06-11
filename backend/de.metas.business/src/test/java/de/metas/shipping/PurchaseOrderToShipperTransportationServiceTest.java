@@ -43,11 +43,14 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -461,6 +464,82 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
 				.as("All packages should be removed when all order lines are deleted")
 				.isEmpty();
+	}
+
+	/**
+	 * When ALL order lines return LU count 0, the service must throw a user-visible error instead of silently adding nothing.
+	 */
+	@Test
+	public void addPurchaseOrderLines_allLinesSkipped_throwsUserError()
+	{
+		final PurchaseOrderToShipperTransportationService serviceWithZeroLU = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting((o, ol) -> 0);
+
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("PartnerSkipAll", "addressSkipAll");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of(10, chf)
+		);
+
+		assertThatThrownBy(() -> serviceWithZeroLU.addPurchaseOrdersToShipperTransportation(
+				transportationId,
+				Collections.singletonList(orderId)))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adEx = (AdempiereException)ex;
+					assertThat(adEx.getErrorCode())
+							.as("Exception must carry the expected AD_Message key as error code")
+							.isEqualTo(PurchaseOrderToShipperTransportationService.MSG_NoLUPackingConfigForOrderLines.toAD_Message());
+					assertThat(adEx.isUserValidationError())
+							.as("Exception must be marked as user-validation error so the UI shows it as a user message")
+							.isTrue();
+				});
+	}
+
+	/**
+	 * When SOME order lines return LU count 0 and others return > 0, the service must warn and add the rest — no exception.
+	 */
+	@Test
+	public void addPurchaseOrderLines_someLinesSkipped_warnsAndAddsRest()
+	{
+		final PurchaseOrderToShipperTransportationService serviceWithPartialLU = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(
+				(order, orderLine) -> orderLine.getM_Product_ID() == product1.getRepoId() ? 0 : 1);
+
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("PartnerSkipSome", "addressSkipSome");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of(10, chf)
+		);
+		final I_C_OrderLine line2 = createOrderLine(
+				orderId,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(3), product2, uom1),
+				Money.of(15, chf)
+		);
+
+		// Must not throw — some lines were added successfully
+		serviceWithPartialLU.addPurchaseOrdersToShipperTransportation(
+				transportationId,
+				Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class)
+				.retrieveShippingPackages(transportationId);
+
+		// Exactly 1 package for product2 (line2); product1 (line1) was skipped
+		assertThat(shippingPackages).hasSize(1);
+		assertThat(shippingPackages.get(0).getC_OrderLine_ID())
+				.as("Only line2 (product2) should produce a shipping package")
+				.isEqualTo(line2.getC_OrderLine_ID());
 	}
 
 	private I_M_ShipperTransportation createShipperTransportation()
