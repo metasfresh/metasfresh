@@ -42,6 +42,13 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isStocked;
 
+	/**
+	 * Explicit {@code M_Product.IsSelfPacked} override. When {@code null} the column keeps its
+	 * default ({@code false}). Set to {@code true} to mark the product as self-packed — required by
+	 * the mobileUI mass-printing flow, which only packs self-packed products and skips the rest.
+	 */
+	@Nullable Boolean isSelfPacked;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;

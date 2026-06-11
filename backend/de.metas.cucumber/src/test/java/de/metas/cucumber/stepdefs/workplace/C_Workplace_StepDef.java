@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.workplace;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -11,10 +12,15 @@ import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.order.OrderPickingType;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceCreateRequest;
+import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -29,6 +35,35 @@ import org.compiere.model.I_C_Workplace_Carrier_Product;
 import org.compiere.model.I_C_Workplace_Product;
 import org.compiere.model.I_C_Workplace_ProductCategory;
 
+/**
+ * Step definitions for creating and managing {@code C_Workplace} records in Cucumber scenarios.
+ *
+ * <p>Provides steps to:
+ * <ul>
+ *   <li>Create workplaces (including picking slots, product/category/carrier restrictions, external systems)</li>
+ *   <li>Assign workplaces to users (mirroring a picker being logged in at a workplace)</li>
+ *   <li>Deactivate all workplace records (setup/teardown)</li>
+ * </ul>
+ *
+ * <p>Required DataTable columns for {@code metasfresh contains C_Workplaces}:
+ * <ul>
+ *   <li>{@code Identifier} — local reference for later steps</li>
+ *   <li>{@code M_Warehouse_ID} — warehouse identifier loaded via {@code load M_Warehouse}</li>
+ * </ul>
+ * <p>Optional columns: {@code M_PickingSlot_ID}, {@code MaxPickingJobs}, {@code SeqNo},
+ * {@code OrderPickingType}, {@code M_Product_ID}, {@code M_Product_Category_ID},
+ * {@code Carrier_Product_ID}, {@code ExternalSystem.Value}.
+ *
+ * <p>Example:
+ * <pre>
+ * And metasfresh contains C_Workplaces
+ *   | Identifier | M_Warehouse_ID | M_PickingSlot_ID |
+ *   | workplace  | warehouse      | pickingSlot      |
+ * And assign C_Workplace to user
+ *   | C_Workplace_ID | AD_User_ID.Login |
+ *   | workplace      | metasfresh       |
+ * </pre>
+ */
 @RequiredArgsConstructor
 public class C_Workplace_StepDef
 {
@@ -41,6 +76,7 @@ public class C_Workplace_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
     @NonNull private final Carrier_Product_StepDefData carrierProductTable;
+	@NonNull private final PickingSlot_StepDefData pickingSlotTable;
 
 	@Given("metasfresh contains C_Workplaces")
 	public void createWorkplaces(final DataTable dataTable)
@@ -63,6 +99,11 @@ public class C_Workplace_StepDef
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_SeqNo).ifPresent(seqNo -> builder.seqNo(SeqNo.ofInt(seqNo)));
 		row.getAsOptionalString(I_C_Workplace.COLUMNNAME_OrderPickingType).ifPresent(type -> builder.orderPickingType(OrderPickingType.ofCode(type)));
 
+		row.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID).ifPresent(pickingSlotIdentifier -> {
+			final I_M_PickingSlot pickingSlot = pickingSlotTable.get(pickingSlotIdentifier);
+			builder.pickingSlotId(PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID()));
+		});
+
 		row.getAsOptionalCommaSeparatedString(I_C_Workplace_Product.COLUMNNAME_M_Product_ID).ifPresent(list -> list.forEach(
 				product -> builder.productId(productTable.getId(product))));
 		row.getAsOptionalCommaSeparatedString(I_C_Workplace_ProductCategory.COLUMNNAME_M_Product_Category_ID).ifPresent(list -> list.forEach(
@@ -80,6 +121,36 @@ public class C_Workplace_StepDef
 		final Workplace workplace = workplaceService.create(builder.build());
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> workplaceTable.put(identifier, workplace));
+	}
+
+	/**
+	 * Assigns a previously-created workplace to a user (by login), so that
+	 * {@code WorkplaceService.getWorkplaceByUserId(userId)} resolves it — mirroring a picker
+	 * being logged in at a workplace. This is what lets a programmatically-created PRODUCT picking
+	 * job auto-allocate the workplace's picking slot.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code C_Workplace_ID} — identifier of a workplace created by {@code metasfresh contains C_Workplaces}</li>
+	 *   <li>{@code AD_User_ID.Login} — login name of the user to assign (e.g. {@code metasfresh})</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And assign C_Workplace to user
+	 *   | C_Workplace_ID | AD_User_ID.Login |
+	 *   | workplace      | metasfresh       |
+	 * </pre>
+	 */
+	@Given("assign C_Workplace to user")
+	public void assignWorkplaceToUser(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final WorkplaceId workplaceId = row.getAsIdentifier(I_C_Workplace.COLUMNNAME_C_Workplace_ID).lookupNotNullIdIn(workplaceTable);
+			final String login = row.getAsString("AD_User_ID.Login");
+			final UserId userId = Services.get(IUserDAO.class).retrieveUserIdByLogin(login);
+			workplaceService.assignWorkplace(userId, workplaceId);
+		});
 	}
 
 	@Given("deactivate all C_Workplace records")
