@@ -23,6 +23,8 @@
 package de.metas.workplace;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroupId;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.inout.PriorityRule;
 import de.metas.order.OrderPickingType;
@@ -56,6 +58,8 @@ public class Workplace
 	@NonNull ImmutableSet<ProductCategoryId> productCategoryIds;
 	@NonNull ImmutableSet<CarrierProductId> carrierProductIds;
 	@NonNull ImmutableSet<ExternalSystemId> externalSystemIds;
+	@NonNull ImmutableSet<BPGroupId> bpartnerGroupIds;
+	@NonNull ImmutableSet<DocTypeId> docTypeIds;
 
 	@Builder
 	private Workplace(
@@ -71,7 +75,9 @@ public class Workplace
 			@Nullable final ImmutableSet<ProductId> productIds,
 			@Nullable final ImmutableSet<ProductCategoryId> productCategoryIds,
 			@Nullable final ImmutableSet<CarrierProductId> carrierProductIds,
-			@Nullable final ImmutableSet<ExternalSystemId> externalSystemIds)
+			@Nullable final ImmutableSet<ExternalSystemId> externalSystemIds,
+			@Nullable final ImmutableSet<BPGroupId> bpartnerGroupIds,
+			@Nullable final ImmutableSet<DocTypeId> docTypeIds)
 	{
 		if (pickFromLocatorId != null)
 		{
@@ -92,5 +98,7 @@ public class Workplace
 		this.productCategoryIds = productCategoryIds != null ? productCategoryIds : ImmutableSet.of();
 		this.carrierProductIds = carrierProductIds != null ? carrierProductIds : ImmutableSet.of();
 		this.externalSystemIds = externalSystemIds != null ? externalSystemIds : ImmutableSet.of();
+		this.bpartnerGroupIds = bpartnerGroupIds != null ? bpartnerGroupIds : ImmutableSet.of();
+		this.docTypeIds = docTypeIds != null ? docTypeIds : ImmutableSet.of();
 	}
 }
