@@ -313,6 +313,9 @@ const BarcodeScannerComponent = ({
           <div className="scan-prompt-text">
             {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
           </div>
+          {/* In-progress sub-caption. Always in DOM; CSS shows it only when the input has
+              chars (i.e. mid-burst) — see BarcodeScannerComponent.scss `:has(...not(:placeholder-shown))`. */}
+          <div className="scan-prompt-progress-text">{trl('components.BarcodeScannerComponent.scanInProgress')}</div>
         </div>
       )}
       {/* IMPORTANT: Always use type="text" — never type="hidden".

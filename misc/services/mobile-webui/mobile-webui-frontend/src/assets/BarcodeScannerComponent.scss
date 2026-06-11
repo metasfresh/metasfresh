@@ -71,6 +71,17 @@
       text-align: center;
       line-height: 1.3;
     }
+
+    // In-progress sub-caption. Hidden by default; revealed by the in-progress :has() rule
+    // below when the input has content. Subordinate font size to the main caption.
+    .scan-prompt-progress-text {
+      font-size: 1em;
+      text-align: center;
+      line-height: 1.3;
+      margin-top: 0.75rem;
+      color: $indicator-yellow;
+      display: none;
+    }
   }
 
   .loading {
@@ -125,14 +136,20 @@
 // the input's current `value`, including imperative `inputTextRef.current.value = barcode`
 // writes from the hook's onReadInProgress. When the buffer is cleared on scan completion the
 // input falls back to placeholder-shown ⇒ icon returns to the idle green/slow pulse.
-.barcode-scanner:has(.input-text:not(:placeholder-shown)) .scan-prompt-icon {
-  color: $indicator-yellow;
+.barcode-scanner:has(.input-text:not(:placeholder-shown)) {
+  .scan-prompt-icon {
+    color: $indicator-yellow;
 
-  @media (prefers-reduced-motion: no-preference) {
-    // Floored at 0.3s — at smaller durations the alternate-pulse crest rate approaches the
-    // WCAG 2.3.1 3Hz photosensitivity threshold (~0.17s duration). Smooth ease-in-out keeps
-    // the transition non-abrupt, but stay conservative.
-    animation-duration: 0.3s;
+    @media (prefers-reduced-motion: no-preference) {
+      // Floored at 0.3s — at smaller durations the alternate-pulse crest rate approaches the
+      // WCAG 2.3.1 3Hz photosensitivity threshold (~0.17s duration). Smooth ease-in-out keeps
+      // the transition non-abrupt, but stay conservative.
+      animation-duration: 0.3s;
+    }
+  }
+
+  .scan-prompt-progress-text {
+    display: block;
   }
 }
 
