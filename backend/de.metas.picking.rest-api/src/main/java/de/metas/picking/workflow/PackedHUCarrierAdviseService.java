@@ -225,8 +225,10 @@ public class PackedHUCarrierAdviseService
 				return "LU";
 			case TU:
 				return "TU";
-			default:
+			case VHU:
 				return "CU";
+			default:
+				throw new AdempiereException("Unexpected HuUnitType: " + huUnitType);
 		}
 	}
 }
