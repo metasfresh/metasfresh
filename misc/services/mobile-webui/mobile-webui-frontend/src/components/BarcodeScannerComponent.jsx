@@ -34,7 +34,7 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
   // Off-screen (DataWedge) mode only: when enabled, set the HTML `readOnly` attribute on the scan
   // input to suppress the on-screen keyboard *unconditionally* — for devices where `inputMode="none"`
   // is not honoured (e.g. Honeywell / Zebra keystroke-mode firmware). Default off ⇒ today's behaviour.
-  // Design: me03 #29246 (`barcodeScanner.offscreenInput.readOnly`). Keystroke-wedge scans are read at
+  // Setting: `barcodeScanner.offscreenInput.readOnly`. Keystroke-wedge scans are read at
   // window level so they still work; DataWedge IME injection does not (documented, opt-in trade-off).
   const offscreenInputReadOnlyEnabled = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
   const offscreenInputReadOnly = !isShowInputText && offscreenInputReadOnlyEnabled;
@@ -304,7 +304,7 @@ const BarcodeScannerComponent = ({
             • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
             • the focus useEffects above     — establish / recover the InputConnection on the device
           The `readOnly` attribute is intentionally NOT set by default (it would break DataWedge IME);
-          it can be enabled per-instance via `barcodeScanner.offscreenInput.readOnly` (me03 #29246) for
+          it can be enabled per-instance via `barcodeScanner.offscreenInput.readOnly` for
           keystroke-mode devices (e.g. Honeywell) where inputMode="none" fails to suppress the keyboard.
           Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
           regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
