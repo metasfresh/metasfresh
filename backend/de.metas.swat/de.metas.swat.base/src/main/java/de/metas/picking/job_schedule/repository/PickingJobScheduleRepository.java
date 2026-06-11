@@ -22,11 +22,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.eevolution.model.I_DD_Order;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -34,7 +34,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Repository Tables: M_Picking_Job_Schedule
@@ -50,9 +49,7 @@ public class PickingJobScheduleRepository
 	public static PickingJobScheduleRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class,
-				PickingJobScheduleRepository::new);
+		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class, PickingJobScheduleRepository::new);
 	}
 
 	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
@@ -98,10 +95,11 @@ public class PickingJobScheduleRepository
 		record.setProcessed(from.isProcessed());
 	}
 
-	private static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
+	public static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
 	{
 		return PickingJobSchedule.builder()
 				.id(PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.workplaceId(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
@@ -115,18 +113,6 @@ public class PickingJobScheduleRepository
 	{
 		final I_M_Picking_Job_Schedule record = load(id, I_M_Picking_Job_Schedule.class);
 		return record != null ? fromRecord(record) : null;
-	}
-
-	/**
-	 * Loads the assignment's owning client/org out-of-trx, for seeding the AD context of the
-	 * after-commit async reconcile event. Returns {@code null} if the assignment was deleted
-	 * since the event was queued.
-	 */
-	@Nullable
-	public ClientAndOrgId getClientAndOrgIdOutOfTrxOrNull(@NonNull final PickingJobScheduleId id)
-	{
-		final I_M_Picking_Job_Schedule record = loadOutOfTrx(id, I_M_Picking_Job_Schedule.class);
-		return record != null ? ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()) : null;
 	}
 
 	public void updateByIds(@NonNull final Set<PickingJobScheduleId> ids, @NonNull final UnaryOperator<PickingJobSchedule> updater)
@@ -231,5 +217,20 @@ public class PickingJobScheduleRepository
 		}
 
 		return queryBuilder.create();
+	}
+
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
+				.addNotInSubQueryFilter(
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						completedDDOrdersQuery)
+				.create()
+				.stream()
+				.map(PickingJobScheduleRepository::fromRecord);
 	}
 }

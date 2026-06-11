@@ -25,12 +25,13 @@ import de.metas.workplace.WorkplaceRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
-
-import javax.annotation.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -146,7 +147,7 @@ public class PickingJobScheduleService
 		final Quantity qtyToDeliver = pickingJobShipmentScheduleService.getQtyToDeliver(shipmentSchedule);
 		final Quantity qtyScheduledForPicking = pickingJobShipmentScheduleService.getQtyScheduledForPicking(shipmentSchedule);
 		return qtyToDeliver.subtract(qtyScheduledForPicking);
-		
+
 	}
 
 	public void autoAssign(@NonNull final PickingJobScheduleAutoAssignRequest request)
@@ -160,5 +161,10 @@ public class PickingJobScheduleService
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	{
+		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(completedDDOrdersQuery);
 	}
 }

@@ -9,13 +9,14 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
+import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentRequest;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -32,14 +33,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
@@ -58,13 +57,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -91,7 +90,6 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final WorkplaceService workplaceService;
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -125,11 +123,11 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	public void scheduleReconcileAfterCommit(@NonNull final PickingJobScheduleId jobScheduleId)
+	public void scheduleReconcileAfterCommit(@NonNull final PickingJobSchedule jobSchedule)
 	{
 		trxManager.accumulateAndProcessAfterCommit(
 				TRX_PROPERTY_ScheduleReconcile,
-				Collections.singletonList(jobScheduleId),
+				ImmutableSet.of(DDOrderReplenishmentRequest.of(jobSchedule)),
 				reconciliationEventPublisher::publishAll);
 	}
 
@@ -490,14 +488,18 @@ public class DDOrderPickingReplenishmentService
 		return new AllocationResult(allocation, remaining);
 	}
 
-	/** Converts a locator's on-hand qty (product stocking UOM) into the demand UOM; may throw {@link NoUOMConversionException}. */
+	/**
+	 * Converts a locator's on-hand qty (product stocking UOM) into the demand UOM; may throw {@link NoUOMConversionException}.
+	 */
 	@FunctionalInterface
 	interface ConvertToDemandUom
 	{
 		Quantity convert(@NonNull Quantity availableStockingUom);
 	}
 
-	/** Result of {@link #greedyAllocate}: the per-locator allocation (insertion-ordered) and the uncovered demand remainder. */
+	/**
+	 * Result of {@link #greedyAllocate}: the per-locator allocation (insertion-ordered) and the uncovered demand remainder.
+	 */
 	@lombok.Value
 	@VisibleForTesting
 	static class AllocationResult
@@ -697,35 +699,15 @@ public class DDOrderPickingReplenishmentService
 	{
 		// Republish a reconcile event for every active, not-processed assignment on a packing warehouse that has
 		// no live (Completed) DD_Order linked — the watchdog's "drifted" assignments.
-		try (final java.util.stream.Stream<PickingJobScheduleId> jobScheduleIds = streamAssignmentsNeedingDDOrder())
-		{
-			jobScheduleIds.forEach(reconciliationEventPublisher::publishOne);
-		}
+		reconciliationEventPublisher.publishAll(
+				streamAssignmentsNeedingDDOrder()
+						.map(DDOrderReplenishmentRequest::of)
+						.collect(ImmutableSet.toImmutableSet()));
 	}
 
-	/**
-	 * Streams the {@link PickingJobScheduleId}s of active, not-processed assignments that have NO live (Completed)
-	 * {@link I_DD_Order} linked. Packing-warehouse relevance is decided downstream by {@link #classifyAction}
-	 * (a non-packing assignment no-ops), so this scan does not pre-filter on the warehouse.
-	 */
-	// Note: this query lives here rather than in PickingJobScheduleService because it is a cross-entity
-	// query (M_Picking_Job_Schedule LEFT-anti-JOIN DD_Order) whose result is only meaningful in the
-	// context of the DD_Order reconcile flow — it is not a general "schedule" query.
-	private java.util.stream.Stream<PickingJobScheduleId> streamAssignmentsNeedingDDOrder()
+	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()
 	{
-		final org.compiere.model.IQuery<I_DD_Order> liveDDOrderSubQuery = ddOrderLowLevelDAO.queryCompletedDDOrders();
-
-		return queryBL
-				.createQueryBuilder(I_M_Picking_Job_Schedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
-				.addNotInSubQueryFilter(
-						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
-						I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID,
-						liveDDOrderSubQuery)
-				.create()
-				.stream()
-				.map(jobSchedule -> PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()));
+		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(ddOrderLowLevelDAO.queryCompletedDDOrders());
 	}
 
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)

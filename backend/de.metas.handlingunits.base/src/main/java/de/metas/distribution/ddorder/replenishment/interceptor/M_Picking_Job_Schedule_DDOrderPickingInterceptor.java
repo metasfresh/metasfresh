@@ -25,6 +25,7 @@ package de.metas.distribution.ddorder.replenishment.interceptor;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -64,10 +65,9 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule record)
 	{
-		replenishmentService.scheduleReconcileAfterCommit(
-				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()));
+		replenishmentService.scheduleReconcileAfterCommit(PickingJobScheduleRepository.fromRecord(record));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
