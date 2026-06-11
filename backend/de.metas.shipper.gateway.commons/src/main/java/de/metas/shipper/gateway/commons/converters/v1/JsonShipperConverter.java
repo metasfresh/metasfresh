@@ -89,6 +89,8 @@ public class JsonShipperConverter
 				.deliveryDate(order.getDeliveryDate() != null ? order.getDeliveryDate().getDate().toString() : null)
 				.deliveryNote(order.getDeliveryNote())
 				.customerReference(order.getCustomerReference())
+				.incotermsValue(order.getIncotermsValue())
+				.externalSystemValue(order.getExternalSystemValue())
 				.deliveryOrderParcels(order.getDeliveryOrderParcels().stream().map(this::toJsonDeliveryOrderLine).collect(ImmutableList.toImmutableList()))
 				.shipperProduct(toJsonShipperProductOrNull(order.getShipperProduct()))
 				.shipperEORI(order.getShipperEORI())

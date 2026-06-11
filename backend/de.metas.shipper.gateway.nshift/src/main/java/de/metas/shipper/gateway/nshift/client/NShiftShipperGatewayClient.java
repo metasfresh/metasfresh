@@ -32,12 +32,7 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.externalsystem.ExternalSystemId;
-import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.incoterms.IncotermsId;
-import de.metas.incoterms.IncotermsRepository;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderAndLineId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.logging.LogManager;
@@ -65,8 +60,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Carrier_Config;
 import org.compiere.model.I_M_Shipper;
 import org.slf4j.Logger;
@@ -96,9 +89,6 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
-	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	@Override
 	@NonNull
@@ -112,11 +102,9 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final List<ShipmentSchedule> schedules = loadSchedules(deliveryOrder);
-		final JsonDeliveryRequest deliveryRequestJson = applyOrderContext(
-				applyShippingRuleOptions(
-						jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
-						deliveryOrder,
-						schedules),
+		final JsonDeliveryRequest deliveryRequestJson = applyShippingRuleOptions(
+				jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
+				deliveryOrder,
 				schedules);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
@@ -198,48 +186,6 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		}
 
 		return request.toBuilder().shipperConfig(patchedConfig).build();
-	}
-
-	/**
-	 * Sets incoterms + external-system context on the request from the order, mirroring the advise side
-	 * ({@code CarrierAdviseCommand.applyAdvisorContext} / {@code NShiftShipAdvisorService}, both nShift reference
-	 * kinds 63/64). Applied unconditionally — independent of the shipping-rule gating — so the ship request
-	 * carries the same context as the advise request.
-	 */
-	private JsonDeliveryRequest applyOrderContext(
-			@NonNull final JsonDeliveryRequest request,
-			@NonNull final List<ShipmentSchedule> schedules)
-	{
-		final OrderAndLineId orderAndLineId = schedules.stream()
-				.map(ShipmentSchedule::getOrderAndLineId)
-				.filter(id -> id != null)
-				.findFirst()
-				.orElse(null);
-		if (orderAndLineId == null)
-		{
-			return request;
-		}
-
-		final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
-
-		String incotermsValue = null;
-		final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
-		if (incotermsId != null)
-		{
-			incotermsValue = incotermsRepository.getById(incotermsId).getValue();
-		}
-
-		String externalSystemValue = null;
-		final ExternalSystemId orderExternalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
-		if (orderExternalSystemId != null)
-		{
-			externalSystemValue = externalSystemRepository.getById(orderExternalSystemId).getType().getValue();
-		}
-
-		return request.toBuilder()
-				.incotermsValue(incotermsValue)
-				.externalSystemValue(externalSystemValue)
-				.build();
 	}
 
 	/**

@@ -77,6 +77,9 @@ public class DeliveryOrder
 	 */
 	@Nullable String customerReference;
 
+	@Nullable String incotermsValue;
+	@Nullable String externalSystemValue;
+
 	/**
 	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderParcels}.
 	 * <p>

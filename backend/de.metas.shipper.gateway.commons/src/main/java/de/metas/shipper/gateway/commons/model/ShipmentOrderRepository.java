@@ -140,6 +140,8 @@ public class ShipmentOrderRepository
 		final DeliveryOrder.DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.id(id)
 				.customerReference(po.getCustomerReference())
+				.incotermsValue(po.getIncotermsValue())
+				.externalSystemValue(po.getExternalSystem())
 				.shipperId(shipperId)
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
 				.pickupDate(PickupDate.builder()
@@ -277,6 +279,8 @@ public class ShipmentOrderRepository
 		final I_Carrier_ShipmentOrder po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder.class);
 		po.setC_BPartner_ID(request.getDeliveryAddress().getBpartnerId());
 		po.setCustomerReference(request.getCustomerReference());
+		po.setIncotermsValue(request.getIncotermsValue());
+		po.setExternalSystem(request.getExternalSystemValue());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
 		final ShipperId shipperId = request.getShipperId();
 		po.setM_Shipper_ID(ShipperId.toRepoId(shipperId));

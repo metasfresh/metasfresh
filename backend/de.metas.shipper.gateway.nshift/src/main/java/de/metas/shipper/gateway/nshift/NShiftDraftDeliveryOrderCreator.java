@@ -41,7 +41,13 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.Product;
@@ -64,6 +70,7 @@ import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
+import org.compiere.model.I_C_Order;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.user.User;
@@ -81,6 +88,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -97,6 +105,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final UserRepository userRepository;
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final CustomsTariffRepository customsTariffRepository;
+	@NonNull private final IncotermsRepository incotermsRepository;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -139,7 +149,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
-		return DeliveryOrder.builder()
+		final DeliveryOrder.DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
@@ -165,10 +175,43 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
 				.goodsType(carrierGoodsTypeRepository.getCachedGoodsTypeById(deliveryOrderKey.getCarrierGoodsTypeId()))
 				.shipperProduct(carrierProductRepository.getCachedShipperProductById(deliveryOrderKey.getCarrierProductId()))
-				.services(deliveryOrderKey.getCarrierServices() != null ? deliveryOrderKey.getCarrierServices().stream().map(carrierServiceRepository::getCachedCarrierServiceById).collect(ImmutableSet.toImmutableSet()) : ImmutableSet.of())
-				//
-				.build();
+				.services(deliveryOrderKey.getCarrierServices() != null ? deliveryOrderKey.getCarrierServices().stream().map(carrierServiceRepository::getCachedCarrierServiceById).collect(ImmutableSet.toImmutableSet()) : ImmutableSet.of());
 
+		resolveOrderContext(request.getPackageInfos(), builder);
+
+		return builder.build();
+	}
+
+	private void resolveOrderContext(
+			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos,
+			@NonNull final DeliveryOrder.DeliveryOrderBuilder builder)
+	{
+		final OrderId orderId = packageInfos.stream()
+				.map(packageInfo -> purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents())
+				.flatMap(Collection::stream)
+				.map(packageItem -> packageItem.getOrderAndLineId().getOrderId())
+				.findFirst()
+				.orElse(null);
+
+		if (orderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
+		if (incotermsId != null)
+		{
+			final Incoterms incoterms = incotermsRepository.getById(incotermsId);
+			builder.incotermsValue(incoterms.getValue());
+		}
+
+		final ExternalSystemId externalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
+		if (externalSystemId != null)
+		{
+			builder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
+		}
 	}
 
 	@NonNull

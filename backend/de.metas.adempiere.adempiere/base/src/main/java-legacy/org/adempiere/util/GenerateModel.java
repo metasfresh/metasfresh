@@ -282,7 +282,7 @@ public class GenerateModel
 
 		if(packageName.equals("org.compiere.model"))
 		{
-			sql.append("\n AND (IsView='N' OR TableName IN ('RV_WarehousePrice','RV_BPartner')");
+			sql.append("\n AND (IsView='N' OR TableName IN ('RV_WarehousePrice','RV_BPartner'))");
 		}
 
 		//
