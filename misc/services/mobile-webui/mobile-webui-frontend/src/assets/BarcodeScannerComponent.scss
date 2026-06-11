@@ -62,7 +62,7 @@
       // hardware scanner input. Opacity-only (not scale/rotation) so the icon doesn't read as
       // a loading spinner. Respects the user's reduced-motion preference (accessibility).
       @media (prefers-reduced-motion: no-preference) {
-        animation: scan-prompt-pulse 2.4s ease-in-out infinite alternate;
+        animation: scan-prompt-pulse 1.4s ease-in-out infinite alternate;
       }
     }
 
@@ -112,7 +112,7 @@
 
 @keyframes scan-prompt-pulse {
   from {
-    opacity: 0.55;
+    opacity: 0.25;
   }
   to {
     opacity: 1;
