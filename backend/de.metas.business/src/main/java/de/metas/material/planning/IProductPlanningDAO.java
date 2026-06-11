@@ -15,6 +15,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -62,6 +63,8 @@ public interface IProductPlanningDAO extends ISingletonService
 	}
 
 	ProductPlanning getById(@NonNull ProductPlanningId id);
+
+	I_PP_Product_Planning getRecordById(@NonNull ProductPlanningId id);
 
 	void deleteById(@NonNull ProductPlanningId id);
 

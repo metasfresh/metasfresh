@@ -34,6 +34,7 @@ import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -78,6 +79,7 @@ public class PP_Order_Candidate
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 	private final PostMaterialEventService materialEventService;
@@ -101,7 +103,7 @@ public class PP_Order_Candidate
 			ppOrderCandidateRecord.setWorkStation_ID(-1);
 			return;
 		}
-		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.load(ppProductPlanningId, I_PP_Product_Planning.class);
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.getRecordById(ppProductPlanningId);
 		ppOrderCandidateRecord.setWorkStation_ID(productPlanning.getWorkStation_ID());
 	}
 

@@ -76,6 +76,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -95,6 +96,12 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	private static ProductPlanning loadProductPlanning(final @NonNull ProductPlanningId id)
 	{
 		return fromRecord(loadOutOfTrx(id, I_PP_Product_Planning.class));
+	}
+
+	@Override
+	public I_PP_Product_Planning getRecordById(@NonNull final ProductPlanningId id)
+	{
+		return load(id, I_PP_Product_Planning.class);
 	}
 
 	@Override
