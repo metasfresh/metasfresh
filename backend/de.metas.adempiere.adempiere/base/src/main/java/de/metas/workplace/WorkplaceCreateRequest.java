@@ -1,6 +1,8 @@
 package de.metas.workplace;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroupId;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.order.OrderPickingType;
 import de.metas.picking.api.PickingSlotId;
@@ -33,4 +35,6 @@ public class WorkplaceCreateRequest
 	@NonNull @Singular ImmutableSet<ProductId> productIds;
 	@NonNull @Singular ImmutableSet<ExternalSystemId> externalSystemIds;
 	@NonNull @Singular ImmutableSet<CarrierProductId> carrierProductIds;
+	@NonNull @Singular ImmutableSet<BPGroupId> bpGroupIds;
+	@NonNull @Singular ImmutableSet<DocTypeId> docTypeIds;
 }
