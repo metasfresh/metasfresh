@@ -353,10 +353,39 @@ public class ExternalSystem_Config_StepDef
 	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion")
 	public void add_externalSystemConfigWithScriptedExportConversion(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::saveExternalSystemConfigWithScriptedExportConversion);
+		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row));
+	}
+
+	/**
+	 * Variant of {@code metasfresh contains ExternalSystem_Config with ScriptedExportConversion} that also
+	 * enables {@code IsTriggerOnComplete} on the scripted-export config, so completing a document of the
+	 * configured table records an {@code ExternalSystem_ScriptedExportConversion_Status} row. Use this when
+	 * the scenario verifies the status-table lifecycle (Pending/DontSend/Sent/Error/Invalid).
+	 *
+	 * <p>Accepts the same columns as the base step:
+	 * <b>ExternalSystem_Config_ID</b> (identifier), <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> (identifier),
+	 * <b>AD_Process_OutboundData_ID.Value</b> (the outbound data process producing the export payload),
+	 * <b>TableName</b> (the document table the config triggers on).
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+	 *   | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
+	 *   | esConfig_es              | scriptedCfg_es                                    | M_InOut_EDI_Export_JSON          | M_InOut   |
+	 * </pre>
+	 */
+	@And("metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:")
+	public void add_externalSystemConfigWithScriptedExportConversionAndStatusColumn(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> saveExternalSystemConfigWithScriptedExportConversion(row, true));
 	}
 
 	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row)
+	{
+		saveExternalSystemConfigWithScriptedExportConversion(row, false);
+	}
+
+	private void saveExternalSystemConfigWithScriptedExportConversion(@NonNull final DataTableRow row, final boolean readStatusColumn)
 	{
 		final StepDefDataIdentifier parentConfigIdentifier = row.getAsIdentifier(COLUMNNAME_ExternalSystem_Config_ID);
 		final StepDefDataIdentifier scriptedConfigIdentifier = row.getAsIdentifier(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID);
@@ -397,6 +426,34 @@ public class ExternalSystem_Config_StepDef
 
 		scriptedExportConversionConfig.setExternalSystemValue(valueAndName.getValue());
 
+		if (readStatusColumn)
+		{
+			// Status_AD_Column_ID was removed from the model when the per-record status design was
+			// consolidated into ExternalSystem_ScriptedExportConversion_Status (a single-row-upsert table
+			// that carries the export lifecycle).  IsTriggerOnComplete is still required to tell the
+			// complete-interceptor to start the export.
+			scriptedExportConversionConfig.setIsTriggerOnComplete(true);
+
+			// Deactivate any pre-existing IsTriggerOnComplete configs for the same AD_Table_ID
+			// to avoid roll-up interference between test runs.
+			queryBL
+					.createQueryBuilder(I_ExternalSystem_Config_ScriptedExportConversion.class)
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_AD_Table_ID, tableId.getRepoId())
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsTriggerOnComplete, true)
+					.addEqualsFilter(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_IsActive, true)
+					.create()
+					.list()
+					.forEach(existing -> {
+						existing.setIsActive(false);
+						InterfaceWrapperHelper.save(existing);
+					});
+		}
+
+		// The DDL default "IsActive=Y" is not valid PostgreSQL SQL (Y is treated as a column name by
+		// the JDBC driver). Overwrite with the syntactically correct form so that
+		// ExternalSystemScriptedExportConversionService.isConfigMatchingRecord() can run the WHERE
+		// clause successfully.
+		scriptedExportConversionConfig.setWhereClause("IsActive='Y'");
 
 		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
 
