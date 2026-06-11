@@ -12,7 +12,7 @@ const ScreenToaster = () => {
       rtl={false}
       pauseOnFocusLoss
       draggable
-      draggableDirection="y"
+      draggableDirection="x"
       draggablePercent={25}
       pauseOnHover
       theme="dark"
