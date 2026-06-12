@@ -45,7 +45,7 @@ class HUPackingMaterialDAOTest
 	}
 
 	/**
-	 * me03 30369: a packing material without a dimension UOM (C_UOM_Dimension_ID = 0) must not abort package
+	 * A packing material without a dimension UOM (C_UOM_Dimension_ID = 0) must not abort package
 	 * creation. Before the fix, {@code retrievePackageDimensions} ran {@code UomId.ofRepoId(0)} and threw
 	 * "Assumption failure: C_UOM_ID > 0 but it was 0", which aborted "Erstelle Packstücke aus Picking Slots"
 	 * and left the Transportauftrag lineless. Dimensions are optional → expect UNSPECIFIED.
@@ -55,10 +55,11 @@ class HUPackingMaterialDAOTest
 	{
 		final I_M_HU_PackingMaterial packingMaterial = newInstance(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName("no dimension UOM");
-		// C_UOM_Dimension_ID intentionally left 0 — the sp80 production condition (80 of 100 packing materials).
+		// C_UOM_Dimension_ID intentionally left at 0 — the reported production condition (many packing materials had no dimension UOM set).
 		saveRecord(packingMaterial);
 
-		final PackageDimensions dimensions = huPackingMaterialDAO.retrievePackageDimensions(packingMaterial, UomId.ofRepoId(540047));
+		// toUomId is irrelevant here — the guard returns UNSPECIFIED before it is read.
+		final PackageDimensions dimensions = huPackingMaterialDAO.retrievePackageDimensions(packingMaterial, UomId.ofRepoId(1));
 
 		assertThat(dimensions).isEqualTo(PackageDimensions.UNSPECIFIED);
 	}
