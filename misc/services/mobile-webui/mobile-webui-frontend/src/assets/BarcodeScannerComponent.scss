@@ -41,8 +41,52 @@
     border: none;
   }
 
+  // Scan prompt — rendered when there is no camera preview, the input is off-screen, and the
+  // caller did NOT explicitly request silent capture (isShowInputText={false} AND
+  // isShowVideo={false} both passed as props). Large barcode icon + inputPlaceholderText caption.
+  // See BarcodeScannerComponent.jsx for the guard (isComponentHidden / isComponentHiddenByParam).
+  .scan-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem 1rem;
+    color: $grey;
+
+    .scan-prompt-icon {
+      font-size: 6rem;
+      margin-bottom: 1rem;
+      color: $base-mf-green;
+
+      // Slow opacity pulse — signals "ready / waiting for scan" without competing with the
+      // hardware scanner input. Opacity-only (not scale/rotation) so the icon doesn't read as
+      // a loading spinner. Respects the user's reduced-motion preference (accessibility).
+      @media (prefers-reduced-motion: no-preference) {
+        animation: scan-prompt-pulse 1.4s ease-in-out infinite alternate;
+      }
+    }
+
+    .scan-prompt-text {
+      font-size: 1.5em;
+      text-align: center;
+      line-height: 1.3;
+
+      // Caption swap: .scan-prompt-text-idle is shown by default; .scan-prompt-text-progress
+      // takes its place while the input has content (see in-progress :has() rule below).
+      // Both occupy the same DOM slot — no layout shift on the transition.
+      .scan-prompt-text-progress {
+        display: none;
+      }
+    }
+  }
+
   .loading {
-    position: absolute;
+    // Center on the VIEWPORT (position: fixed — same as the global .loading rule in
+    // spinner.scss), not within .barcode-scanner. When isProcessing=true the prompt and
+    // input are hidden so .barcode-scanner shrinks to a short container; if the spinner
+    // were absolute-positioned to that short container its centre would land in the upper
+    // portion of the screen, partially behind the top green bar.
+    position: fixed;
     z-index: 999;
     top: 0;
     left: 0;
@@ -72,9 +116,44 @@
 // layer ignores CSS z-index and covers overlaid HTML content).
 .barcode-scanner:not(:has(video)) {
   display: flex;
+  flex-direction: column;
 
-  .input-text {
-    flex-grow: 1;
+  // .scan-prompt + .input-text stack vertically (prompt above input).
+  // flex-grow on the input would stretch it vertically — leave it at its natural height.
+}
+
+@keyframes scan-prompt-pulse {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// In-progress scan signal — when the visible/off-screen input has content (i.e. the hook is
+// mid-burst, chars are accumulating from the scanner), switch the prompt icon to a yellow
+// "scanning" hue and double the pulse rate. CSS-only — :placeholder-shown evaluates against
+// the input's current `value`, including imperative `inputTextRef.current.value = barcode`
+// writes from the hook's onReadInProgress. When the buffer is cleared on scan completion the
+// input falls back to placeholder-shown ⇒ icon returns to the idle green/slow pulse.
+.barcode-scanner:has(.input-text:not(:placeholder-shown)) {
+  .scan-prompt-icon {
+    color: $indicator-yellow;
+
+    @media (prefers-reduced-motion: no-preference) {
+      // Floored at 0.3s — at smaller durations the alternate-pulse crest rate approaches the
+      // WCAG 2.3.1 3Hz photosensitivity threshold (~0.17s duration). Smooth ease-in-out keeps
+      // the transition non-abrupt, but stay conservative.
+      animation-duration: 0.3s;
+    }
+  }
+
+  .scan-prompt-text-idle {
+    display: none;
+  }
+  .scan-prompt-text-progress {
+    display: inline;
   }
 }
 
