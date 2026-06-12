@@ -117,6 +117,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
 				.workflowId(PPRoutingId.ofRepoIdOrNull(record.getAD_Workflow_ID()))
+				.workstationId(ResourceId.ofRepoIdOrNull(record.getWorkStation_ID()))
 				.isAttributeDependant(record.isAttributeDependant())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.storageAttributesKey(StringUtils.trimBlankToNull(record.getStorageAttributesKey()))
@@ -154,6 +155,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		record.setM_Warehouse_ID(WarehouseId.toRepoId(from.getWarehouseId()));
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
 		record.setS_Resource_ID(ResourceId.toRepoId(from.getPlantId()));
+		record.setWorkStation_ID(ResourceId.toRepoId(from.getWorkstationId()));
 		record.setAD_Workflow_ID(PPRoutingId.toRepoId(from.getWorkflowId()));
 		record.setIsAttributeDependant(from.isAttributeDependant());
 		record.setM_AttributeSetInstance_ID(from.getAttributeSetInstanceId().getRepoId());

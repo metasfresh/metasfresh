@@ -58,4 +58,14 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveMergeableListenerQtyPickedForVHU(
 			@NonNull ShipmentScheduleId shipmentScheduleId,
 			@NonNull HuId vhuId);
+
+	/**
+	 * @return {@code true} if at least one active, not-yet-shipped ({@code M_InOutLine_ID IS NULL})
+	 * {@code M_ShipmentSchedule_QtyPicked} row exists for the given (shipment schedule, VHU).
+	 * Used by the shipment-reverse restore safety net to avoid re-creating a row the picking-job reopen
+	 * already restored.
+	 */
+	boolean existsActiveUnshippedQtyPickedForVHU(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull HuId vhuId);
 }

@@ -822,6 +822,29 @@ public class PickingJobService implements PickingSlotListener
 		return pickingJob.getTuPickingTarget(lineId);
 	}
 
+	/**
+	 * @return the set of picked HU ids (VHU level) that are covered by a picking job for any of the given
+	 * shipment schedules — regardless of the job's doc-status. Used by the shipment-reverse restore safety net
+	 * to fire ONLY for picked-qty shipments that originated from a picking job, and never for QtyToDeliver /
+	 * on-the-fly shipments (which have no picking job and whose reverse must clear the HU's BPartner + return it
+	 * to Active stock).
+	 */
+	public ImmutableSet<HuId> getHuIdsCoveredByPickingJobs(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return pickingJobRepository.getPickingJobIdsByScheduleId(shipmentScheduleIds)
+				.values().stream()
+				.flatMap(List::stream)
+				.collect(ImmutableSet.toImmutableSet())
+				.stream()
+				.map(this::getById)
+				.flatMap(pickingJob -> pickingJob.getAllPickedHuIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)
 	{
 		final Map<ShipmentScheduleId, List<PickingJobId>> scheduleId2JobIds = pickingJobRepository
