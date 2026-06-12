@@ -1,7 +1,14 @@
-DROP VIEW IF EXISTS historical_m_inout_json_v
+-- Source DDL: backend/de.metas.swat/de.metas.swat.base/src/main/sql/postgresql/ddl/views/historical_m_inout_json_v.sql
+-- gh30205: add CountryOfOrigin to the Historical Shipments JSON parcel items.
+--   * Parcels[].Items[] now emits 'CountryOfOrigin' = carrier_shipmentorder_item.CountryOfOrigin
+--     (ISO 3166-1 alpha-2), so the per-origin item rows produced by the country-of-origin split
+--     (gh30044 / PR 24363) are no longer indistinguishable duplicate products in the export.
+--   * Everything else is unchanged from 5806060_sys_gh30196 (the immediately preceding view revision).
+
+DROP VIEW IF EXISTS historical_m_inout_json_v$new
 ;
 
-CREATE OR REPLACE VIEW historical_m_inout_json_v AS
+CREATE OR REPLACE VIEW historical_m_inout_json_v$new AS
 SELECT io.m_inout_id                                      AS "Shipment_ID",
        io.documentno                                      AS "Shipment_DocumentNo",
        io.movementdate                                    AS "Shipment_Date",
@@ -119,4 +126,15 @@ FROM m_inout io
 WHERE io.isactive = 'Y'
   AND io.processed = 'Y' /*only output items where movementdate won't change */
 ORDER BY io.movementdate, io.m_inout_id
+;
+
+SELECT db_alter_view(
+    'historical_m_inout_json_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('historical_m_inout_json_v$new'))
+)
+;
+
+DROP VIEW IF EXISTS historical_m_inout_json_v$new
 ;
