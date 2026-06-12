@@ -17,8 +17,8 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierService;
-import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
 import de.metas.shipper.client.nshift.NShiftShipmentService;
+import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 @RequiredArgsConstructor
 public class NShiftGateway_StepDef
 {
-	@NonNull private final NShiftShipAdvisorService shipAdvisorServiceMock = SpringContextHolder.instance.getBean(NShiftShipAdvisorService.class);
+	@NonNull private final ShipAdvisorService shipAdvisorServiceMock = SpringContextHolder.instance.getBean(ShipAdvisorService.class);
 	@NonNull private final NShiftShipmentService shipmentServiceMock = SpringContextHolder.instance.getBean(NShiftShipmentService.class);
 	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;

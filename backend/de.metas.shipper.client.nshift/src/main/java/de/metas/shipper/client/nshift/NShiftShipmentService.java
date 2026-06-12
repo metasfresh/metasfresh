@@ -101,7 +101,8 @@ public class NShiftShipmentService
 		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
 		final String useShippingRulesStr = config.getAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES);
 		final Boolean useShippingRules = useShippingRulesStr != null ? Boolean.valueOf(useShippingRulesStr) : null;
-		final String serviceLevel = config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
+		// with shipping/selection rules active nShift resolves the product from the rules, so ServiceLevel must not be sent (omitted via NON_NULL)
+		final String serviceLevel = Boolean.TRUE.equals(useShippingRules) ? null : config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
 
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)

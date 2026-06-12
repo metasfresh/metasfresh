@@ -45,13 +45,13 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipAdvisorService.class, NShiftRestClient.class })
+@SpringBootTest(classes = { NShiftClientConfig.class, NShiftOrderAdvisorService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
-		"logging.level.de.metas.shipper.client.nshift.NShiftShipAdvisorService=TRACE",
+		"logging.level.de.metas.shipper.client.nshift.NShiftOrderAdvisorService=TRACE",
 		"logging.level.de.metas.shipper.client.nshift.NShiftRestClient=TRACE"
 })
 @ExtendWith(SnapshotExtension.class)
-public class NShiftShipAdvisorServiceTest
+public class NShiftOrderAdvisorServiceTest
 {
 	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "nShift portal actorId");
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
@@ -127,13 +127,14 @@ public class NShiftShipAdvisorServiceTest
 					.username(USERNAME)
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.SERVICE_LEVEL, SHIP_RULE_SERVICE_LEVEL)
+					.additionalProperty(NShiftConstants.SELECTION_RULES, "Y")
 					.build())
-			.mappingConfigs(NShiftTestMappingConfigs.SHARED_TEST)
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED_DB)
 			.build();
 
 	@Autowired
 	@NonNull
-	private NShiftShipAdvisorService nShiftShipAdvisorService;
+	private NShiftOrderAdvisorService nShiftOrderAdvisorService;
 
 	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
@@ -141,7 +142,7 @@ public class NShiftShipAdvisorServiceTest
 	@Test
 	void build_request_test()
 	{
-		final JsonShipAdvisorRequest request = NShiftShipAdvisorService.buildRequest(ADVISOR_REQUEST);
+		final JsonShipAdvisorRequest request = NShiftOrderAdvisorService.buildRequest(ADVISOR_REQUEST);
 		expect.serializer("orderedJson").toMatchSnapshot(request);
 	}
 
@@ -149,7 +150,7 @@ public class NShiftShipAdvisorServiceTest
 	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
 	void local_api_test()
 	{
-		final JsonDeliveryAdvisorResponse response = nShiftShipAdvisorService.advise(ADVISOR_REQUEST);
+		final JsonDeliveryAdvisorResponse response = nShiftOrderAdvisorService.advise(ADVISOR_REQUEST);
 		assertNotNull(response);
 		assertFalse(response.isError());
 	}

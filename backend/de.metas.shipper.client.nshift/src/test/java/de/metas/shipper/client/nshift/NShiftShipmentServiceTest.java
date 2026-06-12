@@ -212,7 +212,7 @@ public class NShiftShipmentServiceTest
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY, "N")
 					.build())
-			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED_TEST)
 			.build();
 
 	@Test

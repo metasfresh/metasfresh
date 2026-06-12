@@ -31,6 +31,8 @@ public class NShiftConstants
 	public static final String ACTOR_ID = "ActorId";
 	public static final String SERVICE_LEVEL = "ServiceLevel";
 	public static final String USE_SHIPPING_RULES = "UseShippingRules";
+	// matches Carrier_Config.IsSelectionRules; when set, activates nShift Selection Rules (UseShippingRules) on advise
+	public static final String SELECTION_RULES = "IsSelectionRules";
 	public static final String IS_CREATE_DRAFT_SHIPMENT_ONLY = "IsCreateDraftShipmentOnly";
 
 	// shipAdvises

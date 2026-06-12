@@ -113,6 +113,12 @@ public class JsonShipmentResponse
 	@JsonProperty("ProdCSID")
 	Integer prodCSID;
 
+	@JsonProperty("ProdName")
+	String prodName;
+
+	@JsonProperty("CarrierFullName")
+	String carrierFullName;
+
 	@JsonProperty("StackCSID")
 	Integer stackCSID;
 

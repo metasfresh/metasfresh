@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -725373864L;
+	private static final long serialVersionUID = 1967725126L;
 
     /** Standard Constructor */
     public X_Carrier_Config (final Properties ctx, final int Carrier_Config_ID, @Nullable final String trxName)
@@ -44,6 +44,27 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	public java.lang.String getActorId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ActorId);
+	}
+
+	/** 
+	 * AdviseType AD_Reference_ID=542106
+	 * Reference name: AdviseType
+	 */
+	public static final int ADVISETYPE_AD_Reference_ID=542106;
+	/** Ship = S */
+	public static final String ADVISETYPE_Ship = "S";
+	/** Order = O */
+	public static final String ADVISETYPE_Order = "O";
+	@Override
+	public void setAdviseType (final java.lang.String AdviseType)
+	{
+		set_Value (COLUMNNAME_AdviseType, AdviseType);
+	}
+
+	@Override
+	public java.lang.String getAdviseType() 
+	{
+		return get_ValueAsString(COLUMNNAME_AdviseType);
 	}
 
 	@Override
@@ -104,9 +125,21 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	}
 
 	@Override
-	public boolean isCreateDraftShipmentOnly()
+	public boolean isCreateDraftShipmentOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCreateDraftShipmentOnly);
+	}
+
+	@Override
+	public void setIsSelectionRules (final boolean IsSelectionRules)
+	{
+		set_Value (COLUMNNAME_IsSelectionRules, IsSelectionRules);
+	}
+
+	@Override
+	public boolean isSelectionRules() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSelectionRules);
 	}
 
 	@Override

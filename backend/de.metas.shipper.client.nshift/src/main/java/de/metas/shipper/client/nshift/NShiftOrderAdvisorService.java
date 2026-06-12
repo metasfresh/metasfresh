@@ -23,9 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
-import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
@@ -38,10 +36,8 @@ import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
-import de.metas.shipper.client.nshift.json.response.JsonShipAdvisorResponse;
-import de.metas.shipper.client.nshift.json.response.JsonShipAdvisorResponseGoodsType;
-import de.metas.shipper.client.nshift.json.response.JsonShipAdvisorResponseProduct;
-import de.metas.shipper.client.nshift.json.response.JsonShipAdvisorResponseService;
+import de.metas.shipper.client.nshift.json.response.JsonOrderAdviceResponse;
+import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -49,15 +45,16 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class NShiftShipAdvisorService
+public class NShiftOrderAdvisorService
 {
-	private static final Logger logger = LogManager.getLogger(NShiftShipAdvisorService.class);
-	private static final String SHIP_ADVISES_ENDPOINT = "/ShipServer/{ID}/shipAdvises";
+	private static final Logger logger = LogManager.getLogger(NShiftOrderAdvisorService.class);
+	private static final String ORDER_ADVICE_ENDPOINT = "/ShipServer/{ID}/OrderAdvice";
 
 	@NonNull private final NShiftRestClient restClient;
 
@@ -65,9 +62,9 @@ public class NShiftShipAdvisorService
 	{
 		try
 		{
-			logger.debug("Getting Ship Advises for request: {}", deliveryAdvisorRequest);
+			logger.debug("Getting Order Advises for request: {}", deliveryAdvisorRequest);
 			final JsonShipAdvisorRequest requestBody = buildRequest(deliveryAdvisorRequest);
-			final JsonShipAdvisorResponse response = restClient.post(SHIP_ADVISES_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonShipAdvisorResponse.class);
+			final JsonOrderAdviceResponse response = restClient.post(ORDER_ADVICE_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonOrderAdviceResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
 			return buildJsonDeliveryAdvisorResponse(response, deliveryAdvisorRequest.getId());
@@ -93,6 +90,8 @@ public class NShiftShipAdvisorService
 				// with selection rules active nShift resolves the product from the rules, so ServiceLevel must not be sent (omitted via NON_NULL)
 				.serviceLevel(useSelectionRules ? null : deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
 				.useShippingRules(useSelectionRules)
+				.submit(false) // advise only: do not book the shipment (serialized as 0)
+				.visibility("extended")
 				.build();
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
@@ -150,37 +149,31 @@ public class NShiftShipAdvisorService
 		return lineBuilder.build();
 	}
 
-	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
+	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonOrderAdviceResponse response, @NonNull final String requestId)
 	{
-		Check.assumeNotEmpty(response.getProducts(), "response should contain at least 1 shipperProduct, pls check defined shipment rules");
-		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
+		// OrderAdvice wraps the advised shipment under "Shipment"; the carrier product is identified by ProdCSID.
+		final JsonShipmentResponse shipment = Check.assumeNotNull(response.getShipment(), "OrderAdvice response should contain a Shipment, pls check defined shipment rules. Status={}", response.getStatus());
+		final Integer prodCSID = Check.assumeNotNull(shipment.getProdCSID(), "OrderAdvice Shipment should contain a ProdCSID, pls check defined shipment rules");
+
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
 				.shipperProduct(JsonShipperProduct.builder()
-						.name(product.getProdName())
-						.code(String.valueOf(product.getProdConceptID()))
+						.code(String.valueOf(prodCSID))
+						.name(shipment.getCarrierFullName())
 						.build());
 
-		final JsonShipAdvisorResponseGoodsType productGoodsType = Check.assumeNotNull(product.getProductGoodsType(), "response should contain a GoodsType, pls check defined shipment rules");
-		responseBuilder.goodsType(JsonGoodsType.builder()
-				.id(String.valueOf(productGoodsType.getGoodsTypeId()))
-				.name(productGoodsType.getGoodsTypeName())
-				.build());
-
-		responseBuilder.shipperProductServices(product.getServices()
-				.stream()
-				.map(NShiftShipAdvisorService::toJsonCarrierService)
-				.collect(ImmutableList.toImmutableList())
-		);
+		// GoodsType is reported per line (no shipment-level GoodsType / Services in the OrderAdvice response);
+		// the advise carries a single line, so take the GoodsType from the first.
+		final List<JsonLine> lines = shipment.getLines();
+		if (lines != null && !lines.isEmpty() && lines.get(0).getGoodsTypeID() != null)
+		{
+			final JsonLine line = lines.get(0);
+			responseBuilder.goodsType(JsonGoodsType.builder()
+					.id(String.valueOf(line.getGoodsTypeID()))
+					.name(line.getGoodsTypeName())
+					.build());
+		}
 
 		return responseBuilder.build();
-	}
-
-	private static JsonCarrierService toJsonCarrierService(@NonNull final JsonShipAdvisorResponseService jsonShipAdvisorResponseService)
-	{
-		return JsonCarrierService.builder()
-				.name(jsonShipAdvisorResponseService.getName())
-				.id(String.valueOf(jsonShipAdvisorResponseService.getServiceId()))
-				.build();
 	}
 }
