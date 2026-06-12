@@ -144,7 +144,7 @@ public class MassPrintingService
 
 			// Pack+ship inside a transaction. Labels print through the standard picking close path during the
 			// pick (the physical print job is enqueued after the transaction commits, like a regular picking job).
-			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, productId, productStorage.getQtyAsInt(), packageables);
+			final PackAndPickResult packAndPickResult = processProductInTrx(request, pickingJobQuery, luId, productId, productStorage.getQtyAsInt(), packageables);
 
 			productResults.add(buildProductResult(productId, packAndPickResult));
 		}
@@ -174,6 +174,7 @@ public class MassPrintingService
 	@NonNull
 	private PackAndPickResult processProductInTrx(
 			@NonNull final MassPrintingScanRequest request,
+			@NonNull final PickingJobQuery pickingJobQuery,
 			@NonNull final HuId luId,
 			@NonNull final ProductId productId,
 			final int unitsOnLU,
@@ -182,12 +183,13 @@ public class MassPrintingService
 		// Shipment generation inside PickingJobCompleteCommand opens its own nested transaction
 		// (callInNewTrx), so the async-batch assignment commits independently from the outer
 		// picking transaction — no M_ShipmentSchedule row-lock deadlock is possible.
-		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, productId, unitsOnLU, packageables));
+		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, pickingJobQuery, luId, productId, unitsOnLU, packageables));
 	}
 
 	@NonNull
 	private PackAndPickResult processProduct(
 			@NonNull final MassPrintingScanRequest request,
+			@NonNull final PickingJobQuery pickingJobQuery,
 			@NonNull final HuId luId,
 			@NonNull final ProductId productId,
 			final int unitsOnLU,
@@ -218,7 +220,7 @@ public class MassPrintingService
 		// Each line is picked-and-closed through the standard picking close path (see pickTuLine / pickCuLine),
 		// so labels print exactly like a regular picking job — closeLUAndTUPickingTargets() collects every
 		// top-level TU/VHU via addTopLevelTUId() and prints its label. No bespoke side-channel print here.
-		final PickingJob pickedJob = createAndPickJob(request, luId, selection);
+		final PickingJob pickedJob = createAndPickJob(request, pickingJobQuery, luId, selection);
 		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
 		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedHuIds);
 		pickingJobService.complete(pickedJob);
@@ -305,10 +307,16 @@ public class MassPrintingService
 	@NonNull
 	private PickingJob createAndPickJob(
 			@NonNull final MassPrintingScanRequest request,
+			@NonNull final PickingJobQuery pickingJobQuery,
 			@NonNull final HuId luId,
 			@NonNull final ScheduleSelection selection)
 	{
-		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selection.getSelectedScheduleIds());
+		// Resolve the schedule-id set exactly like regular picking does from a candidate: in
+		// job-scheduled-to-workplace mode (profile.isConsiderOnlyJobScheduledToWorkplace), the FIFO-selected
+		// shipment schedules carry their picking-job-schedule ids, so the created PRODUCT job is driven by the
+		// job-schedules (consistent with the launcher). In warehouse mode this yields a plain shipment-schedule set.
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet =
+				pickingJobService.resolveScheduleIdsForJobCreation(pickingJobQuery, ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
 						.pickerId(request.getPickerId())
