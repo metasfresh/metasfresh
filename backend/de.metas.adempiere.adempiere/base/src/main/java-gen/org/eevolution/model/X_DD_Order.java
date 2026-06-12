@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1108292797L;
+	private static final long serialVersionUID = 988399147L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -685,6 +685,18 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isInTransit() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInTransit);
+	}
+
+	@Override
+	public void setIsPickingDisconnected (final boolean IsPickingDisconnected)
+	{
+		set_Value (COLUMNNAME_IsPickingDisconnected, IsPickingDisconnected);
+	}
+
+	@Override
+	public boolean isPickingDisconnected() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickingDisconnected);
 	}
 
 	@Override

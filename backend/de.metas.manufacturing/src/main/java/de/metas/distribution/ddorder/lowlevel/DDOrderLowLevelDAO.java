@@ -136,6 +136,11 @@ public class DDOrderLowLevelDAO
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				// A disconnected DD_Order (IsPickingDisconnected=Y) is the in-progress close-out disposition: the
+				// shipment schedule was already closed out, the DD_Order survives as a standalone replenishment the
+				// worker finishes. The picker-busy guard and the reconcile must NOT see it (else they would re-block
+				// the close-out / re-void the standalone job), so it is filtered out here.
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
