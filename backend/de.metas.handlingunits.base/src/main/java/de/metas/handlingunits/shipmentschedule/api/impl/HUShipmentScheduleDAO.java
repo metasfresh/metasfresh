@@ -176,6 +176,26 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
+	public boolean existsActiveUnshippedQtyPickedForVHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId vhuId)
+	{
+		// Thread-inherited trx (same reasoning as retrieveMergeableListenerQtyPickedForVHU): the row may have
+		// been (re)created earlier in the SAME, not-yet-committed reversal transaction (e.g. by the picking-job
+		// reopen). Broad existence check — any active, not-yet-shipped row for the (schedule, VHU); intentionally
+		// NOT filtered by picking-job / anonymous, so a row restored via any path counts.
+		final Properties ctx = Env.getCtx();
+		final String trxName = trxManager.getThreadInheritedTrxName();
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
 	{
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();

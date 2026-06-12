@@ -11,6 +11,9 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsResponse;
+import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
@@ -154,6 +157,15 @@ public class FrontendTestingRestController
 	public JsonReverseShipmentResponse reverseShipment(@RequestBody @NonNull final JsonReverseShipmentRequest request)
 	{
 		return callInContext(() -> ReverseShipmentCommand.builder()
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("generateShipments")
+	public JsonGenerateShipmentsResponse generateShipments(@RequestBody @NonNull final JsonGenerateShipmentsRequest request)
+	{
+		return callInContext(() -> GenerateShipmentsCommand.builder()
 				.request(request)
 				.build()
 				.execute());

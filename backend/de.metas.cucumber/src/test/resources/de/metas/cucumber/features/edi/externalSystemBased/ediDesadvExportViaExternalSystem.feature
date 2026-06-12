@@ -288,14 +288,15 @@ Feature: EDI DESADV export via External System
       | loc_repl_150 | customer1     | Y        | Y        | N               | N               | 0300000150222 |
 
     # ── Location-specific EDI settings ───────────────────────────────────────
+    # SeqNo=5 on both location-specific rows so they win over the null-location Background row (SeqNo=10).
     # loc_ext_150: ExternalSystem path (same externalSystemConfig_1 as Background)
     And metasfresh contains C_BPartner_EDI_Setting:
-      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | Identifier                  |
-      | customer1     | loc_ext_150            | true                 | 1234567891            | E                    | externalSystemConfig_1             | edi_setting_loc_ext_150     |
+      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | SeqNo | Identifier              |
+      | customer1     | loc_ext_150            | true                 | 1234567891            | E                    | externalSystemConfig_1             | 5     | edi_setting_loc_ext_150 |
     # loc_repl_150: ReplicationInterface path (no ExternalSystem config needed)
     And metasfresh contains C_BPartner_EDI_Setting:
-      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | Identifier               |
-      | customer1     | loc_repl_150           | true                 | 1234567892            | R                    | edi_setting_loc_repl_150 |
+      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | SeqNo | Identifier               |
+      | customer1     | loc_repl_150           | true                 | 1234567892            | R                    | 5     | edi_setting_loc_repl_150 |
 
     # ── Order A → loc_ext_150 (ExternalSystem path) ──────────────────────────
     And metasfresh contains C_Orders:

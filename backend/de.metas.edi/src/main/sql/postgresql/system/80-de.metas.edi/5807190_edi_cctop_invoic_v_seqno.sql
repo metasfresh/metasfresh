@@ -1,9 +1,22 @@
--- View: EDI_Cctop_INVOIC_v
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_v_view.sql
+-- EDI export views — resolve recipient config by lowest SeqNo
+--
+-- Replaces the two-LEFT-JOIN + COALESCE pattern (exact-location row / partner-default row)
+-- with a single LEFT JOIN LATERAL that picks the active C_BPartner_EDI_Setting row with the
+-- lowest SeqNo (ties broken by C_BPartner_EDI_Setting_ID), matching the resolution logic in
+-- Java EDIBPartnerConfigMap.resolve (Comparator: SeqNo asc, then ID asc, among rows where
+-- C_BPartner_Location_ID = <doc-location> OR C_BPartner_Location_ID IS NULL).
+--
+-- This file: EDI_Cctop_INVOIC_v  — ReceiverGLN (EdiInvoicRecipientGLN with rl.GLN fallback)
 
-DROP VIEW IF EXISTS EDI_Cctop_INVOIC_v
-;
+-- ==============================================================================================
+-- EDI_Cctop_INVOIC_v
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_v_view.sql
+-- ==============================================================================================
 
-CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
+DROP VIEW IF EXISTS edi_cctop_invoic_v$new;
+
+CREATE OR REPLACE VIEW edi_cctop_invoic_v$new AS
 SELECT i.C_Invoice_ID                                                                                       AS EDI_Cctop_INVOIC_v_ID
      , i.C_Invoice_ID
      , i.C_Order_ID
@@ -165,3 +178,12 @@ FROM C_Invoice i
                              WHERE c_invoice_id = i.c_invoice_id
                              GROUP BY C_Invoice_ID) taxAndSurchage ON TRUE
 ;
+
+SELECT public.db_alter_view(
+    'edi_cctop_invoic_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('edi_cctop_invoic_v$new'))
+);
+
+DROP VIEW IF EXISTS edi_cctop_invoic_v$new;

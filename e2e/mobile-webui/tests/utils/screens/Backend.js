@@ -157,6 +157,35 @@ export const Backend = {
         return responseBody;
     }),
 
+    /**
+     * Generate shipments from a sales order's shipment schedules via the REAL "Generate Shipments"
+     * process path ({@code ShipmentService.generateShipmentsForScheduleIds}) — NOT the
+     * {@code shipments} masterdata shortcut. With quantityType 'P' (Picked) this ships the already-picked
+     * qty through the {@code GenerateInOutFromShipmentSchedules} workpackage. Returns the shipments NEWLY
+     * created by this call; an empty {@code newShipmentIds} means nothing could be shipped (e.g. the
+     * picked qty did not survive a prior reverse — the "can't recreate shipment after void" defect).
+     *
+     * @param {Object} args
+     * @param {string} args.salesOrderId - the C_Order_ID (e.g. masterdata.salesOrders.SO1.id).
+     * @param {string} [args.quantityType='P'] - 'P' = Picked qty, 'D' = QtyToDeliver.
+     * @param {boolean} [args.complete=true] - complete the generated shipment.
+     * @returns {Promise<{newShipmentIds: string[], newShipmentCount: number}>}
+     */
+    generateShipments: async ({ salesOrderId, quantityType = 'P', complete = true }) => await test.step(`Backend: generate shipments for order ${salesOrderId} (qtyType=${quantityType})`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/generateShipments`, {
+            data: { salesOrderId: String(salesOrderId), quantityType, complete },
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
+        return responseBody;
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
