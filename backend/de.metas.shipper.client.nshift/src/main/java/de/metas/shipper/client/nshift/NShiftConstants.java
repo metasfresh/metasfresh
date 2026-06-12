@@ -30,8 +30,12 @@ public class NShiftConstants
 	// config.additionalProperties
 	public static final String ACTOR_ID = "ActorId";
 	public static final String SERVICE_LEVEL = "ServiceLevel";
+	// SHIPMENT path: set by NShiftShipperGatewayClient.applyShippingRuleOptions (true for non-Manual carrier advise),
+	// read by NShiftShipmentService to gate ServiceLevel.
 	public static final String USE_SHIPPING_RULES = "UseShippingRules";
-	// matches Carrier_Config.IsSelectionRules; when set, activates nShift Selection Rules (UseShippingRules) on advise
+	// ADVISE paths: the Carrier_Config.IsSelectionRules flag. Drives UseShippingRules in NShift{Ship,Order}AdvisorService
+	// and gates ServiceLevel there. Deliberately a DIFFERENT key from USE_SHIPPING_RULES above — the two are set by
+	// different code paths (advise = this config flag; shipment = the non-Manual-advise gate).
 	public static final String SELECTION_RULES = "IsSelectionRules";
 	public static final String IS_CREATE_DRAFT_SHIPMENT_ONLY = "IsCreateDraftShipmentOnly";
 
