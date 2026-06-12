@@ -14,7 +14,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
@@ -29,6 +31,7 @@ public class WarehouseCommand
 {
 	// services
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	// params
 	@NonNull private final MasterdataContext context;
@@ -118,12 +121,13 @@ public class WarehouseCommand
 		final Identifier pickingGroupIdentifier = Identifier.ofString(pickingGroupName);
 		final WarehousePickingGroupId pickingGroupId = context.getOptionalId(pickingGroupIdentifier, WarehousePickingGroupId.class)
 				.orElseGet(() -> {
-					final I_M_Warehouse_PickingGroup pickingGroupRecord = InterfaceWrapperHelper.newInstance(I_M_Warehouse_PickingGroup.class);
-					pickingGroupRecord.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
-					pickingGroupRecord.setName(pickingGroupName);
-					saveRecord(pickingGroupRecord);
-
-					final WarehousePickingGroupId newId = WarehousePickingGroupId.ofRepoId(pickingGroupRecord.getM_Warehouse_PickingGroup_ID());
+					// Use a unique Name (string + datetime): the picking group lives in the shared DB and a raw
+					// pickingGroupName would collide across tests reusing the same group label.
+					final WarehousePickingGroupId newId = warehouseDAO.createWarehousePickingGroup(
+							CreateWarehousePickingGroupRequest.builder()
+									.orgId(MasterdataContext.ORG_ID)
+									.name(pickingGroupIdentifier.toUniqueString())
+									.build());
 					context.putIdentifier(pickingGroupIdentifier, newId);
 					return newId;
 				});

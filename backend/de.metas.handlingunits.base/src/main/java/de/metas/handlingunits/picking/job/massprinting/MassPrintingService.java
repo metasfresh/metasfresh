@@ -27,7 +27,10 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -47,6 +50,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /** Orchestration service for the mass-printing flow: scan LU → pick every self-packed product → print labels. */
@@ -308,16 +312,12 @@ public class MassPrintingService
 	private PickingJob createAndPickJob(
 			@NonNull final MassPrintingScanRequest request,
 			@NonNull final PickingJobQuery pickingJobQuery,
-			@NonNull final HuId luId,
+			@NonNull final HuId pickFromLUId,
 			@NonNull final ScheduleSelection selection)
 	{
-		// Resolve the schedule-id set exactly like regular picking does from a candidate: in
-		// job-scheduled-to-workplace mode (query.isScheduledForWorkplaceOnly(), set when the profile's
-		// IsConsideredOnlyScheduledJobs=Y), the FIFO-selected shipment schedules carry their picking-job-schedule
-		// ids, so the created PRODUCT job is driven by the job-schedules (consistent with the launcher). In
-		// warehouse mode this yields a plain shipment-schedule set.
+		// Build the job's schedule-id set the same way regular picking does from a candidate.
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet =
-				pickingJobService.resolveScheduleIdsForJobCreation(pickingJobQuery, ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
+				resolveScheduleIdsForJobCreation(pickingJobQuery, ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
 						.pickerId(request.getPickerId())
@@ -326,7 +326,7 @@ public class MassPrintingService
 						.scheduleIds(scheduleIdSet)
 						.build());
 
-		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
+		final HUQRCode luQRCode = huService.getQRCodeByHuId(pickFromLUId);
 
 		PickingJob pickedJob = pickingJob;
 		for (final PickingJobLine line : pickingJob.getLines())
@@ -334,6 +334,43 @@ public class MassPrintingService
 			pickedJob = pickLine(pickedJob, line, luQRCode, selection.getSelectedScheduleQtys());
 		}
 		return pickedJob;
+	}
+
+	/**
+	 * Resolves the {@link ShipmentScheduleAndJobScheduleIdSet} to drive a PRODUCT picking-job creation for the
+	 * selected shipment-schedule ids.
+	 * <p>
+	 * In job-scheduled-to-workplace mode (the query carries a {@code scheduledForWorkplaceId}), each selected
+	 * shipment schedule carries its picking-job-schedule id (looked up via {@link PickingJobService#listJobSchedules},
+	 * the same job-schedule resolution the launcher / {@code streamPackageable} use), so the created job is driven
+	 * by the job-schedules — consistent with how regular picking creates jobs from candidates. In warehouse mode
+	 * it falls back to a plain shipment-schedule-id set.
+	 */
+	@NonNull
+	private ShipmentScheduleAndJobScheduleIdSet resolveScheduleIdsForJobCreation(
+			@NonNull final PickingJobQuery query,
+			@NonNull final Set<ShipmentScheduleId> selectedShipmentScheduleIds)
+	{
+		// Nothing selected → nothing to create or query for. Guard so we neither build an empty set nor hit the DB.
+		if (selectedShipmentScheduleIds.isEmpty())
+		{
+			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
+		}
+
+		// listJobSchedules returns EMPTY both in warehouse mode (isScheduledForWorkplaceOnly=false) and in
+		// job-scheduled-to-workplace mode when no job-schedules exist for the query; in both cases the job is
+		// driven by plain shipment-schedule ids.
+		final PickingJobScheduleCollection jobSchedules = pickingJobService.listJobSchedules(query);
+		if (jobSchedules.isEmpty())
+		{
+			return ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedShipmentScheduleIds);
+		}
+
+		return selectedShipmentScheduleIds.stream()
+				.map(shipmentScheduleId -> jobSchedules.getSingleScheduleByShipmentScheduleId(shipmentScheduleId)
+						.map(PickingJobSchedule::getShipmentScheduleAndJobScheduleId)
+						.orElseGet(() -> ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(shipmentScheduleId)))
+				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 	}
 
 	/** Fires pick events for one line from the LU, using the capped qty from the FIFO selection. */

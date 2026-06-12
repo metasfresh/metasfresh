@@ -152,6 +152,11 @@ Feature: Mass Printing - honour job-scheduled-to-workplace mode
       | M_HU_ID | UnitsPacked |
       | lu      | 4           |
 
+    # The scanned LU started with 8 PCE; only the 4 scheduled units were packed, so 4 PCE remain on the LU.
+    And validate M_HUs:
+      | Identifier | M_Product_ID | Qty   |
+      | lu         | product      | 4 PCE |
+
     # The scheduled schedule was processed → a completed shipment exists for it.
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |

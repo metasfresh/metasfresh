@@ -66,9 +66,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
-import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
@@ -329,35 +326,19 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * Resolves the {@link ShipmentScheduleAndJobScheduleIdSet} to drive a picking-job creation for the given
-	 * selected shipment-schedule ids, using the same job-schedule resolution as the picking launcher.
-	 * <p>
-	 * In job-scheduled-to-workplace mode (the query carries a {@code scheduledForWorkplaceId}), the returned set
-	 * carries the picking-job-schedule ids for the selected shipment schedules (looked up via the same
-	 * {@code toPickingJobScheduleQuery()} the launcher / {@link #streamPackageable} use), so the created job is
-	 * driven by the job-schedules — consistent with how regular picking creates jobs from candidates. In
-	 * warehouse mode (no {@code scheduledForWorkplaceId}) it falls back to a plain shipment-schedule-id set.
+	 * Lists the picking-job-schedules matching the query, using the same {@code toPickingJobScheduleQuery()}
+	 * resolution as the launcher / {@link #streamPackageable}. Returns {@link PickingJobScheduleCollection#EMPTY}
+	 * when the query is not in job-scheduled-to-workplace mode (no job-schedules apply in warehouse mode).
 	 */
-	public ShipmentScheduleAndJobScheduleIdSet resolveScheduleIdsForJobCreation(
-			@NonNull final PickingJobQuery query,
-			@NonNull final Set<ShipmentScheduleId> selectedShipmentScheduleIds)
+	@NonNull
+	public PickingJobScheduleCollection listJobSchedules(@NonNull final PickingJobQuery query)
 	{
-		if (selectedShipmentScheduleIds.isEmpty())
-		{
-			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
-		}
-
 		if (!query.isScheduledForWorkplaceOnly())
 		{
-			return ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedShipmentScheduleIds);
+			return PickingJobScheduleCollection.EMPTY;
 		}
 
-		final PickingJobScheduleCollection jobSchedules = pickingJobScheduleService.list(query.toPickingJobScheduleQuery());
-		return selectedShipmentScheduleIds.stream()
-				.map(shipmentScheduleId -> jobSchedules.getSingleScheduleByShipmentScheduleId(shipmentScheduleId)
-						.map(PickingJobSchedule::getShipmentScheduleAndJobScheduleId)
-						.orElseGet(() -> ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(shipmentScheduleId)))
-				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
+		return pickingJobScheduleService.list(query.toPickingJobScheduleQuery());
 	}
 
 	public ADRefList getQtyRejectedReasons()

@@ -176,6 +176,11 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
       | M_HU_ID | UnitsPacked |
       | lu      | 4           |
 
+    # The scanned LU started with 8 PCE; only the non-locked schedule's 4 units were packed, so 4 PCE remain.
+    And validate M_HUs:
+      | Identifier | M_Product_ID | Qty   |
+      | lu         | product      | 4 PCE |
+
     # schedLocked was skipped: its lock is still held by otherPicker (mass printing did not unlock or process it)
     And validate M_ShipmentSchedule_Lock record for:
       | M_ShipmentSchedule_ID | Login       | Exists |

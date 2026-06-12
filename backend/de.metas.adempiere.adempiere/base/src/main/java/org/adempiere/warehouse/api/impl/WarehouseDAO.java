@@ -33,6 +33,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.Warehouse;
@@ -120,6 +121,9 @@ public class WarehouseDAO implements IWarehouseDAO
 	private final CCache<Integer, WarehousePickingGroupsIndex> allWarehousePickingGroups = CCache.<Integer, WarehousePickingGroupsIndex>builder()
 			.tableName(I_M_Warehouse_Group.Table_Name)
 			.additionalTableNameToResetFor(I_M_Warehouse.Table_Name)
+			// Also reset when a M_Warehouse_PickingGroup is created/changed (e.g. createWarehousePickingGroup),
+			// so the index does not return a stale picking-group set to the next caller.
+			.additionalTableNameToResetFor(I_M_Warehouse_PickingGroup.Table_Name)
 			.build();
 	private final CCache<Integer, WarehouseGroupsIndex> allWarehouseGroups = CCache.<Integer, WarehouseGroupsIndex>builder()
 			.tableName(I_M_Warehouse_Group.Table_Name)
@@ -911,6 +915,18 @@ public class WarehouseDAO implements IWarehouseDAO
 		createDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
 
 		return ofRecord(warehouseRecord);
+	}
+
+	@Override
+	@NonNull
+	public WarehousePickingGroupId createWarehousePickingGroup(@NonNull final CreateWarehousePickingGroupRequest request)
+	{
+		final I_M_Warehouse_PickingGroup record = newInstance(I_M_Warehouse_PickingGroup.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setName(request.getName());
+		saveRecord(record);
+
+		return WarehousePickingGroupId.ofRepoId(record.getM_Warehouse_PickingGroup_ID());
 	}
 
 	@NonNull
