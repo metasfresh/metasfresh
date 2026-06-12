@@ -6,29 +6,32 @@ import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 import { allure } from 'allure-playwright';
 
-const scannerSysconfigs = ({ showInputText, isInputTextReadonly }) => ({
+const scannerSysconfigs = ({ showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly }) => ({
     ...(showInputText != null && { 'mobileui.frontend.barcodeScanner.showInputText': showInputText }),
     ...(isInputTextReadonly != null && { 'mobileui.frontend.barcodeScanner.isInputTextReadonly': isInputTextReadonly }),
+    ...(useCamera != null && { 'mobileui.frontend.barcodeScanner.useCamera': useCamera }),
+    ...(offscreenInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.offscreenInput.readOnly': offscreenInputReadOnly }),
+    ...(visibleInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.visibleInput.readOnly': visibleInputReadOnly }),
 });
 
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
-const createLoginMasterdata = async ({ extraSysconfigs, showInputText, isInputTextReadonly } = {}) => {
+const createLoginMasterdata = async ({ extraSysconfigs, showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly }), ...extraSysconfigs },
+            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly }), ...extraSysconfigs },
             login: { user: { language: 'en_US' } },
         },
     });
 };
 
 // Full masterdata: login + a handling unit, so scanning its QR code navigates to the HU Manager.
-const createMasterdataWithHU = async ({ extraSysconfigs, showInputText, isInputTextReadonly } = {}) => {
+const createMasterdataWithHU = async ({ extraSysconfigs, showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly }), ...extraSysconfigs },
+            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly }), ...extraSysconfigs },
             login: { user: { language: 'en_US' } },
             products: { P1: {} },
             warehouses: { wh1: {} },
@@ -75,6 +78,52 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
     // input-text-offscreen: CSS-hidden, NOT removed from DOM (type=hidden would break IME)
     await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: null });
     await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
+});
+
+// ⚠️ HARDWARE CONTRACT — Honeywell CT60 / Android 11 / Keyboard-wedge mode.
+// DO NOT WEAKEN THIS TEST. The five conditions below must ALL hold simultaneously — any
+// single regression silently breaks scanning on the real CT60 hardware:
+//
+//   type=text             — required for Android InputConnection (type=hidden cannot focus)
+//   inputmode=none        — soft suppression of the virtual keyboard (Android < 11 honours it)
+//   readOnly PRESENT      — HARD suppression of the virtual keyboard on Android 11+ where
+//                           inputMode="none" is IGNORED (CT60 / Honeywell Wedge keyboard mode).
+//                           This is the load-bearing flag for this device.
+//   input-text-offscreen  — the input stays in the DOM (the keystroke hook listens on document)
+//                           but is visually hidden. The scan-prompt UI provides the visual anchor.
+//   no <video> element    — useCamera=N → device camera should never render
+//
+// Asserts on HU Manager so BarcodeScannerComponent renders from SysConfig (no hardcoded prop) —
+// ApplicationsListScreen hardcodes both isShowInputText={false} and isShowVideo={false}, which
+// would short-circuit the sysconfig path and make readOnly + camera-absent checks vacuously pass.
+//
+// IF THIS TEST FAILS after a change to BarcodeScannerComponent.jsx: the CODE broke the contract.
+// Fix the code, do NOT relax these expected values. Any change to readOnly / inputMode / type /
+// the off-screen class on #input-text MUST be re-validated on a physical Honeywell CT60 (see
+// e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). Automated tests cannot prove the
+// on-device behaviour.
+// noinspection JSUnusedLocalSymbols
+test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no camera', async ({ page }) => {
+    await allure.epic('E0295: Frontend MobileUI');
+    await allure.feature('F12000: Frontend MobileUI');
+    await allure.story('Barcode scanning modes');
+    await allure.severity('critical');
+
+    // Sysconfig combo for the keystroke-wedge mode — captured from a live local stack and
+    // validated on physical CT60 hardware.
+    const masterdata = await createMasterdataWithHU({
+        showInputText: 'N',
+        useCamera: 'N',
+        offscreenInputReadOnly: 'Y',
+    });
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+
+    await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
+    await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
+    await BarcodeScannerComponent.expectCameraVideoAbsent();
 });
 
 // Each test drives one real-world way a barcode reaches the app, end to end:

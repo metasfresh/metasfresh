@@ -27,9 +27,25 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
   const isShowInputText =
     isShowInputTextParam != null ? isShowInputTextParam : useBooleanSetting('barcodeScanner.showInputText');
 
-  const isInputTextReadonly = isShowInputText
+  // Two orthogonal keyboard-suppression knobs feed the scan <input>. They are named after their
+  // mechanism (not their UX effect) so the two cannot be confused:
+  //   • isInputModeNone  → sets `inputMode="none"` (a HINT — soft. Honoured by recent Chrome/Android,
+  //                       ignored by some firmware, e.g. Honeywell CT60 / Android 11).
+  //   • isReadOnlyAttrSet   → sets the HTML `readOnly` attribute (a HARD GUARANTEE — the browser never
+  //                       opens the soft keyboard on a readOnly input, AND manual typing is blocked).
+  // Per the scanner-framework design (https://github.com/metasfresh/me03/issues/29246), readOnly is
+  // controlled by per-mode knobs (`offscreenInput.readOnly` vs `visibleInput.readOnly`) so the two
+  // modes tune independently. Defaults OFF in both modes ⇒ byte-for-byte today's behaviour.
+  // DataWedge IME deployments MUST keep BOTH off — readOnly kills the InputConnection. Enabling
+  // visibleInput.readOnly also BLOCKS manual typing (Mode C3) — intentional opt-in for
+  // hardware-scanner-only deployments where the visible input must stay on screen (e.g. /huManager,
+  // whose only content is the scan field — hiding it leaves the screen blank).
+  const isInputModeNone = isShowInputText
     ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
     : true;
+  const isOffscreenInputReadOnly = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
+  const isVisibleInputReadOnly = useBooleanSetting('barcodeScanner.visibleInput.readOnly', false);
+  const isReadOnlyAttrSet = isShowInputText ? isVisibleInputReadOnly : isOffscreenInputReadOnly;
 
   const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
 
@@ -51,7 +67,8 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
       vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
     },
     isShowInputText,
-    isInputTextReadonly,
+    isInputModeNone,
+    isReadOnlyAttrSet,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
@@ -76,13 +93,16 @@ const BarcodeScannerComponent = ({
     okBeepParams,
     errorBeepParams,
     isShowInputText,
-    isInputTextReadonly,
+    isInputModeNone,
+    isReadOnlyAttrSet,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
     isShowVideo,
     continuousRunning,
   } = useConfigParams({ isShowInputTextParam, isShowVideoParam, continuousRunningParam });
+  const isComponentHidden = !isShowInputText && !isShowVideo;
+  const isComponentHiddenByParam = isShowInputTextParam === false && isShowVideoParam === false;
 
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -121,7 +141,7 @@ const BarcodeScannerComponent = ({
       if (isShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      if (!isInputTextReadonly) {
+      if (!isInputModeNone) {
         inputTextRef?.current?.focus();
       }
     } /* no deps, call it on each render */
@@ -130,7 +150,7 @@ const BarcodeScannerComponent = ({
   // DataWedge IME needs a focused editable input to establish InputConnection.
   // Focus once on mount; the window-level hook handles all subsequent scan events.
   useEffect(() => {
-    if (isInputTextReadonly) {
+    if (isInputModeNone) {
       inputTextRef?.current?.focus();
     }
   }, []);
@@ -234,7 +254,8 @@ const BarcodeScannerComponent = ({
       eventName: 'barcodeScanned',
       scannedBarcode,
       isShowInputText,
-      isInputTextReadonly,
+      isInputModeNone,
+      isReadOnlyAttrSet,
       triggerOnChangeIfLengthGreaterThan,
       textChangedDebounceMillis,
       scanDuplicatesIntervalMillis,
@@ -279,23 +300,68 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
+      {/* Scan prompt — visible on hardware-scanner deployments (no camera) when the input is
+          OFF-SCREEN (the actual empty-screen case: the only thing the component otherwise renders
+          is the invisible off-screen input). When the input is on-screen (isShowInputText=Y) the
+          input itself is the visual anchor — no big prompt needed. Reuses inputPlaceholderText so
+          a caller can override the default caption (e.g. HUScanner's locator-scan branch passes
+          'Scan LU or locator…'); when the caller passes none, the default scanPrompt translation
+          is used. See https://github.com/metasfresh/me03/issues/30363. */}
+      {!isProcessing && isComponentHidden && !isComponentHiddenByParam && (
+        <div className="scan-prompt">
+          <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
+          {/* Caption swap — idle text by default, "Scanning in progress…" while the input
+              has content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
+          <div className="scan-prompt-text">
+            <span className="scan-prompt-text-idle">
+              {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
+            </span>
+            <span className="scan-prompt-text-progress">
+              {trl('components.BarcodeScannerComponent.scanInProgress')}
+            </span>
+          </div>
+        </div>
+      )}
       {/* IMPORTANT: Always use type="text" — never type="hidden".
           When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
           instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
           type="hidden" inputs cannot receive focus, so Android InputConnection is never established
           and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
-          IME-compatible while remaining invisible to the user. (me03#28834) */}
+          IME-compatible while remaining invisible to the user.
+          (https://github.com/metasfresh/me03/issues/28834) */}
       {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
-          compositing issue where the native video layer covers CSS-overlaid content. (me03#28964) */}
-      {/* ⚠️ HARDWARE CONTRACT — Zebra MC3300x DataWedge IME. The exact combination below lets scans
-          inject WITHOUT popping the virtual keyboard:
-            • type="text"                    — Android InputConnection (type="hidden" cannot focus)
-            • inputMode="none" when readonly — suppresses the virtual keyboard, keeps the IME alive
-            • the focus useEffects above     — establish / recover the InputConnection on the device
-          Do NOT change type / inputMode / readOnly or the focus logic to make a test pass. If the
-          regression guard (e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js) goes red, the
-          CODE broke this contract — fix the code, not the test. Any change here MUST be re-validated
-          on a physical Zebra MC3300x (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
+          compositing issue where the native video layer covers CSS-overlaid content.
+          (https://github.com/metasfresh/me03/issues/28964) */}
+      {/* ⚠️ HARDWARE CONTRACT — TWO device classes; each has its own #input-text attribute combo.
+          Any edit to type / inputMode / readOnly / the focus useEffects MUST preserve BOTH.
+
+                                  │ DataWedge IME             │ Keystroke-wedge
+                                  │ (e.g. Zebra MC3300x)      │ (e.g. Honeywell CT60 / Android 11)
+          ────────────────────────┼───────────────────────────┼──────────────────────────────────────
+          type                    │ "text"                    │ "text"
+          inputMode               │ "none"                    │ "none" (ignored on Android 11)
+          readOnly                │ ABSENT (else kills the    │ PRESENT (load-bearing keyboard
+                                  │ InputConnection — text    │ suppression — Android 11 ignores
+                                  │ injection silently fails) │ inputMode="none")
+          Focus useEffects        │ Establish the IME         │ N/A — keystroke hook listens on document
+          ────────────────────────┼───────────────────────────┼──────────────────────────────────────
+          Sysconfig — off-screen  │ offscreenInput.readOnly=N │ offscreenInput.readOnly=Y
+          Sysconfig — visible     │ visibleInput.readOnly=N   │ visibleInput.readOnly=Y (when visible)
+
+          The `readOnly` attribute is per-mode (offscreenInput vs visibleInput) and driven by
+          sysconfigs per the framework design (https://github.com/metasfresh/me03/issues/29246).
+          DataWedge IME requires readOnly ABSENT or InputConnection breaks
+          (https://github.com/metasfresh/me03/issues/28834). Keystroke-wedge devices that ignore
+          inputMode="none" require readOnly PRESENT — first deployed for Honeywell CT60 /
+          Android 11.
+
+          Regression guards (BOTH must stay green — `e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js`):
+            • DataWedge IME:        "#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden"
+            • CT60 keystroke-wedge: "Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no camera"
+
+          Do NOT relax either test to make a change land. A red test means the CODE broke a
+          contract — fix the code, not the test. Any change here MUST be re-validated on physical
+          hardware for BOTH device classes (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
       {!isProcessing && (
         <input
           id="input-text"
@@ -304,7 +370,8 @@ const BarcodeScannerComponent = ({
           className={`input-text${isShowInputText ? '' : ' input-text-offscreen'}`}
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          inputMode={isInputTextReadonly ? 'none' : undefined}
+          inputMode={isInputModeNone ? 'none' : undefined}
+          readOnly={isReadOnlyAttrSet}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
@@ -312,7 +379,7 @@ const BarcodeScannerComponent = ({
           data-testid={testId ?? 'qrCode-input'}
         />
       )}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
+      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
     </div>
   );
 };
