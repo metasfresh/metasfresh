@@ -240,7 +240,7 @@
 
 | Scenario | Test |
 |---|---|
-| Job screen header shows correct From Locator and Locator To | `distribution/header.spec.js` |
+| Job-detail header renders the configured profile caption items (From Locator, To Locator, Product Value and Name) | `distribution/header.spec.js` |
 | Pick multiple HUs; Drop All delivers in one action; warehouse validated per step | `distribution/job_dropAllButton.spec.js` |
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
