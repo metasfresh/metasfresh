@@ -644,7 +644,8 @@ test('Mass printing — cross-warehouse: LU in storage warehouse, demand in work
                 "whPacking": { pickingGroup: 'pickingArea' },
                 "whStorage": { pickingGroup: 'pickingArea' },
             },
-            pickingSlots: { slot1: {} },
+            // Pin the slot to the workplace warehouse — with >1 warehouse the locator is otherwise ambiguous.
+            pickingSlots: { slot1: { locator: 'whPacking' } },
             // The picker's workplace is in the PACKING warehouse (not where the LU is stored).
             workplaces: { "workplace1": { warehouse: 'whPacking', pickingSlot: 'slot1' } },
             products: {
@@ -736,7 +737,8 @@ test('Mass printing — LU outside the workplace picking group is rejected', asy
                 // The LU's warehouse — NOT in any picking group.
                 "whOutside": {},
             },
-            pickingSlots: { slot1: {} },
+            // Pin the slot to the workplace warehouse — with >1 warehouse the locator is otherwise ambiguous.
+            pickingSlots: { slot1: { locator: 'whPacking' } },
             workplaces: { "workplace1": { warehouse: 'whPacking', pickingSlot: 'slot1' } },
             products: {
                 "selfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
