@@ -2,6 +2,9 @@
 -- Order: all carry-forward UPDATEs first, then DELETEs.
 -- Missing legacy rows are harmless (WHERE EXISTS guards).
 
+-- Back up AD_SysConfig before the carry-forward UPDATEs and retire DELETEs below.
+SELECT backup_table('AD_SysConfig');
+
 -- ============================================================
 -- A1. useCamera → mode.camera.enabled (alias: keep useCamera row)
 -- ============================================================
