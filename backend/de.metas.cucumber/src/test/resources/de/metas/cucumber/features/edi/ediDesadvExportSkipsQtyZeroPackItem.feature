@@ -44,9 +44,12 @@ Feature: EDI DESADV export must not include pack items whose own MovementQty is 
     And metasfresh contains C_BPartners:
       | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
       | endcustomer | Y          | ps_S0353_010       | location_gln |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
-      | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
+    # new_dawn_uat keys the EDI config at C_BPartner_Location level (EDIBPartnerConfigService.isEdiDesadvRecipient(BPartnerLocationId));
+    # the recipient flag must live on C_BPartner_EDI_Setting, not on C_BPartner. An EDI_Setting with no
+    # C_BPartner_Location_ID applies to all of the partner's locations (matches the passing ediDesadvPack_with_normal_UOM template).
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | Identifier |
+      | endcustomer   | true                 | bPartnerDesadvRecipientGLN | ediSetting |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer              | product_main            |
