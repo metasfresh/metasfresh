@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 56 | 60 | 93% |
+| Picking | 58 | 62 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -151,9 +151,11 @@
 | Non-self-packed-only LU: no boxes packed, skipped-products section is visible | `picking/massPrinting.spec.js` |
 | Off-mode guard: mass-printing trigger button is absent when feature is disabled in picking profile | `picking/massPrinting.spec.js` |
 | Null PackTo PI: self-packed product with no TU packing instruction packs as VHU (one label per unit, not a TU box) | `picking/massPrinting.spec.js` |
+| Cross-warehouse: LU stored in one warehouse, demand + workplace in another warehouse of the same picking group → demand is found and packed (searches by the workplace warehouse, not the LU's storage warehouse) | `picking/massPrinting.spec.js` |
+| LU outside the workplace's picking group → scan is rejected with an error, nothing packed | `picking/massPrinting.spec.js` |
 | ❌ CREATE_COMPLETE_CLOSE policy: scanning LU packs + produces a completed shipment and closes the shipment schedule — but the schedule must be closed **only on a full pick**; a partially-picked schedule must stay **open** (closing it would discard the remaining open demand) | — |
 
-**10/11 — 91%**
+**12/13 — 92%**
 
 ### Order-based picking — catch-weight
 
