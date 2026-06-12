@@ -41,10 +41,8 @@
     border: none;
   }
 
-  // Scan prompt — rendered when there is no camera preview, the input is off-screen, and the
-  // caller did NOT explicitly request silent capture (isShowInputText={false} AND
-  // isShowVideo={false} both passed as props). Large barcode icon + inputPlaceholderText caption.
-  // See BarcodeScannerComponent.jsx for the guard (isComponentHidden / isComponentHiddenByParam).
+  // Scan prompt — rendered when there is no camera preview and the component is in hardware
+  // or camera mode (not manual). Large barcode icon + inputPlaceholderText caption.
   .scan-prompt {
     display: flex;
     flex-direction: column;
@@ -77,6 +75,26 @@
       .scan-prompt-text-progress {
         display: none;
       }
+    }
+  }
+
+  // Manual entry mode — visible editable text field and submit button.
+  // Stacked vertically: input on top, full-width submit button below.
+  .manual-entry {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+
+    &__input {
+      // Override the .input-text font size for the manual-entry context so it
+      // renders as a comfortable typing size rather than the oversized scan-display size.
+      font-size: 1.25em;
+      text-align: left;
+    }
+
+    &__submit {
+      width: 100%;
     }
   }
 

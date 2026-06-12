@@ -9,6 +9,7 @@ import { debounce } from 'lodash';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
+import ButtonWithIndicator from './buttons/ButtonWithIndicator';
 import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
 import { useBarcodeScannerModes, MODE } from '../hooks/useBarcodeScannerModes';
 import BarcodeScannerFooter from './BarcodeScannerFooter';
@@ -91,6 +92,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
   const handleBackToScanner = () => setActiveMode(enabledModes.hardware ? MODE.HARDWARE : MODE.CAMERA);
 
   const inputTextRef = useRef();
+  const manualInputRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
@@ -141,6 +143,13 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
     }
   }, []);
 
+  // Autofocus the visible manual input whenever MANUAL mode becomes active.
+  useEffect(() => {
+    if (activeMode === MODE.MANUAL) {
+      manualInputRef?.current?.focus();
+    }
+  }, [activeMode]);
+
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
       // console.log('onReadDone', barcode);
@@ -165,10 +174,13 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
     },
     rateMs: textChangedDebounceMillis,
     minLength: triggerOnChangeIfLengthGreaterThan,
-    disabled: isProcessing,
+    // Disable the window-level keyboard reader while in MANUAL mode so that
+    // keystrokes go to the visible manual input field instead of being captured
+    // by the hook (which would double-process each character).
+    disabled: isProcessing || activeMode === MODE.MANUAL,
   });
 
-  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode }) => {
+  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, onSuccess, onError }) => {
     if (!scannedBarcode?.trim()) {
       uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
       return;
@@ -212,13 +224,16 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
         toastError({ plainMessage: resolvedResult.error });
         beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
+        onError?.();
       } else {
         await onResolvedResult(resolvedResult);
         beep(okBeepParams);
+        onSuccess?.();
       }
     } catch (error) {
       beep(errorBeepParams);
       toastErrorFromObj(error);
+      onError?.();
     } finally {
       scanningStatus.running = false;
       setProcessing(false);
@@ -277,6 +292,31 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
     }, 2000);
   };
 
+  // Manual entry mode: submit the typed value, auto-return to default mode on success,
+  // or keep the text and select it on error so the user can correct and retry.
+  const handleManualSubmit = () => {
+    const scannedBarcode = manualInputRef?.current?.value?.trim();
+    if (!scannedBarcode) return;
+    validateScannedBarcodeAndForward({
+      scannedBarcode,
+      onSuccess: () => {
+        if (manualInputRef?.current) {
+          manualInputRef.current.value = '';
+        }
+        setActiveMode(defaultMode);
+      },
+      onError: () => {
+        manualInputRef?.current?.select();
+      },
+    });
+  };
+
+  const handleManualKeyUp = (e) => {
+    if (e.key === 'Enter') {
+      handleManualSubmit();
+    }
+  };
+
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
@@ -286,7 +326,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
           a caller can override the default caption (e.g. HUScanner's locator-scan branch passes
           'Scan LU or locator…'); when the caller passes none, the default scanPrompt translation
           is used. See https://github.com/metasfresh/me03/issues/30363. */}
-      {!isProcessing && activeMode !== MODE.CAMERA && (
+      {!isProcessing && activeMode !== MODE.CAMERA && activeMode !== MODE.MANUAL && (
         <div className="scan-prompt">
           <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
           {/* Caption swap — idle text by default, "Scanning in progress…" while the input
@@ -359,6 +399,29 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
           onKeyUp={handleInputTextKeyPress}
           data-testid={testId ?? 'qrCode-input'}
         />
+      )}
+      {/* Manual entry mode — visible editable input + submit button.
+          Rendered only in MANUAL mode; the off-screen hardware input stays mounted
+          below to preserve DataWedge IME InputConnection on mode switches. */}
+      {activeMode === MODE.MANUAL && !isProcessing && (
+        <div className="manual-entry">
+          <input
+            ref={manualInputRef}
+            className="input-text manual-entry__input"
+            type="text"
+            inputMode="text"
+            placeholder={trl('components.BarcodeScannerComponent.manualInputPlaceholder')}
+            onKeyUp={handleManualKeyUp}
+            data-testid="manual-entry-input"
+          />
+          <ButtonWithIndicator
+            captionKey="components.BarcodeScannerComponent.manualInputSubmit"
+            typeFASIconName="fa-check"
+            additionalCssClass="manual-entry__submit"
+            onClick={handleManualSubmit}
+            testId="manual-entry-submit"
+          />
+        </div>
       )}
       {activeMode === MODE.CAMERA && <video key="video" ref={videoRef} width="100%" height="100%" />}
       <BarcodeScannerFooter

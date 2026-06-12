@@ -86,6 +86,8 @@ const translations = {
       scanWithCamera: 'Scan with camera',
       useHardwareScanner: 'Use hardware scanner',
       backToScanner: 'Back to scanner',
+      manualInputPlaceholder: 'Enter barcode...',
+      manualInputSubmit: 'Submit',
     },
   },
   activities: {

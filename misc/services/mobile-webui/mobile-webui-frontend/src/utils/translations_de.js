@@ -90,6 +90,8 @@ const translations = {
       scanWithCamera: 'Mit Kamera scannen',
       useHardwareScanner: 'Hardware-Scanner verwenden',
       backToScanner: 'Zurück zum Scanner',
+      manualInputPlaceholder: 'Barcode eingeben...',
+      manualInputSubmit: 'Senden',
     },
   },
   activities: {
