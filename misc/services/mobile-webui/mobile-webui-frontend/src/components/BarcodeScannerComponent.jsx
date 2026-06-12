@@ -11,6 +11,7 @@ import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
 import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
 import { useBarcodeScannerModes, MODE } from '../hooks/useBarcodeScannerModes';
+import BarcodeScannerFooter from './BarcodeScannerFooter';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -70,8 +71,7 @@ const useConfigParams = () => {
 
 const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResult, inputPlaceholderText }) => {
   const {
-    // eslint-disable-next-line no-unused-vars
-    enabledModes, // consumed by Tasks 5–8 (mode toggle footer)
+    enabledModes,
     defaultMode,
     hardwareInputMode,
     hardwareInputReadOnly,
@@ -82,9 +82,11 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
     scanDuplicatesIntervalMillis,
   } = useConfigParams();
 
-  // setActiveMode will be wired to the mode-toggle footer in Tasks 5–8.
-  // eslint-disable-next-line no-unused-vars
   const [activeMode, setActiveMode] = useState(defaultMode);
+
+  const handleSelectManual = () => setActiveMode(MODE.MANUAL);
+  const handleToggleHardwareCamera = () =>
+    setActiveMode((prev) => (prev === MODE.HARDWARE ? MODE.CAMERA : MODE.HARDWARE));
 
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -357,6 +359,12 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
         />
       )}
       {activeMode === MODE.CAMERA && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      <BarcodeScannerFooter
+        activeMode={activeMode}
+        enabledModes={enabledModes}
+        onSelectManual={handleSelectManual}
+        onToggleHardwareCamera={handleToggleHardwareCamera}
+      />
     </div>
   );
 };

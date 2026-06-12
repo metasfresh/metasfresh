@@ -82,6 +82,9 @@ const translations = {
       scanTrolleyPlaceholder: 'Scan trolley...',
       scanPrompt: 'Scan barcode',
       scanInProgress: 'Scanning in progress...',
+      enterManually: 'Enter manually',
+      scanWithCamera: 'Scan with camera',
+      useHardwareScanner: 'Use hardware scanner',
     },
   },
   activities: {

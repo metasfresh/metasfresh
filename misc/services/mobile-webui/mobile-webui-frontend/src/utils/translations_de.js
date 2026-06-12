@@ -86,6 +86,9 @@ const translations = {
       scanTrolleyPlaceholder: 'Wagen scannen...',
       scanPrompt: 'Barcode scannen',
       scanInProgress: 'Scan läuft...',
+      enterManually: 'Manuell eingeben',
+      scanWithCamera: 'Mit Kamera scannen',
+      useHardwareScanner: 'Hardware-Scanner verwenden',
     },
   },
   activities: {
