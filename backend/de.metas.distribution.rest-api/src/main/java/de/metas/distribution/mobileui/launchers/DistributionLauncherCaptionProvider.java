@@ -11,23 +11,34 @@ import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
+import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
+import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
+import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.SeqNo;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.X_DD_Order;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -44,6 +55,8 @@ public class DistributionLauncherCaptionProvider
 
 	public WorkflowLauncherCaption compute(@NonNull final DDOrderReference ddOrderReference)
 	{
+		final Context context = toContext(ddOrderReference);
+
 		final MobileUIDistributionConfig config = configRepository.getConfig();
 		final DistributionJobCaptionFormat format = config.getCaptionFormat();
 
@@ -54,7 +67,7 @@ public class DistributionLauncherCaptionProvider
 		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
 			final DistributionJobCaptionField field = formatItem.getField();
-			final ITranslatableString captionItem = computeItem(ddOrderReference, field);
+			final ITranslatableString captionItem = computeItem(context, field);
 			fieldsInOrder.add(field.getCode());
 			fieldValues.put(field.getCode(), captionItem);
 		}
@@ -66,7 +79,7 @@ public class DistributionLauncherCaptionProvider
 
 			if (!fieldValues.containsKey(field.getCode()))
 			{
-				final ITranslatableString captionItem = computeItem(ddOrderReference, field);
+				final ITranslatableString captionItem = computeSortingItem(context, field);
 				fieldValues.put(field.getCode(), captionItem);
 			}
 
@@ -85,49 +98,55 @@ public class DistributionLauncherCaptionProvider
 				.build();
 	}
 
-	private ITranslatableString computeItem(@NonNull final DDOrderReference ddOrderReference, @NonNull final DistributionJobCaptionField field)
+	public ITranslatableString computeItem(@NonNull final DistributionJob job, @NonNull final DistributionJobCaptionField field)
+	{
+		final Context context = toContext(job);
+		return computeItem(context, field);
+	}
+
+	private ITranslatableString computeItem(@NonNull final Context context, @NonNull final DistributionJobCaptionField field)
 	{
 		switch (field)
 		{
 			case LocatorFrom:
-				return extractLocatorFrom(ddOrderReference);
+				return extractLocatorFrom(context);
 			case LocatorTo:
-				return extractLocatorTo(ddOrderReference);
+				return extractLocatorTo(context);
 			case WarehouseFrom:
-				return extractWarehouseFrom(ddOrderReference);
+				return extractPickFromWarehouse(context);
 			case WarehouseTo:
-				return extractWarehouseTo(ddOrderReference);
+				return extractDropToWarehouse(context);
 			case Plant:
-				return extractPlant(ddOrderReference);
+				return extractPlant(context);
 			case PickDate:
-				return extractPickDate(ddOrderReference);
+				return extractDisplayDate(context);
 			case Qty:
-				return extractQty(ddOrderReference);
+				return extractQty(context);
 			case ProductGTIN:
-				return extractGTIN(ddOrderReference);
+				return extractGTIN(context);
 			case ProductValueAndName:
-				return extractProductValueAndName(ddOrderReference);
+				return extractProductValueAndName(context);
 			case SourceDoc:
-				return extractSourceDoc(ddOrderReference);
+				return extractSourceDoc(context);
 			case Priority:
-				return extractPriority(ddOrderReference);
+				return extractPriority(context);
 			case PickingInstruction:
-				return extractPickingInstruction(ddOrderReference);
+				return extractPickingInstruction(context);
 			default:
 				return TranslatableStrings.empty();
 		}
 	}
 
-	private ITranslatableString computeItem(final @NonNull DDOrderReference ddOrderReference, final DistributionJobSortingField field)
+	private ITranslatableString computeSortingItem(final @NonNull Context context, final DistributionJobSortingField field)
 	{
 		switch (field)
 		{
 			case Priority:
-				return extractPriority(ddOrderReference);
+				return extractPriority(context);
 			case DatePromised:
-				return extractPickDate(ddOrderReference);
+				return extractDisplayDate(context);
 			case SeqNo:
-				return TranslatableStrings.number(ddOrderReference.getSeqNo().toInt());
+				return TranslatableStrings.number(context.getSeqNo().toInt());
 			default:
 				return TranslatableStrings.empty();
 		}
@@ -145,72 +164,102 @@ public class DistributionLauncherCaptionProvider
 		}
 	}
 
-	private ITranslatableString extractLocatorFrom(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractLocatorFrom(@NonNull final Context context)
 	{
-		final LocatorId fromLocatorId = ddOrderReference.getFromLocatorId();
+		final LocatorId fromLocatorId = context.getFromLocatorId();
 		return fromLocatorId != null
 				? TranslatableStrings.anyLanguage(warehouseService.getLocatorName(fromLocatorId))
 				: TranslatableStrings.empty();
 	}
 
-	private ITranslatableString extractLocatorTo(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractLocatorTo(@NonNull final Context context)
 	{
-		final LocatorId toLocatorId = ddOrderReference.getToLocatorId();
+		final LocatorId toLocatorId = context.getToLocatorId();
 		return toLocatorId != null
 				? TranslatableStrings.anyLanguage(warehouseService.getLocatorName(toLocatorId))
 				: TranslatableStrings.empty();
 	}
 
-	private static ITranslatableString extractPriority(final @NotNull DDOrderReference ddOrderReference)
+	private static ITranslatableString extractPriority(@NonNull final Context context)
 	{
-		final String priority = StringUtils.trimBlankToNull(ddOrderReference.getPriority());
+		final String priority = StringUtils.trimBlankToNull(context.getPriority());
 		return priority != null
 				? TranslatableStrings.adRefList(X_DD_Order.PRIORITYRULE_AD_Reference_ID, priority)
 				: TranslatableStrings.empty();
 	}
 
-	private ITranslatableString extractWarehouseFrom(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractPickFromWarehouse(@NonNull final Context context)
 	{
-		return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(ddOrderReference.getFromWarehouseId()));
+		if (context.getPickFromWarehouse() != null)
+		{
+			return TranslatableStrings.anyLanguage(context.getPickFromWarehouse().getCaption());
+		}
+		else if (context.getPickFromWarehouseId() != null)
+		{
+			return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(context.getPickFromWarehouseId()));
+		}
+		else
+		{
+			return TranslatableStrings.empty();
+		}
 	}
 
-	private ITranslatableString extractWarehouseTo(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractDropToWarehouse(@NonNull final Context context)
 	{
-		return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(ddOrderReference.getToWarehouseId()));
+		if (context.getDropToWarehouse() != null)
+		{
+			return TranslatableStrings.anyLanguage(context.getDropToWarehouse().getCaption());
+		}
+		else if (context.getDropToWarehouseId() != null)
+		{
+			return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(context.getDropToWarehouseId()));
+		}
+		else
+		{
+			return TranslatableStrings.empty();
+		}
 	}
 
-	private ITranslatableString extractPickDate(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractDisplayDate(@NonNull final Context context)
 	{
-		return TranslatableStrings.dateAndTime(ddOrderReference.getDisplayDate());
+		return TranslatableStrings.dateAndTime(context.getDisplayDate());
 	}
 
-	private ITranslatableString extractPlant(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractPlant(@NonNull final Context context)
 	{
-		final ResourceId plantId = ddOrderReference.getPlantId();
-		return plantId != null
-				? TranslatableStrings.anyLanguage(sourceDocService.getPlantName(plantId))
-				: TranslatableStrings.empty();
+		if (context.getPlant() != null)
+		{
+			return TranslatableStrings.anyLanguage(context.getPlant().getCaption());
+		}
+		else if (context.getPlantId() != null)
+		{
+			return TranslatableStrings.anyLanguage(sourceDocService.getPlantName(context.getPlantId()));
+		}
+		else
+		{
+			return TranslatableStrings.empty();
+		}
 	}
 
-	private static ITranslatableString extractQty(final @NotNull DDOrderReference ddOrderReference)
+	private static ITranslatableString extractQty(@NonNull final Context context)
 	{
-		final Quantity qty = ddOrderReference.getQty();
+		final Quantity qty = context.getQty();
 		return qty != null
 				? TranslatableStrings.builder().appendQty(qty.toBigDecimal(), qty.getUOMSymbol()).build()
 				: TranslatableStrings.empty();
 	}
 
-	private ITranslatableString extractProductValueAndName(final @NotNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractProductValueAndName(@NonNull final Context context)
 	{
-		final ProductId productId = ddOrderReference.getProductId();
+		final ProductId productId = context.getProductId();
 		return productId != null
 				? TranslatableStrings.anyLanguage(productService.getProductValueAndName(productId))
 				: TranslatableStrings.empty();
 	}
 
-	private @NotNull ITranslatableString extractGTIN(final @NotNull DDOrderReference ddOrderReference)
+	private @NotNull ITranslatableString extractGTIN(@NonNull final Context context)
 	{
-		return Optional.ofNullable(ddOrderReference.getProductId())
+		return Optional.ofNullable(context.getProductId())
 				.flatMap(productService::getGTIN)
 				.map(GTIN::getAsString)
 				.map(TranslatableStrings::anyLanguage)
@@ -218,16 +267,16 @@ public class DistributionLauncherCaptionProvider
 	}
 
 	@NonNull
-	private ITranslatableString extractSourceDoc(@NonNull final DDOrderReference ddOrderReference)
+	private ITranslatableString extractSourceDoc(@NonNull final Context context)
 	{
 		ImmutablePair<ITranslatableString, String> documentTypeAndNo;
-		if (ddOrderReference.getSalesOrderId() != null)
+		if (context.getSalesOrderId() != null)
 		{
-			documentTypeAndNo = sourceDocService.getDocumentTypeAndName(ddOrderReference.getSalesOrderId());
+			documentTypeAndNo = sourceDocService.getDocumentTypeAndName(context.getSalesOrderId());
 		}
-		else if (ddOrderReference.getPpOrderId() != null)
+		else if (context.getManufacturingOrderId() != null)
 		{
-			documentTypeAndNo = sourceDocService.getDocumentTypeAndName(ddOrderReference.getPpOrderId());
+			documentTypeAndNo = sourceDocService.getDocumentTypeAndName(context.getManufacturingOrderId());
 		}
 		else
 		{
@@ -242,9 +291,79 @@ public class DistributionLauncherCaptionProvider
 	}
 
 	@NonNull
-	private ITranslatableString extractPickingInstruction(final @NonNull DDOrderReference ddOrderReference)
+	private ITranslatableString extractPickingInstruction(@NonNull final Context context)
 	{
-		final ITranslatableString pickingInstruction = ddOrderReference.getPickingInstruction();
+		final ITranslatableString pickingInstruction = context.getPickingInstruction();
 		return pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
+	}
+
+	private static Context toContext(@NonNull DDOrderReference ddOrderReference)
+	{
+		return Context.builder()
+				.seqNo(ddOrderReference.getSeqNo())
+				.displayDate(ddOrderReference.getDisplayDate())
+				.pickingInstruction(ddOrderReference.getPickingInstruction())
+				.pickFromWarehouseId(ddOrderReference.getFromWarehouseId())
+				.fromLocatorId(ddOrderReference.getFromLocatorId())
+				.dropToWarehouseId(ddOrderReference.getToWarehouseId())
+				.toLocatorId(ddOrderReference.getToLocatorId())
+				.manufacturingOrderId(ddOrderReference.getPpOrderId())
+				.salesOrderId(ddOrderReference.getSalesOrderId())
+				.productId(ddOrderReference.getProductId())
+				.qty(ddOrderReference.getQty())
+				.plantId(ddOrderReference.getPlantId())
+				.priority(ddOrderReference.getPriority())
+				.build();
+	}
+
+	private static Context toContext(@NonNull DistributionJob job)
+	{
+		return Context.builder()
+				.seqNo(job.getSeqNo())
+				.displayDate(job.getPickDate())
+				.pickingInstruction(job.getPickingInstruction())
+				.pickFromWarehouse(job.getPickFromWarehouse())
+				.fromLocatorId(job.getSinglePickFromLocatorIdOrNull())
+				.dropToWarehouse(job.getDropToWarehouse())
+				.toLocatorId(job.getSingleDropToLocatorIdOrNull())
+				.manufacturingOrderId(job.getManufacturingOrderRef() != null ? job.getManufacturingOrderRef().getId() : null)
+				.salesOrderId(job.getSalesOrderRef() != null ? job.getSalesOrderRef().getId() : null)
+				.productId(job.getSingleProductIdOrNull())
+				.qty(job.getSingleUnitQuantityOrNull())
+				.plant(job.getPlantInfo())
+				.priority(job.getPriority())
+				.build();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class Context
+	{
+		// @NonNull DDOrderId ddOrderId;
+		// @NonNull String documentNo;
+		@NonNull SeqNo seqNo;
+		// @NonNull ZonedDateTime datePromised;
+		// @Nullable ZonedDateTime pickDate;
+		@NonNull ZonedDateTime displayDate;
+		@Nullable ITranslatableString pickingInstruction;
+		@Nullable WarehouseInfo pickFromWarehouse;
+		@Nullable WarehouseId pickFromWarehouseId;
+		@Nullable LocatorId fromLocatorId;
+		@Nullable WarehouseInfo dropToWarehouse;
+		@Nullable WarehouseId dropToWarehouseId;
+		@Nullable LocatorId toLocatorId;
+		@Nullable PPOrderId manufacturingOrderId;
+		@Nullable OrderId salesOrderId;
+		@Nullable ProductId productId;
+		@Nullable Quantity qty;
+		@Nullable PlantInfo plant;
+		@Nullable ResourceId plantId;
+		@Nullable String priority;
 	}
 }
