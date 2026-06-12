@@ -45,7 +45,6 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -117,17 +116,6 @@ public interface IOLCandBL extends ISingletonService
 	 * </ul>
 	 */
 	PricingSystemId getPricingSystemId(@NonNull I_C_OLCand olCand, @Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults);
-
-	/**
-	 * Return the warehouse to use for the given {@code olCand}.
-	 * <ul>
-	 * <li>if C_OLCand.M_Warehouse_ID > 0, then return that</li>
-	 * <li>else if the effective business partner is a customer with a picking warehouse set, then return that</li>
-	 * <li>else, if the processor has a warehouse set, then return that</li>
-	 * </ul>
-	 */
-	@Nullable
-	WarehouseId getWarehouseId(@NonNull I_C_OLCand olCand, @Nullable OLCandOrderDefaults orderDefaults);
 
 	ShipperId getShipperId(@Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
 
