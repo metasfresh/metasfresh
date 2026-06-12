@@ -1,3 +1,13 @@
+-- EPCIS export performance: bound shared_lu_inout to the input shipment's LUs
+--
+-- get_epcis_events_json_fn computed shared_lu_inout (the LU<->shipment ownership map) over the
+-- WHOLE m_hu_assignment history on every call — no predicate scoping it to the input shipment.
+-- On a large dataset (~16M m_hu_assignment rows) that materialized ~1.8M rows in ~25s, dominating
+-- a >2min single-shipment call. Add a this_inout_lu CTE (the LUs the input shipment touches) and
+-- scope shared_lu_inout via `m_lu_hu_id IN (this_inout_lu)`, so the m_hu_assignment_m_lu_hu_id
+-- index drives the scan. Owner election is unchanged (MIN over all shipments sharing each LU).
+-- Output is byte-identical; this is a pure performance fix (CREATE OR REPLACE).
+
 /*
  * #%L
  * de.metas.edi
