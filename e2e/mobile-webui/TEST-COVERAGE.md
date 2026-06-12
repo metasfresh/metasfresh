@@ -7,8 +7,8 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 56 | 59 | 95% |
+| Barcode Scanner Modes | 6 | 9 | 67% |
+| Picking | 56 | 60 | 93% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -52,9 +52,10 @@
 
 | Scenario | Test |
 |---|---|
-| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — DataWedge IME contract (visible-input editable, virtual keyboard suppressed via soft hint) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readOnly` present, CSS-hidden, no `<video>` — Honeywell CT60 / Android 11 keystroke-wedge contract (HARD keyboard suppression via `readOnly`; camera disabled) | `barcode_scanner_modes.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ### Scan paths
 
@@ -199,21 +200,6 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
-
-### GRAI-scan picking (product aggregation)
-
-| Scenario | Test |
-|---|---|
-| Scan one GRAI → TU auto-created with GRAI attribute (TC1) | `picking/picking-grai-scan.spec.js` |
-| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error (TC2) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error (TC3) | `picking/picking-grai-scan.spec.js` |
-| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list (TC4) | `picking/picking-grai-scan.spec.js` |
-| Unparseable barcode → scanner ignores it, stays live for valid scan (TC5) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU has no capacity for product → GRAINoCapacityForProduct error (TC6) | `picking/picking-grai-scan.spec.js` |
-| BPartner GRAIRequired=No → no GRAI scanner shown (TC7) | `picking/picking-grai-scan.spec.js` |
-| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete (TC9) | `picking/picking-grai-scan.spec.js` |
-
-**8/8 — 100%**
 
 ---
 

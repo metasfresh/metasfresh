@@ -36,6 +36,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
@@ -76,8 +77,6 @@ public class DDOrderPickingReplenishmentService
 	private static final AdMessageKey MSG_DDOrderPickingReplenishment_MandatoryNetwork = AdMessageKey.of("DDOrderPickingReconcile_MandatoryNetwork");
 	@VisibleForTesting
 	static final AdMessageKey MSG_DDOrderPickingReplenishment_QtyZero = AdMessageKey.of("DDOrderPickingReconcile_QtyZero");
-	@VisibleForTesting
-	static final AdMessageKey MSG_DDOrderPickingReplenishment_NoPickFromLocator = AdMessageKey.of("DDOrderPickingReconcile_NoPickFromLocator");
 
 	// FQN trx-property key: avoids collisions with any other service that might register an
 	// after-commit accumulator under a shorter, easier-to-clash name.
@@ -287,18 +286,21 @@ public class DDOrderPickingReplenishmentService
 		final I_M_Warehouse targetWarehouse = warehouseBL.getById(targetWarehouseId);
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
-		// Target locator = the workstation's configured pick-from locator. If unset there is nowhere to deliver
-		// to → skip (informational log, no DD_Order). Mirrors the network-gap soft-fail.
+		// Target locator = the workstation's configured pick-from locator; if unset, fall back to the workplace
+		// warehouse's default locator (getOrCreateDefaultLocatorId always yields one). There is therefore no
+		// "no pick-from locator" skip — the goods always have a delivery target. The fallback is logged so an
+		// operator can see the goods were routed to the warehouse default rather than a configured pick shelf.
 		final WorkplaceId workplaceId = jobSchedule.getWorkplaceId();
-		final LocatorId locatorToId = workplaceService.getById(workplaceId).getPickFromLocatorId();
-		if (locatorToId == null)
+		final Workplace workplace = workplaceService.getById(workplaceId);
+		final LocatorId locatorToId = workplaceService.getPickFromLocatorIdOrWarehouseDefault(workplace);
+		if (workplace.getPickFromLocatorId() == null)
 		{
 			Loggables.addLog(
-					"{0}: C_Workplace_ID={1} has no PickFrom_Locator_ID for M_Picking_Job_Schedule_ID={2}; no DD_Order will be created",
-					MSG_DDOrderPickingReplenishment_NoPickFromLocator.toAD_Message(),
+					"DD_Order picking replenishment: C_Workplace_ID={0} has no PickFrom_Locator_ID for"
+							+ " M_Picking_Job_Schedule_ID={1}; falling back to the warehouse default M_Locator_ID={2}",
 					workplaceId.getRepoId(),
-					jobScheduleId.getRepoId());
-			return;
+					jobScheduleId.getRepoId(),
+					locatorToId.getRepoId());
 		}
 
 		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(targetWarehouse.getDD_NetworkDistribution_ID());
@@ -370,6 +372,14 @@ public class DDOrderPickingReplenishmentService
 						.bpartnerId(BPartnerId.ofRepoIdOrNull(schedule.getC_BPartner_ID()))
 						.build());
 				ddOrderService.complete(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+				Loggables.addLog(
+						"DD_Order picking replenishment: created DD_Order_ID={0} qty={1} from source M_Locator_ID={2}"
+								+ " to target M_Locator_ID={3} for M_Picking_Job_Schedule_ID={4}",
+						ddOrder.getDD_Order_ID(),
+						locatorQty.toBigDecimal(),
+						sourceLocatorId.getRepoId(),
+						locatorToId.getRepoId(),
+						jobScheduleId.getRepoId());
 			}
 		}
 	}
@@ -580,6 +590,11 @@ public class DDOrderPickingReplenishmentService
 		line.setQtyOrdered(newQtyBD);
 		line.setTargetQty(newQtyBD);
 		ddOrderLowLevelDAO.save(line);
+		Loggables.addLog(
+				"DD_Order picking replenishment: updated DD_OrderLine_ID={0} (DD_Order_ID={1}) qty in place to {2}",
+				line.getDD_OrderLine_ID(),
+				line.getDD_Order_ID(),
+				newQtyBD);
 	}
 
 	/**
@@ -653,6 +668,7 @@ public class DDOrderPickingReplenishmentService
 			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
 		}
 		ddOrderService.voidIt(existingDDOrderId);
+		Loggables.addLog("DD_Order picking replenishment: voided DD_Order_ID={0}", existingDDOrderId.getRepoId());
 
 		// Null the back-reference to M_Picking_Job_Schedule on the (now voided) DD_Order header and its lines.
 		// voidIt does NOT clear it, so when the void runs synchronously inside the assignment's delete transaction

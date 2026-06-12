@@ -105,4 +105,20 @@ public class WorkplaceService
 			return warehouseBL.getLocatorIdsByWarehouseId(workplace.getWarehouseId());
 		}
 	}
+
+	/**
+	 * The single target locator to deliver to for this workplace: the configured {@code PickFrom_Locator_ID} if set,
+	 * otherwise the workplace warehouse's default locator (always resolvable via
+	 * {@link IWarehouseBL#getOrCreateDefaultLocatorId(WarehouseId)}). Use this when exactly one delivery locator is
+	 * required (e.g. the DD_Order picking-replenishment target); {@link #getPickFromLocatorIds(Workplace)} returns the
+	 * multi-locator set used for availability/source filtering.
+	 */
+	@NonNull
+	public LocatorId getPickFromLocatorIdOrWarehouseDefault(@NonNull final Workplace workplace)
+	{
+		final LocatorId pickFromLocatorId = workplace.getPickFromLocatorId();
+		return pickFromLocatorId != null
+				? pickFromLocatorId
+				: warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
+	}
 }
