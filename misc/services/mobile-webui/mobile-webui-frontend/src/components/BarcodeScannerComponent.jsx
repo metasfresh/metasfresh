@@ -70,7 +70,8 @@ const useConfigParams = () => {
 
 const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResult, inputPlaceholderText }) => {
   const {
-    enabledModes,
+    // eslint-disable-next-line no-unused-vars
+    enabledModes, // consumed by Tasks 5–8 (mode toggle footer)
     defaultMode,
     hardwareInputMode,
     hardwareInputReadOnly,
@@ -89,9 +90,6 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
-
-  // Suppress unused-vars lint: enabledModes will be consumed by Tasks 5–8 (mode toggle footer).
-  void enabledModes;
 
   //
   // Video
@@ -125,7 +123,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
       if (activeMode === MODE.CAMERA) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      if (hardwareInputMode !== 'none') {
+      if (hardwareInputMode !== 'none' && !hardwareInputReadOnly) {
         inputTextRef?.current?.focus();
       }
     } /* no deps, call it on each render */
@@ -166,8 +164,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
     disabled: isProcessing,
   });
 
-  // eslint-disable-next-line no-unused-vars
-  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls: _controls = null }) => {
+  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode }) => {
     if (!scannedBarcode?.trim()) {
       uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
       return;
@@ -321,7 +318,8 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
           readOnly                │ ABSENT (else kills the    │ PRESENT (load-bearing keyboard
                                   │ InputConnection — text    │ suppression — Android 11 ignores
                                   │ injection silently fails) │ inputMode="none")
-          Focus useEffects        │ Establish the IME         │ N/A — keystroke hook listens on document
+          Focus useEffects        │ Mount-time focus()        │ Per-render skipped (readOnly guard
+                                  │ establishes IME           │ prevents keyboard trigger)
           ────────────────────────┼───────────────────────────┼──────────────────────────────────────
           Sysconfig — hardware    │ mode.hardware.input.      │ mode.hardware.input.
                                   │   readOnly=N              │   readOnly=Y
