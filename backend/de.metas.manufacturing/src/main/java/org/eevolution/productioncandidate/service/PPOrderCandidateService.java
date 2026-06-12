@@ -69,7 +69,6 @@ import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPMaturingCandidateV;
@@ -509,11 +508,11 @@ public class PPOrderCandidateService
 		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
 		if (ppProductPlanningId == null)
 		{
-			ppOrderCandidateRecord.setWorkStation_ID(-1);
+			ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(null));
 			return;
 		}
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.getRecordById(ppProductPlanningId);
-		ppOrderCandidateRecord.setWorkStation_ID(productPlanning.getWorkStation_ID());
+		final ProductPlanning productPlanning = productPlanningDAO.getById(ppProductPlanningId);
+		ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(productPlanning.getWorkstationId()));
 	}
 
 	public void setWorkstationId(@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds, @Nullable final ResourceId workstationId)
