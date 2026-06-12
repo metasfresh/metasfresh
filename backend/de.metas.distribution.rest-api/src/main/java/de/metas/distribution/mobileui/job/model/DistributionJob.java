@@ -99,9 +99,7 @@ public class DistributionJob
 
 	public void assertCanEdit(final UserId userId)
 	{
-		// A closed job (its DD_Order is no longer Completed — e.g. the shipment was closed-out independently and the
-		// replenishment DD_Order was Closed under the picker) can no longer be edited, even by its responsible user.
-		// Guards the in-flight-edit race: the picker still has the job open on the device when it gets closed server-side.
+		// A closed job can no longer be edited, even by its responsible user (guards the in-flight-edit race).
 		if (isClosed)
 		{
 			throw new AdempiereException("Cannot edit " + this + " because it is closed");
