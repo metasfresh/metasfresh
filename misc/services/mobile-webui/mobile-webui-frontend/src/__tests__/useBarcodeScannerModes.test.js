@@ -1,14 +1,13 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { useBarcodeScannerModes, MODE } from '../hooks/useBarcodeScannerModes';
+import { useBooleanSetting, useSetting } from '../reducers/settings';
 
 // Mock the settings hooks
 jest.mock('../reducers/settings', () => ({
   useBooleanSetting: jest.fn(),
   useSetting: jest.fn(),
 }));
-
-import { useBooleanSetting, useSetting } from '../reducers/settings';
 
 /**
  * Helper: configure the mocked settings hooks for a given scenario.

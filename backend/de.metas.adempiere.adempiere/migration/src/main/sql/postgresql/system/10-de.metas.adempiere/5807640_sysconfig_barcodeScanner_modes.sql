@@ -44,10 +44,14 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_SysConfig WHERE Name='mobileui.frontend.barco
 ;
 
 -- SysConfig Name: mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly
--- Default: N — das Eingabefeld im Hardware-Modus ist bearbeitbar (nicht schreibgeschützt).
+-- Default: N — das Eingabefeld im Hardware-Modus ist bearbeitbar.
+-- Dieses Feld steuert das HARDWARE-MODUS-Eingabefeld (mode.hardware.*).
+-- Es ist NICHT identisch mit barcodeScanner.offscreenInput.readOnly (Off-Screen-Eingabefeld, Modus A)
+-- oder barcodeScanner.visibleInput.readOnly (sichtbares Eingabefeld, Modus C3).
+-- Nur für Keystroke-Firmware-Deployments setzen, bei denen inputMode=none nicht unterdrückt (z. B. Honeywell CT60).
 INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
 SELECT 0,0,541820 /*From ID Server*/,'S',TO_TIMESTAMP('2026-06-12 10:00:04','YYYY-MM-DD HH24:MI:SS'),100,
-       'Eingabefeld im Hardware-Scanner-Modus schreibschützen. Y=nur lesen, N=editierbar. Standard: N.',
+       'Hardware-Modus-Eingabefeld schreibschützen (Y=readOnly, N=editierbar; Standard: N). Nur für Keystroke-Firmware ohne inputMode=none-Unterstützung. Nicht verwechseln mit offscreenInput.readOnly / visibleInput.readOnly.',
        'D','Y','mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly',TO_TIMESTAMP('2026-06-12 10:00:04','YYYY-MM-DD HH24:MI:SS'),100,'N'
 WHERE NOT EXISTS (SELECT 1 FROM AD_SysConfig WHERE Name='mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly')
 ;

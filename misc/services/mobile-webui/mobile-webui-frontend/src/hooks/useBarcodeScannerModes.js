@@ -10,7 +10,7 @@ export const useBarcodeScannerModes = ({ invisible = false } = {}) => {
   const configuredDefault = useSetting('barcodeScanner.defaultMode');
 
   if (invisible) {
-    return { enabledModes: { hardware: true, camera: false, manual: false }, defaultMode: MODE.HARDWARE, MODE };
+    return { enabledModes: { hardware: true, camera: false, manual: false }, defaultMode: MODE.HARDWARE };
   }
 
   let enabled = { hardware, camera, manual };
@@ -23,5 +23,5 @@ export const useBarcodeScannerModes = ({ invisible = false } = {}) => {
     PRIORITY.find((m) => enabled[m]) ||
     MODE.MANUAL;
 
-  return { enabledModes: enabled, defaultMode, MODE };
+  return { enabledModes: enabled, defaultMode };
 };
