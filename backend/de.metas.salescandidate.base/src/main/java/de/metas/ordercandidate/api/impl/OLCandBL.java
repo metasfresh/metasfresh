@@ -121,13 +121,6 @@ public class OLCandBL implements IOLCandBL
 
 	public OLCandBL(
 			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
-	{
-		this(bpartnerBL, bPartnerOrderParamsRepository, Services.get(IWarehouseDAO.class));
-	}
-
-	public OLCandBL(
-			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository,
 			@NonNull final IWarehouseDAO warehouseDAO)
 	{
