@@ -231,8 +231,8 @@ public class M_Picking_Job_Schedule_StepDef
 	 * {@code beforeChange} interceptor REJECTS the save with the expected {@code ErrorCode}.
 	 * <p>
 	 * Real-world trigger: same shipment close-out ({@code GenerateInOutFromShipmentSchedules}) as the step above; this
-	 * one asserts the guard's rejection path (the RED reproduction of packing being blocked while a picker is busy,
-	 * before the close-out exemption was added).
+	 * one asserts the guard's rejection path — the picker-busy guard still blocks a genuine re-plan (qty / workplace
+	 * change) while a picker is active; only the {@code Processed->true} close-out transition is exempt.
 	 * <p>
 	 * Required columns:
 	 * <ul>

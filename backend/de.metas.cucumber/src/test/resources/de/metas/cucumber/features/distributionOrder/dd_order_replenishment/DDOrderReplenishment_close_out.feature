@@ -131,8 +131,8 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | M_Picking_Job_Schedule_ID |
       | jobSchedule               |
 
-    # THE BUG / RED: closing out the schedule (Processed=Y) must NOT be blocked by the busy picker. Before the
-    # close-out exemption this throws DDOrderPickingReconcile_PickerBusy; after the fix it succeeds.
+    # Close-out (M_Picking_Job_Schedule.Processed=Y) is a fulfilment event — it must never be blocked by the
+    # picker-busy guard, even while a picker has the DD_Order job active.
     When the picking job schedule is marked as processed (shipment close-out):
       | M_Picking_Job_Schedule_ID |
       | jobSchedule               |

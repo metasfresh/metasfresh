@@ -18,9 +18,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Covers {@link DistributionJob#assertCanEdit(UserId)} — in particular the closed-job guard added for the
- * packing↔picking close-out: a DD_Order-backed distribution job that was closed under the picker (its DD_Order
- * is no longer Completed) must no longer be editable, even by its responsible user.
+ * Covers {@link DistributionJob#assertCanEdit(UserId)}: a DD_Order-backed distribution job that was closed under
+ * the picker (its DD_Order is no longer Completed) must no longer be editable, even by its responsible user.
  */
 class DistributionJobTest
 {
