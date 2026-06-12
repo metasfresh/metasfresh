@@ -22,10 +22,13 @@
 
 package org.adempiere.warehouse.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 @Value
 @Builder
@@ -33,4 +36,10 @@ public class CreateWarehousePickingGroupRequest
 {
 	@NonNull OrgId orgId;
 	@NonNull String name;
+
+	/**
+	 * Warehouses to assign to the newly-created picking group (each warehouse's
+	 * {@code M_Warehouse_PickingGroup_ID} is set to the new group). May be empty.
+	 */
+	@Singular @NonNull ImmutableSet<WarehouseId> warehouseIds;
 }

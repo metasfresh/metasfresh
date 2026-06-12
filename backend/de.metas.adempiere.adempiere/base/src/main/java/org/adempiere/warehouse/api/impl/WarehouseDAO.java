@@ -926,7 +926,19 @@ public class WarehouseDAO implements IWarehouseDAO
 		record.setName(request.getName());
 		saveRecord(record);
 
-		return WarehousePickingGroupId.ofRepoId(record.getM_Warehouse_PickingGroup_ID());
+		final WarehousePickingGroupId pickingGroupId = WarehousePickingGroupId.ofRepoId(record.getM_Warehouse_PickingGroup_ID());
+
+		// Assign each requested warehouse to the freshly-created picking group.
+		// The saves auto-invalidate the allWarehousePickingGroups CCache (it declares
+		// additionalTableNameToResetFor(M_Warehouse_PickingGroup) and M_Warehouse), so no manual reset is needed.
+		for (final WarehouseId warehouseId : request.getWarehouseIds())
+		{
+			final I_M_Warehouse warehouseRecord = load(warehouseId, I_M_Warehouse.class);
+			warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
+			saveRecord(warehouseRecord);
+		}
+
+		return pickingGroupId;
 	}
 
 	@NonNull

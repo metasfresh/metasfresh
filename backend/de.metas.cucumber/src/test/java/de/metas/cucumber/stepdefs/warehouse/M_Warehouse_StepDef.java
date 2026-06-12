@@ -22,9 +22,9 @@
 
 package de.metas.cucumber.stepdefs.warehouse;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -51,7 +51,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
@@ -130,29 +129,18 @@ public class M_Warehouse_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("At least one row with a Name is required"));
 
-		// Create the group via the BL (which owns the DAO), with a per-run-unique Name so reusing the same
-		// group label across tests in the shared DB does not collide.
-		final WarehousePickingGroupId pickingGroupId = warehouseBL.createWarehousePickingGroup(
+		final ImmutableSet<WarehouseId> warehouseIds = rows.stream()
+				.map(row -> warehouseTable.getId(row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID)))
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Create the group AND assign the warehouses to it in one BL call (the BL/DAO owns the record load+save).
+		// A per-run-unique Name keeps reusing the same group label across tests in the shared DB from colliding.
+		warehouseBL.createWarehousePickingGroup(
 				CreateWarehousePickingGroupRequest.builder()
 						.orgId(StepDefConstants.ORG_ID)
 						.name(groupName + "_" + System.currentTimeMillis())
+						.warehouseIds(warehouseIds)
 						.build());
-
-		rows.forEach(row -> {
-			final WarehouseId warehouseId = warehouseTable.getId(row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID));
-
-			final org.compiere.model.I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.load(
-					warehouseId.getRepoId(), org.compiere.model.I_M_Warehouse.class);
-			warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
-			saveRecord(warehouseRecord);
-		});
-
-		// The picking-group → warehouses index is cached (WarehouseDAO.allWarehousePickingGroups). The bulk
-		// save fires a CacheInvalidation event, but in the shared single-JVM executor that event may not be
-		// processed before the next step reads the index. Reset the relevant caches synchronously so the
-		// freshly-assigned picking group is visible immediately (same trap handled in C_Workplace_StepDef).
-		CacheMgt.get().reset(I_M_Warehouse.Table_Name);
-		CacheMgt.get().reset(I_M_Warehouse_PickingGroup.Table_Name);
 	}
 
 	/**
