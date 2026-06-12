@@ -41,11 +41,11 @@ WHERE  Name = 'mobileui.frontend.barcodeScanner.mode.manual.enabled'
   AND  EXISTS (SELECT 1 FROM AD_SysConfig WHERE Name = 'mobileui.frontend.barcodeScanner.showInputText' AND Value = 'Y')
 ;
 
--- DELETE regardless of Value: showInputText is retired unconditionally;
--- only the mode.manual.enabled carry-forward above is conditional on Value='Y'.
-DELETE FROM AD_SysConfig
-WHERE  Name = 'mobileui.frontend.barcodeScanner.showInputText'
-;
+-- showInputText DELETE: NOT executed here.
+-- BarcodeScannerComponent.jsx still reads barcodeScanner.showInputText via useBooleanSetting.
+-- Deleting this row would silently reset Mode C3 (visible input) on any deployment with showInputText=Y,
+-- causing the visible input field to disappear without warning.
+-- This DELETE ships in the task that updates BarcodeScannerComponent to read the new per-mode knobs.
 
 -- ============================================================
 -- B4. showInputVideo: if exists → set mode.camera.enabled to its Value, then DELETE showInputVideo
@@ -69,11 +69,12 @@ WHERE  Name = 'mobileui.frontend.barcodeScanner.showInputVideo'
 ;
 
 -- ============================================================
--- B5. isInputTextReadonly: DELETE (keyboard suppression now decided by mode)
+-- B5. isInputTextReadonly: NOT deleted here.
+-- BarcodeScannerComponent.jsx still reads barcodeScanner.isInputTextReadonly via useBooleanSetting.
+-- Deleting this row while the JS consumer exists would silently reset any customer-configured
+-- N value to isMobileOrTablet() default, losing the keyboard-suppression override on Mode C3.
+-- This DELETE ships in the task that updates BarcodeScannerComponent to read the new per-mode knobs.
 -- ============================================================
-DELETE FROM AD_SysConfig
-WHERE  Name = 'mobileui.frontend.barcodeScanner.isInputTextReadonly'
-;
 
 -- ============================================================
 -- B6. visibleInput.readOnly: NOT deleted here.
