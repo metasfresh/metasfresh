@@ -21,9 +21,9 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
-    # Defensive: clear any workplace / user->workplace assignment leaked from a prior scenario in the shared JVM.
+    # Defensive: clear any leaked picker->workplace assignment so getWorkplaceByUserId resolves only OUR workplace.
+    # Do NOT deactivate all C_Workplace here — that would deactivate seed workplaces other executor features depend on.
     And delete all C_Workplace_User_Assign records
-    And deactivate all C_Workplace records
 
     # otherPicker simulates a SECOND warehouse worker who is already picking one of the orders on this LU:
     # below they take a picking lock on that order's shipment schedule. The scenario then asserts that mass

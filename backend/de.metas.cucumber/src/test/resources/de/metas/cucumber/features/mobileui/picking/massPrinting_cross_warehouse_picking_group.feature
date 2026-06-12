@@ -23,9 +23,9 @@ Feature: Mass Printing - scan an LU stored in a different warehouse of the same 
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
-    # Defensive: clear any workplace / user->workplace assignment leaked from a prior scenario in the shared JVM.
+    # Defensive: clear any leaked picker->workplace assignment so getWorkplaceByUserId resolves only OUR workplace.
+    # Do NOT deactivate all C_Workplace here — that would deactivate seed workplaces other executor features depend on.
     And delete all C_Workplace_User_Assign records
-    And deactivate all C_Workplace records
 
     And metasfresh contains M_Products:
       | Identifier | X12DE355 | IsSelfPacked |
