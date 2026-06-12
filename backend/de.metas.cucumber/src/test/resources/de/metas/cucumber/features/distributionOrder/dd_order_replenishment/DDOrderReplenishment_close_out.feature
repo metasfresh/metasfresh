@@ -7,8 +7,9 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
   - No replenishment move in progress: the obsolete DD_Order is CLOSED and the picker is released.
   - A replenishment move in progress: the DD_Order is DISCONNECTED (IsPickingDisconnected=Y, FKs retained) so the worker finishes it.
 
-  # Test seams: the picker is made busy via the real mobile picking REST workflow; the close-out is the system's
-  # markAsProcessed; disposal is driven via the after-commit reconcile event, invoked directly for deterministic ordering.
+  # Test seams: the picker is made busy via the real mobile picking REST workflow; the close-out is real shipment
+  # generation (which marks the workstation assignment Processed=Y); disposal is driven via the after-commit reconcile
+  # event, invoked directly for deterministic ordering.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -131,11 +132,13 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | M_Picking_Job_Schedule_ID |
       | jobSchedule               |
 
-    # Close-out (M_Picking_Job_Schedule.Processed=Y) is a fulfilment event — it must never be blocked by the
-    # picker-busy guard, even while a picker has the DD_Order job active.
-    When the picking job schedule is marked as processed (shipment close-out):
-      | M_Picking_Job_Schedule_ID |
-      | jobSchedule               |
+    # Close-out is real shipment generation: the operator brought the rest of the qty to the packing station, so the
+    # packing-warehouse stock ships and the workstation assignment is closed out (M_Picking_Job_Schedule.Processed=Y).
+    # This is a fulfilment event — it must never be blocked by the picker-busy guard, even while a picker has the
+    # DD_Order job active.
+    When shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_Picking_Job_Schedule_ID |
+      | shipmentSchedule      | jobSchedule               |
 
     # Disposal happens in the after-commit reconcile (driven directly here for deterministic ordering). No move is
     # in progress, so the obsolete DD_Order is CLOSED (not Voided) and the picker's assignment is released.
@@ -165,10 +168,11 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | M_Picking_Job_Schedule_ID | PickFrom_HU_ID |
       | jobSchedule               | stockSourceHU  |
 
-    # Close-out still succeeds (packing is GOD) ...
-    When the picking job schedule is marked as processed (shipment close-out):
-      | M_Picking_Job_Schedule_ID |
-      | jobSchedule               |
+    # Close-out still succeeds (packing is GOD): real shipment generation ships the packing-station stock and marks
+    # the workstation assignment Processed=Y ...
+    When shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_Picking_Job_Schedule_ID |
+      | shipmentSchedule      | jobSchedule               |
     And the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
 
     # ... and the DD_Order is DISCONNECTED, not Closed: IsPickingDisconnected=Y, still Completed, FK to the schedule

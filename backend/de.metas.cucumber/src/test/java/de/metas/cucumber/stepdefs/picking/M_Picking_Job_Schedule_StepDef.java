@@ -196,38 +196,6 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Closes out the given workstation assignments ({@code Processed=Y}) via
-	 * {@code pickingJobScheduleService.markAsProcessed}.
-	 * <p>
-	 * Real-world trigger: shipment generation (Schnelldruck/Quickpack → {@code GenerateInOutFromShipmentSchedules})
-	 * sets the assignment {@code Processed=Y} when the shipment is created. The step calls the BL directly to drive
-	 * the close-out deterministically (without spinning up the full shipment-generation flow).
-	 * <p>
-	 * Required columns:
-	 * <ul>
-	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment to close out</li>
-	 * </ul>
-	 * @cucumber.example
-	 * <pre>
-	 * When the picking job schedule is marked as processed (shipment close-out):
-	 *   | M_Picking_Job_Schedule_ID |
-	 *   | jobSchedule               |
-	 * </pre>
-	 */
-	@And("^the picking job schedule is marked as processed \\(shipment close-out\\):$")
-	public void markAsProcessed(final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::markAsProcessed);
-	}
-
-	private void markAsProcessed(final DataTableRow row)
-	{
-		final PickingJobSchedule jobSchedule = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable);
-		pickingJobScheduleService.markAsProcessed(ImmutableSet.of(jobSchedule.getId()));
-	}
-
-
-	/**
 	 * @cucumber.stepdef Deletes all {@code M_Picking_Job_Schedule} records for the given shipment schedule. Triggers
 	 * the {@code afterDelete} interceptor which synchronously voids and unlinks any live DD_Orders linked to the
 	 * deleted assignments (satisfying the deferrable FK constraint within the same transaction).

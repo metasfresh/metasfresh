@@ -56,6 +56,7 @@ import de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrde
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -656,8 +657,7 @@ public class DD_Order_StepDef
 			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 			final I_DD_Order ddOrder = liveDDOrderForPickingJobScheduleQuery(jobScheduleId).firstOnlyNotNull(I_DD_Order.class);
 			// UpdatedBy is always a valid AD_User_ID (> 0) — use it as the "worker who picked up the job".
-			ddOrder.setAD_User_Responsible_ID(ddOrder.getUpdatedBy());
-			InterfaceWrapperHelper.saveRecord(ddOrder);
+			ddOrderService.assignToResponsible(ddOrder, UserId.ofRepoId(ddOrder.getUpdatedBy()));
 		});
 	}
 
