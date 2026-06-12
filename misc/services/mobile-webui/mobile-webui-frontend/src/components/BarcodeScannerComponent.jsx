@@ -25,8 +25,8 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const useConfigParams = () => {
-  const { enabledModes, defaultMode } = useBarcodeScannerModes();
+const useConfigParams = ({ invisible }) => {
+  const { enabledModes, defaultMode } = useBarcodeScannerModes({ invisible });
 
   // Hardware off-screen input HTML attributes — driven directly by per-mode knobs.
   // Two orthogonal keyboard-suppression knobs feed the scan <input>. They are named after their
@@ -70,7 +70,13 @@ const useConfigParams = () => {
   };
 };
 
-const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResult, inputPlaceholderText }) => {
+const BarcodeScannerComponent = ({
+  testId,
+  resolveScannedBarcode,
+  onResolvedResult,
+  inputPlaceholderText,
+  invisible,
+}) => {
   const {
     enabledModes,
     defaultMode,
@@ -81,7 +87,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
-  } = useConfigParams();
+  } = useConfigParams({ invisible });
 
   const [activeMode, setActiveMode] = useState(defaultMode);
 
@@ -350,14 +356,14 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
 
   return (
     <div className="barcode-scanner">
-      {isProcessing && <Spinner />}
+      {!invisible && isProcessing && <Spinner />}
       {/* Scan prompt — visible on hardware-scanner deployments (no camera) when the input is
           OFF-SCREEN (the actual empty-screen case: the only thing the component otherwise renders
           is the invisible off-screen input). Reuses inputPlaceholderText so
           a caller can override the default caption (e.g. HUScanner's locator-scan branch passes
           'Scan LU or locator…'); when the caller passes none, the default scanPrompt translation
           is used. See https://github.com/metasfresh/me03/issues/30363. */}
-      {!isProcessing && activeMode !== MODE.CAMERA && activeMode !== MODE.MANUAL && (
+      {!invisible && !isProcessing && activeMode !== MODE.CAMERA && activeMode !== MODE.MANUAL && (
         <div className="scan-prompt">
           <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
           {/* Caption swap — idle text by default, "Scanning in progress…" while the input
@@ -434,7 +440,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
       {/* Manual entry mode — visible editable input + submit button.
           Rendered only in MANUAL mode; the off-screen hardware input stays mounted
           below to preserve DataWedge IME InputConnection on mode switches. */}
-      {activeMode === MODE.MANUAL && !isProcessing && (
+      {!invisible && activeMode === MODE.MANUAL && !isProcessing && (
         <div className="manual-entry">
           <input
             ref={manualInputRef}
@@ -454,14 +460,16 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
           />
         </div>
       )}
-      {activeMode === MODE.CAMERA && <video key="video" ref={videoRef} width="100%" height="100%" />}
-      <BarcodeScannerFooter
-        activeMode={activeMode}
-        enabledModes={enabledModes}
-        onSelectManual={handleSelectManual}
-        onToggleHardwareCamera={handleToggleHardwareCamera}
-        onBackToScanner={handleBackToScanner}
-      />
+      {!invisible && activeMode === MODE.CAMERA && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      {!invisible && (
+        <BarcodeScannerFooter
+          activeMode={activeMode}
+          enabledModes={enabledModes}
+          onSelectManual={handleSelectManual}
+          onToggleHardwareCamera={handleToggleHardwareCamera}
+          onBackToScanner={handleBackToScanner}
+        />
+      )}
     </div>
   );
 };
@@ -471,6 +479,11 @@ BarcodeScannerComponent.propTypes = {
   resolveScannedBarcode: PropTypes.func,
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
+  invisible: PropTypes.bool,
+};
+
+BarcodeScannerComponent.defaultProps = {
+  invisible: false,
 };
 
 export default BarcodeScannerComponent;
