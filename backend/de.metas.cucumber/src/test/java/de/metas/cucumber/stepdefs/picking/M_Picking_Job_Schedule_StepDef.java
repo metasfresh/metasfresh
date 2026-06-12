@@ -196,6 +196,74 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
+	 * @cucumber.stepdef Marks the given workstation assignments as {@code Processed=Y}, mirroring the shipment
+	 * close-out ({@code GenerateInOutFromShipmentSchedules → pickingJobScheduleService.markAsProcessed}). This fires
+	 * the {@code M_Picking_Job_Schedule.beforeChange} guard on the {@code Processed->true} transition (which must be
+	 * EXEMPT from the picker-busy refusal — AC1) and the {@code afterChange} after-commit reconcile (which disposes
+	 * the obsolete replenishment DD_Order via CLOSE/DISCONNECT — AC2/AC5). To assert the disposition deterministically,
+	 * follow this step with {@code the reconcile event for M_Picking_Job_Schedule <id> is processed}.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment to mark processed</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * When the picking job schedule is marked as processed (shipment close-out):
+	 *   | M_Picking_Job_Schedule_ID |
+	 *   | jobSchedule               |
+	 * </pre>
+	 */
+	@And("^the picking job schedule is marked as processed \\(shipment close-out\\):$")
+	public void markAsProcessed(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::markAsProcessed);
+	}
+
+	private void markAsProcessed(final DataTableRow row)
+	{
+		final PickingJobSchedule jobSchedule = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable);
+		pickingJobScheduleService.markAsProcessed(ImmutableSet.of(jobSchedule.getId()));
+	}
+
+	/**
+	 * @cucumber.stepdef Attempts to mark the given assignment as {@code Processed=Y} and asserts the
+	 * {@code beforeChange} interceptor REJECTS the save with the expected {@code ErrorCode}. Used as the RED
+	 * reproduction of the packing↔picking dependency: before the close-out exemption (AC1), a {@code Processed->true}
+	 * write trips the picker-busy guard and packing is blocked.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment</li>
+	 *   <li>{@code ErrorCode} — expected {@code AdempiereException} error code (e.g. {@code DDOrderPickingReconcile_PickerBusy})</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * Then marking the picking job schedule as processed is rejected:
+	 *   | M_Picking_Job_Schedule_ID | ErrorCode                          |
+	 *   | jobSchedule               | DDOrderPickingReconcile_PickerBusy |
+	 * </pre>
+	 */
+	@And("^marking the picking job schedule as processed is rejected:$")
+	public void markAsProcessedIsRejected(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::markAsProcessedIsRejected);
+	}
+
+	private void markAsProcessedIsRejected(final DataTableRow row)
+	{
+		final PickingJobSchedule jobSchedule = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable);
+		final String expectedErrorCode = row.getAsString("ErrorCode");
+
+		assertThatThrownBy(() -> pickingJobScheduleService.markAsProcessed(ImmutableSet.of(jobSchedule.getId())))
+				.as("Marking the assignment as processed must be rejected by the beforeChange interceptor")
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
+						.as("AdempiereException.ErrorCode")
+						.isEqualTo(expectedErrorCode));
+	}
+
+	/**
 	 * @cucumber.stepdef Deletes all {@code M_Picking_Job_Schedule} records for the given shipment schedule. Triggers
 	 * the {@code afterDelete} interceptor which synchronously voids and unlinks any live DD_Orders linked to the
 	 * deleted assignments (satisfying the deferrable FK constraint within the same transaction).

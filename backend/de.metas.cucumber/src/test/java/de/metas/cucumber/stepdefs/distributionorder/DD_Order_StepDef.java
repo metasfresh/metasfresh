@@ -54,6 +54,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
+import de.metas.util.StringUtils;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ResourceId;
@@ -311,6 +312,23 @@ public class DD_Order_StepDef
 			final OrderId actualOrderId = OrderId.ofRepoIdOrNull(actual.getC_Order_ID());
 			softly.assertThat(actualOrderId).as("C_Order_ID").isEqualTo(expectedOrderId);
 		}
+
+		// Close-out disposition assertions (me03 30383): the in-progress disconnect marker, and the close-out
+		// picker release (AD_User_Responsible_ID cleared). Use `-` in the feature to assert the responsible is unset.
+		expected.getAsOptionalBoolean(I_DD_Order.COLUMNNAME_IsPickingDisconnected)
+				.ifPresent(expectedDisconnected -> softly.assertThat(actual.isPickingDisconnected())
+						.as("IsPickingDisconnected")
+						.isEqualTo(expectedDisconnected));
+
+		// AD_User_Responsible_ID: a `-` cell asserts the responsible is unset (the CLOSE path releases the picker).
+		// Any other (numeric) value asserts that exact AD_User_ID.
+		expected.getAsOptionalString(I_DD_Order.COLUMNNAME_AD_User_Responsible_ID)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(responsibleStr -> {
+					final int expectedResponsibleId = "-".equals(responsibleStr) ? -1 : Integer.parseInt(responsibleStr);
+					final int actualResponsibleId = actual.getAD_User_Responsible_ID() > 0 ? actual.getAD_User_Responsible_ID() : -1;
+					softly.assertThat(actualResponsibleId).as("AD_User_Responsible_ID").isEqualTo(expectedResponsibleId);
+				});
 
 		softly.assertAll();
 	}
@@ -598,6 +616,35 @@ public class DD_Order_StepDef
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
 				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
 				.create();
+	}
+
+	/**
+	 * @cucumber.stepdef Test seam: assigns a responsible user ({@code AD_User_Responsible_ID}) to the live DD_Order
+	 * linked to the given workstation assignment, simulating a worker who has picked up the DD_Order-backed mobile
+	 * DistributionJob (the launcher keys on {@code AD_User_Responsible_ID}). Used so the close-out CLOSE path's picker
+	 * release ({@code AD_User_Responsible_ID} cleared — AC3) can be asserted as a state transition.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the assignment whose DD_Order gets a responsible user</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * When a worker takes the DD_Order linked to picking job schedule:
+	 *   | M_Picking_Job_Schedule_ID |
+	 *   | jobSchedule               |
+	 * </pre>
+	 */
+	@When("^a worker takes the DD_Order linked to picking job schedule:$")
+	public void assignResponsibleToDDOrder(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+			final I_DD_Order ddOrder = liveDDOrderForPickingJobScheduleQuery(jobScheduleId).firstOnlyNotNull(I_DD_Order.class);
+			// UpdatedBy is always a valid AD_User_ID (> 0) — use it as the "worker who picked up the job".
+			ddOrder.setAD_User_Responsible_ID(ddOrder.getUpdatedBy());
+			InterfaceWrapperHelper.saveRecord(ddOrder);
+		});
 	}
 
 	private void validatePickingJobScheduleLine(

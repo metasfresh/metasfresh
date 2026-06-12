@@ -22,12 +22,18 @@
 
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleStatus;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.model.I_DD_OrderLine;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
@@ -93,6 +99,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final M_HU_StepDefData huTable;
 
 	/**
 	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(PickingJobScheduleId)} in
@@ -176,6 +183,66 @@ public class DDOrderPickingReplenishment_StepDef
 		{
 			line.setQtyInTransit(BigDecimal.ONE);
 			InterfaceWrapperHelper.save(line);
+		}
+	}
+
+	/**
+	 * Test seam: directly creates an IN-PROGRESS {@code DD_Order_MoveSchedule} (Status='IP') for the (single) line of
+	 * the DD_Order linked to the given picking job schedule, simulating a picker who has started moving the
+	 * replenishment stock — WITHOUT running the full mobile move-schedule flow. This is what
+	 * {@code DDOrderMoveScheduleService.hasInProgressSchedules(ddOrderId)} checks, and it drives the close-out
+	 * disposition down the DISCONNECT branch instead of CLOSE (AC5).
+	 *
+	 * <p>The move-schedule's mandatory columns (product/UOM/locators/warehouses) are copied from the DD_OrderLine; the
+	 * {@code PickFrom_HU_ID} is the given source HU.</p>
+	 *
+	 * <p>Required columns:</p>
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the assignment whose DD_Order move is "in progress"</li>
+	 *   <li>{@code PickFrom_HU_ID} — identifier of the source HU being moved (any active HU in the scenario)</li>
+	 * </ul>
+	 */
+	@When("^simulate an in-progress replenishment move on DD_Order linked to picking job schedule:$")
+	public void simulate_in_progress_move(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::simulate_in_progress_move);
+	}
+
+	private void simulate_in_progress_move(@NonNull final DataTableRow row)
+	{
+		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(
+				row.getAsIdentifier(de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).getAsString());
+		final HuId pickFromHuId = row.getAsIdentifier("PickFrom_HU_ID").lookupNotNullIdIn(huTable);
+
+		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_DD_OrderLine.class);
+
+		assertThat(lines)
+				.as("DD_OrderLines for picking job schedule %s (must exist before simulating an in-progress move)", jobScheduleId.getRepoId())
+				.isNotEmpty();
+
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		for (final I_DD_OrderLine line : lines)
+		{
+			final I_DD_Order_MoveSchedule moveSchedule = InterfaceWrapperHelper.newInstance(I_DD_Order_MoveSchedule.class);
+			moveSchedule.setAD_Org_ID(line.getAD_Org_ID());
+			moveSchedule.setDD_Order_ID(line.getDD_Order_ID());
+			moveSchedule.setDD_OrderLine_ID(line.getDD_OrderLine_ID());
+			moveSchedule.setM_Product_ID(line.getM_Product_ID());
+			moveSchedule.setC_UOM_ID(line.getC_UOM_ID());
+			moveSchedule.setQtyToPick(line.getQtyOrdered());
+			moveSchedule.setQtyPicked(BigDecimal.ZERO);
+			moveSchedule.setIsPickWholeHU(true);
+			moveSchedule.setPickFrom_HU_ID(pickFromHuId.getRepoId());
+			moveSchedule.setPickFrom_Locator_ID(line.getM_Locator_ID());
+			moveSchedule.setPickFrom_Warehouse_ID(warehouseDAO.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID()).getRepoId());
+			moveSchedule.setDropTo_Locator_ID(line.getM_LocatorTo_ID());
+			moveSchedule.setDropTo_Warehouse_ID(warehouseDAO.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID()).getRepoId());
+			moveSchedule.setStatus(DDOrderMoveScheduleStatus.IN_PROGRESS.getCode());
+			InterfaceWrapperHelper.save(moveSchedule);
 		}
 	}
 
