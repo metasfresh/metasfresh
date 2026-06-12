@@ -89,6 +89,7 @@ const translations = {
       enterManually: 'Manuell eingeben',
       scanWithCamera: 'Mit Kamera scannen',
       useHardwareScanner: 'Hardware-Scanner verwenden',
+      backToScanner: 'Zurück zum Scanner',
     },
   },
   activities: {

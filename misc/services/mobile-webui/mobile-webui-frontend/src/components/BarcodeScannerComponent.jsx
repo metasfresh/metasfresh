@@ -87,6 +87,8 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
   const handleSelectManual = () => setActiveMode(MODE.MANUAL);
   const handleToggleHardwareCamera = () =>
     setActiveMode((prev) => (prev === MODE.HARDWARE ? MODE.CAMERA : MODE.HARDWARE));
+  // Back to scanner from manual mode — go to hardware if enabled, otherwise camera.
+  const handleBackToScanner = () => setActiveMode(enabledModes.hardware ? MODE.HARDWARE : MODE.CAMERA);
 
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
@@ -364,6 +366,7 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
         enabledModes={enabledModes}
         onSelectManual={handleSelectManual}
         onToggleHardwareCamera={handleToggleHardwareCamera}
+        onBackToScanner={handleBackToScanner}
       />
     </div>
   );

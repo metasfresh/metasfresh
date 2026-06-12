@@ -85,6 +85,7 @@ const translations = {
       enterManually: 'Enter manually',
       scanWithCamera: 'Scan with camera',
       useHardwareScanner: 'Use hardware scanner',
+      backToScanner: 'Back to scanner',
     },
   },
   activities: {
