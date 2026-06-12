@@ -78,9 +78,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MNote;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -315,6 +319,35 @@ public class OLCandBL implements IOLCandBL
 				locationShipperId,
 				bpartnerOrderParamsShipperId,
 				orderDefaultsShipperId);
+	}
+
+	@Nullable
+	@Override
+	public WarehouseId getWarehouseId(
+			@NonNull final I_C_OLCand olCand,
+			@Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		final WarehouseId olCandWarehouseId = WarehouseId.ofRepoIdOrNull(olCand.getM_Warehouse_ID());
+		if (olCandWarehouseId != null)
+		{
+			return olCandWarehouseId;
+		}
+
+		final I_C_BPartner bp = effectiveValuesBL.getC_BPartner_Effective(olCand);
+		if (bp != null && bp.isCustomer())
+		{
+			final WarehouseId bpWarehouseId = WarehouseId.ofRepoIdOrNull(bp.getM_Warehouse_ID());
+			if (bpWarehouseId != null)
+			{
+				final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(bpWarehouseId);
+				if (warehouse.isPickingWarehouse())
+				{
+					return bpWarehouseId;
+				}
+			}
+		}
+
+		return orderDefaults != null ? orderDefaults.getWarehouseId() : null;
 	}
 
 	@Override
