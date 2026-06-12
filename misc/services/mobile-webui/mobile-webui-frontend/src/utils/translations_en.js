@@ -80,6 +80,8 @@ const translations = {
       scanWorkplacePlaceholder: 'Scan workplace...',
       scanWorkstationPlaceholder: 'Scan workstation...',
       scanTrolleyPlaceholder: 'Scan trolley...',
+      scanPrompt: 'Scan barcode',
+      scanInProgress: 'Scanning in progress...',
     },
   },
   activities: {

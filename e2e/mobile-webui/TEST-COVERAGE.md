@@ -7,7 +7,7 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 5 | 8 | 63% |
+| Barcode Scanner Modes | 6 | 9 | 67% |
 | Picking | 56 | 60 | 93% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
@@ -52,9 +52,10 @@
 
 | Scenario | Test |
 |---|---|
-| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — DataWedge IME contract (visible-input editable, virtual keyboard suppressed via soft hint) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readOnly` present, CSS-hidden, no `<video>` — Honeywell CT60 / Android 11 keystroke-wedge contract (HARD keyboard suppression via `readOnly`; camera disabled) | `barcode_scanner_modes.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ### Scan paths
 
