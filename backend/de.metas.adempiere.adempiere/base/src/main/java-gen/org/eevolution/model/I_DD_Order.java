@@ -917,6 +917,27 @@ public interface I_DD_Order
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
+	 * Set Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingDisconnected (boolean IsPickingDisconnected);
+
+	/**
+	 * Get Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingDisconnected();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_IsPickingDisconnected = new ModelColumn<>(I_DD_Order.class, "IsPickingDisconnected", null);
+	String COLUMNNAME_IsPickingDisconnected = "IsPickingDisconnected";
+
+	/**
 	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
