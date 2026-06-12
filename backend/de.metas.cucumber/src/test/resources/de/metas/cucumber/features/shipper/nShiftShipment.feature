@@ -446,8 +446,8 @@ Feature: nShift Shipment
       | customerContact_coo | nShift Customer Contact2 | customer      | contact2@nshift-test.example | +41 79 123 45 68 |
     # One order for product (20 PCE) and product2 (8 PCE) — the system picks from both IT and DE batches
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID    | AD_User_ID          |
-      | so_coo     | true    | customer      | 2025-04-01  | wh_coo         | nShift_coo_test | customerContact_coo |
+      | Identifier | REST.Context | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID    | AD_User_ID          |
+      | so_coo     | order_coo_ID | true    | customer      | 2025-04-01  | wh_coo         | nShift_coo_test | customerContact_coo |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_coo_l1  | so_coo     | product      | 20         |
@@ -504,6 +504,64 @@ Feature: nShift Shipment
       | cso_coo                  | nShift Product   | DE              | 13         | 10    | 130        | 27.3            | 12345678            |
       | cso_coo                  | nShift Product 2 | IT              | 5          | 5     | 25         | 6.0             | 12345678            |
       | cso_coo                  | nShift Product 2 | DE              | 3          | 5     | 15         | 3.6             | 12345678            |
+    # gh30205 — the per-country-of-origin content lines must be distinguishable in the Historical Shipments JSON export
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_coo      | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Historical_Shipments_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "Order_ID",
+      "value": "@order_coo_ID@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+  {
+    "Order_ID": @order_coo_ID@,
+    "Parcels": [
+      {
+        "Carrier": "nShift COO Test",
+        "Items": [
+          {
+            "ProductValue": "nshift_product",
+            "ProductName": "nShift Product",
+            "QtyShipped": 7,
+            "CountryOfOrigin": "IT"
+          },
+          {
+            "ProductValue": "nshift_product",
+            "ProductName": "nShift Product",
+            "QtyShipped": 13,
+            "CountryOfOrigin": "DE"
+          },
+          {
+            "ProductValue": "product2",
+            "ProductName": "nShift Product 2",
+            "QtyShipped": 5,
+            "CountryOfOrigin": "IT"
+          },
+          {
+            "ProductValue": "product2",
+            "ProductName": "nShift Product 2",
+            "QtyShipped": 3,
+            "CountryOfOrigin": "DE"
+          }
+        ]
+      }
+    ]
+  }
+]
+    """
 
 
   @Id:S0355_DeliveryOrder_120
