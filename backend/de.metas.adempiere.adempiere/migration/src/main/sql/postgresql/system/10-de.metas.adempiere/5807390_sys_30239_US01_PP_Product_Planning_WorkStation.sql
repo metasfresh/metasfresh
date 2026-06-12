@@ -1,4 +1,4 @@
--- me03#30239 US01: Add WorkStation_ID to PP_Product_Planning
+-- Add WorkStation_ID to PP_Product_Planning
 
 -- Column
 INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Reference_Value_ID, AD_Table_ID,

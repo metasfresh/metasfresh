@@ -1,4 +1,4 @@
--- me03#30239 US02: Rename window/tab "Product Planning" → "Product Plan Data" / "Produkt Plandaten"
+-- Rename window/tab "Product Planning" → "Product Plan Data" / "Produkt Plandaten"
 -- AD_Element 53268 is shared by AD_Window 540750 and AD_Tab 542102
 
 UPDATE AD_Element
