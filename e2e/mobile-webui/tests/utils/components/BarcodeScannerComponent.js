@@ -201,4 +201,37 @@ export const BarcodeScannerComponent = {
         if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(`(^|\\s)${present}(\\s|$)`));
         if (absent) await expect(page.locator('#input-text')).not.toHaveClass(new RegExp(`(^|\\s)${absent}(\\s|$)`));
     }),
+
+    // Asserts the footer (.barcode-scanner-footer) is NOT rendered.
+    // Used by invisible-mode tests — invisible suppresses the footer entirely.
+    expectFooterAbsent: async () => await test.step(`${NAME} - Expect no footer rendered`, async () => {
+        await expect(page.locator('.barcode-scanner-footer')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the manual-entry visible input IS rendered (data-testid="manual-entry-input").
+    expectManualEntryInputPresent: async () => await test.step(`${NAME} - Expect manual-entry input present`, async () => {
+        await expect(page.getByTestId('manual-entry-input')).toBeAttached({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the manual-entry visible input is NOT rendered.
+    expectManualEntryInputAbsent: async () => await test.step(`${NAME} - Expect manual-entry input absent`, async () => {
+        await expect(page.getByTestId('manual-entry-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the manual-entry input does NOT have the readOnly attribute — the user must be able
+    // to type into it (keyboard-enabled). Only meaningful when expectManualEntryInputPresent() passes.
+    expectManualEntryInputNotReadOnly: async () => await test.step(`${NAME} - Expect manual-entry input not readOnly`, async () => {
+        await expect(page.getByTestId('manual-entry-input')).not.toHaveAttribute('readonly');
+    }),
+
+    // Asserts the device camera <video> element IS rendered inside .barcode-scanner.
+    expectCameraVideoPresent: async () => await test.step(`${NAME} - Expect camera <video> rendered`, async () => {
+        await expect(page.locator('.barcode-scanner video')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Clicks a footer button by its testId (e.g. 'barcode-scanner-toggle-hw-camera',
+    // 'barcode-scanner-enter-manually', 'barcode-scanner-back-to-scanner').
+    clickFooterButton: async (testId) => await test.step(`${NAME} - Click footer button '${testId}'`, async () => {
+        await page.getByTestId(testId).tap();
+    }),
 }

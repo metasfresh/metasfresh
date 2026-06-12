@@ -14,6 +14,24 @@ const scannerSysconfigs = ({ showInputText, isInputTextReadonly, useCamera, offs
     ...(visibleInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.visibleInput.readOnly': visibleInputReadOnly }),
 });
 
+// Mode-engine sysconfigs (new per-mode knobs introduced by the BarcodeScannerModes redesign).
+// Keys map 1:1 to AD_SysConfig names (mobileui.frontend.* prefix included).
+const modeSysconfigs = ({
+    hardwareEnabled,
+    cameraEnabled,
+    manualEnabled,
+    defaultMode,
+    hardwareInputMode,
+    hardwareInputReadOnly,
+} = {}) => ({
+    ...(hardwareEnabled != null && { 'mobileui.frontend.barcodeScanner.mode.hardware.enabled': hardwareEnabled }),
+    ...(cameraEnabled != null && { 'mobileui.frontend.barcodeScanner.mode.camera.enabled': cameraEnabled }),
+    ...(manualEnabled != null && { 'mobileui.frontend.barcodeScanner.mode.manual.enabled': manualEnabled }),
+    ...(defaultMode != null && { 'mobileui.frontend.barcodeScanner.defaultMode': defaultMode }),
+    ...(hardwareInputMode != null && { 'mobileui.frontend.barcodeScanner.mode.hardware.input.inputMode': hardwareInputMode }),
+    ...(hardwareInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly': hardwareInputReadOnly }),
+});
+
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
 const createLoginMasterdata = async ({ extraSysconfigs, showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly } = {}) => {
@@ -231,6 +249,169 @@ test.describe('Scan paths', () => {
 
         await HUManagerScreen.waitForHUInfoPanel();
         await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
+});
+
+// Per-mode attribute contract — guards the HTML attributes emitted by the new mode engine.
+//
+// These tests assert the DOM output of useBarcodeScannerModes + the hardware input knobs:
+//   mode.hardware.input.inputMode  → the `inputMode` HTML attribute on #input-text
+//   mode.hardware.input.readOnly   → the `readOnly` HTML attribute on #input-text (absent=N, present=Y)
+//
+// Navigation: HU Manager is used (not ApplicationsListScreen) because ApplicationsListScreen
+// hardcodes `invisible=true`, which short-circuits the sysconfig path and would make
+// mode-specific attribute/footer assertions vacuously pass.
+test.describe('Modes', () => {
+
+    // ⚠️ HARDWARE CONTRACT — mode-engine driven.
+    // Off-screen hardware input default contract: inputmode=none, readonly absent, CSS-hidden.
+    // Mirrors the top-level DataWedge guard above but exercises the NEW mode-engine path
+    // (mode.hardware.enabled=Y, mode.hardware.input.readOnly=N default).
+    // noinspection JSUnusedLocalSymbols
+    test('hardware mode — off-screen input: inputmode=none, readonly absent, CSS-hidden', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        // hardware.enabled=Y (default), readOnly=N (default) — explicit to document the contract.
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled: 'N',
+                hardwareInputReadOnly: 'N',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // Off-screen input HTML contract for DataWedge IME deployments:
+        //   type=text       — focusable, keeps InputConnection alive
+        //   inputmode=none  — suppresses virtual keyboard (soft hint)
+        //   readonly absent — readOnly kills InputConnection; must be absent for DataWedge IME
+        //   CSS-hidden      — input-text-offscreen keeps it in DOM but invisible
+        await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: null });
+        await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
+    });
+
+    // ⚠️ HARDWARE CONTRACT — mode-engine driven, readOnly=Y.
+    // Mirrors the CT60 keystroke-wedge guard above via the new mode-engine readOnly knob.
+    // noinspection JSUnusedLocalSymbols
+    test('hardware mode — off-screen input readOnly=Y: inputmode=none, readonly present', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled: 'N',
+                hardwareInputReadOnly: 'Y',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // readonly PRESENT — hard suppression for Android 11 firmware that ignores inputMode="none".
+        await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
+        await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
+        await BarcodeScannerComponent.expectCameraVideoAbsent();
+    });
+
+    // invisible=true (ApplicationsListScreen / BarcodeScannerButton callers):
+    //   • off-screen #input-text IS present (keyboard listener needs it in DOM)
+    //   • NO <video> element
+    //   • NO footer (.barcode-scanner-footer)
+    // noinspection JSUnusedLocalSymbols
+    test('invisible mode — off-screen input present, no video, no footer', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        // ApplicationsListScreen always renders BarcodeScannerComponent with invisible=true,
+        // so no HU or extra sysconfig setup is needed — just login.
+        const masterdata = await createLoginMasterdata();
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+
+        // invisible=true → useBarcodeScannerModes returns hardware-only, no camera, no manual.
+        // The component renders ONLY the off-screen #input-text and the keyboard listener.
+        await BarcodeScannerComponent.expectAttached({});
+        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectFooterAbsent();
+    });
+
+    // manual mode: mode.manual.enabled=Y + defaultMode=manual →
+    //   • visible editable input (data-testid="manual-entry-input") IS rendered
+    //   • off-screen #input-text IS still present (keyboard listener stays mounted)
+    //   • manual-entry-input has no readOnly attribute (keyboard must be enabled)
+    // noinspection JSUnusedLocalSymbols
+    test('manual mode — visible editable input rendered, off-screen input present, no readOnly', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await createLoginMasterdata({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'N',
+                cameraEnabled: 'N',
+                manualEnabled: 'Y',
+                defaultMode: 'manual',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // Off-screen input stays mounted in MANUAL mode (DataWedge IME InputConnection preserved).
+        await BarcodeScannerComponent.expectAttached({});
+        // Visible editable input is rendered in manual mode.
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        // The manual-entry input must NOT be readOnly — the user must be able to type.
+        await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
+        await BarcodeScannerComponent.expectCameraVideoAbsent();
+    });
+
+    // camera toggle: hardware + camera both enabled →
+    //   • footer toggle button present
+    //   • clicking toggle → <video> renders
+    // noinspection JSUnusedLocalSymbols
+    test('camera toggle — clicking hw/camera toggle renders <video>', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await createLoginMasterdata({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'Y',
+                manualEnabled: 'N',
+                defaultMode: 'hardware',
+            }),
+        });
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // Starting in hardware mode — no video yet.
+        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        // Toggle to camera mode via footer button.
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-toggle-hw-camera');
+        // After toggle, <video> element must be rendered.
+        await BarcodeScannerComponent.expectCameraVideoPresent();
     });
 
 });
