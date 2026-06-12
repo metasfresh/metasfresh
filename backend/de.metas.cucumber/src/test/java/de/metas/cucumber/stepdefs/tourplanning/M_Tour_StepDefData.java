@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.tourplanning;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.tourplanning.model.I_M_Tour;
 
+/**
+ * Having a dedicated class to help the IoC framework injecting the right instances, if a step-def needs more than one.
+ */
 public class M_Tour_StepDefData extends StepDefData<I_M_Tour>
 {
 	public M_Tour_StepDefData()
