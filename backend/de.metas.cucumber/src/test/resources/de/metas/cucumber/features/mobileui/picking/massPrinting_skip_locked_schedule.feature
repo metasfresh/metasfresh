@@ -190,11 +190,3 @@ Feature: Mass Printing - Skip shipment schedule locked by another user
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | schedOpen                        | shipment              | CO            |
-
-    # Leak-safety teardown: remove the metasfresh user->workplace assignment (and the workplace) so they do
-    # not leak into other features in this executor group (e.g. pickingWorkflows.feature). Without this, a
-    # later getWorkplaceByUserId('metasfresh') would resolve the stale assign row pointing at a deactivated
-    # workplace and throw "No workplace found" (HTTP 422). DELETE (not deactivate) because the unique index
-    # one_user_per_org(AD_User_ID, AD_Org_ID) ignores IsActive and would otherwise block re-assignment.
-    And delete all C_Workplace_User_Assign records
-    And deactivate all C_Workplace records

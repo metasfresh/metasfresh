@@ -27,7 +27,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -338,13 +337,17 @@ public class MassPrintingService
 
 	/**
 	 * Resolves the {@link ShipmentScheduleAndJobScheduleIdSet} to drive a PRODUCT picking-job creation for the
-	 * selected shipment-schedule ids.
-	 * <p>
-	 * In job-scheduled-to-workplace mode (the query carries a {@code scheduledForWorkplaceId}), each selected
-	 * shipment schedule carries its picking-job-schedule id (looked up via {@link PickingJobService#listJobSchedules},
-	 * the same job-schedule resolution the launcher / {@code streamPackageable} use), so the created job is driven
-	 * by the job-schedules — consistent with how regular picking creates jobs from candidates. In warehouse mode
-	 * it falls back to a plain shipment-schedule-id set.
+	 * selected shipment-schedule ids. The resolution branches on the query MODE — never on whether job-schedules
+	 * happen to exist:
+	 * <ul>
+	 * <li><b>Warehouse mode</b> ({@code isScheduledForWorkplaceOnly() == false}): the job is driven by plain
+	 * shipment-schedule ids.</li>
+	 * <li><b>Job-scheduled-to-workplace mode</b> ({@code isScheduledForWorkplaceOnly() == true}): the job MUST be
+	 * driven by the picking-job schedules (looked up via {@link PickingJobService#listJobSchedules}, the same
+	 * job-schedule resolution the launcher / {@code streamPackageable} use). We never fall back to a plain
+	 * shipment-schedule set here — that would defeat {@code isScheduledForWorkplaceOnly}. A selected schedule with
+	 * no matching job-schedule is simply not included (we accept "no job schedules" rather than falling back).</li>
+	 * </ul>
 	 */
 	@NonNull
 	private ShipmentScheduleAndJobScheduleIdSet resolveScheduleIdsForJobCreation(
@@ -357,19 +360,20 @@ public class MassPrintingService
 			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
 		}
 
-		// listJobSchedules returns EMPTY both in warehouse mode (isScheduledForWorkplaceOnly=false) and in
-		// job-scheduled-to-workplace mode when no job-schedules exist for the query; in both cases the job is
-		// driven by plain shipment-schedule ids.
-		final PickingJobScheduleCollection jobSchedules = pickingJobService.listJobSchedules(query);
-		if (jobSchedules.isEmpty())
+		// Warehouse mode: the job is driven by plain shipment-schedule ids.
+		if (!query.isScheduledForWorkplaceOnly())
 		{
 			return ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedShipmentScheduleIds);
 		}
 
+		// Scheduled-to-workplace mode: the job MUST be driven by the picking-job schedules.
+		// NEVER fall back to a plain shipment-schedule set here — that would defeat isScheduledForWorkplaceOnly.
+		final PickingJobScheduleCollection jobSchedules = pickingJobService.listJobSchedules(query);
 		return selectedShipmentScheduleIds.stream()
-				.map(shipmentScheduleId -> jobSchedules.getSingleScheduleByShipmentScheduleId(shipmentScheduleId)
+				.map(ssId -> jobSchedules.getSingleScheduleByShipmentScheduleId(ssId)
 						.map(PickingJobSchedule::getShipmentScheduleAndJobScheduleId)
-						.orElseGet(() -> ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(shipmentScheduleId)))
+						.orElse(null))
+				.filter(java.util.Objects::nonNull)
 				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 	}
 

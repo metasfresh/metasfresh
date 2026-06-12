@@ -163,10 +163,6 @@ Feature: Mass Printing - scan an LU stored in a different warehouse of the same 
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | sched                            | shipment              | CO            |
 
-    # Leak-safety teardown.
-    And delete all C_Workplace_User_Assign records
-    And deactivate all C_Workplace records
-
 
   Scenario: Mass printing rejects an LU located in a warehouse outside the workplace's picking group
 
@@ -215,7 +211,3 @@ Feature: Mass Printing - scan an LU stored in a different warehouse of the same 
     Then mass printing scan is rejected:
       | M_HU_ID | Login      | AD_Message                                                               |
       | lu      | metasfresh | de.metas.handlingunits.picking.massprinting.LUNotInWorkplacePickingGroup |
-
-    # Leak-safety teardown.
-    And delete all C_Workplace_User_Assign records
-    And deactivate all C_Workplace records

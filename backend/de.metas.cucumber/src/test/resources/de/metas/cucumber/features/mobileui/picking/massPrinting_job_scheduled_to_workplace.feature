@@ -166,7 +166,3 @@ Feature: Mass Printing - honour job-scheduled-to-workplace mode
     And after not more than 10s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyPickList |
       | schedNotScheduled                | 4                | 0                | 0               |
-
-    # Leak-safety teardown.
-    And delete all C_Workplace_User_Assign records
-    And deactivate all C_Workplace records
