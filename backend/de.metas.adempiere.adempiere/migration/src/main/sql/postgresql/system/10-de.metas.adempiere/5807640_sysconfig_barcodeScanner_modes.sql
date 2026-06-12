@@ -49,8 +49,6 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_SysConfig WHERE Name='mobileui.frontend.barco
 -- Es ist NICHT identisch mit barcodeScanner.offscreenInput.readOnly (Off-Screen-Eingabefeld, Modus A)
 -- oder barcodeScanner.visibleInput.readOnly (sichtbares Eingabefeld, Modus C3).
 -- Nur für Keystroke-Firmware-Deployments setzen, bei denen inputMode=none nicht unterdrückt (z. B. Honeywell CT60).
--- TODO: JS-Verdrahtung folgt in dem Task, der BarcodeScannerComponent auf die neuen mode.*-Knobs umstellt.
---       Bis dahin liest die Komponente noch offscreenInput.readOnly / visibleInput.readOnly direkt.
 INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
 SELECT 0,0,541820 /*From ID Server*/,'S',TO_TIMESTAMP('2026-06-12 10:00:04','YYYY-MM-DD HH24:MI:SS'),100,
        'Hardware-Modus-Eingabefeld schreibschützen (Y=readOnly, N=editierbar; Standard: N). Nur für Keystroke-Firmware ohne inputMode=none-Unterstützung. Nicht verwechseln mit offscreenInput.readOnly / visibleInput.readOnly.',
@@ -61,7 +59,6 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_SysConfig WHERE Name='mobileui.frontend.barco
 -- SysConfig Name: mobileui.frontend.barcodeScanner.mode.hardware.input.inputMode
 -- Default: none — HTML-inputmode für das Hardware-Scanner-Eingabefeld. 'none' unterdrückt die
 -- Bildschirmtastatur auf Touch-Geräten, sodass nur der Hardware-Scanner in das Feld eingeben kann.
--- TODO: JS-Verdrahtung folgt in dem Task, der BarcodeScannerComponent auf die neuen mode.*-Knobs umstellt.
 INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
 SELECT 0,0,541821 /*From ID Server*/,'S',TO_TIMESTAMP('2026-06-12 10:00:05','YYYY-MM-DD HH24:MI:SS'),100,
        'HTML inputmode für das Hardware-Scanner-Eingabefeld. ''none'' unterdrückt die Bildschirmtastatur auf Touch-Geräten. Standard: none.',
