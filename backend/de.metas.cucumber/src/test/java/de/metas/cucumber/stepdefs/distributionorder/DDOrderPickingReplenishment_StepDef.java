@@ -191,7 +191,7 @@ public class DDOrderPickingReplenishment_StepDef
 	 * the DD_Order linked to the given picking job schedule, simulating a picker who has started moving the
 	 * replenishment stock — WITHOUT running the full mobile move-schedule flow. This is what
 	 * {@code DDOrderMoveScheduleService.hasInProgressSchedules(ddOrderId)} checks, and it drives the close-out
-	 * disposition down the DISCONNECT branch instead of CLOSE (AC5).
+	 * disposition down the DISCONNECT branch instead of CLOSE.
 	 *
 	 * <p>The move-schedule's mandatory columns (product/UOM/locators/warehouses) are copied from the DD_OrderLine; the
 	 * {@code PickFrom_HU_ID} is the given source HU.</p>

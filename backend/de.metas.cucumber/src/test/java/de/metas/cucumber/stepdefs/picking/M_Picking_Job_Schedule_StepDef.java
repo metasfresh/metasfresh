@@ -229,7 +229,7 @@ public class M_Picking_Job_Schedule_StepDef
 	/**
 	 * @cucumber.stepdef Attempts to mark the given assignment as {@code Processed=Y} and asserts the
 	 * {@code beforeChange} interceptor REJECTS the save with the expected {@code ErrorCode}. Used as the RED
-	 * reproduction of the packing↔picking dependency: before the close-out exemption (AC1), a {@code Processed->true}
+	 * reproduction of the packing↔picking dependency: before the close-out exemption, a {@code Processed->true}
 	 * write trips the picker-busy guard and packing is blocked.
 	 * <p>
 	 * Required columns:
