@@ -99,26 +99,57 @@ const BarcodeScannerComponent = ({ testId, resolveScannedBarcode, onResolvedResu
 
   //
   // Video
-  const mountedRef = useRef(true);
   const videoRef = useRef();
+  const cameraControlsRef = useRef(null);
   useEffect(() => {
-    mountedRef.current = true;
-
-    if (activeMode === MODE.CAMERA) {
-      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-        if (mountedRef.current === false) {
-          controls.stop();
-        } else if (typeof result !== 'undefined') {
-          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-        }
-      });
+    if (activeMode !== MODE.CAMERA) {
+      return;
     }
 
-    return () => {
-      mountedRef.current = false;
+    let cancelled = false;
+
+    const startCamera = async () => {
+      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
+      try {
+        const controls = await codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, ctrl) => {
+          if (cancelled) {
+            ctrl.stop();
+            return;
+          }
+          if (typeof result !== 'undefined') {
+            validateScannedBarcodeAndForward({ scannedBarcode: result.text });
+          }
+        });
+        if (cancelled) {
+          controls.stop();
+          return;
+        }
+        cameraControlsRef.current = controls;
+      } catch (err) {
+        if (cancelled) return;
+        toastError({
+          plainMessage: trl('components.BarcodeScannerComponent.cameraError'),
+        });
+        setActiveMode(defaultMode);
+      }
     };
-  }, [activeMode]);
+
+    startCamera();
+
+    return () => {
+      cancelled = true;
+      if (cameraControlsRef.current) {
+        cameraControlsRef.current.stop();
+        cameraControlsRef.current = null;
+      }
+      // Also stop any lingering MediaStream tracks on the video element.
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        stream.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
+      }
+    };
+  }, [activeMode]); // intentional: only restart camera when activeMode changes
 
   useEffect(() => {
     return () => handleInputTextChangedDebounced.cancel();
