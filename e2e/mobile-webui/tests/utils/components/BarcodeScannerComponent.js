@@ -144,8 +144,9 @@ export const BarcodeScannerComponent = {
     // the mode-engine is in manual mode (defaultMode=manual, mode.manual.enabled=Y).
     typeManually: async (barcode) => await test.step(`${NAME} - Type manually and press Enter`, async () => {
         await BarcodeScannerComponent.waitToAttach({});
-        await page.locator('[data-testid="manual-entry-input"]').fill(barcode);
-        await page.locator('[data-testid="manual-entry-input"]').press('Enter');
+        const input = page.locator('[data-testid="manual-entry-input"]');
+        await input.fill(barcode);
+        await input.press('Enter');
     }),
 
     // Asserts DOM attributes on #input-text.
