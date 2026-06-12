@@ -152,7 +152,7 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
   @from:cucumber
   Scenario: The picker-busy guard is preserved — a genuine qty re-plan while a picker is busy is still refused
     # A qty change (NOT the Processed=Y close-out) while the picker is busy must still be refused: the guard
-    # protects genuine re-plans (AC4). The DD_Order is left untouched (still the original Completed one).
+    # protects genuine re-plans. The DD_Order is left untouched (still the original Completed one).
     Then changing the picking job schedule quantity is rejected:
       | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                          |
       | jobSchedule               | 8         | DDOrderPickingReconcile_PickerBusy |
@@ -181,7 +181,7 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | Identifier | DocStatus | IsPickingDisconnected |
       | ddOrder    | CO        | true                  |
 
-    # No re-trigger (AC6): the disconnected DD_Order is invisible to the reconcile lookup, so a follow-up reconcile
+    # No re-trigger: the disconnected DD_Order is invisible to the reconcile lookup, so a follow-up reconcile
     # resolves to NONE — it must not re-void, re-close, or create a fresh replenishment.
     And the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
     And after not more than 5s, following DD_Orders are found

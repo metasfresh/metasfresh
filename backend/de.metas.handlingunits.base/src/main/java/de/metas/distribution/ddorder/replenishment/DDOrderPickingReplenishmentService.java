@@ -106,7 +106,7 @@ public class DDOrderPickingReplenishmentService
 			return;
 		}
 
-		// Close-out exemption (AC1/AC4): the shipment close-out (markAsProcessed) sets Processed=Y on the assignment.
+		// Close-out exemption: the shipment close-out (markAsProcessed) sets Processed=Y on the assignment.
 		// That is a fulfilment event, NOT a user re-plan — packing is GOD and must never be blocked by the
 		// replenishment side. So when this change is the Processed->true transition, skip the picker-busy /
 		// movement-started refusal entirely; the obsolete replenishment DD_Order is disposed of (CLOSE/DISCONNECT)
@@ -228,7 +228,7 @@ public class DDOrderPickingReplenishmentService
 	 * </pre>
 	 *
 	 * <p><b>Processed=Y close-out vs IsActive=N un-assignment.</b> Both make the assignment "no longer relevant",
-	 * but they are disposed of differently (AC2): the shipment close-out (Processed=Y) <b>Closes</b> the obsolete
+	 * but they are disposed of differently: the shipment close-out (Processed=Y) <b>Closes</b> the obsolete
 	 * replenishment DD_Order (delivered stock preserved, picker released), while a genuine un-assignment / cancel
 	 * (IsActive=N, or the assignment was deleted) keeps the legacy <b>Void</b>. {@link DDOrderReplenishmentAction#CLOSE}
 	 * is the close-out marker; the per-DD_Order CLOSE-vs-DISCONNECT split (move-in-progress) is resolved at execute
@@ -734,7 +734,7 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Close-out disposition (AC2/AC5): for each obsolete replenishment DD_Order linked to a now-Processed assignment,
+	 * Close-out disposition: for each obsolete replenishment DD_Order linked to a now-Processed assignment,
 	 * dispose it — <b>CLOSE</b> when no replenishment move is in progress (the customer repro), or <b>DISCONNECT</b>
 	 * when a move IS in progress (closing would hit the {@code BEFORE_CLOSE clearSchedules} guard and corrupt a
 	 * half-done move). The picker-busy state is irrelevant here: packing is GOD, the close-out is never blocked.
@@ -756,7 +756,7 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * CLOSE branch (AC2/AC3): Closes the obsolete replenishment DD_Order (no movement reversal — {@code voidMovements}
+	 * CLOSE branch: Closes the obsolete replenishment DD_Order (no movement reversal — {@code voidMovements}
 	 * does not fire on {@code AFTER_CLOSE}, so already-moved stock is preserved; the open remainder is closed off) and
 	 * clears {@code AD_User_Responsible_ID} so the DD_Order-backed mobile DistributionJob is released from the picker.
 	 */
@@ -777,7 +777,7 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * DISCONNECT branch (AC5): a replenishment move is in progress, so the DD_Order must NOT be closed (a half-done
+	 * DISCONNECT branch: a replenishment move is in progress, so the DD_Order must NOT be closed (a half-done
 	 * move must not be corrupted). Instead it is disconnected — {@code IsPickingDisconnected=Y} — so the guard /
 	 * reconcile lookup stops seeing it ({@link DDOrderLowLevelDAO#findActiveDDOrdersForPickingJobSchedule}) while the
 	 * DistributionJob stays live & assigned (launcher keys on {@code AD_User_Responsible_ID}, untouched) for the worker
