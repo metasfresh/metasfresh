@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.warehouse;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CacheMgt;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -129,6 +130,12 @@ public class WarehouseCommand
 
 		warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
 		saveRecord(warehouseRecord);
+
+		// Reset the warehouse / picking-group caches so a later masterdata request (same JVM Spring context)
+		// sees the freshly-assigned group — mirrors M_Warehouse_StepDef. Without this the picking-group index
+		// can be read stale and MassPrintingService.getLocatorIdsOfTheSamePickingGroup misses this warehouse.
+		CacheMgt.get().reset(I_M_Warehouse.Table_Name);
+		CacheMgt.get().reset(I_M_Warehouse_PickingGroup.Table_Name);
 	}
 
 	private Map<String, JsonWarehouseResponse.Locator> createLocators()

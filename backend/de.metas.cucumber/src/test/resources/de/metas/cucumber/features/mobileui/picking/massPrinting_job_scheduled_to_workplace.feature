@@ -114,7 +114,6 @@ Feature: Mass Printing - honour job-scheduled-to-workplace mode
       | workplace      | metasfresh       |
 
 
-  @from:cucumber
   Scenario: Mass printing packs only the demand scheduled to the workplace and ignores the unscheduled demand
 
     # Two sales orders for the same product, each demanding 4 PCE. Only ONE will be scheduled to the workplace.
