@@ -114,6 +114,7 @@ public class OLCandBL implements IOLCandBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -339,7 +340,7 @@ public class OLCandBL implements IOLCandBL
 			final WarehouseId bpWarehouseId = WarehouseId.ofRepoIdOrNull(bp.getM_Warehouse_ID());
 			if (bpWarehouseId != null)
 			{
-				final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(bpWarehouseId);
+				final I_M_Warehouse warehouse = warehouseDAO.getById(bpWarehouseId);
 				if (warehouse.isPickingWarehouse())
 				{
 					return bpWarehouseId;
