@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUContextHolder;
@@ -203,6 +204,20 @@ public class PickingJobHUService
 
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds) {return handlingUnitsBL.getByIds(huIds);}
 
+	/**
+	 * Returns all non-empty product storages on the given HU (e.g. an LU).
+	 */
+	@NonNull
+	public List<IHUProductStorage> getProductStorages(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		return storageFactory.getStorage(hu).getProductStorages()
+				.stream()
+				.filter(s -> !s.isEmpty())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo) {return handlingUnitsBL.getFirstHuIdByExternalLotNo(externalLotNo);}
 
 	public Optional<HuId> getFirstHUIdByQRCodeAttribute(
@@ -300,6 +315,43 @@ public class PickingJobHUService
 		return huPIItemProductBL.retrieveForProducts(productIdSet, partnerId);
 	}
 
+	/**
+	 * Collects the leaf shippable HUs at or below each of the given HUs by descending the HU hierarchy.
+	 * Returns one entry per picked unit, regardless of packing-instruction type:
+	 * <ul>
+	 *   <li>Finite PI (1-CU/TU): each top-level TU has no children → itself is the leaf → one entry per TU.</li>
+	 *   <li>Virtual PI / null PackTo PI (CU path): the mass-printing flow fires one pick event per unit,
+	 *       so each VHU is already a single-unit leaf → one entry per VHU.</li>
+	 *   <li>TU nested under a target LU: descends past the LU wrapper to the leaf TU → one entry per TU.</li>
+	 * </ul>
+	 * The count of returned HU ids equals the number of shippable units packed (one HU = one unit = one label).
+	 */
+	public ImmutableSet<HuId> getPackedBoxHUIds(@NonNull final Collection<HuId> huIds)
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		final List<I_M_HU> topLevelHUs = getByIds(huIds);
+		for (final I_M_HU hu : topLevelHUs)
+		{
+			collectBoxHUs(hu, result);
+		}
+		return result.build();
+	}
+
+	private void collectBoxHUs(@NonNull final I_M_HU hu, @NonNull final ImmutableSet.Builder<HuId> result)
+	{
+		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(hu);
+		if (includedHUs.isEmpty())
+		{
+			// Leaf HU: the actual product-holding unit (TU box for finite PI, VHU/CU for Virtual PI).
+			result.add(HuId.ofRepoId(hu.getM_HU_ID()));
+			return;
+		}
+		for (final I_M_HU includedHU : includedHUs)
+		{
+			collectBoxHUs(includedHU, result);
+		}
+	}
+
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);
@@ -367,6 +419,23 @@ public class PickingJobHUService
 		huLabelService.print(HULabelPrintRequest.builder()
 				.sourceDocType(HULabelSourceDocType.Picking)
 				.hus(HUToReportWrapper.ofList(lus))
+				.onlyIfAutoPrint(true)
+				.failOnMissingLabelConfig(false)
+				.build());
+	}
+
+	/** Prints HU labels for top-level TUs (boxes not under an LU). Mirrors {@link #printLULabels}: auto-print only, best-effort. */
+	public void printTULabels(@NonNull final Collection<HuId> tuIds)
+	{
+		final List<I_M_HU> tus = getByIds(tuIds);
+		if (tus.isEmpty())
+		{
+			return;
+		}
+
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.hus(HUToReportWrapper.ofList(tus))
 				.onlyIfAutoPrint(true)
 				.failOnMissingLabelConfig(false)
 				.build());

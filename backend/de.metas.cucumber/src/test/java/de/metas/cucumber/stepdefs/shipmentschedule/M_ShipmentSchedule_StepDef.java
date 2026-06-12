@@ -85,6 +85,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -303,7 +304,7 @@ public class M_ShipmentSchedule_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) schedule alias; comma-separated to combine multiple schedules into one shipment call<br>
 	 *   <b>quantityTypeToUse</b> — (optional) D (delivery) or O (ordered); default: BOTH<br>
 	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
 	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
@@ -311,8 +312,8 @@ public class M_ShipmentSchedule_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And shipment is generated for the following shipment schedule
-	 *   | M_ShipmentSchedule_ID | M_InOut_ID |
-	 *   | shipmentSchedule_1    | shipment_1 |
+	 *   | M_ShipmentSchedule_ID   | M_InOut_ID |
+	 *   | ss_product, ss_product2 | shipment_1 |
 	 * </pre>
 	 */
 	@And("shipment is generated for the following shipment schedule")
@@ -577,6 +578,14 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+	@When("^the M_ShipmentSchedule identified by (.*) is deactivated$")
+	public void deactivate_M_ShipmentSchedule(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		schedule.setIsActive(false);
+		saveRecord(schedule);
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -649,15 +658,19 @@ public class M_ShipmentSchedule_StepDef
 
 	public void generateShipmentForSchedule(@NonNull final DataTableRow row) throws InterruptedException
 	{
-		final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.toCommaSeparatedList()
+				.stream()
+				.map(id -> id.lookupNotNullIdIn(shipmentScheduleTable))
+				.collect(ImmutableSet.toImmutableSet());
 		final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = row.getAsOptionalEnum("quantityTypeToUse", M_ShipmentSchedule_QuantityTypeToUse.class).orElse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		final boolean isCompleteShipment = row.getAsOptionalBoolean("isCompleteShipment").orElseTrue();
 
-		waitUntilValid(60, ImmutableSet.of(shipmentScheduleId));
+		waitUntilValid(60, scheduleIds);
 
 		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(
 				GenerateShipmentsForSchedulesRequest.builder()
-						.shipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
+						.shipmentScheduleIds(scheduleIds)
 						.quantityTypeToUse(qtyTypeToUse)
 						.isCompleteShipment(isCompleteShipment)
 						.build()
@@ -679,10 +692,11 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	private void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
+	public void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(tableRow.getAsIdentifier());
 
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override).ifPresent(shipmentScheduleRecord::setQtyOrdered_Override);
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliver_Override);
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliverCatch_Override);
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override).ifPresent(shipmentScheduleRecord::setPreparationDate_Override);
@@ -905,6 +919,10 @@ public class M_ShipmentSchedule_StepDef
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking)
 				.ifPresent(expected -> softly.assertThat(shipmentSchedule.getQtyScheduledForPicking()).as("QtyScheduledForPicking").isEqualTo(expected));
 
+		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
+		tableRow.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(expected -> softly.assertThat(shipmentSchedule.isDeliveryStop()).as("IsDeliveryStop for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expected));
+
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
 		{
@@ -1014,7 +1032,9 @@ public class M_ShipmentSchedule_StepDef
 
 	private void logWorkPackageProgressForShipmentSchedule(@NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).orElse(null);
+		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.map(id -> id.toCommaSeparatedList().get(0)) // support comma-separated; use first for logging context
+				.orElse(null);
 		if (shipmentScheduleIdentifier == null)
 		{
 			logger.info("No shipment schedule identifier present --> Cannot log work package progress!");

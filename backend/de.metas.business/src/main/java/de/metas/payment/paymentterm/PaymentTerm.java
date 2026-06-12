@@ -25,7 +25,10 @@ package de.metas.payment.paymentterm;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
@@ -38,6 +41,7 @@ import org.adempiere.service.ClientId;
 import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Value
 public class PaymentTerm
@@ -85,7 +89,7 @@ public class PaymentTerm
 			final int netDays,
 			final int graceDays,
 			final boolean isDefault,
-			final boolean isActive, 
+			final boolean isActive,
 			final boolean isAllowOverrideDueDate,
 			final @NonNull List<PaymentTermBreak> breaks,
 			final @NonNull List<PaySchedule> paySchedules)
@@ -157,7 +161,17 @@ public class PaymentTerm
 		}
 	}
 
+	private static final AdMessageKey MSG_PAYMENT_TERM_INVALID = AdMessageKey.of("PaymentTerm_Invalid");
+
 	public boolean isValid() {return valid.isTrue();}
+
+	public void assertValid()
+	{
+		if (valid.isFalse())
+		{
+			throw new AdempiereException(MSG_PAYMENT_TERM_INVALID, value, name, valid.getReasonAsString());
+		}
+	}
 
 	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
 	{
@@ -169,6 +183,38 @@ public class PaymentTerm
 			throw new AdempiereException("No break found for id: " + id);
 		}
 		return paymentTermBreak;
+	}
+
+	public ImmutableList<PaymentTermBreak> getBreaksBy(@NonNull final Predicate<PaymentTermBreak> predicate)
+	{
+		return sortedBreaks.stream()
+				.filter(predicate)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableMap<PaymentTermBreakId, Money> spreadByBreaks(@NonNull final Money amount, @NonNull final CurrencyPrecision precision)
+	{
+		assertValid();
+
+		final ImmutableMap.Builder<PaymentTermBreakId, Money> result = ImmutableMap.builder();
+
+		Money remainingAmtToSpread = amount;
+		final int termBreaksCount = sortedBreaks.size();
+		for (int i = 0; i < termBreaksCount; i++)
+		{
+			final PaymentTermBreak termBreak = sortedBreaks.get(i);
+			boolean isLastTermBreak = i == termBreaksCount - 1;
+
+			final Money breakAmt = isLastTermBreak
+					? remainingAmtToSpread
+					: amount.multiply(termBreak.getPercent(), precision);
+
+			result.put(termBreak.getId(), breakAmt);
+			remainingAmtToSpread = remainingAmtToSpread.subtract(breakAmt);
+		}
+
+		return result.build();
 	}
 }
 

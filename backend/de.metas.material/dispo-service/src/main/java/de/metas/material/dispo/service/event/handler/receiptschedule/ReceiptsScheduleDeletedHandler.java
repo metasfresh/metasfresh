@@ -1,32 +1,8 @@
-package de.metas.material.dispo.service.event.handler.receiptschedule;
-
-import ch.qos.logback.classic.Level;
-import com.google.common.collect.ImmutableList;
-import de.metas.Profiles;
-import de.metas.logging.LogManager;
-import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
-import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
-import de.metas.util.Loggables;
-import lombok.NonNull;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-material-dispo
+ * metasfresh-material-dispo-service
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,6 +20,33 @@ import java.util.Collection;
  * #L%
  */
 
+package de.metas.material.dispo.service.event.handler.receiptschedule;
+
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
+import de.metas.logging.LogManager;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
+import de.metas.util.Loggables;
+import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class ReceiptsScheduleDeletedHandler
@@ -51,6 +54,7 @@ public class ReceiptsScheduleDeletedHandler
 {
 	private static final Logger logger = LogManager.getLogger(ReceiptsScheduleDeletedHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
@@ -71,10 +75,13 @@ public class ReceiptsScheduleDeletedHandler
 	@Override
 	public void handleEvent(@NonNull final ReceiptScheduleDeletedEvent event)
 	{
-		// dropship-warehouse receipt-schedules bypass material-disposition entirely —
-		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isDropShipWarehouse())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

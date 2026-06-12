@@ -1,10 +1,14 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.inoutcandidate.qty_reservation.MakeQtyReservationCommand;
 import de.metas.inoutcandidate.qty_reservation.MaterialCockpitV2RowVO;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -26,6 +30,8 @@ public class MD_CockpitV2_MakeQtyReservation
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	@Autowired private QtyReservationService qtyReservationService;
 	@Autowired private ProjectRepository projectRepository;
 
@@ -94,13 +100,20 @@ public class MD_CockpitV2_MakeQtyReservation
 		final QtyTU qtyToReserveTU = getAndValidateQtyToReserveTUParam();
 		final MaterialCockpitV2RowVO rowVO = getSingleSelectedMaterialCockpitRow();
 
+		final OrderAndLineId salesOrderAndLineId = getSalesOrderAndLineId();
+
+		// fallback: the PI's CU-per-TU capacity, used when the order line has no positive QtyItemCapacity
+		final Quantity capacityPerTUFallback = huOrderBL.getCapacityPerTUInStockUOMFallback(salesOrderAndLineId, rowVO.getProductId());
+
 		MakeQtyReservationCommand.builder()
 				.orderLineBL(orderLineBL)
+				.productBL(productBL)
 				.qtyReservationService(qtyReservationService)
 				.projectRepository(projectRepository)
 				.rowVO(rowVO)
-				.salesOrderAndLineId(getSalesOrderAndLineId())
+				.salesOrderAndLineId(salesOrderAndLineId)
 				.qtyToReserveTU(qtyToReserveTU)
+				.capacityPerTUFallback(capacityPerTUFallback)
 				.build()
 				.execute();
 

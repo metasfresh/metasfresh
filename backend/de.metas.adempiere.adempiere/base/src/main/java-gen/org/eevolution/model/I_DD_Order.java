@@ -895,7 +895,7 @@ public interface I_DD_Order
 
 	/**
 	 * Set In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -905,7 +905,7 @@ public interface I_DD_Order
 
 	/**
 	 * Get In Transit.
-	 * Movement is in transit
+	 * If Yes, this is a transit warehouse (for inventory between two physical warehouses). Distinct from "Dropship Warehouse" (IsDropShipWarehouse): an in-transit warehouse holds own goods moving between sites, whereas a dropship warehouse routes goods directly from supplier to end customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1005,6 +1005,27 @@ public interface I_DD_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_DD_Order.class, "M_Picking_Job_Schedule_ID", null);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
+
+	/**
 	 * Set MRP Allow Cleanup.
 	 * MRP is allowed to remove this document
 	 *
@@ -1072,6 +1093,27 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_MRP_ToDelete = new ModelColumn<>(I_DD_Order.class, "MRP_ToDelete", null);
 	String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
+
+	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_DD_Order.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Shipper.

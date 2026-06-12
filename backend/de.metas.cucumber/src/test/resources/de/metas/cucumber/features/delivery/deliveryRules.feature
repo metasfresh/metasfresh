@@ -546,7 +546,7 @@ Feature: Delivery rules with and without quantity in stock
     And the inventory identified by inventory_FIFO2_1 is completed
     And the inventory identified by inventory_FIFO2_2 is completed
     And the inventory identified by inventory_FIFO2_3 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_FIFO_2          | 20        |

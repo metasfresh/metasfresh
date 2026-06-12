@@ -195,6 +195,22 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public Optional<Integer> getPurchaseTransportDays(@NonNull final BPartnerId bpartnerId)
+	{
+		return getPurchaseTransportDays(getById(bpartnerId));
+	}
+
+	@Override
+	public Optional<Integer> getPurchaseTransportDays(@NonNull final I_C_BPartner bpartner)
+	{
+		if (InterfaceWrapperHelper.isNull(bpartner, I_C_BPartner.COLUMNNAME_PO_TransportDays))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(bpartner.getPO_TransportDays());
+	}
+
+	@Override
 	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
 	{
 		// NOTE: generally, don't load out of trx unless knowing the context that therefore knowing that it's OK.
@@ -1810,6 +1826,8 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 		else if (!Check.isEmpty(contactQuery.getValue(), true))
 		{
+			// FIXME: AD_User.Value has no unique constraint — if duplicates exist this query throws QueryMoreThanOneRecordsFoundException
+			logger.warn("Querying AD_User by Value={}. AD_User.Value has no unique constraint; duplicates would cause an error here.", contactQuery.getValue());
 			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_Value, contactQuery.getValue().trim());
 		}
 

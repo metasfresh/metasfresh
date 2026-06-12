@@ -146,6 +146,7 @@ public class PP_Product_Planning_StepDef
 		getResourceId(row).ifPresent(builder::plantId);
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		row.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_DeliveryTime_Promised).ifPresent(builder::leadTimeDays);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);

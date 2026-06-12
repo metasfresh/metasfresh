@@ -50,7 +50,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -689,15 +689,19 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
 	public void setBillBPartnerIdIfAssociation(final I_C_Order order)
 	{
 		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		if (bpartnerGroup.isAssociation())
 		{
-			order.setBill_BPartner_ID(bpartnerGroup.getBill_BPartner_ID());
-			order.setBill_Location_ID(bpartnerGroup.getBill_Location_ID());
-			order.setBill_User_ID(bpartnerGroup.getBill_User_ID());
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerGroup.getBill_BPartner_ID());
+			if (billBPartnerId != null)
+			{
+				order.setBill_BPartner_ID(billBPartnerId.getRepoId());
+				order.setBill_Location_ID(bpartnerGroup.getBill_Location_ID());
+				order.setBill_User_ID(bpartnerGroup.getBill_User_ID());
+			}
 		}
 		else
 		{
@@ -707,9 +711,13 @@ public class C_Order
 				final I_C_BP_Group parentGroup = groupDAO.getById(parentGroupId);
 				if (parentGroup.isAssociation())
 				{
-					order.setBill_BPartner_ID(parentGroup.getBill_BPartner_ID());
-					order.setBill_Location_ID(parentGroup.getBill_Location_ID());
-					order.setBill_User_ID(parentGroup.getBill_User_ID());
+					final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
+					if (billBPartnerId != null)
+					{
+						order.setBill_BPartner_ID(billBPartnerId.getRepoId());
+						order.setBill_Location_ID(parentGroup.getBill_Location_ID());
+						order.setBill_User_ID(parentGroup.getBill_User_ID());
+					}
 				}
 			}
 		}

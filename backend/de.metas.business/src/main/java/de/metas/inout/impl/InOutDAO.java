@@ -34,6 +34,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -510,6 +511,26 @@ public class InOutDAO implements IInOutDAO
 	public void save(@NonNull final I_M_InOutLine inoutLine)
 	{
 		InterfaceWrapperHelper.saveRecord(inoutLine);
+	}
+
+	@Override
+	public List<I_M_InOut> retrieveInOutsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).create().list();
+	}
+
+	@Override
+	public List<InOutId> retrieveInOutIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).create().listIds(InOutId::ofRepoId);
+	}
+
+	private IQueryBuilder<I_M_InOut> queryByOrderId(final @NotNull OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
@@ -46,6 +47,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
+	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
 	@Nullable Map<String, JsonCreateProductRequest> products;
 	@Nullable Map<String, JsonCreateResourceRequest> resources;
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;

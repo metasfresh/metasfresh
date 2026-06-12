@@ -35,7 +35,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -47,9 +46,9 @@ import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -69,7 +68,15 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.IsPartialInvoice;
+import de.metas.invoice.process.C_Invoice_OverrideDueDate;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -83,7 +90,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
-import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -99,6 +105,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
@@ -158,6 +165,8 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 @RequiredArgsConstructor
 public class C_Invoice_StepDef
 {
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -519,6 +528,18 @@ public class C_Invoice_StepDef
 		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
 
+		// IsPartialInvoice is a tri-state column (Y / N / null = NA). Read via the
+		// IsPartialInvoice.fromValue(...) helper because the PO layer stores YesNo
+		// column values as Boolean (Y -> TRUE, N -> FALSE, NULL -> null) — a raw
+		// <String>getValue cast throws ClassCastException at runtime. Cucumber's
+		// "-" / "null" tokens map to actual SQL null via DataTableUtil.nullToken2Null.
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_IsPartialInvoice)
+				.ifPresent(expectedRaw -> {
+					final IsPartialInvoice expected = IsPartialInvoice.fromCode(DataTableUtil.nullToken2Null(expectedRaw));
+					final IsPartialInvoice actual = IsPartialInvoice.fromValue(invoice.getIsPartialInvoice());
+					softly.assertThat(actual).as(I_C_Invoice.COLUMNNAME_IsPartialInvoice + " for Identifier=%s", identifierStr).isEqualTo(expected);
+				});
+
 		// payment related
 		{
 			row.getAsOptionalBoolean(COLUMNNAME_IsPaid)
@@ -567,7 +588,7 @@ public class C_Invoice_StepDef
 					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
 					softly.assertThat(invoice.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
 				});
-		
+
 		softly.assertAll();
 	}
 
@@ -890,25 +911,70 @@ public class C_Invoice_StepDef
 			invoice.setDateInvoiced(dateInvoiced);
 		}
 
-		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
-		if (Check.isNotBlank(paymentTerm))
-		{
-			final PaymentTermQuery query = PaymentTermQuery.builder()
-					.orgId(StepDefConstants.ORG_ID)
-					.value(paymentTerm)
-					.build();
-
-			final PaymentTermId paymentTermId = paymentTermRepo.firstIdOnly(query)
-					.orElse(null);
-
-			assertThat(paymentTermId).isNotNull();
-
-			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-		}
+		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
+		// resolve correctly even when the DB record has a unique timestamped Value.
+		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);
 
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
+
+	/**
+	 * Runs the {@code C_Invoice_OverrideDueDate} AD_Process on each invoice row in the DataTable.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) invoice to apply the override to<br>
+	 *   <b>OverrideDueDate</b> — (required) the new due date to apply (format: {@code yyyy-MM-dd})<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When C_Invoice_OverrideDueDate process is invoked:
+	 *   | C_Invoice_ID | OverrideDueDate |
+	 *   | inv_allow    | 2026-12-31      |
+	 * </pre>
+	 */
+	@And("C_Invoice_OverrideDueDate process is invoked:")
+	public void invoke_C_Invoice_OverrideDueDate_process(@NonNull final DataTable dataTable)
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Invoice_OverrideDueDate.class);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID);
+			final I_C_Invoice invoice = invoiceIdentifier.lookupNotNullIn(invoiceTable);
+			final int invoiceId = invoice.getC_Invoice_ID();
+			final Timestamp overrideDueDate = row.getAsLocalDateTimestamp("OverrideDueDate");
+
+			// run with the invoice's client ctx + WebUI role; the default cucumber ctx (System client/role) would match no records
+			final ClientId invoiceClientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
+			final UserId loggedUserId = Env.getLoggedUserId();
+			final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+					.stream()
+					.filter(r -> "WebUI".equals(r.getName()))
+					.map(Role::getId)
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+			ProcessInfo.builder()
+					.setAD_Process_ID(processId.getRepoId())
+					.setClientId(invoiceClientId)
+					.setRoleId(roleId)
+					.setCreateTemporaryCtx()
+					.setTableName(I_C_Invoice.Table_Name)
+					.setWhereClause(COLUMNNAME_C_Invoice_ID + "=" + invoiceId)
+					.addParameter("OverrideDueDate", overrideDueDate)
+					.buildAndPrepareExecution()
+					.switchContextWhenRunning()
+					.executeSync()
+					.getResult()
+					.propagateErrorIfAny();
+
+			// Re-load out-of-transaction so subsequent validate steps see the committed DB state.
+			final I_C_Invoice freshInvoice = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(invoiceId), I_C_Invoice.class);
+			invoiceTable.putOrReplace(invoiceIdentifier, freshInvoice);
+		});
 	}
 
 	@NonNull

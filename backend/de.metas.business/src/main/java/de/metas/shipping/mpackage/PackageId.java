@@ -28,6 +28,9 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value
 public class PackageId implements RepoIdAware
 {
@@ -53,6 +56,8 @@ public class PackageId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Package_ID");
 	}
+
+	public static boolean equals(@Nullable final PackageId id1, @Nullable final PackageId id2) {return Objects.equals(id1, id2);}
 
 	@Override
 	@JsonValue

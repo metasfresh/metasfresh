@@ -1,24 +1,8 @@
-package de.metas.material.event.shipmentschedule;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
-import java.math.BigDecimal;
-
 /*
  * #%L
  * metasfresh-material-event
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +20,22 @@ import java.math.BigDecimal;
  * #L%
  */
 
+package de.metas.material.event.shipmentschedule;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
@@ -50,8 +50,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleDetail") final ShipmentScheduleDetail shipmentScheduleDetail,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("isDropShipWarehouse") final boolean isDropShipWarehouse)
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
 		super(
 				eventDescriptor,
@@ -59,8 +58,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				shipmentScheduleDetail,
 				shipmentScheduleId,
-				null,
-				isDropShipWarehouse);
+				null);
 	}
 
 	@Override

@@ -992,40 +992,44 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 38. GRAI to Packing Instruction Mapping (`hu-pi-grai-mapping.spec.js`)
+### 38. Invoice DueDate Read-Only (`invoice_dueDate_readonly.spec.js`)
 
 **Features Tested**:
-- F00230: MobileUI Picking (GRAI scan-picking — desktop mapping window)
+- F00765: Due Date Management
+
+**Epic**: E0340: Invoicing
+
+**Workflow**:
+1. REST login (authenticate + loginComplete via page.request — bypasses the UI login race)
+2. Create a customer via `Backend.createMasterdata()` (requires port 8282)
+3. Create a drafted sales invoice via the document REST API on window 167 (NEW → C_BPartner_ID → first C_DocTypeTarget_ID → first C_PaymentTerm_ID), checking `validStatus.valid === true` to confirm it persisted
+4. Navigate directly to the created invoice by id (no list view, no dependence on any seed record)
+5. Open SubHeader → Advanced Edit modal (click path; Alt+E is unreliable when grid sub-tab has focus)
+6. Assert the DueDate input (`.panel-modal .form-field-DueDate input`) is disabled
+7. Assert force-clicking the input does not open the date-picker popup
+
+**Key Validations**:
+- `AD_Field.IsReadOnly='Y'` on C_Invoice.DueDate renders as a disabled DatePicker input
+- Calendar popup stays closed on click (DatePicker no-ops when readonly)
+- Seed-independent: creates its own customer + drafted invoice, so it passes on an empty invoice grid (e.g. customer CI seed DBs). **Requires port 8282** (App server) for `Backend.createMasterdata()`
+
+### 39. Workplace Window — Auto-Assign Restriction Fields (`workplace-window.spec.js`)
+
+**Features Tested**:
+- F00251: Worplace Traffic Rules
 
 **Epic**: E0105: Picking
 
-**Window**: GRAI to Packing Instruction Mapping (542157), table `M_HU_PI_GRAI`
-
 **Workflow**:
-1. Provision a prerequisite M_HU_PI (TU packing instruction) via the Backend
-   masterdata API (`packingInstructions`) — the response returns the unique PI name
-2. Login, navigate to window 542157
-3. Create a new record (Alt+N): select the M_HU_PI (List widget) by its name,
-   enter GRAI_CompanyPrefix + GRAI_AssetType (Text widgets), save
-4. Verify the record persisted (WebAPI: validStatus.valid, saveStatus.saved) and read
-   back the raw GRAI_CompanyPrefix / GRAI_AssetType / M_HU_PI_ID values
-5. Create a SECOND record with the SAME (GRAI_CompanyPrefix, GRAI_AssetType)
-6. Verify the save is rejected by the global unique index
-   `M_HU_PI_GRAI_CompanyPrefix_AssetType_UIdx` (WebAPI saveStatus: error=true,
-   saved=false, presentInDatabase=false, reason names the index)
+1. Login via `Backend.createMasterdata()` user in de_DE and en_US (requires port 8282)
+2. Navigate to the Workplace window (541744)
+3. Fetch `/rest/api/window/541744/layout` and assert all 8 auto-assign restriction fields (Kommissionierart/Order Picking Type, Priorität/Priority + the 6 Labels multi-selects: Produkte, Produktkategorien, Lieferweg-Produkte, Externe Systeme, Geschäftspartnergruppen, Auftrags-Belegarten) carry the language-correct caption and the matching-semantics tooltip ("Einschränkung für die automatische Arbeitsplatz-Zuordnung …" / "Restriction for the automatic workplace assignment …")
+4. Create a new Workplace via the UI (Name + Warehouse), set a BP-Group restriction via the Labels widget, reload, assert the chip persisted
 
 **Key Validations**:
-- M_HU_PI_GRAI mapping creation via the dedicated WebUI window
-- Persistence verified language-independently via the WebAPI (raw field values)
-- The domain invariant "one GRAI resolves to exactly one TU type": a duplicate
-  (CompanyPrefix, AssetType) is rejected by the unique index through the UI
-
-**Components Tested**: ListWidget, TextWidget, WidgetCommon, WebAPIValidation utility
-
-**Prerequisite data**: M_HU_PI provisioned through the Backend masterdata
-`packingInstructions` command (never via the DB)
-
----
+- All matching fields live in the "restrictions" element group with explanatory tooltips (window-overhaul migration 5807330)
+- Labels captions resolve via AD_UI_Element.AD_Name_ID → AD_Element_Trl (language-specific); Labels tooltips are German in every language (AD_UI_Element.Description has no _Trl)
+- A BP-Group restriction set through the Labels widget is persisted on the record
 
 ## Test Architecture
 

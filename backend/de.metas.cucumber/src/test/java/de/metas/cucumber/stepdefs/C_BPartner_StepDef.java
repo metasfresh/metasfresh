@@ -35,6 +35,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
@@ -107,6 +108,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_TransportDays;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
@@ -119,6 +121,7 @@ public class C_BPartner_StepDef
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BP_Group_StepDefData bpGroupTable;
 	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -138,6 +141,12 @@ public class C_BPartner_StepDef
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 
+	/**
+	 * Creates {@code C_BPartner} records with their default location.
+	 * <p>
+	 * The {@code C_BP_Group_ID} column resolves a known {@link C_BP_Group_StepDefData} identifier first, then
+	 * falls back to a raw repo-id, then to the default group.
+	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
 	{
@@ -224,7 +233,10 @@ public class C_BPartner_StepDef
 	{
 		final ValueAndName valueAndName = row.suggestValueAndName();
 
-		final int bpGroupId = row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID);
+		final int bpGroupId = row.getAsOptionalIdentifier(COLUMNNAME_C_BP_Group_ID)
+				.flatMap(bpGroupTable::getIdOptional)
+				.map(BPGroupId::getRepoId)
+				.orElseGet(() -> row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID));
 
 		final int orgId = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_Org_ID)
 				.map(orgTable::get)
@@ -325,10 +337,17 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
 				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+		row.getAsOptionalInt(COLUMNNAME_PO_TransportDays).ifPresent(bPartnerRecord::setPO_TransportDays);
 
 		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
 				.map(aggregationTable::getId)
 				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
+
+		// Delivery / order stop fields (gh#28631)
+		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
+				.ifPresent(bPartnerRecord::setDeliveryStopReason);
+		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(bPartnerRecord::setIsDeliveryStop);
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -397,6 +416,12 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId)));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
+
+		// Delivery / order stop fields (gh#28631) — allow toggling Y/N via "the following c_bpartner is changed"
+		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
+				.ifPresent(reason -> bPartnerRecord.setDeliveryStopReason(DataTableUtil.nullToken2Null(reason)));
+		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(bPartnerRecord::setIsDeliveryStop);
 
 		InterfaceWrapperHelper.save(bPartnerRecord);
 	}

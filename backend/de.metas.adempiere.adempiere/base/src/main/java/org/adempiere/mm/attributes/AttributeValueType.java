@@ -50,6 +50,12 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	public boolean isString() {return STRING.equals(this);}
+
+	public boolean isNumber() {return NUMBER.equals(this);}
+
+	public boolean isDate() {return DATE.equals(this);}
+
 	public boolean isList() {return LIST.equals(this);}
 
 	public interface CaseMapper<T>

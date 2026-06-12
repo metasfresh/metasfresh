@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -935528783L;
+	private static final long serialVersionUID = -459031938L;
 
     /** Standard Constructor */
     public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -225,7 +225,7 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public java.lang.String getIsFiscalRepresentation()
+	public java.lang.String getIsFiscalRepresentation() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsFiscalRepresentation);
 	}
@@ -237,21 +237,9 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public boolean isReverseCharge()
+	public boolean isReverseCharge() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
-	}
-
-	@Override
-	public void setIsSalesTax (final boolean IsSalesTax)
-	{
-		set_Value (COLUMNNAME_IsSalesTax, IsSalesTax);
-	}
-
-	@Override
-	public boolean isSalesTax() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSalesTax);
 	}
 
 	/** 
@@ -361,7 +349,7 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	/** No = N */
 	public static final String REQUIRESTAXCERTIFICATE_No = "N";
 	@Override
-	public void setRequiresTaxCertificate (final java.lang.String RequiresTaxCertificate)
+	public void setRequiresTaxCertificate (final @Nullable java.lang.String RequiresTaxCertificate)
 	{
 		set_Value (COLUMNNAME_RequiresTaxCertificate, RequiresTaxCertificate);
 	}

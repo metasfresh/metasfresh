@@ -85,6 +85,10 @@ public class ExternalSystemEndpointRepository
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
 				.isArrayFanOut(endpointRecord.isArrayFanOut())
+				// OAuth2 + file-upload fields
+				.oauthTokenUrl(endpointRecord.getOAuthTokenUrl())
+				.oauthScope(endpointRecord.getOAuthScope())
+				.isFileUpload(endpointRecord.isFileUpload())
 				.build();
 	}
 

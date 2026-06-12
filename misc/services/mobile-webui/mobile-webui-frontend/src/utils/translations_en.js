@@ -50,6 +50,9 @@ const translations = {
     workplace: 'Workplace',
     workstation: 'Workstation',
     trolley: 'Trolley',
+    releaseTrolley: {
+      buttonCaption: 'Release trolley',
+    },
   },
   login: {
     submitButton: 'Login',
@@ -77,6 +80,8 @@ const translations = {
       scanWorkplacePlaceholder: 'Scan workplace...',
       scanWorkstationPlaceholder: 'Scan workstation...',
       scanTrolleyPlaceholder: 'Scan trolley...',
+      scanPrompt: 'Scan barcode',
+      scanInProgress: 'Scanning in progress...',
     },
   },
   activities: {
@@ -143,6 +148,17 @@ const translations = {
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
       noMatchingLines: 'No matching lines found',
+      massPrinting: {
+        triggerButton: 'Mass Print Labels',
+        scanCaption: 'Scan LU',
+        doneButton: 'Done',
+        noResults: 'No eligible products found on this LU',
+        product: 'Product',
+        unitsPacked: 'Units packed',
+        unitsLeftOnLU: 'Units left on LU',
+        unitsOfOpenDemandRemaining: 'Open demand remaining',
+        skippedProducts: 'Skipped products',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -151,6 +167,7 @@ const translations = {
       scanHU: 'Scan pick from HU',
       scanProduct: 'Scan Product',
       scanDropToLocator: 'Scan drop to Locator',
+      switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
       qrcode: {

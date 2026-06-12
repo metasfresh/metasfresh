@@ -34,6 +34,7 @@ import de.metas.util.collections.IteratorUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -384,6 +385,12 @@ public interface IQuery<T>
 	}
 
 	IQuery<T> setRequiredAccess(@Nullable Access access);
+
+	/**
+	 * Appends a row-locking clause to the query, locking matched rows until the transaction ends.
+	 * Use {@link ForUpdate#NONE} (the default) to emit no locking clause.
+	 */
+	IQuery<T> setForUpdate(@NonNull ForUpdate forUpdate);
 
 	/**
 	 * Filter by context AD_Client_ID

@@ -24,6 +24,7 @@
 package de.metas.ui.web.view.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
@@ -33,12 +34,15 @@ import de.metas.document.references.related_documents.relation_type.RelationType
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
+import de.metas.process.ProcessOpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -58,10 +62,13 @@ import java.util.List;
 import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
 
 /**
- * Process implementation for opening related documents in an overlay window (as grid view).
+ * Process implementation for opening related documents via an AD_RelationType.
  * <p>
- * This process is automatically assigned when a process has Type = 'RelationTypeInOverlay'.
- * It retrieves related documents based on the configured AD_RelationType_ID and displays them in a modal overlay.
+ * The display mode is configured per AD_Process via {@code AD_Process.OpenTarget}
+ * (see {@link ProcessOpenTarget}): modal overlay (default — historical behaviour
+ * when the column is NULL) or new browser tab.
+ * <p>
+ * This process is automatically assigned when AD_Process.Type='RelationTypeInOverlay'.
  */
 public class RelationTypeInOverlayProcess extends JavaProcess implements IProcessPrecondition
 {
@@ -128,13 +135,30 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		}
 
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
+		final ViewId viewId = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId())).getViewId();
 
-		final IView popupView = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId()));
-
-		getResult().setWebuiViewToOpen(
-				ProcessExecutionResult.WebuiViewToOpen.modalOverlay(popupView.getViewId().getViewId()));
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder().viewId(viewId.getViewId()).target(getOpenTarget()).build());
 
 		return MSG_OK;
+	}
+
+	private ViewOpenTarget getOpenTarget()
+	{
+		final ProcessOpenTarget processOpenTarget = CoalesceUtil.coalesce(getProcessInfo().getOpenTarget(), ProcessOpenTarget.ModalOverlay);
+		if (processOpenTarget == ProcessOpenTarget.NewBrowserTab)
+		{
+			return ViewOpenTarget.NewBrowserTab;
+		}
+		else if (processOpenTarget == ProcessOpenTarget.ModalOverlay)
+		{
+			return ViewOpenTarget.ModalOverlay;
+		}
+		else
+		{
+			// Defensive fallback for any future ProcessOpenTarget value not yet mapped here — unreachable with current values
+			log.warn("Unknown processOpenTarget {}. Returning {}", processOpenTarget, ViewOpenTarget.ModalOverlay);
+			return ViewOpenTarget.ModalOverlay;
+		}
 	}
 
 	protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)

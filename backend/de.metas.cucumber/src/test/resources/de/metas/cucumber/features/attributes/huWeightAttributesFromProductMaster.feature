@@ -149,7 +149,7 @@ Feature: HU weight attributes are derived from product master Net + Gross
     # transfer pairs. Both pairs of transfer trx_lines carry vhu_item_id on both sides, so the listener's
     # counterpart-VHU guard skips them. WeightTareDeltaTransferStrategy is also called by HULoader.transferAttributes
     # but skips via its source-tare guard because source tare is zero. Tare stays at 0.450.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
       | lu      | rs                   | receipt    |
@@ -256,7 +256,7 @@ Feature: HU weight attributes are derived from product master Net + Gross
       | lu      | WeightTare           | 0.450       |
       | lu      | WeightGross          | 18.450      |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
       | lu      | rs                   | receipt    |

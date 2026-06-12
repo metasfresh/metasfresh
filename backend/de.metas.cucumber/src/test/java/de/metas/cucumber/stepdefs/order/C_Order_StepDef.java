@@ -293,12 +293,10 @@ public class C_Order_StepDef
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 
-		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(userIdentifier))
-		{
-			final I_AD_User user = userTable.get(userIdentifier);
-			order.setAD_User_ID(user.getAD_User_ID());
-		}
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(user -> order.setAD_User_ID(user.getAD_User_ID()));
 
 		final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(billBPartnerIdentifier))
@@ -351,10 +349,9 @@ public class C_Order_StepDef
 		final Instant preparationDate = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_PreparationDate).orElse(null);
 		final Instant datePromised = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised).orElse(null);
 
-		final Instant preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
-		if (preparationDateToBeSet != null)
+		if (preparationDate != null)
 		{
-			order.setPreparationDate(Timestamp.from(preparationDateToBeSet));
+			order.setPreparationDate(Timestamp.from(preparationDate));
 		}
 
 		final Instant datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
@@ -948,11 +945,21 @@ public class C_Order_StepDef
 					else
 					{
 						final LocalDate expectedDate = LocalDate.parse(rawValue);
-						final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date(), zoneId))
+						// Wall-clock interpretation (no zoneId): matches the production read at
+						// OrderPayScheduleService#toOrderSchedulingContext (TimeUtil.asLocalDate(getLC_Date())).
+						// LC_Date is on a deprecation path; don't introduce a new instant-based read here.
+						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date()))
 								.as("LC_Date for Identifier=%s", identifierStr)
 								.isEqualTo(expectedDate);
 					}
+				});
+
+		row.getAsOptionalLocalDate(COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getPreparationDate(), zoneId))
+							.as("PreparationDate for Identifier=%s", identifierStr)
+							.isEqualTo(preparationDate);
 				});
 
 		softly.assertAll();

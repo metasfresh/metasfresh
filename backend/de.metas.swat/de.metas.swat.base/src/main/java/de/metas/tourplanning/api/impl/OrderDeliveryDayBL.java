@@ -36,6 +36,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private static final Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -116,12 +117,22 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		}
 		else if (isUseFallback)
 		{
-			int offset = getFallbackPreparationDateOffsetInHours();
-			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(datePromised, offset)));
+			final int offset = getFallbackPreparationDateOffsetInHours();
+			final ZonedDateTime fallbackBase;
+			if (soTrx.isPurchase())
+			{
+				final int maxTransportDays = orderBL.getMaxPurchaseTransportDays(order);
+				fallbackBase = datePromised.minusDays(maxTransportDays);
+			}
+			else
+			{
+				fallbackBase = datePromised;
+			}
+			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(fallbackBase, offset)));
 			order.setM_Tour_ID(-1);
 			logger.debug(
-					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
-					order.getDatePromised(), order, preparationDate, isUseFallback, systemTime);
+					"Setting PreparationDate={} for C_Order {} (soTrx={}, fallbackToDatePromised={}, systemTime={}).",
+					order.getPreparationDate(), order, soTrx, isUseFallback, systemTime);
 		}
 		else
 		{

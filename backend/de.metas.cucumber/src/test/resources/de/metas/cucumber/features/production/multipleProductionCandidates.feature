@@ -108,7 +108,7 @@ Feature: create multiple production candidates
     #
     # Complete the sales order and expected the PP_Order_Candidate to be generated.
     When the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -126,12 +126,12 @@ Feature: create multiple production candidates
     # Expect a new PP_Order_Candidate to be generated for those 2 PCE.
     And the order identified by o_1 is reactivated
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     And the order identified by o_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -155,7 +155,7 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID |
       | oc_1                  |
       | oc_2                  |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     Then after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppo_1      | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12         | endcustomer_2 | 2021-04-16T21:00:00Z | DR        |
@@ -290,15 +290,15 @@ Feature: create multiple production candidates
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 3 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And the order identified by o_3 is reactivated
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
       | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
@@ -309,7 +309,7 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID | QtyToProcess |
       | ppOrderCandidate_3_2  | 4            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=true
       | PP_Order_Candidate_ID |

@@ -7,9 +7,9 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 56 | 59 | 95% |
-| Distribution | 27 | 30 | 90% |
+| Barcode Scanner Modes | 6 | 9 | 67% |
+| Picking | 56 | 60 | 93% |
+| Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -52,9 +52,10 @@
 
 | Scenario | Test |
 |---|---|
-| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — DataWedge IME contract (visible-input editable, virtual keyboard suppressed via soft hint) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readOnly` present, CSS-hidden, no `<video>` — Honeywell CT60 / Android 11 keystroke-wedge contract (HARD keyboard suppression via `readOnly`; camera disabled) | `barcode_scanner_modes.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ### Scan paths
 
@@ -137,6 +138,24 @@
 
 **3/3 — 100%**
 
+### Order-based picking — mass printing
+
+| Scenario | Test |
+|---|---|
+| Mass-printing scan of an LU → one box and one label per unit packed for open demand (DO_NOT_CREATE policy, no shipment) | `picking/massPrinting.spec.js` |
+| Mass-printing scan of an LU → leftover units stay on the LU when demand is smaller than the LU | `picking/massPrinting.spec.js` |
+| FIFO partial fill: LU capacity < total demand → earliest-date order(s) fully filled, latest order left short, open demand remaining | `picking/massPrinting.spec.js` |
+| CREATE_AND_COMPLETE policy: scanning LU triggers packing and produces a completed (CO) shipment per order | `picking/massPrinting.spec.js` |
+| CREATE_DRAFT policy: scanning LU triggers packing and produces a draft (DR) shipment per order | `picking/massPrinting.spec.js` |
+| DO_NOT_CREATE policy: scanning LU packs boxes but produces no shipment | `picking/massPrinting.spec.js` |
+| Mixed LU (self-packed only): product is packed, skipped-products section is absent | `picking/massPrinting.spec.js` |
+| Non-self-packed-only LU: no boxes packed, skipped-products section is visible | `picking/massPrinting.spec.js` |
+| Off-mode guard: mass-printing trigger button is absent when feature is disabled in picking profile | `picking/massPrinting.spec.js` |
+| Null PackTo PI: self-packed product with no TU packing instruction packs as VHU (one label per unit, not a TU box) | `picking/massPrinting.spec.js` |
+| ❌ CREATE_COMPLETE_CLOSE policy: scanning LU packs + produces a completed shipment and closes the shipment schedule — but the schedule must be closed **only on a full pick**; a partially-picked schedule must stay **open** (closing it would discard the remaining open demand) | — |
+
+**10/11 — 91%**
+
 ### Order-based picking — catch-weight
 
 | Scenario | Test |
@@ -167,10 +186,9 @@
 | DO_NOT_CREATE: partially-picked order (qty still open) → must STAY in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | DO_NOT_CREATE: picked qty fully bound to a draft shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | Reverse (void) an aggregate-HU shipment → recreate must not collide on duplicate QtyPicked rows | `picking/recreate_shipment_after_void.spec.js` |
-| Reverse an aggregate-HU shipment TWICE (recreate via Generate Shipments between) → picked qty must survive every void so the shipment stays recreatable | `picking/recreate_shipment_after_void.spec.js` |
 
 
-**9/9 — 100%**
+**8/8 — 100%**
 
 ### Product-based picking
 
@@ -182,21 +200,6 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
-
-### GRAI-scan picking (product aggregation)
-
-| Scenario | Test |
-|---|---|
-| Scan one GRAI → TU auto-created with GRAI attribute (TC1) | `picking/picking-grai-scan.spec.js` |
-| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error (TC2) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error (TC3) | `picking/picking-grai-scan.spec.js` |
-| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list (TC4) | `picking/picking-grai-scan.spec.js` |
-| Unparseable barcode → scanner ignores it, stays live for valid scan (TC5) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU has no capacity for product → GRAINoCapacityForProduct error (TC6) | `picking/picking-grai-scan.spec.js` |
-| BPartner GRAIRequired=No → no GRAI scanner shown (TC7) | `picking/picking-grai-scan.spec.js` |
-| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete (TC9) | `picking/picking-grai-scan.spec.js` |
-
-**8/8 — 100%**
 
 ---
 
@@ -242,8 +245,14 @@
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
+| "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after switch, scanning an HU from the original locator is rejected with "HU is not at the target trolley" | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) | `distribution/switchPickFromLocator.spec.js` |
 
-**5/5 — 100%**
+**11/11 — 100%**
 
 ### Distribution — HU scanning
 
@@ -253,11 +262,12 @@
 | GTIN-validation mode: scan HU by M_HU_ID, confirm with product GTIN | `distribution/pickFrom_validate_GTIN.spec.js` |
 | GTIN-validation mode: scan HU by ExternalBarcode, confirm with product GTIN | `distribution/pickFrom_validate_GTIN.spec.js` |
 | Only 1 matching unit → qty dialog skipped | `distribution/pickFrom_validate_GTIN.spec.js` |
+| GTIN-validation mode: scan unknown product code → "no product found" error, line stays unpicked | `distribution/pickFrom_validate_GTIN.spec.js` |
 | Scan distribution HU by QR code | `distribution/scan_HU_barcodes.spec.js` |
 | Scan distribution HU by M_HU_ID | `distribution/scan_HU_barcodes.spec.js` |
 | Scan distribution HU by ExternalBarcode | `distribution/scan_HU_barcodes.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Distribution + Manufacturing cross-flow
 

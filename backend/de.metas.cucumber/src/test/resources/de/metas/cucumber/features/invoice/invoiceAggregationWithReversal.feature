@@ -53,7 +53,7 @@ Feature: Invoice aggregation of 2 IC2 when one IC was previously invoiced and re
     # this poll occasionally exhausts its 60 s budget, cascading to the step-def's 120 s recompute
     # fallback, which can in turn time out and abort the runner before any test completes
     # ("Tests run: 0").
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyToInvoice |

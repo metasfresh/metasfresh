@@ -84,6 +84,10 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
+	Optional<Integer> getPurchaseTransportDays(BPartnerId bpartnerId);
+
+	Optional<Integer> getPurchaseTransportDays(I_C_BPartner bpartner);
+
 	List<I_C_BPartner> getByIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1373880103L;
+	private static final long serialVersionUID = -1413846951L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -598,18 +598,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setCreateDta (final @Nullable java.lang.String CreateDta)
-	{
-		set_Value (COLUMNNAME_CreateDta, CreateDta);
-	}
-
-	@Override
-	public java.lang.String getCreateDta() 
-	{
-		return get_ValueAsString(COLUMNNAME_CreateDta);
-	}
-
-	@Override
 	public void setCreateFrom (final @Nullable java.lang.String CreateFrom)
 	{
 		set_Value (COLUMNNAME_CreateFrom, CreateFrom);
@@ -837,27 +825,27 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setDunningGrace (final @Nullable java.sql.Timestamp DunningGrace)
-	{
-		set_Value (COLUMNNAME_DunningGrace, DunningGrace);
-	}
-
-	@Override
-	public java.sql.Timestamp getDunningGrace()
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_DunningGrace);
-	}
-
-	@Override
 	public void setDueDate (final @Nullable java.sql.Timestamp DueDate)
 	{
 		set_Value (COLUMNNAME_DueDate, DueDate);
 	}
 
 	@Override
-	public java.sql.Timestamp getDueDate()
+	public java.sql.Timestamp getDueDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setDunningGrace (final @Nullable java.sql.Timestamp DunningGrace)
+	{
+		set_Value (COLUMNNAME_DunningGrace, DunningGrace);
+	}
+
+	@Override
+	public java.sql.Timestamp getDunningGrace() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DunningGrace);
 	}
 
 	@Override
@@ -1031,6 +1019,27 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isPaid() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPaid);
+	}
+
+	/** 
+	 * IsPartialInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPARTIALINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPARTIALINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISPARTIALINVOICE_No = "N";
+	@Override
+	public void setIsPartialInvoice (final @Nullable java.lang.String IsPartialInvoice)
+	{
+		set_Value (COLUMNNAME_IsPartialInvoice, IsPartialInvoice);
+	}
+
+	@Override
+	public java.lang.String getIsPartialInvoice() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPartialInvoice);
 	}
 
 	@Override

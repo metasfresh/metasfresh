@@ -107,11 +107,24 @@ public interface IInvoiceCandBL extends ISingletonService
 	IInvoiceGenerator generateInvoices();
 
 	/**
+	 * Creates invoices from the given selection, with optional partial-invoice routing.
+	 * <p>
+	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
+	 *
+	 * @param isPartialInvoice {@code true} to generate partial invoices, {@code false} for final invoices,
+	 *                         or {@code null} to use the default behaviour.
+	 */
+	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, @Nullable Boolean isPartialInvoice, String trxName);
+
+	/**
 	 * Creates invoices from the given selection.
 	 * <p>
 	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
 	 */
-	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName);
+	default IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName)
+	{
+		return generateInvoicesFromSelection(ctx, AD_PInstance_ID, ignoreInvoiceSchedule, null, trxName);
+	}
 
 	/**
 	 * Creates <code>de.metas.async</code> work packages from for those invoice candidates that are selected via <code>T_Selection</code> with the given <code>AD_PInstance_ID</code>.

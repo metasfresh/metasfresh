@@ -740,9 +740,21 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public boolean isConfirmedBySupplier() 
+	public boolean isConfirmedBySupplier()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConfirmedBySupplier);
+	}
+
+	@Override
+	public void setIsDeliveryStop (final boolean IsDeliveryStop)
+	{
+		set_Value (COLUMNNAME_IsDeliveryStop, IsDeliveryStop);
+	}
+
+	@Override
+	public boolean isDeliveryStop()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryStop);
 	}
 
 	@Override

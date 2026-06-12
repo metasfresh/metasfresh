@@ -98,7 +98,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | pol_1                     | po_1                  | 2021-04-16      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | true      |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
@@ -191,7 +191,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | pol_1                     | po_1                  | 2021-04-16      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | false     |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
@@ -263,7 +263,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
       | Identifier | C_OrderSO_ID.Identifier | C_OrderLineSO_ID.Identifier | M_Product_ID.Identifier |
       | pc_1       | o_1                     | ol_1                        | p_1                     |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And no C_PurchaseCandidate_Alloc are found for:
       | C_PurchaseCandidate_ID.Identifier |
@@ -357,7 +357,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
 
     # Drain the material event queue so the debouncer handler runs before the alloc poll.
     # Without this, CI-runner contention occasionally exhausts the 120 s poll budget below.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # The debouncer waits for the quiet period, then creates POs — both candidates get an alloc
     And after not more than 120s, C_PurchaseCandidate_Alloc are found
@@ -464,7 +464,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
 
     # Drain the material event queue so the debouncer handler runs before the alloc poll.
     # Without this, CI-runner contention occasionally exhausts the 120 s poll budget below.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # The debouncer waits for the quiet period, then creates POs — one per vendor
     And after not more than 120s, C_PurchaseCandidate_Alloc are found

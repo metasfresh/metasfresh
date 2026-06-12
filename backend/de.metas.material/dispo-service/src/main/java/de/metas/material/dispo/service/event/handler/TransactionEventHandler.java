@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler;
 
 import ch.qos.logback.classic.Level;
@@ -39,6 +61,9 @@ import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
@@ -58,33 +83,13 @@ import java.util.TreeSet;
 
 import static de.metas.util.Check.fail;
 
-/*
- * #%L
- * metasfresh-material-dispo
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class TransactionEventHandler implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private static final Logger logger = LogManager.getLogger(TransactionEventHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService postMaterialEventService;
@@ -108,10 +113,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		// dropship-warehouse transactions bypass material-disposition entirely —
-		// the goods are shipped supplier → customer and never reach our warehouse.
-		if (event.isDropShipWarehouse())
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
 			return;
 		}
 

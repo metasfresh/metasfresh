@@ -47,6 +47,8 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	RECEIVER_DEPARTMENT(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverDepartment),
 	RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverContactLastnameAndFirstname),
 	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
+	RECEIVER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverBPartnerAttention),
+	SENDER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention),
 
 	// From parcel
 	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ParcelId),
@@ -57,6 +59,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	PRODUCT_NAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductName),
 	PRODUCT_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductValue),
 	CUSTOMS_TARIFF(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomsTariff),
+	COUNTRY_OF_ORIGIN(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CountryOfOrigin),
 	SHIPMENT_ORDER_ITEM_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipmentOrderItemId),
 	UNIT_PRICE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UnitPrice),
 	TOTAL_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TotalValue),

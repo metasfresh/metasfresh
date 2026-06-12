@@ -61,12 +61,14 @@ public class DDOrderMainDataHandler
 	@NonNull AbstractDDOrderEvent abstractDDOrderEvent;
 	@NonNull DDOrderLine ddOrderLine;
 
+	// no MRP_Exclude guard: handler only operates on already-existing candidates loaded by ID; if creation was skipped due to MRP_Exclude, the load returns nothing and this is a no-op.
 	public void handleDelete()
 	{
 		deleteForCandidateType(CandidateType.DEMAND);
 		deleteForCandidateType(CandidateType.SUPPLY);
 	}
 
+	// no MRP_Exclude guard: handler only operates on already-existing candidates loaded by ID; if creation was skipped due to MRP_Exclude, the load returns nothing and this is a no-op.
 	public void handleUpdate()
 	{
 		updateForCandidateType(CandidateType.DEMAND);

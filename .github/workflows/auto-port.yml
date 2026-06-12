@@ -52,7 +52,7 @@ jobs:
        endsWith(github.event.workflow_run.head_branch, '_release'))
     runs-on: ${{ vars.RUNNER_LIGHT }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # Use default GITHUB_TOKEN for checkout/push. It has push access

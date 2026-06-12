@@ -14,8 +14,10 @@ import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -462,5 +464,50 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(transactionDetailRecord).isNotNull();
 		assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("1");
 		assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(33);
+	}
+
+	/**
+	 * Reproduces the FK violation
+	 * {@code MDCandidateRebookedFrom_MDCandidateTransactionDetail} that previously caused
+	 * the material event queue to back up when an MD_Candidate referenced via
+	 * {@code MD_Candidate_Transaction_Detail.MD_Candidate_RebookedFrom_ID} was deleted.
+	 * The delete must clear the rebooked-from references on OTHER transaction-detail rows
+	 * before removing the target candidate.
+	 */
+	@Test
+	public void deleteCandidatesAndDetailsByQuery_clears_RebookedFrom_reference_on_other_transactionDetails()
+	{
+		final java.sql.Timestamp now = de.metas.common.util.time.SystemTime.asTimestamp();
+
+		final I_MD_Candidate candidateA = newInstance(I_MD_Candidate.class);
+		candidateA.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		candidateA.setDateProjected(now);
+		save(candidateA);
+		final CandidateId candidateAId = CandidateId.ofRepoId(candidateA.getMD_Candidate_ID());
+
+		final I_MD_Candidate candidateB = newInstance(I_MD_Candidate.class);
+		candidateB.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		candidateB.setDateProjected(now);
+		save(candidateB);
+
+		final I_MD_Candidate_Transaction_Detail detailB = newInstance(I_MD_Candidate_Transaction_Detail.class);
+		detailB.setMD_Candidate_ID(candidateB.getMD_Candidate_ID());
+		detailB.setMD_Candidate_RebookedFrom_ID(candidateA.getMD_Candidate_ID());
+		save(detailB);
+		final int detailBId = detailB.getMD_Candidate_Transaction_Detail_ID();
+
+		candidateRepositoryWriteService.deleteCandidatesAndDetailsByQuery(
+				DeleteCandidatesQuery.builder().candidateId(candidateAId).build());
+
+		final int remainingA = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateAId.getRepoId())
+				.create()
+				.count();
+		assertThat(remainingA).as("candidate A must be deleted").isZero();
+
+		final I_MD_Candidate_Transaction_Detail reloadedDetailB = load(detailBId, I_MD_Candidate_Transaction_Detail.class);
+		assertThat(reloadedDetailB).isNotNull();
+		assertThat(reloadedDetailB.getMD_Candidate_ID()).isEqualTo(candidateB.getMD_Candidate_ID());
+		assertThat(reloadedDetailB.getMD_Candidate_RebookedFrom_ID()).isZero();
 	}
 }

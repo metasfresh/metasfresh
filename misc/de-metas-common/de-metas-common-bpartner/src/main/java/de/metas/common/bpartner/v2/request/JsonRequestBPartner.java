@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
@@ -65,11 +66,20 @@ public class JsonRequestBPartner
 	private boolean nameSet;
 
 	@ApiModelProperty(position = 35,  //
-			value = "This translates to `C_BPartner.Lookup_Label`.")
+			value = "This translates to `C_BPartner.Lookup_Label`. Prefer `glnLookupLabel`.")
+	@Deprecated
 	private @org.jetbrains.annotations.Nullable String lookupLabel;
 
 	@ApiModelProperty(hidden = true)
+	@Deprecated
 	private boolean lookupLabelSet;
+
+	@ApiModelProperty(position = 36,  //
+			value = "This translates to `C_BPartner.Lookup_Label`. Canonical name — use this instead of the deprecated `lookupLabel`.")
+	private @org.jetbrains.annotations.Nullable String glnLookupLabel;
+
+	@ApiModelProperty(hidden = true)
+	private boolean glnLookupLabelSet;
 	
 	@ApiModelProperty(position = 40,  //
 			value = "This translates to `C_BPartner.Name2`.")
@@ -199,6 +209,15 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean discountPrintedSet;
 
+	@ApiModelProperty(position = 168, //
+			value = "Custom REST-API columns on C_BPartner (AD_Column.IsRestAPICustomColumn='Y'). "
+					+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
+					+ "A null or empty value is treated as a no-op; clearing all custom columns is not supported via this field.")
+	private Map<String, Object> extendedProps;
+
+	@ApiModelProperty(hidden = true)
+	private boolean extendedPropsSet;
+
 	@ApiModelProperty(position = 170, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
@@ -243,12 +262,24 @@ public class JsonRequestBPartner
 		this.companyNameSet = true;
 	}
 
+	@Deprecated
 	public void setLookupLabel(@Nullable final String lookupLabel)
 	{
 		this.lookupLabel = lookupLabel;
 		this.lookupLabelSet = true;
 	}
-		
+
+	public void setGlnLookupLabel(@Nullable final String glnLookupLabel)
+	{
+		this.glnLookupLabel = glnLookupLabel;
+		this.glnLookupLabelSet = true;
+	}
+
+	public boolean isGlnLookupLabelSet()
+	{
+		return glnLookupLabelSet;
+	}
+
 	public void setVendor(final Boolean vendor)
 	{
 		this.vendor = vendor;
@@ -351,5 +382,11 @@ public class JsonRequestBPartner
 	{
 		this.discountPrinted = discountPrinted;
 		this.discountPrintedSet = true;
+	}
+
+	public void setExtendedProps(@Nullable final Map<String, Object> extendedProps)
+	{
+		this.extendedProps = extendedProps;
+		this.extendedPropsSet = true;
 	}
 }

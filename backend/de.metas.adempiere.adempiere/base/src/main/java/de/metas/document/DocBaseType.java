@@ -60,6 +60,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	BillOfMaterialVersion(X_C_DocType.DOCBASETYPE_BOMFormula),
 	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
 	AnalysisReport(X_C_DocType.DOCBASETYPE_AnalysisReport),
+	TaxDeclaration(X_C_DocType.DOCBASETYPE_TaxDeclaration),
 	;
 
 	public static final int AD_REFERENCE_ID = X_C_DocType.DOCBASETYPE_AD_Reference_ID;

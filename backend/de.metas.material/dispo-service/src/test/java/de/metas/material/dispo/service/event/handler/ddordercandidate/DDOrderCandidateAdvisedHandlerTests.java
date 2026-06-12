@@ -35,9 +35,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,6 +130,15 @@ public class DDOrderCandidateAdvisedHandlerTests
 				new MDCandidateDimensionFactory()
 		));
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+
+		// Pre-create warehouses used in tests so WarehouseBL can load them.
+		for (final WarehouseId whId : new WarehouseId[] { fromWarehouseId, intermediateWarehouseId, toWarehouseId })
+		{
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, whId.getRepoId());
+			InterfaceWrapperHelper.saveRecord(warehouse);
+		}
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
@@ -185,6 +197,74 @@ public class DDOrderCandidateAdvisedHandlerTests
 	 * <li>one demand-pair with a demand candidate and its stock <b>child</b></li>
 	 * </ul>
 	 */
+	@Test
+	public void handleEvent_excludedTargetWarehouse_shortCircuits()
+	{
+		final WarehouseId excludedTarget = createExcludedWarehouse();
+
+		final DDOrderCandidateAdvisedEvent event = DDOrderCandidateAdvisedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor(50))
+				.ddOrderCandidate(DDOrderCandidateData.builder()
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
+						.productPlanningId(productPlanningId)
+						.distributionNetworkAndLineId(distributionNetworkAndLineId)
+						.sourceWarehouseId(fromWarehouseId)
+						.targetWarehouseId(excludedTarget)
+						.targetPlantId(plantId)
+						.shipperId(shipperId)
+						.customerId(BPARTNER_ID.getRepoId())
+						.productDescriptor(createProductDescriptor())
+						.supplyDate(t2)
+						.demandDate(t2.minus(1, ChronoUnit.DAYS))
+						.qty(BigDecimal.TEN)
+						.uomId(1234)
+						.build())
+				.build();
+
+		ddOrderCandidateAdvisedHandler.handleEvent(event);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
+	@Test
+	public void handleEvent_excludedSourceWarehouse_shortCircuits()
+	{
+		final WarehouseId excludedSource = createExcludedWarehouse();
+
+		final DDOrderCandidateAdvisedEvent event = DDOrderCandidateAdvisedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor(50))
+				.ddOrderCandidate(DDOrderCandidateData.builder()
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
+						.productPlanningId(productPlanningId)
+						.distributionNetworkAndLineId(distributionNetworkAndLineId)
+						.sourceWarehouseId(excludedSource)
+						.targetWarehouseId(toWarehouseId)
+						.targetPlantId(plantId)
+						.shipperId(shipperId)
+						.customerId(BPARTNER_ID.getRepoId())
+						.productDescriptor(createProductDescriptor())
+						.supplyDate(t2)
+						.demandDate(t2.minus(1, ChronoUnit.DAYS))
+						.qty(BigDecimal.TEN)
+						.uomId(1234)
+						.build())
+				.build();
+
+		ddOrderCandidateAdvisedHandler.handleEvent(event);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).isEmpty();
+	}
+
+	private static WarehouseId createExcludedWarehouse()
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude("Y");
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
 	@Test
 	public void handleDistributionAdvisedEvent_with_one_event()
 	{

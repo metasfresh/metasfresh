@@ -53,7 +53,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
@@ -85,7 +85,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
