@@ -126,8 +126,8 @@ public interface IOLCandBL extends ISingletonService
 	 * <li>else return the warehouse from {@code orderDefaults} (typically the processor's default), or {@code null} if not set</li>
 	 * </ul>
 	 * <p>
-	 * Note: unlike most peer methods in this interface, this method does not accept a {@link BPartnerOrderParams} parameter
-	 * because {@link BPartnerOrderParams} does not currently carry a warehouse field.
+	 * Note: unlike most peer methods in this interface, this method does not accept a {@link de.metas.order.BPartnerOrderParams} parameter
+	 * because {@link de.metas.order.BPartnerOrderParams} does not currently carry a warehouse field.
 	 * The BP picking warehouse is resolved internally from the effective BP record.
 	 * </p>
 	 */

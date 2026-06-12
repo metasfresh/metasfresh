@@ -114,17 +114,26 @@ public class OLCandBL implements IOLCandBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
+	private final IWarehouseDAO warehouseDAO;
 
 	public OLCandBL(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
 	{
+		this(bpartnerBL, bPartnerOrderParamsRepository, Services.get(IWarehouseDAO.class));
+	}
+
+	public OLCandBL(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository,
+			@NonNull final IWarehouseDAO warehouseDAO)
+	{
 		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
+		this.warehouseDAO = warehouseDAO;
 	}
 
 	@Override
