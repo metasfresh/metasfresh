@@ -6,13 +6,6 @@ import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { BarcodeScannerComponent } from '../utils/components/BarcodeScannerComponent';
 import { allure } from 'allure-playwright';
 
-const scannerSysconfigs = ({ showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly }) => ({
-    ...(showInputText != null && { 'mobileui.frontend.barcodeScanner.showInputText': showInputText }),
-    ...(isInputTextReadonly != null && { 'mobileui.frontend.barcodeScanner.isInputTextReadonly': isInputTextReadonly }),
-    ...(useCamera != null && { 'mobileui.frontend.barcodeScanner.useCamera': useCamera }),
-    ...(offscreenInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.offscreenInput.readOnly': offscreenInputReadOnly }),
-    ...(visibleInputReadOnly != null && { 'mobileui.frontend.barcodeScanner.visibleInput.readOnly': visibleInputReadOnly }),
-});
 
 // Mode-engine sysconfigs (new per-mode knobs introduced by the BarcodeScannerModes redesign).
 // Keys map 1:1 to AD_SysConfig names (mobileui.frontend.* prefix included).
@@ -34,22 +27,22 @@ const modeSysconfigs = ({
 
 // Minimal masterdata: login only, no HU/orders. Used by the attribute-guard tests,
 // which only need the barcode input to render — so they run in seconds.
-const createLoginMasterdata = async ({ extraSysconfigs, showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly } = {}) => {
+const createLoginMasterdata = async ({ extraSysconfigs } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly }), ...extraSysconfigs },
+            sysconfigs: { ...extraSysconfigs },
             login: { user: { language: 'en_US' } },
         },
     });
 };
 
 // Full masterdata: login + a handling unit, so scanning its QR code navigates to the HU Manager.
-const createMasterdataWithHU = async ({ extraSysconfigs, showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly } = {}) => {
+const createMasterdataWithHU = async ({ extraSysconfigs } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            sysconfigs: { ...scannerSysconfigs({ showInputText, isInputTextReadonly, useCamera, offscreenInputReadOnly, visibleInputReadOnly }), ...extraSysconfigs },
+            sysconfigs: { ...extraSysconfigs },
             login: { user: { language: 'en_US' } },
             products: { P1: {} },
             warehouses: { wh1: {} },
@@ -109,7 +102,7 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 //                           This is the load-bearing flag for this device.
 //   input-text-offscreen  — the input stays in the DOM (the keystroke hook listens on document)
 //                           but is visually hidden. The scan-prompt UI provides the visual anchor.
-//   no <video> element    — useCamera=N → device camera should never render
+//   no <video> element    — mode.camera.enabled=N → device camera should never render
 //
 // Asserts on HU Manager so BarcodeScannerComponent renders from SysConfig (no hardcoded prop) —
 // ApplicationsListScreen hardcodes both isShowInputText={false} and isShowVideo={false}, which
@@ -128,11 +121,16 @@ test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no
     await allure.severity('critical');
 
     // Sysconfig combo for the keystroke-wedge mode — captured from a live local stack and
-    // validated on physical CT60 hardware.
+    // validated on physical CT60 hardware. Drives the new mode-engine keys so the frontend
+    // renders hardware mode with readOnly=Y (hard keyboard suppression for Android 11+).
     const masterdata = await createMasterdataWithHU({
-        showInputText: 'N',
-        useCamera: 'N',
-        offscreenInputReadOnly: 'Y',
+        extraSysconfigs: modeSysconfigs({
+            hardwareEnabled: 'Y',
+            cameraEnabled: 'N',
+            manualEnabled: 'N',
+            defaultMode: 'hardware',
+            hardwareInputReadOnly: 'Y',
+        }),
     });
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -148,15 +146,14 @@ test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no
 // scanning the HU's QR code must navigate to the HU Manager and show the HU quantity.
 test.describe('Scan paths', () => {
 
-    // The manual-typing test flips two GLOBAL barcode-scanner sysconfigs to make the input
-    // visible + editable. A leaked isInputTextReadonly='N' would make every later spec's scanner
+    // The manual-typing test sets the mode-engine sysconfigs to manual mode to make the input
+    // visible + editable. A leaked defaultMode=manual would make every later spec's scanner
     // editable, and BarcodeScannerComponent.type() would then double-insert characters
     // (see e2e/mobile-webui/CLAUDE.md "Barcode Scanner Testing"), breaking unrelated picking scans.
     //
     // No explicit reset is needed here: SysconfigCommand resets the scanner sysconfigs to their
-    // mobile defaults (showInputText='Y', isInputTextReadonly='Y') at the start of every
-    // createMasterdata call, so each test starts from a clean scanner state regardless of what a
-    // prior test left behind.
+    // mobile defaults at the start of every createMasterdata call, so each test starts from
+    // a clean scanner state regardless of what a prior test left behind.
 
     // noinspection JSUnusedLocalSymbols
     test('DataWedge IME — InputConnection injection forwards barcode', async ({ page }) => {
@@ -223,10 +220,14 @@ test.describe('Scan paths', () => {
         await allure.severity('critical');
 
         const masterdata = await createMasterdataWithHU({
-            // showInputText='Y' makes the input visible so Playwright can locate and fill it.
-            showInputText: 'Y',
-            // isInputTextReadonly='N' makes the input editable (not inputMode="none") so fill() works.
-            isInputTextReadonly: 'N',
+            // manual mode: mode.manual.enabled=Y + defaultMode=manual renders a visible editable
+            // input so Playwright can locate and fill it. inputMode attribute is absent (keyboard enabled).
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'N',
+                cameraEnabled: 'N',
+                manualEnabled: 'Y',
+                defaultMode: 'manual',
+            }),
         });
 
         await LoginScreen.login(masterdata.login.user);
@@ -238,8 +239,8 @@ test.describe('Scan paths', () => {
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
 
-        // Regression guard: when isInputTextReadonly=N, inputmode attribute must be absent
-        // (virtual keyboard suppression is disabled to allow manual typing).
+        // Regression guard: in manual mode (defaultMode=manual), the visible editable input
+        // must NOT have an inputmode attribute (virtual keyboard suppression must be disabled).
         await BarcodeScannerComponent.expectAttributes({ inputmode: null });
 
         // fill + Enter exercises the manual-typing path: onKeyUp → handleInputTextKeyPress →
