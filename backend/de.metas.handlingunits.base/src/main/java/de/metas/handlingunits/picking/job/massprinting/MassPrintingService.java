@@ -94,7 +94,7 @@ public class MassPrintingService
 		final Workplace workplace = warehouseService.getWorkplaceByUserId(request.getPickerId()).orElse(null);
 		final LocatorId luLocatorId = huService.getLocatorId(luId);
 
-		// AC3: the operator scanned a workplace; the LU must belong to its picking group.
+		// If the picker is assigned to a workplace, the scanned LU must belong to that workplace's picking group.
 		if (workplace != null
 				&& !warehouseService.getLocatorIdsOfTheSamePickingGroup(workplace.getWarehouseId()).contains(luLocatorId))
 		{
@@ -208,8 +208,8 @@ public class MassPrintingService
 		// schedules, before creating our own job. A job that is unassigned or assigned to this mass-printing
 		// picker is a leftover from a previous failed scan and is aborted here (self-cleanup; also prevents
 		// DDOrderPickingReconcile_PickerBusy errors). A job held by a different picker is left untouched — its
-		// schedules were already dropped before selection by filterSkipLockedByOtherUser (the picking-job
-		// schedule lock), so they do not reach this point.
+		// schedules were already excluded before selection by the reused launcher query's lockedBy(pickerId) +
+		// includeNotLocked filter (PickingJobQuery.toPackageableQueryBuilder), so they do not reach this point.
 		pickingJobService.abortAbortablePickingJobsForSchedules(
 				ImmutableSet.of(productId),
 				ImmutableSet.copyOf(selection.getSelectedScheduleIds()),
