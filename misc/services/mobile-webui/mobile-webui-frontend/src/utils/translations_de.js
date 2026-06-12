@@ -92,6 +92,7 @@ const translations = {
       backToScanner: 'Zurück zum Scanner',
       manualInputPlaceholder: 'Barcode eingeben...',
       manualInputSubmit: 'Senden',
+      cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
     },
   },
   activities: {

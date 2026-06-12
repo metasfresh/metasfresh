@@ -88,6 +88,7 @@ const translations = {
       backToScanner: 'Back to scanner',
       manualInputPlaceholder: 'Enter barcode...',
       manualInputSubmit: 'Submit',
+      cameraError: 'Camera could not be started. Please check camera permissions.',
     },
   },
   activities: {
