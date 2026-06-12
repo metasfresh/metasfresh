@@ -71,7 +71,8 @@ public class MassPrintingService
 	@NonNull
 	public MassPrintingResult scan(@NonNull final MassPrintingScanRequest request)
 	{
-		if (!profileService.getProfile().isMassPrinting())
+		final MobileUIPickingUserProfile profile = profileService.getProfile();
+		if (!profile.isMassPrinting())
 		{
 			throw new AdempiereException(MSG_MASS_PRINTING_NOT_ENABLED);
 		}
@@ -105,7 +106,6 @@ public class MassPrintingService
 					.setParameter("workplaceWarehouseId", workplace.getWarehouseId());
 		}
 
-		final MobileUIPickingUserProfile profile = profileService.getProfile();
 		final PickingJobQuery pickingJobQuery = PickingJobQuery.builder()
 				.userId(request.getPickerId())
 				.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
@@ -312,9 +312,10 @@ public class MassPrintingService
 			@NonNull final ScheduleSelection selection)
 	{
 		// Resolve the schedule-id set exactly like regular picking does from a candidate: in
-		// job-scheduled-to-workplace mode (profile.isConsiderOnlyJobScheduledToWorkplace), the FIFO-selected
-		// shipment schedules carry their picking-job-schedule ids, so the created PRODUCT job is driven by the
-		// job-schedules (consistent with the launcher). In warehouse mode this yields a plain shipment-schedule set.
+		// job-scheduled-to-workplace mode (query.isScheduledForWorkplaceOnly(), set when the profile's
+		// IsConsideredOnlyScheduledJobs=Y), the FIFO-selected shipment schedules carry their picking-job-schedule
+		// ids, so the created PRODUCT job is driven by the job-schedules (consistent with the launcher). In
+		// warehouse mode this yields a plain shipment-schedule set.
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet =
 				pickingJobService.resolveScheduleIdsForJobCreation(pickingJobQuery, ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
 		final PickingJob pickingJob = pickingJobService.createPickingJob(

@@ -123,9 +123,9 @@ Feature: Mass Printing - honour job-scheduled-to-workplace mode
       | SO_scheduled    | true    | customer                 | 2024-03-26  | 2024-03-27T05:00:00Z |
       | SO_notScheduled | true    | customer                 | 2024-03-26  | 2024-03-27T06:00:00Z |
     And metasfresh contains C_OrderLines:
-      | C_Order_ID.Identifier | Identifier     | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | SO_scheduled          | OL_scheduled   | product                 | 4          | TU1                                    |
-      | SO_notScheduled       | OL_notScheduled| product                 | 4          | TU1                                    |
+      | C_Order_ID.Identifier | Identifier      | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO_scheduled          | OL_scheduled    | product                 | 4          | TU1                                    |
+      | SO_notScheduled       | OL_notScheduled | product                 | 4          | TU1                                    |
     And the order identified by SO_scheduled is completed
     And the order identified by SO_notScheduled is completed
 
