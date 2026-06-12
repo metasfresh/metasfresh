@@ -49,7 +49,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
@@ -128,16 +130,20 @@ public class M_Warehouse_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("At least one row with a Name is required"));
 
-		final I_M_Warehouse_PickingGroup pickingGroup = InterfaceWrapperHelper.newInstance(I_M_Warehouse_PickingGroup.class);
-		pickingGroup.setName(groupName);
-		saveRecord(pickingGroup);
+		// Create the group via the BL (which owns the DAO), with a per-run-unique Name so reusing the same
+		// group label across tests in the shared DB does not collide.
+		final WarehousePickingGroupId pickingGroupId = warehouseBL.createWarehousePickingGroup(
+				CreateWarehousePickingGroupRequest.builder()
+						.orgId(StepDefConstants.ORG_ID)
+						.name(groupName + "_" + System.currentTimeMillis())
+						.build());
 
 		rows.forEach(row -> {
 			final WarehouseId warehouseId = warehouseTable.getId(row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID));
 
 			final org.compiere.model.I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.load(
 					warehouseId.getRepoId(), org.compiere.model.I_M_Warehouse.class);
-			warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroup.getM_Warehouse_PickingGroup_ID());
+			warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
 			saveRecord(warehouseRecord);
 		});
 
