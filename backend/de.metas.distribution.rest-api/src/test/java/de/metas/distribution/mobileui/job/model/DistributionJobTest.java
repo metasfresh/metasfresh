@@ -28,7 +28,6 @@ class DistributionJobTest
 
 	private static DistributionJob job(final boolean isClosed, @Nullable final UserId responsibleId)
 	{
-		final WarehouseInfo wh = WarehouseInfo.builder().warehouseId(WarehouseId.ofRepoId(100)).caption("WH").build();
 		final ZonedDateTime when = ZonedDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
 		return DistributionJob.builder()
 				.id(DistributionJobId.ofDDOrderId(DDOrderId.ofRepoId(5555)))
@@ -37,8 +36,8 @@ class DistributionJobTest
 				.customerId(BPartnerId.ofRepoId(2222))
 				.dateRequired(when)
 				.pickDate(when)
-				.pickFromWarehouse(wh)
-				.dropToWarehouse(wh)
+				.pickFromWarehouse(WarehouseInfo.builder().warehouseId(WarehouseId.ofRepoId(100)).caption("PickFromWH").build())
+				.dropToWarehouse(WarehouseInfo.builder().warehouseId(WarehouseId.ofRepoId(200)).caption("DropToWH").build())
 				.priority("5")
 				.responsibleId(responsibleId)
 				.isClosed(isClosed)

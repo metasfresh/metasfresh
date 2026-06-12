@@ -3,18 +3,12 @@
 @allure.label.feature:F5111_DDOrder_Replenishment
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — shipment close-out disposes the obsolete replenishment (packing is GOD)
-  As a packing operator who brought stock to the packing station manually (bypassing picking) and runs
-  Schnelldruck/Quickpack, I want the shipment close-out to ALWAYS succeed even while a picking order for the
-  schedule is still open — the close-out (M_Picking_Job_Schedule.Processed=Y) must never be blocked by the
-  replenishment side. The obsolete replenishment DD_Order is disposed of through the existing event-driven
-  reconcile: CLOSED when no replenishment move is in progress (the picker is released), or DISCONNECTED
-  (IsPickingDisconnected=Y, FKs retained) when a move is already in progress so the worker can finish it.
+  - Shipment close-out (M_Picking_Job_Schedule.Processed=Y) must always succeed, even while a picking order is open.
+  - No replenishment move in progress: the obsolete DD_Order is CLOSED and the picker is released.
+  - A replenishment move in progress: the DD_Order is DISCONNECTED (IsPickingDisconnected=Y, FKs retained) so the worker finishes it.
 
-  # The picker is made busy through the REAL mobile picking workflow (REST: start the wfProcess), which creates
-  # an active (in-progress) M_Picking_Job_Line for the schedule — exactly what the busy guard checks. The
-  # close-out is the system's markAsProcessed (Processed=Y), which mirrors GenerateInOutFromShipmentSchedules.
-  # Disposal is driven deterministically via the reconcile event (the after-commit reconcile, invoked directly
-  # to keep ordering stable — same seam the picker_busy feature uses).
+  # Test seams: the picker is made busy via the real mobile picking REST workflow; the close-out is the system's
+  # markAsProcessed; disposal is driven via the after-commit reconcile event, invoked directly for deterministic ordering.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -69,13 +63,14 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
       | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
       | workplace  | packingWH      | packingLocator      |
 
-    # On-hand stock in the SOURCE warehouse (single locator, qty 5) so the stock-aware split builds the DD_Order.
+    # On-hand stock in the SOURCE warehouse (single locator, qty 3 = the partial replenishment demand) so the
+    # stock-aware split builds the DD_Order and a whole-HU pick moves exactly the scheduled qty.
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | stockInventory            | 2021-10-12   | stockWH        |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | stockInventory            | stockInventoryLine            | product                 | 0       | 5        | PCE          |
+      | stockInventory            | stockInventoryLine            | product                 | 0       | 3        | PCE          |
     And complete inventory with inventoryIdentifier 'stockInventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -110,13 +105,14 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
     And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID | Warehouse_ID | QtyToDeliver |
       | shipmentSchedule | orderLine      | packingWH    | 5            |
-    # Assigning the schedule line to the workstation triggers the reconcile that creates the DD_Order.
+    # Assigning the schedule line to the workstation triggers the reconcile that creates the DD_Order. The assignment
+    # replenishes only PART of the shipment qty (3 of 5) — the operator brought the rest to the station manually.
     And create or update picking job schedules
       | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
-      | jobSchedule               | shipmentSchedule      | workplace      | 5         |
+      | jobSchedule               | shipmentSchedule      | workplace      | 3         |
     And after not more than 120s, the DD_Order linked to picking job schedule is found:
       | Identifier | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
-      | ddOrder    | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |
+      | ddOrder    | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 3          |
 
     # Start a REAL picking job for the order. With IsAllowPickingAnyHU=Y the start call alone creates an active
     # M_Picking_Job_Line referencing the schedule, so the busy guard now reports the picker as busy.
@@ -163,9 +159,9 @@ Feature: DD_Order replenishment — shipment close-out disposes the obsolete rep
 
   @from:cucumber
   Scenario: In-progress replenishment move at close-out → DISCONNECT (not Closed), FKs retained, still pickable
-    # A replenishment move is already in progress for the DD_Order (a half-done move must not be corrupted by a CLOSE,
-    # which would hit the BEFORE_CLOSE clearSchedules guard).
-    Given simulate an in-progress replenishment move on DD_Order linked to picking job schedule:
+    # A worker has started moving the replenishment stock (picked the source HU), so the move is in progress — a
+    # half-done move must not be corrupted by a CLOSE (which would hit the BEFORE_CLOSE clearSchedules guard).
+    Given pick from the DD_Order linked to picking job schedule:
       | M_Picking_Job_Schedule_ID | PickFrom_HU_ID |
       | jobSchedule               | stockSourceHU  |
 
