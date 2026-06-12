@@ -327,7 +327,7 @@ public class DD_Order_StepDef
 			softly.assertThat(actualOrderId).as("C_Order_ID").isEqualTo(expectedOrderId);
 		}
 
-		// Close-out disposition assertions (me03 30383): the in-progress disconnect marker, and the close-out
+		// Close-out disposition assertions: the in-progress disconnect marker, and the close-out
 		// picker release (AD_User_Responsible_ID cleared). Use `-` in the feature to assert the responsible is unset.
 		expected.getAsOptionalBoolean(I_DD_Order.COLUMNNAME_IsPickingDisconnected)
 				.ifPresent(expectedDisconnected -> softly.assertThat(actual.isPickingDisconnected())
@@ -636,7 +636,7 @@ public class DD_Order_StepDef
 	 * @cucumber.stepdef Test seam: assigns a responsible user ({@code AD_User_Responsible_ID}) to the live DD_Order
 	 * linked to the given workstation assignment, simulating a worker who has picked up the DD_Order-backed mobile
 	 * DistributionJob (the launcher keys on {@code AD_User_Responsible_ID}). Used so the close-out CLOSE path's picker
-	 * release ({@code AD_User_Responsible_ID} cleared — AC3) can be asserted as a state transition.
+	 * release ({@code AD_User_Responsible_ID} cleared) can be asserted as a state transition.
 	 * <p>
 	 * Required columns:
 	 * <ul>

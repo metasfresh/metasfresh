@@ -226,44 +226,6 @@ public class M_Picking_Job_Schedule_StepDef
 		pickingJobScheduleService.markAsProcessed(ImmutableSet.of(jobSchedule.getId()));
 	}
 
-	/**
-	 * @cucumber.stepdef Attempts to close out the given assignment ({@code Processed=Y}) and asserts the
-	 * {@code beforeChange} interceptor REJECTS the save with the expected {@code ErrorCode}.
-	 * <p>
-	 * Real-world trigger: same shipment close-out ({@code GenerateInOutFromShipmentSchedules}) as the step above; this
-	 * one asserts the guard's rejection path — the picker-busy guard still blocks a genuine re-plan (qty / workplace
-	 * change) while a picker is active; only the {@code Processed->true} close-out transition is exempt.
-	 * <p>
-	 * Required columns:
-	 * <ul>
-	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment</li>
-	 *   <li>{@code ErrorCode} — expected {@code AdempiereException} error code (e.g. {@code DDOrderPickingReconcile_PickerBusy})</li>
-	 * </ul>
-	 * @cucumber.example
-	 * <pre>
-	 * Then marking the picking job schedule as processed is rejected:
-	 *   | M_Picking_Job_Schedule_ID | ErrorCode                          |
-	 *   | jobSchedule               | DDOrderPickingReconcile_PickerBusy |
-	 * </pre>
-	 */
-	@And("^marking the picking job schedule as processed is rejected:$")
-	public void markAsProcessedIsRejected(final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::markAsProcessedIsRejected);
-	}
-
-	private void markAsProcessedIsRejected(final DataTableRow row)
-	{
-		final PickingJobSchedule jobSchedule = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable);
-		final String expectedErrorCode = row.getAsString("ErrorCode");
-
-		assertThatThrownBy(() -> pickingJobScheduleService.markAsProcessed(ImmutableSet.of(jobSchedule.getId())))
-				.as("Marking the assignment as processed must be rejected by the beforeChange interceptor")
-				.isInstanceOf(AdempiereException.class)
-				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
-						.as("AdempiereException.ErrorCode")
-						.isEqualTo(expectedErrorCode));
-	}
 
 	/**
 	 * @cucumber.stepdef Deletes all {@code M_Picking_Job_Schedule} records for the given shipment schedule. Triggers
