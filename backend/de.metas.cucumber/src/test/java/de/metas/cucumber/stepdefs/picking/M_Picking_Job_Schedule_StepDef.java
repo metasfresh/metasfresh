@@ -196,16 +196,16 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Marks the given workstation assignments as {@code Processed=Y}, mirroring the shipment
-	 * close-out ({@code GenerateInOutFromShipmentSchedules → pickingJobScheduleService.markAsProcessed}). This fires
-	 * the {@code M_Picking_Job_Schedule.beforeChange} guard on the {@code Processed->true} transition (which must be
-	 * EXEMPT from the picker-busy refusal — AC1) and the {@code afterChange} after-commit reconcile (which disposes
-	 * the obsolete replenishment DD_Order via CLOSE/DISCONNECT — AC2/AC5). To assert the disposition deterministically,
-	 * follow this step with {@code the reconcile event for M_Picking_Job_Schedule <id> is processed}.
+	 * @cucumber.stepdef Closes out the given workstation assignments ({@code Processed=Y}) via
+	 * {@code pickingJobScheduleService.markAsProcessed}.
+	 * <p>
+	 * Real-world trigger: shipment generation (Schnelldruck/Quickpack → {@code GenerateInOutFromShipmentSchedules})
+	 * sets the assignment {@code Processed=Y} when the shipment is created. The step calls the BL directly to drive
+	 * the close-out deterministically (without spinning up the full shipment-generation flow).
 	 * <p>
 	 * Required columns:
 	 * <ul>
-	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment to mark processed</li>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the existing assignment to close out</li>
 	 * </ul>
 	 * @cucumber.example
 	 * <pre>
@@ -227,10 +227,12 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Attempts to mark the given assignment as {@code Processed=Y} and asserts the
-	 * {@code beforeChange} interceptor REJECTS the save with the expected {@code ErrorCode}. Used as the RED
-	 * reproduction of the packing↔picking dependency: before the close-out exemption, a {@code Processed->true}
-	 * write trips the picker-busy guard and packing is blocked.
+	 * @cucumber.stepdef Attempts to close out the given assignment ({@code Processed=Y}) and asserts the
+	 * {@code beforeChange} interceptor REJECTS the save with the expected {@code ErrorCode}.
+	 * <p>
+	 * Real-world trigger: same shipment close-out ({@code GenerateInOutFromShipmentSchedules}) as the step above; this
+	 * one asserts the guard's rejection path (the RED reproduction of packing being blocked while a picker is busy,
+	 * before the close-out exemption was added).
 	 * <p>
 	 * Required columns:
 	 * <ul>
