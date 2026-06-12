@@ -8,9 +8,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentRequest;
-import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -90,6 +90,7 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final DDOrderReplenishmentEventPublisher reconciliationEventPublisher;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -101,6 +102,17 @@ public class DDOrderPickingReplenishmentService
 	public void assertCanChange(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
 		if (!isOnAutoDistributionOrder(jobSchedule))
+		{
+			return;
+		}
+
+		// Close-out exemption (AC1/AC4): the shipment close-out (markAsProcessed) sets Processed=Y on the assignment.
+		// That is a fulfilment event, NOT a user re-plan — packing is GOD and must never be blocked by the
+		// replenishment side. So when this change is the Processed->true transition, skip the picker-busy /
+		// movement-started refusal entirely; the obsolete replenishment DD_Order is disposed of (CLOSE/DISCONNECT)
+		// by the after-commit reconcile. Every OTHER change (qty / workplace re-plan) keeps the guard fully in force.
+		if (InterfaceWrapperHelper.isValueChanged(jobSchedule, I_M_Picking_Job_Schedule.COLUMNNAME_Processed)
+				&& jobSchedule.isProcessed())
 		{
 			return;
 		}
@@ -185,6 +197,10 @@ public class DDOrderPickingReplenishmentService
 			case VOID:
 				voidAllDDOrders(existingDDOrders);
 				return;
+			case CLOSE:
+				// Close-out disposition: per DD_Order, CLOSE (not-in-progress) or DISCONNECT (in-progress).
+				disposeCloseOut(existingDDOrders);
+				return;
 			default:
 				throw new AdempiereException("Unexpected action: " + action);
 		}
@@ -199,19 +215,27 @@ public class DDOrderPickingReplenishmentService
 	/**
 	 * Classifies the reconcile action based on the truth-table:
 	 * <pre>
-	 * warehouseIsAutoDistributionOrder | assignmentRelevant (*) | existingDDOrderId | action
+	 * warehouseIsAutoDistributionOrder | state (*)            | existingDDOrderId | action
 	 * false              | *                    | *                 | NONE
-	 * true               | false                | null              | NONE
-	 * true               | false                | non-null          | VOID
-	 * true               | true                 | null              | CREATE
-	 * true               | true                 | non-null          | RECREATE
+	 * true               | active, not processed| null              | CREATE
+	 * true               | active, not processed| non-null          | RECREATE
+	 * true               | processed (close-out)| null              | NONE
+	 * true               | processed (close-out)| non-null          | CLOSE   (close-out disposition)
+	 * true               | inactive (un-assign) | null              | NONE
+	 * true               | inactive (un-assign) | non-null          | VOID
 	 *
-	 * (*) assignmentRelevant = assignment exists AND IsActive=Y AND Processed=N.
-	 *     A missing (deleted) or Processed=Y assignment is treated the same as IsActive=N.
+	 * (*) A missing (deleted) assignment is treated the same as inactive (un-assignment) → VOID.
 	 * </pre>
 	 *
-	 * <p>Pure decision method — no DB queries. The caller resolves {@code existingDDOrderId} exactly once
-	 * before calling this method.</p>
+	 * <p><b>Processed=Y close-out vs IsActive=N un-assignment.</b> Both make the assignment "no longer relevant",
+	 * but they are disposed of differently (AC2): the shipment close-out (Processed=Y) <b>Closes</b> the obsolete
+	 * replenishment DD_Order (delivered stock preserved, picker released), while a genuine un-assignment / cancel
+	 * (IsActive=N, or the assignment was deleted) keeps the legacy <b>Void</b>. {@link DDOrderReplenishmentAction#CLOSE}
+	 * is the close-out marker; the per-DD_Order CLOSE-vs-DISCONNECT split (move-in-progress) is resolved at execute
+	 * time ({@link #disposeCloseOut}) since it needs a DB lookup per order and an assignment can have several.</p>
+	 *
+	 * <p>Pure decision method — no DB queries. The caller resolves {@code hasExistingDDOrder} exactly once before
+	 * calling this method.</p>
 	 */
 	@VisibleForTesting
 	DDOrderReplenishmentAction classifyAction(
@@ -220,28 +244,25 @@ public class DDOrderPickingReplenishmentService
 	{
 		if (jobSchedule == null || !isOnAutoDistributionOrder(jobSchedule))
 		{
-			// Not on a packing warehouse (or assignment gone): void any existing DD_Order, else no-op.
+			// Not on a packing warehouse (or assignment deleted): void any existing DD_Order, else no-op.
 			return hasExistingDDOrder ? DDOrderReplenishmentAction.VOID : DDOrderReplenishmentAction.NONE;
 		}
 
-		final boolean assignmentRelevant = jobSchedule.isActive() && !jobSchedule.isProcessed();
+		if (jobSchedule.isProcessed())
+		{
+			// Shipment close-out: dispose the obsolete replenishment via CLOSE (or DISCONNECT if a move is in
+			// progress — resolved per-order at execute time). No DD_Order → nothing to dispose.
+			return hasExistingDDOrder ? DDOrderReplenishmentAction.CLOSE : DDOrderReplenishmentAction.NONE;
+		}
 
-		if (!assignmentRelevant && !hasExistingDDOrder)
+		if (!jobSchedule.isActive())
 		{
-			return DDOrderReplenishmentAction.NONE;
+			// Genuine un-assignment / cancel: legacy Void (unchanged).
+			return hasExistingDDOrder ? DDOrderReplenishmentAction.VOID : DDOrderReplenishmentAction.NONE;
 		}
-		else if (!assignmentRelevant)
-		{
-			return DDOrderReplenishmentAction.VOID;
-		}
-		else if (!hasExistingDDOrder)
-		{
-			return DDOrderReplenishmentAction.CREATE;
-		}
-		else
-		{
-			return DDOrderReplenishmentAction.RECREATE;
-		}
+
+		// Active, not processed → the assignment demands replenishment.
+		return hasExistingDDOrder ? DDOrderReplenishmentAction.RECREATE : DDOrderReplenishmentAction.CREATE;
 	}
 
 	private boolean isOnAutoDistributionOrder(@NonNull final PickingJobSchedule jobSchedule)
@@ -710,6 +731,68 @@ public class DDOrderPickingReplenishmentService
 		{
 			voidDDOrderFor(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 		}
+	}
+
+	/**
+	 * Close-out disposition (AC2/AC5): for each obsolete replenishment DD_Order linked to a now-Processed assignment,
+	 * dispose it — <b>CLOSE</b> when no replenishment move is in progress (the customer repro), or <b>DISCONNECT</b>
+	 * when a move IS in progress (closing would hit the {@code BEFORE_CLOSE clearSchedules} guard and corrupt a
+	 * half-done move). The picker-busy state is irrelevant here: packing is GOD, the close-out is never blocked.
+	 */
+	private void disposeCloseOut(@NonNull final List<I_DD_Order> ddOrders)
+	{
+		for (final I_DD_Order ddOrder : ddOrders)
+		{
+			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+			if (ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderId))
+			{
+				disconnectDDOrderFor(ddOrderId);
+			}
+			else
+			{
+				closeDDOrderFor(ddOrderId);
+			}
+		}
+	}
+
+	/**
+	 * CLOSE branch (AC2/AC3): Closes the obsolete replenishment DD_Order (no movement reversal — {@code voidMovements}
+	 * does not fire on {@code AFTER_CLOSE}, so already-moved stock is preserved; the open remainder is closed off) and
+	 * clears {@code AD_User_Responsible_ID} so the DD_Order-backed mobile DistributionJob is released from the picker.
+	 */
+	private void closeDDOrderFor(@NonNull final DDOrderId ddOrderId)
+	{
+		ddOrderService.close(ddOrderId);
+
+		// Release the picker's assignment: the DistributionJob launcher keys on AD_User_Responsible_ID, so clearing
+		// it retires the (now closed) job from the worker's launcher.
+		final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(ddOrderId);
+		ddOrder.setAD_User_Responsible_ID(-1);
+		ddOrderLowLevelDAO.save(ddOrder);
+
+		Loggables.addLog(
+				"DD_Order picking replenishment: closed obsolete replenishment DD_Order_ID={0} on shipment close-out"
+						+ " and released AD_User_Responsible_ID",
+				ddOrderId.getRepoId());
+	}
+
+	/**
+	 * DISCONNECT branch (AC5): a replenishment move is in progress, so the DD_Order must NOT be closed (a half-done
+	 * move must not be corrupted). Instead it is disconnected — {@code IsPickingDisconnected=Y} — so the guard /
+	 * reconcile lookup stops seeing it ({@link DDOrderLowLevelDAO#findActiveDDOrdersForPickingJobSchedule}) while the
+	 * DistributionJob stays live & assigned (launcher keys on {@code AD_User_Responsible_ID}, untouched) for the worker
+	 * to finish. The FKs ({@code M_Picking_Job_Schedule_ID}, {@code M_ShipmentSchedule_ID}) are retained for traceability.
+	 */
+	private void disconnectDDOrderFor(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(ddOrderId);
+		ddOrder.setIsPickingDisconnected(true);
+		ddOrderLowLevelDAO.save(ddOrder);
+
+		Loggables.addLog(
+				"DD_Order picking replenishment: disconnected (IsPickingDisconnected=Y) in-progress replenishment"
+						+ " DD_Order_ID={0} on shipment close-out; FKs retained, DistributionJob stays live for the worker",
+				ddOrderId.getRepoId());
 	}
 
 	public void rebuildDrift()
