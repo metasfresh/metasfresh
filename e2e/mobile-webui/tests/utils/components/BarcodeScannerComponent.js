@@ -102,17 +102,36 @@ export const BarcodeScannerComponent = {
         await page.keyboard.press('Enter');
     }),
 
-    // Asserts DOM attributes on #input-text. Pass null as value to assert the attribute is ABSENT.
+    // Asserts DOM attributes on #input-text.
+    //   value === null   → attribute must be ABSENT
+    //   value === true   → attribute must be PRESENT (any value — use for HTML boolean attrs
+    //                      like readonly/disabled where React's rendered value can vary)
+    //   other            → attribute must equal that exact string
     // Example: expectAttributes({ type: 'text', inputmode: 'none', readonly: null })
+    //          expectAttributes({ type: 'text', inputmode: 'none', readonly: true })   // CT60 mode
     expectAttributes: async (expectedAttrs) => await test.step(`${NAME} - Expect attributes: ${JSON.stringify(expectedAttrs)}`, async () => {
         await BarcodeScannerComponent.waitToAttach({});
         for (const [attr, expectedValue] of Object.entries(expectedAttrs)) {
             if (expectedValue === null) {
                 await expect(page.locator('#input-text')).not.toHaveAttribute(attr);
+            } else if (expectedValue === true) {
+                await expect(page.locator('#input-text')).toHaveAttribute(attr, /.*/);
             } else {
                 await expect(page.locator('#input-text')).toHaveAttribute(attr, expectedValue);
             }
         }
+    }),
+
+    // Asserts the device camera <video> element is NOT rendered inside .barcode-scanner.
+    // Used by the hardware-scanner-only deployments (useCamera=N) to guard against a
+    // regression that would silently re-enable the camera capture preview.
+    //
+    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — a
+    // <video> that doesn't appear within seconds is not going to appear, and falling back
+    // to the 120s global assertion timeout would silently consume the test budget on a
+    // genuine regression.
+    expectCameraVideoAbsent: async () => await test.step(`${NAME} - Expect no camera <video> rendered`, async () => {
+        await expect(page.locator('.barcode-scanner video')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,
