@@ -692,8 +692,35 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public int getYield() 
+	public int getYield()
 	{
 		return get_ValueAsInt(COLUMNNAME_Yield);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getWorkStation()
+	{
+		return get_ValueAsPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setWorkStation(final org.compiere.model.I_S_Resource WorkStation)
+	{
+		set_ValueFromPO(COLUMNNAME_WorkStation_ID, org.compiere.model.I_S_Resource.class, WorkStation);
+	}
+
+	@Override
+	public void setWorkStation_ID(final int WorkStation_ID)
+	{
+		if (WorkStation_ID < 1)
+			set_Value(COLUMNNAME_WorkStation_ID, null);
+		else
+			set_Value(COLUMNNAME_WorkStation_ID, WorkStation_ID);
+	}
+
+	@Override
+	public int getWorkStation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkStation_ID);
 	}
 }
