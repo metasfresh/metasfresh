@@ -76,8 +76,9 @@ WHERE  Name = 'mobileui.frontend.barcodeScanner.isInputTextReadonly'
 ;
 
 -- ============================================================
--- B6. visibleInput.readOnly: DELETE (visible read-only input no longer exists)
+-- B6. visibleInput.readOnly: NOT deleted here.
+-- BarcodeScannerComponent.jsx still reads barcodeScanner.visibleInput.readOnly via useBooleanSetting.
+-- Deleting this row while the JS consumer exists would silently reset any customer-configured
+-- Y value to false (the hook default), losing keyboard suppression on the visible input (Mode C3).
+-- This DELETE ships in the task that updates BarcodeScannerComponent to read the new per-mode knob.
 -- ============================================================
-DELETE FROM AD_SysConfig
-WHERE  Name = 'mobileui.frontend.barcodeScanner.visibleInput.readOnly'
-;
