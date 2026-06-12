@@ -27,8 +27,10 @@ import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +56,8 @@ class OLCandBLGetWarehouseIdTest
 		AdempiereTestHelper.get().init();
 		olCandBL = new OLCandBL(
 				new BPartnerBL(new UserRepository()),
-				BPartnerOrderParamsRepository.newInstanceForUnitTesting()
+				BPartnerOrderParamsRepository.newInstanceForUnitTesting(),
+				Services.get(IWarehouseDAO.class)
 		);
 	}
 
@@ -181,6 +184,23 @@ class OLCandBLGetWarehouseIdTest
 		saveRecord(olCand);
 
 		assertThat(olCandBL.getWarehouseId(olCand, null)).isNull();
+	}
+
+	@Test
+	void olCandNoWarehouse_bpCustomerWithPickingWarehouse_nullOrderDefaults_returnsBPPickingWarehouse()
+	{
+		final WarehouseId bpPickingId = createWarehouse("Ind9", true);
+
+		final I_C_BPartner bp = newInstanceOutOfTrx(I_C_BPartner.class);
+		bp.setIsCustomer(true);
+		bp.setM_Warehouse_ID(bpPickingId.getRepoId());
+		saveRecord(bp);
+
+		final I_C_OLCand olCand = newInstanceOutOfTrx(I_C_OLCand.class);
+		olCand.setC_BPartner_ID(bp.getC_BPartner_ID());
+		saveRecord(olCand);
+
+		assertThat(olCandBL.getWarehouseId(olCand, null)).isEqualTo(bpPickingId);
 	}
 
 	private WarehouseId createWarehouse(final String name, final boolean isPickingWarehouse)
