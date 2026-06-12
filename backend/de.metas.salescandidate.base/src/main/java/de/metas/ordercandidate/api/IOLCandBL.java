@@ -122,9 +122,14 @@ public interface IOLCandBL extends ISingletonService
 	 * Return the warehouse to use for the given {@code olCand}.
 	 * <ul>
 	 * <li>if C_OLCand.M_Warehouse_ID > 0, then return that</li>
-	 * <li>else if the effective business partner is a customer with a picking warehouse set, then return that</li>
-	 * <li>else, if the processor has a warehouse set, then return that</li>
+	 * <li>else if the effective business partner is a customer ({@code isCustomer=true}) with a picking warehouse set ({@code isPickingWarehouse=true}), then return that</li>
+	 * <li>else return the warehouse from {@code orderDefaults} (typically the processor's default), or {@code null} if not set</li>
 	 * </ul>
+	 * <p>
+	 * Note: unlike most peer methods in this interface, this method does not accept a {@link BPartnerOrderParams} parameter
+	 * because {@link BPartnerOrderParams} does not currently carry a warehouse field.
+	 * The BP picking warehouse is resolved internally from the effective BP record.
+	 * </p>
 	 */
 	@Nullable
 	WarehouseId getWarehouseId(@NonNull I_C_OLCand olCand, @Nullable OLCandOrderDefaults orderDefaults);

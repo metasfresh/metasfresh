@@ -155,6 +155,34 @@ class OLCandBLGetWarehouseIdTest
 		assertThat(olCandBL.getWarehouseId(olCand, orderDefaults)).isEqualTo(processorDefaultId);
 	}
 
+	@Test
+	void olCandNoWarehouse_bpCustomerWithNoWarehouseSet_returnsProcessorDefault()
+	{
+		final WarehouseId processorDefaultId = createWarehouse("Stoe2", false);
+
+		final I_C_BPartner bp = newInstanceOutOfTrx(I_C_BPartner.class);
+		bp.setIsCustomer(true);
+		// M_Warehouse_ID deliberately not set on the BP
+		saveRecord(bp);
+
+		final I_C_OLCand olCand = newInstanceOutOfTrx(I_C_OLCand.class);
+		olCand.setC_BPartner_ID(bp.getC_BPartner_ID());
+		saveRecord(olCand);
+
+		final OLCandOrderDefaults orderDefaults = OLCandOrderDefaults.builder().warehouseId(processorDefaultId).build();
+
+		assertThat(olCandBL.getWarehouseId(olCand, orderDefaults)).isEqualTo(processorDefaultId);
+	}
+
+	@Test
+	void olCandNoWarehouse_nullOrderDefaults_returnsNull()
+	{
+		final I_C_OLCand olCand = newInstanceOutOfTrx(I_C_OLCand.class);
+		saveRecord(olCand);
+
+		assertThat(olCandBL.getWarehouseId(olCand, null)).isNull();
+	}
+
 	private WarehouseId createWarehouse(final String name, final boolean isPickingWarehouse)
 	{
 		final I_M_Warehouse warehouse = newInstanceOutOfTrx(I_M_Warehouse.class);
