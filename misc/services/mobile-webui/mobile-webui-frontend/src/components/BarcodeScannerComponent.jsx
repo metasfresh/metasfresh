@@ -11,6 +11,8 @@ import CameraModePanel from './BarcodeScanner/CameraModePanel';
 import HardwareModePanel from './BarcodeScanner/HardwareModePanel';
 import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
 
+const TOAST_ID = 'BarcodeScannerComponentError';
+
 const BarcodeScannerComponent = ({
   testId,
   resolveScannedBarcode,
@@ -70,7 +72,7 @@ const BarcodeScannerComponent = ({
       console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
-        toastError({ plainMessage: resolvedResult.error });
+        toastError({ plainMessage: resolvedResult.error, toastId: TOAST_ID });
         beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
         onError?.();
@@ -81,7 +83,7 @@ const BarcodeScannerComponent = ({
       }
     } catch (error) {
       beep(errorBeepParams);
-      toastErrorFromObj(error);
+      toastErrorFromObj(error, TOAST_ID);
       onError?.();
     } finally {
       scanningStatus.running = false;
