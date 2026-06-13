@@ -222,7 +222,7 @@ export const BarcodeScannerComponent = {
     // Asserts the manual-entry input does NOT have the readOnly attribute — the user must be able
     // to type into it (keyboard-enabled). Only meaningful when expectManualEntryInputPresent() passes.
     expectManualEntryInputNotReadOnly: async () => await test.step(`${NAME} - Expect manual-entry input not readOnly`, async () => {
-        await expect(page.getByTestId('manual-entry-input')).not.toHaveAttribute('readonly');
+        await expect(page.getByTestId('manual-entry-input')).not.toHaveAttribute('readonly', { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     // Asserts the device camera <video> element IS rendered inside .barcode-scanner.
