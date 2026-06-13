@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { toastError } from '../utils/toast';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -21,8 +20,6 @@ export const useKeyboardBarcodeReader = ({
       //   meta: event.metaKey,
       //   len: event.key?.length,
       // });
-
-      warnIMEInjectionMode({ event });
 
       if (event.key === 'Unidentified') {
         return;
@@ -126,29 +123,4 @@ export const useKeyboardBarcodeReader = ({
       console.log('Disabled keyboard barcode reader');
     };
   }, [onReadDone, onReadInProgress, rateMs, minLength, disabled]);
-};
-
-//
-//
-//
-//
-//
-
-// 'Unidentified' on KeyboardEvent.key = text committed via Android InputConnection
-// (DataWedge IME / soft IME) instead of as real KeyEvents. The hook can't capture that path;
-// this codebase supports keystroke-output only — the user must fix the scanner profile.
-// toastError already feeds console + uiTrace; toastId de-dupes the message.
-const warnIMEInjectionMode = ({ event }) => {
-  if (event.key !== 'Unidentified') return;
-  const inputEl = document.getElementById('input-text');
-  toastError({
-    messageKey: 'components.BarcodeScannerComponent.imeModeError',
-    toastId: 'scanner-ime-mode',
-    context: {
-      eventKeyCode: event.keyCode,
-      eventCode: event.code,
-      offscreenInputReadOnly: inputEl?.readOnly,
-      offscreenInputInputMode: inputEl?.inputMode,
-    },
-  });
 };
