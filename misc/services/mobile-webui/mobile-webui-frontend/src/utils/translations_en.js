@@ -88,6 +88,8 @@ const translations = {
       manualInputPlaceholder: 'Enter barcode...',
       manualInputSubmit: 'Submit',
       cameraError: 'Camera could not be started. Please check camera permissions.',
+      imeModeError:
+        'Barcode scanner is misconfigured (IME injection detected). Reconfigure DataWedge keystroke output or contact support.',
     },
   },
   activities: {

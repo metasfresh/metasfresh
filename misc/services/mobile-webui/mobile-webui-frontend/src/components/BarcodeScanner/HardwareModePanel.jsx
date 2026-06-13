@@ -33,18 +33,10 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
     disabledRef.current = disabled;
   }, [disabled]);
 
-  // Both focus effects below MUST respect `disabled` — when the parent has disabled this
-  // panel's keyboard reader (currently means `activeMode === MANUAL`), the user is typing
-  // into the VISIBLE manual input (ManualModePanel) and any focus() on the offscreen input
-  // would steal it on every BSC re-render. We still keep the offscreen <input> mounted
-  // (DataWedge InputConnection survives the mode switch), we just don't take focus.
-
-  // Per-render focus effect: covers DataWedge-IME-equivalent configs where the OS DOES
-  // honour the inputMode hint AND the input is editable. Runs on every render — most
-  // importantly on the isProcessing=true→false transition, which remounts the <input>
-  // (see `offscreenInput` memo below: `!isProcessing && <input/>`) so refocus is the only
-  // way to restore the IME's InputConnection. Silent no-op when inputTextRef.current is
-  // null (mid-isProcessing). No deps array → no missed renders; `current` checks keep it safe.
+  // Refocus the offscreen <input> after every render — necessary for IME-style configs (the
+  // input is editable, OS expects focus to route InputConnection). Skipped for keystroke-wedge
+  // configs (readOnly + inputMode=none) which capture at window level and don't need focus.
+  // Always skipped when `disabled` so the visible ManualModePanel input keeps its focus.
   useEffect(() => {
     if (disabled) return;
     if (hardwareInputMode !== 'none' && !hardwareInputReadOnly) {
@@ -52,8 +44,8 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
     }
   });
 
-  // DataWedge IME needs a focused editable input to establish InputConnection.
-  // Focus once on mount; the window-level hook handles all subsequent scan events.
+  // Mount-time focus for DataWedge IME (inputMode=none) — establishes InputConnection once;
+  // the window-level hook handles subsequent scans.
   useEffect(() => {
     if (disabled) return;
     if (hardwareInputMode === 'none') {

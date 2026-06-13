@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as uiTrace from '../utils/ui_trace';
+import { toastError } from '../utils/toast';
+import { trl } from '../utils/translations';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -146,29 +148,35 @@ let imeModeReported = false;
 const warnIMEInjectionMode = ({ event }) => {
   // IME-injection-mode detection: 'Unidentified' = the scanner / IME committed text via
   // Android InputConnection, not via real KeyEvents. The hook can't see the actual text
-  // (it lives in the focused <input>'s value, not on the event). Warn once with concrete
-  // remediation pointing to either the device-side scanner profile or the readOnly knob.
+  // (it lives in the focused <input>'s value, not on the event). This codebase deliberately
+  // supports KEYSTROKE output only — IME-mode delivery is a misconfiguration the user must
+  // fix on the device side (e.g. DataWedge → Keystroke output → Send chars as events: Yes).
+  // We surface this to three sinks with different cadences:
+  //   - toastError on EVERY misconfigured scan (loud user signal, can't be missed)
+  //   - console.warn once per page-load (DevTools — keeps the console scannable)
+  //   - uiTrace.trace once per page-load (backend ui_trace table — diagnosable remotely)
   if (event.key !== 'Unidentified') {
     return;
   }
+
+  // Loud user signal — fires on every misconfigured scan so the user gets repeat exposure
+  // until they fix the device profile. trl() resolves to the user's active language.
+  toastError({ plainMessage: trl('components.BarcodeScannerComponent.imeModeError') });
+
   if (imeModeReported) {
     return;
   }
-
   imeModeReported = true;
   const inputEl = document.getElementById('input-text');
   const traceParams = {
     delivered_via: 'Android InputConnection (DataWedge IME / soft IME) — not as keystrokes',
     offscreenInputReadOnly: inputEl?.readOnly,
     offscreenInputInputMode: inputEl?.inputMode,
-    effect: inputEl?.readOnly
-      ? 'readOnly=true silently blocks the IME commit → scans are lost in this mode'
-      : 'readOnly=false → input should accept the commit; check focus if scans still drop',
+    effect: 'IME-routed text never reaches the window-level keystroke reader → scan lost',
     fix:
       'switch the scanner profile to Keystroke output (UI events) — e.g. DataWedge → ' +
-      'Keystroke output → Inject via UI events — OR set ' +
-      'mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly=N (note: re-enables ' +
-      'the soft keyboard on Android-11 keystroke-wedge devices like Honeywell CT60).',
+      'Keystroke output → Send chars as events: Yes. See ' +
+      'mobile-webui-frontend/CLAUDE.md § Barcode Scanning Modes → Zebra DataWedge.',
   };
   console.warn('[scanner] IME-injection mode detected', traceParams);
   uiTrace.trace({ ...traceParams, eventName: 'scannerImeModeDetected' });

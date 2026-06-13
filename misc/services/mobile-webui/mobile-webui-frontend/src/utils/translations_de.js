@@ -92,6 +92,8 @@ const translations = {
       manualInputPlaceholder: 'Barcode eingeben...',
       manualInputSubmit: 'Senden',
       cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
+      imeModeError:
+        'Barcode-Scanner ist falsch konfiguriert (IME-Modus erkannt). DataWedge-Keystroke-Ausgabe aktivieren oder Support kontaktieren.',
     },
   },
   activities: {
