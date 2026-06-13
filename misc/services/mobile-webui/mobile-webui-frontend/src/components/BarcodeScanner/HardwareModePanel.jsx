@@ -7,11 +7,11 @@ import { debounce } from 'lodash';
 
 const useHardwareConfigParams = () => {
   const hardwareInputMode = useSetting('barcodeScanner.mode.hardware.input.inputMode') ?? 'none';
-  const hardwareInputReadOnly = useBooleanSetting('barcodeScanner.mode.hardware.input.readOnly', false);
+  const isHardwareInputReadOnly = useBooleanSetting('barcodeScanner.mode.hardware.input.readOnly', false);
 
   return {
     hardwareInputMode,
-    hardwareInputReadOnly,
+    isHardwareInputReadOnly,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
@@ -21,7 +21,7 @@ const useHardwareConfigParams = () => {
 };
 
 const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disabled, onBarcodeScanned, testId }) => {
-  const { hardwareInputMode, hardwareInputReadOnly, triggerOnChangeIfLengthGreaterThan, textChangedDebounceMillis } =
+  const { hardwareInputMode, isHardwareInputReadOnly, triggerOnChangeIfLengthGreaterThan, textChangedDebounceMillis } =
     useHardwareConfigParams();
   const inputTextRef = useRef();
   // Tracks the LIVE `disabled` prop so the 2s blur-refocus setTimeout below can check the
@@ -39,7 +39,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
   // Always skipped when `disabled` so the visible ManualModePanel input keeps its focus.
   useEffect(() => {
     if (disabled) return;
-    if (hardwareInputMode !== 'none' && !hardwareInputReadOnly) {
+    if (hardwareInputMode !== 'none' && !isHardwareInputReadOnly) {
       inputTextRef?.current?.focus();
     }
   });
@@ -59,7 +59,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
   // attributes + buffering knobs that the parent doesn't know (and shouldn't read).
   const traceParams = {
     hardwareInputMode,
-    hardwareInputReadOnly,
+    isHardwareInputReadOnly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
   };
@@ -158,9 +158,13 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
       ref={inputTextRef}
       className="input-text input-text-offscreen"
       type="text"
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="none"
+      spellCheck="false"
       placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
       inputMode={hardwareInputMode}
-      readOnly={hardwareInputReadOnly}
+      readOnly={isHardwareInputReadOnly}
       onFocus={handleInputTextFocus}
       onBlur={handleInputTextBlur}
       onChange={handleInputTextChangedDebounced}

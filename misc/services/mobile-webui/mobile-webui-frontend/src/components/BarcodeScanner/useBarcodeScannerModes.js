@@ -6,16 +6,19 @@ export const MODE = { HARDWARE: 'hardware', CAMERA: 'camera', MANUAL: 'manual' }
 export const PRIORITY = [MODE.HARDWARE, MODE.CAMERA, MODE.MANUAL];
 
 export const useBarcodeScannerModes = ({ invisible = false } = {}) => {
-  const hardware = useBooleanSetting('barcodeScanner.mode.hardware.enabled', true);
-  const camera = useBooleanSetting('barcodeScanner.mode.camera.enabled', false);
-  const manual = useBooleanSetting('barcodeScanner.mode.manual.enabled', true);
+  const isHardwareEnabled = useBooleanSetting('barcodeScanner.mode.hardware.enabled', true);
+  const isCameraEnabled = useBooleanSetting('barcodeScanner.mode.camera.enabled', false);
+  const isManualEnabled = useBooleanSetting('barcodeScanner.mode.manual.enabled', true);
   const configuredDefault = useSetting('barcodeScanner.defaultMode');
 
   if (invisible) {
     return { enabledModes: { hardware: true, camera: false, manual: false }, defaultMode: MODE.HARDWARE };
   }
 
-  let enabled = { hardware, camera, manual };
+  // Object keys MUST stay as MODE string values ('hardware'/'camera'/'manual') —
+  // they're looked up dynamically below via `enabled[configuredDefault]` and
+  // `enabled[m]` where m is a MODE value.
+  let enabled = { hardware: isHardwareEnabled, camera: isCameraEnabled, manual: isManualEnabled };
   if (!PRIORITY.some((m) => enabled[m])) {
     enabled = { ...enabled, manual: true }; // fail-safe: operator never locked out
   }

@@ -115,7 +115,6 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    //padding: 2rem $panel-padding-x 1rem;
     color: $grey;
 
     .scan-prompt-icon {
