@@ -344,6 +344,17 @@ public class DDOrderService
 		unassignFromResponsibleAndSave(ddOrder);
 	}
 
+	/**
+	 * Marks the order as disconnected from picking ({@code IsPickingDisconnected=Y}), keeping all FKs and the
+	 * DocStatus intact. The order then becomes invisible to the picking guard/reconcile lookup while staying live.
+	 */
+	public void markAsPickingDisconnected(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		ddOrder.setIsPickingDisconnected(true);
+		save(ddOrder);
+	}
+
 	public void removeAllNotStartedSchedules(final DDOrderId ddOrderId)
 	{
 		ddOrderMoveScheduleService.removeNotStarted(ddOrderId);

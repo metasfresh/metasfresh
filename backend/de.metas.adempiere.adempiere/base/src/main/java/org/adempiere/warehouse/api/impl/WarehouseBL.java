@@ -47,7 +47,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.Warehouse;
@@ -344,6 +346,13 @@ public class WarehouseBL implements IWarehouseBL
 	public Warehouse createWarehouse(@NonNull final CreateWarehouseRequest request)
 	{
 		return warehouseDAO.createWarehouse(request);
+	}
+
+	@Override
+	@NonNull
+	public WarehousePickingGroupId createWarehousePickingGroup(@NonNull final CreateWarehousePickingGroupRequest request)
+	{
+		return warehouseDAO.createWarehousePickingGroup(request);
 	}
 
 	@Override

@@ -325,6 +325,22 @@ public class PickingJobService implements PickingSlotListener
 		);
 	}
 
+	/**
+	 * Lists the picking-job-schedules matching the query, using the same {@code toPickingJobScheduleQuery()}
+	 * resolution as the launcher / {@link #streamPackageable}. Returns {@link PickingJobScheduleCollection#EMPTY}
+	 * when the query is not in job-scheduled-to-workplace mode (no job-schedules apply in warehouse mode).
+	 */
+	@NonNull
+	public PickingJobScheduleCollection listJobSchedules(@NonNull final PickingJobQuery query)
+	{
+		if (!query.isScheduledForWorkplaceOnly())
+		{
+			return PickingJobScheduleCollection.EMPTY;
+		}
+
+		return pickingJobScheduleService.list(query.toPickingJobScheduleQuery());
+	}
+
 	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingCandidateService.getQtyRejectedReasons();

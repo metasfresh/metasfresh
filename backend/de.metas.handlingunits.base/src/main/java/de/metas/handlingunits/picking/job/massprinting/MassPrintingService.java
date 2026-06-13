@@ -14,25 +14,26 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
-import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
-import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableQuery;
-import de.metas.picking.api.PackageableQuery.OrderBy;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,6 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /** Orchestration service for the mass-printing flow: scan LU → pick every self-packed product → print labels. */
@@ -57,6 +58,7 @@ import java.util.stream.Collectors;
 public class MassPrintingService
 {
 	private static final AdMessageKey MSG_MASS_PRINTING_NOT_ENABLED = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.MassPrintingNotEnabled");
+	private static final AdMessageKey MSG_LU_NOT_IN_PICKING_GROUP = AdMessageKey.of("de.metas.handlingunits.picking.massprinting.LUNotInWorkplacePickingGroup");
 
 	private static final Logger logger = LogManager.getLogger(MassPrintingService.class);
 
@@ -64,8 +66,7 @@ public class MassPrintingService
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
-	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
-	@NonNull private final PickingJobLockService pickingJobLockService;
+	@NonNull private final PickingJobWarehouseService warehouseService;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -73,7 +74,8 @@ public class MassPrintingService
 	@NonNull
 	public MassPrintingResult scan(@NonNull final MassPrintingScanRequest request)
 	{
-		if (!profileService.getProfile().isMassPrinting())
+		final MobileUIPickingUserProfile profile = profileService.getProfile();
+		if (!profile.isMassPrinting())
 		{
 			throw new AdempiereException(MSG_MASS_PRINTING_NOT_ENABLED);
 		}
@@ -89,13 +91,38 @@ public class MassPrintingService
 		final ImmutableSet<ProductId> productIds = extractProductIds(productStorages);
 		final Map<ProductId, Product> productsById = productService.getByIdsAsMap(productIds);
 
-		final LocatorId locatorId = huService.getLocatorId(luId);
-		final WarehouseId warehouseId = locatorId.getWarehouseId();
-
 		final ImmutableSet<ProductId> selfPackedProductIds = retainSelfPackedProducts(productsById.values());
 
-		// Batch-load all packageables for self-packed products in one query (avoids N+1 per product).
-		final Map<ProductId, List<Packageable>> packageablesByProduct = loadPackageablesGroupedByProduct(warehouseId, selfPackedProductIds, request.getPickerId());
+		// Search demand exactly like the picking launcher: scope by the operator's workplace warehouse
+		// (which spans every locator of the same M_Warehouse_PickingGroup), not by the LU's own locator.
+		final Workplace workplace = warehouseService.getWorkplaceByUserId(request.getPickerId()).orElse(null);
+		final LocatorId luLocatorId = huService.getLocatorId(luId);
+
+		// If the picker is assigned to a workplace, the scanned LU must belong to that workplace's picking group.
+		if (workplace != null
+				&& !warehouseService.getLocatorIdsOfTheSamePickingGroup(workplace.getWarehouseId()).contains(luLocatorId))
+		{
+			throw new AdempiereException(MSG_LU_NOT_IN_PICKING_GROUP)
+					.appendParametersToMessage()
+					.setParameter("luId", luId)
+					.setParameter("luLocatorId", luLocatorId)
+					.setParameter("workplaceWarehouseId", workplace.getWarehouseId());
+		}
+
+		final PickingJobQuery pickingJobQuery = PickingJobQuery.builder()
+				.userId(request.getPickerId())
+				.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
+				.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() && workplace != null ? workplace.getId() : null)
+				.onlyCustomerIds(profile.getPickOnlyCustomerIds())
+				.build();
+
+		// Reuse the launcher's eligibility seam: streamPackageable applies the same launcher filters
+		// (workplace warehouse, job-schedule branch, lockedBy(userId)+includeNotLocked → other-user-locked
+		// schedules are excluded, excludeLockedForProcessing, etc.). Keep only the self-packed products.
+		final Map<ProductId, List<Packageable>> packageablesByProduct =
+				pickingJobService.streamPackageable(pickingJobQuery)
+						.filter(p -> selfPackedProductIds.contains(p.getProductId()))
+						.collect(Collectors.groupingBy(Packageable::getProductId));
 
 		final ImmutableList.Builder<ProductResult> productResults = ImmutableList.builder();
 		final ImmutableList.Builder<ProductId> skippedNonSelfPacked = ImmutableList.builder();
@@ -120,7 +147,7 @@ public class MassPrintingService
 
 			// Pack+ship inside a transaction. Labels print through the standard picking close path during the
 			// pick (the physical print job is enqueued after the transaction commits, like a regular picking job).
-			final PackAndPickResult packAndPickResult = processProductInTrx(request, luId, productId, productStorage.getQtyAsInt(), packageables);
+			final PackAndPickResult packAndPickResult = processProductInTrx(request, pickingJobQuery, luId, productId, productStorage.getQtyAsInt(), packageables);
 
 			productResults.add(buildProductResult(productId, packAndPickResult));
 		}
@@ -147,74 +174,10 @@ public class MassPrintingService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** Loads all packageables for the given products in one query, grouped by product. */
-	private Map<ProductId, List<Packageable>> loadPackageablesGroupedByProduct(
-			@NonNull final WarehouseId warehouseId,
-			@NonNull final ImmutableSet<ProductId> selfPackedProductIds,
-			@NonNull final UserId pickerId)
-	{
-		if (selfPackedProductIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final PackageableQuery query = PackageableQuery.builder()
-				.warehouseId(warehouseId)
-				.onlyFromSalesOrder(true)
-				.productIds(selfPackedProductIds)
-				.orderBys(ImmutableSet.of(OrderBy.PreparationDate))
-				.build();
-
-		final ImmutableList<Packageable> allPackageables = shipmentScheduleService.stream(query)
-				.collect(ImmutableList.toImmutableList());
-
-		return filterSkipLockedByOtherUser(allPackageables, pickerId)
-				.stream()
-				.collect(Collectors.groupingBy(Packageable::getProductId));
-	}
-
-	/**
-	 * Filters out packageables whose shipment schedule is already locked by a picker other than {@code pickerId}.
-	 * Logs a warning for each skipped schedule so the operator knows why demand was not processed.
-	 */
-	private ImmutableList<Packageable> filterSkipLockedByOtherUser(
-			@NonNull final ImmutableList<Packageable> packageables,
-			@NonNull final UserId pickerId)
-	{
-		if (packageables.isEmpty())
-		{
-			return packageables;
-		}
-
-		final ImmutableSet<ShipmentScheduleId> scheduleIds = packageables.stream()
-				.map(Packageable::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableSet<ShipmentScheduleId> lockedByOtherUser = pickingJobLockService.getScheduleIdsLockedByOtherUser(scheduleIds, pickerId);
-		if (lockedByOtherUser.isEmpty())
-		{
-			return packageables;
-		}
-
-		final ImmutableList.Builder<Packageable> result = ImmutableList.builder();
-		for (final Packageable packageable : packageables)
-		{
-			if (lockedByOtherUser.contains(packageable.getShipmentScheduleId()))
-			{
-				logger.warn("Skipping shipment schedule {} for product {} — locked by another picker",
-						packageable.getShipmentScheduleId(), packageable.getProductId());
-			}
-			else
-			{
-				result.add(packageable);
-			}
-		}
-		return result.build();
-	}
-
 	@NonNull
 	private PackAndPickResult processProductInTrx(
 			@NonNull final MassPrintingScanRequest request,
+			@NonNull final PickingJobQuery pickingJobQuery,
 			@NonNull final HuId luId,
 			@NonNull final ProductId productId,
 			final int unitsOnLU,
@@ -223,12 +186,13 @@ public class MassPrintingService
 		// Shipment generation inside PickingJobCompleteCommand opens its own nested transaction
 		// (callInNewTrx), so the async-batch assignment commits independently from the outer
 		// picking transaction — no M_ShipmentSchedule row-lock deadlock is possible.
-		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, luId, productId, unitsOnLU, packageables));
+		return trxManager.callInThreadInheritedTrx(() -> processProduct(request, pickingJobQuery, luId, productId, unitsOnLU, packageables));
 	}
 
 	@NonNull
 	private PackAndPickResult processProduct(
 			@NonNull final MassPrintingScanRequest request,
+			@NonNull final PickingJobQuery pickingJobQuery,
 			@NonNull final HuId luId,
 			@NonNull final ProductId productId,
 			final int unitsOnLU,
@@ -249,8 +213,8 @@ public class MassPrintingService
 		// schedules, before creating our own job. A job that is unassigned or assigned to this mass-printing
 		// picker is a leftover from a previous failed scan and is aborted here (self-cleanup; also prevents
 		// DDOrderPickingReconcile_PickerBusy errors). A job held by a different picker is left untouched — its
-		// schedules were already dropped before selection by filterSkipLockedByOtherUser (the picking-job
-		// schedule lock), so they do not reach this point.
+		// schedules were already excluded before selection by the reused launcher query's lockedBy(pickerId) +
+		// includeNotLocked filter (PickingJobQuery.toPackageableQueryBuilder), so they do not reach this point.
 		pickingJobService.abortAbortablePickingJobsForSchedules(
 				ImmutableSet.of(productId),
 				ImmutableSet.copyOf(selection.getSelectedScheduleIds()),
@@ -259,7 +223,7 @@ public class MassPrintingService
 		// Each line is picked-and-closed through the standard picking close path (see pickTuLine / pickCuLine),
 		// so labels print exactly like a regular picking job — closeLUAndTUPickingTargets() collects every
 		// top-level TU/VHU via addTopLevelTUId() and prints its label. No bespoke side-channel print here.
-		final PickingJob pickedJob = createAndPickJob(request, luId, selection);
+		final PickingJob pickedJob = createAndPickJob(request, pickingJobQuery, luId, selection);
 		final ImmutableSet<HuId> pickedHuIds = pickedJob.getAllPickedHuIds();
 		final ImmutableSet<HuId> packedHUIds = huService.getPackedBoxHUIds(pickedHuIds);
 		pickingJobService.complete(pickedJob);
@@ -346,10 +310,13 @@ public class MassPrintingService
 	@NonNull
 	private PickingJob createAndPickJob(
 			@NonNull final MassPrintingScanRequest request,
-			@NonNull final HuId luId,
+			@NonNull final PickingJobQuery pickingJobQuery,
+			@NonNull final HuId pickFromLUId,
 			@NonNull final ScheduleSelection selection)
 	{
-		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet = ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selection.getSelectedScheduleIds());
+		// Build the job's schedule-id set the same way regular picking does from a candidate.
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIdSet =
+				resolveScheduleIdsForJobCreation(pickingJobQuery, ImmutableSet.copyOf(selection.getSelectedScheduleIds()));
 		final PickingJob pickingJob = pickingJobService.createPickingJob(
 				PickingJobCreateRequest.builder()
 						.pickerId(request.getPickerId())
@@ -358,7 +325,7 @@ public class MassPrintingService
 						.scheduleIds(scheduleIdSet)
 						.build());
 
-		final HUQRCode luQRCode = huService.getQRCodeByHuId(luId);
+		final HUQRCode luQRCode = huService.getQRCodeByHuId(pickFromLUId);
 
 		PickingJob pickedJob = pickingJob;
 		for (final PickingJobLine line : pickingJob.getLines())
@@ -366,6 +333,48 @@ public class MassPrintingService
 			pickedJob = pickLine(pickedJob, line, luQRCode, selection.getSelectedScheduleQtys());
 		}
 		return pickedJob;
+	}
+
+	/**
+	 * Resolves the {@link ShipmentScheduleAndJobScheduleIdSet} to drive a PRODUCT picking-job creation for the
+	 * selected shipment-schedule ids. The resolution branches on the query MODE — never on whether job-schedules
+	 * happen to exist:
+	 * <ul>
+	 * <li><b>Warehouse mode</b> ({@code isScheduledForWorkplaceOnly() == false}): the job is driven by plain
+	 * shipment-schedule ids.</li>
+	 * <li><b>Job-scheduled-to-workplace mode</b> ({@code isScheduledForWorkplaceOnly() == true}): the job MUST be
+	 * driven by the picking-job schedules (looked up via {@link PickingJobService#listJobSchedules}, the same
+	 * job-schedule resolution the launcher / {@code streamPackageable} use). We never fall back to a plain
+	 * shipment-schedule set here — that would defeat {@code isScheduledForWorkplaceOnly}. A selected schedule with
+	 * no matching job-schedule is simply not included (we accept "no job schedules" rather than falling back).</li>
+	 * </ul>
+	 */
+	@NonNull
+	private ShipmentScheduleAndJobScheduleIdSet resolveScheduleIdsForJobCreation(
+			@NonNull final PickingJobQuery query,
+			@NonNull final Set<ShipmentScheduleId> selectedShipmentScheduleIds)
+	{
+		// Nothing selected → nothing to create or query for. Guard so we neither build an empty set nor hit the DB.
+		if (selectedShipmentScheduleIds.isEmpty())
+		{
+			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
+		}
+
+		// Warehouse mode: the job is driven by plain shipment-schedule ids.
+		if (!query.isScheduledForWorkplaceOnly())
+		{
+			return ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedShipmentScheduleIds);
+		}
+
+		// Scheduled-to-workplace mode: the job MUST be driven by the picking-job schedules.
+		// NEVER fall back to a plain shipment-schedule set here — that would defeat isScheduledForWorkplaceOnly.
+		final PickingJobScheduleCollection jobSchedules = pickingJobService.listJobSchedules(query);
+		return selectedShipmentScheduleIds.stream()
+				.map(ssId -> jobSchedules.getSingleScheduleByShipmentScheduleId(ssId)
+						.map(PickingJobSchedule::getShipmentScheduleAndJobScheduleId)
+						.orElse(null))
+				.filter(java.util.Objects::nonNull)
+				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 	}
 
 	/** Fires pick events for one line from the LU, using the capped qty from the FIFO selection. */

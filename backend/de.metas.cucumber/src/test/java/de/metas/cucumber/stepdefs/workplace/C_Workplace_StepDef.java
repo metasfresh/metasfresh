@@ -198,6 +198,13 @@ public class C_Workplace_StepDef
 	@Given("deactivate all C_Workplace records")
 	public void deactivate_C_Workplace()
 	{
+		// Delete the user->workplace assignments FIRST: deactivating a workplace while leaving its
+		// C_Workplace_User_Assign rows behind creates a dangling assignment — a later getWorkplaceByUserId
+		// resolves the assignment, then fails to load the now-inactive workplace ("No workplace found for
+		// WorkplaceId"). Clearing assignments here makes "deactivate all C_Workplace" a complete reset and
+		// prevents that cross-scenario/feature leak on the shared single-JVM executor.
+		delete_C_Workplace_User_Assign();
+
 		final ICompositeQueryUpdater<I_C_Workplace> updater = queryBL
 				.createCompositeQueryUpdater(I_C_Workplace.class)
 				.addSetColumnValue(I_C_Workplace.COLUMNNAME_IsActive, false);
