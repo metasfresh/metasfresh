@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
@@ -42,10 +43,20 @@ import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrderPickFromRequest;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -54,6 +65,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
+import de.metas.util.StringUtils;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ResourceId;
@@ -66,6 +78,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -121,7 +134,9 @@ public class DD_Order_StepDef
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO = SpringContextHolder.instance.getBean(DDOrderLowLevelDAO.class);
+	@NonNull private final DDOrderMoveScheduleService moveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
@@ -134,6 +149,7 @@ public class DD_Order_StepDef
 	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
+	@NonNull private final M_HU_StepDefData huTable;
 
 	/**
 	 * @cucumber.stepdef Creates DD_Order header records.
@@ -311,6 +327,23 @@ public class DD_Order_StepDef
 			final OrderId actualOrderId = OrderId.ofRepoIdOrNull(actual.getC_Order_ID());
 			softly.assertThat(actualOrderId).as("C_Order_ID").isEqualTo(expectedOrderId);
 		}
+
+		// Close-out disposition assertions: the in-progress disconnect marker, and the close-out
+		// picker release (AD_User_Responsible_ID cleared). Use `-` in the feature to assert the responsible is unset.
+		expected.getAsOptionalBoolean(I_DD_Order.COLUMNNAME_IsPickingDisconnected)
+				.ifPresent(expectedDisconnected -> softly.assertThat(actual.isPickingDisconnected())
+						.as("IsPickingDisconnected")
+						.isEqualTo(expectedDisconnected));
+
+		// AD_User_Responsible_ID: a `-` cell asserts the responsible is unset (the CLOSE path releases the picker).
+		// Any other (numeric) value asserts that exact AD_User_ID.
+		expected.getAsOptionalString(I_DD_Order.COLUMNNAME_AD_User_Responsible_ID)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(responsibleStr -> {
+					final int expectedResponsibleId = "-".equals(responsibleStr) ? -1 : Integer.parseInt(responsibleStr);
+					final int actualResponsibleId = actual.getAD_User_Responsible_ID() > 0 ? actual.getAD_User_Responsible_ID() : -1;
+					softly.assertThat(actualResponsibleId).as("AD_User_Responsible_ID").isEqualTo(expectedResponsibleId);
+				});
 
 		softly.assertAll();
 	}
@@ -598,6 +631,100 @@ public class DD_Order_StepDef
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
 				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
 				.create();
+	}
+
+	/**
+	 * @cucumber.stepdef Test seam: assigns a responsible user ({@code AD_User_Responsible_ID}) to the live DD_Order
+	 * linked to the given workstation assignment, simulating a worker who has picked up the DD_Order-backed mobile
+	 * DistributionJob (the launcher keys on {@code AD_User_Responsible_ID}). Used so the close-out CLOSE path's picker
+	 * release ({@code AD_User_Responsible_ID} cleared) can be asserted as a state transition.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the assignment whose DD_Order gets a responsible user</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * When a worker takes the DD_Order linked to picking job schedule:
+	 *   | M_Picking_Job_Schedule_ID |
+	 *   | jobSchedule               |
+	 * </pre>
+	 */
+	@When("^a worker takes the DD_Order linked to picking job schedule:$")
+	public void assignResponsibleToDDOrder(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+			final I_DD_Order ddOrder = liveDDOrderForPickingJobScheduleQuery(jobScheduleId).firstOnlyNotNull(I_DD_Order.class);
+			// UpdatedBy is always a valid AD_User_ID (> 0) — use it as the "worker who picked up the job".
+			ddOrderService.assignToResponsible(ddOrder, UserId.ofRepoId(ddOrder.getUpdatedBy()));
+		});
+	}
+
+	/**
+	 * @cucumber.stepdef Picks the source HU from the DD_Order linked to the given picking job schedule, leaving the
+	 * move IN_PROGRESS (goods moved to in-transit, not yet dropped). For the DD_Order's single line it creates a
+	 * move-schedule via {@link DDOrderMoveScheduleService#createScheduleToMove} and then picks the HU via
+	 * {@link DDOrderMoveScheduleService#pickFromHU}.
+	 * <p>
+	 * Real-world trigger: a worker opens the DD_Order-backed mobile DistributionJob and picks the source HU, the first
+	 * leg of a warehouse move. The IN_PROGRESS state is what {@link DDOrderMoveScheduleService#hasInProgressSchedules}
+	 * checks, which drives the shipment close-out disposition down the DISCONNECT branch.
+	 * <p>
+	 * Required columns:
+	 * <ul>
+	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the assignment whose DD_Order is picked from</li>
+	 *   <li>{@code PickFrom_HU_ID} — identifier of the source HU being picked</li>
+	 * </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * When pick from the DD_Order linked to picking job schedule:
+	 *   | M_Picking_Job_Schedule_ID | PickFrom_HU_ID |
+	 *   | jobSchedule               | stockSourceHU  |
+	 * </pre>
+	 */
+	@When("^pick from the DD_Order linked to picking job schedule:$")
+	public void pickFromDDOrderLinkedToPickingJobSchedule(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::pickFromDDOrderLinkedToPickingJobSchedule);
+	}
+
+	private void pickFromDDOrderLinkedToPickingJobSchedule(@NonNull final DataTableRow row)
+	{
+		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+		final HuId pickFromHuId = row.getAsIdentifier("PickFrom_HU_ID").lookupNotNullIdIn(huTable);
+
+		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_DD_OrderLine.class);
+
+		assertThat(lines)
+				.as("DD_OrderLines for picking job schedule %s (must exist before picking from the DD_Order)", jobScheduleId.getRepoId())
+				.isNotEmpty();
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			for (final I_DD_OrderLine line : lines)
+			{
+				final DDOrderMoveSchedule schedule = moveScheduleService.createScheduleToMove(
+						DDOrderMoveScheduleCreateRequest.builder()
+								.ddOrderId(DDOrderId.ofRepoId(line.getDD_Order_ID()))
+								.ddOrderLineId(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
+								.productId(ProductId.ofRepoId(line.getM_Product_ID()))
+								.pickFromLocatorId(LocatorId.ofRecord(warehouseDAO.getLocatorByRepoId(line.getM_Locator_ID())))
+								.pickFromHUId(pickFromHuId)
+								.qtyToPick(Quantitys.of(line.getQtyOrdered(), UomId.ofRepoId(line.getC_UOM_ID())))
+								.isPickWholeHU(true)
+								.dropToLocatorId(LocatorId.ofRecord(warehouseDAO.getLocatorByRepoId(line.getM_LocatorTo_ID())))
+								.build());
+
+				moveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
+						.scheduleId(schedule.getId())
+						.huId(pickFromHuId)
+						.build());
+			}
+		});
 	}
 
 	private void validatePickingJobScheduleLine(
