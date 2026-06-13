@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { useBarcodeScannerModes, MODE } from '../hooks/useBarcodeScannerModes';
+import { useBarcodeScannerModes, MODE } from '../components/BarcodeScanner/useBarcodeScannerModes';
 import { useBooleanSetting, useSetting } from '../reducers/settings';
 
 // Mock the settings hooks

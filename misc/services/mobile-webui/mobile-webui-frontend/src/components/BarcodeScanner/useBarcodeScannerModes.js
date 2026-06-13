@@ -1,7 +1,9 @@
-import { useBooleanSetting, useSetting } from '../reducers/settings';
+import { useBooleanSetting, useSetting } from '../../reducers/settings';
 
 export const MODE = { HARDWARE: 'hardware', CAMERA: 'camera', MANUAL: 'manual' };
-const PRIORITY = [MODE.HARDWARE, MODE.CAMERA, MODE.MANUAL];
+// Mode-preference order — used by useBarcodeScannerModes to resolve the default mode and by
+// BarcodeScannerFooter to pick the "back to scanner" target from MANUAL (HARDWARE before CAMERA).
+export const PRIORITY = [MODE.HARDWARE, MODE.CAMERA, MODE.MANUAL];
 
 export const useBarcodeScannerModes = ({ invisible = false } = {}) => {
   const hardware = useBooleanSetting('barcodeScanner.mode.hardware.enabled', true);

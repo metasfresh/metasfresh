@@ -89,7 +89,6 @@ const translations = {
       enterManually: 'Manuell eingeben',
       scanWithCamera: 'Mit Kamera scannen',
       useHardwareScanner: 'Hardware-Scanner verwenden',
-      backToScanner: 'Zurück zum Scanner',
       manualInputPlaceholder: 'Barcode eingeben...',
       manualInputSubmit: 'Senden',
       cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',

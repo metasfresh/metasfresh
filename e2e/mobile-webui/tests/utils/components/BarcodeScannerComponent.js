@@ -142,9 +142,13 @@ export const BarcodeScannerComponent = {
     // Fills the visible editable input and presses Enter — exercises the manual-typing path
     // (onChange debounce / onKeyUp Enter) in BarcodeScannerComponent. Only valid when
     // the mode-engine is in manual mode (defaultMode=manual, mode.manual.enabled=Y).
+    // NOTE: wait on the manual-entry input, NOT on `#input-text`. The hardware off-screen
+    // `#input-text` is rendered by HardwareModePanel only when activeMode === HARDWARE; in
+    // pure manual mode (`mode.hardware.enabled=N` or `defaultMode=manual`) it is not in the
+    // DOM, so `waitToAttach({})` would time out and look like a manual-entry failure.
     typeManually: async (barcode) => await test.step(`${NAME} - Type manually and press Enter`, async () => {
-        await BarcodeScannerComponent.waitToAttach({});
         const input = page.locator('[data-testid="manual-entry-input"]');
+        await input.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
         await input.fill(barcode);
         await input.press('Enter');
     }),

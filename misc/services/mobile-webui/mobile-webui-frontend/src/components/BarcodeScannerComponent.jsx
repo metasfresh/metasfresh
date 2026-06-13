@@ -1,49 +1,15 @@
 import PropTypes from 'prop-types';
 import React, { useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
-import { useBooleanSetting, useNumber, usePositiveNumberSetting, useSetting } from '../reducers/settings';
+import { useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
-import { MODE, useBarcodeScannerModes } from '../hooks/useBarcodeScannerModes';
+import { MODE, useBarcodeScannerModes } from './BarcodeScanner/useBarcodeScannerModes';
 import ManualModePanel from './BarcodeScanner/ManualModePanel';
 import CameraModePanel from './BarcodeScanner/CameraModePanel';
 import HardwareModePanel from './BarcodeScanner/HardwareModePanel';
 import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
-
-const useConfigParams = ({ invisible }) => {
-  const { enabledModes, defaultMode } = useBarcodeScannerModes({ invisible });
-
-  const hardwareInputMode = useSetting('barcodeScanner.mode.hardware.input.inputMode') ?? 'none';
-  const hardwareInputReadOnly = useBooleanSetting('barcodeScanner.mode.hardware.input.readOnly', false);
-
-  return {
-    enabledModes,
-    defaultMode,
-    hardwareInputMode,
-    hardwareInputReadOnly,
-    okBeepParams: {
-      name: 'OK',
-      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
-      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
-      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
-      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
-    },
-    errorBeepParams: {
-      name: 'error',
-      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
-      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
-      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
-      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
-    },
-    triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
-      'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
-      0
-    ),
-    textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
-    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
-  };
-};
 
 const BarcodeScannerComponent = ({
   testId,
@@ -52,25 +18,11 @@ const BarcodeScannerComponent = ({
   inputPlaceholderText,
   invisible,
 }) => {
-  const {
-    enabledModes,
-    defaultMode,
-    hardwareInputMode,
-    hardwareInputReadOnly,
-    okBeepParams,
-    errorBeepParams,
-    triggerOnChangeIfLengthGreaterThan,
-    textChangedDebounceMillis,
-    scanDuplicatesIntervalMillis,
-  } = useConfigParams({ invisible });
+  const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
+    invisible,
+  });
 
   const [activeMode, setActiveMode] = useState(defaultMode);
-
-  const handleSelectManual = () => setActiveMode(MODE.MANUAL);
-  const handleToggleHardwareCamera = () =>
-    setActiveMode((prev) => (prev === MODE.HARDWARE ? MODE.CAMERA : MODE.HARDWARE));
-  // Back to scanner from manual mode — go to hardware if enabled, otherwise camera.
-  const handleBackToScanner = () => setActiveMode(enabledModes.hardware ? MODE.HARDWARE : MODE.CAMERA);
 
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
@@ -140,14 +92,11 @@ const BarcodeScannerComponent = ({
   };
   const validateScannedBarcodeAndForward = uiTrace.traceFunction(
     validateScannedBarcodeAndForward0,
-    ({ scannedBarcode }) => ({
+    ({ scannedBarcode, traceParams }) => ({
+      ...traceParams,
       eventName: 'barcodeScanned',
       scannedBarcode,
       activeMode,
-      hardwareInputMode,
-      hardwareInputReadOnly,
-      triggerOnChangeIfLengthGreaterThan,
-      textChangedDebounceMillis,
       scanDuplicatesIntervalMillis,
     })
   );
@@ -155,15 +104,25 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {!invisible && isProcessing && <Spinner />}
-      {activeMode === MODE.HARDWARE && (
-        <HardwareModePanel
-          inputPlaceholderText={inputPlaceholderText}
-          invisible={invisible}
-          isProcessing={isProcessing}
-          onBarcodeScanned={validateScannedBarcodeAndForward}
-          testId={testId}
-        />
-      )}
+      {/* HardwareModePanel is rendered in EVERY visible mode:
+            HARDWARE → full scan-prompt UI + off-screen <input>
+            MANUAL / CAMERA → invisible mode: off-screen <input> only, no visible chrome
+          Two reasons:
+            (1) keeps `#input-text` mounted across mode switches so DataWedge IME
+                InputConnection survives — matches the E2E contract
+                (barcode_scanner_modes.spec.js — `expectAttached({})` in MANUAL mode).
+            (2) keeps the window-level useKeyboardBarcodeReader hook attached during
+                CAMERA mode (workplaces with a plugged scanner can still scan into the
+                camera view). The hook is `disabled` in MANUAL mode so keystrokes go
+                straight to the visible manual input. */}
+      <HardwareModePanel
+        inputPlaceholderText={inputPlaceholderText}
+        invisible={invisible || activeMode !== MODE.HARDWARE}
+        isProcessing={isProcessing}
+        disabled={isProcessing || activeMode === MODE.MANUAL}
+        onBarcodeScanned={validateScannedBarcodeAndForward}
+        testId={testId}
+      />
       {!invisible && activeMode === MODE.MANUAL && (
         <ManualModePanel
           isProcessing={isProcessing}
@@ -187,13 +146,7 @@ const BarcodeScannerComponent = ({
         />
       )}
       {!invisible && (
-        <BarcodeScannerFooter
-          activeMode={activeMode}
-          enabledModes={enabledModes}
-          onSelectManual={handleSelectManual}
-          onToggleHardwareCamera={handleToggleHardwareCamera}
-          onBackToScanner={handleBackToScanner}
-        />
+        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={setActiveMode} />
       )}
     </div>
   );
@@ -212,6 +165,42 @@ BarcodeScannerComponent.defaultProps = {
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+const useConfigParams = ({ invisible }) => {
+  const { enabledModes, defaultMode } = useBarcodeScannerModes({ invisible });
+
+  return {
+    enabledModes,
+    defaultMode,
+    okBeepParams: {
+      name: 'OK',
+      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
+      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
+    },
+    errorBeepParams: {
+      name: 'error',
+      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
+      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
+    },
+    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
+  };
+};
+
+//
+//
+//
+//
+//
 
 const useDuplicateScansGuard = ({ scanDuplicatesIntervalMillis }) => {
   const lastScanRef = useRef(null);

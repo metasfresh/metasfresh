@@ -20,56 +20,102 @@ const useHardwareConfigParams = () => {
   };
 };
 
-const HardwareModePanel = ({ inputPlaceholderText, invisible, isProcessing, onBarcodeScanned, testId }) => {
+const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disabled, onBarcodeScanned, testId }) => {
   const { hardwareInputMode, hardwareInputReadOnly, triggerOnChangeIfLengthGreaterThan, textChangedDebounceMillis } =
     useHardwareConfigParams();
   const inputTextRef = useRef();
-
-  useEffect(
-    () => {
-      if (hardwareInputMode !== 'none' && !hardwareInputReadOnly) {
-        inputTextRef?.current?.focus();
-      }
-    } /* no deps, call it on each render */
-  );
-
+  // Tracks the LIVE `disabled` prop so the 2s blur-refocus setTimeout below can check the
+  // current value at fire time, not the stale closure value at schedule time. Without this,
+  // a HW→MANUAL switch right after an offscreen-blur would silently re-grab focus 2s later
+  // and yank it from the visible manual input.
+  const disabledRef = useRef(disabled);
   useEffect(() => {
-    return () => handleInputTextChangedDebounced.cancel();
+    disabledRef.current = disabled;
+  }, [disabled]);
+
+  // Both focus effects below MUST respect `disabled` — when the parent has disabled this
+  // panel's keyboard reader (currently means `activeMode === MANUAL`), the user is typing
+  // into the VISIBLE manual input (ManualModePanel) and any focus() on the offscreen input
+  // would steal it on every BSC re-render. We still keep the offscreen <input> mounted
+  // (DataWedge InputConnection survives the mode switch), we just don't take focus.
+
+  // Per-render focus effect: covers DataWedge-IME-equivalent configs where the OS DOES
+  // honour the inputMode hint AND the input is editable. Runs on every render — most
+  // importantly on the isProcessing=true→false transition, which remounts the <input>
+  // (see `offscreenInput` memo below: `!isProcessing && <input/>`) so refocus is the only
+  // way to restore the IME's InputConnection. Silent no-op when inputTextRef.current is
+  // null (mid-isProcessing). No deps array → no missed renders; `current` checks keep it safe.
+  useEffect(() => {
+    if (disabled) return;
+    if (hardwareInputMode !== 'none' && !hardwareInputReadOnly) {
+      inputTextRef?.current?.focus();
+    }
   });
 
   // DataWedge IME needs a focused editable input to establish InputConnection.
   // Focus once on mount; the window-level hook handles all subsequent scan events.
   useEffect(() => {
+    if (disabled) return;
     if (hardwareInputMode === 'none') {
       inputTextRef?.current?.focus();
     }
   }, []);
 
+  // Hardware-specific telemetry forwarded to the parent's uiTrace context on every
+  // onBarcodeScanned call. BSC owns the canonical fields (eventName, scannedBarcode,
+  // activeMode, scanDuplicatesIntervalMillis); this panel adds the hardware-input
+  // attributes + buffering knobs that the parent doesn't know (and shouldn't read).
+  const traceParams = {
+    hardwareInputMode,
+    hardwareInputReadOnly,
+    triggerOnChangeIfLengthGreaterThan,
+    textChangedDebounceMillis,
+  };
+
+  const handleInputTextChanged = (e) => {
+    const scannedBarcode = e.target.value;
+
+    if (
+      scannedBarcode &&
+      triggerOnChangeIfLengthGreaterThan &&
+      triggerOnChangeIfLengthGreaterThan > 0 &&
+      scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
+    ) {
+      onBarcodeScanned({ scannedBarcode, traceParams });
+    }
+  };
+  const handleInputTextChangedDebounced = useMemo(() => {
+    return debounce(handleInputTextChanged, textChangedDebounceMillis);
+  }, [textChangedDebounceMillis]);
+
+  useEffect(() => {
+    return () => handleInputTextChangedDebounced.cancel();
+  }, [handleInputTextChangedDebounced]);
+
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
-      // console.log('onReadDone', barcode);
-      // Clear the input BEFORE calling validateScannedBarcodeAndForward.
-      // validateScannedBarcodeAndForward calls setProcessing(true), which in React 17 legacy
-      // mode (outside a React event handler) triggers a synchronous re-render that unmounts
-      // the input ({!isProcessing && <input/>}) and nulls inputTextRef.current.  If we clear
-      // after the call, inputTextRef.current is already null and the clear is silently skipped.
-      // The un-cleared input value then reaches handleInputTextKeyPress via the keyup event
-      // that follows the Enter keydown, causing a second validateScannedBarcodeAndForward
-      // invocation and a duplicate error toast.
+      // Clear the input BEFORE calling onBarcodeScanned.
+      // onBarcodeScanned triggers setProcessing(true) in the parent, which in React 17 legacy
+      // mode (outside a React event handler) re-renders synchronously and unmounts the input
+      // ({!isProcessing && <input/>}), nulling inputTextRef.current. Clearing AFTER the call
+      // would be silently skipped and the un-cleared value could reach handleInputTextKeyPress
+      // via the trailing keyup event, double-firing the scan.
       if (inputTextRef?.current) {
         inputTextRef.current.value = '';
       }
-      onBarcodeScanned({ scannedBarcode: barcode });
+      onBarcodeScanned({ scannedBarcode: barcode, traceParams });
     },
     onReadInProgress: (barcode) => {
-      // console.log('onReadInProgress', barcode);
       if (inputTextRef?.current) {
         inputTextRef.current.value = barcode;
       }
     },
     rateMs: textChangedDebounceMillis,
     minLength: triggerOnChangeIfLengthGreaterThan,
-    disabled: isProcessing,
+    // Parent owns the disabled decision (see BarcodeScannerComponent — combines isProcessing
+    // with `activeMode === MANUAL` so keystrokes flow to the visible manual input instead
+    // of the offscreen hardware one).
+    disabled,
   });
 
   const handleInputTextKeyPress = (e) => {
@@ -79,6 +125,7 @@ const HardwareModePanel = ({ inputPlaceholderText, invisible, isProcessing, onBa
 
       onBarcodeScanned({
         scannedBarcode,
+        traceParams,
         onStart: () => {
           inputTextRef?.current?.select();
         },
@@ -97,69 +144,75 @@ const HardwareModePanel = ({ inputPlaceholderText, invisible, isProcessing, onBa
 
   const handleInputTextBlur = () => {
     setTimeout(() => {
+      // Check the LIVE `disabled` value via ref — the prop at schedule time may be stale 2s
+      // later. If the user switched into MANUAL during the window, we must NOT yank focus
+      // back from the visible manual input.
+      if (disabledRef.current) return;
       inputTextRef?.current?.focus();
     }, 2000);
   };
 
-  const handleInputTextChanged = (e) => {
-    const scannedBarcode = e.target.value;
+  // The off-screen input is the only DOM element needed for both the visible hardware-mode
+  // scan-prompt UI and the invisible variant (BarcodeScannerButton, ApplicationsListScreen,
+  // DistributionMoveActivity). Render it once; conditionally surround with the scan-prompt
+  // chrome when not invisible. When invisible, return ONLY the off-screen input so the
+  // component contributes zero visible layout — no padding, no background, no animated icon.
+  const offscreenInput = !isProcessing && (
+    <input
+      id="input-text"
+      key="input-text"
+      ref={inputTextRef}
+      className="input-text input-text-offscreen"
+      type="text"
+      placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+      inputMode={hardwareInputMode}
+      readOnly={hardwareInputReadOnly}
+      onFocus={handleInputTextFocus}
+      onBlur={handleInputTextBlur}
+      onChange={handleInputTextChangedDebounced}
+      onKeyUp={handleInputTextKeyPress}
+      data-testid={testId ?? 'qrCode-input'}
+    />
+  );
 
-    if (
-      scannedBarcode &&
-      triggerOnChangeIfLengthGreaterThan &&
-      triggerOnChangeIfLengthGreaterThan > 0 &&
-      scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
-    ) {
-      onBarcodeScanned({ scannedBarcode });
-    }
-  };
-  const handleInputTextChangedDebounced = useMemo(() => {
-    return debounce(handleInputTextChanged, textChangedDebounceMillis);
-  }, [textChangedDebounceMillis]);
+  if (invisible) {
+    return offscreenInput || null;
+  }
 
   return (
-    <>
-      {!invisible && (
-        <div className="scan-prompt">
-          <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
-          {/* Caption swap — idle text by default, "Scanning in progress…" while the input
-              has content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
-          <div className="scan-prompt-text">
-            <span className="scan-prompt-text-idle">
-              {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
-            </span>
-            <span className="scan-prompt-text-progress">
-              {trl('components.BarcodeScannerComponent.scanInProgress')}
-            </span>
-          </div>
-        </div>
-      )}
-      {!isProcessing && (
-        <input
-          id="input-text"
-          key="input-text"
-          ref={inputTextRef}
-          className="input-text input-text-offscreen"
-          type="text"
-          placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          inputMode={hardwareInputMode}
-          readOnly={hardwareInputReadOnly}
-          onFocus={handleInputTextFocus}
-          onBlur={handleInputTextBlur}
-          onChange={handleInputTextChangedDebounced}
-          onKeyUp={handleInputTextKeyPress}
-          data-testid={testId ?? 'qrCode-input'}
-        />
-      )}
-    </>
+    <div className="hardware-mode-panel scan-prompt">
+      {/* FontAwesome SVG-with-JS (src/index.js → @fortawesome/fontawesome-free/js/all.min) mutates
+          <i className="fas …"> into <svg> in place. React's fiber keeps a stale stateNode pointer
+          to the detached <i>; if the conditional <input> below were ever a sibling needing
+          insertBefore against the icon, React would throw NotFoundError. Wrapping in <span>
+          (codebase convention — see ButtonWithIndicator.jsx) gives React a stable, React-owned
+          parent that FA never touches. */}
+      <span>
+        <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
+      </span>
+      {/* Caption swap — idle text by default, "Scanning in progress…" while the input has
+          content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
+      <div className="scan-prompt-text">
+        <span className="scan-prompt-text-idle">
+          {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
+        </span>
+        <span className="scan-prompt-text-progress">{trl('components.BarcodeScannerComponent.scanInProgress')}</span>
+      </div>
+      {offscreenInput}
+    </div>
   );
 };
 HardwareModePanel.propTypes = {
-  inputPlaceholderText: PropTypes.string,
   invisible: PropTypes.bool,
+  inputPlaceholderText: PropTypes.string,
   isProcessing: PropTypes.bool,
+  disabled: PropTypes.bool,
   onBarcodeScanned: PropTypes.func.isRequired,
   testId: PropTypes.string,
+};
+HardwareModePanel.defaultProps = {
+  invisible: false,
+  disabled: false,
 };
 
 export default HardwareModePanel;

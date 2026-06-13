@@ -1,34 +1,58 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { MODE } from '../../hooks/useBarcodeScannerModes';
-
-import '../../assets/BarcodeScannerFooter.scss';
+import { MODE, PRIORITY } from './useBarcodeScannerModes';
 import ButtonWithIndicator from '../buttons/ButtonWithIndicator';
 
-const BarcodeScannerFooter = ({
-  activeMode,
-  enabledModes,
-  onSelectManual,
-  onToggleHardwareCamera,
-  onBackToScanner,
-}) => {
-  const isManualEnabled = !!enabledModes?.manual;
-  const isHardwareCameraToggleShown = !!(enabledModes?.hardware && enabledModes?.camera);
-  // Show "Back to scanner" when user is in manual mode and there is at least one scanner mode to go back to.
-  const isBackToScannerShown = activeMode === MODE.MANUAL && (!!enabledModes?.hardware || !!enabledModes?.camera);
+// "Back to scanner" — when in MANUAL, the button targets the highest-priority scanner mode
+// that is currently enabled. HARDWARE wins over CAMERA (per PRIORITY in useBarcodeScannerModes).
+// If neither scanner mode is enabled the button is hidden — there's nowhere to go back to.
+const SCANNER_MODES = PRIORITY.filter((m) => m === MODE.HARDWARE || m === MODE.CAMERA);
 
-  // The manual button is only useful when not already in manual mode.
+const BACK_TO_SCANNER_CAPTION_KEY = {
+  [MODE.HARDWARE]: 'components.BarcodeScannerComponent.useHardwareScanner',
+  [MODE.CAMERA]: 'components.BarcodeScannerComponent.scanWithCamera',
+};
+const BACK_TO_SCANNER_ICON = {
+  [MODE.HARDWARE]: 'fa-barcode',
+  [MODE.CAMERA]: 'fa-camera',
+};
+
+/*
+ * Footer button cluster. Renders the mode-switching buttons applicable to the current state
+ * and signals the parent via ONE callback: onModeSelected(targetMode).
+ *
+ * Each button resolves its own target mode locally — the footer is the source of truth for
+ * "which mode does this button switch to":
+ *   - HW⇄CAM toggle  → the opposite scanner mode of the current activeMode
+ *   - Back-to-scanner → first enabled of HARDWARE|CAMERA (PRIORITY order)
+ *   - Enter manually → MODE.MANUAL
+ *
+ * The parent's only job is to apply the new mode (typically `onModeSelected={setActiveMode}`).
+ */
+const BarcodeScannerFooter = ({ activeMode, enabledModes, onModeSelected }) => {
+  const isManualEnabled = !!enabledModes?.manual;
+
+  // HW↔Camera toggle only when BOTH scanner modes are enabled AND the user is currently in a
+  // scanner mode. Hidden in MANUAL — the dedicated back-to-scanner button covers that case.
+  const isHardwareCameraToggleShown = !!(enabledModes?.hardware && enabledModes?.camera) && activeMode !== MODE.MANUAL;
+
+  // Manual button — only useful when not already in manual mode.
   const isManualButtonShown = isManualEnabled && activeMode !== MODE.MANUAL;
+
+  // Back-to-scanner — only relevant from MANUAL; resolves to the highest-priority enabled
+  // scanner mode (HARDWARE > CAMERA). Undefined if no scanner mode is enabled → button hidden.
+  const backToScannerTarget = activeMode === MODE.MANUAL ? SCANNER_MODES.find((m) => enabledModes?.[m]) : undefined;
+  const isBackToScannerShown = !!backToScannerTarget;
 
   if (!isManualButtonShown && !isHardwareCameraToggleShown && !isBackToScannerShown) {
     return null;
   }
 
+  const toggleTarget = activeMode === MODE.HARDWARE ? MODE.CAMERA : MODE.HARDWARE;
   const toggleCaptionKey =
     activeMode === MODE.HARDWARE
       ? 'components.BarcodeScannerComponent.scanWithCamera'
       : 'components.BarcodeScannerComponent.useHardwareScanner';
-
   const toggleIconName = activeMode === MODE.HARDWARE ? 'fa-camera' : 'fa-barcode';
 
   return (
@@ -37,17 +61,17 @@ const BarcodeScannerFooter = ({
         <ButtonWithIndicator
           captionKey={toggleCaptionKey}
           typeFASIconName={toggleIconName}
-          additionalCssClass="barcode-scanner-footer__btn"
-          onClick={onToggleHardwareCamera}
+          additionalCssClass="barcode-scanner-btn"
+          onClick={() => onModeSelected(toggleTarget)}
           testId="barcode-scanner-toggle-hw-camera"
         />
       )}
       {isBackToScannerShown && (
         <ButtonWithIndicator
-          captionKey="components.BarcodeScannerComponent.backToScanner"
-          typeFASIconName="fa-barcode"
-          additionalCssClass="barcode-scanner-footer__btn"
-          onClick={onBackToScanner}
+          captionKey={BACK_TO_SCANNER_CAPTION_KEY[backToScannerTarget]}
+          typeFASIconName={BACK_TO_SCANNER_ICON[backToScannerTarget]}
+          additionalCssClass="barcode-scanner-btn"
+          onClick={() => onModeSelected(backToScannerTarget)}
           testId="barcode-scanner-back-to-scanner"
         />
       )}
@@ -55,8 +79,8 @@ const BarcodeScannerFooter = ({
         <ButtonWithIndicator
           captionKey="components.BarcodeScannerComponent.enterManually"
           typeFASIconName="fa-keyboard"
-          additionalCssClass="barcode-scanner-footer__btn"
-          onClick={onSelectManual}
+          additionalCssClass="barcode-scanner-btn"
+          onClick={() => onModeSelected(MODE.MANUAL)}
           testId="barcode-scanner-enter-manually"
         />
       )}
@@ -71,9 +95,7 @@ BarcodeScannerFooter.propTypes = {
     camera: PropTypes.bool,
     manual: PropTypes.bool,
   }).isRequired,
-  onSelectManual: PropTypes.func.isRequired,
-  onToggleHardwareCamera: PropTypes.func.isRequired,
-  onBackToScanner: PropTypes.func.isRequired,
+  onModeSelected: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerFooter;

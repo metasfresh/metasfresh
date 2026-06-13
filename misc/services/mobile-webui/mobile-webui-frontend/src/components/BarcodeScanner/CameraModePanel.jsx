@@ -19,6 +19,7 @@ const READER_OPTIONS = {
 const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
   const videoRef = useRef();
   const cameraControlsRef = useRef(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -63,7 +64,7 @@ const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
         videoRef.current.srcObject = null;
       }
     };
-  }, []); // intentional: only restart camera when activeMode changes
+  }, []);
 
   useEffect(
     () => {
@@ -71,8 +72,15 @@ const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
     } /* no deps, call it on each render */
   );
 
-  return !isProcessing && <video key="video" ref={videoRef} width="100%" height="100%" />;
+  // Wrapper is always present so the panel reserves the same vertical slot whether or not the
+  // <video> is currently mounted (during isProcessing). Keeps the footer anchored — no jump.
+  return (
+    <div className="camera-mode-panel">
+      {!isProcessing && <video key="video" ref={videoRef} width="100%" height="100%" />}
+    </div>
+  );
 };
+
 CameraModePanel.propTypes = {
   isProcessing: PropTypes.bool,
   onBarcodeScanned: PropTypes.func.isRequired,
