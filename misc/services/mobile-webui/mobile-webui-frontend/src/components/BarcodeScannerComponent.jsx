@@ -126,6 +126,8 @@ const BarcodeScannerComponent = ({
       {!invisible && activeMode === MODE.MANUAL && (
         <ManualModePanel
           isProcessing={isProcessing}
+          enabledModes={enabledModes}
+          onModeSelected={setActiveMode}
           onBarcodeScanned={({ scannedBarcode, onSuccess, onError }) =>
             validateScannedBarcodeAndForward({
               scannedBarcode,

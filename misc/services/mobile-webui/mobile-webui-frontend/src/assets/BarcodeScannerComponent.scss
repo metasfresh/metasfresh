@@ -7,8 +7,14 @@
 // Imported globally via assets/index.scss; no local scss imports in the panel JSX files.
 
 // ---- Pixel-perfect layout constants ----
-// All three visible panels share these so the footer never moves on mode switch.
-$panel-height: 16rem;
+// Two panel heights — sized to each mode's content so each panel is visually tight, not
+// padded out for inter-mode symmetry. Mode-switch jumps the bottom of the component up/down
+// by the height delta — acceptable; the buttons themselves never move within a given mode.
+//   - HARDWARE / CAMERA: just-fits the pulsing barcode icon + the one-line caption.
+//   - MANUAL: taller, with empty space at the bottom for the mobile virtual keyboard
+//             (input + Submit + back-to-scanner anchor at the TOP, not the bottom).
+$panel-height-scanner: 12rem;   // HARDWARE + CAMERA
+$panel-height-manual:  16rem;   // MANUAL — bottom area reserved for the soft keyboard
 $panel-padding-x: 1rem;   // horizontal margins for all panel content (manual input, submit)
 $btn-gap: 0.5rem;         // vertical gap between stacked buttons (footer + manual submit↔footer)
 // EXACT button height in rem so all panel/footer arithmetic stays single-unit (Sass refuses
@@ -80,13 +86,18 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
     border: none;
   }
 
-  // ---- All three panels: identical fixed height ----
-  // height (not min-height) + overflow: hidden so the footer position is rock-stable
-  // across mode switches (no jumpy buttons when toggling HARDWARE ⇄ CAMERA ⇄ MANUAL).
+  // ---- Panel heights: per-mode, sized to each mode's content ----
+  // Scanner panels (HARDWARE / CAMERA) shrink to just-fits-content; manual panel is taller
+  // so its top-anchored input + buttons leave bottom space for the virtual keyboard.
+  // height (not min-height) + overflow: hidden keeps each panel's own bottom edge stable
+  // across the in-mode :has()/state transitions (icon pulse, video toggle).
   .hardware-mode-panel.scan-prompt,
-  .camera-mode-panel,
+  .camera-mode-panel {
+    height: $panel-height-scanner;
+    overflow: hidden;
+  }
   .manual-mode-panel {
-    height: $panel-height;
+    height: $panel-height-manual;
     overflow: hidden;
   }
 
@@ -118,6 +129,14 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
       font-size: 1.5em;
       text-align: center;
       line-height: 1.3;
+      // One-line caption — never wrap. Wrapping would inflate panel height and push the
+      // footer down on long translations. text-overflow: ellipsis is the graceful-degrade
+      // fallback for an unexpectedly long string on a narrow viewport; current EN/DE
+      // translations ("Scan barcode" / "Barcode scannen") sit well within the 360px width.
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
 
       // Caption swap: .scan-prompt-text-idle shown by default; .scan-prompt-text-progress
       // takes its place while the input has content (see :has() rule below). Same DOM slot,
@@ -212,7 +231,7 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
   .barcode-scanner-footer {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: $btn-gap;
     padding: $footer-padding-y-top $panel-padding-x $footer-padding-y-bottom;
     height: $footer-height;

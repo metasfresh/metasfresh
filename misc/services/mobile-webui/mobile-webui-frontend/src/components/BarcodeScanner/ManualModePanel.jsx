@@ -2,6 +2,20 @@ import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { trl } from '../../utils/translations';
 import ButtonWithIndicator from '../buttons/ButtonWithIndicator';
+import { MODE, PRIORITY } from './useBarcodeScannerModes';
+
+// "Back to scanner" target resolution — moved here from BarcodeScannerFooter because in
+// MANUAL mode the footer is empty (so the keyboard doesn't overlap any actionable button)
+// and this button needs to sit inside the panel, under Submit. HARDWARE wins over CAMERA.
+const SCANNER_MODES = PRIORITY.filter((m) => m === MODE.HARDWARE || m === MODE.CAMERA);
+const BACK_TO_SCANNER_CAPTION_KEY = {
+  [MODE.HARDWARE]: 'components.BarcodeScannerComponent.useHardwareScanner',
+  [MODE.CAMERA]: 'components.BarcodeScannerComponent.scanWithCamera',
+};
+const BACK_TO_SCANNER_ICON = {
+  [MODE.HARDWARE]: 'fa-barcode',
+  [MODE.CAMERA]: 'fa-camera',
+};
 
 /*
  * Focus policy — DELIBERATE NON-DECISION on blur-refocus.
@@ -31,7 +45,10 @@ import ButtonWithIndicator from '../buttons/ButtonWithIndicator';
  * nowhere — not on a dialog/button/toast). Do NOT add a synchronous refocus
  * inside onBlur — see reasons above.
  */
-const ManualModePanel = ({ isProcessing, onBarcodeScanned }) => {
+const ManualModePanel = ({ isProcessing, onBarcodeScanned, enabledModes, onModeSelected }) => {
+  // Resolve the back-to-scanner target: the highest-priority enabled scanner mode
+  // (HARDWARE > CAMERA). Undefined when no scanner mode is enabled → button hidden.
+  const backToScannerTarget = SCANNER_MODES.find((m) => enabledModes?.[m]);
   const manualInputRef = useRef();
   // Tracks whether the most recent submission failed (so the post-submit focus effect can
   // .select() the rejected text for re-edit instead of just .focus()ing an empty field).
@@ -102,20 +119,33 @@ const ManualModePanel = ({ isProcessing, onBarcodeScanned }) => {
       <ButtonWithIndicator
         captionKey="components.BarcodeScannerComponent.manualInputSubmit"
         typeFASIconName="fa-check"
-        // Same class the BarcodeScannerFooter buttons use — keeps Submit pixel-identical to
-        // the footer buttons (min-height 48px, full width via is-fullwidth, same horizontal
-        // padding because the manual panel and the footer both sit at `padding-x: 1rem`).
         additionalCssClass="barcode-scanner-btn"
         disabled={isProcessing}
         onClick={handleManualSubmit}
         testId="manual-entry-submit"
       />
+      {backToScannerTarget && (
+        <ButtonWithIndicator
+          captionKey={BACK_TO_SCANNER_CAPTION_KEY[backToScannerTarget]}
+          typeFASIconName={BACK_TO_SCANNER_ICON[backToScannerTarget]}
+          additionalCssClass="barcode-scanner-btn"
+          disabled={isProcessing}
+          onClick={() => onModeSelected(backToScannerTarget)}
+          testId="barcode-scanner-back-to-scanner"
+        />
+      )}
     </div>
   );
 };
 ManualModePanel.propTypes = {
   isProcessing: PropTypes.bool,
   onBarcodeScanned: PropTypes.func.isRequired,
+  enabledModes: PropTypes.shape({
+    hardware: PropTypes.bool,
+    camera: PropTypes.bool,
+    manual: PropTypes.bool,
+  }).isRequired,
+  onModeSelected: PropTypes.func.isRequired,
 };
 
 export default ManualModePanel;
