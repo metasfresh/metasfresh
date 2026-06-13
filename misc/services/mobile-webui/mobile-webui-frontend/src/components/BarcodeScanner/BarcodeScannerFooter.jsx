@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ButtonWithIndicator from './buttons/ButtonWithIndicator';
-import { MODE } from '../hooks/useBarcodeScannerModes';
+import { MODE } from '../../hooks/useBarcodeScannerModes';
 
-import '../assets/BarcodeScannerFooter.scss';
+import '../../assets/BarcodeScannerFooter.scss';
+import ButtonWithIndicator from '../buttons/ButtonWithIndicator';
 
 const BarcodeScannerFooter = ({
   activeMode,

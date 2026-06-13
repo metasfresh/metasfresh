@@ -6,7 +6,7 @@ const PRIORITY = [MODE.HARDWARE, MODE.CAMERA, MODE.MANUAL];
 export const useBarcodeScannerModes = ({ invisible = false } = {}) => {
   const hardware = useBooleanSetting('barcodeScanner.mode.hardware.enabled', true);
   const camera = useBooleanSetting('barcodeScanner.mode.camera.enabled', true);
-  const manual = useBooleanSetting('barcodeScanner.mode.manual.enabled', false);
+  const manual = useBooleanSetting('barcodeScanner.mode.manual.enabled', true);
   const configuredDefault = useSetting('barcodeScanner.defaultMode');
 
   if (invisible) {
