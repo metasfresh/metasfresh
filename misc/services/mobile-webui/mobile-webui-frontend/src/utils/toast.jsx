@@ -22,7 +22,7 @@ export const toastErrorFromObj = (obj) => {
   }
 };
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context }) => {
+export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context, toastId }) => {
   let code;
   let message;
   if (axiosError) {
@@ -45,6 +45,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     position: 'bottom-center',
     transition: Bounce,
     bodyStyle: { overflow: 'auto' },
+    toastId,
   });
 
   uiTrace.trace({

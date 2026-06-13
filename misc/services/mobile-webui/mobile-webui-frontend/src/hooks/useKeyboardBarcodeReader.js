@@ -1,7 +1,5 @@
 import { useEffect, useRef } from 'react';
-import * as uiTrace from '../utils/ui_trace';
 import { toastError } from '../utils/toast';
-import { trl } from '../utils/translations';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -136,48 +134,21 @@ export const useKeyboardBarcodeReader = ({
 //
 //
 
-// Module-level: report once per page-load when IME-injection mode is detected. Chrome puts
-// the literal string 'Unidentified' on KeyboardEvent.key when text arrives via Android's
-// InputConnection (DataWedge IME route / soft IME commit) instead of as discrete KeyEvents.
-// The window-level keystroke reader CANNOT capture text delivered that way — the commit
-// goes straight to the focused editable input, not as a keyboard event.
-// Reported to both console.warn (DevTools) and uiTrace (backend ui_trace table — visible
-// without attaching DevTools to the device).
-let imeModeReported = false;
-
+// 'Unidentified' on KeyboardEvent.key = text committed via Android InputConnection
+// (DataWedge IME / soft IME) instead of as real KeyEvents. The hook can't capture that path;
+// this codebase supports keystroke-output only — the user must fix the scanner profile.
+// toastError already feeds console + uiTrace; toastId de-dupes the message.
 const warnIMEInjectionMode = ({ event }) => {
-  // IME-injection-mode detection: 'Unidentified' = the scanner / IME committed text via
-  // Android InputConnection, not via real KeyEvents. The hook can't see the actual text
-  // (it lives in the focused <input>'s value, not on the event). This codebase deliberately
-  // supports KEYSTROKE output only — IME-mode delivery is a misconfiguration the user must
-  // fix on the device side (e.g. DataWedge → Keystroke output → Send chars as events: Yes).
-  // We surface this to three sinks with different cadences:
-  //   - toastError on EVERY misconfigured scan (loud user signal, can't be missed)
-  //   - console.warn once per page-load (DevTools — keeps the console scannable)
-  //   - uiTrace.trace once per page-load (backend ui_trace table — diagnosable remotely)
-  if (event.key !== 'Unidentified') {
-    return;
-  }
-
-  // Loud user signal — fires on every misconfigured scan so the user gets repeat exposure
-  // until they fix the device profile. trl() resolves to the user's active language.
-  toastError({ plainMessage: trl('components.BarcodeScannerComponent.imeModeError') });
-
-  if (imeModeReported) {
-    return;
-  }
-  imeModeReported = true;
+  if (event.key !== 'Unidentified') return;
   const inputEl = document.getElementById('input-text');
-  const traceParams = {
-    delivered_via: 'Android InputConnection (DataWedge IME / soft IME) — not as keystrokes',
-    offscreenInputReadOnly: inputEl?.readOnly,
-    offscreenInputInputMode: inputEl?.inputMode,
-    effect: 'IME-routed text never reaches the window-level keystroke reader → scan lost',
-    fix:
-      'switch the scanner profile to Keystroke output (UI events) — e.g. DataWedge → ' +
-      'Keystroke output → Send chars as events: Yes. See ' +
-      'mobile-webui-frontend/CLAUDE.md § Barcode Scanning Modes → Zebra DataWedge.',
-  };
-  console.warn('[scanner] IME-injection mode detected', traceParams);
-  uiTrace.trace({ ...traceParams, eventName: 'scannerImeModeDetected' });
+  toastError({
+    messageKey: 'components.BarcodeScannerComponent.imeModeError',
+    toastId: 'scanner-ime-mode',
+    context: {
+      eventKeyCode: event.keyCode,
+      eventCode: event.code,
+      offscreenInputReadOnly: inputEl?.readOnly,
+      offscreenInputInputMode: inputEl?.inputMode,
+    },
+  });
 };
