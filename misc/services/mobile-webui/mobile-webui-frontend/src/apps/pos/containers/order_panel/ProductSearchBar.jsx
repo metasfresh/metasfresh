@@ -10,8 +10,8 @@ const _ = (key) => trl(`pos.products.searchBar.${key}`);
 const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
   const [isBarcodeScannerDisplayed, setBarcodeScannerDisplayed] = useState(false);
   // Camera scanning is hidden when the device camera is disabled (e.g. handheld hardware-scanner
-  // deployments). Shares the global barcodeScanner.useCamera switch.
-  const isCameraEnabled = useBooleanSetting('barcodeScanner.useCamera', true);
+  // deployments). Shares the global barcodeScanner.mode.camera.enabled switch.
+  const isCameraEnabled = useBooleanSetting('barcodeScanner.mode.camera.enabled', true);
   const queryStringRef = useRef();
 
   useEffect(() => {

@@ -13,6 +13,18 @@ export const useKeyboardBarcodeReader = ({
 
   useEffect(() => {
     const handleKeyDown = async (event) => {
+      // console.log('[scanner] keydown', {
+      //   key: event.key,
+      //   alt: event.altKey,
+      //   ctrl: event.ctrlKey,
+      //   meta: event.metaKey,
+      //   len: event.key?.length,
+      // });
+
+      if (event.key === 'Unidentified') {
+        return;
+      }
+
       //
       // Handle Ctrl+V (or Cmd+V on Mac)
       if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
@@ -21,7 +33,6 @@ export const useKeyboardBarcodeReader = ({
           if (clipboardText?.length < minLength) {
             return;
           }
-          console.log('Pasted text:', clipboardText);
 
           event.preventDefault(); // Prevent default paste behavior
           onReadDone(clipboardText);
