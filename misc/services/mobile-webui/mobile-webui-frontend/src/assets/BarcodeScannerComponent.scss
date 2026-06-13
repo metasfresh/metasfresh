@@ -169,14 +169,19 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
 
   // === ManualModePanel ===
   // Visible editable text field stacked above the submit button. Both are ANCHORED AT THE
-  // BOTTOM of the fixed-height panel so the submit button visually clusters with the footer
-  // buttons below — empty space sits above the input, not below. Horizontal padding matches
-  // .barcode-scanner-footer's so the submit and the back-to-scanner buttons line up exactly.
+  // TOP of the fixed-height panel so the mobile virtual keyboard, which slides up from the
+  // bottom edge of the viewport, does not overlap them. Empty space sits BELOW the submit
+  // button — that empty area is where the keyboard appears on focus. Horizontal padding
+  // matches .barcode-scanner-footer's so the submit and the back-to-scanner button still
+  // line up exactly on the x-axis. (Footer is below the empty space and may be covered by
+  // the keyboard while typing — acceptable: the user is committed to a manual submit at
+  // that moment; mode-switching is a less common action that requires dismissing the
+  // keyboard first.)
   .manual-mode-panel {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 0 $panel-padding-x;
+    justify-content: flex-start;
+    padding: $panel-padding-x $panel-padding-x 0;
     gap: $btn-gap;
 
     .manual-input {
