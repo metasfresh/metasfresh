@@ -1,6 +1,7 @@
 package de.metas.distribution.ddorder.replenishment;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -49,6 +50,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -271,8 +273,8 @@ public class DDOrderPickingReplenishmentService
 	/**
 	 * Reconciles the required per-locator stock-aware split against the assignment's existing live DD_Orders.
 	 *
-	 * <p>Computes the required {@code (source locator -> qty)} allocation from current on-hand stock (greedy by
-	 * {@code M_Locator.Value}), then for each locator:</p>
+	 * <p>Computes the required {@code (source locator -> qty)} allocation from current on-hand stock (greedy, in
+	 * the locator pick order defined by {@link #buildLocatorSortKey}), then for each locator:</p>
 	 * <ul>
 	 *   <li>in BOTH required and existing → <b>update the existing DD_Order line qty in place</b> (no void/recreate);</li>
 	 *   <li>in EXISTING only (no longer contributes) → <b>void</b> that DD_Order (+ unlink back-ref);</li>
@@ -318,7 +320,7 @@ public class DDOrderPickingReplenishmentService
 		// up in #reconcile, so this code path is never reached with a non-positive qty.
 		final Quantity demandQty = jobSchedule.getQtyToPick();
 
-		// Stock-aware split: required (source locator -> qty), greedy by M_Locator.Value, partial coverage allowed.
+		// Stock-aware split: required (source locator -> qty), greedy in the locator pick order, partial coverage allowed.
 		final Map<LocatorId, Quantity> requiredByLocator = computeRequiredAllocation(jobScheduleId, sourceWarehouseId, productId, demandQty);
 
 		// Picker-busy guard: refuse the whole reconcile before mutating anything if any existing DD_Order is busy.
@@ -396,11 +398,11 @@ public class DDOrderPickingReplenishmentService
 	 * Computes the stock-aware per-locator allocation of {@code demandQty}.
 	 *
 	 * <p>Gets the source warehouse's locators, queries Active on-hand per locator via the shared
-	 * {@link ProductAvailableStockPerLocator} helper, keeps the contributing locators (qty &gt; 0) ordered by
-	 * {@code M_Locator.Value} ascending, and greedily allocates the demand across them. Returns an insertion-ordered
-	 * map {@code (source locator -> allocated qty)}. Partial coverage is allowed: if total on-hand &lt; demand, the
-	 * uncovered remainder is logged and left unfulfilled (no fallback default-locator line). Empty map if no locator
-	 * has stock.</p>
+	 * {@link ProductAvailableStockPerLocator} helper, keeps the contributing locators (qty &gt; 0) in the locator
+	 * pick order (see {@link #buildLocatorSortKey}), and greedily allocates the demand across them. Returns an
+	 * insertion-ordered map {@code (source locator -> allocated qty)}. Partial coverage is allowed: if total on-hand
+	 * &lt; demand, the uncovered remainder is logged and left unfulfilled (no fallback default-locator line). Empty
+	 * map if no locator has stock.</p>
 	 *
 	 * <p>The on-hand quantities returned by {@link ProductAvailableStockPerLocator} are in the product's stocking UOM,
 	 * whereas {@code demandQty} is in the assignment's UOM. Each locator's available qty is therefore converted into
@@ -424,7 +426,6 @@ public class DDOrderPickingReplenishmentService
 		final AllocationResult result = greedyAllocate(
 				demandQty,
 				qtyOnHandByLocator,
-				this::getLocatorValue,
 				availableStockingUom -> uomConversionBL.convertQuantityTo(availableStockingUom, conversionCtx, demandQty.getUomId()),
 				(locatorId, availableStockingUom) -> Loggables.addLog(
 						"DD_Order picking replenishment: skipping source M_Locator_ID={0} for M_Product_ID={1}:"
@@ -452,28 +453,28 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Pure greedy allocation of {@code demandQty} across the contributing locators of {@code qtyOnHandByLocator}.
+	 * Greedy allocation of {@code demandQty} across the contributing locators of {@code qtyOnHandByLocator}.
 	 *
-	 * <p>Keeps the positive-on-hand locators ordered by their {@code M_Locator.Value} (ascending, nulls last),
-	 * converts each locator's on-hand qty (in the product stocking UOM) into the demand UOM via {@code convertToDemandUom}
-	 * (a no-op when the UOMs already match), and greedily fills the demand. A locator whose qty cannot be converted
-	 * ({@link NoUOMConversionException}) is skipped (reported via {@code onSkippedLocator}, treated as non-contributing).
-	 * Returns the insertion-ordered allocation and the uncovered remainder. Pure: no DB / service access — the conversion
-	 * and the locator-Value lookup are injected so this can be unit-tested deterministically.</p>
+	 * <p>Orders the positive-on-hand locators in the locator pick order ({@link #buildLocatorSortKey}, via
+	 * {@link #getLocatorSortKey}), converts each locator's on-hand qty (in the product stocking UOM) into the
+	 * demand UOM via {@code convertToDemandUom} (a no-op when the UOMs already match), and greedily fills the
+	 * demand. A locator whose qty cannot be converted ({@link NoUOMConversionException}) is skipped (reported via
+	 * {@code onSkippedLocator}, treated as non-contributing). Returns the insertion-ordered allocation and the
+	 * uncovered remainder. Only the UOM conversion is injected — so a contrived cross-UOM case the real warehouse
+	 * workflow could not produce can be unit-tested deterministically; locator ordering uses the real warehouse data.</p>
 	 */
 	@VisibleForTesting
-	static AllocationResult greedyAllocate(
+	AllocationResult greedyAllocate(
 			@NonNull final Quantity demandQty,
 			@NonNull final Map<LocatorId, Quantity> qtyOnHandByLocator,
-			@NonNull final java.util.function.Function<LocatorId, String> locatorValueResolver,
 			@NonNull final ConvertToDemandUom convertToDemandUom,
 			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
 	{
-		// Contributing locators (positive on-hand) ordered by M_Locator.Value ascending.
+		// Contributing locators (positive on-hand) in the locator pick order.
 		final List<LocatorId> contributingOrdered = qtyOnHandByLocator.entrySet().stream()
 				.filter(e -> e.getValue().signum() > 0)
 				.map(Map.Entry::getKey)
-				.sorted(Comparator.comparing(locatorValueResolver, Comparator.nullsLast(String::compareTo)))
+				.sorted(Comparator.comparing(this::getLocatorSortKey))
 				.collect(ImmutableList.toImmutableList());
 
 		final LinkedHashMap<LocatorId, Quantity> allocation = new LinkedHashMap<>();
@@ -527,10 +528,27 @@ public class DDOrderPickingReplenishmentService
 		@NonNull Quantity uncovered;
 	}
 
-	@Nullable
-	private String getLocatorValue(@NonNull final LocatorId locatorId)
+	private String getLocatorSortKey(@NonNull final LocatorId locatorId)
 	{
-		return warehouseBL.getLocatorById(locatorId).getValue();
+		// org.compiere.model.I_M_Locator (base), not de.metas.handlingunits.model.I_M_Locator (HU-extended)
+		final I_M_Locator loc = warehouseBL.getLocatorById(locatorId);
+		return buildLocatorSortKey(loc.getPriorityNo(), loc.getValue());
+	}
+
+	/**
+	 * Single source of truth for the DD_Order picking-replenishment locator pick order. Builds a composite sort key
+	 * that yields PriorityNo ASC, then Value ASC under plain lexicographic order. To change the pick order, change
+	 * this method only — every caller orders by the key it returns and does not restate the order itself.
+	 *
+	 * <p>The key format is {@code zeroPad(priorityNo, 10) + "|" + value}. The pad width 10 matches
+	 * {@code M_Locator.PriorityNo numeric(10,0)}. Both inputs are NOT NULL in production
+	 * ({@code M_Locator.Value} NOT NULL; {@code PriorityNo numeric(10,0) NOT NULL DEFAULT 50}).
+	 * Non-negative PriorityNo values are assumed (negative values would sort incorrectly as strings).</p>
+	 */
+	@VisibleForTesting
+	static String buildLocatorSortKey(final int priorityNo, @NonNull final String value)
+	{
+		return Strings.padStart(Integer.toString(priorityNo), 10, '0') + "|" + value;
 	}
 
 	/**
