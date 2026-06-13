@@ -143,8 +143,6 @@ LoginMethodPanel.propTypes = {
 //
 
 const SelectAuthMethodView = ({ availableAuthMethods, onSetAuthMethodClicked }) => {
-  if (!availableAuthMethods) return null;
-
   return (
     <div className="pt-3 section">
       {availableAuthMethods.map((method) => (

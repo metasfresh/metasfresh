@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
-import { toastError } from '../../utils/toast';
+import { toastError, extractUserFriendlyErrorMessageFromAxiosError } from '../../utils/toast';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 const UserAndPassAuth = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginPending, setLoginPending] = useState(false);
+  const [networkErrorMessage, setNetworkErrorMessage] = useState(null);
 
   const history = useMobileNavigation();
   const auth = useAuth();
@@ -16,13 +17,19 @@ const UserAndPassAuth = () => {
   const submitForm = (e) => {
     e.preventDefault();
 
+    setNetworkErrorMessage(null);
     setLoginPending(true);
     auth
       .login(username, password)
       .then(() => history.goToFromLocation())
       .catch((axiosError) => {
         setLoginPending(false);
-        toastError({ axiosError });
+        const isNetworkFailure = !axiosError?.response;
+        if (isNetworkFailure) {
+          setNetworkErrorMessage(extractUserFriendlyErrorMessageFromAxiosError({ axiosError }));
+        } else {
+          toastError({ axiosError });
+        }
       });
     // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
   };
@@ -78,6 +85,7 @@ const UserAndPassAuth = () => {
             </button>
           </div>
         </div>
+        {networkErrorMessage && <p className="help is-danger">{networkErrorMessage}</p>}
       </form>
     </div>
   );
