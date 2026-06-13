@@ -39,7 +39,6 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.location.adapter.OLCandDocumentLocationAdapterFactory;
-import de.metas.util.Services;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.NullOLCandListener;
 import de.metas.product.ProductId;
@@ -57,7 +56,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
@@ -100,8 +98,7 @@ class OLCandOrderFactoryTest
 				IOLCandBL.class,
 				new OLCandBL(
 						bpartnerBL,
-						BPartnerOrderParamsRepository.newInstanceForUnitTesting(),
-						Services.get(IWarehouseDAO.class)
+						BPartnerOrderParamsRepository.newInstanceForUnitTesting()
 				)
 		);
 
