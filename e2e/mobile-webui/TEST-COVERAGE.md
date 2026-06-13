@@ -7,8 +7,8 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 6 | 9 | 67% |
-| Picking | 56 | 60 | 93% |
+| Barcode Scanner Modes | 7 | 12 | 58% |
+| Picking | 58 | 62 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -68,8 +68,11 @@
 | ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
 | ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
 | ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
+| Footer — hardware/camera toggle: renders only when both hw + camera enabled; clicking toggle switches to camera mode and renders `<video>` (feed validation requires physical hardware) | `barcode_scanner_modes.spec.js` |
+| ❌ Footer — "Enter manually": shows only when manual mode enabled and activeMode ≠ MANUAL; clicking sets activeMode to MANUAL | — |
+| ❌ Footer — "Back to scanner": shows when activeMode=MANUAL and at least one of hw/camera enabled; clicking returns to HARDWARE (or CAMERA if only camera enabled) | — |
 
-**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
+**5/10 — 50%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis`, `triggerOnChangeIfLengthGreaterThan`, and two footer buttons not yet covered)
 
 ---
 

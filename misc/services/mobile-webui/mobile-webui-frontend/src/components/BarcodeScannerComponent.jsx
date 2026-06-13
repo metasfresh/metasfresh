@@ -1,181 +1,42 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
-import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
+import React, { useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
-import { trl } from '../utils/translations';
-import { useBooleanSetting, useNumber, usePositiveNumberSetting } from '../reducers/settings';
-import { debounce } from 'lodash';
+import { useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
-import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
-import { isMobileOrTablet } from '../utils/browser';
+import { MODE, useBarcodeScannerModes } from './BarcodeScanner/useBarcodeScannerModes';
+import ManualModePanel from './BarcodeScanner/ManualModePanel';
+import CameraModePanel from './BarcodeScanner/CameraModePanel';
+import HardwareModePanel from './BarcodeScanner/HardwareModePanel';
+import BarcodeScannerFooter from './BarcodeScanner/BarcodeScannerFooter';
 
-const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
-  BarcodeFormat.QR_CODE,
-  BarcodeFormat.CODE_128,
-  BarcodeFormat.ITF,
-]);
-
-const READER_OPTIONS = {
-  delayBetweenScanSuccess: 2000,
-  delayBetweenScanAttempts: 600,
-};
-
-const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRunningParam } = {}) => {
-  const isShowInputText =
-    isShowInputTextParam != null ? isShowInputTextParam : useBooleanSetting('barcodeScanner.showInputText');
-
-  // Two orthogonal keyboard-suppression knobs feed the scan <input>. They are named after their
-  // mechanism (not their UX effect) so the two cannot be confused:
-  //   • isInputModeNone  → sets `inputMode="none"` (a HINT — soft. Honoured by recent Chrome/Android,
-  //                       ignored by some firmware, e.g. Honeywell CT60 / Android 11).
-  //   • isReadOnlyAttrSet   → sets the HTML `readOnly` attribute (a HARD GUARANTEE — the browser never
-  //                       opens the soft keyboard on a readOnly input, AND manual typing is blocked).
-  // Per the scanner-framework design (https://github.com/metasfresh/me03/issues/29246), readOnly is
-  // controlled by per-mode knobs (`offscreenInput.readOnly` vs `visibleInput.readOnly`) so the two
-  // modes tune independently. Defaults OFF in both modes ⇒ byte-for-byte today's behaviour.
-  // DataWedge IME deployments MUST keep BOTH off — readOnly kills the InputConnection. Enabling
-  // visibleInput.readOnly also BLOCKS manual typing (Mode C3) — intentional opt-in for
-  // hardware-scanner-only deployments where the visible input must stay on screen (e.g. /huManager,
-  // whose only content is the scan field — hiding it leaves the screen blank).
-  const isInputModeNone = isShowInputText
-    ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
-    : true;
-  const isOffscreenInputReadOnly = useBooleanSetting('barcodeScanner.offscreenInput.readOnly', false);
-  const isVisibleInputReadOnly = useBooleanSetting('barcodeScanner.visibleInput.readOnly', false);
-  const isReadOnlyAttrSet = isShowInputText ? isVisibleInputReadOnly : isOffscreenInputReadOnly;
-
-  const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
-
-  const continuousRunning = continuousRunningParam != null ? continuousRunningParam : true;
-
-  return {
-    okBeepParams: {
-      name: 'OK',
-      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
-      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
-      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
-      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
-    },
-    errorBeepParams: {
-      name: 'error',
-      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
-      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
-      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
-      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
-    },
-    isShowInputText,
-    isInputModeNone,
-    isReadOnlyAttrSet,
-    triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
-      'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
-      0
-    ),
-    textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
-    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
-    isShowVideo,
-    continuousRunning,
-  };
-};
+const TOAST_ID = 'BarcodeScannerComponentError';
 
 const BarcodeScannerComponent = ({
   testId,
-  isShowInputText: isShowInputTextParam,
-  isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
-  continuousRunning: continuousRunningParam,
+  invisible,
 }) => {
-  const {
-    okBeepParams,
-    errorBeepParams,
-    isShowInputText,
-    isInputModeNone,
-    isReadOnlyAttrSet,
-    triggerOnChangeIfLengthGreaterThan,
-    textChangedDebounceMillis,
-    scanDuplicatesIntervalMillis,
-    isShowVideo,
-    continuousRunning,
-  } = useConfigParams({ isShowInputTextParam, isShowVideoParam, continuousRunningParam });
-  const isComponentHidden = !isShowInputText && !isShowVideo;
-  const isComponentHiddenByParam = isShowInputTextParam === false && isShowVideoParam === false;
+  const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
+    invisible,
+  });
 
-  const inputTextRef = useRef();
+  const [activeMode, setActiveMode] = useState(defaultMode);
+
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
-  //
-  // Video
-  const mountedRef = useRef(true);
-  const videoRef = useRef();
-  useEffect(() => {
-    mountedRef.current = true;
-
-    if (isShowVideo) {
-      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-        if (mountedRef.current === false) {
-          controls.stop();
-        } else if (typeof result !== 'undefined') {
-          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-        }
-      });
+  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, onStart, onSuccess, onError, onFinally }) => {
+    if (!scannedBarcode?.trim()) {
+      uiTrace.traceLogWarn('Ignoring blank barcode', { scannedBarcode });
+      return;
     }
 
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [isShowVideo]);
-
-  useEffect(() => {
-    return () => handleInputTextChangedDebounced.cancel();
-  });
-
-  useEffect(
-    () => {
-      if (isShowVideo) {
-        videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
-      }
-      if (!isInputModeNone) {
-        inputTextRef?.current?.focus();
-      }
-    } /* no deps, call it on each render */
-  );
-
-  // DataWedge IME needs a focused editable input to establish InputConnection.
-  // Focus once on mount; the window-level hook handles all subsequent scan events.
-  useEffect(() => {
-    if (isInputModeNone) {
-      inputTextRef?.current?.focus();
-    }
-  }, []);
-
-  useKeyboardBarcodeReader({
-    onReadDone: (barcode) => {
-      // console.log('onReadDone', barcode);
-      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = '';
-      }
-    },
-    onReadInProgress: (barcode) => {
-      // console.log('onReadInProgress', barcode);
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = barcode;
-      }
-    },
-    rateMs: textChangedDebounceMillis,
-    minLength: triggerOnChangeIfLengthGreaterThan,
-    disabled: isProcessing,
-  });
-
-  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
-    inputTextRef?.current?.select();
+    onStart?.();
 
     const scanningStatus = scanningStatusRef.current;
     if (scanningStatus.running || scanningStatus.done) {
@@ -211,177 +72,133 @@ const BarcodeScannerComponent = ({
       console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
-        toastError({ plainMessage: resolvedResult.error });
+        toastError({ plainMessage: resolvedResult.error, toastId: TOAST_ID });
         beep(errorBeepParams);
         scanningStatus.done = false; // not done yet
+        onError?.();
       } else {
         await onResolvedResult(resolvedResult);
-
-        if (!continuousRunning) {
-          scanningStatus.done = true;
-          controls?.stop();
-        }
-
         beep(okBeepParams);
+        onSuccess?.();
       }
     } catch (error) {
       beep(errorBeepParams);
-      toastErrorFromObj(error);
+      toastErrorFromObj(error, TOAST_ID);
+      onError?.();
     } finally {
       scanningStatus.running = false;
       setProcessing(false);
 
-      if (inputTextRef?.current) {
-        inputTextRef.current.value = '';
-      }
+      onFinally?.();
     }
   };
   const validateScannedBarcodeAndForward = uiTrace.traceFunction(
     validateScannedBarcodeAndForward0,
-    ({ scannedBarcode }) => ({
+    ({ scannedBarcode, traceParams }) => ({
+      ...traceParams,
       eventName: 'barcodeScanned',
       scannedBarcode,
-      isShowInputText,
-      isInputModeNone,
-      isReadOnlyAttrSet,
-      triggerOnChangeIfLengthGreaterThan,
-      textChangedDebounceMillis,
+      activeMode,
       scanDuplicatesIntervalMillis,
     })
   );
 
-  const handleInputTextChanged = (e) => {
-    const scannedBarcode = e.target.value;
-
-    if (
-      scannedBarcode &&
-      triggerOnChangeIfLengthGreaterThan &&
-      triggerOnChangeIfLengthGreaterThan > 0 &&
-      scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
-    ) {
-      validateScannedBarcodeAndForward({ scannedBarcode });
-    }
-  };
-  const handleInputTextChangedDebounced = useMemo(() => {
-    return debounce(handleInputTextChanged, textChangedDebounceMillis);
-  }, [textChangedDebounceMillis]);
-
-  const handleInputTextKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      const scannedBarcode = e.target.value;
-
-      validateScannedBarcodeAndForward({ scannedBarcode });
-    }
-  };
-
-  const handleInputTextFocus = () => {
-    inputTextRef?.current?.select();
-  };
-
-  const handleInputTextBlur = () => {
-    setTimeout(() => {
-      inputTextRef?.current?.focus();
-    }, 2000);
-  };
-
   return (
     <div className="barcode-scanner">
-      {isProcessing && <Spinner />}
-      {/* Scan prompt — visible on hardware-scanner deployments (no camera) when the input is
-          OFF-SCREEN (the actual empty-screen case: the only thing the component otherwise renders
-          is the invisible off-screen input). When the input is on-screen (isShowInputText=Y) the
-          input itself is the visual anchor — no big prompt needed. Reuses inputPlaceholderText so
-          a caller can override the default caption (e.g. HUScanner's locator-scan branch passes
-          'Scan LU or locator…'); when the caller passes none, the default scanPrompt translation
-          is used. See https://github.com/metasfresh/me03/issues/30363. */}
-      {!isProcessing && isComponentHidden && !isComponentHiddenByParam && (
-        <div className="scan-prompt">
-          <i className="fas fa-barcode scan-prompt-icon" aria-hidden="true" />
-          {/* Caption swap — idle text by default, "Scanning in progress…" while the input
-              has content (mid-burst). CSS-only via :has() — see BarcodeScannerComponent.scss. */}
-          <div className="scan-prompt-text">
-            <span className="scan-prompt-text-idle">
-              {inputPlaceholderText || trl('components.BarcodeScannerComponent.scanPrompt')}
-            </span>
-            <span className="scan-prompt-text-progress">
-              {trl('components.BarcodeScannerComponent.scanInProgress')}
-            </span>
-          </div>
-        </div>
-      )}
-      {/* IMPORTANT: Always use type="text" — never type="hidden".
-          When isShowInputText=false, the input is visually hidden via CSS (input-text-offscreen)
-          instead of type="hidden". This is critical for Zebra MC3300x DataWedge IME mode:
-          type="hidden" inputs cannot receive focus, so Android InputConnection is never established
-          and DataWedge text injection silently fails. CSS hiding keeps the input focusable and
-          IME-compatible while remaining invisible to the user.
-          (https://github.com/metasfresh/me03/issues/28834) */}
-      {/* NOTE: Input is rendered BEFORE video to avoid Android 11 WebView SurfaceView
-          compositing issue where the native video layer covers CSS-overlaid content.
-          (https://github.com/metasfresh/me03/issues/28964) */}
-      {/* ⚠️ HARDWARE CONTRACT — TWO device classes; each has its own #input-text attribute combo.
-          Any edit to type / inputMode / readOnly / the focus useEffects MUST preserve BOTH.
-
-                                  │ DataWedge IME             │ Keystroke-wedge
-                                  │ (e.g. Zebra MC3300x)      │ (e.g. Honeywell CT60 / Android 11)
-          ────────────────────────┼───────────────────────────┼──────────────────────────────────────
-          type                    │ "text"                    │ "text"
-          inputMode               │ "none"                    │ "none" (ignored on Android 11)
-          readOnly                │ ABSENT (else kills the    │ PRESENT (load-bearing keyboard
-                                  │ InputConnection — text    │ suppression — Android 11 ignores
-                                  │ injection silently fails) │ inputMode="none")
-          Focus useEffects        │ Establish the IME         │ N/A — keystroke hook listens on document
-          ────────────────────────┼───────────────────────────┼──────────────────────────────────────
-          Sysconfig — off-screen  │ offscreenInput.readOnly=N │ offscreenInput.readOnly=Y
-          Sysconfig — visible     │ visibleInput.readOnly=N   │ visibleInput.readOnly=Y (when visible)
-
-          The `readOnly` attribute is per-mode (offscreenInput vs visibleInput) and driven by
-          sysconfigs per the framework design (https://github.com/metasfresh/me03/issues/29246).
-          DataWedge IME requires readOnly ABSENT or InputConnection breaks
-          (https://github.com/metasfresh/me03/issues/28834). Keystroke-wedge devices that ignore
-          inputMode="none" require readOnly PRESENT — first deployed for Honeywell CT60 /
-          Android 11.
-
-          Regression guards (BOTH must stay green — `e2e/mobile-webui/tests/spec/barcode_scanner_modes.spec.js`):
-            • DataWedge IME:        "#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden"
-            • CT60 keystroke-wedge: "Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no camera"
-
-          Do NOT relax either test to make a change land. A red test means the CODE broke a
-          contract — fix the code, not the test. Any change here MUST be re-validated on physical
-          hardware for BOTH device classes (e2e/mobile-webui/CLAUDE.md → "Manual Hardware Test Rule"). */}
-      {!isProcessing && (
-        <input
-          id="input-text"
-          key="input-text"
-          ref={inputTextRef}
-          className={`input-text${isShowInputText ? '' : ' input-text-offscreen'}`}
-          type="text"
-          placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          inputMode={isInputModeNone ? 'none' : undefined}
-          readOnly={isReadOnlyAttrSet}
-          onFocus={handleInputTextFocus}
-          onBlur={handleInputTextBlur}
-          onChange={handleInputTextChangedDebounced}
-          onKeyUp={handleInputTextKeyPress}
-          data-testid={testId ?? 'qrCode-input'}
+      {!invisible && isProcessing && <Spinner />}
+      {/* HardwareModePanel is rendered in EVERY visible mode:
+            HARDWARE → full scan-prompt UI + off-screen <input>
+            MANUAL / CAMERA → invisible mode: off-screen <input> only, no visible chrome
+          Two reasons:
+            (1) keeps `#input-text` mounted across mode switches so DataWedge IME
+                InputConnection survives — matches the E2E contract
+                (barcode_scanner_modes.spec.js — `expectAttached({})` in MANUAL mode).
+            (2) keeps the window-level useKeyboardBarcodeReader hook attached during
+                CAMERA mode (workplaces with a plugged scanner can still scan into the
+                camera view). The hook is `disabled` in MANUAL mode so keystrokes go
+                straight to the visible manual input. */}
+      <HardwareModePanel
+        inputPlaceholderText={inputPlaceholderText}
+        invisible={invisible || activeMode !== MODE.HARDWARE}
+        isProcessing={isProcessing}
+        disabled={isProcessing || activeMode === MODE.MANUAL}
+        onBarcodeScanned={validateScannedBarcodeAndForward}
+        testId={testId}
+      />
+      {!invisible && activeMode === MODE.MANUAL && (
+        <ManualModePanel
+          isProcessing={isProcessing}
+          enabledModes={enabledModes}
+          onModeSelected={setActiveMode}
+          onBarcodeScanned={({ scannedBarcode, onSuccess, onError }) =>
+            validateScannedBarcodeAndForward({
+              scannedBarcode,
+              onSuccess: () => {
+                onSuccess?.();
+                setActiveMode(defaultMode);
+              },
+              onError,
+            })
+          }
         />
       )}
-      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      {!invisible && activeMode === MODE.CAMERA && (
+        <CameraModePanel
+          isProcessing={isProcessing}
+          onBarcodeScanned={validateScannedBarcodeAndForward}
+          onCancel={() => setActiveMode(defaultMode)}
+        />
+      )}
+      {!invisible && (
+        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={setActiveMode} />
+      )}
     </div>
   );
 };
 
 BarcodeScannerComponent.propTypes = {
   testId: PropTypes.string,
-  isShowInputText: PropTypes.bool,
-  isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
   inputPlaceholderText: PropTypes.string,
-  continuousRunning: PropTypes.bool,
   onResolvedResult: PropTypes.func.isRequired,
+  invisible: PropTypes.bool,
+};
+
+BarcodeScannerComponent.defaultProps = {
+  invisible: false,
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+const useConfigParams = ({ invisible }) => {
+  const { enabledModes, defaultMode } = useBarcodeScannerModes({ invisible });
+
+  return {
+    enabledModes,
+    defaultMode,
+    okBeepParams: {
+      name: 'OK',
+      beepFrequency: useNumber('barcodeScanner.onSuccess.beep.frequency', 1000),
+      beepVolume: useNumber('barcodeScanner.onSuccess.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onSuccess.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onSuccess.vibrate.durationMillis', 100),
+    },
+    errorBeepParams: {
+      name: 'error',
+      beepFrequency: useNumber('barcodeScanner.onError.beep.frequency', 100),
+      beepVolume: useNumber('barcodeScanner.onError.beep.volume', 0.1),
+      beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
+      vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
+    },
+    scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
+  };
+};
 
 //
 //
