@@ -240,8 +240,12 @@ test.describe('Scan paths', () => {
         await HUManagerScreen.waitForScreen();
 
         // Regression guard: in manual mode (defaultMode=manual), the visible editable input
-        // must NOT have an inputmode attribute (virtual keyboard suppression must be disabled).
-        await BarcodeScannerComponent.expectAttributes({ inputmode: null });
+        // ([data-testid="manual-entry-input"]) must be present and NOT readOnly — the user must
+        // be able to type into it (virtual keyboard suppression must be disabled on that field).
+        // NOTE: #input-text (off-screen hardware input) always has inputmode="none" in every mode
+        // (DataWedge IME suppression) — do NOT assert inputmode absence on that element here.
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
 
         // fill + Enter exercises the manual-typing path: onKeyUp → handleInputTextKeyPress →
         // validateScannedBarcodeAndForward. BarcodeScannerComponent.typeManually() encapsulates
