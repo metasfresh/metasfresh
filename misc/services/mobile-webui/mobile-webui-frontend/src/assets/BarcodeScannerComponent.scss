@@ -35,6 +35,9 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
 
 .barcode-scanner {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 
   // Shared button class — applied to every clickable in the scanner (footer toggle,
   // footer back-to-scanner, footer enter-manually, manual Submit). All use ButtonWithIndicator
@@ -89,11 +92,12 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
   }
 
   // ---- Panel heights: per-mode, sized to each mode's content ----
-  // Scanner panels (HARDWARE / CAMERA) shrink to just-fits-content; manual panel is taller
-  // so its top-anchored input + buttons leave bottom space for the virtual keyboard.
-  // height (not min-height) + overflow: hidden keeps each panel's own bottom edge stable
-  // across the in-mode :has()/state transitions (icon pulse, video toggle).
-  .hardware-mode-panel.scan-prompt,
+  // Hardware panel uses min-height so the caption stays visible when font-rendering / line-height
+  // (mobile Android, custom font-scale) makes the icon's box taller than expected. Camera and
+  // manual panels stay fixed-height because their content has a defined slot (video, input+buttons).
+  .hardware-mode-panel.scan-prompt {
+    min-height: $panel-height-scanner;
+  }
   .camera-mode-panel {
     height: $panel-height-scanner;
     overflow: hidden;
@@ -111,7 +115,7 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem $panel-padding-x 1rem;
+    //padding: 2rem $panel-padding-x 1rem;
     color: $grey;
 
     .scan-prompt-icon {
@@ -267,16 +271,6 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
       font-size: 1em;
     }
   }
-}
-
-// Root flex layout — applies whenever the camera <video> is NOT mounted. Overlaying input
-// with position:absolute + z-index does not work reliably on Android 11 WebView due to
-// SurfaceView video compositing (the native video layer ignores CSS z-index and covers
-// overlaid HTML content), so we keep normal-flow stacking when there's a video and switch
-// to flex-column when not.
-.barcode-scanner:not(:has(video)) {
-  display: flex;
-  flex-direction: column;
 }
 
 @keyframes scan-prompt-pulse {

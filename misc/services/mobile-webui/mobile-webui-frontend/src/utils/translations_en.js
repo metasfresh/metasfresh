@@ -57,6 +57,7 @@ const translations = {
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',
+    qrLoginPlaceholder: 'QR Login',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Password',

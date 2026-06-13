@@ -31,12 +31,8 @@
     padding-top: 0;
     padding-bottom: 0;
 
-    .barcode-scanner {
+    .barcode-scanner video {
       max-height: 50vh;
-
-      video {
-        max-height: 50vh;
-      }
     }
   }
 }

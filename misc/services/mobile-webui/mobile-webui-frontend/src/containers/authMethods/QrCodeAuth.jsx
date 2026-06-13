@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import { toastError } from '../../utils/toast';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
+import { trl } from '../../utils/translations';
 
 const QrCodeAuth = () => {
   const history = useMobileNavigation();
@@ -19,7 +20,7 @@ const QrCodeAuth = () => {
 
   return (
     <div id="qr-code-auth" className="section is-size-5 qr-code-auth">
-      <BarcodeScannerComponent onResolvedResult={performLogin} />
+      <BarcodeScannerComponent onResolvedResult={performLogin} inputPlaceholderText={trl('login.qrLoginPlaceholder')} />
     </div>
   );
 };
