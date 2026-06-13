@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import * as uiTrace from '../utils/ui_trace';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -13,6 +14,20 @@ export const useKeyboardBarcodeReader = ({
 
   useEffect(() => {
     const handleKeyDown = async (event) => {
+      // console.log('[scanner] keydown', {
+      //   key: event.key,
+      //   alt: event.altKey,
+      //   ctrl: event.ctrlKey,
+      //   meta: event.metaKey,
+      //   len: event.key?.length,
+      // });
+
+      warnIMEInjectionMode({ event });
+
+      if (event.key === 'Unidentified') {
+        return;
+      }
+
       //
       // Handle Ctrl+V (or Cmd+V on Mac)
       if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
@@ -111,4 +126,50 @@ export const useKeyboardBarcodeReader = ({
       console.log('Disabled keyboard barcode reader');
     };
   }, [onReadDone, onReadInProgress, rateMs, minLength, disabled]);
+};
+
+//
+//
+//
+//
+//
+
+// Module-level: report once per page-load when IME-injection mode is detected. Chrome puts
+// the literal string 'Unidentified' on KeyboardEvent.key when text arrives via Android's
+// InputConnection (DataWedge IME route / soft IME commit) instead of as discrete KeyEvents.
+// The window-level keystroke reader CANNOT capture text delivered that way — the commit
+// goes straight to the focused editable input, not as a keyboard event.
+// Reported to both console.warn (DevTools) and uiTrace (backend ui_trace table — visible
+// without attaching DevTools to the device).
+let imeModeReported = false;
+
+const warnIMEInjectionMode = ({ event }) => {
+  // IME-injection-mode detection: 'Unidentified' = the scanner / IME committed text via
+  // Android InputConnection, not via real KeyEvents. The hook can't see the actual text
+  // (it lives in the focused <input>'s value, not on the event). Warn once with concrete
+  // remediation pointing to either the device-side scanner profile or the readOnly knob.
+  if (event.key !== 'Unidentified') {
+    return;
+  }
+  if (imeModeReported) {
+    return;
+  }
+
+  imeModeReported = true;
+  const inputEl = document.getElementById('input-text');
+  const traceParams = {
+    delivered_via: 'Android InputConnection (DataWedge IME / soft IME) — not as keystrokes',
+    offscreenInputReadOnly: inputEl?.readOnly,
+    offscreenInputInputMode: inputEl?.inputMode,
+    effect: inputEl?.readOnly
+      ? 'readOnly=true silently blocks the IME commit → scans are lost in this mode'
+      : 'readOnly=false → input should accept the commit; check focus if scans still drop',
+    fix:
+      'switch the scanner profile to Keystroke output (UI events) — e.g. DataWedge → ' +
+      'Keystroke output → Inject via UI events — OR set ' +
+      'mobileui.frontend.barcodeScanner.mode.hardware.input.readOnly=N (note: re-enables ' +
+      'the soft keyboard on Android-11 keystroke-wedge devices like Honeywell CT60).',
+  };
+  console.warn('[scanner] IME-injection mode detected', traceParams);
+  uiTrace.trace({ ...traceParams, eventName: 'scannerImeModeDetected' });
 };

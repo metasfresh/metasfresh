@@ -94,6 +94,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
 
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
+      // console.log('onReadDone', barcode);
       // Clear the input BEFORE calling onBarcodeScanned.
       // onBarcodeScanned triggers setProcessing(true) in the parent, which in React 17 legacy
       // mode (outside a React event handler) re-renders synchronously and unmounts the input
@@ -106,6 +107,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
       onBarcodeScanned({ scannedBarcode: barcode, traceParams });
     },
     onReadInProgress: (barcode) => {
+      // console.log('onReadInProgress', barcode);
       if (inputTextRef?.current) {
         inputTextRef.current.value = barcode;
       }

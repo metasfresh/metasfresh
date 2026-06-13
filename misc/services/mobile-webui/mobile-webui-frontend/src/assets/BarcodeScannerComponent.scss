@@ -22,9 +22,11 @@ $btn-gap: 0.5rem;         // vertical gap between stacked buttons (footer + manu
 // gloved-hand warehouse use and guarantees pixel-identical buttons across panels.
 $btn-height: 3rem;
 
-// Maximum buttons the footer can show in any mode (HARDWARE/CAMERA: toggle + enter-manually;
-// MANUAL: just back-to-scanner). We reserve the max-slot height ALWAYS so the footer height
-// is identical across mode switches — no jumpy buttons when going HARDWARE ⇄ MANUAL etc.
+// Maximum buttons the footer can show in HARDWARE/CAMERA (toggle + enter-manually). In
+// MANUAL the footer renders null entirely (the back-to-scanner button lives inside
+// ManualModePanel — see BarcodeScannerFooter.jsx). We still reserve the max-slot height in
+// HARDWARE/CAMERA so toggling between those two modes (1 button each ↔ 2 buttons depending
+// on which other mode is enabled) does not jump the footer.
 $footer-button-slots: 2;
 $footer-padding-y-top: $btn-gap;
 $footer-padding-y-bottom: 1rem;
@@ -216,18 +218,17 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
   }
 
   // === BarcodeScannerFooter ===
-  // Vertical button stack. Same horizontal padding as .manual-mode-panel so the manual
-  // Submit (which sits at the bottom of the manual panel) and the footer's first button
-  // line up perfectly on the x-axis. Top padding = $btn-gap so the visual rhythm between
-  // manual Submit ↔ footer button matches the rhythm between footer buttons themselves.
+  // Vertical button stack, rendered ONLY in HARDWARE / CAMERA (in MANUAL the footer returns
+  // null — see BarcodeScannerFooter.jsx). Same horizontal padding as .manual-mode-panel so
+  // a future inter-mode visual continuity check (HARDWARE footer ↔ MANUAL panel buttons)
+  // keeps button x-positions consistent.
   //
   // FIXED height — reserves space for $footer-button-slots buttons regardless of how many
-  // are actually rendered. Without this, switching HARDWARE/CAMERA (2 buttons) ⇄ MANUAL
-  // (1 button) would change footer height by ~56px and the whole bottom of the scanner
-  // would jump. With it, the footer occupies the same vertical slot in every mode; modes
-  // with fewer buttons simply have empty space below them.
-  // `justify-content: flex-end` anchors the visible buttons to the BOTTOM of the reserved
-  // area so the bottom edge of the scanner stays put across mode switches.
+  // are actually shown in the current scanner mode. Without it, e.g. HARDWARE with one mode
+  // enabled (toggle hidden, only enter-manually) vs HARDWARE with both enabled (toggle +
+  // enter-manually) would change footer height and jump the bottom of the component.
+  // `justify-content: flex-start` stacks the visible buttons at the top of the reserved
+  // area; modes with fewer buttons leave empty space below them.
   .barcode-scanner-footer {
     display: flex;
     flex-direction: column;
