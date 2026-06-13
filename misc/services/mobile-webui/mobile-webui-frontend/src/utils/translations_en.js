@@ -57,7 +57,9 @@ const translations = {
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',
-    qrLoginPlaceholder: 'QR Login',
+    qrLoginPlaceholder: 'Scan your login QR code',
+    username: 'Username',
+    password: 'Password',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Password',
@@ -89,8 +91,6 @@ const translations = {
       manualInputPlaceholder: 'Enter barcode...',
       manualInputSubmit: 'Submit',
       cameraError: 'Camera could not be started. Please check camera permissions.',
-      imeModeError:
-        'Barcode scanner is misconfigured (IME injection detected). Reconfigure DataWedge keystroke output or contact support.',
     },
   },
   activities: {

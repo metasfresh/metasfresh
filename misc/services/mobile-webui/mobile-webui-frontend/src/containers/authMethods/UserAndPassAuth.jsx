@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
-import { toastError, extractUserFriendlyErrorMessageFromAxiosError } from '../../utils/toast';
+import { toastError } from '../../utils/toast';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 const UserAndPassAuth = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginPending, setLoginPending] = useState(false);
-  const [networkErrorMessage, setNetworkErrorMessage] = useState(null);
 
   const history = useMobileNavigation();
   const auth = useAuth();
@@ -17,19 +16,13 @@ const UserAndPassAuth = () => {
   const submitForm = (e) => {
     e.preventDefault();
 
-    setNetworkErrorMessage(null);
     setLoginPending(true);
     auth
       .login(username, password)
       .then(() => history.goToFromLocation())
       .catch((axiosError) => {
         setLoginPending(false);
-        const isNetworkFailure = !axiosError?.response;
-        if (isNetworkFailure) {
-          setNetworkErrorMessage(extractUserFriendlyErrorMessageFromAxiosError({ axiosError }));
-        } else {
-          toastError({ axiosError });
-        }
+        toastError({ axiosError });
       });
     // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
   };
@@ -51,6 +44,8 @@ const UserAndPassAuth = () => {
               name="username"
               value={username}
               autoComplete="username"
+              aria-label={trl('login.username')}
+              placeholder={trl('login.username')}
               ref={usernameFieldRef}
               disabled={loginPending}
               onInput={(e) => setUsername(e.target.value)}
@@ -69,6 +64,8 @@ const UserAndPassAuth = () => {
               name="password"
               value={password}
               autoComplete="current-password"
+              aria-label={trl('login.password')}
+              placeholder={trl('login.password')}
               disabled={loginPending}
               onInput={(e) => setPassword(e.target.value)}
             />
@@ -85,7 +82,6 @@ const UserAndPassAuth = () => {
             </button>
           </div>
         </div>
-        {networkErrorMessage && <p className="help is-danger">{networkErrorMessage}</p>}
       </form>
     </div>
   );

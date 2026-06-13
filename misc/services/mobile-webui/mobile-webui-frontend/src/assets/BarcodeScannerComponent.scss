@@ -161,7 +161,11 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
   // the input falls back to placeholder-shown ⇒ icon returns to the idle green/slow pulse.
   .hardware-mode-panel.scan-prompt:has(.input-text:not(:placeholder-shown)) {
     .scan-prompt-icon {
-      color: $indicator-yellow;
+      // Darker amber — $indicator-yellow (#ffd500) on white is 1.42:1, fails WCAG AA and
+      // is effectively invisible on a white scanner background. #c8900a is ~4.1:1, passes
+      // large-text AA. Global $indicator-yellow is kept for other components that use it
+      // against darker backgrounds (buttons.scss).
+      color: #c8900a;
 
       @media (prefers-reduced-motion: no-preference) {
         // Floored at 0.3s — at smaller durations the alternate-pulse crest rate approaches

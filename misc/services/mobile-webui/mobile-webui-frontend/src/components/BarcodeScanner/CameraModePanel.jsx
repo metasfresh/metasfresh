@@ -68,7 +68,7 @@ const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
 
   useEffect(
     () => {
-      videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      videoRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'end' });
     } /* no deps, call it on each render */
   );
 

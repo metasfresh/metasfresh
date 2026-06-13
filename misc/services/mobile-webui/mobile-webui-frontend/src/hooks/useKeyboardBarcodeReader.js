@@ -33,7 +33,6 @@ export const useKeyboardBarcodeReader = ({
           if (clipboardText?.length < minLength) {
             return;
           }
-          console.log('Pasted text:', clipboardText);
 
           event.preventDefault(); // Prevent default paste behavior
           onReadDone(clipboardText);
