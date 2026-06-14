@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FAST_ACTION_TIMEOUT, page } from '../common';
+import { FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, page } from '../common';
 import { expect } from '@playwright/test';
 
 const NAME = 'BarcodeScannerComponent';
@@ -12,6 +12,20 @@ export const BarcodeScannerComponent = {
         }
 
         await page.locator(selector).waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+    expectAttached: async ({ testId, timeout = SLOW_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect input element attached (${testId})`, async () => {
+        let selector = '#input-text';
+        if (testId) {
+            selector += `[data-testid="${testId}"]`;
+        }
+        await expect(page.locator(selector)).toBeAttached({ timeout });
+    }),
+    expectNotAttached: async ({ testId, timeout = FAST_ACTION_TIMEOUT }) => await test.step(`${NAME} - Expect input element NOT attached (${testId})`, async () => {
+        let selector = '#input-text';
+        if (testId) {
+            selector += `[data-testid="${testId}"]`;
+        }
+        await expect(page.locator(selector)).not.toBeAttached({ timeout });
     }),
     type: async (params) => await test.step(`${NAME} - Type scanned code`, async () => {
         let scannedCode;
