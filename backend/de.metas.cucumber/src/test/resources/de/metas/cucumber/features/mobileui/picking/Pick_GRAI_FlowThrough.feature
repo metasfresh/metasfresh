@@ -178,5 +178,5 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
     # the 'set picking GRAIs' step above (like the happy path); once the endpoint is implemented it
     # proceeds here to assert the guard.
     Then complete picking job expecting error
-      | AD_Message                                       |
-      | de.metas.handlingunits.picking.GRAICountMismatch |
+      | ErrorCode          |
+      | GRAI_COUNT_MISMATCH |

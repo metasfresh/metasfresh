@@ -250,26 +250,27 @@ public class MobileUI_Picking_StepDef
 	 * <p>
 	 * {@link MobileUIPickingClient#complete(String)} runs {@code WorkflowRestController.setUserConfirmation}
 	 * in-process, so the {@code PickingJobCompleteCommand -> PickingJobGRAIValidator -> HUGraiSnapshot.assertAllGraisAssigned}
-	 * {@link AdempiereException} (carrying the AD_Message key) propagates here and is asserted directly.
+	 * {@link AdempiereException} propagates here and its error code is asserted directly.
 	 * <p>
 	 * <b>@cucumber.columns</b>
 	 * <ul>
-	 *   <li><b>AD_Message</b> — (required) the expected AD_Message key the completion must fail with
-	 *       (e.g. {@code de.metas.handlingunits.picking.GRAICountMismatch}).</li>
+	 *   <li><b>ErrorCode</b> — (required) the expected {@link AdempiereException#getErrorCode()} the completion
+	 *       must fail with (e.g. {@code GRAI_COUNT_MISMATCH}).</li>
 	 * </ul>
 	 *
-	 * @param dataTable a single row with the expected {@code AD_Message} key
+	 * @param dataTable a single row with the expected {@code ErrorCode}
 	 */
 	@Then("^complete picking job expecting error$")
 	public void completePickingJobExpectingError(@NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
-		final String expectedAdMessage = row.getAsString("AD_Message");
+		final String expectedErrorCode = row.getAsString("ErrorCode");
 
 		assertThatThrownBy(() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()))
 				.as("completing a GRAIRequired picking job with fewer GRAIs than TUs must be blocked")
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(expectedAdMessage);
+				.extracting(ex -> ((AdempiereException)ex).getErrorCode())
+				.isEqualTo(expectedErrorCode);
 	}
 
 	//

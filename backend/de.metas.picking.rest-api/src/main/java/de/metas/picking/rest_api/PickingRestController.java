@@ -22,14 +22,22 @@
 
 package de.metas.picking.rest_api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.handlingunits.JsonGRAICodesRequest;
+import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
@@ -68,6 +76,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -89,6 +98,7 @@ public class PickingRestController
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final PickingJobService pickingJobService;
 
 	private void assertApplicationAccess()
 	{
@@ -338,5 +348,72 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 		return pickingMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+	}
+
+	/**
+	 * Returns the GRAIs currently assigned to the given picked LU, together with the LU's {@code tuCount}
+	 * (the number of GRAIs the picker is expected to scan, N = one GRAI per TU).
+	 * <p>
+	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action), so a picking
+	 * operator can capture GRAIs on the LU they are picking into. Delegates to the generic, HuId-scoped
+	 * {@link HandlingUnitsService#getGRAIs(HuId)}.
+	 *
+	 * @param wfProcessIdStr the picking job's workflow process id (authorization scope)
+	 * @param huId           the picked LU's HuId (bound to {@code luPickingTarget.luId})
+	 * @return the current GRAI codes and the LU's {@code tuCount}
+	 */
+	@GetMapping("/job/{wfProcessId}/lu/{huId}/grai")
+	public JsonGRAICodesResponse getGRAIs(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@PathVariable("huId") final int huId)
+	{
+		assertApplicationAccess();
+
+		return handlingUnitsService.getGRAIs(HuId.ofRepoId(huId));
+	}
+
+	/**
+	 * Captures the given GRAIs on the picking job's actually-picked TU HUs and returns the refreshed
+	 * picking workflow process.
+	 * <p>
+	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action), so a picking
+	 * operator can capture GRAIs on the LU they are picking into. The GRAIs are distributed one-per-TU
+	 * across the job's picked TUs ({@code PickingJobStepPickedTo.actualPickedHU} — the same HUs the
+	 * completion guard {@code PickingJobCompleteCommand} -> {@code PickingJobGRAIValidator} inspects via
+	 * {@code line.getPickedHUIds()}), each via the generic, HuId-scoped
+	 * {@link HandlingUnitsService#setGRAIs(HuId, GRAISet)}. The completion guard remains the single source
+	 * of truth for whether enough GRAIs were captured (it blocks completion until every picked TU carries a GRAI).
+	 *
+	 * @param wfProcessIdStr the picking job's workflow process id (authorization scope, returned refreshed)
+	 * @param huId           the picked LU's HuId (bound to {@code luPickingTarget.luId}; identifies the LU for the GET tuCount)
+	 * @param request        the GRAI codes to distribute across the picked TUs (one per TU, in order)
+	 * @return the refreshed picking workflow process after the GRAIs were stamped
+	 */
+	@PutMapping("/job/{wfProcessId}/lu/{huId}/grai")
+	public JsonWFProcess setGRAIs(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@PathVariable("huId") final int huId,
+			@RequestBody @NonNull final JsonGRAICodesRequest request)
+	{
+		assertApplicationAccess();
+
+		final PickingJobId pickingJobId = WFProcessId.ofString(wfProcessIdStr).getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+		final List<HuId> pickedTUIds = pickingJob.streamLines()
+				.flatMap(line -> line.getPickedHUIds().stream())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		final List<GRAI> graiList = ImmutableList.copyOf(GRAISet.parseStrings(request.getGraiCodes()));
+
+		// Distribute one GRAI per picked TU (in order). TUs beyond the number of supplied GRAIs are cleared,
+		// so completion stays blocked by the guard until exactly one GRAI per TU has been captured.
+		for (int i = 0; i < pickedTUIds.size(); i++)
+		{
+			final GRAISet graiForTU = i < graiList.size() ? GRAISet.of(graiList.get(i)) : GRAISet.EMPTY;
+			handlingUnitsService.setGRAIs(pickedTUIds.get(i), graiForTU);
+		}
+
+		return workflowRestController.getWFProcessById(wfProcessIdStr);
 	}
 }
