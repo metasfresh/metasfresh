@@ -25,8 +25,9 @@ import static com.tngtech.archunit.library.freeze.FreezingArchRule.freeze;
  * Callers invoke exactly one method — {@link #checkAllModuleRules(JavaClasses)} — which freezes and evaluates
  * every gating rule and joins their results, so a run reports every new violation at once. <b>Adding a new
  * rule ("chapter") means adding a private rule method here plus one line in {@code checkAllModuleRules} — no
- * caller (test class) changes.</b> The individual rule bodies are therefore {@code private}; the only other
- * public member is {@link #boundedContextsFreeOfCycles()} (a distinct, report-only cross-module rule).
+ * caller (test class) changes.</b> The individual rule bodies are therefore {@code private}; the other public
+ * members are {@link #importModule(String)} (a caller utility) and {@link #boundedContextsFreeOfCycles()}
+ * (a distinct, report-only cross-module rule).
  * <p>
  * Each rule cites the corpus rule it enforces in its {@code .because()} clause. Freezing keeps a per-call-site
  * baseline ({@code archunit_store/}). How-to / branch enabler / per-branch baseline: skill
@@ -41,30 +42,40 @@ public final class MetasfreshArchRules
 	/**
 	 * The single gating entry point: freeze + evaluate <b>every</b> per-element rule against the given module's
 	 * classes, join the results, and fail once if any rule has NEW (non-baselined) violations. Reports all
-	 * failing rules together rather than short-circuiting on the first.
+	 * failing rules together (with their rule headings) rather than short-circuiting on the first.
 	 * <p>
 	 * Add a new rule by adding a private factory method below and one entry to the {@code rules} list here —
 	 * callers never change.
+	 * <p>
+	 * {@code moduleLabel} (e.g. {@code "de.metas.business"}) is prefixed onto each rule's description so the
+	 * freeze baseline key is <b>per-module</b>. This is mandatory: {@code FreezingArchRule} keys its store
+	 * entry on the rule description, so running the same rule against two modules without distinct labels would
+	 * make them share — and corrupt — one baseline file.
 	 */
-	public static void checkAllModuleRules(final JavaClasses moduleClasses)
+	public static void checkAllModuleRules(final String moduleLabel, final JavaClasses moduleClasses)
 	{
 		final List<ArchRule> rules = Arrays.asList(
 				persistencePrimitivesConfinedToRepositoryOrDao(),
 				noJavaSqlTimestampFields(),
 				noEnvAmbientContextInServiceOrBL());
 
-		final List<String> violations = new ArrayList<>();
+		final List<String> failingRuleReports = new ArrayList<>();
 		for (final ArchRule rule : rules)
 		{
-			// freeze(...).evaluate(...) creates/updates the rule's baseline store and returns only NEW violations.
-			final EvaluationResult result = freeze(rule).evaluate(moduleClasses);
-			violations.addAll(result.getFailureReport().getDetails());
+			// Per-module freeze key (see Javadoc): prefix the module label onto the description.
+			final ArchRule moduleScopedRule = rule.as("[" + moduleLabel + "] " + rule.getDescription());
+			// freeze(...).evaluate(...) creates/updates this rule's baseline store and returns only NEW violations.
+			final EvaluationResult result = freeze(moduleScopedRule).evaluate(moduleClasses);
+			if (result.hasViolation())
+			{
+				failingRuleReports.add(result.getFailureReport().toString());
+			}
 		}
 
-		if (!violations.isEmpty())
+		if (!failingRuleReports.isEmpty())
 		{
-			throw new AssertionError("ArchUnit found " + violations.size() + " new architecture violation(s):\n"
-					+ String.join("\n", violations));
+			throw new AssertionError("ArchUnit found new architecture violations in " + failingRuleReports.size()
+					+ " rule(s) for module [" + moduleLabel + "]:\n" + String.join("\n", failingRuleReports));
 		}
 	}
 
