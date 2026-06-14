@@ -422,9 +422,9 @@ test.describe('Modes', () => {
 
     // THE canonical hardware-handheld deployment: hardware scanner is the default, manual typing is
     // an available fallback, the device camera is OFF, and the off-screen input is readOnly
-    // (keyboard-suppress for firmware that ignores inputMode=none). This is the config shipped to
-    // intercheese / Dantherm handhelds. The footer must therefore offer the manual-entry fallback
-    // but NOT a camera toggle, and the manual fallback must actually forward a typed barcode.
+    // (keyboard-suppress for firmware that ignores inputMode=none). The footer must therefore offer
+    // the manual-entry fallback but NOT a camera toggle, and the manual fallback must actually
+    // forward a typed barcode.
     test('hardware default + manual fallback, camera off — footer shows manual, hides camera toggle', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
         await allure.feature('F12000: Frontend MobileUI');
