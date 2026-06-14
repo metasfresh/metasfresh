@@ -137,6 +137,17 @@ const translations = {
       },
       graiScan: {
         multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
+        buttonCaption: 'Scan GRAI',
+        windowName: 'Scan GRAI',
+        count: '%(scanned)s / %(total)s GRAIs scanned',
+        countExtra: '(%(extra)s extra)',
+        save: {
+          buttonCaption: 'Save',
+        },
+        clearAll: {
+          buttonCaption: 'Clear All',
+          confirmQuestion: 'Remove all %(count)s GRAIs?',
+        },
       },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',

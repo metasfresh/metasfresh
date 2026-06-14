@@ -187,3 +187,28 @@ export const completePickingJob = ({ wfProcessId }) => {
     .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+/**
+ * Reads the GRAIs currently captured on the picking job's picked TUs (bound to the picked LU)
+ * together with the expected count (`tuCount` = number of picked TUs).
+ * Picking-scoped endpoint — authorized via the picking application (NOT the HU-Manager ScanGRAI action).
+ *
+ * @returns {Promise<{ graiCodes: string[], tuCount: number }>}
+ */
+export const getPickingGRAIs = ({ wfProcessId, huId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/lu/${huId}/grai`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+/**
+ * Captures the given GRAIs on the picking job's picked TUs (bound to the picked LU) and returns
+ * the refreshed picking workflow process. Picking-scoped endpoint.
+ *
+ * @returns {Promise<T>} the refreshed JsonWFProcess
+ */
+export const setPickingGRAIs = ({ wfProcessId, huId, graiCodes }) => {
+  return axios
+    .put(`${apiBasePath}/picking/job/${wfProcessId}/lu/${huId}/grai`, { graiCodes })
+    .then((response) => unboxAxiosResponse(response));
+};

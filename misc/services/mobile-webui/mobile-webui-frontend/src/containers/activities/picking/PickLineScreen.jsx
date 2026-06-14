@@ -7,7 +7,10 @@ import { getActivityById, getLineByIdFromActivity, isAnonymousPickHUsOnTheFly } 
 
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { pickingLineScanScreenLocation } from '../../../routes/picking';
+import { pickingGraiScanScreenLocation, pickingLineScanScreenLocation } from '../../../routes/picking';
+import { useAvailablePickingTargets } from '../../../api/picking';
+import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { PickingTargetType } from '../../../constants/PickingTargetType';
 import {
   getCurrentPickFromHUQRCode,
   getQtyPickedOrRejectedTotalForLine,
@@ -64,6 +67,15 @@ const PickLineScreen = () => {
     qtyPicked,
     additionalHeaderProperties,
   });
+
+  // GRAI mass-capture entry point: shown only when GRAI scanning is required for this job's customer
+  // (graiScanEnabled === GRAIRequired != No) AND an LU has been picked (luPickingTarget.luId present).
+  const { graiScanEnabled } = useAvailablePickingTargets({ wfProcessId, lineId, type: PickingTargetType.TU });
+  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
+  const isShowGraiScanButton = !manuallyClosed && graiScanEnabled && luPickingTarget?.luId != null;
+
+  const onGraiScanButtonClick = () =>
+    history.push(pickingGraiScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
 
   const onPickFromManufacturingOrderClicked = () => {
     startWorkflowRequest({
@@ -195,6 +207,13 @@ const PickLineScreen = () => {
           <ButtonWithIndicator captionKey="general.closeText" onClick={onClose} />
         )}
         {manuallyClosed && <ButtonWithIndicator captionKey="general.reOpenText" onClick={onReOpen} />}
+        {isShowGraiScanButton && (
+          <ButtonWithIndicator
+            captionKey="activities.picking.graiScan.buttonCaption"
+            testId="grai-scan-button"
+            onClick={onGraiScanButtonClick}
+          />
+        )}
       </div>
     </div>
   );
