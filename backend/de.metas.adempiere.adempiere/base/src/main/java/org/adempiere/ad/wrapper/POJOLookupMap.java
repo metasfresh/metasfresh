@@ -729,6 +729,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		POJOLookupMap.resetToDefaultNextIdSupplier();
 		cachedObjects.clear();
+		selectionId2selection.clear();
 	}
 
 	@Override
