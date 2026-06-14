@@ -54,8 +54,9 @@ public final class MetasfreshArchRules
 	 * Add a new rule by adding a private factory method below and one entry to the {@code rules} list here —
 	 * callers never change.
 	 * <p>
-	 * {@code moduleLabel} (e.g. {@code "de.metas.business"}) is prefixed onto each rule's description so the
-	 * freeze baseline key is <b>per-module</b>. This is mandatory: {@code FreezingArchRule} keys its store
+	 * {@code moduleLabel} is any unique label prefixed onto each rule's description so the freeze baseline key
+	 * is distinct per import scope ({@code "metasfresh-backend"} for the whole-backend run; a single-module label
+	 * such as {@code "de.metas.business"} when running against one module). This is mandatory: {@code FreezingArchRule} keys its store
 	 * entry on the rule description, so running the same rule against two modules without distinct labels would
 	 * make them share — and corrupt — one baseline file.
 	 */

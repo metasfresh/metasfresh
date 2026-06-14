@@ -1,5 +1,7 @@
 Field <de.metas.acct.impexp.GLJournalImportProcess$GLJournalImportContext.DateAcct> has raw type java.sql.Timestamp in (GLJournalImportProcess.java:0)
 Field <de.metas.acct.impexp.GLJournalImportProcess.m_DateAcct> has raw type java.sql.Timestamp in (GLJournalImportProcess.java:0)
+Field <de.metas.acct.tax.TaxDeclarationCreateRequest$TaxDeclarationCreateRequestBuilder.dateAcct> has raw type java.sql.Timestamp in (TaxDeclarationCreateRequest.java:0)
+Field <de.metas.acct.tax.TaxDeclarationCreateRequest.dateAcct> has raw type java.sql.Timestamp in (TaxDeclarationCreateRequest.java:0)
 Field <de.metas.banking.payment.PaymentString$PaymentStringBuilder.accountDate> has raw type java.sql.Timestamp in (PaymentString.java:0)
 Field <de.metas.banking.payment.PaymentString$PaymentStringBuilder.paymentDate> has raw type java.sql.Timestamp in (PaymentString.java:0)
 Field <de.metas.banking.payment.PaymentString.accountDate> has raw type java.sql.Timestamp in (PaymentString.java:0)
