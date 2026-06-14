@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -145,7 +146,7 @@ class DDOrderCandidateRepositoryTest
 		ddOrderCandidateRepository.save(candidateB);
 
 		// Filter by source A — only A's candidate
-		final java.util.List<DDOrderCandidate> resultA = ddOrderCandidateRepository.list(
+		final List<DDOrderCandidate> resultA = ddOrderCandidateRepository.list(
 				DDOrderCandidateQuery.builder()
 						.inputDataSourceId(sourceA)
 						.build());
@@ -153,7 +154,7 @@ class DDOrderCandidateRepositoryTest
 		assertThat(resultA.get(0).getInputDataSourceId()).isEqualTo(sourceA);
 
 		// No filter — both candidates
-		final java.util.List<DDOrderCandidate> resultAll = ddOrderCandidateRepository.list(
+		final List<DDOrderCandidate> resultAll = ddOrderCandidateRepository.list(
 				DDOrderCandidateQuery.builder()
 						.build());
 		assertThat(resultAll).hasSize(2);
