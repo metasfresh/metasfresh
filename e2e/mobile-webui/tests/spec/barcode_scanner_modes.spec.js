@@ -420,4 +420,50 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectCameraVideoPresent();
     });
 
+    // THE canonical hardware-handheld deployment: hardware scanner is the default, manual typing is
+    // an available fallback, the device camera is OFF, and the off-screen input is readOnly
+    // (keyboard-suppress for firmware that ignores inputMode=none). This is the config shipped to
+    // intercheese / Dantherm handhelds. The footer must therefore offer the manual-entry fallback
+    // but NOT a camera toggle, and the manual fallback must actually forward a typed barcode.
+    test('hardware default + manual fallback, camera off — footer shows manual, hides camera toggle', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled: 'Y',
+                defaultMode: 'hardware',
+                hardwareInputMode: 'none',
+                hardwareInputReadOnly: 'Y',
+            }),
+        });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // Boots in hardware mode: off-screen scan input present, device camera absent.
+        await BarcodeScannerComponent.expectAttached({});
+        await BarcodeScannerComponent.expectCameraVideoAbsent();
+
+        // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
+        // (camera toggle needs BOTH hardware and camera enabled).
+        await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectFooterButtonAbsent('barcode-scanner-toggle-hw-camera');
+
+        // Manual fallback works: tap "enter manually" → visible editable input → type + Enter forwards.
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
+        await BarcodeScannerComponent.typeManually(masterdata.handlingUnits.HU1.qrCode);
+
+        await HUManagerScreen.waitForHUInfoPanel();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    });
+
 });
