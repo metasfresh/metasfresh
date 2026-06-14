@@ -175,9 +175,7 @@ const GraiScanPanel = ({ onGraiScanned }) => {
     [onGraiScanned]
   );
 
-  return (
-    <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} testId="grai-scan-input" />
-  );
+  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} testId="grai-scan-input" />;
 };
 
 GraiScanPanel.propTypes = {
