@@ -1415,7 +1415,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, null)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null)
 				.create()
-				.createSelection();
+				.createSelection()
+				.orElse(null);
 
 		if (selectionToUpdateId == null)
 		{
@@ -1481,7 +1482,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			selectionQueryBuilder.addEqualsFilter(columnName, null);
 		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection().orElse(null);
 		if (selectionToUpdateId == null)
 		{
 			Loggables.withLogger(logger, Level.INFO)
