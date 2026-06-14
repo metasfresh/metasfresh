@@ -76,14 +76,10 @@ public class DDOrderCandidateService
 		ddOrderCandidateEnqueueService.enqueueIds(ids);
 	}
 
-	public void enqueueToProcess(@NonNull final PInstanceId selectionId)
-	{
-		ddOrderCandidateEnqueueService.enqueueSelection(selectionId);
-	}
-
 	public void enqueueToProcess(@NonNull final DDOrderCandidateQuery query)
 	{
-		enqueueToProcess(ddOrderCandidateRepository.createSelection(query));
+		ddOrderCandidateRepository.createSelection(query)
+				.ifPresent(ddOrderCandidateEnqueueService::enqueueSelection);
 	}
 
 	public List<DDOrderCandidate> getBySelectionId(@NonNull final PInstanceId selectionId)
