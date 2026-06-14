@@ -4,14 +4,11 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.core.importer.Location;
-import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.EvaluationResult;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 /**
  * Cross-module ArchUnit test — the aggregator placement that expresses inter-module invariants.
@@ -67,8 +64,8 @@ public class CrossModuleArchTest
 	@Test
 	void reportBoundedContextCycles()
 	{
-		final ArchRule rule = slices().matching("de.metas.(*)..").should().beFreeOfCycles();
-		final EvaluationResult result = rule.evaluate(scopedModuleClasses);
+		// Rule defined once in MetasfreshArchRules; evaluated report-only here (not frozen).
+		final EvaluationResult result = MetasfreshArchRules.boundedContextsFreeOfCycles().evaluate(scopedModuleClasses);
 		final int detailLines = result.getFailureReport().getDetails().size();
 
 		// Report-only: surface the legacy cycle count, but do not fail the build (see class Javadoc).
