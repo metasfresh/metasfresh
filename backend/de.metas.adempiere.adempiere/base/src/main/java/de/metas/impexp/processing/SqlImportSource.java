@@ -130,7 +130,8 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 					.create()
 					.setOrderBy(sqlOrderBy)
 					.setLimit(limit)
-					.createSelection();
+					.createSelection()
+					.orElse(null);
 			if (batchSelectionId == null)
 			{
 				return mainSelection.withEmpty(true);
