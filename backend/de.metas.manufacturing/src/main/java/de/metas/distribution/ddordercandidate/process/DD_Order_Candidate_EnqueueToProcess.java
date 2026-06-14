@@ -9,7 +9,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.eevolution.model.I_DD_Order_Candidate;
 
@@ -33,16 +32,12 @@ public class DD_Order_Candidate_EnqueueToProcess extends JavaProcess implements 
 	@Override
 	protected String doIt()
 	{
-		final IQueryFilter<I_DD_Order_Candidate> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-
-		final DDOrderCandidateQuery query = DDOrderCandidateQuery.builder()
-				.userSelectionFilter(userSelectionFilter)
+		ddOrderCandidateService.enqueueToProcess(DDOrderCandidateQuery.builder()
+				.userSelectionFilter(getProcessInfo().getQueryFilterOrElse(null))
 				.inputDataSourceId(inputDataSourceId)
 				.processed(false)
 				.onlyPositiveQtyToProcess(true)
-				.build();
-
-		ddOrderCandidateService.enqueueToProcess(query);
+				.build());
 		return MSG_OK;
 	}
 }

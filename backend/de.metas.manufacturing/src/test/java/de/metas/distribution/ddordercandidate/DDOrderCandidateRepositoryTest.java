@@ -26,6 +26,7 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -161,65 +162,69 @@ class DDOrderCandidateRepositoryTest
 		assertThat(resultAll).hasSize(2);
 	}
 
-	@Test
-	void createSelection_filtersByInputDataSource()
+	@Nested
+	class CreateSelection
 	{
-		final InputDataSourceId sourceA = InputDataSourceId.ofRepoId(301);
-		final InputDataSourceId sourceB = InputDataSourceId.ofRepoId(302);
+		@Test
+		void filtersByInputDataSource()
+		{
+			final InputDataSourceId sourceA = InputDataSourceId.ofRepoId(301);
+			final InputDataSourceId sourceB = InputDataSourceId.ofRepoId(302);
 
-		final DDOrderCandidate candidateA = newFullyFilled().toBuilder().inputDataSourceId(sourceA).build();
-		ddOrderCandidateRepository.save(candidateA);
-		final DDOrderCandidate candidateB = newFullyFilled().toBuilder().inputDataSourceId(sourceB).build();
-		ddOrderCandidateRepository.save(candidateB);
+			final DDOrderCandidate candidateA = newFullyFilled().toBuilder().inputDataSourceId(sourceA).build();
+			ddOrderCandidateRepository.save(candidateA);
+			final DDOrderCandidate candidateB = newFullyFilled().toBuilder().inputDataSourceId(sourceB).build();
+			ddOrderCandidateRepository.save(candidateB);
 
-		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
-				.inputDataSourceId(sourceA)
-				.processed(false)
-				.onlyPositiveQtyToProcess(true)
-				.build());
+			final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
+					.inputDataSourceId(sourceA)
+					.processed(false)
+					.onlyPositiveQtyToProcess(true)
+					.build());
 
-		assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
-				.extracting(DDOrderCandidate::getIdNotNull)
-				.containsExactly(candidateA.getIdNotNull());
-	}
+			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
+					.extracting(DDOrderCandidate::getIdNotNull)
+					.containsExactly(candidateA.getIdNotNull());
+		}
 
-	@Test
-	void createSelection_noInputDataSource_returnsAllEligible()
-	{
-		final DDOrderCandidate a = newFullyFilled().toBuilder().inputDataSourceId(InputDataSourceId.ofRepoId(301)).build();
-		ddOrderCandidateRepository.save(a);
-		final DDOrderCandidate b = newFullyFilled().toBuilder().inputDataSourceId(InputDataSourceId.ofRepoId(302)).build();
-		ddOrderCandidateRepository.save(b);
+		@Test
+		void noInputDataSource_returnsAllEligible()
+		{
+			final DDOrderCandidate a = newFullyFilled().toBuilder().inputDataSourceId(InputDataSourceId.ofRepoId(301)).build();
+			ddOrderCandidateRepository.save(a);
+			final DDOrderCandidate b = newFullyFilled().toBuilder().inputDataSourceId(InputDataSourceId.ofRepoId(302)).build();
+			ddOrderCandidateRepository.save(b);
 
-		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
-				.processed(false)
-				.onlyPositiveQtyToProcess(true)
-				.build());
+			final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
+					.processed(false)
+					.onlyPositiveQtyToProcess(true)
+					.build());
 
-		assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
-				.extracting(DDOrderCandidate::getIdNotNull)
-				.containsExactlyInAnyOrder(a.getIdNotNull(), b.getIdNotNull());
-	}
+			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
+					.extracting(DDOrderCandidate::getIdNotNull)
+					.containsExactlyInAnyOrder(a.getIdNotNull(), b.getIdNotNull());
+		}
 
-	@Test
-	void createSelection_excludesIneligibleZeroQtyToProcess()
-	{
-		final InputDataSourceId source = InputDataSourceId.ofRepoId(301);
-		final DDOrderCandidate eligible = newFullyFilled().toBuilder().inputDataSourceId(source).build();
-		ddOrderCandidateRepository.save(eligible);
+		@Test
+		void excludesIneligibleZeroQtyToProcess()
+		{
+			final InputDataSourceId source = InputDataSourceId.ofRepoId(301);
+			final DDOrderCandidate eligible = newFullyFilled().toBuilder().inputDataSourceId(source).build();
+			ddOrderCandidateRepository.save(eligible);
 
-		final DDOrderCandidate base = newFullyFilled();
-		final DDOrderCandidate ineligible = base.toBuilder().inputDataSourceId(source).qtyProcessed(base.getQtyEntered()).build();
-		ddOrderCandidateRepository.save(ineligible);
+			final DDOrderCandidate base = newFullyFilled();
+			final DDOrderCandidate ineligible = base.toBuilder().inputDataSourceId(source).qtyProcessed(base.getQtyEntered()).build();
+			ddOrderCandidateRepository.save(ineligible);
 
-		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
-				.inputDataSourceId(source)
-				.processed(false)
-				.onlyPositiveQtyToProcess(true)
-				.build());
+			final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
+					.inputDataSourceId(source)
+					.processed(false)
+					.onlyPositiveQtyToProcess(true)
+					.build());
 
-		assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
-				.extracting(DDOrderCandidate::getIdNotNull)
-				.containsExactly(eligible.getIdNotNull());
+			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
+					.extracting(DDOrderCandidate::getIdNotNull)
+					.containsExactly(eligible.getIdNotNull());
+		}
 	}
 }
