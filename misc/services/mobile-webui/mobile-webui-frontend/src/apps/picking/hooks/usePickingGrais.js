@@ -68,8 +68,10 @@ export const usePickingGrais = ({ wfProcessId, huId, onSaved }) => {
 
   const assignedGrais = getAssignedGrais(graiCodes, tuCount);
   const extraGrais = getExtraGrais(graiCodes, tuCount);
-  // The save button is enabled only when exactly N (=tuCount) GRAIs are captured.
-  const canSave = tuCount > 0 && graiCodes.length === tuCount && !saving;
+  // The save button is enabled only when the captured list has changed (dirty) AND exactly
+  // N (=tuCount) GRAIs are captured. Without `dirty`, re-entering a fully-captured LU would light
+  // up "Speichern" before the operator did anything and allow a no-op re-save.
+  const canSave = dirty && tuCount > 0 && graiCodes.length === tuCount && !saving;
 
   return {
     graiCodes,

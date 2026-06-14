@@ -86,7 +86,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | line1              | pickFromCU |
 
 # ######################################################################################################################
-# Scenario (a) — HAPPY PATH: GRAIRequired=Y, pick 3 TUs into an LU, capture exactly 3 GRAIs, complete -> SUCCESS.
+# HAPPY PATH: GRAIRequired=Y, pick 3 TUs into an LU, capture exactly 3 GRAIs, complete -> SUCCESS.
 # ######################################################################################################################
   @from:cucumber
   Scenario: GRAIRequired customer - capture one GRAI per TU then complete succeeds
@@ -132,7 +132,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | shipmentSchedule                 | shipment              | CO            |
 
 # ######################################################################################################################
-# Scenario (b) — BLOCKED: GRAIRequired=Y, pick 3 TUs into an LU, capture only 2 GRAIs, complete -> blocked
+# BLOCKED: GRAIRequired=Y, pick 3 TUs into an LU, capture only 2 GRAIs, complete -> blocked
 # with GRAICountMismatch ("LU {0}: {1} of {2} TUs have a GRAI. Please scan all TUs.").
 # ######################################################################################################################
   @from:cucumber

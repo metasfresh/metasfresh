@@ -81,7 +81,7 @@ const PickGraiScanScreen = () => {
     if (!huId) {
       history.goBack();
     }
-  }, []);
+  }, [huId, history]);
 
   useKeyboardBarcodeReader({
     onReadDone: onBarcodeString,

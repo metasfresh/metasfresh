@@ -128,8 +128,7 @@ public class MobileUIPickingClient
 	}
 
 	/**
-	 * Capture GRAIs on the picked LU via the picking-scoped set-GRAIs endpoint (authorized via the
-	 * picking application, NOT the HU-Manager {@code ScanGRAI} action).
+	 * Capture the given GRAIs on the picked LU via the picking-scoped set-GRAIs endpoint.
 	 *
 	 * @return the refreshed picking workflow process after the GRAIs were stamped
 	 */

@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 56 | 59 | 95% |
+| Picking | 58 | 61 | 95% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -197,6 +197,15 @@
 | Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete (TC9) | `picking/picking-grai-scan.spec.js` |
 
 **8/8 — 100%**
+
+### GRAI mass-capture in Flow Through (LU_TU) picking
+
+| Scenario | Test |
+|---|---|
+| Pick 10 crates onto one LU, capture all 10 GRAIs (one typed manually, rest scanned) → save enabled, job completes | `picking/picking-grai-flowthrough.spec.js` |
+| Pick 10 crates onto one LU, capture fewer than 10 GRAIs → save stays disabled and completion is blocked | `picking/picking-grai-flowthrough.spec.js` |
+
+**2/2 — 100%**
 
 ---
 
