@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.architecture-tests</groupId>
+	<artifactId>de.metas.architecture-tests</artifactId>
+	<version>10.0.0</version>
+	<packaging>jar</packaging>
+
+	<description>
+		Aggregator module for cross-module ArchUnit architecture tests. Has no production code; it depends on
+		the modules whose compiled bytecode it analyses for cross-module invariants (the global no-cycles check).
+		Deliberately scoped to a small set of related modules — full multi-module wiring is a later growth step.
+	</description>
+
+	<properties>
+		<metasfresh.version>10.0.0</metasfresh.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- Modules whose compiled bytecode is analysed for cross-module cycles (scoped POC set). -->
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- ArchUnit — core lib (rules run from Jupiter @Test). Version managed in parent-pom.
+		     junit-jupiter (the engine that runs these tests) is inherited from de.metas.parent. -->
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+</project>
