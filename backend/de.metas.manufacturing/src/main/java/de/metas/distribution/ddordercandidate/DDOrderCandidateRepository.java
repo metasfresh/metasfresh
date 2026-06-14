@@ -1,5 +1,6 @@
 package de.metas.distribution.ddordercandidate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -40,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -312,10 +314,12 @@ public class DDOrderCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, ids)
 				.create()
-				.createSelection();
+				.createSelection()
+				.orElseThrow(() -> new AdempiereException("No records found for " + ids));
 	}
 
-	public PInstanceId createSelection(@NonNull final DDOrderCandidateQuery query)
+	@VisibleForTesting
+	Optional<PInstanceId> createSelection(@NonNull final DDOrderCandidateQuery query)
 	{
 		return toSqlQuery(query)
 				.create()

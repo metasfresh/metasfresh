@@ -5,17 +5,18 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.material.event.pporder.PPOrderRef;
-import de.metas.process.PInstanceId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -177,10 +178,11 @@ class DDOrderCandidateRepositoryTest
 			ddOrderCandidateRepository.save(candidateB);
 
 			final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
-					.inputDataSourceId(sourceA)
-					.processed(false)
-					.onlyPositiveQtyToProcess(true)
-					.build());
+							.inputDataSourceId(sourceA)
+							.processed(false)
+							.onlyPositiveQtyToProcess(true)
+							.build())
+					.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
 					.extracting(DDOrderCandidate::getIdNotNull)
@@ -196,9 +198,10 @@ class DDOrderCandidateRepositoryTest
 			ddOrderCandidateRepository.save(b);
 
 			final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
-					.processed(false)
-					.onlyPositiveQtyToProcess(true)
-					.build());
+							.processed(false)
+							.onlyPositiveQtyToProcess(true)
+							.build())
+					.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
 					.extracting(DDOrderCandidate::getIdNotNull)
@@ -217,10 +220,11 @@ class DDOrderCandidateRepositoryTest
 			ddOrderCandidateRepository.save(ineligible);
 
 			final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
-					.inputDataSourceId(source)
-					.processed(false)
-					.onlyPositiveQtyToProcess(true)
-					.build());
+							.inputDataSourceId(source)
+							.processed(false)
+							.onlyPositiveQtyToProcess(true)
+							.build())
+					.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
 					.extracting(DDOrderCandidate::getIdNotNull)

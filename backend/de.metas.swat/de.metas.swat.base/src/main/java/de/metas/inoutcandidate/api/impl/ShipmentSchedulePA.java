@@ -402,7 +402,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			selectionQueryBuilder.addEqualsFilter(inoutCandidateColumnName, null);
 		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection().orElse(null);
 		if (selectionToUpdateId == null)
 		{
 			// nothing to update
