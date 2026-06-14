@@ -67,12 +67,16 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
 
     # GRAIRequired=Y customer -> the completion guard fires for this LU_TU job.
+    # Distinct identity (graiCustomer / GRAI_Dummy_GLN) on purpose: the C_BPartner step upserts by
+    # Value, and the picking features on this executor share one `customer` record. A GRAIRequired=Y
+    # value on that shared record would leak into sibling picking scenarios on the same executor and
+    # trip their completion guard, so this customer must be its own record.
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |
-      | customer   | customer | N            | Y              | PS                            | Y            |
+      | Identifier   | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |
+      | graiCustomer | graiCustomer | N            | Y              | PS                            | Y            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | GLN       | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | customerLocation | Dummy_GLN | customer                 | true                | true         |
+      | Identifier           | GLN            | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | graiCustomerLocation | GRAI_Dummy_GLN | graiCustomer             | true                | true         |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -99,7 +103,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | SO         | true    | customer                 | 2024-03-26  |
+      | SO         | true    | graiCustomer             | 2024-03-26  |
     And metasfresh contains C_OrderLines:
       | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | SO                    | L1         | product                 | 12         | TUx4                                   |
@@ -146,7 +150,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | SO         | true    | customer                 | 2024-03-26  |
+      | SO         | true    | graiCustomer             | 2024-03-26  |
     And metasfresh contains C_OrderLines:
       | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | SO                    | L1         | product                 | 12         | TUx4                                   |
