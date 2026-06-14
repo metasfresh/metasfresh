@@ -31,6 +31,7 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
@@ -215,6 +217,59 @@ public class MobileUI_Picking_StepDef
 	{
 		final JsonWFProcess wfProcess = mobileUIPickingClient.complete(context.getWfProcessIdNotNull());
 		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Capture N GRAIs (one per TU) on the picked LU via the picking-scoped set-GRAIs endpoint.
+	 * <p>
+	 * The LU identifier is the existing-LU registered by {@code expect current picking target} (column
+	 * {@code Existing_LU}); this step resolves it from {@link #huTable} and binds the scanned GRAIs to it.
+	 * <p>
+	 * <b>@cucumber.columns</b>
+	 * <ul>
+	 *   <li><b>GRAI</b> — (required) one row per GRAI code to assign to the LU (e.g. {@code 7613204.00307.000001}).</li>
+	 * </ul>
+	 *
+	 * @param luIdentifier identifier of the picked LU (resolved via the HU step-def table)
+	 * @param dataTable    one {@code GRAI} column, one row per GRAI to assign
+	 */
+	@When("^set picking GRAIs on LU identified by (.*)$")
+	public void setPickingGraisOnLU(@NonNull final String luIdentifier, @NonNull final DataTable dataTable)
+	{
+		final HuId luId = huTable.getId(luIdentifier);
+		final ImmutableList<String> graiCodes = DataTableRows.of(dataTable).stream()
+				.map(row -> row.getAsString("GRAI"))
+				.collect(ImmutableList.toImmutableList());
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.setPickingGrais(context.getWfProcessIdNotNull(), luId, graiCodes);
+		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Complete the picking job and assert it is BLOCKED by the completion-time GRAI validator.
+	 * <p>
+	 * {@link MobileUIPickingClient#complete(String)} runs {@code WorkflowRestController.setUserConfirmation}
+	 * in-process, so the {@code PickingJobCompleteCommand -> PickingJobGRAIValidator -> HUGraiSnapshot.assertAllGraisAssigned}
+	 * {@link AdempiereException} (carrying the AD_Message key) propagates here and is asserted directly.
+	 * <p>
+	 * <b>@cucumber.columns</b>
+	 * <ul>
+	 *   <li><b>AD_Message</b> — (required) the expected AD_Message key the completion must fail with
+	 *       (e.g. {@code de.metas.handlingunits.picking.GRAICountMismatch}).</li>
+	 * </ul>
+	 *
+	 * @param dataTable a single row with the expected {@code AD_Message} key
+	 */
+	@Then("^complete picking job expecting error$")
+	public void completePickingJobExpectingError(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final String expectedAdMessage = row.getAsString("AD_Message");
+
+		assertThatThrownBy(() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()))
+				.as("completing a GRAIRequired picking job with fewer GRAIs than TUs must be blocked")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(expectedAdMessage);
 	}
 
 	//

@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -32,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -122,5 +124,21 @@ public class MobileUIPickingClient
 	public JsonWFProcess complete(final String wfProcessId)
 	{
 		return workflowRestController.setUserConfirmation(wfProcessId, PickingMobileApplication.ACTIVITY_ID_Complete.getAsString());
+	}
+
+	/**
+	 * Capture GRAIs on the picked LU via the (not-yet-implemented) picking-scoped set-GRAIs endpoint.
+	 * <p>
+	 * The existing get/set-GRAIs endpoints are HU-Manager-scoped (gated by {@code HUManagerAction.ScanGRAI}),
+	 * so a picking operator cannot use them. The picking endpoint must delegate to the generic, already-existing
+	 * service {@code HandlingUnitsService.setGRAIs(HuId, GRAISet)} but gate on the PICKING application. GRAIs bind
+	 * to {@code luPickingTarget.luId}; expected count N = the LU's tuCount ({@code HUGraiSnapshot.getTUCount}).
+	 */
+	public JsonWFProcess setPickingGrais(
+			@NonNull final String wfProcessId,
+			@NonNull final HuId luId,
+			@NonNull final List<String> graiCodes)
+	{
+		throw new AdempiereException("picking set-GRAIs endpoint not implemented yet");
 	}
 }

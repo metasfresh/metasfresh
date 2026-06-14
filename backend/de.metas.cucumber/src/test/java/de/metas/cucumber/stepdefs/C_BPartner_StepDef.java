@@ -262,6 +262,10 @@ public class C_BPartner_StepDef
 		final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule, DeliveryRule.class).orElse(DeliveryRule.FORCE);
 		bPartnerRecord.setDeliveryRule(deliveryRule.getCode());
 
+		// optional GRAIRequired (Y/N/D ref-list) — drives the picking-completion GRAI guard
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_GRAIRequired)
+				.ifPresent(bPartnerRecord::setGRAIRequired);
+
 		final StepDefDataIdentifier pricingSystemIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
 		if (pricingSystemIdentifier != null)
 		{
