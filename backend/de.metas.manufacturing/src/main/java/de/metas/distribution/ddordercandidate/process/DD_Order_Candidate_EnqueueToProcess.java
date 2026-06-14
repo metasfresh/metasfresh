@@ -1,6 +1,5 @@
 package de.metas.distribution.ddordercandidate.process;
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.process.IProcessPrecondition;
@@ -9,10 +8,10 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -23,19 +22,18 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.eevolution.model.I_DD_Order_Candidate;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 public class DD_Order_Candidate_EnqueueToProcess extends JavaProcess implements IProcessPrecondition
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final SpringContextHolder.Lazy<DDOrderCandidateService> ddOrderCandidateService = SpringContextHolder.lazyBean(DDOrderCandidateService.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final DDOrderCandidateService ddOrderCandidateService = SpringContextHolder.instance.getBean(DDOrderCandidateService.class);
 
 	@Param(parameterName = I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID, mandatory = false)
 	private InputDataSourceId inputDataSourceId;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
@@ -45,11 +43,10 @@ public class DD_Order_Candidate_EnqueueToProcess extends JavaProcess implements 
 	}
 
 	@Override
-	@RunOutOfTrx
 	protected String doIt()
 	{
 		final PInstanceId selectionId = createSelection();
-		ddOrderCandidateService.get().enqueueToProcess(selectionId);
+		ddOrderCandidateService.enqueueToProcess(selectionId);
 		return MSG_OK;
 	}
 
@@ -58,11 +55,10 @@ public class DD_Order_Candidate_EnqueueToProcess extends JavaProcess implements 
 		final PInstanceId adPInstanceId = Check.assumeNotNull(getPinstanceId(), "adPInstanceId is not null");
 		DB.deleteT_Selection(adPInstanceId, ITrx.TRXNAME_ThreadInherited);
 
-		final int count = selectionQueryBuilder(getProcessInfo().getQueryFilterOrElse(null), inputDataSourceId)
+		final int count = selectionQueryBuilder()
 				.create()
 				.setRequiredAccess(Access.READ)
 				.createSelection(adPInstanceId);
-
 		if (count <= 0)
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -70,11 +66,11 @@ public class DD_Order_Candidate_EnqueueToProcess extends JavaProcess implements 
 		return adPInstanceId;
 	}
 
-	@VisibleForTesting
-	IQueryBuilder<I_DD_Order_Candidate> selectionQueryBuilder(
-			@Nullable final IQueryFilter<I_DD_Order_Candidate> userSelectionFilter,
-			@Nullable final InputDataSourceId source)
+	private IQueryBuilder<I_DD_Order_Candidate> selectionQueryBuilder()
 	{
+		// Present when run manually from a WebUI grid (the row selection); null when run headless (scheduler / API).
+		final IQueryFilter<I_DD_Order_Candidate> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
+
 		final IQueryBuilder<I_DD_Order_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_DD_Order_Candidate.class)
 				.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Processed, false)
@@ -86,12 +82,10 @@ public class DD_Order_Candidate_EnqueueToProcess extends JavaProcess implements 
 		{
 			queryBuilder.filter(userSelectionFilter);
 		}
-
-		if (source != null)
+		if (inputDataSourceId != null)
 		{
-			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID, source);
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID, inputDataSourceId);
 		}
-
 		return queryBuilder;
 	}
 }
