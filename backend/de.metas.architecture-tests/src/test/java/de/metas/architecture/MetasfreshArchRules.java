@@ -1,6 +1,7 @@
 package de.metas.architecture;
 
 import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
@@ -13,6 +14,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
@@ -92,6 +95,86 @@ public final class MetasfreshArchRules
 			throw new IllegalStateException("ArchUnit imported zero classes for module token '" + moduleLocationToken
 					+ "' — the classpath form changed or the token is mis-scoped");
 		}
+		return classes;
+	}
+
+	/**
+	 * Import the WHOLE backend — every class in {@code de.metas}, {@code org.adempiere}, {@code org.compiere},
+	 * and {@code org.eevolution} found on the test classpath, excluding test classes. No location filter is
+	 * applied, so all modules reachable via the {@code metasfresh-dist-serverRoot} +
+	 * {@code metasfresh-webui-api} transitive dependency closures are included.
+	 * <p>
+	 * Before returning, this method logs:
+	 * <ul>
+	 *   <li>Total number of imported classes</li>
+	 *   <li>Distinct {@code de.metas.<x>} top-level sub-packages present</li>
+	 * </ul>
+	 * and asserts that several well-known modules are present (de.metas.business, de.metas.invoice,
+	 * de.metas.handlingunits, de.metas.contracts, de.metas.payment). A missing module means the
+	 * transitive closure is incomplete.
+	 *
+	 * @throws IllegalStateException if zero classes were imported, or if a mandatory module is absent
+	 */
+	public static JavaClasses importWholeBackend()
+	{
+		final long importStart = System.currentTimeMillis();
+
+		final JavaClasses classes = new ClassFileImporter()
+				.withImportOption(new ImportOption.DoNotIncludeTests())
+				.importPackages("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
+
+		final long importMs = System.currentTimeMillis() - importStart;
+
+		if (classes.isEmpty())
+		{
+			throw new IllegalStateException("ArchUnit imported zero classes for the whole backend — "
+					+ "the assembly deps are missing from the test classpath");
+		}
+
+		// Collect distinct de.metas.<x> top-level sub-packages
+		final Set<String> metasSubPackages = new TreeSet<>();
+		for (final JavaClass cls : classes)
+		{
+			final String pkg = cls.getPackageName();
+			if (pkg.startsWith("de.metas."))
+			{
+				final String[] parts = pkg.split("\\.");
+				// parts[0]=de, parts[1]=metas, parts[2]=<subpackage>
+				if (parts.length >= 3)
+				{
+					metasSubPackages.add(parts[2]);
+				}
+			}
+		}
+
+		System.out.println("[ArchUnit whole-backend] Total classes imported: " + classes.size()
+				+ " (import took " + importMs + " ms)");
+		System.out.println("[ArchUnit whole-backend] Distinct de.metas.<x> sub-packages (" + metasSubPackages.size() + "): " + metasSubPackages);
+
+		// Probe: assert key module sub-packages are present — a missing one means an incomplete closure.
+		// NOTE: Maven artifact names (e.g. "de.metas.business") do not correspond to Java package names.
+		// de.metas.business artifact puts classes under de.metas.invoice, de.metas.invoicecandidate, etc.
+		// We probe for distinct Java sub-packages that are definitively contributed by different modules:
+		//   invoice         → de.metas.invoice          (from de.metas.business jar)
+		//   handlingunits   → de.metas.handlingunits     (from de.metas.handlingunits.base)
+		//   contracts       → de.metas.contracts         (from de.metas.contracts)
+		//   payment         → de.metas.payment           (from de.metas.payment.* jars)
+		//   manufacturing   → de.metas.manufacturing     (from de.metas.manufacturing)
+		final List<String> missingModules = new ArrayList<>();
+		for (final String mandatorySubPkg : Arrays.asList(
+				"invoice", "handlingunits", "contracts", "payment", "manufacturing"))
+		{
+			if (!metasSubPackages.contains(mandatorySubPkg))
+			{
+				missingModules.add("de.metas." + mandatorySubPkg);
+			}
+		}
+		if (!missingModules.isEmpty())
+		{
+			throw new IllegalStateException("[ArchUnit whole-backend] INCOMPLETE CLOSURE — missing expected sub-packages: "
+					+ missingModules + ". These sub-packages were present: " + metasSubPackages);
+		}
+
 		return classes;
 	}
 

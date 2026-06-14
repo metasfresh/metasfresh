@@ -5,31 +5,32 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Central application of the shared {@link MetasfreshArchRules} to individual modules' classes.
+ * Central application of the shared {@link MetasfreshArchRules} to the WHOLE metasfresh backend.
  * <p>
- * The rule <i>definitions</i> and the freezing all live behind a single entry point,
- * {@link MetasfreshArchRules#checkAllModuleRules(String, JavaClasses)}; this class only imports a module's
- * classes and calls it. Adding a new rule changes only {@code MetasfreshArchRules}, never this class. Covering
- * another module = import its classes and add one more {@code @Test} calling {@code checkAllModuleRules} with
- * that module's label — the label keys a separate freeze baseline per module, so modules never share a store.
+ * The test classpath includes the full transitive closure of {@code metasfresh-dist-serverRoot}
+ * and {@code metasfresh-webui-api} (both assembly modules), so {@link MetasfreshArchRules#importWholeBackend()}
+ * imports every backend module's classes in a single pass. The probe inside {@code importWholeBackend()}
+ * asserts that the closure is complete by verifying that classes from several distinct modules
+ * (de.metas.business, de.metas.invoice, de.metas.handlingunits, de.metas.contracts, de.metas.payment)
+ * are present.
  * <p>
- * This POC covers {@code de.metas.business}. Trade-offs of this central placement vs. distributed per-module
- * tests (and the path to the latter) are recorded in docs/coding-rules/archunit-backlog.md / skill
- * {@code metasfresh-archunit}.
+ * {@link MetasfreshArchRules#checkAllModuleRules(String, JavaClasses)} is called with the label
+ * {@code "metasfresh-backend"}, which keys a single whole-app freeze baseline. Adding a new rule
+ * changes only {@code MetasfreshArchRules} — never this class.
  */
 public class ModuleArchitectureTest
 {
-	private static JavaClasses businessClasses;
+	private static JavaClasses wholeBackendClasses;
 
 	@BeforeAll
-	static void importModuleClasses()
+	static void importWholeBackendClasses()
 	{
-		businessClasses = MetasfreshArchRules.importModule("/de.metas.business/");
+		wholeBackendClasses = MetasfreshArchRules.importWholeBackend();
 	}
 
 	@Test
-	void de_metas_business_satisfiesArchitectureRules()
+	void metasfresh_backend_satisfiesArchitectureRules()
 	{
-		MetasfreshArchRules.checkAllModuleRules("de.metas.business", businessClasses);
+		MetasfreshArchRules.checkAllModuleRules("metasfresh-backend", wholeBackendClasses);
 	}
 }

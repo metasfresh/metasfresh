@@ -27,16 +27,21 @@
 
 	<dependencies>
 
-		<!-- Modules whose compiled bytecode is analysed for cross-module cycles (scoped POC set). -->
+		<!-- Whole-backend closure: serverRoot (app-server) + webui-api assembly modules.
+		     Their full transitive dependency sets are pulled onto the test classpath by Maven,
+		     so ArchUnit's importPackages() sees the classes of every backend module at once.
+		     The uber-jars themselves contain only Spring Boot loader classes at the root level;
+		     the nested BOOT-INF/lib/*.jar entries are opaque to ArchUnit and to Maven's resolver,
+		     which resolves each dependency as a normal thin jar via the POM graph instead. -->
 		<dependency>
-			<groupId>de.metas.business</groupId>
-			<artifactId>de.metas.business</artifactId>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-serverRoot</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-api</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -50,4 +55,17 @@
 		</dependency>
 
 	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Whole-backend ArchUnit import loads ~25 k+ classes into heap; raise JVM heap accordingly. -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>@{argLine} -Xms512m -Xmx4g -Dfile.encoding=UTF-8</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>

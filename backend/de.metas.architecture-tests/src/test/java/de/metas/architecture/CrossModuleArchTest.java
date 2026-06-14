@@ -1,76 +1,45 @@
 package de.metas.architecture;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
-import com.tngtech.archunit.core.importer.ImportOption;
-import com.tngtech.archunit.core.importer.Location;
 import com.tngtech.archunit.lang.EvaluationResult;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 /**
- * Cross-module ArchUnit test — the aggregator placement that expresses inter-module invariants.
+ * Cross-module ArchUnit test — the aggregator placement for inter-module invariants (no-cycles).
  * <p>
- * Like {@code de.metas.business}'s {@code ArchitectureTest}, the rule runs from a plain JUnit Jupiter
- * {@code @Test} using the core {@code archunit} library (not the {@code archunit-junit5} engine, which needs
- * a newer {@code junit-platform} than the backend pins). This POC scopes the import to a small set of related
- * modules ({@code de.metas.business} + {@code de.metas.adempiere.adempiere.base}); wiring the check across all
- * backend modules is a later growth step.
- * <p>
- * <b>The no-cycles check is REPORT-ONLY here</b> — it logs the cycle count but does not fail the build. This is
- * the deliberate "baseline report-only first" step from the brainstorm: {@code beFreeOfCycles()} violation
- * descriptions are non-deterministic (cycle paths + their edge lists vary run-to-run), so a frozen
- * {@code FreezingArchRule} baseline does not byte-match on re-runs and would make the gate flaky in CI.
- * Turning this into a frozen, gating rule needs deterministic cycle descriptions (or a much smaller, stable
- * slice scope) — tracked in docs/coding-rules/archunit-backlog.md (row 10). The aggregator placement itself
- * (importing several modules' bytecode and running an inter-module rule) is what this POC proves.
+ * <b>REPORT-ONLY and OPT-IN.</b> At whole-backend scale the no-cycles slice analysis over all ~167
+ * {@code de.metas} modules is expensive (several minutes) and only <i>logs</i> the cycle count — it does not
+ * gate (frozen {@code beFreeOfCycles()} baselines are non-deterministic, hence ungatable; see
+ * docs/coding-rules/archunit-backlog.md row 10 + skill {@code metasfresh-archunit}). So it is skipped unless
+ * explicitly enabled with {@code -Darchunit.cycles=true} (run it on demand / nightly, not on every PR). When
+ * skipped, the costly whole-backend import is not performed either — the gating rules in
+ * {@link ModuleArchitectureTest} carry the per-PR enforcement (~70s).
  */
 public class CrossModuleArchTest
 {
 	private static final Logger logger = LoggerFactory.getLogger(CrossModuleArchTest.class);
 
-	private static JavaClasses scopedModuleClasses;
+	/** Opt-in flag: {@code -Darchunit.cycles=true} runs the slow whole-backend no-cycles report. */
+	private static final String CYCLES_REPORT_PROPERTY = "archunit.cycles";
 
-	@BeforeAll
-	static void importScopedModuleClasses()
-	{
-		scopedModuleClasses = new ClassFileImporter()
-				.withImportOption(new ImportOption.DoNotIncludeTests())
-				.withImportOption(CrossModuleArchTest::isScopedModuleClass)
-				.importPackages("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
-
-		// Fail loudly rather than let the rule pass vacuously against an empty class set.
-		if (scopedModuleClasses.isEmpty())
-		{
-			throw new IllegalStateException(
-					"ArchUnit imported zero scoped-module classes — the classpath form changed or isScopedModuleClass is mis-scoped");
-		}
-	}
-
-	/** Restrict the import to the scoped POC modules' compiled output (jar or target/classes). */
-	private static boolean isScopedModuleClass(final Location location)
-	{
-		return location.contains("/de.metas.business/")
-				|| location.contains("/de.metas.adempiere.adempiere.base/");
-	}
-
-	/**
-	 * Reports (does not gate) dependency cycles between {@code de.metas} bounded contexts across the scoped
-	 * modules. See the class Javadoc for why this is report-only. Relates to
-	 * docs/coding-rules/architecture.md §8 (bounded-context dependency discipline).
-	 */
 	@Test
 	void reportBoundedContextCycles()
 	{
-		// Rule defined once in MetasfreshArchRules; evaluated report-only here (not frozen).
-		final EvaluationResult result = MetasfreshArchRules.boundedContextsFreeOfCycles().evaluate(scopedModuleClasses);
+		assumeTrue(Boolean.getBoolean(CYCLES_REPORT_PROPERTY),
+				"Skipped — set -D" + CYCLES_REPORT_PROPERTY + "=true to run the (slow, report-only) whole-backend no-cycles report");
+
+		// Import + slice only when opted in (both are expensive at whole-backend scale).
+		final JavaClasses wholeBackendClasses = MetasfreshArchRules.importWholeBackend();
+		final EvaluationResult result = MetasfreshArchRules.boundedContextsFreeOfCycles().evaluate(wholeBackendClasses);
 		final int detailLines = result.getFailureReport().getDetails().size();
 
-		// Report-only: surface the legacy cycle count, but do not fail the build (see class Javadoc).
-		logger.warn("ArchUnit cross-module no-cycles is REPORT-ONLY (POC): {} cycle-violation detail line(s) "
-				+ "across de.metas.business + de.metas.adempiere.adempiere.base. Frozen/gating is a next step "
-				+ "(needs deterministic cycle descriptions) — see docs/coding-rules/archunit-backlog.md row 10.", detailLines);
+		// Report-only: surface the legacy cycle count, never fail the build (see class Javadoc).
+		logger.warn("ArchUnit cross-module no-cycles is REPORT-ONLY (whole backend): {} cycle-violation detail line(s) "
+				+ "across all de.metas modules. Frozen/gating needs deterministic cycle descriptions — see "
+				+ "docs/coding-rules/archunit-backlog.md row 10.", detailLines);
 	}
 }
