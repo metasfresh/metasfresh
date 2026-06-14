@@ -9,6 +9,8 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.core.importer.Location;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.EvaluationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -38,6 +40,8 @@ import static com.tngtech.archunit.library.freeze.FreezingArchRule.freeze;
  */
 public final class MetasfreshArchRules
 {
+	private static final Logger logger = LoggerFactory.getLogger(MetasfreshArchRules.class);
+
 	private MetasfreshArchRules()
 	{
 	}
@@ -147,9 +151,8 @@ public final class MetasfreshArchRules
 			}
 		}
 
-		System.out.println("[ArchUnit whole-backend] Total classes imported: " + classes.size()
-				+ " (import took " + importMs + " ms)");
-		System.out.println("[ArchUnit whole-backend] Distinct de.metas.<x> sub-packages (" + metasSubPackages.size() + "): " + metasSubPackages);
+		logger.info("[ArchUnit whole-backend] Total classes imported: {} (import took {} ms)", classes.size(), importMs);
+		logger.info("[ArchUnit whole-backend] Distinct de.metas.<x> sub-packages ({}): {}", metasSubPackages.size(), metasSubPackages);
 
 		// Probe: assert key module sub-packages are present — a missing one means an incomplete closure.
 		// NOTE: Maven artifact names (e.g. "de.metas.business") do not correspond to Java package names.

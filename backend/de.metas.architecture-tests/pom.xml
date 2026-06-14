@@ -16,9 +16,10 @@
 	<packaging>jar</packaging>
 
 	<description>
-		Aggregator module for cross-module ArchUnit architecture tests. Has no production code; it depends on
-		the modules whose compiled bytecode it analyses for cross-module invariants (the global no-cycles check).
-		Deliberately scoped to a small set of related modules — full multi-module wiring is a later growth step.
+		Whole-backend ArchUnit architecture tests. Has no production code; it depends on the assembly modules
+		(metasfresh-dist-serverRoot + metasfresh-webui-api) whose transitive classpath forms the complete
+		backend closure that ArchUnit analyses. The frozen gating rules run over every backend module; the
+		report-only no-cycles check is opt-in (-Darchunit.cycles=true).
 	</description>
 
 	<properties>
