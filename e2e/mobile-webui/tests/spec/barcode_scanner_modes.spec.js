@@ -105,8 +105,9 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 //   no <video> element    — mode.camera.enabled=N → device camera should never render
 //
 // Asserts on HU Manager so BarcodeScannerComponent renders from SysConfig (no hardcoded prop) —
-// ApplicationsListScreen hardcodes both isShowInputText={false} and isShowVideo={false}, which
-// would short-circuit the sysconfig path and make readOnly + camera-absent checks vacuously pass.
+// ApplicationsListScreen hardcodes `invisible` (headless hardware variant: off-screen input only,
+// no footer, no video), which would short-circuit the sysconfig path and make readOnly +
+// camera-absent checks vacuously pass.
 //
 // IF THIS TEST FAILS after a change to BarcodeScannerComponent.jsx: the CODE broke the contract.
 // Fix the code, do NOT relax these expected values. Any change to readOnly / inputMode / type /
@@ -234,7 +235,7 @@ test.describe('Scan paths', () => {
         await ApplicationsListScreen.expectVisible();
 
         // Navigate to HU Manager so the barcode scanner renders from SysConfig (no hardcoded prop).
-        // The ApplicationsListScreen hardcodes isShowInputText={false}, which would override the
+        // The ApplicationsListScreen hardcodes `invisible`, which would override the
         // SysConfig and make the attribute assertion below meaningless.
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
