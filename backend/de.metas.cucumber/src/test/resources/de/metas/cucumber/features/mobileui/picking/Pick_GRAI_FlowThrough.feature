@@ -6,9 +6,8 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
 ## A GRAIRequired=Yes customer forces the picker to capture one GRAI per TU on the picked LU
 ## before the picking job can be completed:
 ## - GRAIs are captured per-LU via the picking-scoped get/set-GRAIs endpoint.
-## - The completion guard (PickingJobCompleteCommand -> PickingJobGRAIValidator ->
-##   HUGraiSnapshot.assertAllGraisAssigned) blocks completion until exactly N GRAIs are assigned
-##   (N = the LU's tuCount).
+## - The picking completion guard blocks completion until exactly N GRAIs are assigned
+##   (N = the LU's TU count — one GRAI per TU).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -68,7 +67,6 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
 
     # GRAIRequired=Y customer -> the completion guard fires for this LU_TU job.
-    # The GRAIRequired column on the C_BPartners create step is NEW (see C_BPartner_StepDef).
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |
       | customer   | customer | N            | Y              | PS                            | Y            |
@@ -173,10 +171,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | 7613204.00307.000001 |
       | 7613204.00307.000002 |
 
-    # The completion must be rejected by the completion guard with the GRAICountMismatch AD_Message
-    # (one TU has no GRAI). NOTE: until the picking set-GRAIs endpoint exists, this scenario REDs at
-    # the 'set picking GRAIs' step above (like the happy path); once the endpoint is implemented it
-    # proceeds here to assert the guard.
+    # The completion must be rejected by the completion guard with the GRAICountMismatch error (one TU has no GRAI).
     Then complete picking job expecting error
       | ErrorCode          |
       | GRAI_COUNT_MISMATCH |

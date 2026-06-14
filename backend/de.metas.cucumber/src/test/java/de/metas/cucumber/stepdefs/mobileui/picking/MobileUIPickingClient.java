@@ -128,12 +128,8 @@ public class MobileUIPickingClient
 	}
 
 	/**
-	 * Capture GRAIs on the picked LU via the picking-scoped set-GRAIs endpoint.
-	 * <p>
-	 * The HU-Manager get/set-GRAIs endpoints are HU-Manager-scoped (gated by {@code HUManagerAction.ScanGRAI}),
-	 * so a picking operator cannot use them. The picking endpoint delegates to the generic, already-existing
-	 * service {@code HandlingUnitsService.setGRAIs(HuId, GRAISet)} but gates on the PICKING application. GRAIs bind
-	 * to {@code luPickingTarget.luId}; expected count N = the LU's tuCount ({@code HUGraiSnapshot.getTUCount}).
+	 * Capture GRAIs on the picked LU via the picking-scoped set-GRAIs endpoint (authorized via the
+	 * picking application, NOT the HU-Manager {@code ScanGRAI} action).
 	 *
 	 * @return the refreshed picking workflow process after the GRAIs were stamped
 	 */

@@ -248,10 +248,6 @@ public class MobileUI_Picking_StepDef
 	/**
 	 * Complete the picking job and assert it is BLOCKED by the completion-time GRAI validator.
 	 * <p>
-	 * {@link MobileUIPickingClient#complete(String)} runs {@code WorkflowRestController.setUserConfirmation}
-	 * in-process, so the {@code PickingJobCompleteCommand -> PickingJobGRAIValidator -> HUGraiSnapshot.assertAllGraisAssigned}
-	 * {@link AdempiereException} propagates here and its error code is asserted directly.
-	 * <p>
 	 * <b>@cucumber.columns</b>
 	 * <ul>
 	 *   <li><b>ErrorCode</b> — (required) the expected {@link AdempiereException#getErrorCode()} the completion
@@ -268,9 +264,8 @@ public class MobileUI_Picking_StepDef
 
 		assertThatThrownBy(() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()))
 				.as("completing a GRAIRequired picking job with fewer GRAIs than TUs must be blocked")
-				.isInstanceOf(AdempiereException.class)
-				.extracting(ex -> ((AdempiereException)ex).getErrorCode())
-				.isEqualTo(expectedErrorCode);
+				.isInstanceOfSatisfying(AdempiereException.class, ex ->
+						assertThat(ex.getErrorCode()).isEqualTo(expectedErrorCode));
 	}
 
 	//

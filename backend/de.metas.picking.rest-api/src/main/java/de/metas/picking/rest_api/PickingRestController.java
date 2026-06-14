@@ -351,16 +351,17 @@ public class PickingRestController
 	}
 
 	/**
-	 * Returns the GRAIs currently assigned to the given picked LU, together with the LU's {@code tuCount}
-	 * (the number of GRAIs the picker is expected to scan, N = one GRAI per TU).
+	 * Returns the GRAIs currently captured on the picking job's actually-picked TUs, together with
+	 * {@code tuCount} (the number of picked TUs = the number of GRAIs the picker is expected to scan,
+	 * one per TU).
 	 * <p>
-	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action), so a picking
-	 * operator can capture GRAIs on the LU they are picking into. Delegates to the generic, HuId-scoped
-	 * {@link HandlingUnitsService#getGRAIs(HuId)}.
+	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action). The data is
+	 * derived from the picking job (NOT from the path {@code huId}), so a picking operator can only read
+	 * the GRAIs of the TUs they actually picked.
 	 *
-	 * @param wfProcessIdStr the picking job's workflow process id (authorization scope)
-	 * @param huId           the picked LU's HuId (bound to {@code luPickingTarget.luId})
-	 * @return the current GRAI codes and the LU's {@code tuCount}
+	 * @param wfProcessIdStr the picking job's workflow process id (authorization + data scope)
+	 * @param huId           the picked LU's HuId (kept for URL symmetry with the PUT; not used for data)
+	 * @return the current GRAI codes captured on the picked TUs and the picked-TU count
 	 */
 	@GetMapping("/job/{wfProcessId}/lu/{huId}/grai")
 	public JsonGRAICodesResponse getGRAIs(
@@ -369,23 +370,30 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 
-		return handlingUnitsService.getGRAIs(HuId.ofRepoId(huId));
+		final PickingJobId pickingJobId = WFProcessId.ofString(wfProcessIdStr).getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+		final List<HuId> pickedTUIds = pickingJob.streamLines()
+				.flatMap(line -> line.getPickedHUIds().stream())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		final List<String> graiCodes = pickedTUIds.stream()
+				.flatMap(pickedTUId -> handlingUnitsService.getGRAIs(pickedTUId).getGraiCodes().stream())
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonGRAICodesResponse.builder()
+				.graiCodes(graiCodes)
+				.tuCount(pickedTUIds.size())
+				.build();
 	}
 
 	/**
-	 * Captures the given GRAIs on the picking job's actually-picked TU HUs and returns the refreshed
-	 * picking workflow process.
-	 * <p>
-	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action), so a picking
-	 * operator can capture GRAIs on the LU they are picking into. The GRAIs are distributed one-per-TU
-	 * across the job's picked TUs ({@code PickingJobStepPickedTo.actualPickedHU} — the same HUs the
-	 * completion guard {@code PickingJobCompleteCommand} -> {@code PickingJobGRAIValidator} inspects via
-	 * {@code line.getPickedHUIds()}), each via the generic, HuId-scoped
-	 * {@link HandlingUnitsService#setGRAIs(HuId, GRAISet)}. The completion guard remains the single source
-	 * of truth for whether enough GRAIs were captured (it blocks completion until every picked TU carries a GRAI).
+	 * Captures the given GRAIs on the picking job's actually-picked TUs and returns the refreshed
+	 * picking workflow process. Authorized via the picking application (NOT the HU-Manager
+	 * {@code ScanGRAI} action).
 	 *
-	 * @param wfProcessIdStr the picking job's workflow process id (authorization scope, returned refreshed)
-	 * @param huId           the picked LU's HuId (bound to {@code luPickingTarget.luId}; identifies the LU for the GET tuCount)
+	 * @param wfProcessIdStr the picking job's workflow process id (authorization + data scope, returned refreshed)
+	 * @param huId           the picked LU's HuId (kept for URL symmetry; not used for data)
 	 * @param request        the GRAI codes to distribute across the picked TUs (one per TU, in order)
 	 * @return the refreshed picking workflow process after the GRAIs were stamped
 	 */
