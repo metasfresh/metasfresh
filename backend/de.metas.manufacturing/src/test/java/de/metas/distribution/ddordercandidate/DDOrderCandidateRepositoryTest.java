@@ -5,6 +5,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.process.PInstanceId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.order.OrderAndLineId;
@@ -106,27 +107,29 @@ class DDOrderCandidateRepositoryTest
 	}
 
 	@Test
-	void inputDataSource_roundtrips()
+	void inputDataSource_roundtrip_present()
 	{
-		// Case 1: with inputDataSourceId
 		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoId(200);
 
-		final DDOrderCandidate candidateWithSource = newFullyFilled().toBuilder()
+		final DDOrderCandidate candidate = newFullyFilled().toBuilder()
 				.inputDataSourceId(inputDataSourceId)
 				.build();
-		ddOrderCandidateRepository.save(candidateWithSource);
+		ddOrderCandidateRepository.save(candidate);
 
-		final DDOrderCandidate reloaded = ddOrderCandidateRepository.getById(candidateWithSource.getIdNotNull());
+		final DDOrderCandidate reloaded = ddOrderCandidateRepository.getById(candidate.getIdNotNull());
 		assertThat(reloaded.getInputDataSourceId()).isEqualTo(inputDataSourceId);
+	}
 
-		// Case 2: no inputDataSourceId (null)
-		final DDOrderCandidate candidateNoSource = newFullyFilled().toBuilder()
+	@Test
+	void inputDataSource_roundtrip_absent()
+	{
+		final DDOrderCandidate candidate = newFullyFilled().toBuilder()
 				.inputDataSourceId(null)
 				.build();
-		ddOrderCandidateRepository.save(candidateNoSource);
+		ddOrderCandidateRepository.save(candidate);
 
-		final DDOrderCandidate reloadedNoSource = ddOrderCandidateRepository.getById(candidateNoSource.getIdNotNull());
-		assertThat(reloadedNoSource.getInputDataSourceId()).isNull();
+		final DDOrderCandidate reloaded = ddOrderCandidateRepository.getById(candidate.getIdNotNull());
+		assertThat(reloaded.getInputDataSourceId()).isNull();
 	}
 
 	@Test
@@ -145,7 +148,6 @@ class DDOrderCandidateRepositoryTest
 				.build();
 		ddOrderCandidateRepository.save(candidateB);
 
-		// Filter by source A — only A's candidate
 		final List<DDOrderCandidate> resultA = ddOrderCandidateRepository.list(
 				DDOrderCandidateQuery.builder()
 						.inputDataSourceId(sourceA)
@@ -153,10 +155,71 @@ class DDOrderCandidateRepositoryTest
 		assertThat(resultA).hasSize(1);
 		assertThat(resultA.get(0).getInputDataSourceId()).isEqualTo(sourceA);
 
-		// No filter — both candidates
 		final List<DDOrderCandidate> resultAll = ddOrderCandidateRepository.list(
 				DDOrderCandidateQuery.builder()
 						.build());
 		assertThat(resultAll).hasSize(2);
+	}
+
+	@Test
+	void createSelection_filtersByInputDataSource()
+	{
+		final InputDataSourceId sourceA = InputDataSourceId.ofRepoId(301);
+		final InputDataSourceId sourceB = InputDataSourceId.ofRepoId(302);
+
+		final DDOrderCandidate candidateA = newFullyFilled().toBuilder().inputDataSourceId(sourceA).build();
+		ddOrderCandidateRepository.save(candidateA);
+		final DDOrderCandidate candidateB = newFullyFilled().toBuilder().inputDataSourceId(sourceB).build();
+		ddOrderCandidateRepository.save(candidateB);
+
+		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
+				.inputDataSourceId(sourceA)
+				.processed(false)
+				.onlyPositiveQtyToProcess(true)
+				.build());
+
+		assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
+				.extracting(DDOrderCandidate::getIdNotNull)
+				.containsExactly(candidateA.getIdNotNull());
+	}
+
+	@Test
+	void createSelection_noInputDataSource_returnsAllEligible()
+	{
+		final DDOrderCandidate a = newFullyFilled().toBuilder().inputDataSourceId(InputDataSourceId.ofRepoId(301)).build();
+		ddOrderCandidateRepository.save(a);
+		final DDOrderCandidate b = newFullyFilled().toBuilder().inputDataSourceId(InputDataSourceId.ofRepoId(302)).build();
+		ddOrderCandidateRepository.save(b);
+
+		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
+				.processed(false)
+				.onlyPositiveQtyToProcess(true)
+				.build());
+
+		assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
+				.extracting(DDOrderCandidate::getIdNotNull)
+				.containsExactlyInAnyOrder(a.getIdNotNull(), b.getIdNotNull());
+	}
+
+	@Test
+	void createSelection_excludesIneligibleZeroQtyToProcess()
+	{
+		final InputDataSourceId source = InputDataSourceId.ofRepoId(301);
+		final DDOrderCandidate eligible = newFullyFilled().toBuilder().inputDataSourceId(source).build();
+		ddOrderCandidateRepository.save(eligible);
+
+		final DDOrderCandidate base = newFullyFilled();
+		final DDOrderCandidate ineligible = base.toBuilder().inputDataSourceId(source).qtyProcessed(base.getQtyEntered()).build();
+		ddOrderCandidateRepository.save(ineligible);
+
+		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(DDOrderCandidateQuery.builder()
+				.inputDataSourceId(source)
+				.processed(false)
+				.onlyPositiveQtyToProcess(true)
+				.build());
+
+		assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
+				.extracting(DDOrderCandidate::getIdNotNull)
+				.containsExactly(eligible.getIdNotNull());
 	}
 }

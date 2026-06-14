@@ -14,12 +14,14 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantitys;
+import de.metas.security.permissions.Access;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -270,6 +272,14 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID, query.getInputDataSourceId());
 		}
+		if (query.getUserSelectionFilter() != null)
+		{
+			queryBuilder.filter(query.getUserSelectionFilter());
+		}
+		if (Boolean.TRUE.equals(query.getOnlyPositiveQtyToProcess()))
+		{
+			queryBuilder.addCompareFilter(I_DD_Order_Candidate.COLUMNNAME_QtyToProcess, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		}
 
 		return queryBuilder;
 	}
@@ -302,6 +312,14 @@ public class DDOrderCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, ids)
 				.create()
+				.createSelection();
+	}
+
+	public PInstanceId createSelection(@NonNull final DDOrderCandidateQuery query)
+	{
+		return toSqlQuery(query)
+				.create()
+				.setRequiredAccess(Access.READ)
 				.createSelection();
 	}
 
