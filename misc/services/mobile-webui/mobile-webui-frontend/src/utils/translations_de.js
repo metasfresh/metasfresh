@@ -61,6 +61,9 @@ const translations = {
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',
+    qrLoginPlaceholder: 'QR-Code zum Anmelden scannen',
+    username: 'Benutzername',
+    password: 'Passwort',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Passwort',
@@ -86,6 +89,12 @@ const translations = {
       scanTrolleyPlaceholder: 'Wagen scannen...',
       scanPrompt: 'Barcode scannen',
       scanInProgress: 'Scan läuft...',
+      enterManually: 'Manuell eingeben',
+      scanWithCamera: 'Mit Kamera scannen',
+      useHardwareScanner: 'Hardware-Scanner verwenden',
+      manualInputPlaceholder: 'Barcode eingeben...',
+      manualInputSubmit: 'Senden',
+      cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
     },
   },
   activities: {

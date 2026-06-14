@@ -99,7 +99,7 @@ const AppScreen = () => {
       </div>
     );
   } else {
-    return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
+    return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
   }
 };
 
