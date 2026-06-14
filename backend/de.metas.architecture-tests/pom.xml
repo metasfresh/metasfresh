@@ -64,6 +64,11 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>@{argLine} -Xms512m -Xmx4g -Dfile.encoding=UTF-8</argLine>
+					<!-- TEMP (me03 30396): print the full freeze-failure report (every new violation) to the
+					     CI console so the CI-authoritative baseline can be harvested from the job log.
+					     REVERT this block before merge — leaves only the argLine above. -->
+					<useFile>false</useFile>
+					<redirectTestOutputToFile>false</redirectTestOutputToFile>
 				</configuration>
 			</plugin>
 		</plugins>
