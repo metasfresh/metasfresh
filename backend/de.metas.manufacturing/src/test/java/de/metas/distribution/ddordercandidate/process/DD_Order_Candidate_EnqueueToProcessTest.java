@@ -2,11 +2,11 @@ package de.metas.distribution.ddordercandidate.process;
 
 import de.metas.impexp.InputDataSourceId;
 import de.metas.testsupport.MetasfreshAssertions;
-import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.eevolution.model.I_DD_Order_Candidate;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +27,9 @@ class DD_Order_Candidate_EnqueueToProcessTest
 	{
 		final DD_Order_Candidate_EnqueueToProcess process = new DD_Order_Candidate_EnqueueToProcess();
 
-		// (c) base filters Processed=false, QtyToProcess>0, active ALWAYS present — check with null source, null grid
+		// (base) null, null → base filters always present
 		{
-			final IQueryBuilder<I_DD_Order_Candidate> qb = process.buildSelectionQuery(null, null);
+			final IQueryBuilder<I_DD_Order_Candidate> qb = process.selectionQueryBuilder(null, null);
 			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = qb.getCompositeFilter();
 			MetasfreshAssertions.assertThat(compositeFilter)
 					.hasEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Processed, false)
@@ -37,40 +37,38 @@ class DD_Order_Candidate_EnqueueToProcessTest
 					.hasActiveRecordQueryFilter();
 		}
 
-		// (a) source set → source equals-filter present
+		// (source set) null, sourceId → source equals-filter present
 		{
 			final InputDataSourceId sourceId = InputDataSourceId.ofRepoId(42);
-			final IQueryBuilder<I_DD_Order_Candidate> qb = process.buildSelectionQuery(null, sourceId);
+			final IQueryBuilder<I_DD_Order_Candidate> qb = process.selectionQueryBuilder(null, sourceId);
 			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = qb.getCompositeFilter();
 			MetasfreshAssertions.assertThat(compositeFilter)
 					.hasEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID, sourceId);
 		}
 
-		// (b) source null → no source filter
+		// (source null) null, null → no source filter
 		{
-			final IQueryBuilder<I_DD_Order_Candidate> qb = process.buildSelectionQuery(null, null);
+			final IQueryBuilder<I_DD_Order_Candidate> qb = process.selectionQueryBuilder(null, null);
 			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = qb.getCompositeFilter();
 			MetasfreshAssertions.assertThat(compositeFilter)
 					.hasNoFilterRegarding(I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID);
 		}
 
-		// (d) grid-selection filter applied when provided
+		// (grid present) plain EqualsQueryFilter as userSelectionFilter → composite has that equals-filter as direct child
 		{
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			final IQueryBuilder<I_DD_Order_Candidate> gridSelectionQB = queryBL
-					.createQueryBuilder(I_DD_Order_Candidate.class)
-					.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, 999);
+			final IQueryFilter<I_DD_Order_Candidate> userSelectionFilter =
+					EqualsQueryFilter.of(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, 999);
 
-			final IQueryBuilder<I_DD_Order_Candidate> withGrid = process.buildSelectionQuery(gridSelectionQB, null);
-			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = withGrid.getCompositeFilter();
+			final IQueryBuilder<I_DD_Order_Candidate> qb = process.selectionQueryBuilder(userSelectionFilter, null);
+			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = qb.getCompositeFilter();
 			MetasfreshAssertions.assertThat(compositeFilter)
 					.hasEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, 999);
 		}
 
-		// (d) grid-selection filter absent when null
+		// (grid null) null, null → no DD_Order_Candidate_ID filter
 		{
-			final IQueryBuilder<I_DD_Order_Candidate> withoutGrid = process.buildSelectionQuery(null, null);
-			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = withoutGrid.getCompositeFilter();
+			final IQueryBuilder<I_DD_Order_Candidate> qb = process.selectionQueryBuilder(null, null);
+			final ICompositeQueryFilter<I_DD_Order_Candidate> compositeFilter = qb.getCompositeFilter();
 			MetasfreshAssertions.assertThat(compositeFilter)
 					.hasNoFilterRegarding(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID);
 		}
