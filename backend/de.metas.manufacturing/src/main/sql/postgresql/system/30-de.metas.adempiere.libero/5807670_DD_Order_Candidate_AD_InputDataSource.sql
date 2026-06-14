@@ -57,6 +57,13 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 VALUES (0,592807 /*From ID Server*/,541291,0,19,NULL,542424,'AD_InputDataSource_ID',TO_TIMESTAMP('2026-06-14 14:00:00','YYYY-MM-DD HH24:MI:SS'),100,'N','','EE01',10,'','Y','Y','N','N','N','N','N','N','N','N','N','Y','Eingabequelle',TO_TIMESTAMP('2026-06-14 14:00:00','YYYY-MM-DD HH24:MI:SS'),100,0,'NP')
 ;
 
+-- Allow zoom from the field to the AD_InputDataSource record — mirror C_OLCand.AD_InputDataSource_ID,
+-- whose column has IsExcludeFromZoomTargets='N'. The DB default for a new column is 'Y' (no zoom arrow).
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',
+       Updated=TO_TIMESTAMP('2026-06-14 14:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+ WHERE AD_Column_ID=592807
+;
+
 -- AD_Column_Trl skeleton rows for all active system languages
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
