@@ -84,7 +84,6 @@ const WFLaunchersScreen = () => {
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => setWorkstationByQRCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkstationPlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
@@ -104,7 +103,6 @@ const WFLaunchersScreen = () => {
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => setWorkplaceByQRCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkplacePlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
@@ -126,7 +124,6 @@ const WFLaunchersScreen = () => {
             setTrolleyByScannedCode(scannedBarcode).catch((axiosError) => toastError({ axiosError }))
           }
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
