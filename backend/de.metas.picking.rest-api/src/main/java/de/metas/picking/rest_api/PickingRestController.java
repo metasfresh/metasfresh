@@ -22,14 +22,12 @@
 
 package de.metas.picking.rest_api;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonGRAICodesRequest;
 import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -85,6 +83,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/picking")
@@ -351,17 +351,18 @@ public class PickingRestController
 	}
 
 	/**
-	 * Returns the GRAIs currently captured on the picking job's actually-picked TUs, together with
-	 * {@code tuCount} (the number of picked TUs = the number of GRAIs the picker is expected to scan,
+	 * Returns the GRAIs currently captured on the picking job's picked LU, together with
+	 * {@code tuCount} (the LU's crate count = the number of GRAIs the picker is expected to scan,
 	 * one per TU).
 	 * <p>
-	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action). The data is
-	 * derived from the picking job (NOT from the path {@code huId}), so a picking operator can only read
-	 * the GRAIs of the TUs they actually picked.
+	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action). The LU is
+	 * resolved from the job's pick target (NOT the path {@code huId}), so a picking operator can only
+	 * read the GRAIs of the LU they actually picked onto. {@code tuCount} comes from the LU snapshot, so
+	 * a Flow-Through pick of N crates into one aggregate TU reports N (not 1).
 	 *
 	 * @param wfProcessIdStr the picking job's workflow process id (authorization + data scope)
 	 * @param huId           the picked LU's HuId (kept for URL symmetry with the PUT; not used for data)
-	 * @return the current GRAI codes captured on the picked TUs and the picked-TU count
+	 * @return the current GRAI codes captured on the picked LU and the LU's crate count
 	 */
 	@GetMapping("/job/{wfProcessId}/lu/{huId}/grai")
 	public JsonGRAICodesResponse getGRAIs(
@@ -370,31 +371,19 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 
-		final PickingJobId pickingJobId = WFProcessId.ofString(wfProcessIdStr).getRepoId(PickingJobId::ofRepoId);
-		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
-		final List<HuId> pickedTUIds = pickingJob.streamLines()
-				.flatMap(line -> line.getPickedHUIds().stream())
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
-
-		final List<String> graiCodes = pickedTUIds.stream()
-				.flatMap(pickedTUId -> handlingUnitsService.getGRAIs(pickedTUId).getGraiCodes().stream())
-				.collect(ImmutableList.toImmutableList());
-
-		return JsonGRAICodesResponse.builder()
-				.graiCodes(graiCodes)
-				.tuCount(pickedTUIds.size())
-				.build();
+		final HuId luId = resolvePickedLuId(wfProcessIdStr);
+		return handlingUnitsService.getGRAIs(luId);
 	}
 
 	/**
-	 * Captures the given GRAIs on the picking job's actually-picked TUs and returns the refreshed
-	 * picking workflow process. Authorized via the picking application (NOT the HU-Manager
-	 * {@code ScanGRAI} action).
+	 * Captures the given GRAIs on the picking job's picked LU and returns the refreshed picking
+	 * workflow process. Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI}
+	 * action). The LU is resolved from the job's pick target; the LU snapshot distributes the GRAIs
+	 * across the LU's crate slots (including the N slots of a Flow-Through aggregate TU).
 	 *
 	 * @param wfProcessIdStr the picking job's workflow process id (authorization + data scope, returned refreshed)
 	 * @param huId           the picked LU's HuId (kept for URL symmetry; not used for data)
-	 * @param request        the GRAI codes to distribute across the picked TUs (one per TU, in order)
+	 * @param request        the GRAI codes to capture on the picked LU
 	 * @return the refreshed picking workflow process after the GRAIs were stamped
 	 */
 	@PutMapping("/job/{wfProcessId}/lu/{huId}/grai")
@@ -405,23 +394,37 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 
-		final PickingJobId pickingJobId = WFProcessId.ofString(wfProcessIdStr).getRepoId(PickingJobId::ofRepoId);
-		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
-		final List<HuId> pickedTUIds = pickingJob.streamLines()
-				.flatMap(line -> line.getPickedHUIds().stream())
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
-
-		final List<GRAI> graiList = ImmutableList.copyOf(GRAISet.parseStrings(request.getGraiCodes()));
-
-		// Distribute one GRAI per picked TU (in order). TUs beyond the number of supplied GRAIs are cleared,
-		// so completion stays blocked by the guard until exactly one GRAI per TU has been captured.
-		for (int i = 0; i < pickedTUIds.size(); i++)
-		{
-			final GRAISet graiForTU = i < graiList.size() ? GRAISet.of(graiList.get(i)) : GRAISet.EMPTY;
-			handlingUnitsService.setGRAIs(pickedTUIds.get(i), graiForTU);
-		}
+		final HuId luId = resolvePickedLuId(wfProcessIdStr);
+		final GRAISet graiSet = GRAISet.parseStrings(request.getGraiCodes());
+		handlingUnitsService.setGRAIs(luId, graiSet);
 
 		return workflowRestController.getWFProcessById(wfProcessIdStr);
+	}
+
+	/**
+	 * Resolves the concrete LU the picker has picked onto, from the job's LU pick targets.
+	 * <p>
+	 * When picking onto a <em>new</em> LU the pick target initially carries only the LU packing
+	 * instruction (no {@code luId}); the physical LU is materialised on the first pick and the
+	 * <em>line-level</em> pick target is then updated to an existing-LU target carrying the concrete
+	 * {@code luId} (the header target keeps the new-LU instruction). So the concrete LU is found by
+	 * scanning the effective pick target of the header and every line for the first one that has a
+	 * materialised {@code luId}.
+	 */
+	@NonNull
+	private HuId resolvePickedLuId(@NonNull final String wfProcessIdStr)
+	{
+		final PickingJobId pickingJobId = WFProcessId.ofString(wfProcessIdStr).getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+
+		return Stream.concat(
+						Stream.of(pickingJob.getLuPickingTarget(null)),
+						pickingJob.streamLines().map(line -> pickingJob.getLuPickingTargetEffective(line.getId())))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No picked LU found on picking job " + pickingJobId));
 	}
 }

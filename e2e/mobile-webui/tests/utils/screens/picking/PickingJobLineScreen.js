@@ -50,6 +50,14 @@ export const PickingJobLineScreen = {
         await page.locator('.loading').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    clickGraiScanButton: async () => await test.step(`${NAME} - Click GRAI scan button`, async () => {
+        await page.getByTestId('grai-scan-button').tap();
+    }),
+
+    expectGraiScanButtonVisible: async () => await test.step(`${NAME} - Expect GRAI scan button visible`, async () => {
+        await expect(page.getByTestId('grai-scan-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await PickingJobLineScreen.waitForScreen();
         await page.locator(ID_BACK_BUTTON).tap();
