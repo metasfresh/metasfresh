@@ -2,6 +2,7 @@ package de.metas.distribution.ddordercandidate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
@@ -75,6 +76,8 @@ public class DDOrderCandidate
 	@Nullable private final DistributionNetworkAndLineId distributionNetworkAndLineId;
 	@Nullable private final ProductPlanningId productPlanningId;
 
+	@Nullable private final InputDataSourceId inputDataSourceId;
+
 	// Not persisted fields:
 	@Nullable private final String traceId;
 	@Nullable private final MaterialDispoGroupId materialDispoGroupId;
@@ -107,6 +110,7 @@ public class DDOrderCandidate
 			@Nullable final PPOrderRef forwardPPOrderRef,
 			@Nullable final DistributionNetworkAndLineId distributionNetworkAndLineId,
 			@Nullable final ProductPlanningId productPlanningId,
+			@Nullable final InputDataSourceId inputDataSourceId,
 			@Nullable final String traceId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId)
 	{
@@ -138,6 +142,7 @@ public class DDOrderCandidate
 		this.forwardPPOrderRef = forwardPPOrderRef;
 		this.distributionNetworkAndLineId = distributionNetworkAndLineId;
 		this.productPlanningId = productPlanningId;
+		this.inputDataSourceId = inputDataSourceId;
 		this.traceId = traceId;
 		this.materialDispoGroupId = materialDispoGroupId;
 	}

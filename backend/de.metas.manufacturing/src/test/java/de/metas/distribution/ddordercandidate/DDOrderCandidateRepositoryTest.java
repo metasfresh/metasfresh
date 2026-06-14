@@ -3,6 +3,7 @@ package de.metas.distribution.ddordercandidate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
@@ -101,5 +102,29 @@ class DDOrderCandidateRepositoryTest
 		assertThat(candidate2).usingRecursiveComparison().isEqualTo(candidate);
 		assertThat(candidate2).isEqualTo(candidate);
 
+	}
+
+	@Test
+	void inputDataSource_roundtrips()
+	{
+		// Case 1: with inputDataSourceId
+		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoId(200);
+
+		final DDOrderCandidate candidateWithSource = newFullyFilled().toBuilder()
+				.inputDataSourceId(inputDataSourceId)
+				.build();
+		ddOrderCandidateRepository.save(candidateWithSource);
+
+		final DDOrderCandidate reloaded = ddOrderCandidateRepository.getById(candidateWithSource.getIdNotNull());
+		assertThat(reloaded.getInputDataSourceId()).isEqualTo(inputDataSourceId);
+
+		// Case 2: no inputDataSourceId (null)
+		final DDOrderCandidate candidateNoSource = newFullyFilled().toBuilder()
+				.inputDataSourceId(null)
+				.build();
+		ddOrderCandidateRepository.save(candidateNoSource);
+
+		final DDOrderCandidate reloadedNoSource = ddOrderCandidateRepository.getById(candidateNoSource.getIdNotNull());
+		assertThat(reloadedNoSource.getInputDataSourceId()).isNull();
 	}
 }
