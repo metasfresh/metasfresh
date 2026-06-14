@@ -22,7 +22,7 @@ import static com.tngtech.archunit.library.freeze.FreezingArchRule.freeze;
 /**
  * The metasfresh architecture rules, defined <b>once</b> and run through a <b>single</b> public entry point.
  * <p>
- * Callers invoke exactly one method — {@link #checkAllModuleRules(JavaClasses)} — which freezes and evaluates
+ * Callers invoke exactly one method — {@link #checkAllModuleRules(String, JavaClasses)} — which freezes and evaluates
  * every gating rule and joins their results, so a run reports every new violation at once. <b>Adding a new
  * rule ("chapter") means adding a private rule method here plus one line in {@code checkAllModuleRules} — no
  * caller (test class) changes.</b> The individual rule bodies are therefore {@code private}; the other public
