@@ -141,6 +141,12 @@ const translations = {
         windowName: 'Scan GRAI',
         count: '%(scanned)s / %(total)s GRAIs scanned',
         countExtra: '(%(extra)s extra)',
+        manualEntry: {
+          placeholder: 'Enter GRAI',
+          submit: {
+            buttonCaption: 'Add',
+          },
+        },
         save: {
           buttonCaption: 'Save',
         },

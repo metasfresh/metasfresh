@@ -17,10 +17,13 @@ import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import '../../../assets/GRAIScreen.scss';
 
 /**
- * In-picking GRAI mass-capture screen. Reached after the LU is fully picked (when GRAI scanning is
- * required for the job's customer). Binds to the picked LU (`luPickingTarget.luId`) and captures one
- * GRAI per picked TU via the picking-scoped GRAI endpoints. The save button ("Speichern") is enabled
- * only when exactly N (=tuCount) GRAIs are captured; on save it returns to the picking job screen.
+ * In-picking GRAI mass-capture screen. Available once the LU picking target is selected
+ * (`luPickingTarget.luId` present) when GRAI scanning is required for the job's customer; the
+ * backend completion guard remains the authoritative gate on whether GRAIs may actually be saved.
+ * Binds to the LU target and captures one GRAI per picked TU via the picking-scoped GRAI endpoints.
+ * GRAIs can be captured either by scanning or by typing them on the on-screen keyboard (both paths
+ * add to the same deduped list). The save button ("Speichern") is enabled only when exactly
+ * N (=tuCount) GRAIs are captured; on save it returns to the picking job screen.
  */
 const PickGraiScanScreen = () => {
   const { history, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -42,6 +45,7 @@ const PickGraiScanScreen = () => {
     usePickingGrais({ wfProcessId, huId, onSaved: goBackToJob });
 
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
+  const [manualInput, setManualInput] = useState('');
 
   const onBarcodeString = useCallback(
     (barcodeString) => {
@@ -62,6 +66,17 @@ const PickGraiScanScreen = () => {
     [onBarcodeString]
   );
 
+  // Manual keyboard entry: lets the operator TYPE a GRAI and confirm, in addition to scanning.
+  // Feeds the exact same onBarcodeString path as the hardware scanner, so both inputs add to the
+  // same deduped list. Scoped to this screen only — the shared BarcodeScannerComponent (hardware
+  // scan path) and its DataWedge/inputMode/readOnly logic are left untouched.
+  const submitManualInput = useCallback(() => {
+    const trimmed = manualInput.trim();
+    if (!trimmed) return;
+    onBarcodeString(trimmed);
+    setManualInput('');
+  }, [manualInput, onBarcodeString]);
+
   useEffect(() => {
     if (!huId) {
       history.goBack();
@@ -78,6 +93,35 @@ const PickGraiScanScreen = () => {
   return (
     <div className="grai-screen">
       {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />}
+
+      <div className="grai-manual-entry field has-addons">
+        <div className="control is-expanded">
+          <input
+            className="input grai-manual-input"
+            type="text"
+            value={manualInput}
+            placeholder={trl('activities.picking.graiScan.manualEntry.placeholder')}
+            onChange={(e) => setManualInput(e.target.value)}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') submitManualInput();
+            }}
+            disabled={loading}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck="false"
+            data-testid="grai-manual-input"
+          />
+        </div>
+        <div className="control">
+          <ButtonWithIndicator
+            captionKey="activities.picking.graiScan.manualEntry.submit.buttonCaption"
+            testId="grai-manual-submit"
+            disabled={loading || !manualInput.trim()}
+            onClick={submitManualInput}
+          />
+        </div>
+      </div>
 
       <div className="grai-count" data-testid="grai-count">
         {trl('activities.picking.graiScan.count', { scanned: assignedGrais.length, total: tuCount })}

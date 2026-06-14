@@ -70,6 +70,8 @@ const PickLineScreen = () => {
 
   // GRAI mass-capture entry point: shown only when GRAI scanning is required for this job's customer
   // (graiScanEnabled === GRAIRequired != No) AND an LU has been picked (luPickingTarget.luId present).
+  // Perf note: this fires on every PickLineScreen mount purely to learn graiScanEnabled; there is no
+  // cached job-level flag to read instead, so we accept the extra GET as the trade-off.
   const { graiScanEnabled } = useAvailablePickingTargets({ wfProcessId, lineId, type: PickingTargetType.TU });
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
   const isShowGraiScanButton = !manuallyClosed && graiScanEnabled && luPickingTarget?.luId != null;
