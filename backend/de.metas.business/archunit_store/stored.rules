@@ -1,5 +1,0 @@
-#
-#Sun Jun 14 12:59:44 EEST 2026
-Fields\ must\ not\ be\ of\ type\ java.sql.Timestamp,\ because\ docs/coding-rules/java-time.md\ \u00A72\ \u2014\ use\ Instant/ZonedDateTime\ via\ SystemTime/TimeUtil,\ not\ java.sql.Timestamp=9563e4ad-aa3b-474c-a499-1354ba58a1a5
-InterfaceWrapperHelper.save/saveRecord/load\ must\ only\ be\ called\ from\ *Repository\ /\ *DAO\ classes,\ because\ docs/coding-rules/service-injection.md\ \u00A74\ +\ java-general.md\ \u00A718\ \u2014\ persistence\ primitives\ belong\ in\ Repository/DAO,\ not\ in\ BL/Service/command/interceptor/process=92f0828f-64b8-4c52-86d7-863a6227ace3
-Env.getAD_Client_ID/getClientId/getAD_Org_ID/getOrgId\ must\ not\ be\ called\ from\ @Service/@Component/@Repository/*BL\ classes,\ because\ docs/coding-rules/service-injection.md\ \u00A77\ \u2014\ service/BL\ code\ must\ not\ read\ client/org\ from\ the\ ambient\ Env\ thread-local;\ pass\ it\ explicitly\ or\ derive\ it\ from\ the\ domain\ object=7ee8ed4b-b5e9-47d1-9c14-00b54f0ed6c6

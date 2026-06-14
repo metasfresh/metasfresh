@@ -1,3 +1,5 @@
 #
-#Sun Jun 14 13:03:22 EEST 2026
-de.metas\ bounded\ contexts\ (scoped\ to\ de.metas.business\ +\ de.metas.adempiere.adempiere.base)\ must\ be\ free\ of\ cycles,\ because\ docs/coding-rules/architecture.md\ \u00A78\ \u2014\ bounded-context\ dependency\ discipline;\ cycle-freedom\ is\ its\ structural\ corollary=84ff5df7-f4b0-4455-890e-7e40ec98ef94
+#Sun Jun 14 13:28:41 EEST 2026
+Fields\ must\ not\ be\ of\ type\ java.sql.Timestamp,\ because\ docs/coding-rules/java-time.md\ \u00A72\ \u2014\ use\ Instant/ZonedDateTime\ via\ SystemTime/TimeUtil,\ not\ java.sql.Timestamp=3fd194cc-e8e7-468e-bd5d-984aaedf8b05
+InterfaceWrapperHelper.save/saveRecord/load\ must\ only\ be\ called\ from\ *Repository\ /\ *DAO\ classes,\ because\ docs/coding-rules/service-injection.md\ \u00A74\ +\ java-general.md\ \u00A718\ \u2014\ persistence\ primitives\ belong\ in\ Repository/DAO,\ not\ in\ BL/Service/command/interceptor/process=1aef4010-cdfe-4d3d-80e4-85eb719472a2
+Env.getAD_Client_ID/getClientId/getAD_Org_ID/getOrgId\ must\ not\ be\ called\ from\ @Service/@Component/@Repository/*BL\ classes,\ because\ docs/coding-rules/service-injection.md\ \u00A77\ \u2014\ service/BL\ code\ must\ not\ read\ client/org\ from\ the\ ambient\ Env\ thread-local;\ pass\ it\ explicitly\ or\ derive\ it\ from\ the\ domain\ object=20d03b2d-b66a-4b6c-9f48-3167f48b153f

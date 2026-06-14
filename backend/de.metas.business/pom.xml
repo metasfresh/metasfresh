@@ -96,13 +96,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- ArchUnit — architecture enforcement (core lib; rules run from Jupiter @Test). Version in parent-pom. -->
-		<dependency>
-			<groupId>com.tngtech.archunit</groupId>
-			<artifactId>archunit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>
