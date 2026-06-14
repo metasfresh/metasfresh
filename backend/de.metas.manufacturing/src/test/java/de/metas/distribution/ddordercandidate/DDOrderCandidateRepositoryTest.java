@@ -127,4 +127,35 @@ class DDOrderCandidateRepositoryTest
 		final DDOrderCandidate reloadedNoSource = ddOrderCandidateRepository.getById(candidateNoSource.getIdNotNull());
 		assertThat(reloadedNoSource.getInputDataSourceId()).isNull();
 	}
+
+	@Test
+	void list_filtersByInputDataSource()
+	{
+		final InputDataSourceId sourceA = InputDataSourceId.ofRepoId(301);
+		final InputDataSourceId sourceB = InputDataSourceId.ofRepoId(302);
+
+		final DDOrderCandidate candidateA = newFullyFilled().toBuilder()
+				.inputDataSourceId(sourceA)
+				.build();
+		ddOrderCandidateRepository.save(candidateA);
+
+		final DDOrderCandidate candidateB = newFullyFilled().toBuilder()
+				.inputDataSourceId(sourceB)
+				.build();
+		ddOrderCandidateRepository.save(candidateB);
+
+		// Filter by source A — only A's candidate
+		final java.util.List<DDOrderCandidate> resultA = ddOrderCandidateRepository.list(
+				DDOrderCandidateQuery.builder()
+						.inputDataSourceId(sourceA)
+						.build());
+		assertThat(resultA).hasSize(1);
+		assertThat(resultA.get(0).getInputDataSourceId()).isEqualTo(sourceA);
+
+		// No filter — both candidates
+		final java.util.List<DDOrderCandidate> resultAll = ddOrderCandidateRepository.list(
+				DDOrderCandidateQuery.builder()
+						.build());
+		assertThat(resultAll).hasSize(2);
+	}
 }

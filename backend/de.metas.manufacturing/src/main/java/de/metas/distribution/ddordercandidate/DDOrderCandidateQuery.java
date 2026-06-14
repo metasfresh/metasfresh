@@ -1,5 +1,6 @@
 package de.metas.distribution.ddordercandidate;
 
+import de.metas.impexp.InputDataSourceId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -25,4 +26,5 @@ public class DDOrderCandidateQuery
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
 	@Nullable DDOrderCandidateId ddOrderCandidateId;
 	@Nullable PPOrderBOMLineId ppOrderBOMLineId;
+	@Nullable InputDataSourceId inputDataSourceId;
 }
