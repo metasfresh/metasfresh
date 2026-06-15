@@ -5,19 +5,28 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 
-// Mobile Distribution launcher split by Workplace.IsPackingPlace.
+// Mobile Distribution launcher split by Workplace.IsPackingPlace, modelled on a realistic
+// two-warehouse topology:
+//   - "packing" warehouse holds the packing stations (locators packing_station_1 / _2).
+//   - "storage" warehouse holds reserve + ground pick faces (reserve1/ground1, reserve2/ground2).
 //
-// Setup: one destination warehouse wh1 with four incoming DD orders from wh4.
-//   - DD1, DD3 target wh1_l1   — the packing pick-from locator of the packing-place workplace
-//   - DD2, DD4 target wh1_0A   — a groundfill (non-packing) locator
-// Two workplaces in wh1:
-//   - packingWP        IsPackingPlace=Y, pickFromLocator=wh1_l1
-//   - replenishmentWP  IsPackingPlace=N (its own pickFromLocator is irrelevant for the N path)
+// Workplaces:
+//   - packing_station_1  IsPackingPlace=Y, warehouse=packing, pick-from=packing_station_1
+//   - packing_station_2  IsPackingPlace=Y, warehouse=packing, pick-from=packing_station_2
+//   - fork_lift_1        IsPackingPlace=N, warehouse=storage, no pick-from
 //
-// Expected launcher sets:
-//   - packingWP (Y)        → only DD orders whose target locator = its pick-from (wh1_l1) → DD1, DD3
-//   - replenishmentWP (N)  → only DD orders whose target locator is NOT a packing-place locator
-//                            (i.e. NOT IN {wh1_l1}) → the groundfill moves DD2, DD4
+// DD orders:
+//   - DD1  storage/ground1   → packing/packing_station_1   (bring-to-packing)
+//   - DD2  storage/ground2   → packing/packing_station_2   (bring-to-packing)
+//   - DD3  storage/reserve1  → storage/ground1             (groundfill, intra-storage)
+//   - DD4  storage/reserve2  → storage/ground2             (groundfill, intra-storage)
+//
+// Expected launchers:
+//   - packing_station_1 (Y) → DD1 only (its warehouse=packing + pick-from locator=packing_station_1)
+//   - packing_station_2 (Y) → DD2 only
+//   - fork_lift_1 (N)       → DD3, DD4 (its warehouse=storage; no packing-place locator lives in
+//                             storage, so nothing is excluded and the bring-to-packing DD1/DD2 are
+//                             already filtered out by warehouseTo=packing)
 const createMasterdata = async ({ distributionOrders }) => {
     const distributionOrdersEffective = {};
     let seqNo = 1;
@@ -49,13 +58,14 @@ const createMasterdata = async ({ distributionOrders }) => {
             resources: { "plantId": { type: "PT" } },
             products: { "P1": {} },
             warehouses: {
-                "wh1": { locators: { wh1_l1: {}, wh1_l2: {}, wh1_0A: {} } },
-                "wh4": { locators: { wh4_l1: {} } },
+                "packing": { locators: { packing_station_1: {}, packing_station_2: {} } },
+                "storage": { locators: { ground1: {}, reserve1: {}, ground2: {}, reserve2: {} } },
                 "whInTransit": { inTransit: true },
             },
             workplaces: {
-                packingWP: { warehouse: 'wh1', pickFromLocator: 'wh1_l1', isPackingPlace: true },
-                replenishmentWP: { warehouse: 'wh1', pickFromLocator: 'wh1_l2', isPackingPlace: false },
+                wpPacking1: { warehouse: 'packing', pickFromLocator: 'packing_station_1', isPackingPlace: true },
+                wpPacking2: { warehouse: 'packing', pickFromLocator: 'packing_station_2', isPackingPlace: true },
+                wpForkLift: { warehouse: 'storage', isPackingPlace: false },
             },
             distributionOrders: distributionOrdersEffective,
         }
@@ -63,7 +73,7 @@ const createMasterdata = async ({ distributionOrders }) => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Distribution launchers split by Workplace.IsPackingPlace (Y vs N)', async ({ page }) => {
+test('Distribution launchers split by Workplace.IsPackingPlace (packing stations vs fork-lift)', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.feature('F5114: MobileUI Distribution');
@@ -72,35 +82,45 @@ test('Distribution launchers split by Workplace.IsPackingPlace (Y vs N)', async 
 
     const masterdata = await createMasterdata({
         distributionOrders: {
-            "DD1": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_l1" },
-            "DD2": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_0A" },
-            "DD3": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_l1" },
-            "DD4": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_0A" },
+            "DD1": { warehouseFrom: "storage", locatorFrom: "ground1", warehouseTo: "packing", locatorTo: "packing_station_1" },
+            "DD2": { warehouseFrom: "storage", locatorFrom: "ground2", warehouseTo: "packing", locatorTo: "packing_station_2" },
+            "DD3": { warehouseFrom: "storage", locatorFrom: "reserve1", warehouseTo: "storage", locatorTo: "ground1" },
+            "DD4": { warehouseFrom: "storage", locatorFrom: "reserve2", warehouseTo: "storage", locatorTo: "ground2" },
         }
     });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    await test.step('Packing-place workplace (IsPackingPlace=Y) is offered only the DD orders targeting its pick-from locator wh1_l1', async () => {
-        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.packingWP.qrCode });
+    await test.step('packing_station_1 (IsPackingPlace=Y) is offered only its own bring-to-packing order DD1', async () => {
+        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.wpPacking1.qrCode });
         await ApplicationsListScreen.startApplication('distribution');
         await DistributionJobsListScreen.waitForScreen();
-        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.packingWP.name });
+        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpPacking1.name });
         await DistributionJobsListScreen.expectJobButtons([
             { testId: masterdata.distributionOrders.DD1.launcherTestId },
-            { testId: masterdata.distributionOrders.DD3.launcherTestId },
         ]);
         await DistributionJobsListScreen.goBack();
     });
 
-    await test.step('Replenishment workplace (IsPackingPlace=N) is offered only the DD orders NOT targeting a packing-place locator (the groundfill wh1_0A moves)', async () => {
-        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.replenishmentWP.qrCode });
+    await test.step('packing_station_2 (IsPackingPlace=Y) is offered only its own bring-to-packing order DD2', async () => {
+        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.wpPacking2.qrCode });
         await ApplicationsListScreen.startApplication('distribution');
         await DistributionJobsListScreen.waitForScreen();
-        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.replenishmentWP.name });
+        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpPacking2.name });
         await DistributionJobsListScreen.expectJobButtons([
             { testId: masterdata.distributionOrders.DD2.launcherTestId },
+        ]);
+        await DistributionJobsListScreen.goBack();
+    });
+
+    await test.step('fork_lift_1 (IsPackingPlace=N) is offered the intra-storage groundfill orders DD3, DD4', async () => {
+        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.wpForkLift.qrCode });
+        await ApplicationsListScreen.startApplication('distribution');
+        await DistributionJobsListScreen.waitForScreen();
+        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpForkLift.name });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD3.launcherTestId },
             { testId: masterdata.distributionOrders.DD4.launcherTestId },
         ]);
     });
