@@ -129,4 +129,54 @@ public class QueryOrderByTest
 		assertThat(users.get(1).getAD_User_ID()).isEqualTo(user_10.getAD_User_ID());
 		assertThat(users.get(2).getAD_User_ID()).isEqualTo(user_20.getAD_User_ID());
 	}
+
+	@Test
+	public void getSql_identityMapper_realColumn()
+	{
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(
+				new QueryOrderByItem("C_Order_ID", Direction.Ascending, Nulls.Last)));
+
+		assertThat(queryOrderBy.getSql()).isEqualTo("C_Order_ID ASC NULLS LAST");
+	}
+
+	@Test
+	public void getSql_mapper_expandsVirtualColumn()
+	{
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(
+				new QueryOrderByItem("MyVirtualCol", Direction.Descending, Nulls.First)));
+
+		final String sql = queryOrderBy.getSql(col -> "(SELECT x FROM t WHERE t.id = " + col + ".id)");
+
+		assertThat(sql).isEqualTo("((SELECT x FROM t WHERE t.id = MyVirtualCol.id)) DESC NULLS FIRST");
+	}
+
+	@Test
+	public void getSql_mapper_realColumnReturnedAsIs()
+	{
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(
+				new QueryOrderByItem("C_Order_ID", Direction.Ascending, Nulls.Last)));
+
+		// Mapper returns the bare column name → emitted without parentheses
+		final String sql = queryOrderBy.getSql(col -> col);
+
+		assertThat(sql).isEqualTo("C_Order_ID ASC NULLS LAST");
+	}
+
+	@Test
+	public void getSql_mapper_returnsNull_skipsItem()
+	{
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(
+				new QueryOrderByItem("UnknownCol", Direction.Ascending, Nulls.Last)));
+
+		final String sql = queryOrderBy.getSql(col -> null);
+
+		assertThat(sql).isEqualTo("");
+	}
+
+	@Test
+	public void toString_empty_returnsEmptyString_notNull()
+	{
+		// NONE singleton — exercise toString() on empty list (regression guard against NPE in string concatenation)
+		assertThat(QueryOrderBy.NONE.toString()).isEqualTo("");
+	}
 }

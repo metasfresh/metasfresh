@@ -26,7 +26,6 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -83,5 +82,6 @@ public final class SqlQueryOrderBy implements IQueryOrderBy
 	public String getSql(@NonNull final UnaryOperator<String> columnNameMapper) {return orderBy;}
 
 	@Override
-	public @NotNull Comparator<Object> getComparator() {throw new UnsupportedOperationException("SqlQueryOrderBy does not support Comparator");}
+	@NonNull
+	public Comparator<Object> getComparator() {throw new UnsupportedOperationException("SqlQueryOrderBy does not support Comparator");}
 }

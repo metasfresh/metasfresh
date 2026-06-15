@@ -62,7 +62,11 @@ class QueryOrderBy implements IQueryOrderBy
 
 	@Override
 	@Deprecated
-	public String toString() {return getSql();}
+	public String toString()
+	{
+		final String sql = getSql();
+		return sql != null ? sql : "";
+	}
 
 	@Override
 	public String getSql()

@@ -1456,7 +1456,15 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		final POInfo poInfo = getPOInfo();
-		return queryOrderBy.getSql(poInfo::getColumnSql);
+		final String tableNamePrefix = poInfo.getTableName() + ".";
+		return queryOrderBy.getSql(columnName -> {
+			final String columnSql = poInfo.getColumnSqlOrNull(columnName);
+			if (columnSql == null)
+			{
+				return columnName;
+			}
+			return columnSql.replace("@JoinTableNameOrAliasIncludingDot@", tableNamePrefix);
+		});
 	}
 
 	@Override
