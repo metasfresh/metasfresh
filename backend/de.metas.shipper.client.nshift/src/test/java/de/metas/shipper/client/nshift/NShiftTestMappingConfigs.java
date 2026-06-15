@@ -351,37 +351,37 @@ public class NShiftTestMappingConfigs
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION)
 					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(55)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME)
-					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(60)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT)
-					.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(55)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME)
+			// 		.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(60)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT)
+			// 		.build(),
 			// Receiver attention
 			JsonMappingConfig.builder()
 					.seqNo(70)
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION)
 					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(75)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME)
-					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(80)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT)
-					.build(),
-			JsonMappingConfig.builder()
-					.seqNo(90)
-					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME)
-					.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(75)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME)
+			// 		.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(80)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT)
+			// 		.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(90)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME)
+			// 		.build(),
 			// Shipment-level detail group (customs info)
 			JsonMappingConfig.builder()
 					.seqNo(100)
