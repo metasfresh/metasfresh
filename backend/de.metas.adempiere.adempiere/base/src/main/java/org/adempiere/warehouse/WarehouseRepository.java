@@ -60,6 +60,7 @@ public class WarehouseRepository
 	private final CCache<Integer, WarehouseMap> cache = CCache.<Integer, WarehouseMap>builder()
 			.tableName(I_M_Warehouse.Table_Name)
 			.additionalTableNameToResetFor(I_M_Warehouse_SourceHUConfig.Table_Name)
+			.additionalTableNameToResetFor(I_M_Locator.Table_Name)
 			.build();
 
 	@NonNull

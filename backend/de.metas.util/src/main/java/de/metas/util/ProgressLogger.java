@@ -15,18 +15,15 @@ import javax.annotation.Nullable;
 public class ProgressLogger
 {
 	@NonNull private final ILoggable loggable;
-	@NonNull final String logPattern;
 	private final int maxItemsToLog;
 	@Getter private int countItemsProcessed;
 
 	@Builder(access = AccessLevel.PACKAGE)
 	private ProgressLogger(
 			@NonNull ILoggable loggable,
-			@Nullable final String logPattern,
 			@Nullable final Integer maxItemsToLog)
 	{
 		this.loggable = loggable;
-		this.logPattern = logPattern != null ? logPattern : "{}";
 		this.maxItemsToLog = maxItemsToLog != null && maxItemsToLog >= 0 ? maxItemsToLog : -1;
 	}
 

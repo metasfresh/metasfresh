@@ -87,7 +87,7 @@ public class DDOrderCandidateService
 			return;
 		}
 
-		Loggables.addLog("Enqueue {} DD_Order_Candidate(s) for {}", selection.getSelectionId(), query);
+		Loggables.addLog("Enqueue {} DD_Order_Candidate(s) for {}", selection.getCount(), query);
 		ddOrderCandidateEnqueueService.enqueueSelection(selection.getSelectionId());
 	}
 
