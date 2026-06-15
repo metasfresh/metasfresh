@@ -16,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests {@link DistributionJobQueries#toActiveNotAssignedDDOrderQuery(DDOrderReferenceQuery)}:
  * <ul>
- *   <li>Y case — regular workplace: locatorToId present, excludeLocatorToIds absent → locatorToIds predicate matches exactly that locator, excludeLocatorToIds null</li>
- *   <li>N case — packing-place workplace: locatorToId absent, excludeLocatorToIds populated → locatorToIds is any-match, excludeLocatorToIds propagated</li>
+ *   <li>Y case — packing-place workplace (IsPackingPlace=Y): locatorToId present, excludeLocatorToIds absent → locatorToIds predicate matches exactly that locator, excludeLocatorToIds null</li>
+ *   <li>N case — replenishment workplace (IsPackingPlace=N): locatorToId absent, excludeLocatorToIds populated → locatorToIds is any-match, excludeLocatorToIds propagated</li>
  * </ul>
  */
 class DistributionJobQueriesTest

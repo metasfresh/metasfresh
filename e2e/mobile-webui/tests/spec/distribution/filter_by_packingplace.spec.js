@@ -5,7 +5,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 
-// me03 #30429 — mobile Distribution launcher split by Workplace.IsPackingPlace.
+// Mobile Distribution launcher split by Workplace.IsPackingPlace.
 //
 // Setup: one destination warehouse wh1 with four incoming DD orders from wh4.
 //   - DD1, DD3 target wh1_l1   — the packing pick-from locator of the packing-place workplace
@@ -66,7 +66,7 @@ const createMasterdata = async ({ distributionOrders }) => {
 test('Distribution launchers split by Workplace.IsPackingPlace (Y vs N)', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5112.1');
+    allure.feature('F5114: MobileUI Distribution');
     allure.story('Filter distribution by workplace packing-place role');
     allure.severity('normal');
 
