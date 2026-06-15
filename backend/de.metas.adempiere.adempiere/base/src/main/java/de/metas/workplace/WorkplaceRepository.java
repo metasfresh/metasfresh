@@ -62,6 +62,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -124,6 +125,7 @@ public class WorkplaceRepository
 		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		record.setMaxPickingJobs(request.getMaxPickingJobs());
+		record.setIsPackingPlace(request.isPackingPlace());
 
 		final SeqNo seqNo = request.getSeqNo() != null ? request.getSeqNo() : getMap().getNextSeqNo();
 		record.setSeqNo(seqNo.toInt());
@@ -442,7 +444,7 @@ public class WorkplaceRepository
 			return allActive.stream()
 					.filter(Workplace::isPackingPlace)
 					.map(Workplace::getPickFromLocatorId)
-					.filter(java.util.Objects::nonNull)
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}

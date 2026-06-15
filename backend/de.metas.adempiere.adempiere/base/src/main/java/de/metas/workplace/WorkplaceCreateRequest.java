@@ -30,6 +30,7 @@ public class WorkplaceCreateRequest
 	@Nullable SeqNo seqNo;
 	@Nullable OrderPickingType orderPickingType;
 	int maxPickingJobs;
+	boolean isPackingPlace;
 
 	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
 	@NonNull @Singular ImmutableSet<ProductId> productIds;
