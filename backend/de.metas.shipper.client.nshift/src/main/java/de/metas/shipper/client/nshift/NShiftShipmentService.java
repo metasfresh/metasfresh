@@ -27,8 +27,10 @@ import com.google.common.collect.Streams;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
@@ -52,14 +54,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -362,9 +367,57 @@ public class NShiftShipmentService
 				.collect(Collectors.toList());
 		Check.assume(items.size() == requestParcels.size(), "Request and response parcel counts do not match. Request: %s, Response: %s", requestParcels.size(), items.size());
 
-		return JsonDeliveryResponse.builder()
+		final JsonDeliveryResponse.JsonDeliveryResponseBuilder responseBuilder = JsonDeliveryResponse.builder()
 				.requestId(deliveryRequest.getId())
 				.items(items)
+				.shipperProduct(extractResolvedShipperProduct(response));
+
+		extractResolvedGoodsTypes(responseLines).forEach(responseBuilder::resolvedGoodsType);
+		extractResolvedServices(response).forEach(responseBuilder::resolvedService);
+
+		return responseBuilder.build();
+	}
+
+	@Nullable
+	private static JsonShipperProduct extractResolvedShipperProduct(@NonNull final JsonShipmentResponse response)
+	{
+		if (response.getProdConceptID() == null)
+		{
+			return null;
+		}
+		final String code = String.valueOf(response.getProdConceptID());
+		return JsonShipperProduct.builder()
+				.code(code)
+				.name(response.getProdName() != null ? response.getProdName() : code)
 				.build();
+	}
+
+	private static Set<JsonGoodsType> extractResolvedGoodsTypes(@NonNull final List<JsonLine> responseLines)
+	{
+		return responseLines.stream()
+				.filter(line -> line.getGoodsTypeID() != null)
+				.map(line -> {
+					final String id = String.valueOf(line.getGoodsTypeID());
+					return JsonGoodsType.builder()
+							.id(id)
+							.name(line.getGoodsTypeName() != null ? line.getGoodsTypeName() : id)
+							.build();
+				})
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
+	private static Set<JsonCarrierService> extractResolvedServices(@NonNull final JsonShipmentResponse response)
+	{
+		if (response.getServices() == null)
+		{
+			return Collections.emptySet();
+		}
+		// services come back as bare ids; use the id as the name as well
+		return response.getServices().stream()
+				.map(svcId -> {
+					final String id = String.valueOf(svcId);
+					return JsonCarrierService.builder().id(id).name(id).build();
+				})
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 }

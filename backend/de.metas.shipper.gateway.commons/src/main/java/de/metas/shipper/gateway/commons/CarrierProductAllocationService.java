@@ -22,14 +22,27 @@
 
 package de.metas.shipper.gateway.commons;
 
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierService;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.shipping.CarrierProductId;
+import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductGoodsTypeAllocRepository;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductServiceAllocRepository;
+import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +50,9 @@ public class CarrierProductAllocationService
 {
 	private final CarrierProductGoodsTypeAllocRepository goodsTypeAllocRepo;
 	private final CarrierProductServiceAllocRepository serviceAllocRepo;
+	private final CarrierProductRepository carrierProductRepository;
+	private final CarrierGoodsTypeRepository carrierGoodsTypeRepository;
+	private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
 
 	public void addGoodsTypeIfMissing(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierGoodsTypeId goodsTypeId)
 	{
@@ -51,6 +67,39 @@ public class CarrierProductAllocationService
 		if (!serviceAllocRepo.exists(carrierProductId, serviceId))
 		{
 			serviceAllocRepo.save(carrierProductId, serviceId);
+		}
+	}
+
+	/**
+	 * Persists the carrier that was actually resolved at ship time into the carrier-product allocation tables
+	 * (get-or-create product / goods types / services, then add the allocations only if missing) so what was
+	 * shipped becomes selectable in manual advise. No-op when no product was resolved.
+	 */
+	public void persistResolvedAllocations(
+			@NonNull final ShipperId shipperId,
+			@Nullable final JsonShipperProduct product,
+			@NonNull final Set<JsonGoodsType> goodsTypes,
+			@NonNull final Set<JsonCarrierService> services)
+	{
+		if (product == null)
+		{
+			return;
+		}
+
+		final String productName = product.getName() != null ? product.getName() : product.getCode();
+		final CarrierProduct carrierProduct = carrierProductRepository.getOrCreateCarrierProduct(shipperId, product.getCode(), productName);
+		final CarrierProductId carrierProductId = carrierProduct.getId();
+
+		for (final JsonGoodsType goodsType : goodsTypes)
+		{
+			final CarrierGoodsType carrierGoodsType = carrierGoodsTypeRepository.getOrCreateGoodsType(shipperId, goodsType.getId(), goodsType.getName());
+			addGoodsTypeIfMissing(carrierProductId, carrierGoodsType.getId());
+		}
+
+		for (final JsonCarrierService service : services)
+		{
+			final CarrierService carrierService = carrierServiceRepository.getOrCreateService(shipperId, service.getId(), service.getName());
+			addServiceIfMissing(carrierProductId, carrierService.getId());
 		}
 	}
 }

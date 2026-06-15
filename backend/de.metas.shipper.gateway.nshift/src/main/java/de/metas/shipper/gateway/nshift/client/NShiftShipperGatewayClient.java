@@ -36,6 +36,7 @@ import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.logging.LogManager;
+import de.metas.shipper.gateway.commons.CarrierProductAllocationService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
@@ -85,6 +86,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull private final ShipperServiceLevelConfigList serviceLevelConfigs;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipperRepository shipperRepository;
+	@NonNull private final CarrierProductAllocationService carrierProductAllocationService;
 
 	@Override
 	@NonNull
@@ -127,6 +129,18 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		{
 			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
 		}
+
+		// When shipping rules were active, nShift re-resolved the carrier at ship time; persist what was actually
+		// shipped into the carrier-product allocations (only if missing) so it becomes selectable in manual advise.
+		if (areShippingRulesActive(deliveryOrder, schedules))
+		{
+			carrierProductAllocationService.persistResolvedAllocations(
+					deliveryOrder.getShipperId(),
+					response.getShipperProduct(),
+					response.getResolvedGoodsTypes(),
+					response.getResolvedServices());
+		}
+
 		return updateDeliveryOrder(deliveryOrder, response);
 	}
 
@@ -149,17 +163,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<ShipmentSchedule> schedules)
 	{
-		if (!shipperRepository.isApiCarrierAdvise(deliveryOrder.getShipperId()))
-		{
-			return request;
-		}
-		if (schedules.isEmpty())
-		{
-			return request;
-		}
-		final boolean allManual = schedules.stream()
-				.allMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
-		if (allManual)
+		if (!areShippingRulesActive(deliveryOrder, schedules))
 		{
 			return request;
 		}
@@ -181,6 +185,27 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		}
 
 		return request.toBuilder().shipperConfig(patchedConfig).build();
+	}
+
+	/**
+	 * Shipping rules are active (so nShift re-resolves the carrier at ship time) when the shipper is configured
+	 * for API carrier advising and not all schedules are Manual.
+	 */
+	private boolean areShippingRulesActive(
+			@NonNull final DeliveryOrder deliveryOrder,
+			@NonNull final List<ShipmentSchedule> schedules)
+	{
+		if (!shipperRepository.isApiCarrierAdvise(deliveryOrder.getShipperId()))
+		{
+			return false;
+		}
+		if (schedules.isEmpty())
+		{
+			return false;
+		}
+		final boolean allManual = schedules.stream()
+				.allMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
+		return !allManual;
 	}
 
 	/**

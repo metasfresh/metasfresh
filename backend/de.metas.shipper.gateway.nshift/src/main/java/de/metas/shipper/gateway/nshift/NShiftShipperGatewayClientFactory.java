@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.nshift;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigRepository;
+import de.metas.shipper.gateway.commons.CarrierProductAllocationService;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
 import de.metas.shipper.gateway.commons.servicelevel.ShipperServiceLevelConfigRepository;
@@ -31,6 +32,7 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@NonNull private final ShipperServiceLevelConfigRepository serviceLevelConfigRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipperRepository shipperRepository;
+	@NonNull private final CarrierProductAllocationService carrierProductAllocationService;
 
 
 	@Override
@@ -49,6 +51,7 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 				.shipAdvisorService(shipAdvisorService)
 				.shipmentScheduleRepository(shipmentScheduleRepository)
 				.shipperRepository(shipperRepository)
+				.carrierProductAllocationService(carrierProductAllocationService)
 				.build();
 	}
 }

@@ -70,4 +70,16 @@ class JsonOrderAdviceResponseDeserializationTest
 		assertThat(lines.get(0).getGoodsTypeName()).isEqualTo("Customer supplied package");
 		assertThat(lines.get(1).getGoodsTypeID()).isEqualTo(2);
 	}
+
+	@Test
+	void deserialize_readsTopLevelServices() throws Exception
+	{
+		final String json = "{ \"ProdConceptID\" : 9303, \"ProdName\" : \"Home Delivery\", \"Services\" : [337011, 337012] }";
+
+		final JsonShipmentResponse shipment = objectMapper.readValue(json, JsonShipmentResponse.class);
+
+		assertThat(shipment.getProdConceptID()).isEqualTo(9303);
+		assertThat(shipment.getProdName()).isEqualTo("Home Delivery");
+		assertThat(shipment.getServices()).containsExactly(337011, 337012);
+	}
 }

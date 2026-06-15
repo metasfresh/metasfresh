@@ -140,6 +140,9 @@ public class JsonShipmentResponse
 	@JsonProperty("Lines")
 	List<JsonLine> lines;
 
+	@JsonProperty("Services")
+	List<Integer> services;
+
 	@JsonProperty("Labels")
 	@Singular
 	List<JsonShipmentResponseLabel> labels;
