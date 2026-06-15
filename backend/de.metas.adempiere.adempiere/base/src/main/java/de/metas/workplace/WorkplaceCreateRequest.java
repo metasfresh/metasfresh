@@ -30,7 +30,7 @@ public class WorkplaceCreateRequest
 	@Nullable SeqNo seqNo;
 	@Nullable OrderPickingType orderPickingType;
 	int maxPickingJobs;
-	/** Defaults to {@code true} to match the {@code C_Workplace.IsPackingPlace} DB column default ('Y'): a workplace created without an explicit role is a packing place, preserving the pre-existing launcher behaviour (me03 #30429 AC2). */
+	/** Defaults to {@code true} to match the {@code C_Workplace.IsPackingPlace} DB column default ('Y'): a workplace created without an explicit role is a packing place, preserving the pre-existing launcher behaviour. */
 	@Builder.Default boolean isPackingPlace = true;
 
 	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
