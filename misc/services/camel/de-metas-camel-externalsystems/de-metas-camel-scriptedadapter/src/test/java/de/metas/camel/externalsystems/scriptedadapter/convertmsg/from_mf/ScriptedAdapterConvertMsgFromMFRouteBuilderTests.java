@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorExceptio
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessToken;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
+import de.metas.camel.externalsystems.scriptedadapter.oauth2.OAuth2TokenManager;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -101,7 +102,11 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		Mockito.when(oauthTokenManager.getAccessToken(Mockito.any()))
 				.thenReturn(OAuthAccessToken.of("dummy access token", SystemTime.asInstant().plus(24, ChronoUnit.HOURS)));
 
-		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(oauthTokenManager, new SftpDeliveryProcessor());
+		final OAuth2TokenManager oauth2TokenManager = Mockito.mock(OAuth2TokenManager.class);
+		Mockito.when(oauth2TokenManager.getAccessToken(Mockito.anyString(), Mockito.nullable(String.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+				.thenReturn("dummy-oauth2-token");
+
+		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(oauthTokenManager, oauth2TokenManager, new SftpDeliveryProcessor());
 	}
 
 	@Test

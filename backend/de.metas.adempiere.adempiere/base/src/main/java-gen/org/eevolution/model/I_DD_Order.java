@@ -917,6 +917,27 @@ public interface I_DD_Order
 	String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
+	 * Set Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingDisconnected (boolean IsPickingDisconnected);
+
+	/**
+	 * Get Is Picking Disconnected.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingDisconnected();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_IsPickingDisconnected = new ModelColumn<>(I_DD_Order.class, "IsPickingDisconnected", null);
+	String COLUMNNAME_IsPickingDisconnected = "IsPickingDisconnected";
+
+	/**
 	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
@@ -1003,6 +1024,27 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DD_Order.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_DD_Order.class, "M_Picking_Job_Schedule_ID", null);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
 
 	/**
 	 * Set MRP Allow Cleanup.

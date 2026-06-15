@@ -55,12 +55,8 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.filter(getProcessInfo().getQueryFilterOrElseTrue())
 				.create()
-				.createSelection();
-
-		if (userSelectionId == null)
-		{
-			throw new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED).markAsUserValidationError();
-		}
+				.createSelection()
+				.orElseThrow(() -> new AdempiereException(MSG_OL_CANDENQUEUE_FOR_SALES_ORDER_CREATION_NO_VALID_RECORD_SELECTED));
 
 		final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer = SpringContextHolder.instance.getBean(C_OLCandToOrderEnqueuer.class);
 

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.warehouse;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -48,9 +49,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
 
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -89,6 +92,55 @@ public class M_Warehouse_StepDef
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});
+	}
+
+	/**
+	 * Creates one {@code M_Warehouse_PickingGroup} and assigns every listed warehouse to it
+	 * (sets {@code M_Warehouse.M_Warehouse_PickingGroup_ID}).
+	 *
+	 * <p>Warehouses sharing a picking group are treated as a single picking scope: a picker working at a
+	 * workplace in one warehouse of the group may pick demand and stock located in any warehouse of the
+	 * same group. This mirrors the real-life setup where a storage warehouse and a packing/workplace
+	 * warehouse belong to the same physical picking area.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code Name} — the picking group's name (one group is created for the whole DataTable;
+	 *       the {@code Name} of the first row is used).</li>
+	 *   <li>{@code M_Warehouse_ID} — (identifier-ref) a previously created/loaded warehouse to assign to the
+	 *       group. One row per warehouse.</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And the following warehouses share one M_Warehouse_PickingGroup:
+	 *   | Name        | M_Warehouse_ID |
+	 *   | pickingArea | warehouseStock |
+	 *   | pickingArea | warehouseWork  |
+	 * </pre>
+	 */
+	@And("the following warehouses share one M_Warehouse_PickingGroup:")
+	public void assign_warehouses_to_picking_group(@NonNull final DataTable dataTable)
+	{
+		final DataTableRows rows = DataTableRows.of(dataTable);
+
+		final String groupName = rows.stream()
+				.map(row -> row.getAsString(I_M_Warehouse_PickingGroup.COLUMNNAME_Name))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("At least one row with a Name is required"));
+
+		final ImmutableSet<WarehouseId> warehouseIds = rows.stream()
+				.map(row -> warehouseTable.getId(row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID)))
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Create the group AND assign the warehouses to it in one BL call (the BL/DAO owns the record load+save).
+		// A per-run-unique Name keeps reusing the same group label across tests in the shared DB from colliding.
+		warehouseBL.createWarehousePickingGroup(
+				CreateWarehousePickingGroupRequest.builder()
+						.orgId(StepDefConstants.ORG_ID)
+						.name(groupName + "_" + System.currentTimeMillis())
+						.warehouseIds(warehouseIds)
+						.build());
 	}
 
 	/**

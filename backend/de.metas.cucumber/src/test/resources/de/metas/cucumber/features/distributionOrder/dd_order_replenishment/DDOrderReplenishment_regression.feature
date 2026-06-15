@@ -34,11 +34,17 @@ Feature: DD_Order replenishment — non-packing warehouses are not touched by th
       | customerLocation | bPLocation_1 | customer      |
 
   @from:cucumber
-  Scenario: A sales order on a regular warehouse produces no reconcile DD_Order
+  Scenario: Assigning a workstation on a regular (non-packing) warehouse produces no reconcile DD_Order
     # A plain warehouse: IsAutoDistributionOrder=N (default), no MRP_Exclude, no DD_NetworkDistribution.
+    # Its default locator is captured so the workstation can still carry a pick-from locator — proving that
+    # the ONLY reason no DD_Order is created is the non-packing warehouse (classifyAction=NONE), not a
+    # missing pick-from locator.
     Given metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsAutoDistributionOrder |
-      | regularWH      | customer      | customerLocation       | N                  |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsAutoDistributionOrder | M_Locator_ID   |
+      | regularWH      | customer      | customerLocation       | N                       | regularLocator |
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
+      | workplace  | regularWH      | regularLocator      |
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
@@ -52,5 +58,17 @@ Feature: DD_Order replenishment — non-packing warehouses are not touched by th
       | Identifier       | C_OrderLine_ID | Warehouse_ID |
       | shipmentSchedule | orderLine      | regularWH    |
 
-    # The new packing-reconcile flow must NOT have fired: no DD_Order is linked to any schedule of this order.
+    # Assigning the schedule line to a workstation fires the M_Picking_Job_Schedule interceptor and reconcile.
+    When create or update picking job schedules
+      | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | jobSchedule               | shipmentSchedule      | workplace      | 5         |
+
+    # The reconcile DID run (handler records a Done AD_EventLog_Entry) but classified the assignment as NONE
+    # (non-packing warehouse), so no DD_Order was created. The Done entry makes the negative assertion below
+    # deterministic — we wait for the async reconcile to complete before asserting nothing was produced.
+    Then after not more than 60s, an AD_EventLog_Entry for the replenishment event handler is found:
+      | M_Picking_Job_Schedule_ID | IsError |
+      | jobSchedule               | false   |
+
+    # The new packing-reconcile flow must NOT have created a DD_Order for any schedule of this order.
     And there is no reconcile DD_Order for the C_Order order

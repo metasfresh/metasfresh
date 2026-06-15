@@ -75,6 +75,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -1623,9 +1624,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
-	@Nullable
 	@Override
-	public PInstanceId createSelection()
+	public Optional<PInstanceId> createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
 		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
@@ -1634,10 +1634,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final int count = createSelection(newSelectionId);
 		if (count <= 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		return newSelectionId;
+		return Optional.of(newSelectionId);
 	}
 
 	@Override
