@@ -108,6 +108,8 @@ public class WorkplaceRepository
 
 	public List<Workplace> getAllActive() {return getMap().getAllActive();}
 
+	public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds() {return getMap().getPackingPlacePickFromLocatorIds();}
+
 	public Workplace create(@NonNull final WorkplaceCreateRequest request)
 	{
 		if (request.getPickFromLocatorId() != null && !WarehouseId.equals(request.getWarehouseId(), request.getPickFromLocatorId().getWarehouseId()))
@@ -373,6 +375,7 @@ public class WorkplaceRepository
 				.priorityRule(PriorityRule.ofNullableCode(record.getPriorityRule()))
 				.orderPickingType(OrderPickingType.ofNullableCode(record.getOrderPickingType()))
 				.maxPickingJobs(record.getMaxPickingJobs())
+				.isPackingPlace(record.isPackingPlace())
 				// Add child collections
 				.productIds(ImmutableSet.copyOf(productsByWorkplace.get(workplaceId)))
 				.productCategoryIds(ImmutableSet.copyOf(categoriesByWorkplace.get(workplaceId)))
@@ -432,6 +435,15 @@ public class WorkplaceRepository
 		{
 			final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
 			return workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(10);
+		}
+
+		public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds()
+		{
+			return allActive.stream()
+					.filter(Workplace::isPackingPlace)
+					.map(Workplace::getPickFromLocatorId)
+					.filter(java.util.Objects::nonNull)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

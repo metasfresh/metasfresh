@@ -94,6 +94,11 @@ public class WorkplaceService
 		return workplaceRepository.isAnyWorkplaceActive();
 	}
 
+	public Set<LocatorId> getPackingPlacePickFromLocatorIds()
+	{
+		return workplaceRepository.getPackingPlacePickFromLocatorIds();
+	}
+
 	public Set<LocatorId> getPickFromLocatorIds(final Workplace workplace)
 	{
 		if (workplace.getPickFromLocatorId() != null)
