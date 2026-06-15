@@ -204,7 +204,7 @@
 |---|---|
 | Pick 10 crates onto one LU, capture all 10 GRAIs (one typed manually, rest scanned) → save enabled, job completes | `picking/picking-grai-flowthrough.spec.js` |
 | Pick 10 crates onto one LU, capture fewer than 10 GRAIs → save stays disabled and completion is blocked | `picking/picking-grai-flowthrough.spec.js` |
-| Pick two products onto one LU; re-opening GRAI capture shows the LU's full crate count with the first product's GRAIs pre-loaded, and an RFID re-scan of all tags dedups the already-assigned ones → exactly the scanned GRAIs land on the LU and the job completes | `picking/picking-grai-flowthrough.spec.js` |
+| Pick two products onto one LU; re-opening GRAI capture shows the LU's full crate count with the first product's GRAIs pre-loaded, and an RFID re-scan of all tags dedups the already-assigned ones → exactly the scanned GRAIs land on the LU and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
 
 **3/3 — 100%**
 

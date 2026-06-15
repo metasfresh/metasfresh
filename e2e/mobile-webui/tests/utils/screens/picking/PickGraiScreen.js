@@ -66,9 +66,12 @@ export const PickGraiScreen = {
         return match ? parseInt(match[1], 10) : 0;
     }),
 
-    /** Assert the captured/assigned GRAI chip count (the N-of-tuCount progress). */
+    /** Assert the total captured GRAI chip count — both assigned ('grai-chip') and overflow
+     * ('grai-chip-extra'), so an unexpected over-capture is caught instead of silently passing because
+     * the extra chips fall outside a chip-only count. */
     expectGraiChipCount: async ({ expectedCount }) => await test.step(`${NAME} - Expect ${expectedCount} GRAI chip(s)`, async () => {
-        await expect(page.getByTestId('grai-chip')).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
+        const chips = page.locator('[data-testid="grai-chip"], [data-testid="grai-chip-extra"]');
+        await expect(chips).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /**

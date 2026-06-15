@@ -150,7 +150,8 @@ public class PickingJobService implements PickingSlotListener
 
 		if (!isPickedLU)
 		{
-			throw new AdempiereException("HU " + requestedLuId.getRepoId() + " is not a picked LU of picking job " + pickingJobId);
+			throw new AdempiereException("HU " + requestedLuId.getRepoId() + " is not a picked LU of picking job " + pickingJobId)
+					.markAsUserValidationError();
 		}
 
 		return requestedLuId;
