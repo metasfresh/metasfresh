@@ -54,6 +54,9 @@ const DLpropTypes = {
   updateRawModal: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
+  listSelectedRow: PropTypes.object,
+  setListSelected: PropTypes.func.isRequired,
+  updateTableSelection: PropTypes.func.isRequired,
 };
 
 /**
@@ -147,6 +150,7 @@ const DLmapStateToProps = (state, props) => {
     rawModalVisible: state.windowHandler.rawModal.visible,
     filters,
     filterId,
+    listSelectedRow: state.listHandler.selectedRow || null,
   };
 };
 
