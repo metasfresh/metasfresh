@@ -1469,4 +1469,16 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Yield);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+	@Override
+	public void setIsProdDateSet (final boolean IsProdDateSet)
+	{
+		set_Value (COLUMNNAME_IsProdDateSet, IsProdDateSet);
+	}
+
+	@Override
+	public boolean isProdDateSet()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsProdDateSet);
+	}
 }
