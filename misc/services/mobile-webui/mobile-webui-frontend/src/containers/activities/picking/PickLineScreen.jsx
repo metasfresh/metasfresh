@@ -70,10 +70,14 @@ const PickLineScreen = () => {
 
   // GRAI mass-capture entry point: shown only when GRAI scanning is required for this job's customer
   // (graiScanEnabled === GRAIRequired != No) AND an LU has been picked (luPickingTarget.luId present).
+  // fallbackToHeader: under sales_order aggregation the pick target lives at the header/activity level
+  // (the line-level target is null), so fall back to it — otherwise the button never shows for the
+  // (common) sales_order Flow-Through config. For product aggregation the line target is set, so the
+  // fallback is a no-op.
   // Perf note: this fires on every PickLineScreen mount purely to learn graiScanEnabled; there is no
   // cached job-level flag to read instead, so we accept the extra GET as the trade-off.
   const { graiScanEnabled } = useAvailablePickingTargets({ wfProcessId, lineId, type: PickingTargetType.TU });
-  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
+  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId, fallbackToHeader: true });
   const isShowGraiScanButton = !manuallyClosed && graiScanEnabled && luPickingTarget?.luId != null;
 
   const onGraiScanButtonClick = () =>

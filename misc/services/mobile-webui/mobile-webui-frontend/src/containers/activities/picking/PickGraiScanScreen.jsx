@@ -34,7 +34,11 @@ const PickGraiScanScreen = () => {
 
   const navigation = useMobileNavigation();
 
-  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
+  // fallbackToHeader: under sales_order aggregation the picked LU lives on the header/activity-level
+  // target (the line-level target is null); fall back to it so the GRAI screen resolves the picked LU
+  // for both header-level (sales_order) and line-level (product) aggregation. For product aggregation
+  // the line target is set, so the fallback is a no-op.
+  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId, fallbackToHeader: true });
   const huId = luPickingTarget?.luId;
 
   const goBackToJob = useCallback(() => {
