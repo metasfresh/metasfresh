@@ -52,6 +52,7 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.SpringContextHolder;
@@ -1455,7 +1456,19 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return null;
 		}
 
-		final POInfo poInfo = getPOInfo();
+		// POInfo is needed ONLY to expand virtual-column (ColumnSQL) ORDER BY entries — a DB-only feature.
+		// In a no-DB context (e.g. SQL-building unit tests) loading it raises DBNoConnectionException;
+		// there is nothing to expand without a DB, so fall back to the plain (non-expanded) ORDER BY.
+		final POInfo poInfo;
+		try
+		{
+			poInfo = getPOInfo();
+		}
+		catch (final DBNoConnectionException ignored)
+		{
+			return queryOrderBy.getSql(columnName -> columnName);
+		}
+
 		final String tableNamePrefix = poInfo.getTableName() + ".";
 		return queryOrderBy.getSql(columnName -> {
 			final String columnSql = poInfo.getColumnSqlOrNull(columnName);
