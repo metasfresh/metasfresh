@@ -38,6 +38,9 @@ public class EDIBPartnerConfig
 	@NonNull BPartnerId bPartnerId;
 	@Nullable BPartnerLocationId bpartnerLocationId;
 
+	int repoId;
+	int seqNo;
+
 	boolean isEdiDesadvRecipient;
 	@Nullable String ediDesadvRecipientGLN;
 	@NonNull EDISendingMode ediDesadvSendingMode;

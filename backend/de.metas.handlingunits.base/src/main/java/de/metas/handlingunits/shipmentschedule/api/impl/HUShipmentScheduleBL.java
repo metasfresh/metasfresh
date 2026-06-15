@@ -90,6 +90,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -103,6 +104,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -309,6 +311,68 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				"tryMergeQtyPickedIntoExistingForVHU: merged qty={} into M_ShipmentSchedule_QtyPicked_ID={} (shipmentScheduleId={} vhuId={})",
 				qtyToAdd.getStockQty(), existing.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId.getShipmentScheduleId(), vhuId);
 		return true;
+	}
+
+	@Override
+	public void restoreUnshippedQtyPickedIfMissing(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations)
+	{
+		final Set<String> processedKeys = new HashSet<>();
+		for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
+		{
+			final int vhuRepoId = alloc.getVHU_ID();
+			if (vhuRepoId <= 0)
+			{
+				continue; // only VHU-backed picked rows can be restored this way
+			}
+			final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID());
+			final HuId vhuId = HuId.ofRepoId(vhuRepoId);
+			if (!processedKeys.add(scheduleId.getRepoId() + "|" + vhuId.getRepoId()))
+			{
+				continue; // already handled this (schedule, VHU) — allocations are consolidated to one row per VHU
+			}
+
+			// If the picking-job reopen (a Completed job) already restored an active un-shipped row, leave it.
+			if (huShipmentScheduleDAO.existsActiveUnshippedQtyPickedForVHU(scheduleId, vhuId))
+			{
+				continue;
+			}
+
+			// Nothing was restored (e.g. the shipment was recreated via "Generate Shipments", leaving the
+			// picking job Drafted, so its reopen was a no-op). Re-create an active copy of the consolidated
+			// reversed allocation so the picked qty survives this reverse. Direct copy — no step-replay, no
+			// tryMerge — so the qty is not inflated and exactly one active row per tuple is preserved.
+			// M_Picking_Job_Schedule_ID is intentionally NOT copied: the restored row is a plain picked row,
+			// matching the shape a Completed-job reopen produces.
+			final I_M_ShipmentSchedule_QtyPicked restored = newInstance(I_M_ShipmentSchedule_QtyPicked.class, alloc);
+			restored.setAD_Org_ID(alloc.getAD_Org_ID());
+			restored.setM_ShipmentSchedule_ID(alloc.getM_ShipmentSchedule_ID());
+			restored.setVHU_ID(alloc.getVHU_ID());
+			restored.setM_TU_HU_ID(alloc.getM_TU_HU_ID());
+			restored.setM_LU_HU_ID(alloc.getM_LU_HU_ID());
+			restored.setQtyPicked(alloc.getQtyPicked());
+			restored.setQtyTU(alloc.getQtyTU());
+			restored.setQtyLU(alloc.getQtyLU());
+			restored.setIsAnonymousHuPickedOnTheFly(alloc.isAnonymousHuPickedOnTheFly());
+			restored.setCatch_UOM_ID(alloc.getCatch_UOM_ID());
+			restored.setQtyDeliveredCatch(alloc.getQtyDeliveredCatch());
+			// M_InOutLine_ID stays null (un-shipped); IsActive defaults Y; Processed defaults N.
+			saveRecord(restored);
+
+			// The reverse reactivated the HU to Active; a picked row needs the HU to be Picked
+			// (retrieveNotShippedRecords keeps only Picked/Shipped HUs). Also re-stamp BPartner/Location
+			// from the schedule, exactly like addQtyPickedAndUpdateHU / tryMergeQtyPickedIntoExistingForVHU —
+			// every pick-creation path must leave the top-level HU with the delivery partner/location set.
+			final I_M_HU vhu = handlingUnitsDAO.getById(vhuId);
+			final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(vhu);
+			final I_M_HU topLevelHU = husPair.getTopLevelHU();
+			setHUStatusToPicked(topLevelHU);
+			setHUPartnerAndLocationFromSched(topLevelHU, shipmentScheduleBL.getById(scheduleId));
+			handlingUnitsDAO.saveHU(topLevelHU);
+
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"restoreUnshippedQtyPickedIfMissing: re-created active QtyPicked_ID={} for shipmentScheduleId={} vhuId={} (reverse left no completed-job reopen to restore it)",
+					restored.getM_ShipmentSchedule_QtyPicked_ID(), scheduleId, vhuId);
+		}
 	}
 
 	private de.metas.inoutcandidate.model.I_M_ShipmentSchedule getShipmentSchedule(final AddQtyPickedRequest request)

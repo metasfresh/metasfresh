@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_EDI_Setting extends org.compiere.model.PO implements I_C_BPartner_EDI_Setting, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1587066449L;
+	private static final long serialVersionUID = -1733227030L;
 
     /** Standard Constructor */
     public X_C_BPartner_EDI_Setting (final Properties ctx, final int C_BPartner_EDI_Setting_ID, @Nullable final String trxName)
@@ -211,5 +211,17 @@ public class X_C_BPartner_EDI_Setting extends org.compiere.model.PO implements I
 	public boolean isEdiInvoicRecipient() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiInvoicRecipient);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }
