@@ -1,10 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
-import {
-  FRONTEND_BASE_URL,
-  FAST_ACTION_TIMEOUT,
-  SLOW_ACTION_TIMEOUT,
-} from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Grid Selection Restore test suite for metasfresh web UI.
