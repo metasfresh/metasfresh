@@ -203,10 +203,10 @@ public final class MetasfreshArchRules
 	 * Before returning, this method logs:
 	 * <ul>
 	 *   <li>Total number of imported classes</li>
-	 *   <li>Distinct {@code de.metas.<x>} top-level sub-packages present</li>
+	 *   <li>Distinct owning modules present (by {@link #moduleLabelOf(JavaClass)} — the source jar / artifact id)</li>
 	 * </ul>
-	 * and asserts that several well-known modules are present (de.metas.business, de.metas.invoice,
-	 * de.metas.handlingunits, de.metas.contracts, de.metas.payment). A missing module means the
+	 * and asserts that several well-known module jars are present (de.metas.business, de.metas.handlingunits.base,
+	 * de.metas.contracts, de.metas.payment.sepa.base, de.metas.manufacturing). A missing one means the
 	 * transitive closure is incomplete.
 	 *
 	 * @throws IllegalStateException if zero classes were imported, or if a mandatory module is absent
@@ -227,47 +227,38 @@ public final class MetasfreshArchRules
 					+ "the assembly deps are missing from the test classpath");
 		}
 
-		// Collect distinct de.metas.<x> top-level sub-packages
-		final Set<String> metasSubPackages = new TreeSet<>();
+		// Collect the distinct OWNING MODULES present, using the very same jar-based notion as the per-module
+		// freeze grouping (#moduleLabelOf). The completeness probe and the grouping thus speak about "module"
+		// identically — there is one module model in this class (the Maven artifact / source jar), not a second
+		// package-based one. (Aside: a Maven artifact id is NOT a Java package — e.g. the de.metas.business jar
+		// contributes de.metas.invoice, de.metas.invoicecandidate, … packages — which is exactly why we key on
+		// the jar, not the package.)
+		final Set<String> moduleLabels = new TreeSet<>();
 		for (final JavaClass cls : classes)
 		{
-			final String pkg = cls.getPackageName();
-			if (pkg.startsWith("de.metas."))
-			{
-				final String[] parts = pkg.split("\\.");
-				// parts[0]=de, parts[1]=metas, parts[2]=<subpackage>
-				if (parts.length >= 3)
-				{
-					metasSubPackages.add(parts[2]);
-				}
-			}
+			moduleLabels.add(moduleLabelOf(cls));
 		}
 
 		logger.info("[ArchUnit whole-backend] Total classes imported: {} (import took {} ms)", classes.size(), importMs);
-		logger.info("[ArchUnit whole-backend] Distinct de.metas.<x> sub-packages ({}): {}", metasSubPackages.size(), metasSubPackages);
+		logger.info("[ArchUnit whole-backend] Distinct owning modules ({}): {}", moduleLabels.size(), moduleLabels);
 
-		// Probe: assert key module sub-packages are present — a missing one means an incomplete closure.
-		// NOTE: Maven artifact names (e.g. "de.metas.business") do not correspond to Java package names.
-		// de.metas.business artifact puts classes under de.metas.invoice, de.metas.invoicecandidate, etc.
-		// We probe for distinct Java sub-packages that are definitively contributed by different modules:
-		//   invoice         → de.metas.invoice          (from de.metas.business jar)
-		//   handlingunits   → de.metas.handlingunits     (from de.metas.handlingunits.base)
-		//   contracts       → de.metas.contracts         (from de.metas.contracts)
-		//   payment         → de.metas.payment           (from de.metas.payment.* jars)
-		//   manufacturing   → de.metas.manufacturing     (from de.metas.manufacturing)
+		// Probe: assert a few well-known module jars are present — a missing one means the serverRoot/webui-api
+		// transitive closure did not fully load, so the per-module freeze would silently under-cover. These are
+		// Maven artifact ids (= the #moduleLabelOf grouping key), each definitively contributed by a distinct module.
 		final List<String> missingModules = new ArrayList<>();
-		for (final String mandatorySubPkg : Arrays.asList(
-				"invoice", "handlingunits", "contracts", "payment", "manufacturing"))
+		for (final String mandatoryModule : Arrays.asList(
+				"de.metas.business", "de.metas.handlingunits.base", "de.metas.contracts",
+				"de.metas.payment.sepa.base", "de.metas.manufacturing"))
 		{
-			if (!metasSubPackages.contains(mandatorySubPkg))
+			if (!moduleLabels.contains(mandatoryModule))
 			{
-				missingModules.add("de.metas." + mandatorySubPkg);
+				missingModules.add(mandatoryModule);
 			}
 		}
 		if (!missingModules.isEmpty())
 		{
-			throw new IllegalStateException("[ArchUnit whole-backend] INCOMPLETE CLOSURE — missing expected sub-packages: "
-					+ missingModules + ". These sub-packages were present: " + metasSubPackages);
+			throw new IllegalStateException("[ArchUnit whole-backend] INCOMPLETE CLOSURE — missing expected module jars: "
+					+ missingModules + ". Modules present: " + moduleLabels);
 		}
 
 		return classes;
