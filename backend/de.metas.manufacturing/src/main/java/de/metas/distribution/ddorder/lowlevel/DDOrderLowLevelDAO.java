@@ -392,6 +392,19 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// Locator To — exclude (packing places)
+		if (query.getExcludeLocatorToIds() != null && !query.getExcludeLocatorToIds().isEmpty())
+		{
+			queryBuilder.addNotInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getExcludeLocatorToIds())
+							.create());
+		}
+
+		//
 		// Sales Order
 		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
 		{

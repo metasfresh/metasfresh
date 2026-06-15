@@ -18,6 +18,7 @@ import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,12 @@ public class DistributionWarehouseService
 	public Optional<Workplace> getWorkplaceByUserId(@NonNull final UserId userId)
 	{
 		return workplaceService.getWorkplaceByUserId(userId);
+	}
+
+	@NonNull
+	public Set<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId)
+	{
+		return workplaceService.getPackingPlacePickFromLocatorIds(warehouseId);
 	}
 
 	public WarehouseInfo getWarehouseInfoByRepoId(final int warehouseRepoId)
