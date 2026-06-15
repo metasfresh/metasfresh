@@ -107,7 +107,7 @@ Feature: Shipment schedule updating
 
   @ghActions:run_on_executor7
   @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00105_Sales_Order_Document
+  @allure.label.feature:F00130_Shipment_Schedule
   @Id:S0271_29118
   Scenario: Sales order can be reactivated after a 0-qty line processed its shipment schedule
     # Zeroing an order line (instead of deleting it) and re-completing auto-processes that line's
