@@ -287,7 +287,11 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
-		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+		// UNKNOWN (not null): the auto-trigger / archive-listener path must propagate a non-null error
+		// context so a downstream failure reaches the scripted-export error listener (createIssue only
+		// notifies it when errorContext != null) and the status row flips to Error. The EDI and Re-send
+		// paths pass EDI / RESEND; auto-trigger has no specific context, so it uses the neutral UNKNOWN.
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.UNKNOWN).getExceptions();
 	}
 
 	/**
