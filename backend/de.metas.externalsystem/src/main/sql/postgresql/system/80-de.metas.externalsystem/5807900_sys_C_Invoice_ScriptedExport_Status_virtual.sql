@@ -3,6 +3,8 @@
 -- The ColumnSql is a ranked-aggregate over ExternalSystem_ScriptedExportConversion_Status:
 --   Rank {E,I}→1 (error/invalid), {P,U,D}→2 (in-flight), {S,N}→3 (sent/skip);
 --   tie-break by latest Updated; LIMIT 1.
+-- No AD_Field/AD_UI_Element added here: window placement is a separate task
+-- (the DocuWare Invoice Status Tab) that places this column in the tab layout.
 -- AD_SQLColumn_SourceTableColumn ties this column to source table 542617
 -- so the WebUI virtual-column cache is invalidated when a status row changes.
 --
