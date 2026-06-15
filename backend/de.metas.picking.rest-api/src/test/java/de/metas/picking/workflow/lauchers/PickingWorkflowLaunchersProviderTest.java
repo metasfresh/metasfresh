@@ -3,6 +3,8 @@ package de.metas.picking.workflow.lauchers;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.edi.EDIProductLookupService;
+import de.metas.picking.workflow.CarrierAdviseConsistencyService;
+import org.mockito.Mockito;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.order.OrderAndLineId;
@@ -50,7 +52,7 @@ class PickingWorkflowLaunchersProviderTest
 		this.launchersProvider = new PickingWorkflowLaunchersProvider(
 				helper.configService,
 				helper.bpartnerService,
-				new PickingJobRestService(helper.pickingJobService, helper.configService),
+				new PickingJobRestService(helper.pickingJobService, helper.configService, Mockito.mock(CarrierAdviseConsistencyService.class)),
 				helper.warehouseService,
 				helper.huService,
 				new DisplayValueProviderService(helper.bpartnerService),

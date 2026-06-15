@@ -2,13 +2,19 @@ package de.metas.picking.workflow;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
+import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.customstariff.CustomsTariffId;
+import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
@@ -16,20 +22,29 @@ import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
 import de.metas.product.ProductRepository;
+import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
-import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.Shipper;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.CoalesceUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -47,10 +62,14 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final CarrierProductRepository carrierProductRepository;
+	@NonNull private final CustomsTariffRepository customsTariffRepository;
+	@NonNull private final ShipperRepository shipperRepository;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	public CarrierAdviseTargetInfo resolveTargetInfo(@NonNull final I_M_HU topLevelHU)
 	{
@@ -64,7 +83,7 @@ public class PackedHUCarrierAdviseService
 				.map(ShipmentSchedule::getShipperId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-		final Map<ShipperId, I_M_Shipper> shippersById = shipperDAO.getByIds(shipperIds);
+		final Map<ShipperId, Shipper> shippersById = shipperRepository.getByIds(shipperIds);
 
 		boolean anyAdviseEnabled = false;
 		boolean allManual = true;
@@ -78,7 +97,7 @@ public class PackedHUCarrierAdviseService
 				continue;
 			}
 
-			final I_M_Shipper shipper = shippersById.get(shipperId);
+			final Shipper shipper = shippersById.get(shipperId);
 			if (shipper == null || !shipper.isApiCarrierAdvise())
 			{
 				continue;
@@ -117,40 +136,53 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * Re-advises the currently open packed LU/TU target for the given picking job line.
+	 * Re-advises all packed top-level HUs for the given picking job / line.
+	 * Covers LU, standalone-TU, and CU self-packed picks — any HU that was picked
+	 * on the job (or on the specific line when {@code lineId} is non-null) is resolved
+	 * to its top-level HU and re-advised.
 	 * Skips shipment schedules whose carrier advising status is Manual.
-	 *
-	 * @throws AdempiereException if no existing LU target is set on the job line
+	 * <p>
+	 * Top-level resolution (getById → getTopLevelParentAsLUTUCUPair → getTopLevelHU) and
+	 * deduplication by HuId must be kept in sync with
+	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob}.
 	 */
 	public void advise(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
-		final LUPickingTarget luTarget = pickingJob.getLuPickingTarget(lineId)
-				.orElseThrow(() -> new AdempiereException("No LU picking target set"));
-
-		if (!luTarget.isExistingLU())
+		final ImmutableSet<HuId> pickedHuIds = pickingJob.getPickedHuIds(lineId);
+		if (pickedHuIds.isEmpty())
 		{
-			throw new AdempiereException("Carrier advise requires an existing (packed) LU, not a new one");
+			return;
 		}
 
-		final I_M_HU topLevelHU = handlingUnitsDAO.getById(luTarget.getLuIdNotNull());
+		// Resolve to top-level HUs and deduplicate by HuId
+		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
+		// Keep in sync with CarrierAdviseConsistencyService#assertConsistentForJob
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = pickedHuIds.stream()
+				.map(handlingUnitsDAO::getById)
+				.map(hu -> handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())
+				.collect(ImmutableMap.toImmutableMap(
+						hu -> HuId.ofRepoId(hu.getM_HU_ID()),
+						hu -> hu,
+						(existing, ignored) -> existing));
 
-		final JsonDeliveryAdvisorRequestItem item = buildRequestItem(topLevelHU);
-
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
-		if (schedulesById.isEmpty())
+		for (final I_M_HU topLevelHU : topLevelHUsById.values())
 		{
-			throw new AdempiereException("No undelivered qty-picked records found for HU " + topLevelHU.getM_HU_ID());
-		}
+			final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
 
-		for (final ShipmentSchedule schedule : schedulesById.values())
-		{
-			if (schedule.getCarrierAdvisingStatus().isManual())
+			// Use the first schedule's order line as the price source (single-product HU enforced in buildRequestItem).
+			final ShipmentSchedule firstSchedule = schedulesById.values().stream().findFirst().orElse(null);
+			final JsonDeliveryAdvisorRequestItem item = buildRequestItem(topLevelHU, firstSchedule);
+
+			for (final ShipmentSchedule schedule : schedulesById.values())
 			{
-				continue;
+				if (schedule.getCarrierAdvisingStatus().isManual())
+				{
+					continue;
+				}
+				CarrierAdviseCommand.ofPackedHU(schedule.getId(), item).execute();
 			}
-			CarrierAdviseCommand.ofPackedHU(schedule.getId(), item).execute();
 		}
 	}
 
@@ -160,7 +192,9 @@ public class PackedHUCarrierAdviseService
 	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
-	private JsonDeliveryAdvisorRequestItem buildRequestItem(@NonNull final I_M_HU topLevelHU)
+	private JsonDeliveryAdvisorRequestItem buildRequestItem(
+			@NonNull final I_M_HU topLevelHU,
+			@Nullable final ShipmentSchedule schedule)
 	{
 		final PackedHUShippingInfo shippingInfo = packedHUShippingInfoService.of(topLevelHU);
 
@@ -179,12 +213,54 @@ public class PackedHUCarrierAdviseService
 		final IHUProductStorage singleProductStorage = productStorages.get(0);
 
 		final Product product = productRepository.getById(singleProductStorage.getProductId());
-		final int numberOfItems = singleProductStorage.getQtyInStockingUOM().intValueExact();
+		final Quantity qty = singleProductStorage.getQtyInStockingUOM();
+		final int numberOfItems = qty.intValueExact();
 
 		final PackageDimensions dimensions = shippingInfo.getDimensions();
 		final BigDecimal grossWeightKgBD = shippingInfo.getWeightInKg() != null
 				? shippingInfo.getWeightInKg().toBigDecimal()
 				: BigDecimal.ZERO;
+
+		// Customs tariff — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
+		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
+
+		// Unit price / total value from order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
+		// Null when no schedule or no order line is available (e.g. inventory-receipt picks).
+		JsonMoney unitPrice = null;
+		JsonMoney totalValue = null;
+		BigDecimal totalWeightInKg = null;
+		JsonQuantity shippedQuantity = null;
+		if (schedule != null)
+		{
+			final OrderAndLineId orderAndLineId = schedule.getOrderAndLineId();
+			if (orderAndLineId != null)
+			{
+				final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
+				final UomId targetUomId = CoalesceUtil.coalesceNotNull(
+						UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()),
+						qty.getUomId());
+				final Quantity qtyConverted = uomConversionBL.convertQuantityTo(qty, product.getId(), targetUomId);
+				final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+				final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
+				final String currencyISOCode = currencyCode.toThreeLetterCode();
+				final Money unitPriceMoney = Money.of(orderLine.getPriceEntered(), currencyId);
+				unitPrice = JsonMoney.builder()
+						.amount(unitPriceMoney.toBigDecimal())
+						.currencyCode(currencyISOCode)
+						.build();
+				totalValue = JsonMoney.builder()
+						.amount(unitPriceMoney.multiply(qtyConverted.toBigDecimal()).toBigDecimal())
+						.currencyCode(currencyISOCode)
+						.build();
+				shippedQuantity = JsonQuantity.builder()
+						.value(qtyConverted.toBigDecimal())
+						.uomCode(qtyConverted.getX12DE355().getCode())
+						.build();
+			}
+			// Total weight in kg — nominal gross weight, same as NShiftDraftDeliveryOrderCreator#computeNominalGrossWeightInKg
+			totalWeightInKg = grossWeightKgBD;
+		}
 
 		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(numberOfItems)
@@ -198,6 +274,11 @@ public class PackedHUCarrierAdviseService
 						.build())
 				.topLevelType(toTopLevelTypeWireString(shippingInfo.getTopLevelType()))
 				.countryOfOrigin(shippingInfo.getCountryOfOrigin())
+				.customsTariff(customsTariff)
+				.unitPrice(unitPrice)
+				.totalValue(totalValue)
+				.shippedQuantity(shippedQuantity)
+				.totalWeightInKg(totalWeightInKg)
 				.build();
 	}
 

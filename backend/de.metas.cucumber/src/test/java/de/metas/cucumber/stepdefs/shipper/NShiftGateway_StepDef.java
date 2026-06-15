@@ -218,19 +218,6 @@ public class NShiftGateway_StepDef
 	 * Asserts address, contact, and item fields on the most-recently-captured {@link JsonDeliveryAdvisorRequest}.
 	 * All columns are optional. {@code Sender*} columns target the pickup address/contact;
 	 * {@code Receiver*} columns target the delivery address/contact.
-	 * Supported columns: {@code SenderCompanyName}, {@code SenderCountryCode}, {@code SenderAttention},
-	 * {@code ReceiverCompanyName}, {@code ReceiverCompanyName2}, {@code ReceiverStreet},
-	 * {@code ReceiverAdditionalAddressInfo}, {@code ReceiverHouseNo}, {@code ReceiverZip},
-	 * {@code ReceiverCity}, {@code ReceiverCountryCode}, {@code ReceiverAttention},
-	 * {@code ReceiverContactName}, {@code ReceiverContactPhone}, {@code ReceiverContactEmail},
-	 * {@code numberOfItems} (item.numberOfItems — the per-unit baseline sent to the advisor),
-	 * {@code grossWeightKg} (item.grossWeightKg — per-unit gross weight in kg, rounded up),
-	 * {@code lengthInCM}, {@code widthInCM}, {@code heightInCM} (item.packageDimensions — per-unit package dimensions).
-	 * <p>
-	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
-	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by
-	 * {@link de.metas.shipper.client.nshift.NShiftShipAdvisorService#buildRequest}, which is
-	 * verified by {@code NShiftShipAdvisorServiceTest}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -248,11 +235,16 @@ public class NShiftGateway_StepDef
 	 *   <b>ReceiverContactName</b>            — (optional) delivery contact name<br>
 	 *   <b>ReceiverContactPhone</b>           — (optional) delivery contact phone<br>
 	 *   <b>ReceiverContactEmail</b>           — (optional) delivery contact e-mail<br>
-	 *   <b>numberOfItems</b>  — (optional) expected item.numberOfItems<br>
-	 *   <b>grossWeightKg</b>  — (optional) expected item.grossWeightKg (per-unit, rounded up)<br>
-	 *   <b>lengthInCM</b>     — (optional) expected item.packageDimensions.lengthInCM<br>
-	 *   <b>widthInCM</b>      — (optional) expected item.packageDimensions.widthInCM<br>
-	 *   <b>heightInCM</b>     — (optional) expected item.packageDimensions.heightInCM
+	 *   <b>numberOfItems</b>     — (optional) expected item.numberOfItems<br>
+	 *   <b>grossWeightKg</b>     — (optional) expected item.grossWeightKg (per-unit, rounded up)<br>
+	 *   <b>lengthInCM</b>        — (optional) expected item.packageDimensions.lengthInCM<br>
+	 *   <b>widthInCM</b>         — (optional) expected item.packageDimensions.widthInCM<br>
+	 *   <b>heightInCM</b>        — (optional) expected item.packageDimensions.heightInCM<br>
+	 *   <b>unitPrice</b>         — (optional) expected item.unitPrice.amount<br>
+	 *   <b>totalValue</b>        — (optional) expected item.totalValue.amount<br>
+	 *   <b>shippedQuantity</b>   — (optional) expected item.shippedQuantity.value<br>
+	 *   <b>customsTariff</b>     — (optional) expected item.customsTariff<br>
+	 *   <b>totalWeightInKg</b>   — (optional) expected item.totalWeightInKg
 	 */
 	@And("validate the captured nShift advisor request:")
 	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
@@ -296,6 +288,34 @@ public class NShiftGateway_StepDef
 						? capturedAdvisorRequest.getItem().getPackageDimensions().getHeightInCM() : null)
 				.as("item.packageDimensions.heightInCM")
 				.isEqualTo(expected));
+
+		row.getAsOptionalBigDecimal("unitPrice").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getUnitPrice() != null
+						? capturedAdvisorRequest.getItem().getUnitPrice().getAmount() : null)
+				.as("item.unitPrice.amount")
+				.isEqualByComparingTo(expected));
+
+		row.getAsOptionalBigDecimal("totalValue").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getTotalValue() != null
+						? capturedAdvisorRequest.getItem().getTotalValue().getAmount() : null)
+				.as("item.totalValue.amount")
+				.isEqualByComparingTo(expected));
+
+		row.getAsOptionalBigDecimal("shippedQuantity").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getShippedQuantity() != null
+						? capturedAdvisorRequest.getItem().getShippedQuantity().getValue() : null)
+				.as("item.shippedQuantity.value")
+				.isEqualByComparingTo(expected));
+
+		row.getAsOptionalString("customsTariff").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getCustomsTariff())
+				.as("item.customsTariff")
+				.isEqualTo(expected));
+
+		row.getAsOptionalBigDecimal("totalWeightInKg").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getItem().getTotalWeightInKg())
+				.as("item.totalWeightInKg")
+				.isEqualByComparingTo(expected));
 
 		softly.assertAll();
 	}

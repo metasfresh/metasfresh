@@ -22,11 +22,15 @@
 
 package de.metas.shipper.gateway.commons.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
 import de.metas.common.util.StringUtils;
 import de.metas.i18n.AdMessageKey;
-import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.Shipper;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,6 +42,7 @@ import org.compiere.model.I_Carrier_Config;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
+import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
@@ -66,25 +71,47 @@ public class ShipperConfigRepository
 			I_Carrier_Config.COLUMNNAME_AD_Org_ID,
 			I_Carrier_Config.COLUMNNAME_AD_Client_ID);
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ShipperRepository shipperRepository = SpringContextHolder.instance.getBean(ShipperRepository.class);
+
+	@NonNull private final CCache<Integer, ImmutableMap<ShipperId, ShipperConfig>> cache = CCache.<Integer, ImmutableMap<ShipperId, ShipperConfig>>builder()
+			.tableName(I_Carrier_Config.Table_Name)
+			.additionalTableNameToResetFor(I_M_Shipper.Table_Name)
+			.build();
 
 	@NonNull
 	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
-		return queryBL.createQueryBuilder(I_Carrier_Config.class)
+		final ShipperConfig config = getMap().get(shipperId);
+		if (config == null)
+		{
+			throw new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId);
+		}
+		return config;
+	}
+
+	@NonNull
+	private ImmutableMap<ShipperId, ShipperConfig> getMap()
+	{
+		return cache.getOrLoadNonNull(0, this::retrieveMap);
+	}
+
+	@NonNull
+	private ImmutableMap<ShipperId, ShipperConfig> retrieveMap()
+	{
+		final ImmutableList<ShipperConfig> configs = queryBL.createQueryBuilder(I_Carrier_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
-				.firstOnlyOptional()
+				.stream()
 				.map(this::fromRecord)
-				.orElseThrow(() -> new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId));
+				.collect(ImmutableList.toImmutableList());
+		return Maps.uniqueIndex(configs, ShipperConfig::getShipperId);
 	}
 
 	private ShipperConfig fromRecord(@NotNull final I_Carrier_Config carrierConfig)
 	{
 		final ShipperId shipperId = ShipperId.ofRepoId(carrierConfig.getM_Shipper_ID());
-		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		final Shipper shipper = shipperRepository.getById(shipperId);
 		return ShipperConfig.builder()
 				.id(ShipperConfigId.ofRepoId(carrierConfig.getCarrier_Config_ID()))
 				.shipperId(shipperId)
@@ -93,7 +120,7 @@ public class ShipperConfigRepository
 				.password(carrierConfig.getPassword())
 				.clientId(carrierConfig.getClient_Id())
 				.clientSecret(carrierConfig.getClient_Secret())
-				.trackingUrlTemplate(shipper.getTrackingURL())
+				.trackingUrlTemplate(shipper.getTrackingUrl())
 				.additionalProperties(buildAdditionalPropertiesMap(carrierConfig))
 				.build();
 	}

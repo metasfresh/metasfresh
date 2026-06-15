@@ -15,10 +15,11 @@ import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.shipping.CarrierProductId;
-import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.Shipper;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Shipper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +58,7 @@ class CarrierAdviseConsistencyServiceTest
 	@Mock private HUShipmentScheduleResolver resolver;
 	@Mock private IHandlingUnitsBL handlingUnitsBL;
 	@Mock private IHandlingUnitsDAO handlingUnitsDAO;
-	@Mock private IShipperDAO shipperDAO;
+	@Mock private ShipperRepository shipperRepository;
 
 	private CarrierAdviseConsistencyService service;
 
@@ -67,7 +68,9 @@ class CarrierAdviseConsistencyServiceTest
 	@BeforeEach
 	void setUp()
 	{
-		service = new CarrierAdviseConsistencyService(resolver, handlingUnitsBL, handlingUnitsDAO, shipperDAO);
+		AdempiereTestHelper.get().init();
+
+		service = new CarrierAdviseConsistencyService(resolver, handlingUnitsBL, handlingUnitsDAO, shipperRepository);
 
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
@@ -92,11 +95,14 @@ class CarrierAdviseConsistencyServiceTest
 	/** Stub a shipper that has isApiCarrierAdvise()==true for the given ShipperId. */
 	private void stubShipper(final ShipperId shipperId)
 	{
-		final I_M_Shipper shipper = mock(I_M_Shipper.class);
-		when(shipper.isApiCarrierAdvise()).thenReturn(true);
-		when(shipperDAO.getByIds(any())).thenAnswer(inv -> {
+		final Shipper shipper = Shipper.builder()
+				.id(shipperId)
+				.name("Shipper-" + shipperId.getRepoId())
+				.apiCarrierAdvise(true)
+				.build();
+		when(shipperRepository.getByIds(any())).thenAnswer(inv -> {
 			final java.util.Set<ShipperId> ids = inv.getArgument(0);
-			final Map<ShipperId, I_M_Shipper> result = new HashMap<>();
+			final Map<ShipperId, Shipper> result = new HashMap<>();
 			if (ids.contains(shipperId))
 			{
 				result.put(shipperId, shipper);
@@ -108,14 +114,20 @@ class CarrierAdviseConsistencyServiceTest
 	/** Stub two advise-enabled shippers. */
 	private void stubTwoShippers()
 	{
-		final I_M_Shipper s1 = mock(I_M_Shipper.class);
-		when(s1.isApiCarrierAdvise()).thenReturn(true);
-		final I_M_Shipper s2 = mock(I_M_Shipper.class);
-		when(s2.isApiCarrierAdvise()).thenReturn(true);
-		final Map<ShipperId, I_M_Shipper> twoShippers = new HashMap<>();
+		final Shipper s1 = Shipper.builder()
+				.id(SHIPPER_1)
+				.name("Shipper-" + SHIPPER_1.getRepoId())
+				.apiCarrierAdvise(true)
+				.build();
+		final Shipper s2 = Shipper.builder()
+				.id(SHIPPER_2)
+				.name("Shipper-" + SHIPPER_2.getRepoId())
+				.apiCarrierAdvise(true)
+				.build();
+		final Map<ShipperId, Shipper> twoShippers = new HashMap<>();
 		twoShippers.put(SHIPPER_1, s1);
 		twoShippers.put(SHIPPER_2, s2);
-		when(shipperDAO.getByIds(any())).thenReturn(twoShippers);
+		when(shipperRepository.getByIds(any())).thenReturn(twoShippers);
 	}
 
 	private ShipmentSchedule mockSchedule(

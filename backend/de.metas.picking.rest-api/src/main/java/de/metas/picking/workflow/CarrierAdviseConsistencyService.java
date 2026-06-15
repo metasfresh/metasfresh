@@ -13,13 +13,14 @@ import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.shipping.CarrierProductId;
-import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.Shipper;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Shipper;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -46,7 +47,7 @@ public class CarrierAdviseConsistencyService
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO;
-	@NonNull private final IShipperDAO shipperDAO;
+	@NonNull private final ShipperRepository shipperRepository;
 
 	public CarrierAdviseConsistencyService(@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver)
 	{
@@ -54,7 +55,7 @@ public class CarrierAdviseConsistencyService
 				huShipmentScheduleResolver,
 				Services.get(IHandlingUnitsBL.class),
 				Services.get(IHandlingUnitsDAO.class),
-				Services.get(IShipperDAO.class)
+				SpringContextHolder.instance.getBean(ShipperRepository.class)
 		);
 	}
 
@@ -62,12 +63,12 @@ public class CarrierAdviseConsistencyService
 			@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHandlingUnitsDAO handlingUnitsDAO,
-			@NonNull final IShipperDAO shipperDAO)
+			@NonNull final ShipperRepository shipperRepository)
 	{
 		this.huShipmentScheduleResolver = huShipmentScheduleResolver;
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.handlingUnitsDAO = handlingUnitsDAO;
-		this.shipperDAO = shipperDAO;
+		this.shipperRepository = shipperRepository;
 	}
 
 	/**
@@ -113,7 +114,7 @@ public class CarrierAdviseConsistencyService
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<ShipperId, I_M_Shipper> shippersById = shipperDAO.getByIds(allShipperIds);
+		final Map<ShipperId, Shipper> shippersById = shipperRepository.getByIds(allShipperIds);
 
 		// restrict to advise-enabled schedules
 		final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
@@ -194,14 +195,14 @@ public class CarrierAdviseConsistencyService
 
 	private static boolean isAdviseEnabled(
 			@NonNull final ShipmentSchedule schedule,
-			@NonNull final Map<ShipperId, I_M_Shipper> shippersById)
+			@NonNull final Map<ShipperId, Shipper> shippersById)
 	{
 		final ShipperId shipperId = schedule.getShipperId();
 		if (shipperId == null)
 		{
 			return false;
 		}
-		final I_M_Shipper shipper = shippersById.get(shipperId);
+		final Shipper shipper = shippersById.get(shipperId);
 		return shipper != null && shipper.isApiCarrierAdvise();
 	}
 

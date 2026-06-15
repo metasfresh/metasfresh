@@ -28,7 +28,18 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
+import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
+import de.metas.common.delivery.v1.json.JsonQuantity;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.customstariff.CustomsTariffId;
+import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.uom.UomId;
+import de.metas.util.CoalesceUtil;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
@@ -116,7 +127,9 @@ public class CarrierAdviseCommand
 	@NonNull private final CarrierProductAllocationService carrierProductAllocationService = SpringContextHolder.instance.getBean(CarrierProductAllocationService.class);
 	@NonNull private final ShipperMappingConfigRepository shipperMappingConfigRepository = SpringContextHolder.instance.getBean(ShipperMappingConfigRepository.class);
 	@NonNull private final JsonShipperConverter jsonShipperConverter = SpringContextHolder.instance.getBean(JsonShipperConverter.class);
+	@NonNull private final CustomsTariffRepository customsTariffRepository = SpringContextHolder.instance.getBean(CustomsTariffRepository.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -292,9 +305,49 @@ public class CarrierAdviseCommand
 	{
 		final Product product = productRepository.getById(shipmentSchedule.getProductId());
 		final PackageDimensions dimensions = product.getPackageDimensions();
+		final BigDecimal grossWeightKg = computeProductGrossWeight(shipmentSchedule);
+
+		// Customs tariff — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
+		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
+
+		// Unit price / total value from order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
+		// numberOfItems=1 (per-unit baseline); unit price is sent as-is; total = 1 × unitPrice.
+		JsonMoney unitPrice = null;
+		JsonMoney totalValue = null;
+		JsonQuantity shippedQuantity = null;
+		final OrderAndLineId orderAndLineId = shipmentSchedule.getOrderAndLineId();
+		if (orderAndLineId != null)
+		{
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
+			final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+			final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
+			final String currencyISOCode = currencyCode.toThreeLetterCode();
+			final Money unitPriceMoney = Money.of(orderLine.getPriceEntered(), currencyId);
+			final UomId priceUomId = CoalesceUtil.coalesceNotNull(
+					UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()),
+					UomId.ofRepoId(orderLine.getC_UOM_ID()));
+			final Quantity oneUnit = uomConversionBL.convertQuantityTo(
+					Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()))),
+					shipmentSchedule.getProductId(),
+					priceUomId);
+			unitPrice = JsonMoney.builder()
+					.amount(unitPriceMoney.toBigDecimal())
+					.currencyCode(currencyISOCode)
+					.build();
+			totalValue = JsonMoney.builder()
+					.amount(unitPriceMoney.multiply(oneUnit.toBigDecimal()).toBigDecimal())
+					.currencyCode(currencyISOCode)
+					.build();
+			shippedQuantity = JsonQuantity.builder()
+					.value(oneUnit.toBigDecimal())
+					.uomCode(oneUnit.getX12DE355().getCode())
+					.build();
+		}
+
 		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(1)
-				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
+				.grossWeightKg(grossWeightKg)
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
 				.packageDimensions(JsonPackageDimensions.builder()
@@ -302,6 +355,11 @@ public class CarrierAdviseCommand
 						.widthInCM(dimensions.getWidthInCM())
 						.lengthInCM(dimensions.getLengthInCM())
 						.build())
+				.customsTariff(customsTariff)
+				.unitPrice(unitPrice)
+				.totalValue(totalValue)
+				.shippedQuantity(shippedQuantity)
+				.totalWeightInKg(grossWeightKg)
 				.build();
 	}
 

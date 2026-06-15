@@ -52,15 +52,13 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
-import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.mpackage.PackageId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_Carrier_Config;
-import org.compiere.model.I_M_Shipper;
 import org.slf4j.Logger;
 
 import java.util.Base64;
@@ -86,8 +84,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull private final ShipperMappingConfigList mappingConfigs;
 	@NonNull private final ShipperServiceLevelConfigList serviceLevelConfigs;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
-
-	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final ShipperRepository shipperRepository;
 
 	@Override
 	@NonNull
@@ -152,8 +149,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<ShipmentSchedule> schedules)
 	{
-		final I_M_Shipper shipper = shipperDAO.getById(deliveryOrder.getShipperId());
-		if (!shipper.isApiCarrierAdvise())
+		if (!shipperRepository.isApiCarrierAdvise(deliveryOrder.getShipperId()))
 		{
 			return request;
 		}
