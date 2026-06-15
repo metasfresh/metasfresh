@@ -137,7 +137,7 @@ public class PPOrderBLTest
 	}
 
 	/**
-	 * me03 30241: the IsProdDateSet flag must stop the automatic overwrite of the
+	 * The IsProdDateSet flag must stop the automatic overwrite of the
 	 * effective production date (DateDelivered) done by {@link PPOrderBL#addQty}.
 	 */
 	@Nested

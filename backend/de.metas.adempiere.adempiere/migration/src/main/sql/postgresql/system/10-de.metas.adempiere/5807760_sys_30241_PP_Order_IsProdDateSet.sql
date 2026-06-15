@@ -43,8 +43,8 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Element_ID = 584991
 UPDATE AD_Element_Trl
 SET Name        = 'Eff. Prod. Date Set',
     PrintName   = 'Eff. Prod. Date Set',
-    Description = 'If set, the "Eff. Prod. Datum" field is read-only.',
-    Help        = 'Controls whether the effective production date ("Eff. Prod. Datum", PP_Order.DateDelivered) on the production order can be edited.'
+    Description = 'If set, the "Eff. Prod. Date" field is read-only.',
+    Help        = 'Controls whether the effective production date ("Eff. Prod. Date", PP_Order.DateDelivered) on the production order can be edited.'
                   || ' When "Yes" the field is read-only; when "No" it is editable. Default: "No".',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-06-15 08:00:12', 'YYYY-MM-DD HH24:MI:SS'),
@@ -135,6 +135,11 @@ SELECT l.AD_Language, t.AD_Field_ID, t.Name, t.Description, t.Help, 'N', t.AD_Cl
 FROM AD_Language l, AD_Field t
 WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Field_ID = 781116
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
+
+-- Field-level translation propagation + element link (mandatory after a new AD_Field)
+SELECT update_FieldTranslation_From_AD_Name_Element(584991);
+DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781116;
+SELECT AD_Element_Link_Create_Missing_Field(781116);
 
 -- =============================================================================
 -- 5. AD_UI_Element — checkbox placed in the same UI group as "Eff. Prod. Datum" (field 54142)
