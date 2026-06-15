@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -29,14 +28,16 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 import static com.tngtech.archunit.library.freeze.FreezingArchRule.freeze;
 
 /**
- * The metasfresh architecture rules, defined <b>once</b> and run through a <b>single</b> public entry point.
+ * The metasfresh architecture rules, defined <b>once</b> and run through a single per-module entry point.
  * <p>
- * Callers invoke exactly one method — {@link #checkAllModuleRules(String, JavaClasses)} — which freezes and evaluates
- * every gating rule and joins their results, so a run reports every new violation at once. <b>Adding a new
+ * Whole-backend callers invoke exactly one method — {@link #checkAllModulesIndividually(JavaClasses)} — which
+ * splits the import by owning module and freezes each module against its own baseline. <b>Adding a new
  * rule ("chapter") means adding a private rule method here plus one line in {@code checkAllModuleRules} — no
  * caller (test class) changes.</b> The individual rule bodies are therefore {@code private}; the other public
- * members are {@link #importModule(String)} (a caller utility) and {@link #boundedContextsFreeOfCycles()}
- * (a distinct, report-only cross-module rule).
+ * members are {@link #checkAllModuleRules(String, JavaClasses)} (the per-module building block, also usable
+ * directly for a single-module run with {@link #importModule(String)}), {@link #importModule(String)} and
+ * {@link #importWholeBackend()} (caller utilities), and {@link #boundedContextsFreeOfCycles()} (a distinct,
+ * report-only cross-module rule).
  * <p>
  * Each rule cites the corpus rule it enforces in its {@code .because()} clause. Freezing keeps a per-call-site
  * baseline ({@code archunit_store/}). How-to / branch enabler / per-branch baseline: skill
@@ -57,6 +58,10 @@ public final class MetasfreshArchRules
 	 * <p>
 	 * Add a new rule by adding a private factory method below and one entry to the {@code rules} list here —
 	 * callers never change.
+	 * <p>
+	 * For a whole-backend run, call {@link #checkAllModulesIndividually(JavaClasses)} instead — it performs the
+	 * per-module split that makes the freeze baselines reproducible. Calling this method directly with the whole
+	 * backend under one label recreates the single-baseline that could not be kept in sync with CI.
 	 * <p>
 	 * {@code moduleLabel} is any unique label prefixed onto each rule's description so the freeze baseline key
 	 * is distinct per import scope ({@code "metasfresh-backend"} for the whole-backend run; a single-module label
@@ -155,12 +160,12 @@ public final class MetasfreshArchRules
 	 */
 	private static String moduleLabelOf(final JavaClass cls)
 	{
-		final Optional<Source> source = cls.getSource();
-		if (!source.isPresent())
+		final Source source = cls.getSource().orElse(null);
+		if (source == null)
 		{
 			return "unknown-module";
 		}
-		final String uri = source.get().getUri().toString();
+		final String uri = source.getUri().toString();
 		final int jarIdx = uri.lastIndexOf(".jar");
 		if (jarIdx < 0)
 		{
@@ -168,7 +173,8 @@ public final class MetasfreshArchRules
 		}
 		final String beforeJar = uri.substring(0, jarIdx);
 		final String fileBase = beforeJar.substring(beforeJar.lastIndexOf('/') + 1);
-		// strip the -<version> suffix (a metasfresh artifact version always starts with a digit)
+		// Strip the -<version> suffix (a metasfresh artifact version always starts with a digit). Assumes the
+		// artifact id itself has no hyphen-then-digit segment — true for the whole backend module corpus.
 		return fileBase.replaceFirst("-\\d.*$", "");
 	}
 
