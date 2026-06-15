@@ -113,7 +113,7 @@ public class WarehouseRepository
 	private Multimap<WarehouseId, Locator> retrieveLocatorRecords()
 	{
 		return queryBL.createQueryBuilder(I_M_Locator.class)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.collect(Multimaps.toMultimap(
@@ -136,6 +136,7 @@ public class WarehouseRepository
 	{
 		return Locator.builder()
 				.locatorId(LocatorId.ofRecord(record))
+				.active(record.isActive())
 				.value(record.getValue())
 				.priorityNo(record.getPriorityNo())
 				.build();
@@ -172,11 +173,16 @@ public class WarehouseRepository
 
 	public String getLocatorNameById(final @NonNull LocatorId locatorId)
 	{
-		return getWarehouseMap().getLocatorNameById(locatorId);
+		return getLocatorById(locatorId).getValue();
 	}
 
 	public Locator getLocatorByRepoId(final int locatorRepoId)
 	{
 		return getWarehouseMap().getLocatorByRepoId(locatorRepoId);
+	}
+
+	public Locator getLocatorById(@NonNull final LocatorId locatorId)
+	{
+		return getWarehouseMap().getLocatorById(locatorId);
 	}
 }

@@ -10,6 +10,7 @@ import org.adempiere.warehouse.qrcode.LocatorQRCode;
 public class Locator
 {
 	@NonNull LocatorId locatorId;
+	@Builder.Default boolean active = true;
 	@NonNull String value;
 	int priorityNo;
 

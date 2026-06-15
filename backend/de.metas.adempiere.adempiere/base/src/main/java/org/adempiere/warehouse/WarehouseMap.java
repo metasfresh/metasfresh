@@ -61,12 +61,6 @@ final class WarehouseMap
 	}
 
 	@NonNull
-	public String getLocatorNameById(@NonNull final LocatorId locatorId)
-	{
-		return getLocatorById(locatorId).getValue();
-	}
-
-	@NonNull
 	public Locator getLocatorById(@NonNull final LocatorId locatorId)
 	{
 		return getById(locatorId.getWarehouseId()).getLocatorById(locatorId);
