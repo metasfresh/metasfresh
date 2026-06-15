@@ -47,6 +47,13 @@ public final class MetasfreshArchRules
 {
 	private static final Logger logger = LoggerFactory.getLogger(MetasfreshArchRules.class);
 
+	/**
+	 * The backend package roots ArchUnit imports and analyses: metasfresh ({@code de.metas}, {@code org.eevolution})
+	 * plus the legacy ADempiere bases ({@code org.adempiere}, {@code org.compiere}) that metasfresh classes still
+	 * call into. Single source for every importer here, so the analysed surface can't drift between methods.
+	 */
+	private static final String[] BACKEND_PACKAGE_ROOTS = { "de.metas", "org.adempiere", "org.compiere", "org.eevolution" };
+
 	private MetasfreshArchRules()
 	{
 	}
@@ -184,7 +191,7 @@ public final class MetasfreshArchRules
 		final JavaClasses classes = new ClassFileImporter()
 				.withImportOption(new ImportOption.DoNotIncludeTests())
 				.withImportOption((final Location location) -> location.contains(moduleLocationToken))
-				.importPackages("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
+				.importPackages(BACKEND_PACKAGE_ROOTS);
 
 		if (classes.isEmpty())
 		{
@@ -205,11 +212,11 @@ public final class MetasfreshArchRules
 	 *   <li>Total number of imported classes</li>
 	 *   <li>Distinct owning modules present (by {@link #moduleLabelOf(JavaClass)} — the source jar / artifact id)</li>
 	 * </ul>
-	 * and asserts that several well-known module jars are present (de.metas.business, de.metas.handlingunits.base,
-	 * de.metas.contracts, de.metas.payment.sepa.base, de.metas.manufacturing). A missing one means the
-	 * transitive closure is incomplete.
+	 * and asserts the closure is <b>substantial</b> — a lower bound on the distinct module count — rather than
+	 * enumerating a hand-maintained "complete" list (which would rot). Too few modules means the assembly closure
+	 * did not fully load.
 	 *
-	 * @throws IllegalStateException if zero classes were imported, or if a mandatory module is absent
+	 * @throws IllegalStateException if zero classes were imported, or if the closure is implausibly small
 	 */
 	public static JavaClasses importWholeBackend()
 	{
@@ -217,7 +224,7 @@ public final class MetasfreshArchRules
 
 		final JavaClasses classes = new ClassFileImporter()
 				.withImportOption(new ImportOption.DoNotIncludeTests())
-				.importPackages("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
+				.importPackages(BACKEND_PACKAGE_ROOTS);
 
 		final long importMs = System.currentTimeMillis() - importStart;
 
@@ -242,23 +249,19 @@ public final class MetasfreshArchRules
 		logger.info("[ArchUnit whole-backend] Total classes imported: {} (import took {} ms)", classes.size(), importMs);
 		logger.info("[ArchUnit whole-backend] Distinct owning modules ({}): {}", moduleLabels.size(), moduleLabels);
 
-		// Probe: assert a few well-known module jars are present — a missing one means the serverRoot/webui-api
-		// transitive closure did not fully load, so the per-module freeze would silently under-cover. These are
-		// Maven artifact ids (= the #moduleLabelOf grouping key), each definitively contributed by a distinct module.
-		final List<String> missingModules = new ArrayList<>();
-		for (final String mandatoryModule : Arrays.asList(
-				"de.metas.business", "de.metas.handlingunits.base", "de.metas.contracts",
-				"de.metas.payment.sepa.base", "de.metas.manufacturing"))
+		// Probe: the closure must be SUBSTANTIAL. We deliberately do NOT enumerate a "complete" module list —
+		// there is no authoritative hand-maintained set, and any such list would rot as modules are added/removed.
+		// Instead we assert a generous lower bound on the distinct module count: the zero-class guard above catches
+		// "nothing loaded", and this catches "loaded only a partial sliver" (assembly deps missing → per-module
+		// freeze would silently under-cover). A healthy serverRoot+webui-api closure yields ~140 modules; a floor
+		// of MIN_EXPECTED_MODULES is well below that yet far above any partial-load failure. The full module list
+		// is logged above for inspection.
+		final int MIN_EXPECTED_MODULES = 50;
+		if (moduleLabels.size() < MIN_EXPECTED_MODULES)
 		{
-			if (!moduleLabels.contains(mandatoryModule))
-			{
-				missingModules.add(mandatoryModule);
-			}
-		}
-		if (!missingModules.isEmpty())
-		{
-			throw new IllegalStateException("[ArchUnit whole-backend] INCOMPLETE CLOSURE — missing expected module jars: "
-					+ missingModules + ". Modules present: " + moduleLabels);
+			throw new IllegalStateException("[ArchUnit whole-backend] INCOMPLETE CLOSURE — only " + moduleLabels.size()
+					+ " distinct modules on the classpath (expected >= " + MIN_EXPECTED_MODULES
+					+ "); the serverRoot/webui-api assembly deps did not fully load. Modules present: " + moduleLabels);
 		}
 
 		return classes;
@@ -322,6 +325,11 @@ public final class MetasfreshArchRules
 	 * <b>Returned for report-only use, NOT for freezing.</b> {@code beFreeOfCycles()} violation descriptions
 	 * are non-deterministic run-to-run, so a {@code FreezingArchRule} baseline would be flaky — callers should
 	 * {@code evaluate()} this and log, not {@code freeze(...).check(...)}. See skill {@code metasfresh-archunit}.
+	 * <p>
+	 * Scoped to {@code de.metas} only (not the other {@link #BACKEND_PACKAGE_ROOTS}): {@code de.metas.<x>} is the
+	 * bounded-context layer this rule is about, whereas {@code org.adempiere}/{@code org.compiere}/
+	 * {@code org.eevolution} are the flat legacy ADempiere base with no bounded-context structure to slice and
+	 * known pre-existing cycles — including them would only emit legacy noise on a report-only check.
 	 */
 	public static ArchRule boundedContextsFreeOfCycles()
 	{
