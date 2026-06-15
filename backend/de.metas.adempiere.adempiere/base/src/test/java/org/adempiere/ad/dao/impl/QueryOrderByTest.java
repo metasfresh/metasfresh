@@ -170,7 +170,7 @@ public class QueryOrderByTest
 
 		final String sql = queryOrderBy.getSql(col -> null);
 
-		assertThat(sql).isEqualTo("");
+		assertThat(sql).isNull();
 	}
 
 	@Test

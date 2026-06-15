@@ -60,6 +60,7 @@ class QueryOrderBy implements IQueryOrderBy
 		return items != null && !items.isEmpty() ? new QueryOrderBy(items) : NONE;
 	}
 
+	/** @deprecated kept only for legacy human-readable logging; use {@link #getSql()} to obtain the SQL ORDER BY clause. */
 	@Override
 	@Deprecated
 	public String toString()
@@ -93,7 +94,8 @@ class QueryOrderBy implements IQueryOrderBy
 			appendSql(sqlBuf, item, columnNameMapper);
 		}
 
-		return sqlBuf.toString();
+		// null (not "") when every item was skipped by the mapper — consistent with the empty-items case above and the @Nullable contract.
+		return StringUtils.trimBlankToNull(sqlBuf.toString());
 	}
 
 	private static void appendSql(

@@ -42,7 +42,7 @@ import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
 
 /**
- * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig
+ * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig, M_Locator
  * Repository Cluster: WarehouseRepository, WarehouseDAO
  */
 @Repository
