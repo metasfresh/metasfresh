@@ -254,13 +254,13 @@ public final class MetasfreshArchRules
 		// Instead we assert a generous lower bound on the distinct module count: the zero-class guard above catches
 		// "nothing loaded", and this catches "loaded only a partial sliver" (assembly deps missing → per-module
 		// freeze would silently under-cover). A healthy serverRoot+webui-api closure yields ~140 modules; a floor
-		// of MIN_EXPECTED_MODULES is well below that yet far above any partial-load failure. The full module list
+		// of minExpectedModules is well below that yet far above any partial-load failure. The full module list
 		// is logged above for inspection.
-		final int MIN_EXPECTED_MODULES = 50;
-		if (moduleLabels.size() < MIN_EXPECTED_MODULES)
+		final int minExpectedModules = 50;
+		if (moduleLabels.size() < minExpectedModules)
 		{
 			throw new IllegalStateException("[ArchUnit whole-backend] INCOMPLETE CLOSURE — only " + moduleLabels.size()
-					+ " distinct modules on the classpath (expected >= " + MIN_EXPECTED_MODULES
+					+ " distinct modules on the classpath (expected >= " + minExpectedModules
 					+ "); the serverRoot/webui-api assembly deps did not fully load. Modules present: " + moduleLabels);
 		}
 
