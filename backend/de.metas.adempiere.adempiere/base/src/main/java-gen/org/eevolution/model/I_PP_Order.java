@@ -2031,7 +2031,7 @@ public interface I_PP_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsProdDateSet (boolean IsProdDateSet);
+	void setIsFixedProductionDate (boolean IsFixedProductionDate);
 
 	/**
 	 * Get Eff. Prod. Date Set.
@@ -2041,8 +2041,9 @@ public interface I_PP_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProdDateSet();
+	boolean isFixedProductionDate();
 
-	ModelColumn<I_PP_Order, Object> COLUMN_IsProdDateSet = new ModelColumn<>(I_PP_Order.class, "IsProdDateSet", null);
-	String COLUMNNAME_IsProdDateSet = "IsProdDateSet";
+	ModelColumn<I_PP_Order, Object> COLUMN_IsFixedProductionDate = new ModelColumn<>(I_PP_Order.class, "IsFixedProductionDate", null);
+	String COLUMNNAME_IsFixedProductionDate = "IsFixedProductionDate";
+
 }

@@ -1471,14 +1471,14 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public void setIsProdDateSet (final boolean IsProdDateSet)
+	public void setIsFixedProductionDate (final boolean IsFixedProductionDate)
 	{
-		set_Value (COLUMNNAME_IsProdDateSet, IsProdDateSet);
+		set_Value (COLUMNNAME_IsFixedProductionDate, IsFixedProductionDate);
 	}
 
 	@Override
-	public boolean isProdDateSet()
+	public boolean isFixedProductionDate()
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsProdDateSet);
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedProductionDate);
 	}
 }

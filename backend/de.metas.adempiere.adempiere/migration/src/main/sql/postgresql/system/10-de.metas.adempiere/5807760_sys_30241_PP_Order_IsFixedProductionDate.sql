@@ -1,12 +1,12 @@
--- 30241: Produktionsauftrag — IsProdDateSet flag makes "Eff. Prod. Datum" read-only
+-- 30241: Produktionsauftrag — IsFixedProductionDate flag makes "Eff. Prod. Datum" read-only
 --
--- Adds a new Y/N flag PP_Order.IsProdDateSet (default 'N' = backward compatible).
+-- Adds a new Y/N flag PP_Order.IsFixedProductionDate (default 'N' = backward compatible).
 -- When the flag = 'Y', the "Eff. Prod. Datum" field (PP_Order.DateDelivered,
 -- AD_Field 54142, window 53009 / tab 53054) becomes read-only; when 'N' it stays editable.
 --
 -- IDs allocated from idserver.metas.de on 2026-06-15:
---   AD_Element     584991  (PP_Order.IsProdDateSet label/help)
---   AD_Column      592808  (PP_Order.IsProdDateSet)
+--   AD_Element     584991  (PP_Order.IsFixedProductionDate label/help)
+--   AD_Column      592808  (PP_Order.IsFixedProductionDate)
 --   AD_Field       781116  (checkbox on window 53009 / tab 53054)
 --   AD_UI_Element  652262  (UI placement)
 --
@@ -23,7 +23,7 @@ INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
 VALUES (584991 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-06-15 08:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-06-15 08:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-        'IsProdDateSet',
+        'IsFixedProductionDate',
         'Eff. Prod. Datum gesetzt',
         'Eff. Prod. Datum gesetzt',
         'Wenn aktiviert, ist das Feld „Eff. Prod. Datum" schreibgeschützt.',
@@ -89,7 +89,7 @@ VALUES (592808 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-06-15 08:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-06-15 08:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         0, (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'PP_Order'), 584991, 20,
-        'IsProdDateSet',
+        'IsFixedProductionDate',
         'Eff. Prod. Datum gesetzt',
         'Wenn aktiviert, ist das Feld „Eff. Prod. Datum" schreibgeschützt.',
         NULL,
@@ -108,9 +108,9 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Column_ID = 592808
 -- =============================================================================
 -- 3. DDL — physical column (via db_alter_table: handles dependent-view drop/recreate)
 -- =============================================================================
-SELECT db_alter_table('PP_Order', 'ALTER TABLE public.PP_Order ADD COLUMN IF NOT EXISTS IsProdDateSet CHAR(1) DEFAULT ''N''');
-UPDATE PP_Order SET IsProdDateSet = 'N' WHERE IsProdDateSet IS NULL;
-SELECT db_alter_table('PP_Order', 'ALTER TABLE public.PP_Order ALTER COLUMN IsProdDateSet SET NOT NULL');
+SELECT db_alter_table('PP_Order', 'ALTER TABLE public.PP_Order ADD COLUMN IF NOT EXISTS IsFixedProductionDate CHAR(1) DEFAULT ''N''');
+UPDATE PP_Order SET IsFixedProductionDate = 'N' WHERE IsFixedProductionDate IS NULL;
+SELECT db_alter_table('PP_Order', 'ALTER TABLE public.PP_Order ALTER COLUMN IsFixedProductionDate SET NOT NULL');
 
 -- =============================================================================
 -- 4. AD_Field on window 53009 / tab 53054
@@ -165,10 +165,10 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584991);
 -- =============================================================================
 -- 7. ReadOnlyLogic at AD_Column level on PP_Order.DateDelivered ("Eff. Prod. Datum").
 --    Set on the column (not field 54142) so it applies wherever DateDelivered is shown
---    on PP_Order windows. @IsProdDateSet@ resolves from the same record's flag.
+--    on PP_Order windows. @IsFixedProductionDate@ resolves from the same record's flag.
 -- =============================================================================
 UPDATE AD_Column
-SET ReadOnlyLogic = '@IsProdDateSet@=Y',
+SET ReadOnlyLogic = '@IsFixedProductionDate@=Y',
     Updated       = TO_TIMESTAMP('2026-06-15 08:03:00', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy     = 100
 WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'PP_Order')

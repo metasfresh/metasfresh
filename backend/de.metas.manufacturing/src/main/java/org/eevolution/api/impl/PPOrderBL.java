@@ -290,10 +290,10 @@ public class PPOrderBL implements IPPOrderBL
 		//
 		// Update PP Order Dates
 		final Timestamp date = TimeUtil.asTimestamp(request.getDate());
-		// Keep a manually-set effective production date: when IsProdDateSet='Y' the
+		// Keep a manually-set effective production date: when IsFixedProductionDate='Y' the
 		// "Eff. Prod. Datum" (DateDelivered) is user-managed, so it must not be overwritten
 		// by the reported receipt date. When 'N' (default) the previous behaviour applies.
-		if (!order.isProdDateSet())
+		if (!order.isFixedProductionDate())
 		{
 			order.setDateDelivered(date); // overwrite=last
 		}

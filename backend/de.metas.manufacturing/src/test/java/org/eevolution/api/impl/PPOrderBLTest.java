@@ -137,7 +137,7 @@ public class PPOrderBLTest
 	}
 
 	/**
-	 * The IsProdDateSet flag must stop the automatic overwrite of the
+	 * The IsFixedProductionDate flag must stop the automatic overwrite of the
 	 * effective production date (DateDelivered) done by {@link PPOrderBL#addQty}.
 	 */
 	@Nested
@@ -181,9 +181,9 @@ public class PPOrderBLTest
 		}
 
 		@Test
-		public void dateDelivered_isUpdatedToReceiptDate_whenProdDateNotSet()
+		public void dateDelivered_isUpdatedToReceiptDate_whenNotFixedProductionDate()
 		{
-			order.setIsProdDateSet(false);
+			order.setIsFixedProductionDate(false);
 			saveRecord(order);
 
 			final ZonedDateTime receiptDate = ZonedDateTime.parse("2026-06-15T10:00:00Z");
@@ -193,10 +193,10 @@ public class PPOrderBLTest
 		}
 
 		@Test
-		public void dateDelivered_isPreserved_whenProdDateSet()
+		public void dateDelivered_isPreserved_whenFixedProductionDate()
 		{
 			final Timestamp manualProdDate = TimeUtil.asTimestamp(ZonedDateTime.parse("2026-01-01T00:00:00Z"));
-			order.setIsProdDateSet(true);
+			order.setIsFixedProductionDate(true);
 			order.setDateDelivered(manualProdDate);
 			saveRecord(order);
 
