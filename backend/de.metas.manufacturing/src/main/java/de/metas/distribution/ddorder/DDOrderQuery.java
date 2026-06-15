@@ -32,6 +32,7 @@ public class DDOrderQuery
 	@Nullable Set<WarehouseId> warehouseFromIds;
 	@Nullable InSetPredicate<WarehouseId> warehouseToIds;
 	@Nullable InSetPredicate<LocatorId> locatorToIds;
+	/** Plain {@link Set} (not {@link InSetPredicate}) because the exclude filter uses a NOT-IN subquery via {@code DD_OrderLine}; there is no meaningful "exclude all" wildcard case. */
 	@Nullable Set<LocatorId> excludeLocatorToIds;
 	@Nullable Set<OrderId> salesOrderIds;
 	@Nullable Set<PPOrderId> manufacturingOrderIds;
