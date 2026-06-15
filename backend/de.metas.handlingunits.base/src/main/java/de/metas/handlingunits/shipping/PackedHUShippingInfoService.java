@@ -56,6 +56,10 @@ public class PackedHUShippingInfoService
 		return huUnitType != null ? huUnitType : HuUnitType.VHU;
 	}
 
+	// countryOfOrigin source — keep in sync with NShiftDraftDeliveryOrderCreator#readCountryOfOrigin:
+	// both read ATTR_CountryOfOrigin (here: HU attribute storage; there: inout-line ASI).
+	// The two resolve to the same value because ShipmentLineBuilder.transferAttributesToShipmentLine()
+	// copies HU attributes (including CountryOfOrigin) into the shipment-line ASI on shipment creation.
 	@Nullable
 	private String readCountryOfOrigin(@NonNull final I_M_HU hu)
 	{

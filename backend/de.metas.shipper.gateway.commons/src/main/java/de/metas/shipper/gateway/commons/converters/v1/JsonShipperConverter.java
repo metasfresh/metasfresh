@@ -207,9 +207,13 @@ public class JsonShipperConverter
 				.packageDimensions(toJsonPackageDimensions(line.getPackageDimensions()))
 				.packageId(line.getPackageId().toString())
 				.contents(line.getItems().stream().map(this::toJsonDeliveryOrderLineContents).collect(Collectors.toList()))
+				.topLevelType(line.getTopLevelType())
 				.build();
 	}
 
+	// Populates the delivery-order common request object (JsonDeliveryOrderLineContents).
+	// Keep the populated field set in sync with the advise common object (JsonDeliveryAdvisorRequestItem),
+	// populated in PackedHUCarrierAdviseService#buildRequestItem and CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem.
 	private JsonDeliveryOrderLineContents toJsonDeliveryOrderLineContents(@NonNull final DeliveryOrderItem item)
 	{
 		Check.assumeNotNull(item.getId(), "itemId shouldn't be null");

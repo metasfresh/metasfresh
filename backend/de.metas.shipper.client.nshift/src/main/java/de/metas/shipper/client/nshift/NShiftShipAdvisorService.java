@@ -34,7 +34,6 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
-import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
@@ -48,7 +47,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -120,34 +118,12 @@ public class NShiftShipAdvisorService
 				attributeValue -> Optional.ofNullable(deliveryAdvisorRequest.getValue(attributeValue)));
 		final Function<String, String> finalLineValueProvider = attributeValue -> lineValueProvider.apply(attributeValue).orElse(null);
 
-		dataBuilder.line(buildNShiftLine(item, mappingConfigs, finalLineValueProvider));
+		dataBuilder.line(NShiftUtil.buildAdvisorLine(item, mappingConfigs, finalLineValueProvider));
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
 				.data(dataBuilder.build())
 				.build();
-	}
-
-	private static JsonLine buildNShiftLine(
-			@NonNull final JsonDeliveryAdvisorRequestItem item,
-			@NonNull final NShiftMappingConfigs mappingConfigs,
-			@NonNull final Function<String, String> lineValueProvider)
-	{
-		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
-		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
-				.lineWeight(weightGrams)
-				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
-		if (item.getPackageDimensions() != null)
-		{
-			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
-			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
-			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(1); // always 1: the item represents a single physical HU or a per-unit product baseline
-			lineBuilder.length(lengthMM);
-			lineBuilder.width(widthMM);
-			lineBuilder.height(heightMM);
-		}
-		return lineBuilder.build();
 	}
 
 	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)

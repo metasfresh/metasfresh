@@ -33,8 +33,12 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.compiere.util.Env;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -52,12 +56,14 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final MobileUIPickingClient mobileUIPickingClient = new MobileUIPickingClient();
 
@@ -228,6 +234,31 @@ public class MobileUI_Picking_StepDef
 		waitUntilPickingJobSchedulesValid();
 		final JsonWFProcess wfProcess = mobileUIPickingClient.complete(context.getWfProcessIdNotNull());
 		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Attempts to complete the current picking job and asserts that it is rejected with the given AD_Message key.
+	 * The exception message is resolved via {@link IMsgBL} so the assertion is robust to translation changes.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Message</b> — (required) the AD_Message key (value) the rejection must carry<br>
+	 * @cucumber.depends StepDefData: context (active WFProcess)
+	 * @cucumber.example
+	 * <pre>
+	 * Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_MultipleShippersOnHU"
+	 * </pre>
+	 */
+	@Then("completing the picking job is rejected with AD_Message {string}")
+	public void completeExpectingRejection(@NonNull final String adMessageKey) throws InterruptedException
+	{
+		waitUntilPickingJobSchedulesValid();
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
+		final String expectedMessageText = msgBL.getMsg(Env.getCtx(), expectedMessageKey);
+		assertThatThrownBy(() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()))
+				.as("Picking job completion must be rejected with AD_Message %s", adMessageKey)
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(expectedMessageText);
 	}
 
 	/**

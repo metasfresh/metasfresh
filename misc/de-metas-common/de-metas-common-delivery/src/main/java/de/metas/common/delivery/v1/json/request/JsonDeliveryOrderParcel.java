@@ -54,12 +54,17 @@ public class JsonDeliveryOrderParcel
 	@Nullable String trackingUrl;
 	@Nullable byte[] labelPdfBase64;
 	@NonNull List<JsonDeliveryOrderLineContents> contents;
+	/** Wire-string for the top-level HU type: "LU", "TU", or "CU". Keep wire format in sync with
+	 * PackedHUCarrierAdviseService.toTopLevelTypeWireString (advise path). */
+	@Nullable String topLevelType;
 
 	@JsonIgnore
 	public Optional<String> getValue(@NonNull final String attributeValue)
 	{
 		switch (attributeValue)
 		{
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE:
+				return Optional.ofNullable(topLevelType);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID:
 				return Optional.of(getId());
 			//aggregated JsonDeliveryOrderLineContents

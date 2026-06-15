@@ -72,6 +72,7 @@ public class PickingJobRestService
 
 	private final PickingJobService pickingJobService;
 	private final MobileUIPickingUserProfileService configService;
+	private final CarrierAdviseConsistencyService carrierAdviseConsistencyService;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -152,6 +153,7 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
 	{
+		carrierAdviseConsistencyService.assertConsistentForJob(pickingJobService.getById(pickingJobId));
 		return pickingJobService.complete(pickingJobId, callerId);
 	}
 
@@ -177,6 +179,7 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
+		carrierAdviseConsistencyService.assertConsistentForJob(pickingJob);
 		return pickingJobService.complete(pickingJob);
 	}
 

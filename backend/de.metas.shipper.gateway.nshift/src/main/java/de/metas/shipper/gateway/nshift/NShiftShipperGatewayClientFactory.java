@@ -1,7 +1,6 @@
 package de.metas.shipper.gateway.nshift;
 
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigRepository;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
@@ -9,6 +8,7 @@ import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
 import de.metas.shipper.gateway.commons.servicelevel.ShipperServiceLevelConfigRepository;
 import de.metas.shipper.gateway.nshift.client.NShiftShipperGatewayClient;
 import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
+import de.metas.shipper.gateway.nshift.client.ShipmentDispatchService;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import de.metas.shipping.ShipperGatewayId;
@@ -24,7 +24,7 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@NonNull private final ShipperConfigRepository configRepository;
 	@NonNull private final JsonShipperConverter jsonConverter;
 	@NonNull private final ShipmentOrderLogRepository shipmentOrderLogRepository;
-	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipmentDispatchService shipmentDispatchService;
 	@NonNull private final ShipAdvisorService shipAdvisorService;
 	@NonNull private final ShipperMappingConfigRepository shipperMappingConfigRepository;
 	@NonNull private final ShipperServiceLevelConfigRepository serviceLevelConfigRepository;
@@ -43,7 +43,7 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 				.serviceLevelConfigs(serviceLevelConfigRepository.getByShipperId(shipperId))
 				.jsonConverter(jsonConverter)
 				.shipmentOrderLogRepository(shipmentOrderLogRepository)
-				.shipmentService(shipmentService)
+				.shipmentDispatchService(shipmentDispatchService)
 				.shipAdvisorService(shipAdvisorService)
 				.shipmentScheduleRepository(shipmentScheduleRepository)
 				.build();

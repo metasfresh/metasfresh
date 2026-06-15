@@ -36,7 +36,6 @@ import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.logging.LogManager;
-import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
@@ -76,7 +75,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
-	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipmentDispatchService shipmentDispatchService;
 	@NonNull private final ShipAdvisorService shipAdvisorService;
 	//TODO Adrian to be removed in next iteration(s), once the API changes so that we pass a JsonDeliveryRequest and we get a JsonDeliveryResponse
 	@NonNull private final JsonShipperConverter jsonConverter;
@@ -110,7 +109,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		JsonDeliveryResponse response;
 		try
 		{
-			response = shipmentService.createShipment(deliveryRequestJson);
+			response = shipmentDispatchService.createShipment(deliveryRequestJson);
 			logger.debug("Received nShift response: {}", response);
 		}
 		catch (final AdempiereException ex)

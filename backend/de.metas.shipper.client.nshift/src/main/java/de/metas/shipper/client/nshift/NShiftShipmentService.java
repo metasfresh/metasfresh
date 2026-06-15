@@ -43,6 +43,7 @@ import de.metas.shipper.client.nshift.json.JsonPackage;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
+import de.metas.shipper.client.nshift.json.response.JsonOrderAdviceResponse;
 import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import de.metas.shipper.client.nshift.json.response.JsonShipmentResponseLabel;
 import lombok.NonNull;
@@ -93,6 +94,53 @@ public class NShiftShipmentService
 					.errorMessage(throwable.getMessage())
 					.build();
 		}
+	}
+
+	/**
+	 * Books a shipment via the OrderAdvice endpoint (Submit=1).
+	 * Keep response handling in sync with {@link #createShipment}.
+	 */
+	public JsonDeliveryResponse createShipmentViaOrderAdvice(@NonNull final JsonDeliveryRequest deliveryRequest)
+	{
+		try
+		{
+			logger.debug("Creating shipment via OrderAdvice for request: {}", deliveryRequest);
+			final JsonShipmentRequest requestBody = buildOrderAdviceShipmentRequest(deliveryRequest);
+			final JsonOrderAdviceResponse orderAdviceResponse = restClient.post(NShiftConstants.ORDER_ADVICE_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonOrderAdviceResponse.class);
+
+			logger.debug("Successfully received nShift OrderAdvice response: {}", orderAdviceResponse);
+			final JsonShipmentResponse shipment = Check.assumeNotNull(
+					orderAdviceResponse.getShipment(),
+					"OrderAdvice(Submit=1) response should contain a booked Shipment; Status={}", orderAdviceResponse.getStatus());
+			return buildJsonDeliveryResponse(shipment, deliveryRequest);
+		}
+		catch (final Throwable throwable)
+		{
+			logger.error("Got error", throwable);
+			return JsonDeliveryResponse.builder()
+					.requestId(deliveryRequest.getId())
+					.errorMessage(throwable.getMessage())
+					.build();
+		}
+	}
+
+	@VisibleForTesting
+	public static JsonShipmentRequest buildOrderAdviceShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
+	{
+		final JsonShipmentRequest baseRequest = buildShipmentRequest(deliveryRequest);
+		// Rebuild options with submit=true to book the shipment; other options are preserved from the base request.
+		final JsonShipmentOptions baseOptions = baseRequest.getOptions();
+		final JsonShipmentOptions bookingOptions = JsonShipmentOptions.builder()
+				.labelType(baseOptions.getLabelType())
+				.trackingURL(baseOptions.getTrackingURL())
+				.useShippingRules(baseOptions.getUseShippingRules())
+				.serviceLevel(baseOptions.getServiceLevel())
+				.submit(true)
+				.build();
+		return JsonShipmentRequest.builder()
+				.data(baseRequest.getData())
+				.options(bookingOptions)
+				.build();
 	}
 
 	@VisibleForTesting

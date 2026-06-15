@@ -309,31 +309,31 @@ Feature: nShift Shipment
       | cp1                | cgt1                  | cs1, cs2           |
     And the nShift shipment service is stubbed to return a successful shipment creation response
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
-      | so_ac7     | true    | customer      | 2025-04-01  | wh             | nShift       |
+      | Identifier        | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_manual_advise  | true    | customer      | 2025-04-01  | wh             | nShift       |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_ac7_l1  | so_ac7     | product      | 10         |
-    When the order identified by so_ac7 is completed
+      | Identifier           | C_Order_ID       | M_Product_ID | QtyEntered |
+      | so_manual_advise_l1  | so_manual_advise | product      | 10         |
+    When the order identified by so_manual_advise is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_ac7     | so_ac7_l1      | N             | cp1                | cgt1                  |
+      | Identifier       | C_OrderLine_ID      | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_manual_advise | so_manual_advise_l1 | N             | cp1                | cgt1                  |
     # Set the carrier-advising status to Manual via the manual-advise process
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
-      | nShift       | ss_ac7                | cp2                | cgt2                  | cs3, cs4           |
+      | nShift       | ss_manual_advise      | cp2                | cgt2                  | cs3, cs4           |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_ac7     | so_ac7_l1      | N             | cp2                | cgt2                  |
+      | Identifier       | C_OrderLine_ID      | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_manual_advise | so_manual_advise_l1 | N             | cp2                | cgt2                  |
     And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_ac7                | inout_ac7  |
+      | M_ShipmentSchedule_ID | M_InOut_ID        |
+      | ss_manual_advise      | inout_manual_advise |
     And after not more than 60s, Transportation Order is found for Shipment:
-      | M_InOut_ID | M_ShipperTransportation_ID |
-      | inout_ac7  | transpOrder_ac7            |
+      | M_InOut_ID          | M_ShipperTransportation_ID    |
+      | inout_manual_advise | transpOrder_manual_advise     |
     And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier | M_InOut_ID |
-      | cso_ac7    | inout_ac7  |
+      | Identifier          | M_InOut_ID          |
+      | cso_manual_advise   | inout_manual_advise |
     Then validate the captured nShift shipment request options:
       | UseShippingRules |
       | -                |
@@ -1066,6 +1066,64 @@ Feature: nShift Shipment
       | nShift Product   | IT              | 9               | 10        | 90         | 18.9            | 12345678      |
       | nShift Product   | DE              | 7               | 10        | 70         | 14.7            | 12345678      |
       | nShift Product 2 | IT              | 6               | 5         | 30         | 7.2             | 12345678      |
+
+  @Id:S0355_DeliveryOrder_150
+  Scenario: nShift Partial Shipment — Carrier_ShipmentOrder product is frozen at creation, remainder re-advise does not overwrite it
+    # A partial shipment (6 of 10 PCE) creates a Carrier_ShipmentOrder with the carrier product that was
+    # active at delivery-order-creation time (cp1). The remainder schedule (4 PCE still open) is then
+    # re-advised by the automatic advise process, which returns a different product (cp2). The already-
+    # created Carrier_ShipmentOrder must still carry cp1 — the re-advise must not mutate it.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    # Stub advisor to return cp1 — this is what the schedule receives at order-completion time.
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1, cs2           |
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ps      | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_ps_l1   | so_ps      | product      | 10         |
+    When the order identified by so_ps is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_ps      | so_ps_l1       | N             | cp1                | cgt1                  |
+    # Constrain delivery to 6 PCE so that 4 PCE remain open on the schedule after shipment.
+    And update shipment schedules
+      | Identifier | QtyToDeliver_Override |
+      | ss_ps      | 6                     |
+    # Generate partial shipment for 6 PCE — delivery order is created with cp1 inside the same transaction.
+    And shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_ps                 | inout_partial |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID    | M_ShipperTransportation_ID |
+      | inout_partial | transpOrder_ps             |
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier  | M_InOut_ID    |
+      | cso_partial | inout_partial |
+    # The shipment request captured at delivery-order-creation time must carry cp1.
+    And validate the captured nShift shipment request:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    # Re-stub the advisor to return cp2 — simulates a different recommendation for the remainder.
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp2                | cgt2                  | cs3, cs4           |
+    # Re-advise the remainder schedule: the advisor now returns cp2, so the schedule's product changes.
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
+      | ss_ps                 | true                         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_ps      | so_ps_l1       | N             | cp2                |
+    # The already-created Carrier_ShipmentOrder for the partial shipment must still carry cp1.
+    # This step freshly reads the DB record to verify the re-advise did not mutate it.
+    Then validate Carrier_ShipmentOrder product for shipment:
+      | M_InOut_ID    | Carrier_Product_ID |
+      | inout_partial | cp1                |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

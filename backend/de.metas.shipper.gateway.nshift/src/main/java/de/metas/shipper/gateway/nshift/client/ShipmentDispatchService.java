@@ -22,10 +22,9 @@
 
 package de.metas.shipper.gateway.nshift.client;
 
-import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
-import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
-import de.metas.shipper.client.nshift.NShiftOrderAdvisorService;
-import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,23 +33,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ShipAdvisorService
+public class ShipmentDispatchService
 {
-	private final NShiftShipAdvisorService shipAdvisorService;
-	private final NShiftOrderAdvisorService orderAdvisorService;
+	private final NShiftShipmentService shipmentService;
 
-	public JsonDeliveryAdvisorResponse advise(@NonNull final JsonDeliveryAdvisorRequest deliveryRequest)
+	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
-		final String adviseTypeCode = deliveryRequest.getShipperConfig().getAdditionalProperty(I_Carrier_Config.COLUMNNAME_AdviseType);
-		final AdviseType adviseType = adviseTypeCode != null ? AdviseType.ofCode(adviseTypeCode) : AdviseType.ORDER;
-		switch (adviseType)
+		final String shipTypeCode = deliveryRequest.getShipperConfig().getAdditionalProperty(I_Carrier_Config.COLUMNNAME_ShipType);
+		final ShipType shipType = shipTypeCode != null ? ShipType.ofCode(shipTypeCode) : ShipType.ORDER;
+		switch (shipType)
 		{
 			case SHIP:
-				return shipAdvisorService.advise(deliveryRequest);
+				return shipmentService.createShipment(deliveryRequest);
 			case ORDER:
-				return orderAdvisorService.advise(deliveryRequest);
+				return shipmentService.createShipmentViaOrderAdvice(deliveryRequest);
 			default:
-				throw new AdempiereException("Unhandled " + AdviseType.class.getSimpleName() + ": " + adviseType);
+				throw new AdempiereException("Unhandled " + ShipType.class.getSimpleName() + ": " + shipType);
 		}
 	}
 }

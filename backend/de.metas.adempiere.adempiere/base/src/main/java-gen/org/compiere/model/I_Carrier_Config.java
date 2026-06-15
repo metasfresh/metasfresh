@@ -72,8 +72,8 @@ public interface I_Carrier_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Advise Type.
-	 * Determines which nShift advise endpoint is used.
+	 * Set Carrier Advise Type.
+	 * Which carrier-advise endpoint is used (ship advise vs order advise).
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -82,8 +82,8 @@ public interface I_Carrier_Config
 	void setAdviseType (java.lang.String AdviseType);
 
 	/**
-	 * Get Advise Type.
-	 * Determines which nShift advise endpoint is used.
+	 * Get Carrier Advise Type.
+	 * Which carrier-advise endpoint is used (ship advise vs order advise).
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -338,6 +338,29 @@ public interface I_Carrier_Config
 
 	ModelColumn<I_Carrier_Config, Object> COLUMN_ServiceLevel = new ModelColumn<>(I_Carrier_Config.class, "ServiceLevel", null);
 	String COLUMNNAME_ServiceLevel = "ServiceLevel";
+
+	/**
+	 * Set Ship Type.
+	 * Which nShift endpoint creates the shipment (shipment vs order-advice submit).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setShipType (java.lang.String ShipType);
+
+	/**
+	 * Get Ship Type.
+	 * Which nShift endpoint creates the shipment (shipment vs order-advice submit).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getShipType();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_ShipType = new ModelColumn<>(I_Carrier_Config.class, "ShipType", null);
+	String COLUMNNAME_ShipType = "ShipType";
 
 	/**
 	 * Get Updated.

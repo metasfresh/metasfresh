@@ -8,17 +8,14 @@ import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
-import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
 import de.metas.product.ProductRepository;
@@ -47,18 +44,17 @@ import java.util.Objects;
 public class PackedHUCarrierAdviseService
 {
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
-	@NonNull private final ShipmentScheduleService shipmentScheduleService;
+	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final CarrierProductRepository carrierProductRepository;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	public CarrierAdviseTargetInfo resolveTargetInfo(@NonNull final I_M_HU topLevelHU)
 	{
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = resolveSchedulesByIdForHU(topLevelHU);
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
 		if (schedulesById.isEmpty())
 		{
 			return CarrierAdviseTargetInfo.NONE;
@@ -120,24 +116,6 @@ public class PackedHUCarrierAdviseService
 				.build();
 	}
 
-	private ImmutableMap<ShipmentScheduleId, ShipmentSchedule> resolveSchedulesByIdForHU(@NonNull final I_M_HU topLevelHU)
-	{
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords =
-				huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(topLevelHU);
-		if (qtyPickedRecords.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableSet<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
-				.map(r -> ShipmentScheduleId.ofRepoId(r.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		return shipmentScheduleService.getByIds(scheduleIds)
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, s -> s));
-	}
-
 	/**
 	 * Re-advises the currently open packed LU/TU target for the given picking job line.
 	 * Skips shipment schedules whose carrier advising status is Manual.
@@ -160,7 +138,7 @@ public class PackedHUCarrierAdviseService
 
 		final JsonDeliveryAdvisorRequestItem item = buildRequestItem(topLevelHU);
 
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = resolveSchedulesByIdForHU(topLevelHU);
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
 		if (schedulesById.isEmpty())
 		{
 			throw new AdempiereException("No undelivered qty-picked records found for HU " + topLevelHU.getM_HU_ID());
@@ -176,6 +154,12 @@ public class PackedHUCarrierAdviseService
 		}
 	}
 
+	// Carrier "final info" build path — HU-advise (1 of 3).
+	// Field derivation MUST stay consistent across the three nShift build paths (change together):
+	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
 	private JsonDeliveryAdvisorRequestItem buildRequestItem(@NonNull final I_M_HU topLevelHU)
 	{
 		final PackedHUShippingInfo shippingInfo = packedHUShippingInfoService.of(topLevelHU);

@@ -24,13 +24,16 @@ package de.metas.shipper.client.nshift;
 
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonContact;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
+import de.metas.shipper.client.nshift.json.JsonLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -85,6 +88,33 @@ public class NShiftUtil
 		return buildNShiftAddressBuilder(commonAddress, contact, kind)
 				.attention(mappingConfigs.getSingleValue(attentionAttributeType, valueProvider))
 				.build();
+	}
+
+	/**
+	 * Builds the nShift {@link JsonLine} for an advise request from a {@link JsonDeliveryAdvisorRequestItem}.
+	 * Shared by {@code NShiftShipAdvisorService} and {@code NShiftOrderAdvisorService} — the two advise
+	 * endpoints must build the line identically; keep this the single source for advise-line building.
+	 */
+	public static JsonLine buildAdvisorLine(
+			@NonNull final JsonDeliveryAdvisorRequestItem item,
+			@NonNull final NShiftMappingConfigs mappingConfigs,
+			@NonNull final Function<String, String> lineValueProvider)
+	{
+		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
+		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
+				.lineWeight(weightGrams)
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
+		if (item.getPackageDimensions() != null)
+		{
+			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
+			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
+			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
+			lineBuilder.number(1); // always 1: the item represents a single physical HU or a per-unit product baseline
+			lineBuilder.length(lengthMM);
+			lineBuilder.width(widthMM);
+			lineBuilder.height(heightMM);
+		}
+		return lineBuilder.build();
 	}
 
 	public static <T, R> Function<T, Optional<R>> withFallback(

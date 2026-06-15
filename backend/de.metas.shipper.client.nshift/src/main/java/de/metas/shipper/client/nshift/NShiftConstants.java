@@ -43,4 +43,9 @@ public class NShiftConstants
 	public static final String PROD_CONCEPT_ID = "ProdConceptId";
 	public static final String GOODS_TYPE_ID = "GoodsTypeID";
 	public static final String GOODS_TYPE_NAME = "GoodsTypeName";
+
+	// Shared endpoint paths
+	/** Used by both {@link de.metas.shipper.client.nshift.NShiftOrderAdvisorService} (advise, Submit=0)
+	 * and {@link de.metas.shipper.client.nshift.NShiftShipmentService} (book, Submit=1). */
+	public static final String ORDER_ADVICE_ENDPOINT = "/ShipServer/{ID}/OrderAdvice";
 }

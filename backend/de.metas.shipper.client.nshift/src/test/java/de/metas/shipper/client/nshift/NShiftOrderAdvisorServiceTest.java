@@ -129,7 +129,7 @@ public class NShiftOrderAdvisorServiceTest
 					.additionalProperty(NShiftConstants.SERVICE_LEVEL, SHIP_RULE_SERVICE_LEVEL)
 					.additionalProperty(NShiftConstants.SELECTION_RULES, "Y")
 					.build())
-			.mappingConfigs(NShiftTestMappingConfigs.SHARED_DB)
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED_TEST)
 			.build();
 
 	@Autowired
@@ -150,7 +150,8 @@ public class NShiftOrderAdvisorServiceTest
 	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
 	void local_api_test()
 	{
-		final JsonDeliveryAdvisorResponse response = nShiftOrderAdvisorService.advise(ADVISOR_REQUEST);
+		final JsonDeliveryAdvisorResponse response = nShiftOrderAdvisorService.advise(
+				ADVISOR_REQUEST.toBuilder().mappingConfigs(NShiftTestMappingConfigs.SHARED_DB).build());
 		assertNotNull(response);
 		assertFalse(response.isError());
 	}

@@ -23,6 +23,7 @@ public class NShiftTestMappingConfigs
 	public static final String REFERENCE_KIND_CUSTOMER_REFERENCE = "7";
 	public static final String REFERENCE_KIND_INCOTERMS = "63";
 	public static final String REFERENCE_KIND_EXTERNAL_SYSTEM = "64";
+	public static final String LINE_REFERENCE_KIND_TOP_LEVEL_TYPE = "135";
 	public static final String LINE_REFERENCE_KIND_CONTENTS = "23";
 	public static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_1 = "129";
 	public static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_2 = "130";
@@ -464,6 +465,12 @@ public class NShiftTestMappingConfigs
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
 					.attributeKey(REFERENCE_KIND_EXTERNAL_SYSTEM)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(220)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+					.attributeKey(LINE_REFERENCE_KIND_TOP_LEVEL_TYPE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE)
 					.build()
 	));
 }

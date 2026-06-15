@@ -23,7 +23,6 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
-import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
@@ -40,6 +39,7 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
+import lombok.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,8 +49,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
@@ -58,9 +60,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 		"logging.level.de.metas.shipper.client.nshift.NShiftRestClient=TRACE"
 })
 @ExtendWith(SnapshotExtension.class)
-public class NShiftShipmentServiceTest
+public class NShiftShipmentServiceOrderAdviceTest
 {
-	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "123"); //nShift portal actorId
+	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "123");
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
 	private static final String URL = System.getProperty("nshift.test.url", "https://demo.shipmentserver.com:8080");
@@ -216,21 +218,25 @@ public class NShiftShipmentServiceTest
 			.build();
 
 	@Test
-	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
-	void local_api_test()
+	void build_order_advice_request_test()
 	{
-		final JsonDeliveryResponse response = nShiftShipmentService.createShipment(
-				DELIVERY_REQUEST.toBuilder().mappingConfigs(NShiftTestMappingConfigs.SHARED_DB).build());
-		assertNotNull(response);
-		assertNotNull(response.getItems().get(0).getTrackingUrl());
-		assertFalse(response.isError());
-	}
+		final JsonShipmentRequest request = NShiftShipmentService.buildOrderAdviceShipmentRequest(DELIVERY_REQUEST);
 
-	@Test
-	void build_request_test()
-	{
-		final JsonShipmentRequest request = NShiftShipmentService.buildShipmentRequest(DELIVERY_REQUEST);
+		// Assert the booking flag is set: Submit must be true (serialized as 1 via BooleanToIntConverter)
+		assertNotNull(request.getOptions().getSubmit(), "Submit must be set for OrderAdvice booking");
+		assertTrue(request.getOptions().getSubmit(), "Submit must be true to book via OrderAdvice");
+
+		// The data payload is identical to the standard createShipment request — assert via snapshot
 		expect.serializer("orderedJson").toMatchSnapshot(request);
 	}
 
+	@Test
+	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
+	void local_api_test()
+	{
+		final JsonDeliveryResponse response = nShiftShipmentService.createShipmentViaOrderAdvice(
+				DELIVERY_REQUEST.toBuilder().mappingConfigs(NShiftTestMappingConfigs.SHARED_DB).build());
+		assertNotNull(response);
+		assertFalse(response.isError());
+	}
 }

@@ -44,7 +44,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -54,7 +53,6 @@ import java.util.function.Function;
 public class NShiftOrderAdvisorService
 {
 	private static final Logger logger = LogManager.getLogger(NShiftOrderAdvisorService.class);
-	private static final String ORDER_ADVICE_ENDPOINT = "/ShipServer/{ID}/OrderAdvice";
 
 	@NonNull private final NShiftRestClient restClient;
 
@@ -64,7 +62,7 @@ public class NShiftOrderAdvisorService
 		{
 			logger.debug("Getting Order Advises for request: {}", deliveryAdvisorRequest);
 			final JsonShipAdvisorRequest requestBody = buildRequest(deliveryAdvisorRequest);
-			final JsonOrderAdviceResponse response = restClient.post(ORDER_ADVICE_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonOrderAdviceResponse.class);
+			final JsonOrderAdviceResponse response = restClient.post(NShiftConstants.ORDER_ADVICE_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonOrderAdviceResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
 			return buildJsonDeliveryAdvisorResponse(response, deliveryAdvisorRequest.getId());
@@ -119,34 +117,12 @@ public class NShiftOrderAdvisorService
 				attributeValue -> Optional.ofNullable(deliveryAdvisorRequest.getValue(attributeValue)));
 		final Function<String, String> finalLineValueProvider = attributeValue -> lineValueProvider.apply(attributeValue).orElse(null);
 
-		dataBuilder.line(buildNShiftLine(item, mappingConfigs, finalLineValueProvider));
+		dataBuilder.line(NShiftUtil.buildAdvisorLine(item, mappingConfigs, finalLineValueProvider));
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
 				.data(dataBuilder.build())
 				.build();
-	}
-
-	private static JsonLine buildNShiftLine(
-			@NonNull final JsonDeliveryAdvisorRequestItem item,
-			@NonNull final NShiftMappingConfigs mappingConfigs,
-			@NonNull final Function<String, String> lineValueProvider)
-	{
-		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
-		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
-				.lineWeight(weightGrams)
-				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
-		if (item.getPackageDimensions() != null)
-		{
-			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
-			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
-			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(1); // always 1: the item represents a single physical HU or a per-unit product baseline
-			lineBuilder.length(lengthMM);
-			lineBuilder.width(widthMM);
-			lineBuilder.height(heightMM);
-		}
-		return lineBuilder.build();
 	}
 
 	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonOrderAdviceResponse response, @NonNull final String requestId)

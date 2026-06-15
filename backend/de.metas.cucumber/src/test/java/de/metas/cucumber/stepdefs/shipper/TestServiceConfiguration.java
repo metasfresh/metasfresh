@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.shipper;
 
-import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
+import de.metas.shipper.gateway.nshift.client.ShipmentDispatchService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,10 +46,15 @@ public class TestServiceConfiguration
 		return Mockito.mock(ShipAdvisorService.class);
 	}
 
+	/**
+	 * Stub ship at the gateway boundary ({@link ShipmentDispatchService}) instead of the underlying
+	 * client service, so the cucumber ship stub stays independent of which ship endpoint the
+	 * {@code ShipType} switch routes to (createShipment vs createShipmentViaOrderAdvice). Mirrors the advise stub above.
+	 */
 	@Bean
 	@Primary
-	public NShiftShipmentService nShiftShipmentService()
+	public ShipmentDispatchService shipmentDispatchServiceMock()
 	{
-		return Mockito.mock(NShiftShipmentService.class);
+		return Mockito.mock(ShipmentDispatchService.class);
 	}
 }

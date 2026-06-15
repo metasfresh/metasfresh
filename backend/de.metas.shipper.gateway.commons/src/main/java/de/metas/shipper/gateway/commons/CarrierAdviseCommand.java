@@ -281,6 +281,12 @@ public class CarrierAdviseCommand
 		return builder;
 	}
 
+	// Carrier "final info" build path — schedule-advise (2 of 3).
+	// Field derivation MUST stay consistent across the three nShift build paths (change together):
+	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
 	@NonNull
 	private JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(@NonNull final ShipmentSchedule shipmentSchedule)
 	{

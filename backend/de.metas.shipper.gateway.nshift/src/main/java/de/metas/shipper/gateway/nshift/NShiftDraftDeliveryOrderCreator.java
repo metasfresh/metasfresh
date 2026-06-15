@@ -43,7 +43,14 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
@@ -89,6 +96,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -116,6 +124,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
@@ -252,11 +263,51 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 							.content(packageInfo.getDescription())
 							.items(deliveryOrderItems)
+							.topLevelType(resolveTopLevelTypeWireString(packageInfo.getPackageId()))
 							.build();
 				})
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	// TopLevelType wire-conversion: "LU", "TU", "CU".
+	// Keep in sync with PackedHUCarrierAdviseService.toTopLevelTypeWireString (HU-advise path).
+	// Both sides must produce identical strings for the nShift mapping config to work consistently.
+	@Nullable
+	private String resolveTopLevelTypeWireString(@NonNull final PackageId packageId)
+	{
+		final List<I_M_Package_HU> packageHUs = huPackageDAO.retrievePackageHUs(packageId);
+		if (packageHUs.isEmpty())
+		{
+			return null;
+		}
+		final HuId huId = HuId.ofRepoId(packageHUs.get(0).getM_HU_ID());
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final HuUnitType huUnitType = HuUnitType.ofNullableCode(handlingUnitsBL.getHU_UnitType(hu));
+		if (huUnitType == null)
+		{
+			return null;
+		}
+		switch (huUnitType)
+		{
+			case LU:
+				return "LU";
+			case TU:
+				return "TU";
+			case VHU:
+				return "CU";
+			default:
+				// ship path is resilient: an unexpected unit type omits TopLevelType (returns null)
+				// rather than failing the shipment — unlike the advise path which throws.
+				return null;
+		}
+	}
+
+	// Carrier "final info" build path — delivery-order (3 of 3).
+	// Field derivation MUST stay consistent across the three nShift build paths (change together):
+	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
 	@NonNull
 	private DeliveryOrderItem createDeliveryOrderItem(@NonNull final PackageItem packageItem)
 	{
@@ -291,6 +342,10 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	private static final AttributeCode ATTR_COUNTRY_OF_ORIGIN = HUAttributeConstants.ATTR_CountryOfOrigin;
 
+	// countryOfOrigin source — keep in sync with PackedHUShippingInfoService#readCountryOfOrigin:
+	// both read ATTR_CountryOfOrigin (here: inout-line ASI; there: HU attribute storage).
+	// The two resolve to the same value because ShipmentLineBuilder.transferAttributesToShipmentLine()
+	// copies HU attributes (including CountryOfOrigin) into the shipment-line ASI on shipment creation.
 	@Nullable
 	private String readCountryOfOrigin(@NonNull final PackageItem packageItem)
 	{

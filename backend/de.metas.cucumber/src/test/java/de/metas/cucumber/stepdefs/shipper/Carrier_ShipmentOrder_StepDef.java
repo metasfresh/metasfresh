@@ -27,7 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.inout.InOutId;
-import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -41,6 +41,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_ShipmentOrder;
@@ -66,6 +67,7 @@ public class Carrier_ShipmentOrder_StepDef
 
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final Carrier_ShipmentOrder_StepDefData carrierShipmentOrderTable;
+	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 
 	/**
 	 * Polls until the shipment's delivery order has been created and at least one parcel has its AWB set.
@@ -358,6 +360,54 @@ public class Carrier_ShipmentOrder_StepDef
 				parcel.setTrackingURL(trackingURL);
 				InterfaceWrapperHelper.save(parcel);
 			}
+		});
+	}
+
+	/**
+	 * Freshly reloads the {@link I_Carrier_ShipmentOrder} DB record for the given shipment and asserts
+	 * its {@code Carrier_Product_ID}. Bypasses {@link Carrier_ShipmentOrder_StepDefData} so the assertion
+	 * always reflects the current DB state, not the value captured when the order was first found.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b>          — (required, identifier-ref) shipment whose delivery order is checked<br>
+	 *   <b>Carrier_Product_ID</b>  — (required, identifier-ref) expected carrier product
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, Carrier_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate Carrier_ShipmentOrder product for shipment:
+	 *   | M_InOut_ID    | Carrier_Product_ID |
+	 *   | inout_partial | cp1                |
+	 * </pre>
+	 */
+	@And("validate Carrier_ShipmentOrder product for shipment:")
+	public void validateCarrierShipmentOrderProductForShipment(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final InOutId inOutId = inOutTable.getId(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
+			final CarrierProductId expectedProductId = row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
+					.lookupNotNullIdIn(carrierProductTable);
+
+			final I_Carrier_ShipmentOrder_Parcel parcel = queryBL
+					.createQueryBuilder(I_M_Package.class)
+					.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
+					.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
+					.create()
+					.first();
+
+			assertThat(parcel)
+					.as("Carrier_ShipmentOrder_Parcel for M_InOut_ID=%s", inOutId)
+					.isNotNull();
+
+			final I_Carrier_ShipmentOrder cso = InterfaceWrapperHelper.load(
+					parcel.getCarrier_ShipmentOrder_ID(), I_Carrier_ShipmentOrder.class);
+			assertThat(cso)
+					.as("Carrier_ShipmentOrder for M_InOut_ID=%s", inOutId)
+					.isNotNull();
+
+			assertThat(CarrierProductId.ofRepoIdOrNull(cso.getCarrier_Product_ID()))
+					.as("Carrier_ShipmentOrder.Carrier_Product_ID for M_InOut_ID=%s", inOutId)
+					.isEqualTo(expectedProductId);
 		});
 	}
 }

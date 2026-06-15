@@ -15,10 +15,11 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierService;
-import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
+import de.metas.shipper.gateway.nshift.client.ShipmentDispatchService;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.when;
 public class NShiftGateway_StepDef
 {
 	@NonNull private final ShipAdvisorService shipAdvisorServiceMock = SpringContextHolder.instance.getBean(ShipAdvisorService.class);
-	@NonNull private final NShiftShipmentService shipmentServiceMock = SpringContextHolder.instance.getBean(NShiftShipmentService.class);
+	@NonNull private final ShipmentDispatchService shipmentDispatchServiceMock = SpringContextHolder.instance.getBean(ShipmentDispatchService.class);
 	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
@@ -119,7 +120,7 @@ public class NShiftGateway_StepDef
 	{
 		capturedShipmentRequest = null; // reset before each stub setup so stale captures don't leak between scenarios
 
-		when(shipmentServiceMock.createShipment(any(JsonDeliveryRequest.class)))
+		when(shipmentDispatchServiceMock.createShipment(any(JsonDeliveryRequest.class)))
 				.thenAnswer((Answer<JsonDeliveryResponse>)invocation -> {
 					final JsonDeliveryRequest actualRequest = invocation.getArgument(0);
 
@@ -148,7 +149,7 @@ public class NShiftGateway_StepDef
 	}
 
 	/**
-	 * Asserts the {@link JsonDeliveryRequest} captured by the {@code NShiftShipmentService} mock.
+	 * Asserts the {@link JsonDeliveryRequest} captured by the {@code ShipmentDispatchService} mock.
 	 * Carrier product / goods type / the two services are required; address / contact / EORI /
 	 * parcel columns are optional. {@code Parcel*} columns assume a single parcel.
 	 * {@code ParcelItem_CountryOfOrigin} asserts the country of origin of the first item in the
@@ -329,7 +330,7 @@ public class NShiftGateway_StepDef
 
 		row.getAsOptionalString("UseShippingRules").ifPresent(expected -> {
 			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("UseShippingRules");
-			if ("null".equalsIgnoreCase(expected) || "-".equals(expected))
+			if (DataTableUtil.isNullPlaceholder(expected))
 			{
 				softly.assertThat(actual).as("shipperConfig.UseShippingRules should be absent").isNull();
 			}
@@ -341,7 +342,7 @@ public class NShiftGateway_StepDef
 
 		row.getAsOptionalString("ServiceLevel").ifPresent(expected -> {
 			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("ServiceLevel");
-			if ("null".equalsIgnoreCase(expected) || "-".equals(expected))
+			if (DataTableUtil.isNullPlaceholder(expected))
 			{
 				softly.assertThat(actual).as("shipperConfig.ServiceLevel should be absent").isNull();
 			}
@@ -421,7 +422,7 @@ public class NShiftGateway_StepDef
 	@Given("the nShift shipment service is stubbed to return an error on shipment creation")
 	public void stubShipmentServiceWithError()
 	{
-		when(shipmentServiceMock.createShipment(any(JsonDeliveryRequest.class)))
+		when(shipmentDispatchServiceMock.createShipment(any(JsonDeliveryRequest.class)))
 				.thenAnswer((Answer<JsonDeliveryResponse>)invocation -> {
 					final JsonDeliveryRequest actualRequest = invocation.getArgument(0);
 
