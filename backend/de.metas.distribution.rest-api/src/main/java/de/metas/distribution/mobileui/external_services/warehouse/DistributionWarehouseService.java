@@ -45,6 +45,7 @@ public class DistributionWarehouseService
 		return workplaceService.getWorkplaceByUserId(userId);
 	}
 
+	@NonNull
 	public Set<LocatorId> getPackingPlacePickFromLocatorIds()
 	{
 		return workplaceService.getPackingPlacePickFromLocatorIds();

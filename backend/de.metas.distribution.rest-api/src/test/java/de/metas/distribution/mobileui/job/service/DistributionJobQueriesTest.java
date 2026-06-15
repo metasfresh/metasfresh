@@ -2,6 +2,7 @@ package de.metas.distribution.mobileui.job.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderQuery;
+import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -30,7 +31,7 @@ class DistributionJobQueriesTest
 	{
 		// Given: regular (non-packing) workplace — locatorToId set, excludeLocatorToIds absent
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
-				.responsibleId(de.metas.user.UserId.ofRepoId(999))
+				.responsibleId(UserId.ofRepoId(999))
 				.warehouseToId(W1)
 				.locatorToId(L1)
 				.excludeLocatorToIds(null)
@@ -56,7 +57,7 @@ class DistributionJobQueriesTest
 		// Given: packing-place workplace — locatorToId absent, excludeLocatorToIds populated
 		final ImmutableSet<LocatorId> packingLocators = ImmutableSet.of(L1, L2);
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
-				.responsibleId(de.metas.user.UserId.ofRepoId(999))
+				.responsibleId(UserId.ofRepoId(999))
 				.warehouseToId(W1)
 				.locatorToId(null)
 				.excludeLocatorToIds(packingLocators)
