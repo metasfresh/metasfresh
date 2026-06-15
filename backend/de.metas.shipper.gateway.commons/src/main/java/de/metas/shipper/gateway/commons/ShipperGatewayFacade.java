@@ -18,9 +18,9 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
-import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMDAO;
@@ -74,8 +74,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ShipperGatewayFacade
 {
-	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
@@ -238,7 +238,7 @@ public class ShipperGatewayFacade
 
 	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
 	{
-		return shipperDAO.getShipperGatewayId(shipperId).orElseThrow();
+		return shipperRepository.getShipperGatewayId(shipperId).orElseThrow();
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

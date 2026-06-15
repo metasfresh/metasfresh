@@ -1,8 +1,8 @@
--- nShift Carrier_Config: new ShipType column + flip AdviseType and IsSelectionRules defaults
+-- nShift Carrier_Config: new ShipType column
 --   ShipType          Char(1) LIST (Ship/Order), mandatory, default 'O' (Order) — selects which nShift shipment-create endpoint is used
---   AdviseType        default flipped S→O  (existing AD_Column_ID 592804)
---   IsSelectionRules  default flipped N→Y  (existing AD_Column_ID 592805)
---   Both existing nShift Carrier_Config rows updated to the new operative defaults
+--
+-- AdviseType / IsSelectionRules already default to Order / 'Y' at introduction in
+-- 5807540_sys_Carrier_Config_AdviseType_IsSelectionRules.sql — nothing to flip here.
 --
 -- IDs allocated from idserver.metas.de on 2026-06-15:
 --   AD_Element    584992  (ShipType — label "Versand-Typ" / "Ship Type")
@@ -150,47 +150,3 @@ VALUES (0,0,652263 /*From ID Server*/,781117,553597,548455,
 -- Final propagation: re-run after AD_Field is created so field _Trl rows (created at 10:02:00)
 -- pick up element translations (set at 10:00:12–14) — timestamps differ, guard passes
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584992, NULL);
-
--- ============================================================
--- (b) Flip AdviseType default Ship→Order (AD_Column_ID 592804)
--- ============================================================
-UPDATE AD_Column
-SET DefaultValue='O',
-    Updated=TO_TIMESTAMP('2026-06-15 10:03:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-    UpdatedBy=100
-WHERE AD_Column_ID=592804
-;
-
--- Flip the physical column default (existing column — use t_alter_column)
-INSERT INTO t_alter_column VALUES('carrier_config','AdviseType','CHAR(1)',null,'O');
-
--- ============================================================
--- (c) Flip IsSelectionRules default N→Y (AD_Column_ID 592805)
--- ============================================================
-UPDATE AD_Column
-SET DefaultValue='Y',
-    Updated=TO_TIMESTAMP('2026-06-15 10:03:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-    UpdatedBy=100
-WHERE AD_Column_ID=592805
-;
-
--- Flip the physical column default (existing column — use t_alter_column)
-INSERT INTO t_alter_column VALUES('carrier_config','IsSelectionRules','CHAR(1)',null,'Y');
-
--- ============================================================
--- (d) Update ALL existing Carrier_Config rows to operative defaults.
--- Scope decision: ALL rows — both rows in this DB link to nShift shippers
--- (M_Shipper_ID 540019 "nShift" and 1000002 "nShift COO Test").
--- Carrier_Config is an nShift-only config table; no non-nShift carrier
--- uses it, so updating every row is correct and safe.
--- ShipType is already 'O' from the ADD COLUMN backfill above.
--- AdviseType and IsSelectionRules still hold their old values (S/N) on
--- pre-existing rows, so we flip them here.
--- ============================================================
-SELECT backup_table('carrier_config', '_before_shiptype_defaults_flip');
-UPDATE carrier_config
-SET AdviseType='O',
-    IsSelectionRules='Y',
-    Updated=TO_TIMESTAMP('2026-06-15 10:04:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
-    UpdatedBy=100
-;

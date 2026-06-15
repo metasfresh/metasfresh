@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
+import de.metas.common.delivery.v1.json.JsonTopLevelType;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -287,11 +288,11 @@ public class PackedHUCarrierAdviseService
 		switch (huUnitType)
 		{
 			case LU:
-				return "LU";
+				return JsonTopLevelType.LU.getCode();
 			case TU:
-				return "TU";
+				return JsonTopLevelType.TU.getCode();
 			case VHU:
-				return "CU";
+				return JsonTopLevelType.CU.getCode();
 			default:
 				throw new AdempiereException("Unexpected HuUnitType: " + huUnitType);
 		}

@@ -29,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
+import de.metas.common.delivery.v1.json.JsonTopLevelType;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.currency.CurrencyCode;
@@ -81,8 +82,9 @@ import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceReposit
 import de.metas.shipper.gateway.spi.ShipperConfigRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipping.CarrierProductId;
-import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -99,8 +101,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -128,7 +128,7 @@ public class CarrierAdviseCommand
 	@NonNull private final ShipperMappingConfigRepository shipperMappingConfigRepository = SpringContextHolder.instance.getBean(ShipperMappingConfigRepository.class);
 	@NonNull private final JsonShipperConverter jsonShipperConverter = SpringContextHolder.instance.getBean(JsonShipperConverter.class);
 	@NonNull private final CustomsTariffRepository customsTariffRepository = SpringContextHolder.instance.getBean(CustomsTariffRepository.class);
-	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final ShipperRepository shipperRepository = SpringContextHolder.instance.getBean(ShipperRepository.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -183,7 +183,7 @@ public class CarrierAdviseCommand
 			}
 			else
 			{
-				final I_M_Shipper shipper =  shipperDAO.getById(shipperId);
+				final Shipper shipper = shipperRepository.getById(shipperId);
 				response = JsonDeliveryAdvisorResponse.builder()
 						.requestId(UUID.randomUUID().toString())
 						.shipperProduct(JsonShipperProduct.builder()
@@ -206,7 +206,7 @@ public class CarrierAdviseCommand
 	@Nullable
 	private ShipperGatewayId getShipperGatewayIdOrNull(@NonNull final ShipperId shipperId)
 	{
-		return shipperDAO.getShipperGatewayId(shipperId).orElse(null);
+		return shipperRepository.getShipperGatewayId(shipperId).orElse(null);
 	}
 
 	private ShipmentSchedule retrieveShipmentSchedule()
@@ -234,7 +234,7 @@ public class CarrierAdviseCommand
 		{
 			throw new AdempiereException("shipmentSchedule.dateOrdered is null");
 		}
-		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		final Shipper shipper = shipperRepository.getById(shipperId);
 
 		final I_C_BPartner deliverToBPartner = bpartnerBL.getById(shipmentSchedule.getShipBPartnerId());
 		final I_C_BPartner_Location deliverToBPLocation = Check.assumeNotNull(bpartnerDAO.getBPartnerLocationByIdInTrx(shipmentSchedule.getShipLocationId()), "bp location not null");
@@ -251,8 +251,8 @@ public class CarrierAdviseCommand
 				.build());
 
 		builder.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
-				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()).toString())
-				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()).toString())
+				.pickupTimeFrom(shipper.getPickupTimeFrom().toString())
+				.pickupTimeTo(shipper.getPickupTimeTo().toString())
 				.pickupAddress(getJsonAddress(pickupFromBPartner, pickupFromBPLocation))
 				.pickupContact(getJsonContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.deliveryAddress(getJsonAddress(deliverToBPartner, deliverToBPLocation))
@@ -347,6 +347,8 @@ public class CarrierAdviseCommand
 
 		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(1)
+				// schedule-advise has no packed HU; a single product unit is a customer unit (CU)
+				.topLevelType(JsonTopLevelType.CU.getCode())
 				.grossWeightKg(grossWeightKg)
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())

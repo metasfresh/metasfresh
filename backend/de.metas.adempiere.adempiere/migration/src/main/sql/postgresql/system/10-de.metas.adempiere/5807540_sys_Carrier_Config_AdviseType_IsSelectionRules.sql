@@ -124,9 +124,9 @@ SET IsTranslated='Y',
 WHERE AD_Language='de_CH' AND AD_Element_ID=584987
 ;
 
--- DDL: new column with default 'S', backfill existing rows, then NOT NULL (matches AD_Column.IsMandatory='Y')
-ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS AdviseType CHAR(1) DEFAULT 'S';
-UPDATE carrier_config SET AdviseType='S' WHERE AdviseType IS NULL;
+-- DDL: new column with default 'O' (Order), backfill existing rows, then NOT NULL (matches AD_Column.IsMandatory='Y')
+ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS AdviseType CHAR(1) DEFAULT 'O';
+UPDATE carrier_config SET AdviseType='O' WHERE AdviseType IS NULL;
 ALTER TABLE carrier_config ALTER COLUMN AdviseType SET NOT NULL;
 ALTER TABLE carrier_config ADD CONSTRAINT AdviseType_Check CHECK (AdviseType IN ('S','O'));
 
@@ -138,7 +138,7 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Org_ID,AD_Column_ID,AD_Element_ID,AD_Refe
                        IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,PersonalDataCategory,
                        Name,Updated,UpdatedBy,Version)
 VALUES (0,0,592804 /*From ID Server*/,584987,17,542106,542540,
-        'AdviseType',TO_TIMESTAMP('2026-06-12 10:02:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','S',
+        'AdviseType',TO_TIMESTAMP('2026-06-12 10:02:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','O',
         'D',1,'Y','Y','N','N',
         'Y','N','N','N','Y',
         'N','N','N','Y','NP',
@@ -202,9 +202,9 @@ SET IsTranslated='Y',
 WHERE AD_Language='de_CH' AND AD_Element_ID=584988
 ;
 
--- DDL: new YesNo column with default 'N', backfill existing rows, then NOT NULL (matches AD_Column.IsMandatory='Y')
-ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS IsSelectionRules CHAR(1) DEFAULT 'N';
-UPDATE carrier_config SET IsSelectionRules='N' WHERE IsSelectionRules IS NULL;
+-- DDL: new YesNo column with default 'Y', backfill existing rows, then NOT NULL (matches AD_Column.IsMandatory='Y')
+ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS IsSelectionRules CHAR(1) DEFAULT 'Y';
+UPDATE carrier_config SET IsSelectionRules='Y' WHERE IsSelectionRules IS NULL;
 ALTER TABLE carrier_config ALTER COLUMN IsSelectionRules SET NOT NULL;
 ALTER TABLE carrier_config ADD CONSTRAINT IsSelectionRules_Check CHECK (IsSelectionRules IN ('Y','N'));
 
@@ -216,7 +216,7 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Org_ID,AD_Column_ID,AD_Element_ID,AD_Refe
                        IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,PersonalDataCategory,
                        Name,Updated,UpdatedBy,Version)
 VALUES (0,0,592805 /*From ID Server*/,584988,20,542540,
-        'IsSelectionRules',TO_TIMESTAMP('2026-06-12 10:04:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','N',
+        'IsSelectionRules',TO_TIMESTAMP('2026-06-12 10:04:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Y',
         'D',1,'Y','Y','N','N',
         'Y','N','N','N','Y',
         'N','N','N','Y','NP',

@@ -26,11 +26,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -67,6 +69,16 @@ public class ShipperRepository
 	}
 
 	@NonNull
+	public ExplainedOptional<ShipperGatewayId> getShipperGatewayId(@NonNull final ShipperId shipperId)
+	{
+		final Shipper shipper = getMap().getById(shipperId);
+		final ShipperGatewayId shipperGatewayId = shipper.getShipperGatewayId();
+		return shipperGatewayId != null
+				? ExplainedOptional.of(shipperGatewayId)
+				: ExplainedOptional.emptyBecause("Shipper " + shipper.getName() + " has no gateway configured");
+	}
+
+	@NonNull
 	private ShippersMap getMap()
 	{
 		return cache.getOrLoadNonNull(0, this::retrieveMap);
@@ -92,6 +104,9 @@ public class ShipperRepository
 				.name(record.getName())
 				.apiCarrierAdvise(record.isApiCarrierAdvise())
 				.trackingUrl(record.getTrackingURL())
+				.pickupTimeFrom(TimeUtil.asLocalTime(record.getPickupTimeFrom()))
+				.pickupTimeTo(TimeUtil.asLocalTime(record.getPickupTimeTo()))
+				.shipperGatewayId(ShipperGatewayId.ofNullableString(record.getShipperGateway()))
 				.build();
 	}
 

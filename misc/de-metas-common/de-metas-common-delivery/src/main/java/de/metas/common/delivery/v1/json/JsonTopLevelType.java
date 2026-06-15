@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de-metas-common-delivery
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,28 @@
  * #L%
  */
 
-package de.metas.shipping;
+package de.metas.common.delivery.v1.json;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.LocalTime;
-
-@Value
-@Builder
-public class Shipper
+/**
+ * Wire codes for the top-level handling-unit type sent to nShift on advise/ship items
+ * ({@code JsonDeliveryAdvisorRequestItem#topLevelType}, {@code JsonDeliveryOrderParcel#topLevelType}).
+ * LU = load unit, TU = transport unit, CU = customer unit (a single product unit / no packaging).
+ */
+public enum JsonTopLevelType
 {
-	@NonNull ShipperId id;
-	@NonNull String name;
-	boolean apiCarrierAdvise;
-	@Nullable String trackingUrl;
-	@Nullable LocalTime pickupTimeFrom;
-	@Nullable LocalTime pickupTimeTo;
-	@Nullable ShipperGatewayId shipperGatewayId;
+	LU("LU"),
+	TU("TU"),
+	CU("CU");
+
+	private final String code;
+
+	JsonTopLevelType(final String code)
+	{
+		this.code = code;
+	}
+
+	public String getCode()
+	{
+		return code;
+	}
 }
