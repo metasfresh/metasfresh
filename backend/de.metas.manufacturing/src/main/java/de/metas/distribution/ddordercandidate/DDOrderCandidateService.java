@@ -15,11 +15,13 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.CreateSelectionResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -78,8 +80,15 @@ public class DDOrderCandidateService
 
 	public void enqueueToProcess(@NonNull final DDOrderCandidateQuery query)
 	{
-		ddOrderCandidateRepository.createSelection(query)
-				.ifPresent(ddOrderCandidateEnqueueService::enqueueSelection);
+		final CreateSelectionResponse selection = ddOrderCandidateRepository.createSelection(query).orElse(null);
+		if (selection == null)
+		{
+			Loggables.addLog("No DD_Order_Candidate(s) to enqueue for {}", query);
+			return;
+		}
+
+		Loggables.addLog("Enqueue {} DD_Order_Candidate(s) for {}", selection.getSelectionId(), query);
+		ddOrderCandidateEnqueueService.enqueueSelection(selection.getSelectionId());
 	}
 
 	public List<DDOrderCandidate> getBySelectionId(@NonNull final PInstanceId selectionId)

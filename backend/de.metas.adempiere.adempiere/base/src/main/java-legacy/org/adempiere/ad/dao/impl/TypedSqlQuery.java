@@ -55,6 +55,7 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -1625,7 +1626,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public Optional<PInstanceId> createSelection()
+	public Optional<CreateSelectionResponse> createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
 		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
@@ -1637,13 +1638,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return Optional.empty();
 		}
 
-		return Optional.of(newSelectionId);
+		return Optional.of(CreateSelectionResponse.of(newSelectionId, count));
 	}
 
 	@Override
 	public int deleteDirectly()
 	{
-		if(limit.isNoLimit())
+		if (limit.isNoLimit())
 		{
 			return deleteDirectlyFrom();
 		}
@@ -1665,7 +1666,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
-
 
 	private int deleteDirectlyInSelect()
 	{
@@ -1902,7 +1902,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					//
 					+ "\n INSERT INTO T_Selection (AD_PInstance_ID, T_Selection_ID)"
 					+ "\n SELECT " + insertSelectionId.getRepoId() + ", " + toKeyColumnName + " FROM insert_code"
-					//
+			//
 			;
 		}
 		else

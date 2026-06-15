@@ -37,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MOrderLine;
@@ -402,7 +403,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			selectionQueryBuilder.addEqualsFilter(inoutCandidateColumnName, null);
 		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection().orElse(null);
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
 		if (selectionToUpdateId == null)
 		{
 			// nothing to update
