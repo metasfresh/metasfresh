@@ -32,6 +32,20 @@ export const PickGraiScreen = {
         await BarcodeScannerComponent.type(graiString);
     }),
 
+    /**
+     * Scan a whole batch of GRAIs in one burst — the RFID-gun read pattern, where the reader emits
+     * every tag in range back-to-back with an Enter terminator between codes. {@link BarcodeScannerComponent.typeBatch}
+     * sends Enter after each code, so the keyboard hook flushes each barcode individually (no buffer
+     * merge) and no inter-scan assertion is needed (unlike consecutive {@link scanGrai} calls).
+     *
+     * The list may legitimately contain GRAIs already captured on the LU — the screen's deduped merge
+     * (usePickingGrais.mergeGraiArrays) ignores any GRAI already present, so re-reading already-assigned
+     * tags does not inflate the count.
+     */
+    scanGraiBatch: async ({ graiStrings }) => await test.step(`${NAME} - Scan GRAI batch of ${graiStrings.length}`, async () => {
+        await BarcodeScannerComponent.typeBatch({ codes: graiStrings });
+    }),
+
     /** Type a GRAI into the manual-entry input and confirm it with the Add button. */
     enterGraiManually: async ({ graiString }) => await test.step(`${NAME} - Enter GRAI manually: ${graiString}`, async () => {
         const input = page.getByTestId('grai-manual-input');

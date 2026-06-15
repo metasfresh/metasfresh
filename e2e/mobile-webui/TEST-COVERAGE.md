@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 58 | 61 | 95% |
+| Picking | 59 | 62 | 95% |
 | Distribution | 27 | 30 | 90% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -204,8 +204,9 @@
 |---|---|
 | Pick 10 crates onto one LU, capture all 10 GRAIs (one typed manually, rest scanned) → save enabled, job completes | `picking/picking-grai-flowthrough.spec.js` |
 | Pick 10 crates onto one LU, capture fewer than 10 GRAIs → save stays disabled and completion is blocked | `picking/picking-grai-flowthrough.spec.js` |
+| Pick two products onto one LU; re-opening GRAI capture shows the LU's full crate count with the first product's GRAIs pre-loaded, and an RFID re-scan of all tags dedups the already-assigned ones → exactly the scanned GRAIs land on the LU and the job completes | `picking/picking-grai-flowthrough.spec.js` |
 
-**2/2 — 100%**
+**3/3 — 100%**
 
 ---
 
