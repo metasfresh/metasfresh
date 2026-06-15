@@ -101,9 +101,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Field_ID = 781119
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
 
 -- Propagate AD_Element_Trl → AD_Field_Trl (pass ELEMENT ID, not field ID)
-SELECT update_FieldTranslation_From_AD_Name_Element(
-  (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName = 'IsPackingPlace')
-);
+SELECT update_FieldTranslation_From_AD_Name_Element(584993 /*IsPackingPlace, From ID Server*/);
 
 -- Rebuild element links for this field
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781119;
@@ -134,6 +132,4 @@ VALUES (652265 /*From ID Server*/, 0, 0, 'Y',
 -- =============================================================================
 -- 6. Propagate all translations from AD_Element_Trl
 -- =============================================================================
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(
-  (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName = 'IsPackingPlace')
-);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584993 /*IsPackingPlace, From ID Server*/);
