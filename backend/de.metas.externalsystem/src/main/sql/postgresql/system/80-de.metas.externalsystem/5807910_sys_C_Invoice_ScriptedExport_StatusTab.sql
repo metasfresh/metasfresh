@@ -269,9 +269,14 @@ VALUES
 --                          StatusMessage, IsResend, AD_PInstance_ID, Updated
 -- ===========================================================================
 
--- 4.1 ExportStatus (AD_Column 592784, AD_Element 577791)
+-- 4.1 ExportStatus (AD_Column 592784, shared AD_Element 577791)
+--     The column's AD_Element 577791 is shared across 8 host tables and carries English
+--     'Export Status' base text (its de_DE/de_CH trl is untranslated system-wide). To show the
+--     German caption on this tab WITHOUT a system-wide shared-element mutation, pin the field
+--     label via AD_Name_ID=584995 (the ScriptedExport_Status element, 'Exportstatus'/'Export Status').
 INSERT INTO AD_Field
     (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
+     AD_Name_ID,
      Created, CreatedBy, Description, DisplayLength, EntityType,
      Help, IsActive, IsDisplayed, IsDisplayedGrid,
      IsEncrypted, IsFieldOnly, IsHeading, IsMandatory, IsReadOnly,
@@ -279,11 +284,12 @@ INSERT INTO AD_Field
      SortNo, SpanX, SpanY, Updated, UpdatedBy)
 VALUES
     (0, 592784, 781120 /*From ID Server*/, 0, 549313,
+     584995 /*ScriptedExport_Status label element — 'Exportstatus'/'Export Status'*/,
      TO_TIMESTAMP('2026-06-15 09:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      NULL, 14, 'de.metas.externalsystem',
      NULL, 'Y', 'Y', 'Y',
      'N', 'N', 'N', 'N', 'Y',
-     'N', 'Export Status', 10, 10,
+     'N', 'Exportstatus', 10, 10,
      0, 1, 1,
      TO_TIMESTAMP('2026-06-15 09:02:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
@@ -291,13 +297,13 @@ INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsT
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
 FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Field_ID=781120
 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID);
-/* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(577791);
+/* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(584995);
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=781120;
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(781120);
 UPDATE AD_Field_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-15 09:02:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Field_ID=781120 AND AD_Language IN ('de_DE','de_CH','en_US');
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
-VALUES (0, 781120, 0, 549313, 555450, 652266 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-06-15 09:02:02','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Export Status', 10, 10, 0, TO_TIMESTAMP('2026-06-15 09:02:02','YYYY-MM-DD HH24:MI:SS'), 100);
+VALUES (0, 781120, 0, 549313, 555450, 652266 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-06-15 09:02:02','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Exportstatus', 10, 10, 0, TO_TIMESTAMP('2026-06-15 09:02:02','YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- 4.2 ExternalSystem_Config_ScriptedExportConversion_ID (AD_Column 592781, AD_Element 584101)
 --     AD_Name_ID=584997 (ScriptedExport_Config) pins the label to 'Exportkonfiguration'/

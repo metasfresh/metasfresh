@@ -41,7 +41,7 @@ VALUES
      'C_Invoice_ReSend_ScriptedExportConversion',
      'Export erneut senden (Scripted Export Conversion)',
      'de.metas.externalsystem.scriptedexportconversion.process.C_Invoice_ReSend_ScriptedExportConversion',
-     'N', 'Y', 'de.metas.externalsystem',
+     'N', 'N' /*IsReport=N, IsFormatExcelFile=N — this is a Java action process, not a spreadsheet report*/, 'de.metas.externalsystem',
      '3', 'Java', 'Y', 'N')
 ;
 
