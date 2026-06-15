@@ -103,7 +103,7 @@ public class DistributionWorkflowLaunchersProvider
 
 		if (workplace != null && !workplace.isPackingPlace())
 		{
-			builder.excludeLocatorToIds(warehouseService.getPackingPlacePickFromLocatorIds());
+			builder.excludeLocatorToIds(warehouseService.getPackingPlacePickFromLocatorIds(workplace.getWarehouseId()));
 		}
 		else
 		{
