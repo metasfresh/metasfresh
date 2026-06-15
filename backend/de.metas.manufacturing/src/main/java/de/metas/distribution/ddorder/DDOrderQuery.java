@@ -53,6 +53,7 @@ public class DDOrderQuery
 	public enum OrderByField
 	{
 		PriorityRule,
+		LocatorPriority,
 		DatePromised,
 		SeqNo,
 	}
