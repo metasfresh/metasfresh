@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Central application of the shared {@link MetasfreshArchRules} to the WHOLE metasfresh backend.
+ * Central application of the shared {@link MetasfreshArchRules} to the metasfresh backend, <b>keyed per module</b>.
  * <p>
  * The test classpath includes the full transitive closure of {@code metasfresh-dist-serverRoot}
  * and {@code metasfresh-webui-api} (both assembly modules), so {@link MetasfreshArchRules#importWholeBackend()}
@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
  * (de.metas.business, de.metas.invoice, de.metas.handlingunits, de.metas.contracts, de.metas.payment)
  * are present.
  * <p>
- * {@link MetasfreshArchRules#checkAllModuleRules(String, JavaClasses)} is called with the label
- * {@code "metasfresh-backend"}, which keys a single whole-app freeze baseline. Adding a new rule
+ * {@link MetasfreshArchRules#checkAllModulesIndividually(JavaClasses)} then splits the imported classes by their
+ * owning module (source jar) and freezes each module against its <b>own</b> baseline. Per-module baselines are
+ * reproducible by construction (a module's violations depend only on that module's own classes), unlike a single
+ * whole-app baseline whose class set drifted between a stale local build and CI's fresh build. Adding a new rule
  * changes only {@code MetasfreshArchRules} — never this class.
  */
 public class ModuleArchitectureTest
@@ -31,6 +33,6 @@ public class ModuleArchitectureTest
 	@Test
 	void metasfresh_backend_satisfiesArchitectureRules()
 	{
-		MetasfreshArchRules.checkAllModuleRules("metasfresh-backend", wholeBackendClasses);
+		MetasfreshArchRules.checkAllModulesIndividually(wholeBackendClasses);
 	}
 }

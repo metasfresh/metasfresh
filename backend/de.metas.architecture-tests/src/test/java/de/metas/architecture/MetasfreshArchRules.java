@@ -4,6 +4,7 @@ import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethodCall;
+import com.tngtech.archunit.core.domain.Source;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.core.importer.Location;
@@ -15,7 +16,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -85,6 +89,87 @@ public final class MetasfreshArchRules
 			throw new AssertionError("ArchUnit found new architecture violations in " + failingRuleReports.size()
 					+ " rule(s) for module [" + moduleLabel + "]:\n" + String.join("\n", failingRuleReports));
 		}
+	}
+
+	/**
+	 * Per-module gating entry point. Splits the whole-backend import into per-owning-module groups (keyed by the
+	 * source jar's artifact id) and runs {@link #checkAllModuleRules(String, JavaClasses)} against each group
+	 * separately, so every module gets its <b>own</b> freeze baseline.
+	 * <p>
+	 * This is reproducible by construction: a module's violations derive only from <b>that module's own compiled
+	 * classes</b>, independent of which other modules happen to be on the classpath (the whole-backend single
+	 * baseline was not — its set drifted between a stale local build and CI's fresh full build). A module that has
+	 * no committed baseline auto-records on first run ({@code freeze.store.default.allowStoreCreation=true}) and
+	 * passes, so coverage can grow incrementally without ever red-failing CI. See skill {@code metasfresh-archunit}.
+	 */
+	public static void checkAllModulesIndividually(final JavaClasses allClasses)
+	{
+		// Cache each class's owning-module label once — URI parsing is not free, and we re-scan per module below.
+		final Map<JavaClass, String> labelByClass = new IdentityHashMap<>();
+		final Set<String> moduleLabels = new TreeSet<>();
+		for (final JavaClass cls : allClasses)
+		{
+			final String label = moduleLabelOf(cls);
+			labelByClass.put(cls, label);
+			moduleLabels.add(label);
+		}
+
+		logger.info("[ArchUnit per-module] checking {} modules: {}", moduleLabels.size(), moduleLabels);
+
+		final List<String> failingModuleReports = new ArrayList<>();
+		for (final String moduleLabel : moduleLabels)
+		{
+			final JavaClasses moduleClasses = allClasses.that(
+					new DescribedPredicate<JavaClass>("owned by module " + moduleLabel)
+					{
+						@Override
+						public boolean test(final JavaClass cls)
+						{
+							return moduleLabel.equals(labelByClass.get(cls));
+						}
+					});
+			try
+			{
+				checkAllModuleRules(moduleLabel, moduleClasses);
+			}
+			catch (final AssertionError e)
+			{
+				failingModuleReports.add(e.getMessage());
+			}
+		}
+
+		if (!failingModuleReports.isEmpty())
+		{
+			throw new AssertionError("ArchUnit found new architecture violations in " + failingModuleReports.size()
+					+ " module(s):\n" + String.join("\n", failingModuleReports));
+		}
+	}
+
+	/**
+	 * Derive a stable owning-module label from a class's source jar (e.g. {@code de.metas.business-10.0.0.jar} →
+	 * {@code de.metas.business}): the jar's artifact id with the {@code -<version>} suffix stripped. The label is
+	 * identical whether the jar is resolved from {@code .m2-local} (CI / maven) or extracted from a Spring Boot fat
+	 * jar (baseline generation), so the freeze key is reproducible. Classes not loaded from a jar (e.g. an
+	 * assembly's own {@code target/classes}) yield {@code "unknown-module"}; in CI those classes carry their real
+	 * jar key instead and simply auto-record.
+	 */
+	private static String moduleLabelOf(final JavaClass cls)
+	{
+		final Optional<Source> source = cls.getSource();
+		if (!source.isPresent())
+		{
+			return "unknown-module";
+		}
+		final String uri = source.get().getUri().toString();
+		final int jarIdx = uri.lastIndexOf(".jar");
+		if (jarIdx < 0)
+		{
+			return "unknown-module";
+		}
+		final String beforeJar = uri.substring(0, jarIdx);
+		final String fileBase = beforeJar.substring(beforeJar.lastIndexOf('/') + 1);
+		// strip the -<version> suffix (a metasfresh artifact version always starts with a digit)
+		return fileBase.replaceFirst("-\\d.*$", "");
 	}
 
 	/** Import a single module's own compiled classes (jar or target/classes), failing loudly on an empty set. */
