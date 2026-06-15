@@ -58,6 +58,27 @@ public class WorkplaceRepositoryTest
 	}
 
 	@Test
+	public void create_defaultsToPackingPlace()
+	{
+		// A workplace created without an explicit IsPackingPlace must default to a packing place ('Y'),
+		// matching the C_Workplace.IsPackingPlace DB column default and preserving the pre-change launcher
+		// behaviour (me03 #30429 AC2). A 'N' default would silently flip every request-created workplace
+		// into the replenishment role.
+		final Workplace workplace = WorkplaceRepository.newInstanceForUnitTesting().create(WorkplaceCreateRequest.builder()
+				.name("default-role")
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.build());
+		assertThat(workplace.isPackingPlace()).isTrue();
+
+		final Workplace replenishment = WorkplaceRepository.newInstanceForUnitTesting().create(WorkplaceCreateRequest.builder()
+				.name("explicit-replenishment")
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.isPackingPlace(false)
+				.build());
+		assertThat(replenishment.isPackingPlace()).isFalse();
+	}
+
+	@Test
 	public void getPackingPlacePickFromLocatorIds_returnsOnlyPackingPlacesWithLocator()
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(1);
