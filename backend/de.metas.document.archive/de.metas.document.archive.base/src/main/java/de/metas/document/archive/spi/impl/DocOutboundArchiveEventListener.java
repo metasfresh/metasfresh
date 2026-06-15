@@ -7,6 +7,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
@@ -26,6 +27,7 @@ import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -188,13 +190,25 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@VisibleForTesting
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
-		I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archive));
+		List<I_C_Doc_Outbound_Log> docOutboundLogRecords = docOutboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archive));
+
+		I_C_Doc_Outbound_Log docOutboundLogRecord = null;
+
+		for (final I_C_Doc_Outbound_Log log : docOutboundLogRecords)
+		{
+			if (log.getAD_Archive_ID() == archive.getAD_Archive_ID())
+			{
+				docOutboundLogRecord = log;
+			}
+		}
+
 
 		if (docOutboundLogRecord == null)
 		{
 			// no log found, create a new one
 			docOutboundLogRecord = createLog(archive);
 		}
+
 
 		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = DocOutboundUtils.createOutboundLogLineRecord(docOutboundLogRecord);
 
@@ -232,9 +246,9 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
 		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
-
-		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
-		docOutboundLogRecord.setC_DocType_ID(doctypeID);
+		docOutboundLogRecord.setAD_Archive_ID(archiveRecord.getAD_Archive_ID());
+		final DocTypeId doctypeID = findDocTypeId(archiveRecord);
+		docOutboundLogRecord.setC_DocType_ID(DocTypeId.toRepoId(doctypeID));
 
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
@@ -260,6 +274,23 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		return docOutboundLogRecord;
 	}
 
+	@Nullable
+	private DocTypeId findDocTypeId(@NonNull final I_AD_Archive archiveRecord)
+	{
+		DocTypeId doctypeID =  DocTypeId.ofRepoIdOrNull(archiveRecord.getOverride_DocType_ID());
+
+		if (doctypeID == null)
+		{
+			final TableRecordReference reference = DocOutboundDAO.extractRecordRef(archiveRecord);
+			final int adTableId = reference.getAD_Table_ID();
+			final int recordId = reference.getRecord_ID();
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(archiveRecord);
+			doctypeID = DocTypeId.ofRepoIdOrNull(Services.get(IDocumentBL.class).getC_DocType_ID(ctx, adTableId, recordId));
+		}
+		return doctypeID;
+	}
+
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(
@@ -268,6 +299,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
 						.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
 						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
+						.bPartnerId(BPartnerId.ofRepoIdOrNull(docOutboundLogRecord.getC_BPartner_ID()))
 						.build());
 
 		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
@@ -278,7 +310,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			@NonNull final DocOutBoundRecipient recipient)
 	{
 		final String tableName = TableRecordReference.ofReferenced(docOutboundLogRecord).getTableName();
-		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipient.isInvoiceAsEmail();
+		final boolean isInvoiceEmailEnabled = (I_C_Invoice.Table_Name.equals(tableName) || I_M_Shipping_Notification.Table_Name.equals(tableName))
+				&& recipient.isInvoiceAsEmail();
 		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
 
 		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());

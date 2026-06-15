@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.docoutbound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -36,6 +35,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 
 import java.util.Map;
 

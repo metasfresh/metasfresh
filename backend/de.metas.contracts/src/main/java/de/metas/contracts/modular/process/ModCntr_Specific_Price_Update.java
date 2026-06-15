@@ -28,6 +28,7 @@ import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.process.IProcessPrecondition;
@@ -43,6 +44,8 @@ import java.math.BigDecimal;
 
 public class ModCntr_Specific_Price_Update extends JavaProcess implements IProcessPrecondition
 {
+	@NonNull private static final AdMessageKey REJECT_MSG_AVERAGE_PRICE = AdMessageKey.of("de.metas.contracts.modular.process.ModCntr_Specific_Price_Update.RejectMsgAveragePrice");
+
 	@NonNull private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
 	@NonNull private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
 	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry = SpringContextHolder.instance.getBean(ModularContractLogHandlerRegistry.class);
@@ -69,6 +72,11 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceService.getById(ModCntrSpecificPriceId.ofRepoId(context.getSingleSelectedRecordId()));
+		if (modCntrSpecificPrice.isAveragePrice())
+		{
+			return ProcessPreconditionsResolution.reject(REJECT_MSG_AVERAGE_PRICE);
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -77,7 +85,7 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 	{
 		final ModCntrSpecificPriceId contractPriceId = ModCntrSpecificPriceId.ofRepoId(getRecord_ID());
 
-		ModCntrSpecificPrice newContractPrice;
+		final ModCntrSpecificPrice newContractPrice;
 
 		if (p_asNewPrice)
 		{

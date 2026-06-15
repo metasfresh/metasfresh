@@ -143,6 +143,8 @@ public class ProductPrices
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final org.compiere.model.I_M_Product product = productDAO.getById(productPrice.getM_Product_ID());
 
+		if(product.isSkipPriceUOMValidation()){return;}
+
 		if (UomId.ofRepoId(product.getC_UOM_ID()).equals(UomId.ofRepoId(productPrice.getC_UOM_ID())))
 		{
 			return;

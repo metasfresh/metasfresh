@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.user.UserId;
+import lombok.NonNull;
 import org.compiere.model.I_AD_User;
 
 /**
@@ -32,5 +34,15 @@ public class AD_User_StepDefData extends StepDefData<I_AD_User>
 	public AD_User_StepDefData()
 	{
 		super(I_AD_User.class);
+	}
+
+	public UserId getUserId(@NonNull final String userIdentifier)
+	{
+		return UserId.ofRepoId(get(userIdentifier).getAD_User_ID());
+	}
+
+	public UserId getUserId(@NonNull final StepDefDataIdentifier userIdentifier)
+	{
+		return UserId.ofRepoId(get(userIdentifier).getAD_User_ID());
 	}
 }

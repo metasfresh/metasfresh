@@ -33,4 +33,11 @@ public interface DocumentLocationAdapterFactory
 	Optional<IDocumentDeliveryLocationAdapter> getDocumentDeliveryLocationAdapter(Object record);
 
 	Optional<IDocumentHandOverLocationAdapter> getDocumentHandOverLocationAdapter(Object record);
+
+	default Optional<IDocumentShipFromLocationAdapter> getDocumentShipFromLocationAdapter(Object record)
+	{
+		return Optional.empty();
+	}
+
+	;
 }

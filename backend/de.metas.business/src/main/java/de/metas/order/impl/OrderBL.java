@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -34,20 +35,27 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveCont
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.InOutService;
+import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -66,9 +74,13 @@ import de.metas.order.InvoiceRule;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineQuery;
+import de.metas.order.inout.InOutFromOrderProducer;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -81,6 +93,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
@@ -99,13 +112,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
@@ -129,9 +143,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
 public class OrderBL implements IOrderBL
 {
@@ -159,6 +175,8 @@ public class OrderBL implements IOrderBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
 	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
 	{
@@ -177,19 +195,25 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
+	}
+
+	@Override
 	public List<I_C_Order> getByIds(@NonNull final Collection<OrderId> orderIds)
 	{
 		return orderDAO.getByIds(orderIds);
 	}
 
 	@Override
-	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
+	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull final Set<OrderAndLineId> orderAndLineIds)
 	{
 		return orderDAO.getOrderLinesByIds(orderAndLineIds);
 	}
 
 	@Override
-	public I_C_OrderLine getLineById(@NonNull OrderAndLineId orderAndLineId)
+	public I_C_OrderLine getLineById(@NonNull final OrderAndLineId orderAndLineId)
 	{
 		return orderDAO.getOrderLineById(orderAndLineId);
 	}
@@ -405,7 +429,7 @@ public class OrderBL implements IOrderBL
 		}
 	}
 
-	public void setPODocTypeTargetId(@NonNull final I_C_Order order, @NonNull final String poDocSubType)
+	public void setPODocTypeTargetId(@NonNull final I_C_Order order, @NonNull final DocSubType poDocSubType)
 	{
 		if (order.isSOTrx())
 		{
@@ -446,7 +470,7 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
-				.docSubType(soDocSubType)
+				.docSubType(DocSubType.ofNullableCode(soDocSubType))
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
@@ -547,6 +571,7 @@ public class OrderBL implements IOrderBL
 		return Optional.of(bpartnerOrderParamsRepository.getBy(query));
 	}
 
+	@org.jetbrains.annotations.Nullable
 	@Override
 	public PriceListVersionId getPriceListVersion(final I_C_Order order)
 	{
@@ -720,9 +745,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-				.type(Type.SHIP_TO)
-				.build());
+																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+																									.type(Type.SHIP_TO)
+																									.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -769,11 +794,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(newBPartnerLocationId.getBpartnerId())
-						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-						.locationId(newBPartnerLocationId.getLocationCaptureId())
-						.contactId(newContactId)
-						.build());
+								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
+								 .contactId(newContactId)
+								 .build());
 
 		return true; // found it
 	}
@@ -1037,7 +1062,14 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isProFormaSO(@NonNull final I_C_Order order)
+	public boolean isProformaSO(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isProformaSO(order);
+	}
+
+	@Override
+	public boolean isProformaSO(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		if (!soTrx.isSales())
@@ -1046,7 +1078,21 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
-		return docTypeId != null && docTypeBL.isProFormaSO(docTypeId);
+		return docTypeId != null && docTypeBL.isProformaSO(docTypeId);
+	}
+
+	@Override
+	public boolean isCallOrder(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isCallOrder(docTypeId);
+	}
+
+	@Override
+	public boolean isFrameAgreement(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isFrameAgreement(docTypeId);
 	}
 
 	@Override
@@ -1082,8 +1128,9 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
+	@Override
 	@Nullable
-	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
+	public DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		if (docTypeId != null)
@@ -1287,13 +1334,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId)
+	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull final OrderAndLineId purchaseOrderLineId)
 	{
 		return orderDAO.getSOLineIdsByPOLineId(purchaseOrderLineId);
 	}
 
 	@Override
-	public void updateIsOnConsignmentFromLines(OrderId orderId)
+	public void updateIsOnConsignmentFromLines(final OrderId orderId)
 	{
 		final boolean isOnConsignment = orderDAO.hasIsOnConsignmentLines(orderId);
 		final I_C_Order order = getById(orderId);
@@ -1354,6 +1401,50 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order);
+	}
+
+	@Override
+	public boolean isClosed(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isClosed();
+	}
+
+	@Override
+	public boolean isVoidedOrClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order) || isVoided(order);
+	}
+
+	private boolean isVoided(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isVoided();
+	}
+
+	@Override
+	public void open(@NonNull final OrderId orderId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		Check.assume(isClosed(orderRecord), "Only closed orders can be opened");
+		orderRecord.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		orderRecord.setDocAction(X_C_Order.DOCACTION_Re_Activate);
+		save(orderRecord);
+	}
+
+	@Override
+	public boolean isNotJustOpened(@NonNull final I_C_Order orderRecord)
+	{
+		final I_C_Order oldOrderRecord = createOld(orderRecord, I_C_Order.class);
+		final DocStatus oldDocStatus = DocStatus.ofCode(oldOrderRecord.getDocStatus());
+		final DocStatus newDocStatus = DocStatus.ofCode(orderRecord.getDocStatus());
+		return !oldDocStatus.isClosed() || !newDocStatus.isCompleted();
+	}
+
+	@Override
 	public void setPhysicalClearanceDate(@NonNull final OrderId orderId, @Nullable final Instant physicalClearanceDate)
 	{
 		final I_C_Order salesOrderRecord = orderDAO.getById(orderId);
@@ -1367,4 +1458,81 @@ public class OrderBL implements IOrderBL
 		return orderDAO.getPPCostCollectorId(orderLineId);
 	}
 
+	@Override
+	public ShippingNotificationFromOrderProducer newShippingNotificationProducer()
+	{
+		return new ShippingNotificationFromOrderProducer(
+				SpringContextHolder.instance.getBean(ShippingNotificationService.class),
+				this,
+				orderLineBL,
+				SpringContextHolder.instance.getBean(DocTypeService.class),
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
+				warehouseBL
+		);
+	}
+
+	@Override
+	public InOutFromOrderProducer newInOutFromOrderProducer()
+	{
+		return new InOutFromOrderProducer(
+				this,
+				orgDAO,
+				orderLineBL,
+				SpringContextHolder.instance.getBean(DocTypeService.class),
+				SpringContextHolder.instance.getBean(InOutService.class),
+				InOutUserNotificationsProducer.newInstance(),
+				warehouseBL
+		);
+	}
+
+	@Override
+	@Nullable
+	public YearId getSuitableHarvestingYearId(@NonNull final I_C_Order orderRecord)
+	{
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(orderRecord.getC_DocTypeTarget_ID());
+
+		if (docTypeTargetId == null)
+		{
+			return null;
+		}
+
+		if (isCallOrder(orderRecord) || isFrameAgreement(orderRecord))
+		{
+			return null;
+		}
+
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(orderRecord.getC_Harvesting_Calendar_ID());
+		if (harvestingCalendarId == null)
+		{
+			return null;
+		}
+
+		final LocalDateAndOrgId dateOrdered = LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(), OrgId.ofRepoId(orderRecord.getAD_Org_ID()), orgDAO::getTimeZone);
+
+		return calendarDAO.findYearByCalendarAndDate(dateOrdered, harvestingCalendarId);
+	}
+
+	@Override
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order)
+	{
+		return orderDAO.retrieveOrderLines(order);
+	}
+
+	@Override
+	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query) {return orderDAO.streamOrderLines(query);}
+
+	@Override
+	public boolean anyMatch(@NonNull final OrderLineQuery query) {return orderDAO.anyMatch(query);}
+
+	@Override
+	public List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull final I_C_Order order)
+	{
+		return orderDAO.retrieveInOutsForMatchingOrderLines(order);
+	}
+
+	@Override
+	public final ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull final OrderId orderId)
+	{
+		return orderDAO.retrieveAllOrderLineIds(orderId);
+	}
 }

@@ -70,6 +70,7 @@ Feature: create or update BPartner v2
                "vendorPaymentTermIdentifier": "val-10 Tage 4%",
                "incotermsCustomerValue":"DAF",
                "incotermsVendorValue":"DDU",
+               "discountPrinted": false,
                "paymentRule":"OnCredit",
                "paymentRulePO":"Cash",
                "sectionGroupPartnerIdentifier":"ext-ALBERTA-bp2212",
@@ -230,8 +231,8 @@ Feature: create or update BPartner v2
 
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier | OPT.Section_Group_Partner_ID.Identifier | OPT.IsProspect | OPT.Fresh_Urproduzent |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_211122 | test_name | test_name       | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            | sectionGroupPartner                     | true           | true                  |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsDiscountPrinted | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier | OPT.Section_Group_Partner_ID.Identifier | OPT.IsProspect | OPT.Fresh_Urproduzent |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_211122 | test_name | test_name       | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | N                     | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            | sectionGroupPartner                     | true           | true                  |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.IsHandOverLocation | OPT.IsRemitTo | OPT.IsReplicationLookupDefault | OPT.VATaxId        | OPT.SAP_PaymentMethod | OPT.Name                | OPT.BPartnerName   |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | true                   | false         | false                          | null               | PAY                   | test_address1 test_name | null               |
@@ -291,6 +292,7 @@ Feature: create or update BPartner v2
       "group":"test-group",
       "vendor":false,
       "customer":false,
+      "discountPrinted":false,
       "paymentRule":"OnCredit",
       "paymentRulePO":"Cash",
       "company":true,
@@ -456,7 +458,8 @@ Feature: create or update BPartner v2
                "url":"url_updated",
                "group":"test-group",
                "vatId":null,
-               "urproduzent":false
+               "urproduzent":false,
+               "discountPrinted":true
             },
             "locations":{
                "requestItems":[
@@ -542,8 +545,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was updated for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName   | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse | OPT.Fresh_Urproduzent |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name_updated | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName   | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse | OPT.Fresh_Urproduzent | OPT.IsDiscountPrinted |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name_updated | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 | Y                     |
     And verify that location was updated for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId | OPT.Name                                  |
       | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name                       |

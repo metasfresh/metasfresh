@@ -109,7 +109,7 @@ export const testContext = {};
 export const test = require('@playwright/test').test.extend({
   page: async ({ page }, use) => {
     global.currentPage = page;
-    Object.keys(testContext).forEach(key => delete testContext[key]);
+    Object.keys(testContext).forEach((key) => delete testContext[key]);
     await use(page);
   },
 });

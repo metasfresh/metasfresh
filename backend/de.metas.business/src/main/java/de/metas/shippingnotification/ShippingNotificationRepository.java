@@ -28,6 +28,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -41,6 +42,12 @@ import java.util.stream.Stream;
 public class ShippingNotificationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public static ShippingNotificationRepository newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ShippingNotificationRepository();
+	}
 
 	@NonNull
 	public ShippingNotification getById(@NonNull final ShippingNotificationId shippingNotificationId)

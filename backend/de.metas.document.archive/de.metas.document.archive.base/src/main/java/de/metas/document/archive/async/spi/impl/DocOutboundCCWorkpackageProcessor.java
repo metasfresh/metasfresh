@@ -5,12 +5,12 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.logging.LogManager;
+import de.metas.report.DocOutboundConfig;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.IOStreamUtils;
@@ -21,6 +21,7 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import java.io.BufferedOutputStream;
@@ -74,6 +75,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
 
 	@Override
 	public Result processWorkPackage(
@@ -111,13 +113,13 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// Get Document Outbound Configuration
-		final I_C_Doc_Outbound_Config config = Services.get(IDocOutboundDAO.class).retrieveConfigForModel(model);
+		final DocOutboundConfig config = docOutboundConfigRepository.retrieveConfigForModel(model);
 		if (config == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Doc_Outbound_Config@ (" + model + ")");
 		}
 
-		final String ccPath = config.getCCPath();
+		final String ccPath = config.getCcPath();
 		if (Check.isEmpty(ccPath, true))
 		{
 			// Doc Outbound config does not have CC Path set

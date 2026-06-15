@@ -9,6 +9,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.DimensionService;
@@ -67,6 +68,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -164,6 +166,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// Parameters
 	private Properties _ctx;
 	private String _trxName;
+
+	@Setter
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
@@ -394,7 +398,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
-				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
+				final Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
@@ -469,6 +473,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setOrg_BP_Account_ID(BankAccountId.toRepoId(invoiceHeader.getOrgBankAccountId()));
 
 			setHarvestingDetails(invoice, invoiceHeader);
+			invoice.setModCntr_Settings_ID(ModularContractSettingsId.toRepoId(invoiceHeader.getModularContractSettingsId()));
 
 			invoice.setIsCreditedInvoiceReinvoicable(invoiceHeader.isCreditedInvoiceReinvoicable());
 
@@ -709,6 +714,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setInvoicingGroup(cand.getInvoicingGroup());
 				invoiceLine.setUserElementNumber1(cand.getUserElementNumber1());
 				invoiceLine.setUserElementNumber2(cand.getUserElementNumber2());
+				invoiceLine.setIsHidePriceAndAmountOnPrint(cand.isHidePriceAndAmountOnPrint());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)
@@ -1083,7 +1089,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					userInChargeId = USERINCHARGE_NA;
 				}
 
-				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+				final List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
 				candsOfUserId.add(ic);
 			}
 
@@ -1182,14 +1188,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 		}
 		return candidates;
-	}
-
-	/**
-	 * Set the invoice generator to use in invoicing.
-	 */
-	public void setInvoiceGeneratorClass(final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
-	{
-		this.invoiceGeneratorClass = invoiceGeneratorClass;
 	}
 
 	@Override

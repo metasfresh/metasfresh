@@ -42,13 +42,13 @@ import java.util.stream.Stream;
 public abstract class AbstractComputingMethodHandler implements IComputingMethodHandler
 {
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull protected final IProductBL productBL = Services.get(IProductBL.class);
 
 	/**
 	 * This is the default implementation, used by yet-unimplemented methods. Its result ensures the IC is not created.
 	 */
 	@Override
-	 @NonNull
+	@NonNull
 	public ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());

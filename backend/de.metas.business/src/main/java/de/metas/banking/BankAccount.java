@@ -107,10 +107,18 @@ public class BankAccount
 
 	}
 
-	public boolean isAddressComplete()
+	/**
+	 * @return {@code true} when none of {@code accountStreet} / {@code accountZip} /
+	 * {@code accountCity} is populated. The country code alone does not constitute
+	 * a usable address: a bank account with only {@code accountCountry} set is treated
+	 * as empty so the SEPA marshalers fall back to the partner billing location
+	 * instead of emitting a {@code <PstlAdr>} that has only a {@code <Ctry>} child
+	 * (schema-invalid in pain.001 / pain.008).
+	 */
+	public boolean isAddressEmpty()
 	{
-		return Check.isNotBlank(accountStreet) &&
-				Check.isNotBlank(accountZip) &&
-				Check.isNotBlank(accountCity);
+		return Check.isBlank(accountStreet)
+				&& Check.isBlank(accountZip)
+				&& Check.isBlank(accountCity);
 	}
 }

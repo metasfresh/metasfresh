@@ -3,8 +3,8 @@ package de.metas.order.interceptor;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -124,6 +124,8 @@ public class OrderTest
 		doctype.setDocumentNote(documentNote);
 
 		doctype.setIsCopyDescriptionToDocument(true);
+
+		doctype.setDocBaseType(DocBaseType.SalesOrder.getCode());
 
 		save(doctype);
 

@@ -26,7 +26,7 @@ public class ShippingNotificationLine
 	@NonNull private final ProductId productId;
 	@NonNull private final AttributeSetInstanceId asiId;
 	@NonNull private final Quantity qty;
-	@NonNull private final ShipmentScheduleId shipmentScheduleId;
+	@Nullable private final ShipmentScheduleId shipmentScheduleId;
 	@NonNull private final OrderAndLineId salesOrderAndLineId;
 	@NonNull @Getter @Setter(AccessLevel.PACKAGE) @Builder.Default private SeqNo line = SeqNo.ofInt(0);
 

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Module
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr_Module, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -791716617L;
+	private static final long serialVersionUID = -1999606309L;
 
     /** Standard Constructor */
     public X_ModCntr_Module (final Properties ctx, final int ModCntr_Module_ID, @Nullable final String trxName)
@@ -64,6 +64,18 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	public java.lang.String getInvoicingGroup() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
+	}
+
+	@Override
+	public void setIsGenerated (final boolean IsGenerated)
+	{
+		set_Value (COLUMNNAME_IsGenerated, IsGenerated);
+	}
+
+	@Override
+	public boolean isGenerated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGenerated);
 	}
 
 	@Override
@@ -160,18 +172,6 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
-	}
-
-	@Override
-	public void setProcessed (final boolean Processed)
-	{
-		set_Value (COLUMNNAME_Processed, Processed);
-	}
-
-	@Override
-	public boolean isProcessed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

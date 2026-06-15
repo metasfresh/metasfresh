@@ -1,12 +1,13 @@
 import { test } from '../../playwright.config';
 import { ErrorToast } from './components/ErrorToast';
 
-export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
+export const FRONTEND_BASE_URL =
+  process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
 
-export const VERY_FAST_ACTION_TIMEOUT = 1000;    // 1 second
-export const FAST_ACTION_TIMEOUT = 5000;         // 5 seconds
-export const SLOW_ACTION_TIMEOUT = 20000;        // 20 seconds
-export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
+export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1 second
+export const FAST_ACTION_TIMEOUT = 5000; // 5 seconds
+export const SLOW_ACTION_TIMEOUT = 20000; // 20 seconds
+export const VERY_SLOW_ACTION_TIMEOUT = 40000; // 40 seconds
 
 export const getPage = () => global.currentPage;
 

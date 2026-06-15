@@ -44,6 +44,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -64,6 +65,12 @@ public class ProcessModularLogsEnqueuer
 
 	@NonNull
 	private final ModularLogCreateStatusService createStatusService;
+
+	public static ProcessModularLogsEnqueuer newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProcessModularLogsEnqueuer(ModularLogCreateStatusService.newInstanceForJUnitTesting());
+	}
 
 	public void enqueueAfterCommit(@NonNull final ProcessModularLogsEnqueuer.EnqueueRequest request)
 	{

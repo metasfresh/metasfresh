@@ -65,6 +65,11 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId> {
 		return ChronoUnit.DAYS.between(d1.toLocalDate(), d2.toLocalDate());
 	}
 
+	public boolean isAfter(@NonNull final LocalDateAndOrgId date)
+	{
+		return daysBetween(this, date) < 0;
+	}
+
 	private static void assertSameOrg(@NonNull final LocalDateAndOrgId d1, @NonNull final LocalDateAndOrgId d2)
 	{
 		Check.assumeEquals(d1.getOrgId(), d2.getOrgId(), "Dates have the same org: {}, {}", d1, d2);

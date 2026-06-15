@@ -22,10 +22,12 @@ package de.metas.adempiere.docline.sort.api.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.DocBaseType;
+import de.metas.testsupport.AbstractTestSupport;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,11 +41,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Before;
 
-import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.testsupport.AbstractTestSupport;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 /**
  *
@@ -96,7 +94,7 @@ public abstract class AbstractDocLineSortItemFinderTest extends AbstractTestSupp
 		{
 			// Sales
 			docTypeSOO = docType(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
-			docTypeMMS = docType(DocBaseType.MaterialDelivery, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
+			docTypeMMS = docType(DocBaseType.Shipment, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
 			// Purchase
 			docTypePOO = docType(DocBaseType.PurchaseOrder, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
 			docTypeMMR = docType(DocBaseType.MaterialReceipt, X_C_DocType.DOCSUBTYPE_Produktanlieferung);

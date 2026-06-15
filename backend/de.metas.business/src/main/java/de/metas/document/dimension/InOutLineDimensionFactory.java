@@ -29,13 +29,10 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine>
@@ -69,7 +66,7 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
-				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getC_Harvesting_Calendar_ID(), record.getHarvesting_Year_ID()))
+				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
 				.build();
 	}
 

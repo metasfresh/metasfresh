@@ -10,7 +10,8 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.IModelTranslationMap;
@@ -27,6 +28,7 @@ import de.metas.lang.SOTrx;
 import de.metas.material.MovementType;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -118,7 +120,7 @@ public class InOutBL implements IInOutBL
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -137,9 +139,18 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public I_M_InOut getByLineIdInTrx(@NonNull final InOutLineId inoutLineId) {return inOutDAO.getByLineIdInTrx(inoutLineId);}
+
+	@Override
 	public void save(@NonNull final I_M_InOut inout)
 	{
 		inOutDAO.save(inout);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_InOutLine inoutLine)
+	{
+		inOutDAO.save(inoutLine);
 	}
 
 	@Override
@@ -606,6 +617,12 @@ public class InOutBL implements IInOutBL
 		return orderLine.getC_Order();
 	}
 
+	@Override
+	public Optional<OrderId> getOrderIdForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getOrderIdForLineId(inoutLineId);
+	}
+
 	private RequestTypeId getRequestTypeId(final SOTrx soTrx)
 	{
 		return soTrx.isSales()
@@ -616,7 +633,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(@NonNull final I_M_InOut inOut)
 	{
-		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+		final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(inOut.getC_DocType_ID()));
 
 		if (docType.getR_RequestType_ID() <= 0)
 		{
@@ -681,7 +698,7 @@ public class InOutBL implements IInOutBL
 	public void updateDescriptionAndDescriptionBottomFromDocType(@NonNull final I_M_InOut inOut)
 	{
 
-		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+		final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(inOut.getC_DocType_ID()));
 		if (docType == null)
 		{
 			return;
@@ -758,5 +775,17 @@ public class InOutBL implements IInOutBL
 	public List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull final OrderLineId orderLineId)
 	{
 		return inOutDAO.retrieveCompleteOrClosedLinesForOrderLine(orderLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public boolean isProformaShipment(@NonNull final InOutId inOutId)
+	{
+		return isProformaShipment(getById(inOutId));
+	}
+
+	@Override
+	public boolean isProformaShipment(@NonNull final I_M_InOut inOutRecord)
+	{
+		return docTypeBL.isProformaShipment(DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID()));
 	}
 }

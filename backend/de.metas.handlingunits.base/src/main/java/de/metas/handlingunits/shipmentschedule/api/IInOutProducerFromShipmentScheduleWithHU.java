@@ -42,9 +42,9 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 
-	IInOutProducerFromShipmentScheduleWithHU setForexContractRef(ForexContractRef forexContractRef);
+	IInOutProducerFromShipmentScheduleWithHU setForexContractRef(@Nullable ForexContractRef forexContractRef);
 
-	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(DeliveryPlanningId deliveryPlanningId);
+	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable DeliveryPlanningId deliveryPlanningId);
 
 	InOutProducerFromShipmentScheduleWithHU setB2BReceiptId(@Nullable InOutId b2bReceiptId);
 }

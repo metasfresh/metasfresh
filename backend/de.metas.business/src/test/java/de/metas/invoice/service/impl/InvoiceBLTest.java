@@ -77,7 +77,7 @@ public class InvoiceBLTest
 	private I_C_DocType createSalesOrderDocType()
 	{
 		final I_C_DocType salesOrderDocType = docType(DocBaseType.SalesOrder);
-		salesOrderDocType.setC_DocTypeInvoice_ID(docTypeId(DocBaseType.ARInvoice).getRepoId());
+		salesOrderDocType.setC_DocTypeInvoice_ID(docTypeId(DocBaseType.SalesInvoice).getRepoId());
 		InterfaceWrapperHelper.save(salesOrderDocType);
 		return salesOrderDocType;
 	}

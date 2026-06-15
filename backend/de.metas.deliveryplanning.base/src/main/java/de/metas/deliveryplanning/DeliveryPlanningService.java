@@ -37,6 +37,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -92,7 +93,6 @@ import org.compiere.model.I_C_BPartner_BlockStatus;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -489,7 +489,7 @@ public class DeliveryPlanningService
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.ShipperTransportation)
-				.docSubType(X_C_DocType.DOCSUBTYPE_DeliveryInstruction)
+				.docSubType(DocSubType.DeliveryInstruction)
 				.adClientId(deliveryPlanningRecord.getAD_Client_ID())
 				.adOrgId(deliveryPlanningRecord.getAD_Org_ID())
 				.build();

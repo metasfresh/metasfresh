@@ -64,10 +64,17 @@ public class AddressBuilderTest
 	// prepraring methods
 	private I_C_Country prepareCountry(final String countryName, final String displaySequence)
 	{
+		return prepareCountry(countryName, displaySequence, -1);
+	}
+
+	@NonNull
+	private I_C_Country prepareCountry(final String countryName, final String displaySequence, final int maxLineChars)
+	{
 		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setName(countryName);
 		country.setDisplaySequence(displaySequence);
 		country.setDisplaySequenceLocal("LOCAL: " + displaySequence);
+		country.setMaxLineChars(maxLineChars);
 		saveRecord(country);
 
 		return country;
@@ -588,6 +595,48 @@ public class AddressBuilderTest
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 		}
+
+		@Test
+		public void limitLine_To_4_Characters()
+		{
+			final boolean isLocalAddress = true;
+			final String bPartnerBlock = null;
+			final String userBlock = null;
+			
+			final I_C_Country countryWithoutMaxLineChars = prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ (Postfach @PB@) @CO@");
+			final I_C_Location locationWithoutMaxLineChars = prepareLocation("addr1",
+																			 "addr2",
+																			 null,
+																			 null,
+																			 "City1",
+																			 "Region1",
+																			 "121212",
+																			 false,
+																			 "",
+																			 countryWithoutMaxLineChars);
+
+			assertEquals(
+					"LOCAL: addr1\naddr2\n121212 City1\nCountry1",
+					builder("de_CH")
+							.buildAddressString(locationWithoutMaxLineChars, isLocalAddress, bPartnerBlock, userBlock));
+
+			final I_C_Country countryWith4MaxLineChars = prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ (Postfach @PB@) @CO@", 4);
+			final I_C_Location locationWithMaxLineChars = prepareLocation("addr1",
+																		  "addr2",
+																		  null,
+																		  null,
+																		  "City1",
+																		  "Region1",
+																		  "121212",
+																		  false,
+																		  "",
+																		  countryWith4MaxLineChars);
+
+			assertEquals(
+					"LOCA\naddr\n1212\nCoun",
+					builder("de_CH")
+							.buildAddressString(locationWithMaxLineChars, isLocalAddress, bPartnerBlock, userBlock));
+		}
 	}
 
 	@Nested
@@ -686,7 +735,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -711,7 +760,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ \\(test\\) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ \\(test\\) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -736,7 +785,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -761,7 +810,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("CompanyAG")
@@ -785,7 +834,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @GR@ @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ @GR@ @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -809,7 +858,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ (z.L. @GR@) @CON@ @A2@ @A1@ (PF @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ (z.L. @GR@) @CON@ @A2@ @A1@ (PF @PB@) @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -833,7 +882,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -878,7 +927,7 @@ public class AddressBuilderTest
 		public void case_0130_isPOBox()
 		{
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
-					prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final I_C_BPartner bPartner = bpartner()
 					.name("Name1")
@@ -902,7 +951,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP_GR@ @BP_Name@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
@@ -929,7 +978,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP@ @BP_Name@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP@ @BP_Name@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
@@ -954,7 +1003,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
@@ -982,7 +1031,7 @@ public class AddressBuilderTest
 		{
 
 			final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-					prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+														  prepareCountry("Germany", "@BP_GR@ @BP_Name@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 
 			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 			final GreetingId greetingId = prepareGreeting("Frau");
@@ -1092,7 +1141,7 @@ public class AddressBuilderTest
 			@Nullable String contactGreeting)
 	{
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
-				prepareCountry("Germany", countryDisplaySequence));
+													  prepareCountry("Germany", countryDisplaySequence));
 
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
 		final I_C_BPartner bPartner = bpartner().name(bpartnerName).name2(bpartnerName2).isCompany(isCompany).build();

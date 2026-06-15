@@ -1,6 +1,8 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import de.metas.banking.Bank;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
@@ -8,17 +10,22 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
+import de.metas.payment.sepa.api.SepaMarshallerException;
 import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentification1;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PostalAddress6CH;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +42,7 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
@@ -428,6 +436,271 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	{
 		boolean result = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isInvalidQRReference(input);
 		assertThat(result).isEqualTo(expected);
+	}
+
+	// ----------------------------------------------------------------------------------------------
+	// Address resolution — bank account is authoritative.
+	// See me03#29173: when the C_BP_BankAccount has any address fields populated, the SEPA
+	// XML must use those fields verbatim instead of silently falling back to the partner
+	// billing location.
+	// ----------------------------------------------------------------------------------------------
+
+	private BankAccount bankAccount(
+			final String street,
+			final String zip,
+			final String city,
+			final String country)
+	{
+		return BankAccount.builder()
+				.id(BankAccountId.ofRepoId(1))
+				.orgId(OrgId.ANY)
+				.currencyId(chf)
+				.accountStreet(street)
+				.accountZip(zip)
+				.accountCity(city)
+				.accountCountry(country)
+				.build();
+	}
+
+	private I_C_Location chLocation(final String address1, final String postal, final String city)
+	{
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setCountryCode("CH");
+		country.setName("Switzerland");
+		save(country);
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setAddress1(address1);
+		location.setPostal(postal);
+		location.setCity(city);
+		location.setC_Country_ID(country.getC_Country_ID());
+		save(location);
+		return location;
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_fullAddress()
+	{
+		final BankAccount bankAccount = bankAccount("Bankstrasse 1", "8000", "Zuerich", "CH");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(bankAccount, null);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getStrtNm()).isEqualTo("Bankstrasse");
+		assertThat(pstlAdr.getBldgNb()).isEqualTo("1");
+		assertThat(pstlAdr.getPstCd()).isEqualTo("8000");
+		assertThat(pstlAdr.getTwnNm()).isEqualTo("Zuerich");
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_partialAddress_streetOnly()
+	{
+		// Bank account has only the street and country populated; zip / city are blank.
+		// Expectation under "bank account is authoritative": the partner billing
+		// location is NOT consulted, even though it would provide the missing fields.
+		// The blank fields stay blank in the XML.
+		final BankAccount bankAccount = bankAccount("Bankstrasse 1", null, null, "CH");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getStrtNm()).isEqualTo("Bankstrasse");
+		assertThat(pstlAdr.getBldgNb()).isEqualTo("1");
+		assertThat(pstlAdr.getPstCd()).isNull();
+		assertThat(pstlAdr.getTwnNm()).isNull();
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_partialAddress_cityOnly()
+	{
+		final BankAccount bankAccount = bankAccount(null, null, "Zuerich", "CH");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getTwnNm()).isEqualTo("Zuerich");
+		assertThat(pstlAdr.getStrtNm()).isNull();
+		assertThat(pstlAdr.getBldgNb()).isNull();
+		assertThat(pstlAdr.getPstCd()).isNull();
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_addressWithoutCountry_throws()
+	{
+		// Country is mandatory in <Ctry>; emitting a structured address without a
+		// valid ISO-3166 alpha-2 country code would produce schema-invalid SEPA XML.
+		// The marshaler must surface this as a clear SEPA error instead.
+		final BankAccount bankAccount = bankAccount("Bankstrasse 1", "8000", "Zuerich", null);
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		assertThatThrownBy(() -> xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation))
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining("A_Country is required");
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_invalidCountry_throws()
+	{
+		// "Switzerland" is not a valid ISO-3166 alpha-2 country code.
+		final BankAccount bankAccount = bankAccount("Bankstrasse 1", "8000", "Zuerich", "Switzerland");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		assertThatThrownBy(() -> xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation))
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining("'Switzerland' is not a valid ISO-3166 alpha-2 country code");
+	}
+
+	@Test
+	public void createStructuredPstlAdr_emptyBankAccount_fallsBackToLocation()
+	{
+		final BankAccount emptyBankAccount = bankAccount(null, null, null, null);
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(emptyBankAccount, partnerLocation);
+
+		assertThat(pstlAdr.getStrtNm()).isEqualTo("Partnerstrasse");
+		assertThat(pstlAdr.getBldgNb()).isEqualTo("5");
+		assertThat(pstlAdr.getPstCd()).isEqualTo("3000");
+		assertThat(pstlAdr.getTwnNm()).isEqualTo("Bern");
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+	}
+
+	@Test
+	public void createStructuredPstlAdr_nullBankAccount_fallsBackToLocation()
+	{
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(null, partnerLocation);
+
+		assertThat(pstlAdr.getStrtNm()).isEqualTo("Partnerstrasse");
+		assertThat(pstlAdr.getBldgNb()).isEqualTo("5");
+		assertThat(pstlAdr.getPstCd()).isEqualTo("3000");
+		assertThat(pstlAdr.getTwnNm()).isEqualTo("Bern");
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_bankAccountAuthoritative_partialAddress_streetOnly()
+	{
+		// Same partial-address case as createStructuredPstlAdr_*, but for the
+		// unstructured (PAYMENT_TYPE_5 / PAYMENT_TYPE_6) variant. Country is
+		// mandatory and supplied; zip / city stay blank.
+		final BankAccount bankAccount = bankAccount("Bankstrasse 1", null, null, "CH");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation);
+
+		// One AdrLine for the street, no zip/city line because both are blank.
+		// pain.001 forbids mixing structured fields with AdrLine, so the structured
+		// fields stay null in the bank-account branch.
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getAdrLine()).containsExactly("Bankstrasse 1");
+		assertThat(pstlAdr.getStrtNm()).isNull();
+		assertThat(pstlAdr.getBldgNb()).isNull();
+		assertThat(pstlAdr.getPstCd()).isNull();
+		assertThat(pstlAdr.getTwnNm()).isNull();
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_bankAccountAuthoritative_zipAndCityOnly()
+	{
+		final BankAccount bankAccount = bankAccount(null, "8000", "Zuerich", "CH");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation);
+
+		// Only the zip+city line is emitted; no street line because the street is
+		// blank. Structured fields stay null (no mixing).
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getAdrLine()).containsExactly("8000 Zuerich");
+		assertThat(pstlAdr.getStrtNm()).isNull();
+		assertThat(pstlAdr.getBldgNb()).isNull();
+		assertThat(pstlAdr.getPstCd()).isNull();
+		assertThat(pstlAdr.getTwnNm()).isNull();
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_bankAccountAuthoritative_addressWithoutCountry_throws()
+	{
+		final BankAccount bankAccount = bankAccount("Bankstrasse 1", "8000", "Zuerich", null);
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		assertThatThrownBy(() -> xmlGenerator.createUnstructuredPstlAdr(bankAccount, partnerLocation))
+				.isInstanceOf(SepaMarshallerException.class)
+				.hasMessageContaining("A_Country is required");
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_emptyBankAccount_fallsBackToLocation()
+	{
+		// Mirror of createStructuredPstlAdr_emptyBankAccount_fallsBackToLocation:
+		// non-null but fully-blank bank account → location is used.
+		final BankAccount emptyBankAccount = bankAccount(null, null, null, null);
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(emptyBankAccount, partnerLocation);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getAdrLine()).containsExactly("Partnerstrasse 5", "3000 Bern");
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_nullBankAccount_fallsBackToLocation()
+	{
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(null, partnerLocation);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getAdrLine()).containsExactly("Partnerstrasse 5", "3000 Bern");
+	}
+
+	@Test
+	public void createUnstructuredPstlAdr_locationFallback_handlesNullPostalAndCity()
+	{
+		// Pre-existing latent bug: location.getPostal() + " " + location.getCity()
+		// produced "null null" when both were missing. With joinNonBlank we get
+		// an empty string for the second line, which is then suppressed because
+		// SEPA XSDs require AdrLine to be non-empty when present.
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setCountryCode("CH");
+		country.setName("Switzerland");
+		save(country);
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setAddress1("Partnerstrasse 5");
+		location.setC_Country_ID(country.getC_Country_ID());
+		// Postal and City intentionally not set
+		save(location);
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createUnstructuredPstlAdr(null, location);
+
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		// Only the street line is emitted; the (otherwise empty) zip+city line is suppressed.
+		assertThat(pstlAdr.getAdrLine()).containsExactly("Partnerstrasse 5");
+	}
+
+	@Test
+	public void createStructuredPstlAdr_bankAccountAuthoritative_countryOnly_fallsBackToLocation()
+	{
+		// Country alone is NOT a usable address; isAddressEmpty() ignores it on
+		// purpose so we don't emit a <PstlAdr> with only a <Ctry> child (which
+		// would be schema-invalid). The partner billing location is used instead.
+		// The bank-account country value is irrelevant here — the bank-account
+		// path is never entered, so it is neither validated nor read.
+		final BankAccount bankAccount = bankAccount(null, null, null, "ZZ");
+		final I_C_Location partnerLocation = chLocation("Partnerstrasse 5", "3000", "Bern");
+
+		final PostalAddress6CH pstlAdr = xmlGenerator.createStructuredPstlAdr(bankAccount, partnerLocation);
+
+		// Resolved from the location — bank-account country is ignored.
+		assertThat(pstlAdr.getCtry()).isEqualTo("CH");
+		assertThat(pstlAdr.getStrtNm()).isEqualTo("Partnerstrasse");
+		assertThat(pstlAdr.getBldgNb()).isEqualTo("5");
+		assertThat(pstlAdr.getPstCd()).isEqualTo("3000");
+		assertThat(pstlAdr.getTwnNm()).isEqualTo("Bern");
 	}
 
 }

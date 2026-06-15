@@ -22,7 +22,7 @@ package de.metas.printing.model;
  * #L%
  */
 
-public interface I_C_Doc_Outbound_Config extends de.metas.document.archive.model.I_C_Doc_Outbound_Config
+public interface I_C_Doc_Outbound_Config extends org.compiere.model.I_C_Doc_Outbound_Config
 {
 	//@formatter:off
 	// task 09417

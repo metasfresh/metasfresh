@@ -27,8 +27,10 @@ import lombok.EqualsAndHashCode;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @EqualsAndHashCode
 public class HttpCallScheduler
@@ -40,7 +42,14 @@ public class HttpCallScheduler
 	public HttpCallScheduler()
 	{
 		this.requestsQueue = new LinkedBlockingQueue<>();
-		this.executor = Executors.newFixedThreadPool(1);
+		// Use a pool that lets its thread terminate after 60s of idleness.
+		// One HttpCallScheduler is created per API-calling user and kept forever
+		// in ApiAuditService.callerId2Scheduler, so without idle timeout the
+		// thread would live permanently even if the user never calls again.
+		this.executor = new ThreadPoolExecutor(
+				0, 1,
+				60, TimeUnit.SECONDS,
+				new SynchronousQueue<>());
 
 		this.executorFuture = new CompletableFuture<>();
 		this.executorFuture.complete(null);

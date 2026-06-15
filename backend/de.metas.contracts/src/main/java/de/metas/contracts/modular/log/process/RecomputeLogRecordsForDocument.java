@@ -57,7 +57,7 @@ public class RecomputeLogRecordsForDocument extends JavaProcess
 			case I_C_Invoice.Table_Name -> recomputeLogsService.recomputeForInvoice(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_C_Order.Table_Name -> recomputeLogsService.recomputeForOrder(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_M_InOut.Table_Name -> recomputeLogsService.recomputeForInOut(getProcessInfo().getQueryFilterOrElseFalse());
-			case I_C_Flatrate_Term.Table_Name -> recomputeLogsService.recomputeForFlatrate(getProcessInfo().getQueryFilterOrElseFalse());
+			case I_C_Flatrate_Term.Table_Name -> recomputeLogsService.recomputeForFlatrateInNewTrx(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_M_Inventory.Table_Name -> recomputeLogsService.recomputeForInventory(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_PP_Cost_Collector.Table_Name -> recomputeLogsService.recomputeForCostCollector(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_PP_Order.Table_Name -> recomputeLogsService.recomputeForPPOrder(getProcessInfo().getQueryFilterOrElseFalse());

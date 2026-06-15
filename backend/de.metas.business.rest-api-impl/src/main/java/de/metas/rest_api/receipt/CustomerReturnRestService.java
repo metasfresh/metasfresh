@@ -214,7 +214,7 @@ public class CustomerReturnRestService
 		}
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(DocBaseType.MaterialDelivery)
+				.docBaseType(DocBaseType.Shipment)
 				.adClientId(Env.getAD_Client_ID())
 				.adOrgId(orgId.getRepoId())
 				.build();

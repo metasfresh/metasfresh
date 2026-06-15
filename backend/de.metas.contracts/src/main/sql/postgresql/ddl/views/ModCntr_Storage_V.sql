@@ -25,6 +25,5 @@ FROM c_invoiceline il
          JOIN modcntr_type t ON log.modcntr_type_id = t.modcntr_type_id
          JOIN m_product p ON log.initial_product_id = p.m_product_id
          JOIN c_uom uom ON log.c_uom_id = uom.c_uom_id
-WHERE t.modularcontracthandlertype::text = 'StorageCost'::text
 ORDER BY log.datetrx, p.name
 ;

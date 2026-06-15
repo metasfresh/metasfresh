@@ -57,7 +57,18 @@ public class C_Calendar_StepDef
 			createCalendar(tableRow);
 		}
 	}
-	
+
+	@And("^load default C_Calendar from metasfresh as (.*)$")
+	public void loadDefaultCalendar(@NonNull final String calendarIdentifier)
+	{
+		final I_C_Calendar defaultCalendar = queryBL.createQueryBuilder(I_C_Calendar.class)
+				.addEqualsFilter(I_C_Calendar.COLUMNNAME_IsDefault, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly();
+		calendarTable.putOrReplace(calendarIdentifier, defaultCalendar);
+	}
+
 	@And("load C_Calendar from metasfresh:")
 	public void load_C_Calendar(@NonNull final DataTable dataTable)
 	{
@@ -79,11 +90,11 @@ public class C_Calendar_StepDef
 	private void createCalendar(@NonNull final Map<String, String> tableRow)
 	{
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Calendar.COLUMNNAME_Name);
-		
+
 		final I_C_Calendar calendarRecord = InterfaceWrapperHelper.newInstance(I_C_Calendar.class);
 
 		calendarRecord.setName(name);
-		
+
 		saveRecord(calendarRecord);
 
 		final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Calendar.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);

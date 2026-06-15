@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
@@ -14,6 +15,9 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.mmovement.MovementId;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -113,17 +117,17 @@ public class HUTraceEventQuery
 
 	HuId vhuSourceId;
 
-	int inOutId;
+	InOutId inOutId;
 
 	ShipmentScheduleId shipmentScheduleId;
 
-	int movementId;
+	MovementId movementId;
 
 	@Nullable InventoryId inventoryId;
 
-	int ppCostCollectorId;
+	PPCostCollectorId ppCostCollectorId;
 
-	int ppOrderId;
+	PPOrderId ppOrderId;
 
 	String docStatus;
 
@@ -132,6 +136,12 @@ public class HUTraceEventQuery
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
+
+	/**
+	 * Might be a HU-trace-record's VHU, source-VHU or TopLevel-HU.
+	 */
+	@Nullable
+	HuId anyHuId;
 
 	String huValue;
 

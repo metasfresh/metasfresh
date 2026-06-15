@@ -44,13 +44,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 
@@ -238,7 +236,7 @@ public class AbstractTestSupport
 	private I_C_DocType createSalesOrderDocType()
 	{
 		final I_C_DocType orderDocType = docType(DocBaseType.SalesOrder, null);
-		final I_C_DocType invoiceDocType = docType(DocBaseType.ARInvoice, null);
+		final I_C_DocType invoiceDocType = docType(DocBaseType.SalesInvoice, null);
 		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 

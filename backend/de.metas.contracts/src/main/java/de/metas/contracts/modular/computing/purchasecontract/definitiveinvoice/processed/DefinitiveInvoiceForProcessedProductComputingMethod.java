@@ -24,6 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
@@ -31,6 +32,7 @@ import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingP
 import de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.AbstractDefinitiveInvoiceComputingMethod;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -46,9 +48,10 @@ public class DefinitiveInvoiceForProcessedProductComputingMethod extends Abstrac
 
 	public DefinitiveInvoiceForProcessedProductComputingMethod(@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final ModularContractProvider contractProvider,
-			@NonNull final ComputingMethodService computingMethodService)
+			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ModularContractPriceService modularContractPriceService)
 	{
-		super(contractProvider, computingMethodService);
+		super(contractProvider, computingMethodService, modularContractPriceService);
 		this.contractProvider = contractProvider;
 		this.manufacturingFacadeService = manufacturingFacadeService;
 	}
@@ -63,6 +66,12 @@ public class DefinitiveInvoiceForProcessedProductComputingMethod extends Abstrac
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		return super.applies(recordRef, logEntryContractType) || appliesForProductionOrder(recordRef, logEntryContractType);
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		return settings.getSoTrx().isPurchase();
 	}
 
 	private boolean appliesForProductionOrder(final TableRecordReference recordRef, final LogEntryContractType logEntryContractType)

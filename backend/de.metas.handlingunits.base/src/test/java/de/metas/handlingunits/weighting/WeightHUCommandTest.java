@@ -2,7 +2,7 @@ package de.metas.handlingunits.weighting;
 
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
@@ -100,7 +100,7 @@ public class WeightHUCommandTest
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 		final InventoryRepository inventoryRepo = new InventoryRepository();
 		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
 
@@ -143,7 +143,7 @@ public class WeightHUCommandTest
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
-				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
+				.docSubType(InventoryDocSubType.SingleHUInventory.getDocSubType())
 				.name("inventory")
 				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());

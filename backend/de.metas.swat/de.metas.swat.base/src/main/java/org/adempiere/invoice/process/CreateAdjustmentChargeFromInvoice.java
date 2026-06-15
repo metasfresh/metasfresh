@@ -31,7 +31,7 @@ public class CreateAdjustmentChargeFromInvoice extends JavaProcess implements IP
 
 		final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest = AdjustmentChargeCreateRequest.builder()
 				.invoiceID(InvoiceId.ofRepoId(getRecord_ID()))
-				.docBaseAndSubTYpe(docBaseAndSubType)
+				.docBaseAndSubType(docBaseAndSubType)
 				.build();
 
 		invoiceBL.adjustmentCharge(adjustmentChargeCreateRequest);

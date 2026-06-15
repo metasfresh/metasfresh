@@ -9,7 +9,7 @@ var listenHost = '0.0.0.0';
 const devServer = new WebpackDevServer(
   {
     host: listenHost,
-    port: 3000,
+    port: process.env.PORT || 3000,
     allowedHosts: 'all', // 👈 allows any external host (like myapp3000.loca.lt)
     static: {
       directory: path.join(__dirname, ''),
@@ -17,6 +17,34 @@ const devServer = new WebpackDevServer(
     },
     hot: true,
     historyApiFallback: true,
+    // Proxy is opt-in: set API_PROXY_TARGET to enable proxying /rest and /stomp
+    // to a local backend (e.g., API_PROXY_TARGET=http://localhost:8080).
+    ...(process.env.API_PROXY_TARGET
+      ? {
+          proxy: [
+            {
+              context: ['/rest', '/stomp'],
+              target: process.env.API_PROXY_TARGET,
+              changeOrigin: false,
+              ws: true,
+              cookieDomainRewrite: '',
+              cookiePathRewrite: '/',
+              onProxyRes: function (proxyRes) {
+                var setCookie = proxyRes.headers['set-cookie'];
+                if (setCookie) {
+                  proxyRes.headers['set-cookie'] = setCookie.map(function (
+                    cookie
+                  ) {
+                    return cookie
+                      .replace(/;\s*SameSite=[^;]*/gi, '')
+                      .replace(/;\s*Secure/gi, '');
+                  });
+                }
+              },
+            },
+          ],
+        }
+      : {}),
   },
   webpack(config)
 );
@@ -30,5 +58,7 @@ devServer.startCallback((err) => {
     return console.error(err);
   }
   // eslint-disable-next-line no-console
-  return console.warn('Listening at http://' + listenHost + ':3000/');
+  return console.warn(
+    'Listening at http://' + listenHost + ':' + (process.env.PORT || 3000) + '/'
+  );
 });

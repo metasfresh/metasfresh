@@ -1248,7 +1248,7 @@ public final class FactLine extends X_Fact_Acct
 
 			//
 			// Revenue Recognition for AR Invoices
-			if (DocBaseType.ARInvoice.equals(m_doc.getDocBaseType())
+			if (DocBaseType.SalesInvoice.equals(m_doc.getDocBaseType())
 					&& m_docLine != null
 					&& m_docLine.getC_RevenueRecognition_ID() > 0)
 			{

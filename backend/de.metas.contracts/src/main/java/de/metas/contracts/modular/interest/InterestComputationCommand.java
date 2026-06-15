@@ -60,6 +60,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.log.LogEntryDocumentType.ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES;
+
 @RequiredArgsConstructor
 @Builder
 public class InterestComputationCommand
@@ -270,18 +272,21 @@ public class InterestComputationCommand
 			@NonNull final InterestComputationRequest request,
 			@Nullable final FlatrateTermId onlyForContractId)
 	{
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.computingMethodType(request.getComputingMethodType())
-				.flatrateTermId(onlyForContractId)
 				.invoicingGroupId(request.getInvoicingGroupId())
 				.billable(true)
 				.processed(false)
 				.lockOwner(request.getLockOwner())
-				.logEntryDocumentType(LogEntryDocumentType.SHIPPING_NOTIFICATION)
-				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC)
-				.build();
+				.logEntryDocumentTypes(ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES)
+				.orderBy(ModularContractLogQuery.OrderBy.TRANSACTION_DATE_ASC);
 
-		return modularContractLogService.streamModularContractLogEntries(query);
+		if(onlyForContractId != null)
+		{
+			queryBuilder.flatrateTermId(onlyForContractId);
+		}
+
+		return modularContractLogService.streamModularContractLogEntries(queryBuilder.build());
 	}
 
 	@NonNull
@@ -391,8 +396,8 @@ public class InterestComputationCommand
 			@NonNull final ModularContractLogEntry shippingNotification,
 			@NonNull final BonusAndInterestTimeInterval bonusAndInterestTimeInterval)
 	{
-		Check.assume(LogEntryDocumentType.SHIPPING_NOTIFICATION == shippingNotification.getDocumentType(),
-					 "Expecting DocumentType = " + LogEntryDocumentType.SHIPPING_NOTIFICATION +
+		Check.assume(shippingNotification.getDocumentType().isAnyShippingNotificationType(),
+					 "Expecting DocumentType in " + ALL_SHIPPING_NOTIFICATION_MODCNTR_LOG_DOCUMENTTYPES +
 							 " but got " + shippingNotification.getDocumentType() + "! LogId=" + shippingNotification.getId());
 
 		final Money shippingNotificationAmount = Optional

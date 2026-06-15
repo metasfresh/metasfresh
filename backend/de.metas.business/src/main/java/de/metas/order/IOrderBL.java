@@ -22,15 +22,20 @@
 
 package de.metas.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.calendar.standard.YearId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.inout.InOutFromOrderProducer;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -49,7 +54,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_InOut;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -60,10 +65,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
+
+	I_C_OrderLine getOrderLineById(OrderLineId orderLineId);
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
@@ -153,7 +161,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setDefaultDocTypeTargetId(I_C_Order order);
 
-	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+	void setPODocTypeTargetId(I_C_Order order, DocSubType poDocSubType);
 
 	/**
 	 * Set Target Sales Document Type.
@@ -254,7 +262,13 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
-	boolean isProFormaSO(@NonNull I_C_Order order);
+	boolean isProformaSO(@NonNull OrderId orderId);
+
+	boolean isProformaSO(@NonNull I_C_Order order);
+
+	boolean isCallOrder(@NonNull I_C_Order order);
+
+	boolean isFrameAgreement(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
 
@@ -263,6 +277,9 @@ public interface IOrderBL extends ISingletonService
 	boolean isPrepay(I_C_Order order);
 
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
+
+	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(@NonNull I_C_Order order);
 
 	@Nullable
 	I_C_DocType getDocTypeOrNull(I_C_Order order);
@@ -335,7 +352,33 @@ public interface IOrderBL extends ISingletonService
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
+	boolean isClosed(@NonNull OrderId orderId);
+
+	boolean isClosed(@NonNull I_C_Order order);
+
+	boolean isVoidedOrClosed(@NonNull final OrderId orderId);
+
+	void open(@NonNull OrderId orderId);
+
+	boolean isNotJustOpened(@NonNull I_C_Order orderRecord);
+
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
+
+	ShippingNotificationFromOrderProducer newShippingNotificationProducer();
+
+	InOutFromOrderProducer newInOutFromOrderProducer();
+
+	YearId getSuitableHarvestingYearId(@NonNull I_C_Order orderRecord);
+
+	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(@NonNull I_C_Order order);
+
+	Stream<de.metas.interfaces.I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
+
+	boolean anyMatch(@NonNull OrderLineQuery query);
+
+	List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull I_C_Order order);
+
+	ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull OrderId orderId);
 }

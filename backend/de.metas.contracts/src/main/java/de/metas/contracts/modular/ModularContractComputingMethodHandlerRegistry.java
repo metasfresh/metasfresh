@@ -31,9 +31,11 @@ import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -49,6 +51,12 @@ public class ModularContractComputingMethodHandlerRegistry
 				.toList();
 		this.handlersByType = Maps.uniqueIndex(currentHandlers, IComputingMethodHandler::getComputingMethodType);
 		logger.info("Handlers: {}", this.handlersByType);
+	}
+
+	public static ModularContractComputingMethodHandlerRegistry newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractComputingMethodHandlerRegistry(Collections.emptyList());
 	}
 
 	private boolean isNotDeprecated(@NonNull final IComputingMethodHandler iComputingMethodHandler)

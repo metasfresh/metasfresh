@@ -36,8 +36,9 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_ModCntr_Settings;
-import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -51,6 +52,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
@@ -63,6 +65,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 
@@ -125,6 +128,17 @@ public interface IFlatrateBL extends ISingletonService
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	Optional<FlatrateTermId> getIdByInvoiceId(@NonNull InvoiceId invoiceId);
+
+	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	@NonNull Set<OrderId> getOrderIds(@NonNull Set<FlatrateTermId> flatrateTermIds);
+
+	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(@NonNull I_C_Flatrate_Term contract);
+
+	@Nullable
+	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull I_C_Flatrate_Term contract);
 
 	/**
 	 * term to extend
@@ -279,8 +293,15 @@ public interface IFlatrateBL extends ISingletonService
 	@NonNull
 	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
 
+	Set<FlatrateTermId> getInterimContractIdsByModularContractId(@NonNull FlatrateTermId modularFlatrateTermId);
+
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@NonNull List<I_C_Flatrate_Term> getByOrderId(@NonNull OrderId orderId);
+
+	@Nullable
+	ProductPrice extractPriceActualById(@NonNull FlatrateTermId flatrateTermId);
 
 	@Nullable
 	ProductPrice extractPriceActual(@NonNull I_C_Flatrate_Term contract);

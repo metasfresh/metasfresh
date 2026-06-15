@@ -39,6 +39,13 @@ class SectionGroup extends PureComponent {
 
     this.widgets = [];
 
+    // Tracks whether the initial focus-into-modal has already been done for this
+    // SectionGroup instance. Persists across re-renders (unlike the render-reset
+    // elementGroupFocused flag it replaces) so that a PATCH response triggering
+    // a re-render mid-typing cannot yank focus back to the first field. Resets
+    // only when the SectionGroup unmounts (i.e. modal closes and reopens).
+    this.didInitialFocus = false;
+
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
     this.requestElementGroupFocus = this.requestElementGroupFocus.bind(this);
@@ -374,11 +381,69 @@ class SectionGroup extends PureComponent {
     }
   }
 
+  /**
+   * Move focus into the freshly-opened modal so the caret lands on a field
+   * the user can type into immediately. Called from ElementGroup's ref callback
+   * on the first element group of the first column of the first section
+   * (i.e. the top-left element group of the modal body).
+   *
+   * Why this is non-trivial: the element-group DOM node is a plain <div>
+   * without tabindex — calling .focus() on it is a no-op. We instead query
+   * for the first editable input/textarea/select inside it and focus that.
+   * Fallbacks cover the "all readonly" and "data still loading" cases.
+   *
+   * Idempotent: once the initial focus has succeeded, subsequent invocations
+   * (caused by re-renders re-invoking the inline ref callback) are no-ops.
+   */
   requestElementGroupFocus(elementGroupComponent) {
-    if (!this.elementGroupFocused) {
-      elementGroupComponent.focus();
-      this.elementGroupFocused = true;
+    if (this.didInitialFocus) return;
+
+    const EDITABLE_SELECTOR =
+      'input:not([disabled]):not([tabindex="-1"]):not([type="hidden"]),' +
+      'textarea:not([disabled]):not([tabindex="-1"]),' +
+      'select:not([disabled]):not([tabindex="-1"])';
+
+    const firstEditable =
+      elementGroupComponent.querySelector(EDITABLE_SELECTOR);
+
+    if (firstEditable) {
+      firstEditable.focus();
+      this.didInitialFocus = true;
+      return;
     }
+
+    // No editable field yet. If the container is still empty, widgetData is
+    // probably loading — bail out and wait for the next render to try again.
+    const hasAnyField = elementGroupComponent.querySelector(
+      '.form-group, input, textarea, select'
+    );
+    if (!hasAnyField) return;
+
+    // Container has fields but none are editable (all readonly / locked
+    // document). Fall back to focusing the modal's primary action button so
+    // keyboard users can still close the modal via Enter/Space and Shift+Tab
+    // back into the form for reading. The first `tabIndex=0` button in
+    // `.panel-modal-header` is Cancel (for new docs) or Done (for existing);
+    // both accept Enter/Space.
+    const modalWrapper = elementGroupComponent.closest(
+      '.modal-content-wrapper'
+    );
+    const actionButton =
+      modalWrapper &&
+      modalWrapper.querySelector('.panel-modal-header button[tabindex="0"]');
+    if (actionButton) {
+      actionButton.focus();
+      this.didInitialFocus = true;
+      return;
+    }
+
+    // Last resort: make the container itself focusable so Esc / focus-within
+    // still work even if there's nothing else to focus.
+    if (!elementGroupComponent.hasAttribute('tabindex')) {
+      elementGroupComponent.setAttribute('tabindex', '-1');
+    }
+    elementGroupComponent.focus();
+    this.didInitialFocus = true;
   }
 
   render() {
@@ -389,8 +454,6 @@ class SectionGroup extends PureComponent {
       handleDragStart,
       isModal,
     } = this.props;
-
-    this.elementGroupFocused = false;
 
     return (
       <div key="window" className="window-wrapper">

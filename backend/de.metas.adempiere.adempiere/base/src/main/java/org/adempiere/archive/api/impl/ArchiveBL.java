@@ -25,6 +25,7 @@ package org.adempiere.archive.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -55,8 +56,10 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.Resource;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -110,7 +113,7 @@ public class ArchiveBL implements IArchiveBL
 		final TableRecordReference recordRef = request.getRecordRef();
 		archive.setAD_Table_ID(recordRef != null ? recordRef.getAD_Table_ID() : -1);
 		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
-
+		archive.setIsMainArchive(request.isMainReport());
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 
 		final byte[] byteArray = extractByteArray(request);
@@ -351,14 +354,13 @@ public class ArchiveBL implements IArchiveBL
 		return archiveDAO.getRecordById(archiveId);
 	}
 
-	// Discard this change when merging back to intensive_care_uat
-	// @Override
-	// @Nullable
-	// public DocTypeId getOverrideDocTypeId(@NotNull final ArchiveId archiveId)
-	// {
-	// 	final I_AD_Archive archive = getRecordById(archiveId);
-	// 	return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
-	// }
+	@Override
+	@Nullable
+	public DocTypeId getOverrideDocTypeId(@NotNull final ArchiveId archiveId)
+	{
+		final I_AD_Archive archive = getRecordById(archiveId);
+		return DocTypeId.ofRepoIdOrNull(archive.getOverride_DocType_ID());
+	}
 
 	@Override
 	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)

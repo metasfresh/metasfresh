@@ -72,7 +72,7 @@ public class SalesCreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceY
 
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(tableRecordReference.getRecord_ID()));
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
-		return DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted() && docBaseAndSubType.getDocBaseType().isARCreditMemo();
+		return DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted() && docBaseAndSubType.getDocBaseType().isSalesCreditMemo();
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import de.metas.edi.model.I_C_OLCand;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.impex.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -102,7 +103,7 @@ public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 
 			Check.assumeNotNull(olcand, "Invoice candidate {} has a record ID that points to an invalid order candidate", candidate);
 
-			final int inputDataSourceId = olcand.getAD_InputDataSource_ID();
+			final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoIdOrNull(olcand.getAD_InputDataSource_ID());
 			return inputDataSourceBL.isEDIInputDataSource(inputDataSourceId);
 		}
 

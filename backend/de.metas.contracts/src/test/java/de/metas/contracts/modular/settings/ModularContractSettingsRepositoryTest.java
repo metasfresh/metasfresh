@@ -37,10 +37,11 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 
+import static de.metas.contracts.model.X_ModCntr_Settings.ISSOTRX_No;
 import static de.metas.contracts.modular.ComputingMethodType.INTERIM_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ModularContractSettingsRepositoryTest
 {
@@ -68,6 +69,8 @@ class ModularContractSettingsRepositoryTest
 		settingsRecord.setM_Raw_Product_ID(30);
 		settingsRecord.setM_PricingSystem_ID(40);
 		settingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
+		settingsRecord.setReceiptAVEndDate(Timestamp.valueOf("2024-04-24 07:15:00"));
+		settingsRecord.setIsSOTrx(ISSOTRX_No);
 		saveRecord(settingsRecord);
 
 		final I_ModCntr_Type typeRecord = newInstance(I_ModCntr_Type.class);

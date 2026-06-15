@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -30,12 +31,13 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
@@ -72,18 +75,36 @@ public class C_Order
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed");
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed_PurchaseOrder");
 
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull private final ModularContractService contractService;
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogService contractLogService;
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void beforeComplete(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.setPurchaseModularContractIdsIfExists(orderRecord, true);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_Order.COLUMNNAME_Harvesting_Year_ID, I_C_Order.COLUMNNAME_M_Warehouse_ID })
+	public void afterChange(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.setPurchaseModularContractIdsIfExists(orderRecord, false);
+	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
 		createModularContractIfRequired(orderRecord);
 		invokeHandlerForEachLine(orderRecord, COMPLETED);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void beforeVoid(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.cancelContractsOnOrderVoidIfNeededAndAllowed(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
@@ -114,10 +135,10 @@ public class C_Order
 			return;
 		}
 
-		final boolean hasAnyModularLogs = orderDAO.retrieveOrderLines(orderRecord)
+		final boolean hasAnyModularLogs = contractLogService.hasAnyModularLogs(orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.map(record -> TableRecordReference.of(I_C_OrderLine.Table_Name, record.getC_OrderLine_ID()))
-				.anyMatch(contractLogDAO::hasAnyModularLogs);
+				.collect(TableRecordReferenceSet.collect()));
 
 		if (!hasAnyModularLogs)
 		{
@@ -132,7 +153,7 @@ public class C_Order
 			@NonNull final I_C_Order orderRecord,
 			@NonNull final ModelAction modelAction)
 	{
-		orderDAO.retrieveOrderLines(orderRecord)
+		orderBL.retrieveOrderLines(orderRecord)
 				.forEach(line -> contractService.scheduleLogCreation(
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
@@ -145,18 +166,12 @@ public class C_Order
 
 	private void createModularContractIfRequired(final @NonNull I_C_Order orderRecord)
 	{
-		orderDAO.retrieveOrderLines(orderRecord)
+		orderBL.retrieveOrderLines(orderRecord)
 				.forEach(line -> createModularContractIfRequiredForEachLine(line, SOTrx.ofBoolean(orderRecord.isSOTrx())));
 	}
 
 	private void createModularContractIfRequiredForEachLine(final @NonNull I_C_OrderLine orderLine, @NonNull final SOTrx soTrx)
 	{
-		//Sales modular contracts aren't supported atm
-		if(soTrx.isSales())
-		{
-			return;
-		}
-
 		if (!isModularContractLine(orderLine))
 		{
 			return;
@@ -197,7 +212,7 @@ public class C_Order
 			return;
 		}
 
-		final boolean hasAnyContractTerms = orderDAO.retrieveOrderLines(orderRecord)
+		final boolean hasAnyContractTerms = orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.anyMatch(ol -> ol.getC_Flatrate_Conditions_ID() > 0);
 
@@ -208,5 +223,26 @@ public class C_Order
 
 		throw new AdempiereException(MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO)
 				.markAsUserValidationError();
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, I_C_Order.COLUMNNAME_DateOrdered })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, I_C_Order.COLUMNNAME_DateOrdered })
+	public void setHarvestingYearIfNeeded(@NonNull final I_C_Order orderRecord)
+	{
+		final YearId harvestingYearId = orderBL.getSuitableHarvestingYearId(orderRecord);
+
+		final YearId existingHarvestingYearId = YearId.ofRepoIdOrNull(orderRecord.getHarvesting_Year_ID());
+
+		if(!YearId.equals(existingHarvestingYearId,harvestingYearId))
+		{
+			orderRecord.setHarvesting_Year_ID(YearId.toRepoId(harvestingYearId));
+		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_CLOSE)
+	public void beforeClose(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.closeContractsOnOrderCloseIfNeededAndAllowed(orderRecord);
 	}
 }

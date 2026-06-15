@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ColumnOption;
+import de.metas.contracts.modular.computing.ColumnOption;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

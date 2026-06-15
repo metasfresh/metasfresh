@@ -72,7 +72,7 @@ public class ReturnsInOutHeaderFiller
 			final boolean isSOTrx = inOutBL.getSOTrxFromMovementType(movementType);
 			// isSOTrx = 'Y' means packing material coming back from the customer -> incoming -> Receipt
 			// isSOTrx = 'N' means packing material is returned to the vendor -> outgoing -> Delivery
-			final DocBaseType docBaseType = isSOTrx ? DocBaseType.MaterialReceipt : DocBaseType.MaterialDelivery;
+			final DocBaseType docBaseType = isSOTrx ? DocBaseType.MaterialReceipt : DocBaseType.Shipment;
 
 			returnsInOut.setMovementType(movementType);
 			returnsInOut.setIsSOTrx(isSOTrx);

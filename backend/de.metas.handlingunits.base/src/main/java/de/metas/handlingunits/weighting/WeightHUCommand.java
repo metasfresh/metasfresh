@@ -135,7 +135,7 @@ public class WeightHUCommand
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(DocBaseType.MaterialPhysicalInventory)
-				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
+				.docSubType(InventoryDocSubType.SingleHUInventory.getDocSubType())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

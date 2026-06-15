@@ -147,23 +147,14 @@ class FiltersItem extends PureComponent {
    * @summary Called from the widgets to set the filter value. It then pushes the
    * change to the active filter.
    *
-   * @param {object|array} parameter
+   * @param {string|object|array} parameter
    * @param {*} value
    * @param {*} id
    * @param {*} valueTo
    */
   setValue = (parameter, value, id, valueTo = '') => {
-    if (!Array.isArray(parameter)) {
-      parameter = [parameter];
-    }
-
-    parameter = parameter.map((param) => ({
-      parameterName: param.parameterName ? param.parameterName : param,
-      value,
-      valueTo,
-    }));
-
-    const { filter, activeFilter } = this.mergeSingle(parameter, true);
+    const parametersArray = toParameterValueArray(parameter, value, valueTo);
+    const { filter, activeFilter } = this.mergeSingle(parametersArray, true);
 
     return new Promise((resolve) => {
       this.setState({ filter, activeFilter }, () => resolve(true));
@@ -190,8 +181,8 @@ class FiltersItem extends PureComponent {
    * @summary This method syncs values between filters/active filters. It takes an array
    * of params (be it initial parameters, or updated when the widget value changes) and
    * traverses the local filter and activeFilter objects updating the values when needed.
-   * If value for parameter exists it will be updated, if not - nulled. In case of active
-   * filters, paremeters without values will be removed (and in case there are no more
+   * If value for parameter exists it will be updated, if not - nullified. In case of active
+   * filters, parameters without values will be removed (and in case there are no more
    * parameters left the filter will be removed from active)
    *
    * @param {obj} parameters - filter parameters object
@@ -200,21 +191,15 @@ class FiltersItem extends PureComponent {
    */
   mergeSingle = (parameters, active) => {
     const { activeFilter, filter } = this.state;
-    let newActiveFilter = activeFilter
-      ? { ...activeFilter }
-      : {
-          filterId: filter.filterId,
-          parameters: [],
-        };
-    let value = '';
-    let valueTo = '';
-    let activeValue = '';
-    let activeValueTo = '';
+
     const paramsMap = {};
     const updatedParameters = {};
-
     parameters.forEach((parameter) => {
       const parameterName = parameter.parameterName;
+      let value = '';
+      let valueTo = '';
+      let activeValue = '';
+      let activeValueTo = '';
 
       // if filter has defaultValue, update local filters data to include
       // it for displaying
@@ -256,6 +241,13 @@ class FiltersItem extends PureComponent {
       }
     });
 
+    let newActiveFilter = activeFilter
+      ? { ...activeFilter }
+      : {
+          filterId: filter.filterId,
+          parameters: [],
+        };
+
     // updated activeFilter parameters
     const parametersArray = [];
 
@@ -293,7 +285,10 @@ class FiltersItem extends PureComponent {
         if (paramsMap[param.parameterName]) {
           const { value, valueTo } = paramsMap[param.parameterName];
 
-          if (value !== null && value !== '') {
+          if (
+            (value !== null && value !== '') ||
+            (valueTo !== null && valueTo !== '')
+          ) {
             return {
               ...param,
               value: convertDateToReadable(param.widgetType, value),
@@ -739,3 +734,21 @@ export default connect(null, {
   openFilterBox,
   closeFilterBox,
 })(FiltersItem);
+
+//
+//
+//
+//
+//
+
+const toParameterValueArray = (parameter, value, valueTo) => {
+  let parametersArray = Array.isArray(parameter) ? parameter : [parameter];
+
+  parametersArray = parametersArray.map((param) => ({
+    parameterName: param.parameterName ? param.parameterName : param,
+    value,
+    valueTo,
+  }));
+
+  return parametersArray;
+};

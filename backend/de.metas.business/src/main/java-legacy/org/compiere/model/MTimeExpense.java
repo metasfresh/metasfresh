@@ -325,7 +325,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Std Period open? - AP (Reimbursement) Invoice
-		if (!MPeriod.isOpen(getCtx(), getDateReport(), DocBaseType.APInvoice, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateReport(), DocBaseType.PurchaseInvoice, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;

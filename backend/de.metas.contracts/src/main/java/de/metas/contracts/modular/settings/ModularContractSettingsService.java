@@ -22,9 +22,12 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_ModCntr_Module;
@@ -34,6 +37,7 @@ import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -42,25 +46,40 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import static de.metas.contracts.modular.ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceStorageCost_ID;
+import static de.metas.contracts.modular.ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceUserElementNumber1_ID;
+import static de.metas.contracts.modular.ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceUserElementNumber2_ID;
+import static de.metas.contracts.modular.ModularContract_Constants.CONTRACT_MODULE_TYPE_StorageCost_ID;
+import static de.metas.contracts.modular.ModularContract_Constants.CONTRACT_MODULE_TYPE_UserElementNumber1_ID;
+import static de.metas.contracts.modular.ModularContract_Constants.CONTRACT_MODULE_TYPE_UserElementNumber2_ID;
 
 @Service
 @RequiredArgsConstructor
 public class ModularContractSettingsService
 {
-	public static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
+	@NonNull private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
+	@NonNull private static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
+	@NonNull private static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private ModularContractSettingsRepository modularContractSettingsRepository;
 
-	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
-	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
+
+	public static ModularContractSettingsService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ModularContractSettingsService(new ModularContractSettingsRepository());
+	}
 
 	public ConditionsId retrieveFlatrateConditionId(
 			@NonNull final ModularContractSettings modularContractSettings,
@@ -96,11 +115,6 @@ public class ModularContractSettingsService
 		}
 	}
 
-	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
-	{
-		return modularContractSettingsRepository.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId);
-	}
-
 	public ModularContractSettings getById(@NonNull final ModularContractSettingsId settingsId)
 	{
 		return modularContractSettingsRepository.getById(settingsId);
@@ -124,23 +138,25 @@ public class ModularContractSettingsService
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
-	public boolean isMatchingComputingMethodType(@NonNull final ModularContractTypeId modularContractTypeId, @NonNull final ComputingMethodType computingMethodType)
+	public boolean isMatchingAnyComputingMethodType(@NonNull final ModularContractTypeId modularContractTypeId, @NonNull final ImmutableSet<ComputingMethodType> computingMethodTypes)
 	{
 		final ModularContractType contractType = modularContractSettingsRepository.getContractTypeById(modularContractTypeId);
-		return contractType.isMatching(computingMethodType);
+		return computingMethodTypes
+				.stream()
+				.anyMatch(contractType::isMatching);
 	}
 
-	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ModularContractTypeId modularContractTypeId)
 	{
 		modularContractSettingsRepository.createModule(
 				ModuleConfigCreateRequest.builder()
 						.modularContractSettingsId(modularContractSettingsId)
 						.seqNo(SeqNo.ofInt(0))
 						.name("Informative Logs") // NOTE en/de trl is the same
-						.modularContractType(modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID))
+						.modularContractType(modularContractSettingsRepository.getContractTypeById(modularContractTypeId))
 						.invoicingGroup(InvoicingGroupType.SERVICES)
 						.productId(getById(modularContractSettingsId).getRawProductId())
-						.processed(true)
+						.generated(true)
 						.build()
 		);
 	}
@@ -154,12 +170,12 @@ public class ModularContractSettingsService
 		if (processedProductId != null)
 		{
 			moduleProductId = processedProductId;
-			moduleContractType = modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct);
+			moduleContractType = modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct_ID);
 		}
 		else
 		{
 			moduleProductId = modularContractSettings.getRawProductId();
-			moduleContractType = modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct);
+			moduleContractType = modularContractSettingsRepository.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct_ID);
 		}
 
 		final String moduleName = TranslatableStrings.adElementOrMessage(AD_ELEMENT_DEFINITIVE_INVOICE).translate(Env.getADLanguageOrBaseLanguage());
@@ -171,16 +187,22 @@ public class ModularContractSettingsService
 						.modularContractType(moduleContractType)
 						.invoicingGroup(InvoicingGroupType.SERVICES)
 						.productId(moduleProductId)
-						.processed(true)
+						.generated(true)
 						.build()
 		);
 	}
-	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
+	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId, @NonNull final SOTrx soTrx)
 	{
-		final I_ModCntr_Module existingModuleConfig = modularContractSettingsRepository.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId);
+		final ModularContractTypeId modularContractTypeIdToUse = soTrx.isPurchase() ? ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID : ModularContract_Constants.CONTRACT_MODULE_TYPE_SALES_INFORMATIVE_LOGS_ID;
+		final I_ModCntr_Module existingModuleConfig = modularContractSettingsRepository.retrieveModuleRecordOrNull(
+				ModularContractModuleQuery.builder()
+						.modularContractSettingsId(modularContractSettingsId)
+						.modularContractTypeId(modularContractTypeIdToUse)
+						.build());
+
 		if (existingModuleConfig == null)
 		{
-			createInformativeLogsModule(modularContractSettingsId);
+			createInformativeLogsModule(modularContractSettingsId, modularContractTypeIdToUse);
 		}
 		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{
@@ -190,11 +212,16 @@ public class ModularContractSettingsService
 		}
 	}
 
-	public void upsertDefinitiveInvoiceModule(@NonNull final ModularContractSettingsId modularContractSettingsId,
+	public void upsertDefinitiveInvoiceSalesModule(@NonNull final ModularContractSettingsId modularContractSettingsId,
 			@NonNull final ProductId rawProductId,
 			@Nullable final ProductId processedProductId)
 	{
-		final I_ModCntr_Module existingModuleConfig = modularContractSettingsRepository.retrieveDefinitiveInvoiceModuleRecordOrNull(modularContractSettingsId);
+		final I_ModCntr_Module existingModuleConfig = modularContractSettingsRepository.retrieveModuleRecordOrNull(
+				ModularContractModuleQuery.builder()
+						.modularContractSettingsId(modularContractSettingsId)
+						.modularContractTypeIds(ImmutableSet.of(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct_ID,
+																ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct_ID))
+						.build());
 		if (existingModuleConfig == null)
 		{
 			createDefinitiveInvoiceModule(modularContractSettingsId);
@@ -202,7 +229,7 @@ public class ModularContractSettingsService
 		else if (processedProductId != null)
 		{
 			modularContractSettingsRepository.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
-					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct)
+					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct_ID)
 					.productId(processedProductId)
 					.moduleName(productBL.getProductName(processedProductId))
 					.build());
@@ -210,7 +237,7 @@ public class ModularContractSettingsService
 		else
 		{
 			modularContractSettingsRepository.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
-					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct)
+					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct_ID)
 					.productId(rawProductId)
 					.moduleName(productBL.getProductName(rawProductId))
 					.build());
@@ -219,14 +246,75 @@ public class ModularContractSettingsService
 
 	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId productId)
 	{
-		modularContractSettingsRepository.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+		modularContractSettingsRepository.updateModule(moduleConfig.getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
 				.modularContractTypeId(modularContractTypeId)
 				.productId(productId)
 				.build());
 	}
 
-	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
+	public void upsertDefinitiveModule(@NonNull final ModuleConfig moduleConfig)
 	{
-		return modularContractSettingsRepository.getSettingsByQuery(query);
+		final ModularContractTypeId moduleTypeIdToUse = getRelatedDefinitiveTypeId(moduleConfig.getModularContractTypeId());
+		if(moduleTypeIdToUse != null)
+		{
+			final ModularContractModuleQuery query = ModularContractModuleQuery.builder()
+					.modularContractSettingsId(moduleConfig.getModularContractSettingsId())
+					.modularContractTypeId(moduleTypeIdToUse)
+					.build();
+
+			final ModularContractModuleUpdateRequest updateRequest = ModularContractModuleUpdateRequest.builder()
+					.modularContractSettingsId(moduleConfig.getModularContractSettingsId())
+					.seqno(moduleConfig.getSeqNo())
+					.productId(moduleConfig.getProductId())
+					.moduleName(moduleConfig.getName())
+					.modularContractTypeId(moduleTypeIdToUse)
+					.invoicingGroupType(moduleConfig.getInvoicingGroup())
+					.generated(true)
+					.build();
+
+			modularContractSettingsRepository.upsertModule(query, updateRequest);
+		}
+	}
+
+	@Nullable
+	public ModularContractTypeId getRelatedDefinitiveTypeId(final @NotNull ModularContractTypeId moduleTypeId)
+	{
+		final ModularContractTypeId moduleTypeIdToUse;
+
+		if(ModularContractTypeId.equals(moduleTypeId, CONTRACT_MODULE_TYPE_UserElementNumber1_ID))
+		{
+			moduleTypeIdToUse = CONTRACT_MODULE_TYPE_DefinitiveInvoiceUserElementNumber1_ID;
+		}
+		else if(ModularContractTypeId.equals(moduleTypeId, CONTRACT_MODULE_TYPE_UserElementNumber2_ID))
+		{
+			moduleTypeIdToUse = CONTRACT_MODULE_TYPE_DefinitiveInvoiceUserElementNumber2_ID;
+		}
+		else if(ModularContractTypeId.equals(moduleTypeId, CONTRACT_MODULE_TYPE_StorageCost_ID))
+		{
+			moduleTypeIdToUse = CONTRACT_MODULE_TYPE_DefinitiveInvoiceStorageCost_ID;
+		}
+		else
+		{
+			moduleTypeIdToUse = null;
+		}
+		return moduleTypeIdToUse;
+	}
+
+	@Nullable
+	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
+	{
+		return modularContractSettingsRepository.getByFlatrateTermIdOrNull(contractId);
+	}
+
+	@NonNull
+	public ImmutableMap<FlatrateTermId, ModularContractSettings> getOrLoadBy(@NonNull final Set<FlatrateTermId> termIds)
+	{
+		return modularContractSettingsRepository.getOrLoadBy(termIds);
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return modularContractSettingsRepository.getByModuleId(modularContractModuleId);
 	}
 }

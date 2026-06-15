@@ -1,6 +1,5 @@
 package de.metas.contracts.modular.settings;
 
-import de.metas.contracts.model.I_ModCntr_Module;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 
@@ -32,14 +31,5 @@ public class ModCntr_Module_POCopyRecordSupport extends GeneralCopyRecordSupport
 	public void updateSpecialColumnsName(final PO to)
 	{
 		// DO NOTHING here
-	}
-
-	@Override
-	protected void onRecordCopied(final PO to, final PO from)
-	{
-		if (to.get_ColumnIndex(I_ModCntr_Module.COLUMNNAME_Processed) >= 0)
-		{
-			to.set_CustomColumn(I_ModCntr_Module.COLUMNNAME_Processed, from.get_Value(I_ModCntr_Module.COLUMNNAME_Processed));
-		}
 	}
 }

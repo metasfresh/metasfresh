@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -18,7 +19,6 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
@@ -157,7 +157,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 		}
 		// APP
-		else if (DocBaseType.APPayment.equals(docBaseType))
+		else if (DocBaseType.PurchasePayment.equals(docBaseType))
 		{
 			// Prepayment/PaymentSelect (DR)
 			final Account acct;

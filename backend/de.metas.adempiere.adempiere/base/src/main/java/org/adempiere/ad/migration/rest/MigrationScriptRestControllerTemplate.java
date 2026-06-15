@@ -50,6 +50,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class MigrationScriptRestControllerTemplate
 {
@@ -101,6 +102,7 @@ public abstract class MigrationScriptRestControllerTemplate
 				.build();
 	}
 
+	@Nullable
 	private static String toString(@Nullable final Path path)
 	{
 		if (path == null)
@@ -138,17 +140,17 @@ public abstract class MigrationScriptRestControllerTemplate
 	private List<String> getMigrationScriptFileNames()
 	{
 		final Path migrationScriptDirectory = getMigrationScriptsDirectoryPath();
-		try
+		try (final Stream<Path> paths = Files.list(migrationScriptDirectory))
 		{
-			return Files.list(migrationScriptDirectory)
+			return paths
 					.map(Path::toFile)
 					.map(File::getName)
 					.filter(filename -> filename.toLowerCase().endsWith(".sql"))
 					.collect(ImmutableList.toImmutableList());
 		}
-		catch (final IOException e)
+		catch (final IOException ex)
 		{
-			throw new AdempiereException("Failed fetching migration scripts from " + migrationScriptDirectory);
+			throw new AdempiereException("Failed fetching migration scripts from " + migrationScriptDirectory, ex);
 		}
 	}
 
@@ -279,7 +281,7 @@ public abstract class MigrationScriptRestControllerTemplate
 						{
 							out.write(bytes);
 						}
-						catch (IOException ex)
+						catch (final IOException ex)
 						{
 							// shall never happen
 							throw AdempiereException.wrapIfNeeded(ex);

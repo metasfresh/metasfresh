@@ -26,14 +26,15 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
+import de.metas.contracts.modular.workpackage.impl.AbstractContractLog;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Getter
 @Component
-class InterimContractLog extends AbstractPurchaseContractHandler
+class InterimContractLog extends AbstractContractLog
 {
 	@NonNull private final InterimComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.CONTRACT_PREFINANCING;
@@ -42,9 +43,10 @@ class InterimContractLog extends AbstractPurchaseContractHandler
 	public InterimContractLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractLogRepository contractLogRepo,
 			@NonNull final InterimComputingMethod computingMethod)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository);
+		super(modularContractService, modCntrInvoicingGroupRepository, contractLogRepo);
 		this.computingMethod = computingMethod;
 	}
 }

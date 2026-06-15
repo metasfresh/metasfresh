@@ -61,27 +61,35 @@ FROM de_metas_acct.report_taxaccounts(p_AD_Org_ID =>  $P{AD_Org_ID},
   ORDER BY vatcode;]]>
 	</queryString>
 	<field name="taxamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="taxamt_sum"/>
 		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum"/>
 	</field>
 	<field name="taxamt_sum_prevyear" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="taxamt_sum_prevyear"/>
 		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum_prevyear"/>
 	</field>
 	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currency"/>
 		<property name="com.jaspersoft.studio.field.label" value="currency"/>
 	</field>
 	<field name="source_currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="source_currency"/>
 		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
 	</field>
 	<field name="totalamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="totalamt_sum"/>
 		<property name="com.jaspersoft.studio.field.label" value="totalamt_sum"/>
 	</field>
 	<field name="netamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="netamt_sum"/>
 		<property name="com.jaspersoft.studio.field.label" value="netamt_sum"/>
 	</field>
 	<field name="taxname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxname"/>
 		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
 	</field>
 	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="vatcode"/>
 		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
 	</field>
 	<background>

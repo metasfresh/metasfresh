@@ -103,7 +103,6 @@ public class CallOrderSummaryRepo
 		record.setQtyDeliveredInUOM(callOrderSummaryData.getQtyDelivered());
 		record.setQtyInvoicedInUOM(callOrderSummaryData.getQtyInvoiced());
 
-		record.setPOReference(callOrderSummaryData.getPoReference());
 		record.setIsSOTrx(callOrderSummaryData.getSoTrx().toBoolean());
 
 		if (callOrderSummaryData.getAttributeSetInstanceId() != null)
@@ -134,7 +133,6 @@ public class CallOrderSummaryRepo
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(record.getM_AttributeSetInstance_ID()))
 				.qtyDelivered(record.getQtyDeliveredInUOM())
 				.qtyInvoiced(record.getQtyInvoicedInUOM())
-				.poReference(record.getPOReference())
 				.isActive(record.isActive())
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.build();

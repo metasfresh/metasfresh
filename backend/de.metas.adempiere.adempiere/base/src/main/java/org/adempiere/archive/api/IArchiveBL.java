@@ -23,6 +23,7 @@ package org.adempiere.archive.api;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -34,6 +35,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.springframework.core.io.Resource;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -74,9 +76,8 @@ public interface IArchiveBL extends ISingletonService
 
 	I_AD_Archive getRecordById(@NonNull ArchiveId archiveId);
 
-	// Discard this change when merging back to intensive_care_uat
-	// @Nullable
-	// DocTypeId getOverrideDocTypeId(@NonNull ArchiveId archiveId);
+	@Nullable
+	DocTypeId getOverrideDocTypeId(@NonNull ArchiveId archiveId);
 
 	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 }

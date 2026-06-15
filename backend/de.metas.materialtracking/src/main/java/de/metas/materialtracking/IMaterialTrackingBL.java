@@ -3,14 +3,15 @@ package de.metas.materialtracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.util.ISingletonService;
+import org.compiere.model.X_C_DocType;
 
 public interface IMaterialTrackingBL extends ISingletonService
 {
-	String C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment = "DP";
+	String C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment = X_C_DocType.DOCSUBTYPE_DownPayment;
 
-	String C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement = "QI";
+	String C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement = X_C_DocType.DOCSUBTYPE_QualityInspection;
 
-	String C_DocType_PPORDER_DOCSUBTYPE_QualityInspection = "QI";
+	String C_DocType_PPORDER_DOCSUBTYPE_QualityInspection = X_C_DocType.DOCSUBTYPE_QualityInspection;
 
 	/**
 	 * @return true if material tracking module is enabled

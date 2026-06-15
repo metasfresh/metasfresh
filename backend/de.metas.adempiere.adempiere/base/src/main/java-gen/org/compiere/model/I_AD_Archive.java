@@ -440,6 +440,17 @@ public interface I_AD_Archive
 	ModelColumn<I_AD_Archive, Object> COLUMN_IsDirectProcessQueueItem = new ModelColumn<>(I_AD_Archive.class, "IsDirectProcessQueueItem", null);
 	String COLUMNNAME_IsDirectProcessQueueItem = "IsDirectProcessQueueItem";
 
+
+	void setIsMainArchive(boolean IsMainArchive);
+
+	boolean isMainArchive();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_IsMainArchive = new ModelColumn<>(I_AD_Archive.class, "IsMainArchive", null);
+	String COLUMNNAME_IsMainArchive = "IsMainArchive";
+
+
+
+
 	/**
 	 * Set IsFileSystem.
 	 *
@@ -504,6 +515,26 @@ public interface I_AD_Archive
 
 	ModelColumn<I_AD_Archive, Object> COLUMN_Name = new ModelColumn<>(I_AD_Archive.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Override Doc TYpe.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOverride_DocType_ID (int Override_DocType_ID);
+
+	/**
+	 * Get Override Doc TYpe.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOverride_DocType_ID();
+
+	String COLUMNNAME_Override_DocType_ID = "Override_DocType_ID";
 
 	/**
 	 * Set Record ID.

@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -41,6 +42,7 @@ import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -74,7 +76,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -139,6 +140,7 @@ public class InterimInvoiceCandidateService
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getC_Harvesting_Calendar_ID());
 
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
+		final ModularContractSettingsId modularContractSettingsId= modularContractService.getModularSettingsForContract(flatrateTermId).getId();
 
 		final InvoiceCandidateUpsertRequest.InvoiceCandidateUpsertRequestBuilder newInvoiceCandidateTemplate = InvoiceCandidateUpsertRequest.builder()
 				.invoiceCandidateId(interimLogsToInvoice.getSingleInvoiceCandidateIdOrNull())
@@ -147,6 +149,7 @@ public class InterimInvoiceCandidateService
 				.invoiceDocTypeId(getInterimInvoiceDocType(ClientId.ofRepoId(flatrateTermRecord.getAD_Client_ID())))
 				.invoiceRule(InvoiceRule.Immediate)
 				.harvestYearAndCalendarId(yearAndCalendarId)
+				.modularContractSettingsId(modularContractSettingsId)
 				.productId(productId)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()
@@ -213,8 +216,8 @@ public class InterimInvoiceCandidateService
 		{
 			interimInvoiceDocType = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 					.adClientId(clientId.getRepoId())
-					.docBaseType(DocBaseType.APInvoice)
-					.docSubType(X_C_DocType.DOCSUBTYPE_DownPayment)
+					.docBaseType(DocBaseType.PurchaseInvoice)
+					.docSubType(DocSubType.DownPayment)
 					.build());
 		}
 		return interimInvoiceDocType;

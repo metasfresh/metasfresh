@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
 import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
@@ -87,8 +88,6 @@ import static de.metas.document.DocBaseType.MaterialPhysicalInventory;
 import static de.metas.inventory.AggregationType.SINGLE_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_InventoryOverageDocument;
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_InventoryShortageDocument;
 
 /**
  * Creates an inventory document for the given M_Delivery_Planning that corrects the respective quantities *after* they were received.
@@ -173,12 +172,12 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		if (p_Qty.signum() > 0)
 		{
 			adMessageKey = MSG_Event_OverageGenerated;
-			docTypeQuery.docSubType(DOCSUBTYPE_InventoryOverageDocument);
+			docTypeQuery.docSubType(DocSubType.InventoryOverageDocument);
 		}
 		else if (p_Qty.signum() < 0)
 		{
 			adMessageKey = MSG_Event_ShortageGenerated;
-			docTypeQuery.docSubType(DOCSUBTYPE_InventoryShortageDocument);
+			docTypeQuery.docSubType(DocSubType.InventoryShortageDocument);
 		}
 		else
 		{

@@ -373,7 +373,7 @@ public class ESRImportBL implements IESRImportBL
 		// task 05917: check if the the payment date from the ESR file is OK for us
 		try
 		{
-			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.APPayment, importLine.getAD_Org_ID());
+			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.PurchasePayment, importLine.getAD_Org_ID());
 		}
 		catch (final PeriodClosedException p)
 		{

@@ -132,6 +132,7 @@ public class MOrder extends X_C_Order implements IDocument
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -228,7 +229,7 @@ public class MOrder extends X_C_Order implements IDocument
 		setIsSOTrx(IsSOTrx);
 		if (IsSOTrx)
 		{
-			if (DocSubType == null || DocSubType.length() == 0)
+			if (DocSubType == null || DocSubType.isEmpty())
 			{
 				orderBL.setSODocTypeTargetId(this, DocSubType_OnCredit);
 			}
@@ -1245,7 +1246,7 @@ public class MOrder extends X_C_Order implements IDocument
 			else
 			// convert only if offer
 			{
-				if (Services.get(IDocTypeBL.class).isSalesProposalOrQuotation(dt))
+				if (docTypeBL.isSalesProposalOrQuotation(dt))
 				{
 					setC_DocType_ID(getC_DocTypeTarget_ID());
 				}
@@ -1356,6 +1357,8 @@ public class MOrder extends X_C_Order implements IDocument
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
+		final boolean isProForma = docTypeBL.isProformaSO(DocTypeId.ofRepoId(docTypeId));
+
 		// Always check and (un) Reserve Inventory
 		for (final MOrderLine line : lines)
 		{
@@ -1398,7 +1401,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 			// Check Product - Stocked and Item
 			final MProduct product = line.getProduct();
-			if (product != null)
+			if (product != null && !isProForma)
 			{
 				if (Services.get(IProductBL.class).isStocked(product))
 				{

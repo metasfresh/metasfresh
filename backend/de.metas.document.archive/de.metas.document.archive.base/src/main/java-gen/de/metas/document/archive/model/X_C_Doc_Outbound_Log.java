@@ -34,6 +34,23 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+
+	@Override
+	public void setAD_Archive_ID (final int AD_Archive_ID)
+	{
+		if (AD_Archive_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, AD_Archive_ID);
+	}
+
+	@Override
+	public int getAD_Archive_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Archive_ID);
+	}
+
+
 	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{

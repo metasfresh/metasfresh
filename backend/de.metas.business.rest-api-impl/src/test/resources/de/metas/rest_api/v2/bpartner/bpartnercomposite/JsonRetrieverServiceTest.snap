@@ -53,6 +53,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       "customerPaymentTermId": 1000000,
       "deliveryRule": "AVAILABILITY",
       "deliveryViaRule": "Shipper",
+      "discountPrinted": false,
       "excludeFromPromotions": false,
       "groupId": 15,
       "id": 20,

@@ -221,6 +221,8 @@ class ShippingNotificationLoaderAndSaver
 				.contactId(BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getAD_User_ID()))
 				.auctionId(record.getC_Auction_ID())
 				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
+				.shipFromBPartnerAndLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getShipFrom_Partner_ID(), record.getShipFrom_Location_ID()))
+				.shipFromContactId(BPartnerContactId.ofRepoIdOrNull(record.getShipFrom_Partner_ID(), record.getShipFrom_User_ID()))
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.physicalClearanceDate(record.getPhysicalClearanceDate().toInstant())
@@ -245,7 +247,7 @@ class ShippingNotificationLoaderAndSaver
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.qty(Quantitys.of(record.getMovementQty(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.line(SeqNo.ofInt(record.getLine()))
 				.reversalLineId(ShippingNotificationLineId.ofRepoIdOrNull(record.getReversal_ID()))
@@ -303,6 +305,9 @@ class ShippingNotificationLoaderAndSaver
 		record.setC_Auction_ID(from.getAuctionId());
 		record.setM_Warehouse_ID(from.getLocatorId().getWarehouseId().getRepoId());
 		record.setM_Locator_ID(from.getLocatorId().getRepoId());
+		record.setShipFrom_Partner_ID(from.getShipFromBPartnerAndLocationId().getBpartnerId().getRepoId());
+		record.setShipFrom_User_ID(from.getShipFromContactId() != null ? from.getShipFromContactId().getRepoId() : -1);
+		record.setShipFrom_Location_ID(from.getShipFromBPartnerAndLocationId() != null ? from.getShipFromBPartnerAndLocationId().getRepoId() : -1);
 		record.setC_Order_ID(from.getSalesOrderId().getRepoId());
 		record.setDateAcct(Timestamp.from(from.getDateAcct()));
 		record.setPhysicalClearanceDate(Timestamp.from(from.getPhysicalClearanceDate()));
@@ -315,7 +320,6 @@ class ShippingNotificationLoaderAndSaver
 		record.setDocAction(from.getDocAction());
 		record.setProcessed(from.isProcessed());
 		record.setReversal_ID(ShippingNotificationId.toRepoId(from.getReversalId()));
-		record.setBPartnerAddress(from.getBpaddress());
 	}
 
 	private static void updateRecord(
@@ -333,7 +337,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setM_AttributeSetInstance_ID(fromLine.getAsiId().getRepoId());
 		record.setMovementQty(fromLine.getQty().toBigDecimal());
 		record.setC_UOM_ID(fromLine.getQty().getUomId().getRepoId());
-		record.setM_ShipmentSchedule_ID(fromLine.getShipmentScheduleId().getRepoId());
+		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(fromLine.getShipmentScheduleId()));
 		record.setC_Order_ID(fromLine.getSalesOrderAndLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(fromLine.getSalesOrderAndLineId().getOrderLineRepoId());
 	}

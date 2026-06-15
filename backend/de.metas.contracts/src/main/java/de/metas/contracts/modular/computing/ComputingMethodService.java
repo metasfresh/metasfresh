@@ -25,15 +25,24 @@ package de.metas.contracts.modular.computing;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
@@ -44,21 +53,23 @@ import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.RECREATE_LOGS;
@@ -68,30 +79,27 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVAT
 @RequiredArgsConstructor
 public class ComputingMethodService
 {
-	private static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
 	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
-	@NonNull private final ModularContractLogService contractLogService;
+
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull private final ModularContractSettingsService modularContractSettingsService;
+
+	public static ComputingMethodService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ComputingMethodService(ModularContractLogService.newInstanceForJUnitTesting(),
+										  ModularContractSettingsService.newInstanceForJUnitTesting());
+	}
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
-		if (action.equals(RECREATE_LOGS))
-		{
-			if (recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name))
-			{
-				final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID())).getPP_Order_ID());
-				final TableRecordReference ppOrderRef = TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId);
-				contractLogService.throwErrorIfProcessedLogsExistForRecord(ppOrderRef, MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			}
-			else
-			{
-				contractLogService.throwErrorIfProcessedLogsExistForRecord(recordRef, MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			}
-		}
-		else if (!action.equals(COMPLETED))
+		if (!(action.equals(COMPLETED) || action.equals(RECREATE_LOGS)))
 		{
 			contractLogService.throwErrorIfProcessedLogsExistForRecord(recordRef, MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS);
 		}
@@ -119,12 +127,20 @@ public class ComputingMethodService
 			{
 				switch (action)
 				{
-					case COMPLETED, RECREATE_LOGS -> {}
-					case REACTIVATED, REVERSED, VOIDED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+					case COMPLETED, RECREATE_LOGS, VOIDED -> {}
+					case REACTIVATED, REVERSED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_C_Flatrate_Term.Table_Name, I_PP_Cost_Collector.Table_Name ->
+			case I_C_Flatrate_Term.Table_Name ->
+			{
+				switch (action)
+				{
+					case COMPLETED, VOIDED, RECREATE_LOGS -> {}
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				}
+			}
+			case I_PP_Cost_Collector.Table_Name ->
 			{
 				switch (action)
 				{
@@ -214,10 +230,65 @@ public class ComputingMethodService
 	}
 
 	@NonNull
+	public ComputingResponse toZeroResponseWithLogs(final @NotNull ComputingRequest request, final @NonNull ModularContractLogEntriesList logs)
+	{
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		return ComputingResponse.builder()
+				.ids(logs.getIds())
+				.price(ProductPrice.builder()
+						.productId(request.getProductId())
+						.money(Money.zero(request.getCurrencyId()))
+						.uomId(stockUOMId)
+						.build())
+				.qty(Quantitys.zero(stockUOMId))
+				.build();
+	}
+
+	@NonNull
 	public ProductPrice productPriceToUOM(@NonNull final ProductPrice priceWithPriceUOM, @NonNull final UomId stockUOMId)
 	{
 		// use 12 digit precision, because it will be rounded on IC creation according to priceList precision
 		final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
 		return priceWithPriceUOM.convertToUom(stockUOMId, precision, uomConversionBL);
+	}
+
+	public boolean isFinalInvoiceLineForComputingMethod(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final ComputingMethodType computingMethodType)
+	{
+		return isFinalInvoiceLineForComputingMethod(invoiceLineId, ImmutableSet.of(computingMethodType));
+	}
+
+	public boolean isFinalInvoiceLineForComputingMethod(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final Collection<ComputingMethodType> computingMethodTypes)
+	{
+		return isFinalInvoiceLineForComputingMethod(invoiceLineId, computingMethodTypes, null);
+	}
+
+	public boolean isFinalInvoiceLineForComputingMethod(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final Collection<ComputingMethodType> computingMethodTypes,
+			@Nullable final ColumnOption columnOption)
+	{
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(invoiceLineId);
+		if(!invoiceBL.isFinalInvoiceOrFinalCreditMemo(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID())))
+		{
+			return false;
+		}
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord, false);
+
+		if (invoiceCandidates.isEmpty())
+		{
+			return false;
+		}
+
+		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoIdOrNull(CollectionUtils.extractSingleElement(invoiceCandidates, I_C_Invoice_Candidate::getModCntr_Module_ID));
+		if(modularContractModuleId == null)
+		{
+			return false;
+		}
+		final ModuleConfig moduleConfig = modularContractSettingsService.getByModuleId(modularContractModuleId);
+		return moduleConfig.isMatchingAnyOf(computingMethodTypes) && (columnOption == null || moduleConfig.isMatching(columnOption));
 	}
 }

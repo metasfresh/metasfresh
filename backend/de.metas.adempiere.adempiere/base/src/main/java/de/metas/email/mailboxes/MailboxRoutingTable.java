@@ -1,17 +1,17 @@
 package de.metas.email.mailboxes;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Comparator.naturalOrder;
@@ -25,7 +25,7 @@ class MailboxRoutingTable
 			.thenComparing(MailboxRouting::getEmailCustomType, nullsLast(naturalOrder()))
 			.thenComparing(MailboxRouting::getAdProcessId, nullsLast(naturalOrder()))
 			.thenComparing(MailboxRouting::getDocBaseType, nullsLast(naturalOrder()))
-			.thenComparing(MailboxRouting::getDocSubType, nullsLast(naturalOrder()));
+			.thenComparing(MailboxRouting::getDocSubType, reverseOrder());
 	private static final MailboxRoutingTable EMPTY = new MailboxRoutingTable(ImmutableList.of());
 
 	private final ImmutableList<MailboxRouting> listOrdered;
@@ -49,7 +49,8 @@ class MailboxRoutingTable
 				.findFirst();
 	}
 
-	private static boolean isMatching(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
+	@VisibleForTesting
+	public static boolean isMatching(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
 		return ClientId.equals(routing.getClientId(), query.getClientId())
 				&& isMatching_OrgId(routing, query)
@@ -82,13 +83,7 @@ class MailboxRoutingTable
 
 	private static boolean isMatching_DocSubType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final String routingDocSubType = routing.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(routing.getDocBaseAndSubType().getDocSubType()) : null;
-		if (routingDocSubType == null)
-		{
-			return true;
-		}
-
-		final String queryDocSubType = query.getDocBaseAndSubType() != null ? StringUtils.trimBlankToNull(query.getDocBaseAndSubType().getDocSubType()) : null;
-		return Objects.equals(routingDocSubType, queryDocSubType);
+		final DocSubType routingDocSubType = routing.getDocSubType();
+		return routingDocSubType == null || routingDocSubType.isAny() || DocSubType.equals(routingDocSubType, query.getDocSubType());
 	}
 }

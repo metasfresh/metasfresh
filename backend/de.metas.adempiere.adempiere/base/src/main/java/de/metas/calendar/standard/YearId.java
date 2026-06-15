@@ -30,6 +30,7 @@ import de.metas.util.lang.RepoIdAwares;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @RepoIdAwares.SkipTest
@@ -67,4 +68,7 @@ public class YearId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static boolean equals(@Nullable final YearId id1, @Nullable final YearId id2) {return Objects.equals(id1, id2);}
+
 }
