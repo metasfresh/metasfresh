@@ -307,7 +307,8 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceOrderAdviceTest.build_order_
     "options": {
       "Labels": "PDF",
       "Submit": 1,
-      "TrackingURL": 1
+      "TrackingURL": 1,
+      "Visibility": "extended"
     }
   }
 ]

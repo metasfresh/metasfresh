@@ -136,6 +136,8 @@ public class NShiftShipmentService
 				.useShippingRules(baseOptions.getUseShippingRules())
 				.serviceLevel(baseOptions.getServiceLevel())
 				.submit(true)
+				// OrderAdvice returns product/carrier (+ goods type) detail only with Visibility=extended — same as the advise (Submit=0) path
+				.visibility(NShiftConstants.VISIBILITY_EXTENDED)
 				.build();
 		return JsonShipmentRequest.builder()
 				.data(baseRequest.getData())

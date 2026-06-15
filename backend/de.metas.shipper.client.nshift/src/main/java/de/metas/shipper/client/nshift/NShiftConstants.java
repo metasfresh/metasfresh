@@ -48,4 +48,8 @@ public class NShiftConstants
 	/** Used by both {@link de.metas.shipper.client.nshift.NShiftOrderAdvisorService} (advise, Submit=0)
 	 * and {@link de.metas.shipper.client.nshift.NShiftShipmentService} (book, Submit=1). */
 	public static final String ORDER_ADVICE_ENDPOINT = "/ShipServer/{ID}/OrderAdvice";
+
+	/** OrderAdvice option Visibility="extended": nShift returns product + carrier (+ goods type) detail in the
+	 * response. Required on both the advise (Submit=0) and the booking (Submit=1) OrderAdvice calls. */
+	public static final String VISIBILITY_EXTENDED = "extended";
 }

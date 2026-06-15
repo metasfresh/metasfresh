@@ -89,7 +89,7 @@ public class NShiftOrderAdvisorService
 				.serviceLevel(useSelectionRules ? null : deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
 				.useShippingRules(useSelectionRules)
 				.submit(false) // advise only: do not book the shipment (serialized as 0)
-				.visibility("extended")
+				.visibility(NShiftConstants.VISIBILITY_EXTENDED)
 				.build();
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
