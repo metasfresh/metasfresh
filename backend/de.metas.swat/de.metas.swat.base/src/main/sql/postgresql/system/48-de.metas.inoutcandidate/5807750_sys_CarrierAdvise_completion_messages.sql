@@ -10,15 +10,15 @@
 --   AD_Message 545756 (CarrierAdvise_MultipleShippersOnHU)
 
 -- Message 1: Manual advise is inconsistent (mixed manual/automatic or different product/goods-type/service)
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value) VALUES (0,545754,0,TO_TIMESTAMP('2026-06-15 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking','Y','HU {0}: manuelle Lieferweg-Abfrage ist uneinheitlich (gemischt manuell/automatisch oder unterschiedliches Produkt/Warenart/Service). Bitte die manuelle Carrier-Konfiguration korrigieren.','E','CARRIER_ADVISE_MANUAL_INCONSISTENT_ON_HU',TO_TIMESTAMP('2026-06-15 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise_ManualInconsistentOnHU')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value) VALUES (0,545754 /*From ID Server*/,0,TO_TIMESTAMP('2026-06-15 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking','Y','HU {0}: manuelle Lieferweg-Abfrage ist uneinheitlich (gemischt manuell/automatisch oder unterschiedliches Produkt/Warenart/Service). Bitte die manuelle Carrier-Konfiguration korrigieren.','E','CARRIER_ADVISE_MANUAL_INCONSISTENT_ON_HU',TO_TIMESTAMP('2026-06-15 00:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise_ManualInconsistentOnHU')
 ;
 
 -- Message 2: Non-manual advise has divergent carrier products on one HU
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value) VALUES (0,545755,0,TO_TIMESTAMP('2026-06-15 00:00:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking','Y','HU {0}: unterschiedliche Lieferweg-Produkte auf einer HU. Bitte erneut abfragen (Re-Advise), um zu vereinheitlichen.','E','CARRIER_ADVISE_NONMANUAL_DIVERGENT_ON_HU',TO_TIMESTAMP('2026-06-15 00:00:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise_NonManualDivergentOnHU')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value) VALUES (0,545755 /*From ID Server*/,0,TO_TIMESTAMP('2026-06-15 00:00:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking','Y','HU {0}: unterschiedliche Lieferweg-Produkte auf einer HU. Bitte erneut abfragen (Re-Advise), um zu vereinheitlichen.','E','CARRIER_ADVISE_NONMANUAL_DIVERGENT_ON_HU',TO_TIMESTAMP('2026-06-15 00:00:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise_NonManualDivergentOnHU')
 ;
 
 -- Message 3: Multiple shippers on one HU
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value) VALUES (0,545756,0,TO_TIMESTAMP('2026-06-15 00:00:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking','Y','HU {0}: mehrere Spediteure auf einer HU.','E','CARRIER_ADVISE_MULTIPLE_SHIPPERS_ON_HU',TO_TIMESTAMP('2026-06-15 00:00:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise_MultipleShippersOnHU')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value) VALUES (0,545756 /*From ID Server*/,0,TO_TIMESTAMP('2026-06-15 00:00:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking','Y','HU {0}: mehrere Spediteure auf einer HU.','E','CARRIER_ADVISE_MULTIPLE_SHIPPERS_ON_HU',TO_TIMESTAMP('2026-06-15 00:00:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise_MultipleShippersOnHU')
 ;
 
 -- Create skeleton AD_Message_Trl rows for all active system languages

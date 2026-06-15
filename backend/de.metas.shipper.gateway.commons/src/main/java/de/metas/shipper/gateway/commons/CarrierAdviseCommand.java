@@ -251,8 +251,8 @@ public class CarrierAdviseCommand
 				.build());
 
 		builder.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
-				.pickupTimeFrom(shipper.getPickupTimeFrom().toString())
-				.pickupTimeTo(shipper.getPickupTimeTo().toString())
+				.pickupTimeFrom(shipper.getPickupTimeFrom() != null ? shipper.getPickupTimeFrom().toString() : null)
+				.pickupTimeTo(shipper.getPickupTimeTo() != null ? shipper.getPickupTimeTo().toString() : null)
 				.pickupAddress(getJsonAddress(pickupFromBPartner, pickupFromBPLocation))
 				.pickupContact(getJsonContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.deliveryAddress(getJsonAddress(deliverToBPartner, deliverToBPLocation))

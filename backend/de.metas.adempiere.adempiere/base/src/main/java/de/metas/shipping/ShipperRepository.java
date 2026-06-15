@@ -40,7 +40,7 @@ import java.util.Set;
 
 /**
  * Repository Tables: M_Shipper
- * Repository Cluster: ShipperRepository
+ * Repository Cluster: ShipperRepository, ShipperConfigRepository
  */
 @Repository
 public class ShipperRepository
