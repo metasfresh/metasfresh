@@ -51,6 +51,8 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
@@ -231,6 +233,22 @@ public class NShiftShipmentServiceTest
 	{
 		final JsonShipmentRequest request = NShiftShipmentService.buildShipmentRequest(DELIVERY_REQUEST);
 		expect.serializer("orderedJson").toMatchSnapshot(request);
+	}
+
+	@Test
+	void buildShipmentRequest_withShippingRules_omitsProductGoodsTypeAndServices()
+	{
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig().withAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES, "true"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertTrue(shipmentRequest.getOptions().getUseShippingRules(), "UseShippingRules must be on");
+		// with rules active nShift resolves product/goods type/services, so we don't pre-send a resolved product
+		assertTrue(shipmentRequest.getData().getProdConceptID() == 0, "ProdConceptID must stay 0 (no resolved product) when rules resolve it");
+		assertTrue(shipmentRequest.getData().getServices().isEmpty(), "Services must not be pre-sent when rules resolve them");
+		assertNull(shipmentRequest.getData().getLines().get(0).getGoodsTypeID(), "Line GoodsTypeID must be omitted when rules resolve it");
 	}
 
 }

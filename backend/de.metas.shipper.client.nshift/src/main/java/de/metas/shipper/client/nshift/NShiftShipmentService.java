@@ -163,15 +163,20 @@ public class NShiftShipmentService
 
 		final String actorId = config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID);
 
-		final int prodConceptId = Integer.parseInt(deliveryRequest.getShipperProduct().getCode());
+		final boolean useRules = Boolean.TRUE.equals(useShippingRules);
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
 				.orderNo(String.valueOf(deliveryRequest.getDeliveryOrderId()))
-				.prodConceptID(prodConceptId)
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
-		deliveryRequest.getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
+		// With shipping rules active (non-manual) nShift re-resolves product / goods type / services from the rules,
+		// so they must NOT be pre-sent on the request; only send them when rules are off (manual / fixed product).
+		if (!useRules)
+		{
+			dataBuilder.prodConceptID(Integer.parseInt(deliveryRequest.getShipperProduct().getCode()));
+			deliveryRequest.getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
+		}
 
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
@@ -191,7 +196,7 @@ public class NShiftShipmentService
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())
 		{
-			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs));
+			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs, useRules));
 			allDetailGroups.addAll(buildLineLevelDetailGroups(deliveryLine, lineNoCounter, mappingConfigs, deliveryRequest));
 			lineNoCounter++;
 		}
@@ -239,7 +244,8 @@ public class NShiftShipmentService
 
 	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine,
 											@NonNull final JsonDeliveryRequest deliveryRequest,
-											@NonNull final NShiftMappingConfigs mappingConfigs
+											@NonNull final NShiftMappingConfigs mappingConfigs,
+											final boolean useShippingRules
 	)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
@@ -248,23 +254,28 @@ public class NShiftShipmentService
 		final int widthMM = deliveryLine.getPackageDimensions().getWidthInCM() * 10;
 		final int heightMM = deliveryLine.getPackageDimensions().getHeightInCM() * 10;
 
-		final JsonGoodsType goodsType = Check.assumeNotNull(deliveryRequest.getGoodsType(), "No Goods Type found for %s", deliveryRequest);
-
 		final Function<String, Optional<String>> valueProvider =
 				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 		final Function<String, String> finalValueProvider = attributeValue -> valueProvider.apply(attributeValue).orElse(null);
 
-		return JsonLine.builder()
+		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
 				.number(1)
 				.pkgWeight(weightGrams)
 				.lineWeight(weightGrams)
 				.length(lengthMM)
 				.width(widthMM)
 				.height(heightMM)
-				.goodsTypeID(Long.valueOf(goodsType.getId()).intValue())
-				.goodsTypeName(goodsType.getName())
-				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, finalValueProvider))
-				.build();
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, finalValueProvider));
+
+		// Goods type is part of the product resolution — with rules active nShift resolves it, so don't pre-send it.
+		if (!useShippingRules)
+		{
+			final JsonGoodsType goodsType = Check.assumeNotNull(deliveryRequest.getGoodsType(), "No Goods Type found for %s", deliveryRequest);
+			lineBuilder.goodsTypeID(Long.valueOf(goodsType.getId()).intValue())
+					.goodsTypeName(goodsType.getName());
+		}
+
+		return lineBuilder.build();
 	}
 
 	private static List<JsonDetailGroup> buildLineLevelDetailGroups(
