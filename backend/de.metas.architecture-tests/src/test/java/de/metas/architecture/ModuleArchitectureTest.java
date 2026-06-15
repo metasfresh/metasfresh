@@ -4,6 +4,9 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 /**
  * Central application of the shared {@link MetasfreshArchRules} to the metasfresh backend, <b>keyed per module</b>.
  * <p>
@@ -27,6 +30,17 @@ public class ModuleArchitectureTest
 	@BeforeAll
 	static void importWholeBackendClasses()
 	{
+		// Guard: with freeze.store.default.allowStoreCreation=true (needed so a not-yet-baselined module
+		// auto-records instead of red-failing), a MISSING committed store would also silently re-record itself
+		// and pass green — dropping ALL enforcement unnoticed. Fail loudly if the whole baseline was not checked
+		// out / was deleted. A genuinely new module still auto-records: the store dir is present, it just lacks
+		// that one key. (archunit_store is the default freeze.store path, resolved relative to the module dir.)
+		if (!Files.exists(Paths.get("archunit_store", "stored.rules")))
+		{
+			throw new IllegalStateException("archunit_store/stored.rules is missing — the committed freeze baseline "
+					+ "was not checked out or was deleted; refusing to silently re-create it (that would mask all enforcement)");
+		}
+
 		wholeBackendClasses = MetasfreshArchRules.importWholeBackend();
 	}
 
