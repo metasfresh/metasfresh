@@ -52,9 +52,9 @@ class DistributionJobQueriesTest
 	}
 
 	@Test
-	void toActiveNotAssignedDDOrderQuery_packingPlaceWorkplace_excludeLocatorToIdsSet()
+	void toActiveNotAssignedDDOrderQuery_replenishmentWorkplace_excludeLocatorToIdsSet()
 	{
-		// Given: packing-place workplace — locatorToId absent, excludeLocatorToIds populated
+		// Given: replenishment (non-packing, IsPackingPlace=N) workplace — locatorToId absent, excludeLocatorToIds populated
 		final ImmutableSet<LocatorId> packingLocators = ImmutableSet.of(L1, L2);
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
 				.responsibleId(UserId.ofRepoId(999))
