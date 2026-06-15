@@ -586,7 +586,6 @@ class DocumentListContainer extends Component {
             });
           }
 
-          // Restore cached row selection (e.g. after browser-back from detail view)
           this.restoreCachedSelection(id);
         }
 

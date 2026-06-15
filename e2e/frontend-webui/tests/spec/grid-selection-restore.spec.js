@@ -20,8 +20,6 @@ import {
  * Fix: The selected row ID is now cached in Redux (listHandler) alongside
  * pagination/sorting/viewId when navigating to a detail view, and restored
  * when the grid view reloads after browser-back.
- *
- * me03#28448
  */
 test.describe('Grid Selection Restore on Browser Back', () => {
   // Login before each test
@@ -59,103 +57,85 @@ test.describe('Grid Selection Restore on Browser Back', () => {
   test('Row selection is preserved after browser back from detail view', async ({
     page,
   }) => {
+    // Grid data rows render as plain <tr> in a standard HTML <table>
+    // (see e2e/frontend-webui/CLAUDE.md "Grid Row Selector"). The selected
+    // row carries the `row-selected` class. Rows have no `data-row-id`
+    // attribute, so row identity is tracked by the row's visible text.
+    const gridRows = page.locator('.table-flex-wrapper table tbody tr');
+
     // Step 1: Navigate to a window with multiple rows (Organisation, AD_Window_ID=110)
     await test.step('Navigate to grid view', async () => {
       await page.goto(`${FRONTEND_BASE_URL}/window/110`);
       await page.waitForURL(/\/window\/110/, { timeout: SLOW_ACTION_TIMEOUT });
-      // Wait for the grid table to load
-      await page
-        .locator('.table-flex-wrapper .table-flex-wrapper-row')
+      await gridRows
         .first()
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
 
     // Step 2: Click on a non-first row to select it
-    let selectedRowId;
+    let selectedRowText;
+    let firstRowText;
     await test.step('Select a non-first row', async () => {
-      // Get all grid rows
-      const rows = page.locator(
-        '.table-flex-wrapper .table-flex-wrapper-row'
-      );
-      const rowCount = await rows.count();
+      const rowCount = await gridRows.count();
       expect(rowCount).toBeGreaterThan(1);
 
-      // Click the second row (index 1)
-      const secondRow = rows.nth(1);
+      firstRowText = (await gridRows.first().innerText()).trim();
+
+      // Click the <tr> of the second row (index 1) to select it. Clicking a
+      // <td> would enter cell edit mode instead (CLAUDE.md "Click <tr>, Not <td>").
+      const secondRow = gridRows.nth(1);
+      selectedRowText = (await secondRow.innerText()).trim();
       await secondRow.click();
 
-      // Wait briefly for selection to register in Redux
-      await page.waitForTimeout(300);
-
-      // Verify the second row is selected (has 'row-selected' class)
+      // Auto-waits for Redux to register the selection — no fixed delay needed.
       await expect(secondRow).toHaveClass(/row-selected/, {
-        timeout: FAST_ACTION_TIMEOUT,
+        timeout: SLOW_ACTION_TIMEOUT,
       });
-
-      // Capture the row ID for later verification
-      selectedRowId = await secondRow.getAttribute('data-row-id');
-      console.log(`Selected row ID: ${selectedRowId}`);
+      expect(selectedRowText).not.toBe(firstRowText);
+      console.log(`[INFO] Selected non-first row: ${selectedRowText}`);
     });
 
     // Step 3: Press Enter to open detail view
     await test.step('Press Enter to open detail view', async () => {
       await page.keyboard.press('Enter');
-
-      // Wait for navigation to detail view URL pattern: /window/110/{docId}
       await page.waitForURL(/\/window\/110\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      console.log(`Navigated to detail view: ${page.url()}`);
+      console.log(`[INFO] Navigated to detail view: ${page.url()}`);
     });
 
     // Step 4: Press browser Back
     await test.step('Press browser Back button', async () => {
       await page.goBack();
-
-      // Wait for grid view to reload
-      await page.waitForURL(/\/window\/110\?/, {
+      // Back to the grid URL (not the /window/110/<docId> detail URL).
+      await page.waitForURL(/\/window\/110(?:\?.*)?$/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      await page
-        .locator('.table-flex-wrapper .table-flex-wrapper-row')
+      await gridRows
         .first()
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Give Redux time to restore selection
-      await page.waitForTimeout(500);
     });
 
-    // Step 5: Verify the previously selected row is re-selected
+    // Step 5: Verify the previously selected row is re-selected (not the first row)
     await test.step(
       'Verify previously selected row is re-selected',
       async () => {
-        // Find the row with the previously selected ID
+        // Auto-waits for the restore to apply; exactly one row stays selected.
         const restoredRow = page.locator(
-          `.table-flex-wrapper .table-flex-wrapper-row[data-row-id="${selectedRowId}"]`
+          '.table-flex-wrapper table tbody tr.row-selected'
         );
-
-        // Verify it exists and is selected
-        await expect(restoredRow).toBeVisible({
-          timeout: FAST_ACTION_TIMEOUT,
-        });
-        await expect(restoredRow).toHaveClass(/row-selected/, {
-          timeout: FAST_ACTION_TIMEOUT,
+        await expect(restoredRow).toHaveCount(1, {
+          timeout: SLOW_ACTION_TIMEOUT,
         });
 
-        // Also verify the first row is NOT selected (unless it's the same row)
-        const firstRow = page
-          .locator('.table-flex-wrapper .table-flex-wrapper-row')
-          .first();
-        const firstRowId = await firstRow.getAttribute('data-row-id');
-
-        if (firstRowId !== selectedRowId) {
-          await expect(firstRow).not.toHaveClass(/row-selected/, {
-            timeout: FAST_ACTION_TIMEOUT,
-          });
-          console.log(
-            `Verified: row ${selectedRowId} is selected (not first row ${firstRowId})`
-          );
-        }
+        const restoredText = (await restoredRow.innerText()).trim();
+        // The bug re-selected the FIRST row; the fix restores the row the
+        // user had picked. Assert both to pin the regression precisely.
+        expect(restoredText).toBe(selectedRowText);
+        expect(restoredText).not.toBe(firstRowText);
+        console.log(
+          `[PASS] Restored selection is the previously picked row: ${restoredText}`
+        );
       }
     );
   });

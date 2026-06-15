@@ -50,11 +50,14 @@ export default function listHandler(state = initialState, action) {
 
     case types.SET_LIST_SELECTED:
       return Object.assign({}, state, {
-        selectedRow: {
-          rowId: action.rowId,
-          viewId: action.viewId,
-          windowType: action.windowType,
-        },
+        selectedRow:
+          action.rowId === null
+            ? null
+            : {
+                rowId: action.rowId,
+                viewId: action.viewId,
+                windowType: action.windowType,
+              },
       });
 
     default:
