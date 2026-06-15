@@ -39,7 +39,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.uom.UomId;
-import de.metas.util.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;

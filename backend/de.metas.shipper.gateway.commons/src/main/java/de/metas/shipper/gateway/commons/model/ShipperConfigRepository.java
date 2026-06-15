@@ -35,6 +35,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,13 +43,17 @@ import org.compiere.model.I_Carrier_Config;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
-import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.function.Function;
 
+/**
+ * Repository Tables: Carrier_Config
+ * Repository Cluster: ShipperConfigRepository, ShipperRepository
+ */
 @Repository
+@RequiredArgsConstructor
 public class ShipperConfigRepository
 {
 	private final static AdMessageKey MSG_NO_SHIPPER_CONFIG_FOUND = AdMessageKey.of("de.metas.shipper.gateway.commons.config.NoShipperConfigFound");
@@ -72,7 +77,7 @@ public class ShipperConfigRepository
 			I_Carrier_Config.COLUMNNAME_AD_Client_ID);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final ShipperRepository shipperRepository = SpringContextHolder.instance.getBean(ShipperRepository.class);
+	@NonNull private final ShipperRepository shipperRepository;
 
 	@NonNull private final CCache<Integer, ImmutableMap<ShipperId, ShipperConfig>> cache = CCache.<Integer, ImmutableMap<ShipperId, ShipperConfig>>builder()
 			.tableName(I_Carrier_Config.Table_Name)
