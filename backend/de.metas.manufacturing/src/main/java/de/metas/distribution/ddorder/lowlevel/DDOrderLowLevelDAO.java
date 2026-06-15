@@ -492,6 +492,13 @@ public class DDOrderLowLevelDAO
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
 		}
+		else if (field == DDOrderQuery.OrderByField.LocatorPriority)
+		{
+			// Virtual column on DD_Order whose ColumnSQL returns M_Locator.PriorityNo
+			// when all DD_OrderLines share the same locator; NULL otherwise.
+			// Resolved via the virtual-column ORDER BY support in TypedSqlQuery.getOrderBy.
+			sqlColumnName = "LocatorPriorityNo";
+		}
 		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_DatePromised;
