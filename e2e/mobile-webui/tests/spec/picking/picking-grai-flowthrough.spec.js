@@ -46,7 +46,9 @@ const QTY_CUS_PER_TU = 4;
  * - GRAIRequired='Y' customer -> the GRAI capture step is active and the completion guard fires.
  * - PRODUCT aggregation -> the pick is line-level, so luPickingTarget.luId is populated at line scope
  *   and the pick-line screen shows the grai-scan-button (the entry to the in-picking GRAI mass-capture
- *   screen). With sales_order aggregation the target lives on the header and the button never appears.
+ *   screen). This file exercises the product-aggregation path; the sales_order-aggregation path (LU
+ *   target at header level, reached via fallbackToHeader) is covered by
+ *   picking-grai-flowthrough-mixed-product.spec.js.
  * - pickTo: ['LU_TU'] -> the "Flow Through" profile shape: the picked crates are aggregated under one LU.
  * - order qty = TU_COUNT * QTY_CUS_PER_TU -> the line demands exactly TU_COUNT whole crates.
  * - graiMapping:true makes the PI's TU type GRAI-resolvable; the returned canonical GRAI is a
