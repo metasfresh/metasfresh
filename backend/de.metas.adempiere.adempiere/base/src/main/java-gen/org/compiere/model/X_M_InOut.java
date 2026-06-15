@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -893759826L;
+	private static final long serialVersionUID = -1997047345L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -704,6 +704,36 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	/** 
+	 * EPCIS_ExportStatus AD_Reference_ID=542104
+	 * Reference name: ExternalSystem_ExportStatus
+	 */
+	public static final int EPCIS_EXPORTSTATUS_AD_Reference_ID=542104;
+	/** Pending = P */
+	public static final String EPCIS_EXPORTSTATUS_Pending = "P";
+	/** Enqueued = U */
+	public static final String EPCIS_EXPORTSTATUS_Enqueued = "U";
+	/** SendingStarted = D */
+	public static final String EPCIS_EXPORTSTATUS_SendingStarted = "D";
+	/** Sent = S */
+	public static final String EPCIS_EXPORTSTATUS_Sent = "S";
+	/** Error = E */
+	public static final String EPCIS_EXPORTSTATUS_Error = "E";
+	/** Invalid = I */
+	public static final String EPCIS_EXPORTSTATUS_Invalid = "I";
+	/** DontSend = N */
+	public static final String EPCIS_EXPORTSTATUS_DontSend = "N";
+	@Override
+	public void setEPCIS_ExportStatus (final @Nullable java.lang.String EPCIS_ExportStatus)
+	{
+		throw new IllegalArgumentException ("EPCIS_ExportStatus is virtual column");	}
+
+	@Override
+	public java.lang.String getEPCIS_ExportStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_EPCIS_ExportStatus);
 	}
 
 	@Override
