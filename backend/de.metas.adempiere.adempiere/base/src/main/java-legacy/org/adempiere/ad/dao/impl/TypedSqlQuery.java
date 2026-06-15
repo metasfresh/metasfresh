@@ -1456,9 +1456,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return null;
 		}
 
-		// POInfo is needed ONLY to expand virtual-column (ColumnSQL) ORDER BY entries — a DB-only feature.
-		// In a no-DB context (e.g. SQL-building unit tests) loading it raises DBNoConnectionException;
-		// there is nothing to expand without a DB, so fall back to the plain (non-expanded) ORDER BY.
+		// In a no-DB context (e.g. SQL-building unit tests) POInfo cannot be loaded (DBNoConnectionException).
+		// POInfo is only used to expand virtual-column (ColumnSQL) ORDER BY entries — a DB-only feature —
+		// so without a DB there is nothing to expand: fall back to the plain (non-expanded) ORDER BY.
 		final POInfo poInfo;
 		try
 		{
