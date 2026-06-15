@@ -1,20 +1,19 @@
 package org.adempiere.ad.dao.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
-
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -72,7 +71,7 @@ public class QueryOrderByTest
 	{
 
 		final QueryOrderByItem queryOrderByItem = new QueryOrderByItem(I_AD_User.COLUMNNAME_C_Greeting_ID, Direction.Descending, Nulls.Last);
-		final QueryOrderBy queryOrderBy = new QueryOrderBy(ImmutableList.of(queryOrderByItem));
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(queryOrderByItem));
 
 		// invoke the method under test
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
@@ -83,13 +82,12 @@ public class QueryOrderByTest
 		assertThat(users.get(2).getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
 	}
 
-
 	@Test
 	public void getComparator_descending_nulls_first()
 	{
 
 		final QueryOrderByItem queryOrderByItem = new QueryOrderByItem(I_AD_User.COLUMNNAME_C_Greeting_ID, Direction.Descending, Nulls.First);
-		final QueryOrderBy queryOrderBy = new QueryOrderBy(ImmutableList.of(queryOrderByItem));
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(queryOrderByItem));
 
 		// invoke the method under test
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
@@ -105,7 +103,7 @@ public class QueryOrderByTest
 	{
 
 		final QueryOrderByItem queryOrderByItem = new QueryOrderByItem(I_AD_User.COLUMNNAME_C_Greeting_ID, Direction.Ascending, Nulls.Last);
-		final QueryOrderBy queryOrderBy = new QueryOrderBy(ImmutableList.of(queryOrderByItem));
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(queryOrderByItem));
 
 		// invoke the method under test
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
@@ -121,7 +119,7 @@ public class QueryOrderByTest
 	{
 
 		final QueryOrderByItem queryOrderByItem = new QueryOrderByItem(I_AD_User.COLUMNNAME_C_Greeting_ID, Direction.Ascending, Nulls.First);
-		final QueryOrderBy queryOrderBy = new QueryOrderBy(ImmutableList.of(queryOrderByItem));
+		final QueryOrderBy queryOrderBy = QueryOrderBy.of(ImmutableList.of(queryOrderByItem));
 
 		// invoke the method under test
 		final Comparator<Object> comparator = queryOrderBy.getComparator();

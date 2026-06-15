@@ -1454,7 +1454,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			return null;
 		}
-		return queryOrderBy.getSql();
+
+		final POInfo poInfo = getPOInfo();
+		return queryOrderBy.getSql(poInfo::getColumnSql);
 	}
 
 	@Override
