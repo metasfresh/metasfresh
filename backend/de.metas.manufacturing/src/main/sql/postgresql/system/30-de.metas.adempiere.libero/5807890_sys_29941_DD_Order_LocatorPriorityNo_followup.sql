@@ -53,7 +53,7 @@ SELECT
 	TO_TIMESTAMP('2026-06-15 23:00:02', 'YYYY-MM-DD HH24:MI:SS'), 100,
 	53037, 592811,
 	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_Locator'),
-	'select distinct DD_Order_ID from dd_orderline where M_Locator_ID = ?',
+	'select distinct DD_Order_ID from dd_orderline where M_Locator_ID = @Record_ID@',
 	'S'
 WHERE NOT EXISTS (
 	SELECT 1 FROM AD_SQLColumn_SourceTableColumn
