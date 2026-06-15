@@ -21,6 +21,7 @@
  */
 package de.metas.shipper.client.nshift.json;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -67,7 +68,10 @@ public class JsonLine
 	@JsonProperty("Loadmeter")
 	Integer loadmeter;
 
+	// nShift uses different keys per direction: request sends "GoodsType", response returns "GoodsTypeID".
+	// @JsonProperty drives serialization (request); @JsonAlias adds the response key for deserialization.
 	@JsonProperty("GoodsType")
+	@JsonAlias("GoodsTypeID")
 	Integer goodsTypeID;
 
 	@JsonProperty("GoodsTypeName")
