@@ -193,7 +193,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceOrderAdviceTest.build_order_
       ],
       "Lines": [
         {
-          "GoodsType": 5,
+          "GoodsTypeID": 5,
           "GoodsTypeName": "Packet",
           "Height": 150,
           "Length": 1000,
@@ -230,7 +230,7 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceOrderAdviceTest.build_order_
           "Width": 200
         },
         {
-          "GoodsType": 5,
+          "GoodsTypeID": 5,
           "GoodsTypeName": "Packet",
           "Height": 150,
           "Length": 1000,

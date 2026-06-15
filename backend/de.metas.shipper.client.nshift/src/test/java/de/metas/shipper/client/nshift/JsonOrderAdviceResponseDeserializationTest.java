@@ -65,8 +65,7 @@ class JsonOrderAdviceResponseDeserializationTest
 
 		final List<JsonLine> lines = shipment.getLines();
 		assertThat(lines).hasSize(2);
-		// nShift returns the goods type under "GoodsTypeID" on the response, but the request sends "GoodsType".
-		// Without @JsonAlias("GoodsTypeID") on JsonLine, getGoodsTypeID() would deserialize to null here.
+		// JsonLine maps the goods type from "GoodsTypeID"; guards against it deserializing to null.
 		assertThat(lines.get(0).getGoodsTypeID()).isEqualTo(2);
 		assertThat(lines.get(0).getGoodsTypeName()).isEqualTo("Customer supplied package");
 		assertThat(lines.get(1).getGoodsTypeID()).isEqualTo(2);
