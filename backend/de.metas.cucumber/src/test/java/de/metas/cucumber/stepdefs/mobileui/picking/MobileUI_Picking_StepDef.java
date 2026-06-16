@@ -54,6 +54,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -172,21 +173,15 @@ public class MobileUI_Picking_StepDef
 		final String target = row.getAsString("target");
 		final boolean expectedAvailable = row.getAsBoolean("available");
 		final boolean expectedReadOnly = row.getAsBoolean("readOnly");
-		final String expectedCaption = row.getAsOptionalString("carrierProductCaption").orElse(null);
+		final Optional<String> expectedCaption = row.getAsOptionalString("carrierProductCaption");
 
-		// The `target` column documents the pick-to shape under test; the flags themselves are read from the
-		// line, which carries them for every shape on a header-level job (same source the mobile UI renders).
+		// flags are always at line level; `target` just names the pick-to shape being asserted
 		final JsonPickingJobLine line = CollectionUtils.singleElement(context.getPickingJobLines());
-		final boolean actualAvailable = line.isCarrierAdviseAvailable();
-		final boolean actualReadOnly = line.isCarrierAdviseReadOnly();
-		final String actualCaption = line.getCarrierProductCaption();
 
-		assertThat(actualAvailable).as("carrierAdviseAvailable for target %s", target).isEqualTo(expectedAvailable);
-		assertThat(actualReadOnly).as("carrierAdviseReadOnly for target %s", target).isEqualTo(expectedReadOnly);
-		if (row.getAsOptionalString("carrierProductCaption").isPresent())
-		{
-			assertThat(actualCaption).as("carrierProductCaption for target %s", target).isEqualTo(expectedCaption);
-		}
+		assertThat(line.isCarrierAdviseAvailable()).as("carrierAdviseAvailable for target %s", target).isEqualTo(expectedAvailable);
+		assertThat(line.isCarrierAdviseReadOnly()).as("carrierAdviseReadOnly for target %s", target).isEqualTo(expectedReadOnly);
+		expectedCaption.ifPresent(caption -> assertThat(line.getCarrierProductCaption())
+				.as("carrierProductCaption for target %s", target).isEqualTo(caption));
 	}
 
 	@When("pick lines")
