@@ -186,8 +186,6 @@ public class EmptiesMovementProducer
 	{
 		final EmptiesMovementDirection movementDirection = extractEmptiesMovementDirection(candidate);
 
-		// To/From locator — M_Warehouse_ID is the locator's parent column; use the id directly
-		// (the generated I_M_Locator no longer exposes the getM_Warehouse() FK accessor).
 		final I_M_Locator locatorCandidate = candidate.getM_Locator();
 
 		final MovementHeaderCandidate warehouseDirection = new MovementHeaderCandidate(movementDirection, locatorCandidate.getM_Warehouse_ID());

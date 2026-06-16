@@ -144,8 +144,6 @@ import java.util.Set;
 
 		//
 		// Retrieve Plant of current warehouse (where our Quantitites currently are)
-		// M_Warehouse_ID is the locator's parent column; the generated I_M_Locator no longer
-		// exposes the getM_Warehouse() FK accessor, so load the warehouse by its id.
 		final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()));
 		final ResourceId warehousePlantId = productPlanningDAO.findPlantId(warehouse.getAD_Org_ID(),
 				warehouse,
