@@ -181,6 +181,12 @@ public class WarehouseCommand
 			saveRecord(locatorRecord);
 		}
 
+		if (locatorRequest.getIsGroundLocator() != null)
+		{
+			locatorRecord.setIsGroundLocator(locatorRequest.getIsGroundLocator());
+			saveRecord(locatorRecord);
+		}
+
 		return toJson(locatorRecord);
 	}
 
