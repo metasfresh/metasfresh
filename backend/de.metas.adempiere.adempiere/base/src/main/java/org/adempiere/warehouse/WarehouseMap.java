@@ -83,6 +83,7 @@ final class WarehouseMap
 	{
 		return allActive.stream()
 				.filter(warehouse -> warehouse.isInTransit() && OrgId.equals(warehouse.getOrgId(), orgId))
+				// deterministic tie-break (lowest WarehouseId) for the rare org with more than one in-transit warehouse
 				.sorted(Comparator.comparing(Warehouse::getWarehouseId))
 				.map(Warehouse::getWarehouseId)
 				.findFirst();

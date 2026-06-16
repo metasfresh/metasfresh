@@ -64,7 +64,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -430,7 +429,8 @@ public class DDOrderPickingReplenishmentService
 			return ImmutableMap.of();
 		}
 
-		final ProductQtyOnHandByLocator qtyOnHandByLocator = getQtyOnHandByLocator(productId, sourceLocatorIds);
+		final ProductQtyOnHandByLocator qtyOnHandByLocator = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
+				.getQtyOnHandByLocator(productId, sourceLocatorIds);
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
@@ -461,12 +461,6 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		return result.getAllocation();
-	}
-
-	private ProductQtyOnHandByLocator getQtyOnHandByLocator(@NonNull final ProductId productId, @NonNull final Collection<LocatorId> sourceLocatorIds)
-	{
-		return ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
-				.getQtyOnHandByLocator(productId, ImmutableSet.copyOf(sourceLocatorIds));
 	}
 
 	/**
@@ -583,9 +577,12 @@ public class DDOrderPickingReplenishmentService
 			final I_DD_OrderLine line = lines.get(0);
 			// Resolve the source LocatorId from the locator record (authoritative warehouse) rather than the line's
 			// M_Warehouse_ID, which is not reliably populated on a programmatically-built DD_OrderLine.
-			final Locator sourceLocator = warehouseRepository.getLocatorByRepoId(line.getM_Locator_ID());
-			if (sourceLocator != null)
+			// Skip lines whose source locator is unset: getLocatorByRepoId throws on a 0/unknown id, and a
+			// reconcile line with no source locator must be skipped (matches the prior ofRecordOrNull behaviour).
+			final int sourceLocatorRepoId = line.getM_Locator_ID();
+			if (sourceLocatorRepoId > 0)
 			{
+				final Locator sourceLocator = warehouseRepository.getLocatorByRepoId(sourceLocatorRepoId);
 				byLocator.put(sourceLocator.getLocatorId(), line);
 			}
 		}

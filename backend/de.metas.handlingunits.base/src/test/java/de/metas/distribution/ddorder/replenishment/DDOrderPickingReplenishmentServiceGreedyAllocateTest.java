@@ -75,7 +75,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		uomCase = BusinessTestHelper.createUOM("Case", 0, 0);
 
 		// Create a real M_Warehouse record so WarehouseRepository can resolve the locators created below.
-		// (IDs are auto-assigned by the POJO store; we derive warehouseId from the created record.)
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
 		warehouse.setName("TestWarehouse");
 		warehouse.setValue("TW");
