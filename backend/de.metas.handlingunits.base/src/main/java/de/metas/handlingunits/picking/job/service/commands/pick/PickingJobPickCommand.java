@@ -528,7 +528,8 @@ public class PickingJobPickCommand
 	}
 
 	/**
-	 * Stamps the event's {@code graiCodes} onto the picked LU's TUs inside the pick transaction.
+	 * Stamps the event's {@code graiCodes} onto the picked LU inside the pick transaction
+	 * ({@code HUGraiService} distributes them across the LU's TU slots).
 	 * <p>
 	 * The picked LU id is resolved via {@link PickingJob#getLuPickingTargetEffective(PickingJobLineId)}
 	 * for the current line ({@link #_lineId}), which handles both aggregation modes:
