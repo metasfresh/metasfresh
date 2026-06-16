@@ -1,4 +1,4 @@
--- me03 #25556 — Enforce Serial Number scan in mobile picking
+-- Serial No Picking — enforce serial-number scan in mobile picking
 -- Adds the standard product flag M_Product.IsSerialNoPicked (Y/N, default N) + Product-window field.
 -- Mirrors 5513990_sys_M_Product_IsQuotationGroupping.sql.
 

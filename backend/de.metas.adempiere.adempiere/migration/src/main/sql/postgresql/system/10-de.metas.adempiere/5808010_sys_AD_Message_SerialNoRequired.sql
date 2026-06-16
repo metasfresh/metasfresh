@@ -1,4 +1,4 @@
--- me03 #25556 — Serial No Picking
+-- Serial No Picking
 -- AD_Message shown when a serial number is required (product IsSerialNoPicked + HU supports SerialNo) but missing at pick time.
 
 INSERT INTO AD_Message (AD_Message_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,MsgText,MsgType,ErrorCode,EntityType)
