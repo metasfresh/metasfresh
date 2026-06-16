@@ -1,11 +1,11 @@
 package de.metas.distribution.mobileui.external_services.warehouse;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.storage.LocatorIdAndQty;
 import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
-import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,15 +34,35 @@ public class GroundLocatorByPriorityAndStockResolver implements NextPickFromLoca
 			throw new AdempiereException(MSG_NO_ALTERNATIVE);
 		}
 
-		final ProductQtyOnHandByLocator qtyOnHandByLocator = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
-				.getQtyOnHandByLocator(productId, locatorIds);
+		final List<LocatorId> candidatesInRoundRobinOrder = orderedRoundRobinAfter(locatorIds, currentLocatorId);
 
-		final LocatorId nextLocatorId = CollectionUtils.getNextRoundRobin(locatorIds, currentLocatorId, qtyOnHandByLocator::hasStock);
-		if (nextLocatorId == null)
+		return ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
+				.streamLocatorQtyOnHandOrdered(productId, 10, candidatesInRoundRobinOrder)
+				.map(LocatorIdAndQty::getLocatorId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException(MSG_NO_ALTERNATIVE));
+	}
+
+	/**
+	 * Returns the {@code locatorIds} reordered round-robin starting at {@code currentLocatorId + 1},
+	 * excluding {@code currentLocatorId} itself. Empty if {@code currentLocatorId} is not in the list.
+	 */
+	private static List<LocatorId> orderedRoundRobinAfter(
+			@NonNull final List<LocatorId> locatorIds,
+			@NonNull final LocatorId currentLocatorId)
+	{
+		final int startIdx = locatorIds.indexOf(currentLocatorId);
+		if (startIdx < 0)
 		{
-			throw new AdempiereException(MSG_NO_ALTERNATIVE);
+			return ImmutableList.of();
 		}
 
-		return nextLocatorId;
+		final int size = locatorIds.size();
+		final ImmutableList.Builder<LocatorId> result = ImmutableList.builderWithExpectedSize(size - 1);
+		for (int step = 1; step < size; step++)
+		{
+			result.add(locatorIds.get((startIdx + step) % size));
+		}
+		return result.build();
 	}
 }

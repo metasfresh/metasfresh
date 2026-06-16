@@ -1,6 +1,6 @@
 package de.metas.handlingunits.storage;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
@@ -11,7 +11,7 @@ import org.adempiere.warehouse.LocatorId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Returns the Active on-hand quantity of a product, grouped per locator.
@@ -34,17 +34,9 @@ public class ProductAvailableStockPerLocator
 		return new ProductAvailableStockPerLocator(handlingUnitsBL);
 	}
 
-	/** Convenience overload accepting any {@link Collection} of locator ids (copied to an immutable set). */
 	public ProductQtyOnHandByLocator getQtyOnHandByLocator(
 			@NonNull final ProductId productId,
 			@NonNull final Collection<LocatorId> locatorIds)
-	{
-		return getQtyOnHandByLocator(productId, ImmutableSet.copyOf(locatorIds));
-	}
-
-	public ProductQtyOnHandByLocator getQtyOnHandByLocator(
-			@NonNull final ProductId productId,
-			@NonNull final Set<LocatorId> locatorIds)
 	{
 		if (locatorIds.isEmpty())
 		{
@@ -60,16 +52,49 @@ public class ProductAvailableStockPerLocator
 				.list();
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-
-		final HashMap<LocatorId, Quantity> qtyByLocator = new HashMap<>();
+		final HashMap<LocatorId, Quantity> result = new HashMap<>();
 		storageFactory.streamHUProductStorages(hus)
 				.filter(huStorageProduct -> productId.equals(huStorageProduct.getProductId()))
 				.forEach(huStorageProduct -> {
 					final LocatorId locatorId = IHandlingUnitsBL.extractLocatorId(huStorageProduct.getM_HU());
 					final Quantity qty = huStorageProduct.getQtyInStockingUOM();
-					qtyByLocator.merge(locatorId, qty, Quantity::add);
+					result.merge(locatorId, qty, Quantity::add);
 				});
 
-		return ProductQtyOnHandByLocator.ofMap(qtyByLocator);
+		return ProductQtyOnHandByLocator.ofMap(result);
 	}
+
+	/**
+	 * Lazily streams the locators that have positive on-hand stock for the given product, paired with
+	 * their qty (product stocking UOM), preserving the iteration order of {@code orderedLocatorIds}.
+	 * <p>
+	 * Each call to the underlying HU query covers at most {@code chunkSize} locators; subsequent chunks
+	 * are loaded only when the consumer keeps pulling from the stream. Pair with {@link Stream#findFirst()}
+	 * or with {@code stream().iterator()} + an early-exit loop to short-circuit once the caller has enough.
+	 * Callers tune {@code chunkSize} to their access pattern — small for find-first lookups (a single hit
+	 * usually fits in one chunk), larger for cumulative consumers (fewer round-trips when many locators
+	 * contribute).
+	 */
+	public Stream<LocatorIdAndQty> streamLocatorQtyOnHandOrdered(
+			@NonNull final ProductId productId,
+			final int chunkSize,
+			@NonNull final List<LocatorId> orderedLocatorIds)
+	{
+		if (orderedLocatorIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return Lists.partition(orderedLocatorIds, chunkSize)
+				.stream()
+				.flatMap(chunk -> {
+					// Side-effecting load inside flatMap is intentional: it's what makes the chunked
+					// stream lazy — chunk N's HU query fires only when the consumer pulls past chunk N-1.
+					final ProductQtyOnHandByLocator qtyByLocator = getQtyOnHandByLocator(productId, chunk);
+					return chunk.stream()
+							.filter(qtyByLocator::hasStock)
+							.map(locatorId -> LocatorIdAndQty.of(locatorId, qtyByLocator.getQty(locatorId)));
+				});
+	}
+
 }

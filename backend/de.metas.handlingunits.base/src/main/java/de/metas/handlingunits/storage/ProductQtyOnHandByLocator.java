@@ -45,19 +45,24 @@ public class ProductQtyOnHandByLocator
 
 	public boolean hasStock(@NonNull final LocatorId locatorId)
 	{
-		final Quantity quantity = map.get(locatorId);
+		final Quantity quantity = getQtyOrNull(locatorId);
 		return quantity != null && quantity.signum() > 0;
 	}
 
 	@NonNull
 	public Quantity getQty(@NonNull final LocatorId locatorId)
 	{
-		final Quantity quantity = map.get(locatorId);
+		final Quantity quantity = getQtyOrNull(locatorId);
 		if (quantity == null)
 		{
 			throw new AdempiereException("No quantity found for " + locatorId + " in " + this);
 		}
 		return quantity;
+	}
+
+	public Quantity getQtyOrNull(@NonNull final LocatorId locatorId)
+	{
+		return map.get(locatorId);
 	}
 
 }

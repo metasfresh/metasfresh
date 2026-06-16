@@ -19,6 +19,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.handlingunits.storage.LocatorIdAndQty;
 import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
 import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.i18n.AdMessageKey;
@@ -65,6 +66,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -429,14 +431,21 @@ public class DDOrderPickingReplenishmentService
 			return ImmutableMap.of();
 		}
 
-		final ProductQtyOnHandByLocator qtyOnHandByLocator = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
-				.getQtyOnHandByLocator(productId, sourceLocatorIds);
+		// Sort the source locators in the locator pick order BEFORE streaming their on-hand qty, so the
+		// lazy chunked stream yields the highest-priority locators first; once the greedy loop has covered
+		// the demand it stops pulling, and no further locator chunks are queried for stock.
+		final List<LocatorId> sourceLocatorIdsInPickOrder = sourceLocatorIds.stream()
+				.sorted(Comparator.comparing(this::getLocatorSortKey))
+				.collect(ImmutableList.toImmutableList());
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
-		final AllocationResult result = greedyAllocate(
+		final Stream<LocatorIdAndQty> orderedNonEmpty = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
+				.streamLocatorQtyOnHandOrdered(productId, 50, sourceLocatorIdsInPickOrder);
+
+		final AllocationResult result = greedyAllocateOrdered(
 				demandQty,
-				qtyOnHandByLocator,
+				orderedNonEmpty,
 				availableStockingUom -> uomConversionBL.convertQuantityTo(availableStockingUom, conversionCtx, demandQty.getUomId()),
 				(locatorId, availableStockingUom) -> Loggables.addLog(
 						"DD_Order picking replenishment: skipping source M_Locator_ID={0} for M_Product_ID={1}:"
@@ -481,37 +490,53 @@ public class DDOrderPickingReplenishmentService
 			@NonNull final ConvertToDemandUom convertToDemandUom,
 			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
 	{
-		// Contributing locators (positive on-hand) in the locator pick order.
-		final List<LocatorId> contributingOrdered = qtyOnHandByLocator.streamNonEmptyLocatorIds()
+		// Pre-materialised map variant: sort contributing locators in the locator pick order, then delegate
+		// to the streaming core. Production goes through greedyAllocateOrdered directly with a lazy stream.
+		final Stream<LocatorIdAndQty> orderedNonEmpty = qtyOnHandByLocator.streamNonEmptyLocatorIds()
 				.sorted(Comparator.comparing(this::getLocatorSortKey))
-				.collect(ImmutableList.toImmutableList());
+				.map(locatorId -> LocatorIdAndQty.of(locatorId, qtyOnHandByLocator.getQty(locatorId)));
+		return greedyAllocateOrdered(demandQty, orderedNonEmpty, convertToDemandUom, onSkippedLocator);
+	}
 
+	/**
+	 * Greedy allocation core: consumes {@code orderedNonEmpty} (already in the locator pick order and only
+	 * positive-on-hand entries) via an iterator so the stream's lazy upstream (chunked locator-stock fetch)
+	 * is short-circuited as soon as {@code remaining <= 0}.
+	 */
+	private AllocationResult greedyAllocateOrdered(
+			@NonNull final Quantity demandQty,
+			@NonNull final Stream<LocatorIdAndQty> orderedNonEmpty,
+			@NonNull final ConvertToDemandUom convertToDemandUom,
+			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
+	{
 		final LinkedHashMap<LocatorId, Quantity> allocation = new LinkedHashMap<>();
 		Quantity remaining = demandQty;
-		for (final LocatorId locatorId : contributingOrdered)
+
+		try (Stream<LocatorIdAndQty> stream = orderedNonEmpty)
 		{
-			if (remaining.signum() <= 0)
+			final Iterator<LocatorIdAndQty> iter = stream.iterator();
+			while (remaining.signum() > 0 && iter.hasNext())
 			{
-				break;
-			}
+				final LocatorIdAndQty locatorAndQty = iter.next();
 
-			// Convert the locator's on-hand qty (product stocking UOM) into the demand UOM before comparing/allocating.
-			// A no-op when the UOMs already match. If no conversion exists, skip this locator (non-contributing).
-			final Quantity availableStockingUom = qtyOnHandByLocator.getQty(locatorId);
-			final Quantity available;
-			try
-			{
-				available = convertToDemandUom.convert(availableStockingUom);
-			}
-			catch (final NoUOMConversionException ex)
-			{
-				onSkippedLocator.accept(locatorId, availableStockingUom);
-				continue;
-			}
+				// Convert the locator's on-hand qty (product stocking UOM) into the demand UOM before comparing/allocating.
+				// A no-op when the UOMs already match. If no conversion exists, skip this locator (non-contributing).
+				final Quantity availableStockingUom = locatorAndQty.getQty();
+				final Quantity available;
+				try
+				{
+					available = convertToDemandUom.convert(availableStockingUom);
+				}
+				catch (final NoUOMConversionException ex)
+				{
+					onSkippedLocator.accept(locatorAndQty.getLocatorId(), availableStockingUom);
+					continue;
+				}
 
-			final Quantity allocated = remaining.min(available);
-			allocation.put(locatorId, allocated);
-			remaining = remaining.subtract(allocated);
+				final Quantity allocated = remaining.min(available);
+				allocation.put(locatorAndQty.getLocatorId(), allocated);
+				remaining = remaining.subtract(allocated);
+			}
 		}
 
 		return new AllocationResult(allocation, remaining);
