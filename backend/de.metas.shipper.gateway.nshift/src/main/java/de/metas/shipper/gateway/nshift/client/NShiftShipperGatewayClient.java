@@ -100,10 +100,11 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final List<ShipmentSchedule> schedules = loadSchedules(deliveryOrder);
+		final boolean shippingRulesActive = areShippingRulesActive(deliveryOrder, schedules);
 		final JsonDeliveryRequest deliveryRequestJson = applyShippingRuleOptions(
 				jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
-				deliveryOrder,
-				schedules);
+				schedules,
+				shippingRulesActive);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
 		try
@@ -130,9 +131,9 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
 		}
 
-		// When shipping rules were active, nShift re-resolved the carrier at ship time; persist what was actually
-		// shipped into the carrier-product allocations (only if missing) so it becomes selectable in manual advise.
-		if (areShippingRulesActive(deliveryOrder, schedules))
+		// nShift re-resolved the carrier at ship time; persist what was shipped into the carrier-product
+		// allocations (only if missing) so it becomes selectable in manual advise.
+		if (shippingRulesActive)
 		{
 			carrierProductAllocationService.persistResolvedAllocations(
 					deliveryOrder.getShipperId(),
@@ -156,14 +157,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 
 	/**
 	 * Patches the shipper config of the given request with UseShippingRules and ServiceLevel
-	 * when the shipper is configured for API carrier advising and not all schedules are Manual.
+	 * when shipping rules are active (see {@link #areShippingRulesActive}).
 	 */
 	private JsonDeliveryRequest applyShippingRuleOptions(
 			@NonNull final JsonDeliveryRequest request,
-			@NonNull final DeliveryOrder deliveryOrder,
-			@NonNull final List<ShipmentSchedule> schedules)
+			@NonNull final List<ShipmentSchedule> schedules,
+			final boolean shippingRulesActive)
 	{
-		if (!areShippingRulesActive(deliveryOrder, schedules))
+		if (!shippingRulesActive)
 		{
 			return request;
 		}
