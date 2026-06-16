@@ -24,8 +24,9 @@ Feature: nShift Shipment
       | ct         | 12345678 |
     # Explicit Value+Name so reruns reuse the same product (upserts via productDAO.retrieveProductByValue).
     And metasfresh contains M_Products:
-      | Identifier | Value          | Name           | WeightNet | WeightGross | M_CustomsTariff_ID | LengthInCm | WidthInCm | HeightInCm |
-      | product    | nshift_product | nShift Product | 2 KGM     | 2.1 KGM     | ct                 | 30         | 20        | 10         |
+      | Identifier | Value           | Name            | WeightNet | WeightGross | M_CustomsTariff_ID | LengthInCm | WidthInCm | HeightInCm |
+      | product    | nshift_product  | nShift Product  | 2 KGM     | 2.1 KGM     | ct                 | 30         | 20        | 10         |
+      | product_2  | nshift_product2 | nShift Product2 | 1 KGM     | 1.1 KGM     | ct                 | 30         | 20        | 10         |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
@@ -38,6 +39,7 @@ Feature: nShift Shipment
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv                    | product      | 10.0     | PCE      |
+      | plv                    | product_2    | 8.0      | PCE      |
     # Explicit Value+Name so reruns reuse the same BPartner (upserts via bpartnerDAO.retrieveBPartnerByValue) —
     # required for the composite FK c_order(c_bpartner_id, ad_user_id) to stay valid across reruns.
     And metasfresh contains C_BPartners without locations:
@@ -62,15 +64,18 @@ Feature: nShift Shipment
       | Identifier | M_Inventory_ID | M_Product_ID    | QtyBook | QtyCount | UOM.X12DE355 |
       | inv_l_1    | inv            | product         | 0       | 100      | PCE          |
       | inv_l_2    | inv            | packing_product | 0       | 100      | PCE          |
+      | inv_l_3    | inv            | product_2       | 0       | 100      | PCE          |
     When the inventory identified by inv is completed
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID |
-      | inv_l_1            | hu_1    |
-      | inv_l_2            | hu_2    |
+      | M_InventoryLine_ID | M_HU_ID      |
+      | inv_l_1            | hu_1         |
+      | inv_l_2            | hu_2         |
+      | inv_l_3            | hu_product_2 |
     And M_HU_Storage are validated
-      | M_HU_ID | M_Product_ID    | Qty |
-      | hu_1    | product         | 100 |
-      | hu_2    | packing_product | 100 |
+      | M_HU_ID      | M_Product_ID    | Qty |
+      | hu_1         | product         | 100 |
+      | hu_2         | packing_product | 100 |
+      | hu_product_2 | product_2       | 100 |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
       | LU         |
@@ -86,6 +91,7 @@ Feature: nShift Shipment
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
       | product_TU_10CU         | huPiItemTU      | product      | 10  | 2021-01-01 |
+      | product_2_TU_10CU       | huPiItemTU      | product_2    | 10  | 2021-01-01 |
     And metasfresh contains Carrier_Products:
       | Identifier | M_Shipper_ID |
       | cp1        | nShift       |
@@ -1127,7 +1133,205 @@ Feature: nShift Shipment
       | M_InOut_ID    | Carrier_Product_ID |
       | inout_partial | cp1                |
 
+  @from:cucumber
+  @Id:S0355_DeliveryOrder_200
+  Scenario: Carrier-advise guard — picking job completion blocked when one LU carries mixed manual + automatic advise (E1)
+    # Two order lines (product + product_2) on one nShift order produce two schedules.
+    # Schedule for product is manually advised (cp2/cgt2/cs2 → Manual status); schedule for product_2
+    # is automatically advised (cp1/cgt1 → Completed/non-manual). Picked into ONE LU → mixed manual +
+    # automatic on a single HU → the E1 guard rejects completion.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot_e1    | guard_e1    | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_e1      | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_e1_l1   | so_e1      | product      | 10         | product_TU_10CU         |
+      | so_e1_l2   | so_e1      | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_e1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_e1_1    | so_e1_l1       | N             |
+      | ss_e1_2    | so_e1_l2       | N             |
+    # Auto-advise schedule 2 → Completed status (non-manual) with cp1
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_e1_2               |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e1_2    | so_e1_l2       | N             | cp1                |
+    # Manually advise schedule 1 → Manual status with cp2/cgt2
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_e1_1               | cp2                | cgt2                  | cs2                |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e1_1    | so_e1_l1       | N             | cp2                |
+    # Pick both schedules into the same LU so the guard sees mixed manual/automatic on one HU
+    When start picking job for sales order identified by so_e1
+    And scan picking slot identified by slot_e1
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | hu_1         | 10        |
+      | product_2             | hu_product_2 | 10        |
+    Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"
+
+  @from:cucumber
+  @Id:S0355_DeliveryOrder_210
+  Scenario: Carrier-advise guard — picking job completion blocked on divergent non-manual carrier products (E2)
+    # Two non-manual schedules on one LU. On order completion both auto-advise to cp1. Re-advising
+    # schedule 2 against a cp2 stub (while still un-picked) makes its carrier product diverge (cp1 vs
+    # cp2) → E2 guard rejects completion. (The convergent-then-succeeds counterpart is covered by the OK
+    # scenario; a picked schedule is no longer eligible for re-advise, so it cannot be re-unified here.)
+    Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot_e2    | guard_e2    | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_e2      | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_e2_l1   | so_e2      | product      | 10         | product_TU_10CU         |
+      | so_e2_l2   | so_e2      | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_e2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e2_1    | so_e2_l1       | N             | cp1                |
+      | ss_e2_2    | so_e2_l2       | N             | cp1                |
+    # Re-stub the advisor to cp2 and re-advise schedule 2 only → ss_e2_1=cp1, ss_e2_2=cp2 (divergent, both non-manual)
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp2                | cgt2                  | cs2                |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_e2_2               |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e2_2    | so_e2_l2       | N             | cp2                |
+    # Pick both schedules into the same LU — ss_e2_1 has cp1, ss_e2_2 has cp2
+    When start picking job for sales order identified by so_e2
+    And scan picking slot identified by slot_e2
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | hu_1         | 10        |
+      | product_2             | hu_product_2 | 10        |
+    # E2: divergent non-manual carrier products on the same HU
+    Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"
+
+  @from:cucumber
+  @Id:S0355_DeliveryOrder_220
+  Scenario: Carrier-advise guard — picking job completion blocked when one LU spans more than one advise-enabled shipper (E3)
+    # Two schedules on one nShift order. The second order line carries a second advise-enabled shipper
+    # (nShift2, also IsApiCarrierAdvise=Y); the schedule derives its shipper from the order line, so the
+    # value survives recompute. Picked into one LU → two advise-enabled shippers on a single HU → E3
+    # guard rejects completion.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+    And contains M_Shippers
+      | Identifier | Value   | Name    | OPT.ShipperGateway | OPT.IsApiCarrierAdvise |
+      | nShift2    | nshift2 | nShift2 | nshift             | Y                      |
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot_e3    | guard_e3    | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_e3      | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID | M_Shipper_ID |
+      | so_e3_l1   | so_e3      | product      | 10         | product_TU_10CU         | nShift       |
+      | so_e3_l2   | so_e3      | product_2    | 10         | product_2_TU_10CU       | nShift2      |
+    When the order identified by so_e3 is completed
+    # ss_e3_1 derives shipper nShift, ss_e3_2 derives shipper nShift2 — both advise-enabled
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | OPT.M_Shipper_ID.Identifier |
+      | ss_e3_1    | so_e3_l1       | N             | nShift                      |
+      | ss_e3_2    | so_e3_l2       | N             | nShift2                     |
+    # Pick both lines into the same LU
+    When start picking job for sales order identified by so_e3
+    And scan picking slot identified by slot_e3
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | hu_1         | 10        |
+      | product_2             | hu_product_2 | 10        |
+    Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_MultipleShippersOnHU"
+
+  @from:cucumber
+  @Id:S0355_DeliveryOrder_230
+  Scenario: Carrier-advise guard — picking job completes when all packed schedules share one consistent carrier advise (OK)
+    # Two schedules on one nShift order, both auto-advised to the same cp1/cgt1. Consistent non-manual
+    # advise on a single LU → the guard passes and completion creates the shipment.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot_ok    | guard_ok    | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ok      | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_ok_l1   | so_ok      | product      | 10         | product_TU_10CU         |
+      | so_ok_l2   | so_ok      | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_ok is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_ok_1    | so_ok_l1       | N             |
+      | ss_ok_2    | so_ok_l2       | N             |
+    # Auto-advise both schedules — both get cp1/cgt1 from the stub
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_ok_1               |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_ok_2               |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_ok_1    | so_ok_l1       | N             | cp1                |
+      | ss_ok_2    | so_ok_l2       | N             | cp1                |
+    # Pick both schedules into the same LU — consistent non-manual advise on both
+    When start picking job for sales order identified by so_ok
+    And scan picking slot identified by slot_ok
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | hu_1         | 10        |
+      | product_2             | hu_product_2 | 10        |
+    When complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_ok_1               | inout_ok   | CO        |
+
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
     And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value true for sys config de.metas.shipper.gateway.printLabels.enabled
+    And set sys config boolean value false for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU

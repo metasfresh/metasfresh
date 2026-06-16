@@ -254,11 +254,17 @@ public class MobileUI_Picking_StepDef
 	{
 		waitUntilPickingJobSchedulesValid();
 		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
-		final String expectedMessageText = msgBL.getMsg(Env.getCtx(), expectedMessageKey);
+		// The raw message template carries a "{0}" placeholder for the HU id; the thrown exception has it
+		// substituted, so assert on the stable text following the placeholder (still uniquely identifies the message).
+		final String expectedMessageTemplate = msgBL.getMsg(Env.getCtx(), expectedMessageKey);
+		final int placeholderEnd = expectedMessageTemplate.indexOf("{0}");
+		final String expectedStableText = placeholderEnd >= 0
+				? expectedMessageTemplate.substring(placeholderEnd + "{0}".length())
+				: expectedMessageTemplate;
 		assertThatThrownBy(() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()))
 				.as("Picking job completion must be rejected with AD_Message %s", adMessageKey)
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(expectedMessageText);
+				.hasMessageContaining(expectedStableText);
 	}
 
 	/**
