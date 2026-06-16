@@ -38,8 +38,10 @@ test.describe("HU Label Configuration window — create a new record", () => {
   test("a new record saves with only the label process set (IsAutoPrint stays N)", async ({
     page,
   }) => {
-    allure.epic("Handling Units");
+    allure.epic("E0370: Intralogistic (HUs)");
     allure.story("HU Label Configuration — create record (AutoPrintCopies default)");
+    allure.tag("F5210: HU Label Configuration & Printing");
+    allure.tag("F5210");
     allure.severity("critical");
 
     const masterdata = await Backend.createMasterdata({
@@ -72,6 +74,9 @@ test.describe("HU Label Configuration window — create a new record", () => {
     await page.waitForTimeout(300);
     await processInput.fill(LABEL_PROCESS_NAME);
     await page.waitForTimeout(500);
+    // Dropdown options carry no data-testid; match the (de_DE-pinned, unique) process name.
+    // Substring match — the rendered option wraps the name with extra whitespace/markup, so
+    // an exact match does not apply; .first() guards against an unexpected second match.
     await page
       .locator(".input-dropdown-list-option")
       .getByText(LABEL_PROCESS_NAME)

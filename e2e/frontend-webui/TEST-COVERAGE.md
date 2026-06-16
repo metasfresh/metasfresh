@@ -117,7 +117,9 @@ npm run test:report
 **Key Validations**:
 - New record creation in a grid window
 - A mandatory field hidden by DisplayLogic must still get a default (regression guard
-  for the AutoPrintCopies default — without it the record saves with `0` copies)
+  for the AutoPrintCopies default — without it the WebUI saves the record with
+  AutoPrintCopies = `0`, i.e. "print zero copies"; the direct-INSERT path fails with a
+  NOT-NULL violation)
 - `validStatus.valid` + `saveStatus.saved` polling
 
 **Components Tested**:
