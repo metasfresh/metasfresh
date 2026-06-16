@@ -56,8 +56,8 @@ const createMasterdata = async () => {
 test('Sort distribution jobs by locator priority', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5112.1: MobileUI Distribution Filter');
-        allure.tag('F5112.1');  // Standalone tag for Tags section;
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Sort distribution jobs by locator priority');
     allure.severity('normal');
 
