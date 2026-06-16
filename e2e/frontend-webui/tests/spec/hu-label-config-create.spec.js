@@ -4,10 +4,8 @@ import { allure } from "allure-playwright";
 import { Backend } from "../utils/Backend";
 import { LoginPage } from "../utils/pages/LoginPage";
 import { DashboardPage } from "../utils/pages/DashboardPage";
-import { MasterWindowPage } from "../utils/pages/MasterWindowPage";
 import {
   FRONTEND_BASE_URL,
-  getPage,
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from "../utils/common";
