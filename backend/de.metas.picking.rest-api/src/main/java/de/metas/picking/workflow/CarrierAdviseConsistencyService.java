@@ -18,10 +18,9 @@ import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -36,6 +35,7 @@ import java.util.Objects;
  * (e.g. multiple shippers, mixed manual/non-manual, divergent product or goods-type).
  */
 @Service
+@RequiredArgsConstructor
 public class CarrierAdviseConsistencyService
 {
 	private static final AdMessageKey MSG_ManualInconsistentOnHU =
@@ -46,32 +46,9 @@ public class CarrierAdviseConsistencyService
 			AdMessageKey.of("de.metas.picking.CarrierAdvise_MultipleShippersOnHU");
 
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO;
 	@NonNull private final ShipperRepository shipperRepository;
-
-	@Autowired
-	public CarrierAdviseConsistencyService(@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver)
-	{
-		this(
-				huShipmentScheduleResolver,
-				Services.get(IHandlingUnitsBL.class),
-				Services.get(IHandlingUnitsDAO.class),
-				SpringContextHolder.instance.getBean(ShipperRepository.class)
-		);
-	}
-
-	CarrierAdviseConsistencyService(
-			@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			@NonNull final IHandlingUnitsDAO handlingUnitsDAO,
-			@NonNull final ShipperRepository shipperRepository)
-	{
-		this.huShipmentScheduleResolver = huShipmentScheduleResolver;
-		this.handlingUnitsBL = handlingUnitsBL;
-		this.handlingUnitsDAO = handlingUnitsDAO;
-		this.shipperRepository = shipperRepository;
-	}
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	/**
 	 * Checks every distinct top-level HU that has been picked on the given job.

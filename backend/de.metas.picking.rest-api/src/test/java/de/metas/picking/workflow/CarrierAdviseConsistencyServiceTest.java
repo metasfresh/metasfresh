@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.util.Services;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.model.I_M_HU;
@@ -69,8 +70,10 @@ class CarrierAdviseConsistencyServiceTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(IHandlingUnitsBL.class, handlingUnitsBL);
+		Services.registerService(IHandlingUnitsDAO.class, handlingUnitsDAO);
 
-		service = new CarrierAdviseConsistencyService(resolver, handlingUnitsBL, handlingUnitsDAO, shipperRepository);
+		service = new CarrierAdviseConsistencyService(resolver, shipperRepository);
 
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
