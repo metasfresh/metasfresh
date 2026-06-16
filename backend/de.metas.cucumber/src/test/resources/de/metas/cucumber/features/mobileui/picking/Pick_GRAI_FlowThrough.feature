@@ -121,10 +121,10 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | product               | pickFromLU | 3         | 7613204.00307.000003 |
     And expect current picking target
       | Existing_LU |
-      | pickedLU    |
+      | pickFromLU  |
 
     # The picked TUs must carry the scanned GRAIs.
-    Then the TUs on picked LU identified by pickedLU carry GRAIs
+    Then the TUs on picked LU identified by pickFromLU carry GRAIs
       | GRAI                 |
       | 7613204.00307.000001 |
       | 7613204.00307.000002 |
