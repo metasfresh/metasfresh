@@ -35,6 +35,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 
+/**
+ * Repository Tables: Carrier_Product
+ * Repository Cluster: CarrierProductRepository
+ */
 @Repository
 public class CarrierProductRepository
 {

@@ -35,7 +35,7 @@ public class PackedHUShippingInfoServiceTest
 	{
 		data = new LUTUProducerDestinationTestSupport();
 		SpringContextHolder.registerJUnitBean(ProductRepository.newInstanceForUnitTesting());
-		service = new PackedHUShippingInfoService();
+		service = PackedHUShippingInfoService.newInstanceForUnitTesting();
 
 		// The packing material DAO needs a centimetre UOM to convert dimensions.
 		// Set it on the packing materials so getPackageDimensions can succeed.

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipping;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -12,6 +13,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -24,6 +27,14 @@ public class PackedHUShippingInfoService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	@VisibleForTesting
+	public static PackedHUShippingInfoService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(PackedHUShippingInfoService.class, PackedHUShippingInfoService::new);
+	}
 
 	@NonNull
 	public PackedHUShippingInfo of(@NonNull final I_M_HU hu)
