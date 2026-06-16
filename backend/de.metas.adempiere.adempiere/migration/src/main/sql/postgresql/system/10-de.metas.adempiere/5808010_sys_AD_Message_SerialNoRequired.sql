@@ -1,8 +1,8 @@
 -- me03 #25556 — Serial No Picking
 -- AD_Message shown when a serial number is required (product IsSerialNoPicked + HU supports SerialNo) but missing at pick time.
 
-INSERT INTO AD_Message (AD_Message_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,MsgText,MsgType,EntityType)
-VALUES (545758 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-06-16 02:50:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-06-16 02:50:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED','Bitte Seriennummer scannen.','E','D')
+INSERT INTO AD_Message (AD_Message_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,MsgText,MsgType,ErrorCode,EntityType)
+VALUES (545758 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-06-16 02:50:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-06-16 02:50:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED','Bitte Seriennummer scannen.','E','SERIAL_NO_REQUIRED','D')
 ;
 
 -- seed _Trl rows for every active system language (copies the German base text)

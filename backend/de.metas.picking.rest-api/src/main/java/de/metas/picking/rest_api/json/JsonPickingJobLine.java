@@ -80,8 +80,8 @@ public class JsonPickingJobLine
 	@Nullable String salesOrderDocumentNo;
 	int orderLineSeqNo;
 	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
-	// Per-line pick attributes the mobile UI should prompt for (e.g. SerialNo for serial-no products);
-	// supersedes the job-level JsonPickingJob.readAttributes for this line.
+	// Per-line pick attributes the mobile UI should prompt for; extends (does not replace) the job-level
+	// JsonPickingJob.readAttributes by adding SerialNo for serial-no products.
 	@Builder.Default @NonNull Set<PickAttribute> readAttributes = ImmutableSet.of();
 
 	public static JsonPickingJobLineBuilder builderFrom(

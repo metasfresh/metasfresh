@@ -11,7 +11,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- AD_Element_Trl — de_DE description/help (later than element INSERT)
-UPDATE AD_Element_Trl SET Description='Wenn aktiviert, muss beim Kommissionieren dieses Produkts in eine Handling Unit die Seriennummer gescannt werden.', Help='Wenn aktiviert, muss beim Kommissionieren dieses Produkts in eine Handling Unit die Seriennummer gescannt werden.', Updated=TO_TIMESTAMP('2026-06-16 02:25:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585003 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Description='Wenn aktiviert, muss beim Kommissionieren dieses Produkts in eine Handling Unit die Seriennummer gescannt werden.', Help='Wenn aktiviert, muss beim Kommissionieren dieses Produkts in eine Handling Unit die Seriennummer gescannt werden.', Updated=TO_TIMESTAMP('2026-06-16 02:25:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585003 AND AD_Language='de_DE'
 ;
 
 -- AD_Element_Trl — en_US (later than element INSERT; distinct from de_DE)
@@ -34,7 +34,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN IsSerialNoPicked CHAR(1) DEFAULT ''N'' CHECK (IsSerialNoPicked IN (''Y'',''N'')) NOT NULL')
 ;
 
--- AD_Field on Product window tab 180 (later than element → propagation guard passes)
+-- AD_Field on the Product window's main header tab 180 (later than element → propagation guard passes)
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592813,781148 /*From ID Server*/,0,180,TO_TIMESTAMP('2026-06-16 02:27:00','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Seriennummer kommissionieren',TO_TIMESTAMP('2026-06-16 02:27:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
@@ -42,6 +42,6 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Field_ID=781148 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- AD_UI_Element — place in existing 'hu' element group 542064 (after IsHUtracing seqno 10)
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781148,0,180,652294 /*From ID Server*/,542064,'F',TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Seriennummer kommissionieren',20,0,0,TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100)
+-- AD_UI_Element — place in existing 'hu' element group 542064 (SeqNo 15: after IsHUtracing=10, before the existing HULabelPer=20)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781148,0,180,652294 /*From ID Server*/,542064,'F',TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Seriennummer kommissionieren',15,0,0,TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;

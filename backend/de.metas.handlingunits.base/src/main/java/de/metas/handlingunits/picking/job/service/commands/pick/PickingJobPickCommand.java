@@ -136,7 +136,6 @@ public class PickingJobPickCommand
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
 	@NonNull private final PickAttributes _manualPickAttributes;
-	// True when the line's product opts into serial-no picking (M_Product.IsSerialNoPicked) and its attribute set supports SerialNo.
 	private final boolean serialNoPickingEnabled;
 
 	//
