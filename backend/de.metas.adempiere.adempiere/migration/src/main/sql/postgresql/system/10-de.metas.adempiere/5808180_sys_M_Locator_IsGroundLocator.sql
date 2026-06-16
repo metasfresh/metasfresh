@@ -86,7 +86,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
 -- =============================================================================
 -- 3. Physical DDL — mandatory boolean, default false, NOT NULL
 -- =============================================================================
-ALTER TABLE M_Locator ADD COLUMN IF NOT EXISTS IsGroundLocator CHAR(1) DEFAULT 'N' CHECK (IsGroundLocator IN ('Y','N')) NOT NULL;
+SELECT public.db_alter_table('M_Locator', 'ALTER TABLE public.M_Locator ADD COLUMN IF NOT EXISTS IsGroundLocator CHAR(1) DEFAULT ''N'' CHECK (IsGroundLocator IN (''Y'',''N'')) NOT NULL');
 
 -- Sync AD_Column.DefaultValue
 UPDATE AD_Column
