@@ -1676,6 +1676,73 @@ Feature: nShift Shipment
       | target | available | readOnly |
       | line   | false     | false    |
 
+  @from:cucumber
+  @Id:S0355_DeliveryOrder_400
+  Scenario: nShift Delivery Order — one shipment whose HUs carry different carriers is split into two delivery orders
+    # One nShift order, two lines on two different products, each packed into its own top-level HU (one package each).
+    # Each schedule is advised to a DIFFERENT carrier product of the same shipper (cp1/cgt1 vs cp2/cgt2). The gateway
+    # groups packages by carrier (ShipperGatewayFacade.createDeliveryOrderKey, one DeliveryOrderKey per M_Package
+    # grouped by carrier), so the single shipment yields TWO Carrier_ShipmentOrders / TWO nShift createShipment calls,
+    # one per carrier. Different carriers on DIFFERENT HUs is allowed by the consistency guard (it only rejects
+    # different carriers on the SAME HU).
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
+    And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
+    And the nShift shipment service is stubbed to return a successful shipment creation response
+    And metasfresh contains AD_Users:
+      | Identifier      | Name                    | C_BPartner_ID | EMail                       | Phone            |
+      | customerContact | nShift Customer Contact | customer      | contact@nshift-test.example | +41 79 123 45 67 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      |
+      | so_split   | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_split_l1 | so_split   | product      | 10         | product_TU_10CU         |
+      | so_split_l2 | so_split   | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_split is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier   | C_OrderLine_ID | IsToRecompute |
+      | ss_split_l1  | so_split_l1    | N             |
+      | ss_split_l2  | so_split_l2    | N             |
+    # Each line advised to its own carrier product of the same shipper.
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_split_l1           | cp1                | cgt1                  | cs1                |
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_split_l2           | cp2                | cgt2                  | cs2                |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_split_l1 | so_split_l1    | N             | cp1                | cgt1                  |
+      | ss_split_l2 | so_split_l2    | N             | cp2                | cgt2                  |
+    # Both schedules generate into ONE shipment (one order, one shipper).
+    And shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID    | M_InOut_ID  |
+      | ss_split_l1, ss_split_l2 | inout_split |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID  | M_ShipperTransportation_ID |
+      | inout_split | transpOrder_split          |
+    # Two delivery orders: the gateway split the shipment's two packages by carrier.
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier | M_InOut_ID  | Carrier_Product_ID |
+      | cso_cp1    | inout_split | cp1                |
+      | cso_cp2    | inout_split | cp2                |
+    And validate Carrier_ShipmentOrder_Parcels:
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+      | cso_cp1                  | awb1 | trackingUrl1 | true        |
+    And validate Carrier_ShipmentOrder_Parcels:
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+      | cso_cp2                  | awb1 | trackingUrl1 | true        |
+    # 10 PCE / 10 PCE-per-TU => 1 parcel each; product weight 2.1×10=21, product_2 weight 1.1×10=11.
+    And validate Carrier_ShipmentOrder_Items:
+      | Carrier_ShipmentOrder_ID | ProductName     | ArticleValue    | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
+      | cso_cp1                  | nShift Product  | nshift_product  | 12345678            | 10         | 10    | 100        | 21              |
+      | cso_cp2                  | nShift Product2 | nshift_product2 | 12345678            | 10         | 8     | 80         | 11              |
+    # Two createShipment calls, one per carrier; each request carries its own carrier product / goods type / parcel.
+    And validate the captured nShift shipment requests:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | NumParcels |
+      | cp1                | cgt1                  | 1          |
+      | cp2                | cgt2                  | 1          |
+
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
     And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder

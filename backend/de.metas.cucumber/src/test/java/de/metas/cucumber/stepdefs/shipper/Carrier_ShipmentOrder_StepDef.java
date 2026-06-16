@@ -50,6 +50,7 @@ import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -73,6 +74,15 @@ public class Carrier_ShipmentOrder_StepDef
 	 * Polls until the shipment's delivery order has been created and at least one parcel has its AWB set.
 	 * Implicitly waits for {@code CreatePackagesForShipmentWorkpackageProcessor} →
 	 * {@code DeliveryOrderWorkpackageProcessor} (the AWB is the last thing the chain writes).
+	 *
+	 * <p>When the gateway splits one shipment's packages into several delivery orders (one per carrier),
+	 * the optional {@code Carrier_Product_ID} column selects the one delivery order whose carrier product
+	 * matches — otherwise the first found delivery order for the shipment is used.</p>
+	 *
+	 * @cucumber.columns
+	 *   <b>Identifier</b>          — (required) alias to store the found delivery order under<br>
+	 *   <b>M_InOut_ID</b>          — (required, identifier-ref) shipment whose delivery order(s) to poll for<br>
+	 *   <b>Carrier_Product_ID</b>  — (optional, identifier-ref) disambiguator when the shipment was split into several delivery orders
 	 */
 	@And("^after not more than (.*)s, Carrier_ShipmentOrder is found:$")
 	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable)
@@ -94,6 +104,10 @@ public class Carrier_ShipmentOrder_StepDef
 	{
 		final InOutId inOutId = inOutTable.getId(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
 
+		final CarrierProductId expectedProductId = row.getAsOptionalIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
+				.map(identifier -> identifier.lookupNotNullIdIn(carrierProductTable))
+				.orElse(null);
+
 		final DeliveryOrder[] resultHolder = new DeliveryOrder[1];
 
 		final Supplier<Boolean> foundWithAwb = () -> {
@@ -109,26 +123,50 @@ public class Carrier_ShipmentOrder_StepDef
 				return false;
 			}
 
-			final boolean anyHasAwb = parcels.stream()
-					.anyMatch(p -> p.getawb() != null && !p.getawb().isEmpty());
+			final List<DeliveryOrderId> deliveryOrderIds = parcels.stream()
+					.filter(p -> p.getawb() != null && !p.getawb().isEmpty())
+					.map(p -> DeliveryOrderId.ofRepoId(p.getCarrier_ShipmentOrder_ID()))
+					.distinct()
+					.collect(Collectors.toList());
 
-			if (!anyHasAwb)
+			if (deliveryOrderIds.isEmpty())
 			{
 				return false;
 			}
 
-			final DeliveryOrderId deliveryOrderId = DeliveryOrderId.ofRepoId(parcels.get(0).getCarrier_ShipmentOrder_ID());
-			resultHolder[0] = shipmentOrderRepository.getById(deliveryOrderId);
+			final DeliveryOrder match = deliveryOrderIds.stream()
+					.map(shipmentOrderRepository::getById)
+					.filter(order -> expectedProductId == null
+							|| expectedProductId.equals(carrierProductIdOfCso(order.getId())))
+					.findFirst()
+					.orElse(null);
+
+			if (match == null)
+			{
+				return false;
+			}
+
+			resultHolder[0] = match;
 			return true;
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, foundWithAwb);
 
 		assertThat(resultHolder[0])
-				.as("Carrier_ShipmentOrder with AWB for M_InOut_ID=%s was not found within %ss", inOutId, timeoutSec)
+				.as("Carrier_ShipmentOrder with AWB for M_InOut_ID=%s%s was not found within %ss",
+						inOutId,
+						expectedProductId != null ? " and Carrier_Product_ID=" + expectedProductId : "",
+						timeoutSec)
 				.isNotNull();
 
 		carrierShipmentOrderTable.put(row.getAsIdentifier(), resultHolder[0]);
+	}
+
+	@Nullable
+	private CarrierProductId carrierProductIdOfCso(@NonNull final DeliveryOrderId deliveryOrderId)
+	{
+		final I_Carrier_ShipmentOrder cso = InterfaceWrapperHelper.load(deliveryOrderId.getRepoId(), I_Carrier_ShipmentOrder.class);
+		return CarrierProductId.ofRepoIdOrNull(cso.getCarrier_Product_ID());
 	}
 
 	/**

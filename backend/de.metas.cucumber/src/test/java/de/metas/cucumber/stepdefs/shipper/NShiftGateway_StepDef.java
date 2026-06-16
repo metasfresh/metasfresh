@@ -62,6 +62,13 @@ public class NShiftGateway_StepDef
 	 */
 	@Nullable private JsonDeliveryRequest capturedShipmentRequest = null;
 
+	/**
+	 * Holds every {@link JsonDeliveryRequest} captured by the shipment service stub, in call order.
+	 * One entry per nShift {@code createShipment} call — i.e. one per delivery order the gateway splits the
+	 * packages into. Cleared each time {@link #stubShipmentServiceWithSuccess()} is called.
+	 */
+	@NonNull private final List<JsonDeliveryRequest> capturedShipmentRequests = new java.util.ArrayList<>();
+
 	@Given("the nShift ship advisor service is stubbed to return a successful response based on the request")
 	public void stubShipAdvisorServiceWithDynamicSuccess(@NonNull final DataTable dataTable)
 	{
@@ -119,6 +126,7 @@ public class NShiftGateway_StepDef
 	public void stubShipmentServiceWithSuccess()
 	{
 		capturedShipmentRequest = null; // reset before each stub setup so stale captures don't leak between scenarios
+		capturedShipmentRequests.clear();
 
 		when(shipmentDispatchServiceMock.createShipment(any(JsonDeliveryRequest.class)))
 				.thenAnswer((Answer<JsonDeliveryResponse>)invocation -> {
@@ -126,6 +134,7 @@ public class NShiftGateway_StepDef
 
 					// Capture the request so it can be inspected via validateCapturedNShiftShipmentRequest()
 					capturedShipmentRequest = actualRequest;
+					capturedShipmentRequests.add(actualRequest);
 
 					final JsonDeliveryResponse.JsonDeliveryResponseBuilder builder = JsonDeliveryResponse.builder()
 							.requestId(actualRequest.getId());
@@ -212,6 +221,55 @@ public class NShiftGateway_StepDef
 		assertContact(softly, capturedShipmentRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
 
 		softly.assertAll();
+	}
+
+	/**
+	 * Asserts the set of nShift {@code createShipment} calls when the gateway splits the shipment's packages
+	 * into more than one delivery order (one call per {@code DeliveryOrderKey}, i.e. per distinct carrier).
+	 * The row count MUST equal the number of captured requests; each row is matched to a request by its
+	 * carrier product ({@code shipperProduct.code}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_Product_ID</b>    — (required, identifier-ref) discriminator: the request's shipperProduct<br>
+	 *   <b>Carrier_Goods_Type_ID</b> — (optional, identifier-ref) the request's goodsType<br>
+	 *   <b>NumParcels</b>            — (optional) expected number of parcels in that request
+	 * @cucumber.depends StepDefData: Carrier_Product_StepDefData, Carrier_Goods_Type_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the captured nShift shipment requests:
+	 *   | Carrier_Product_ID | Carrier_Goods_Type_ID | NumParcels |
+	 *   | cp1                | cgt1                  | 1          |
+	 *   | cp2                | cgt2                  | 1          |
+	 * </pre>
+	 */
+	@And("validate the captured nShift shipment requests:")
+	public void validateCapturedNShiftShipmentRequests(@NonNull final DataTable dataTable)
+	{
+		assertThat(capturedShipmentRequests)
+				.as("nShift shipment service call count")
+				.hasSize(dataTable.height() - 1);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final CarrierProduct expectedProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
+
+			final JsonDeliveryRequest request = capturedShipmentRequests.stream()
+					.filter(req -> expectedProduct.getCode().equals(req.getShipperProduct().getCode()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("No captured nShift shipment request with shipperProduct.code=" + expectedProduct.getCode()));
+
+			final SoftAssertions softly = new SoftAssertions();
+			row.getAsOptionalIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID)
+					.map(carrierGoodsTypeTable::get)
+					.ifPresent(expectedGoodsType -> softly.assertThat(request.getGoodsType().getId())
+							.as("goodsType.id for carrier product %s", expectedProduct.getCode())
+							.isEqualTo(expectedGoodsType.getExternalId()));
+			row.getAsOptionalInt("NumParcels").ifPresent(expectedNumParcels -> softly
+					.assertThat(request.getDeliveryOrderParcels().size())
+					.as("number of parcels for carrier product %s", expectedProduct.getCode())
+					.isEqualTo(expectedNumParcels));
+			softly.assertAll();
+		});
 	}
 
 	/**
