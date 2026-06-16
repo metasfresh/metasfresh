@@ -122,4 +122,14 @@ public class MobileUIPickingClient
 	{
 		return workflowRestController.setUserConfirmation(wfProcessId, PickingMobileApplication.ACTIVITY_ID_Complete.getAsString());
 	}
+
+	/**
+	 * Re-fetches the current workflow process from the server, exactly like the mobile UI does after each step.
+	 * Unlike the post-event responses, this rebuilds the picking-job JSON freshly, so values that materialize
+	 * only after a pick (e.g. the existing LU/TU picking target and its carrier-advise flags) are reflected.
+	 */
+	public JsonWFProcess getWFProcessById(@NonNull final String wfProcessId)
+	{
+		return workflowRestController.getWFProcessById(wfProcessId);
+	}
 }

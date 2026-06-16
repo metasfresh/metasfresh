@@ -153,6 +153,42 @@ public class MobileUI_Picking_StepDef
 				});
 	}
 
+	/**
+	 * Asserts the carrier-advise display flags the mobile picking UI renders for the current job line,
+	 * across the pick-to shapes (LU target, TU target, or CU-direct / no-target pick) — exactly the
+	 * line-level {@code carrierAdvise*} fields {@code SelectCurrentLUTUButtons} reads to render the advise button.
+	 */
+	@Then("expect current picking job carrier advise")
+	public void expectCarrierAdvise(@NonNull final DataTable dataTable)
+	{
+		// Re-fetch the process freshly (as the mobile UI does) so the post-pick line-level carrier-advise
+		// flags are reflected, not the stale post-event response.
+		context.setWfProcess(mobileUIPickingClient.getWFProcessById(context.getWfProcessIdNotNull()));
+		DataTableRows.of(dataTable).forEach(this::assertCarrierAdvise);
+	}
+
+	private void assertCarrierAdvise(@NonNull final DataTableRow row)
+	{
+		final String target = row.getAsString("target");
+		final boolean expectedAvailable = row.getAsBoolean("available");
+		final boolean expectedReadOnly = row.getAsBoolean("readOnly");
+		final String expectedCaption = row.getAsOptionalString("carrierProductCaption").orElse(null);
+
+		// The `target` column documents the pick-to shape under test; the flags themselves are read from the
+		// line, which carries them for every shape on a header-level job (same source the mobile UI renders).
+		final JsonPickingJobLine line = CollectionUtils.singleElement(context.getPickingJobLines());
+		final boolean actualAvailable = line.isCarrierAdviseAvailable();
+		final boolean actualReadOnly = line.isCarrierAdviseReadOnly();
+		final String actualCaption = line.getCarrierProductCaption();
+
+		assertThat(actualAvailable).as("carrierAdviseAvailable for target %s", target).isEqualTo(expectedAvailable);
+		assertThat(actualReadOnly).as("carrierAdviseReadOnly for target %s", target).isEqualTo(expectedReadOnly);
+		if (row.getAsOptionalString("carrierProductCaption").isPresent())
+		{
+			assertThat(actualCaption).as("carrierProductCaption for target %s", target).isEqualTo(expectedCaption);
+		}
+	}
+
 	@When("pick lines")
 	public void pickLines(@NonNull final DataTable dataTable)
 	{
@@ -340,7 +376,7 @@ public class MobileUI_Picking_StepDef
 			return Util.equals(pickingLineProductId, productIdStr);
 		}
 
-		private List<JsonPickingJobLine> getPickingJobLines()
+		public List<JsonPickingJobLine> getPickingJobLines()
 		{
 			final JsonWFProcess wfProcess = getWfProcessNotNull();
 			final JsonWFActivity activity = wfProcess.getActivityById(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString());

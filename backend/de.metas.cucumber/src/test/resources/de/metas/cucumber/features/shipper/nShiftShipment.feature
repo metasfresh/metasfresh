@@ -1,9 +1,9 @@
 @from:cucumber
-@allure.label.epic:E0355_Transport_Planning_Extralogistik
-@allure.label.feature:F00355
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29099_nShift_Interface
 @ghActions:run_on_executor4
 Feature: nShift Shipment
-## F00355: Shipper
+## F29099: nShift Interface
 
   Background:
     Given infrastructure and metasfresh are running
@@ -1329,6 +1329,352 @@ Feature: nShift Shipment
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
       | ss_ok_1               | inout_ok   | CO        |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_300
+  Scenario: Carrier-advise picking display — LU target, non-manual API-advise shipper shows available, editable, with carrier product caption
+    # Schedule on the advise-enabled nShift shipper, auto-advised (non-manual, Completed) to a named carrier
+    # product. Picked into a new LU → the LU target exposes carrierAdvise available + editable + the product caption.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot   | IsDynamic |
+      | slot_lu_avl | display_lu_av | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier  | M_Shipper_ID | Name           |
+      | cp_lu_named | nShift       | LU Std Parcel  |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_lu_named        | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_lu_avl  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_lu_avl_l1 | so_lu_avl  | product      | 10         | product_TU_10CU         |
+    When the order identified by so_lu_avl is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_lu_avl  | so_lu_avl_l1   | N             |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_lu_avl             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_lu_avl  | so_lu_avl_l1   | N             | cp_lu_named        |
+    When start picking job for sales order identified by so_lu_avl
+    And scan picking slot identified by slot_lu_avl
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly | carrierProductCaption |
+      | LU     | true      | false    | LU Std Parcel         |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_310
+  Scenario: Carrier-advise picking display — LU target, manual advise shows available but read-only
+    # The schedule is advised Manually (M_ShipmentSchedule_Advise_Manual → Manual status). Picked into a new LU
+    # → the LU target exposes carrierAdvise available but read-only (every advise-enabled schedule is Manual).
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot    | IsDynamic |
+      | slot_lu_man | display_lu_man | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier      | M_Shipper_ID | Name          |
+      | cp_lu_man_named | nShift       | LU Man Parcel |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_lu_man  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_lu_man_l1 | so_lu_man  | product      | 10         | product_TU_10CU         |
+    When the order identified by so_lu_man is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_lu_man  | so_lu_man_l1   | N             |
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_lu_man             | cp_lu_man_named    | cgt2                  | cs3                |
+    # Wait for the Manual advising status + carrier product to settle before picking, so the picked HU's
+    # carrier-advise resolves readOnly=true (every advise-enabled schedule is Manual).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_lu_man  | so_lu_man_l1   | N             | cp_lu_man_named    |
+    When start picking job for sales order identified by so_lu_man
+    And scan picking slot identified by slot_lu_man
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly | carrierProductCaption |
+      | LU     | true      | true     | LU Man Parcel         |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_320
+  Scenario: Carrier-advise picking display — LU target, non-API-advise shipper shows not available
+    # The order's shipper is NOT advise-enabled (IsApiCarrierAdvise=N). Picked into a new LU → the LU target
+    # exposes carrierAdvise as not available (no advise button rendered).
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And contains M_Shippers
+      | Identifier | Value      | Name       | OPT.IsApiCarrierAdvise |
+      | noAdvise   | no_advise  | No Advise  | N                      |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot   | IsDynamic |
+      | slot_lu_none | display_lu_no | Y         |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_lu_none | true    | customer      | 2025-04-01  | wh             | noAdvise     |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_lu_none_l1 | so_lu_none | product      | 10         | product_TU_10CU         |
+    When the order identified by so_lu_none is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_lu_none | so_lu_none_l1  | N             |
+    When start picking job for sales order identified by so_lu_none
+    And scan picking slot identified by slot_lu_none
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly |
+      | LU     | false     | false    |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_330
+  Scenario: Carrier-advise picking display — TU target, non-manual API-advise shipper shows available, editable, with carrier product caption
+    # Same advise states as the LU scenarios, but picked into a new standalone TU → the carrierAdvise flags
+    # are exposed on the TU target.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot   | IsDynamic |
+      | slot_tu_avl | display_tu_av | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier  | M_Shipper_ID | Name          |
+      | cp_tu_named | nShift       | TU Std Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_tu_named        | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tu_avl  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_tu_avl_l1 | so_tu_avl  | product      | 10         | product_TU_10CU         |
+    When the order identified by so_tu_avl is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_tu_avl  | so_tu_avl_l1   | N             |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_tu_avl             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_tu_avl  | so_tu_avl_l1   | N             | cp_tu_named        |
+    When start picking job for sales order identified by so_tu_avl
+    And scan picking slot identified by slot_tu_avl
+    And set picking target as new TU identified by TU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly | carrierProductCaption |
+      | TU     | true      | false    | TU Std Parcel         |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_340
+  Scenario: Carrier-advise picking display — TU target, manual advise shows available but read-only
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot    | IsDynamic |
+      | slot_tu_man | display_tu_man | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier      | M_Shipper_ID | Name          |
+      | cp_tu_man_named | nShift       | TU Man Parcel |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tu_man  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_tu_man_l1 | so_tu_man  | product      | 10         | product_TU_10CU         |
+    When the order identified by so_tu_man is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_tu_man  | so_tu_man_l1   | N             |
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_tu_man             | cp_tu_man_named    | cgt2                  | cs3                |
+    # Wait for the Manual advising status + carrier product to settle before picking, so the picked HU's
+    # carrier-advise resolves readOnly=true (every advise-enabled schedule is Manual).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_tu_man  | so_tu_man_l1   | N             | cp_tu_man_named    |
+    When start picking job for sales order identified by so_tu_man
+    And scan picking slot identified by slot_tu_man
+    And set picking target as new TU identified by TU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly | carrierProductCaption |
+      | TU     | true      | true     | TU Man Parcel         |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_350
+  Scenario: Carrier-advise picking display — TU target, non-API-advise shipper shows not available
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And contains M_Shippers
+      | Identifier  | Value         | Name          | OPT.IsApiCarrierAdvise |
+      | noAdviseTU  | no_advise_tu  | No Advise TU  | N                      |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot   | IsDynamic |
+      | slot_tu_none | display_tu_no | Y         |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tu_none | true    | customer      | 2025-04-01  | wh             | noAdviseTU   |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_tu_none_l1 | so_tu_none | product      | 10         | product_TU_10CU         |
+    When the order identified by so_tu_none is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_tu_none | so_tu_none_l1  | N             |
+    When start picking job for sales order identified by so_tu_none
+    And scan picking slot identified by slot_tu_none
+    And set picking target as new TU identified by TU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly |
+      | TU     | false     | false    |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_360
+  Scenario: Carrier-advise picking display — no pick-to target (CU-direct), non-manual API-advise shipper shows available, editable, with carrier product caption
+    # No LU/TU target is set; the picked HU stays top-level (CU-direct). The carrierAdvise flags are then
+    # exposed at line level instead of on a target.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot   | IsDynamic |
+      | slot_cu_avl | display_cu_av | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier  | M_Shipper_ID | Name          |
+      | cp_cu_named | nShift       | CU Std Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_cu_named        | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_cu_avl  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_cu_avl_l1 | so_cu_avl  | product      | 10         | product_TU_10CU         |
+    When the order identified by so_cu_avl is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_cu_avl  | so_cu_avl_l1   | N             |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_cu_avl             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_cu_avl  | so_cu_avl_l1   | N             | cp_cu_named        |
+    When start picking job for sales order identified by so_cu_avl
+    And scan picking slot identified by slot_cu_avl
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly | carrierProductCaption |
+      | line   | true      | false    | CU Std Parcel         |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_370
+  Scenario: Carrier-advise picking display — no pick-to target (CU-direct), manual advise shows available but read-only
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier  | PickingSlot    | IsDynamic |
+      | slot_cu_man | display_cu_man | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier      | M_Shipper_ID | Name          |
+      | cp_cu_man_named | nShift       | CU Man Parcel |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_cu_man  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_cu_man_l1 | so_cu_man  | product      | 10         | product_TU_10CU         |
+    When the order identified by so_cu_man is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_cu_man  | so_cu_man_l1   | N             |
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_cu_man             | cp_cu_man_named    | cgt2                  | cs3                |
+    # Wait for the Manual advising status + carrier product to settle before picking, so the picked HU's
+    # carrier-advise resolves readOnly=true (every advise-enabled schedule is Manual).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_cu_man  | so_cu_man_l1   | N             | cp_cu_man_named    |
+    When start picking job for sales order identified by so_cu_man
+    And scan picking slot identified by slot_cu_man
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly | carrierProductCaption |
+      | line   | true      | true     | CU Man Parcel         |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_380
+  Scenario: Carrier-advise picking display — no pick-to target (CU-direct), non-API-advise shipper shows not available
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And contains M_Shippers
+      | Identifier | Value        | Name         | OPT.IsApiCarrierAdvise |
+      | noAdviseCU | no_advise_cu | No Advise CU | N                      |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot   | IsDynamic |
+      | slot_cu_none | display_cu_no | Y         |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_cu_none | true    | customer      | 2025-04-01  | wh             | noAdviseCU   |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_cu_none_l1 | so_cu_none | product      | 10         | product_TU_10CU         |
+    When the order identified by so_cu_none is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_cu_none | so_cu_none_l1  | N             |
+    When start picking job for sales order identified by so_cu_none
+    And scan picking slot identified by slot_cu_none
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job carrier advise
+      | target | available | readOnly |
+      | line   | false     | false    |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
