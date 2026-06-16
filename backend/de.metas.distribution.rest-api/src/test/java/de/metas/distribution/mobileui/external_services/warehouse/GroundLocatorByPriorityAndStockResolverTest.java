@@ -21,17 +21,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit tests for {@link LocatorValueRoundRobinResolver#resolveNext}.
+ * Unit tests for {@link GroundLocatorByPriorityAndStockResolver#resolveNext}.
  *
  * <p>Uses the full in-memory POJO stack (AdempiereTestHelper + HUTestHelper) so that
  * {@link WarehouseRepository} and {@link de.metas.handlingunits.storage.ProductAvailableStockPerLocator}
  * both operate against real in-memory records — no mocks needed for the data layer.</p>
  */
 @ExtendWith(AdempiereTestWatcher.class)
-class LocatorValueRoundRobinResolverTest
+class GroundLocatorByPriorityAndStockResolverTest
 {
 	private HUTestHelper huHelper;
-	private LocatorValueRoundRobinResolver resolver;
+	private GroundLocatorByPriorityAndStockResolver resolver;
 
 	private I_C_UOM uomKg;
 	private ProductId productId;
@@ -53,7 +53,7 @@ class LocatorValueRoundRobinResolverTest
 		warehouse.setValue("TW");
 		InterfaceWrapperHelper.saveRecord(warehouse);
 
-		resolver = new LocatorValueRoundRobinResolver(new WarehouseRepository());
+		resolver = new GroundLocatorByPriorityAndStockResolver(new WarehouseRepository());
 	}
 
 	// -----------------------------------------------------------------------

@@ -20,7 +20,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class LocatorValueRoundRobinResolver implements NextPickFromLocatorResolver
+public class GroundLocatorByPriorityAndStockResolver implements NextPickFromLocatorResolver
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final WarehouseRepository warehouseRepository;
