@@ -223,8 +223,9 @@ test.describe('Scan paths', () => {
         const masterdata = await createMasterdataWithHU({
             // manual mode: mode.manual.enabled=Y + defaultMode=manual renders a visible editable
             // input so Playwright can locate and fill it. inputMode attribute is absent (keyboard enabled).
+            // hardware stays enabled (the handheld's scanner is always present in real deployments).
             extraSysconfigs: modeSysconfigs({
-                hardwareEnabled: 'N',
+                hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
                 manualEnabled: 'Y',
                 defaultMode: 'manual',
@@ -356,10 +357,13 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectFooterAbsent();
     });
 
-    // manual mode: mode.manual.enabled=Y + defaultMode=manual →
+    // manual mode: mode.manual.enabled=Y + defaultMode=manual, hardware always enabled →
     //   • visible editable input (data-testid="manual-entry-input") IS rendered
     //   • off-screen #input-text IS still present (keyboard listener stays mounted)
     //   • manual-entry-input has no readOnly attribute (keyboard must be enabled)
+    //   • the "Use hardware scanner" button IS shown (hardware is an enabled scanner mode to
+    //     return to) — this mirrors the real deployment, where the handheld's hardware scanner
+    //     is always present, so manual mode always offers a way back to it.
     // noinspection JSUnusedLocalSymbols
     test('manual mode — visible editable input rendered, off-screen input present, no readOnly', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
@@ -369,7 +373,7 @@ test.describe('Modes', () => {
 
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
-                hardwareEnabled: 'N',
+                hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
                 manualEnabled: 'Y',
                 defaultMode: 'manual',
@@ -387,6 +391,9 @@ test.describe('Modes', () => {
         // The manual-entry input must NOT be readOnly — the user must be able to type.
         await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
         await BarcodeScannerComponent.expectCameraVideoAbsent();
+        // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
+        // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
+        await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-back-to-scanner');
     });
 
     // camera toggle: hardware + camera both enabled →
