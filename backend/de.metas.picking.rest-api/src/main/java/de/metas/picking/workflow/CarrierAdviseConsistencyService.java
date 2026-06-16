@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -49,6 +50,7 @@ public class CarrierAdviseConsistencyService
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO;
 	@NonNull private final ShipperRepository shipperRepository;
 
+	@Autowired
 	public CarrierAdviseConsistencyService(@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver)
 	{
 		this(
