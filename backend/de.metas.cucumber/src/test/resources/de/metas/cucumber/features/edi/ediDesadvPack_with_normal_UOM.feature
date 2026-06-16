@@ -71,8 +71,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     When the order identified by o_1_S0316_010 is completed
 
     And after not more than 30s, M_ShipmentSchedules are found:
-      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1_S0316_010 | ol_1_S0316_010            | N             |
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1_S0316_010 | ol_1_S0316_010            | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -159,8 +159,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     When the order identified by o_1_11212023_4 is completed
 
     And after not more than 30s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1_11212023_4 | ol_1_11212023_4           | N             |
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1_11212023_4 | ol_1_11212023_4           | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -382,8 +382,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     When the order identified by o_1_S0316_020 is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1_S0316_020 | ol_1_S0316_020            | N             |
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
+      | s_s_1_S0316_020 | ol_1_S0316_020            | N             | 100          |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
