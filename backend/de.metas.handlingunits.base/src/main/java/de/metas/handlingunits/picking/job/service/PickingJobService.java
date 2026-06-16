@@ -150,8 +150,11 @@ public class PickingJobService implements PickingSlotListener
 
 		if (!isPickedLU)
 		{
-			throw new AdempiereException("HU " + requestedLuId.getRepoId() + " is not a picked LU of picking job " + pickingJobId)
-					.markAsUserValidationError();
+			// defensive scoping guard: the frontend always sends a huId derived from the line's own pick target,
+			// so a legitimate UI never reaches here — only stale UI state / a race / direct API tampering can,
+			// none operator-correctable. So this is a technical error, NOT markAsUserValidationError (cf. the
+			// plain-AdempiereException guards elsewhere in this class), and it needs no translated AD_Message.
+			throw new AdempiereException("HU " + requestedLuId.getRepoId() + " is not a picked LU of picking job " + pickingJobId);
 		}
 
 		return requestedLuId;
