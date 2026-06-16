@@ -39,13 +39,10 @@ describe('grai list helpers', () => {
       expect(result).toBe(prev);
     });
 
-    it('deduplicates within a single call (newGrais contains duplicates of each other)', () => {
-      // Only the first occurrence of a dup makes it in — the second is filtered by existingSet
-      // after the first was added. Actually the filter is against prev set only; duplicates within
-      // newGrais will both pass the filter and both be appended. Document the actual contract:
-      // dedup is against PREV only, not within newGrais itself.
+    it('dedup is against prev only — within-newGrais duplicates both pass through', () => {
+      // mergeGraiArrays deduplicates against the existing (prev) list only.
+      // Duplicate entries within newGrais itself are NOT filtered — both append.
       const result = mergeGraiArrays([], ['X', 'X']);
-      // Both pass because neither was in prev — consistent with the implementation.
       expect(result).toEqual(['X', 'X']);
     });
   });

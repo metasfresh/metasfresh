@@ -50,7 +50,7 @@ export const useGrais = ({ huId }) => {
         const newTuCount = response.tuCount || 0;
         setTuCount(newTuCount);
         setGraiCodes((prev) => {
-          const currentExtras = newTuCount > 0 ? prev.slice(newTuCount) : [];
+          const currentExtras = getExtraGrais(prev, newTuCount);
           return [...backendGrais, ...currentExtras];
         });
         setDirty(false);
