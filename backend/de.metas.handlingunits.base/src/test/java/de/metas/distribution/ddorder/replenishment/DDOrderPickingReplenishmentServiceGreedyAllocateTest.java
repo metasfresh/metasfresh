@@ -279,11 +279,11 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	}
 
 	/**
-	 * AC4: when the source warehouse has no ground-floor locators (or all ground-floor locators have zero on-hand),
+	 * When the source warehouse has no ground-floor locators (or all ground-floor locators have zero on-hand),
 	 * {@code greedyAllocate} must return an empty allocation with no exception — no NPE, no fallback to non-ground locators.
 	 */
 	@Test
-	void ac4_noGroundLocators_returnsEmptyAllocation()
+	void noGroundLocators_returnsEmptyAllocation()
 	{
 		// No ground-floor locators → empty on-hand map (mirrors computeRequiredAllocation returning early)
 		final AllocationResult result = service.greedyAllocate(
@@ -297,10 +297,10 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	}
 
 	/**
-	 * AC4 variant: ground-floor locators exist but have zero on-hand for the product → allocation is empty.
+	 * Ground-floor locators exist but have zero on-hand for the product → allocation is empty.
 	 */
 	@Test
-	void ac4_groundLocatorsExistButZeroOnHand_returnsEmptyAllocation()
+	void groundLocatorsExist_butZeroOnHand_returnsEmptyAllocation()
 	{
 		// Ground locators created, but on-hand map is empty (zero stock for the product)
 		createLocator("10-A", 50); // ground locator with no stock — must NOT appear in allocation

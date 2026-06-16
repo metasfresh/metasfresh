@@ -85,13 +85,12 @@ class LocatorValueRoundRobinResolverTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Test cases (AC5 + AC6)
+	// Test cases
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Case 1 (AC5): non-ground locator is skipped even when it holds stock.
-	 * Ground locator G has stock; non-ground N also has stock. Current is G → next is G again? No, G is current.
-	 * Setup: current=G (ground, stock), N=non-ground (stock), G2=ground (stock). Result must be G2, not N.
+	 * Non-ground locator is skipped even when it holds stock.
+	 * Setup: current=G1 (ground), N=non-ground (stock), G2=ground (stock). Result must be G2, not N.
 	 */
 	@Test
 	void skipsNonGroundLocator_evenWithStock()
@@ -109,7 +108,7 @@ class LocatorValueRoundRobinResolverTest
 	}
 
 	/**
-	 * Case 2 (AC5): ground locator with zero stock for the product is skipped.
+	 * Ground locator with zero stock for the product is skipped.
 	 */
 	@Test
 	void skipsGroundLocator_withZeroStock()
@@ -126,8 +125,8 @@ class LocatorValueRoundRobinResolverTest
 	}
 
 	/**
-	 * Case 3 (AC5): ground locator with partial (less than any demand) stock is accepted — eligibility
-	 * requires only "on-hand > 0", not "on-hand >= demand".
+	 * Ground locator with partial (less than any demand) stock is accepted — eligibility
+	 * requires only "on-hand &gt; 0", not "on-hand &gt;= demand".
 	 */
 	@Test
 	void acceptsGroundLocator_withPartialStock()
@@ -147,15 +146,7 @@ class LocatorValueRoundRobinResolverTest
 	@Test
 	void priorityOrder_prio10BeforePrio20()
 	{
-		// Start from a locator not in the ground list so there are no ordering side-effects
-		// from the current position. Use prio10 as current, expect prio20 last; but with
-		// wrap-around the next after prio10 (current) must be prio10-wrap... simpler:
-		// Put current at prio30, ground list = [prio10, prio20]; next after prio30 should
-		// wrap to prio10 first (since ground list is ordered prio10, prio20).
-		//
-		// Actually the ground list does not contain prio30 (non-ground). To test priority order:
-		// current = G_prio20, both G_prio10 and G_prio20 are in list. Ground list order by prio:
-		// [G_prio10, G_prio20]. Starting from G_prio20 (last), wrap-around gives G_prio10 first.
+		// Ground list: [gPrio10(10), gPrio20(20)]. Starting from gPrio20 (last), wrap-around → gPrio10.
 		final LocatorId gPrio10 = createLocator("GP10", true, 10);
 		final LocatorId gPrio20 = createLocator("GP20", true, 20);
 
@@ -186,7 +177,7 @@ class LocatorValueRoundRobinResolverTest
 	}
 
 	/**
-	 * Case 6 (AC6): current locator is NOT in the ground list → MSG_NO_ALTERNATIVE.
+	 * Current locator is NOT in the ground list → MSG_NO_ALTERNATIVE.
 	 */
 	@Test
 	void currentNotInGroundList_throwsMsgNoAlternative()
@@ -203,7 +194,7 @@ class LocatorValueRoundRobinResolverTest
 	}
 
 	/**
-	 * Case 7 (AC6): empty ground list → MSG_NO_ALTERNATIVE.
+	 * Empty ground list → MSG_NO_ALTERNATIVE.
 	 */
 	@Test
 	void emptyGroundList_throwsMsgNoAlternative()
