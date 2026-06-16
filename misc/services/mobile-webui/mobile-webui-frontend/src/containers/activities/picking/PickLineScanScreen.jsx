@@ -380,7 +380,7 @@ const usePostQtyPicked = ({
     catchWeight = null,
     bestBeforeDate,
     lotNo,
-    serialNo,
+    serialNos,
     productNo,
     isCloseTarget = false,
     isDone = true,
@@ -420,8 +420,8 @@ const usePostQtyPicked = ({
         bestBeforeDate,
         setLotNo: lotNo !== undefined,
         lotNo,
-        setSerialNo: serialNo !== undefined,
-        serialNo,
+        setSerialNos: serialNos !== undefined,
+        serialNos,
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());

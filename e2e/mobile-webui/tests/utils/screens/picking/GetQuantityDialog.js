@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, BARCODE_HOOK_FLUSH_MS } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 
@@ -57,22 +57,47 @@ export const GetQuantityDialog = {
     expectSerialNoNotVisible: async () => await test.step(`${NAME} - Expect SerialNo controls not visible`, async () => {
         await expect(page.getByTestId('serialNo-scan-button')).not.toBeVisible();
         await expect(page.getByTestId('serialNo-scan-again-button')).not.toBeVisible();
+        await expect(page.getByTestId('serialNo-count')).not.toBeVisible();
     }),
 
-    expectSerialNoValue: async (expected) => await test.step(`${NAME} - Expect SerialNo value '${expected}'`, async () => {
-        await expect(page.getByTestId('serialNo-value')).toHaveText(`${expected}`);
+    // "X of N scanned" progress text in the qty dialog's serial row.
+    expectSerialNoCount: async ({ scanned, total }) => await test.step(`${NAME} - Expect SerialNo count '${scanned} of ${total}'`, async () => {
+        await expect(page.getByTestId('serialNo-count')).toContainText(`${scanned} of ${total}`, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    // Opens the "Scan Serial No" sub-view, simulates a hardware scan of `serialNo`, and returns to the dialog.
-    scanSerialNo: async (serialNo) => await test.step(`${NAME} - Scan SerialNo '${serialNo}'`, async () => {
+    expectSerialNoChipCount: async (expectedCount) => await test.step(`${NAME} - Expect ${expectedCount} SerialNo chip(s)`, async () => {
+        await expect(page.getByTestId('serialNo-chip')).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Opens the live multi-scan sub-view, scans each serial (asserting the chip count rises between
+    // scans so the keyboard hook flushes each barcode), then taps Done to return to the qty dialog.
+    scanSerialNos: async (serialNos) => await test.step(`${NAME} - Scan ${serialNos.length} SerialNo(s)`, async () => {
         const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
             && await page.getByTestId('serialNo-scan-again-button').isVisible();
         await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
-        // Wait for the scan sub-view to mount (its keyboard hook to be active) before dispatching
-        // barcode keystrokes — otherwise the events fire into the unmounted view and are lost.
-        await expect(page.getByTestId('serialNo-scan-cancel-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        // Wait for the scan sub-view to mount (keyboard hook active) before dispatching keystrokes.
+        await expect(page.getByTestId('serialNo-scan-done-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const before = await page.getByTestId('serialNo-chip').count();
+        for (let i = 0; i < serialNos.length; i++) {
+            await BarcodeScannerComponent.type({ scannedCode: serialNos[i] });
+            // assertion between scans → lets the interval flush process each barcode (avoids concat)
+            await expect(page.getByTestId('serialNo-chip')).toHaveCount(before + i + 1, { timeout: SLOW_ACTION_TIMEOUT });
+        }
+        await page.getByTestId('serialNo-scan-done-button').tap();
+    }),
+
+    // Scans a serial that is already present; asserts the chip count does NOT change (silent dedup).
+    scanDuplicateSerialNo: async (serialNo) => await test.step(`${NAME} - Scan duplicate SerialNo '${serialNo}'`, async () => {
+        const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
+            && await page.getByTestId('serialNo-scan-again-button').isVisible();
+        await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
+        await expect(page.getByTestId('serialNo-scan-done-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const before = await page.getByTestId('serialNo-chip').count();
         await BarcodeScannerComponent.type({ scannedCode: serialNo });
-        await expect(page.getByTestId('serialNo-value')).toHaveText(`${serialNo}`, { timeout: SLOW_ACTION_TIMEOUT });
+        // give the hook time to flush, then assert the count is unchanged (dedup)
+        await page.waitForTimeout(BARCODE_HOOK_FLUSH_MS);
+        await expect(page.getByTestId('serialNo-chip')).toHaveCount(before);
+        await page.getByTestId('serialNo-scan-done-button').tap();
     }),
 
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {

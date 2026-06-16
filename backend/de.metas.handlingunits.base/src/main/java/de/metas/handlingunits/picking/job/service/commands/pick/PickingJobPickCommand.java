@@ -105,7 +105,6 @@ public class PickingJobPickCommand
 	private final static AdMessageKey INVALID_NUMBER_QR_CODES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.INVALID_NUMBER_QR_CODES_ERROR_MSG");
 	private final static AdMessageKey UNKNOWN_TARGET_LU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.UNKNOWN_TARGET_LU_ERROR_MSG");
 	private final static AdMessageKey ERR_NotEnoughTUsFound = AdMessageKey.of("de.metas.handlingunits.picking.job.NOT_ENOUGH_TUS_ERROR_MSG");
-	private final static AdMessageKey ERR_SerialNoRequired = AdMessageKey.of("de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED");
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
@@ -769,7 +768,7 @@ public class PickingJobPickCommand
 			final SerialNoSet serialNos = getPickAttributes().getSerialNos();
 			if (serialNos.size() != qtyToPickCUs.toBigDecimal().intValueExact())
 			{
-				throw new AdempiereException(ERR_SerialNoRequired);
+				throw new AdempiereException(PickAttributes.ERR_SerialNoRequired);
 			}
 		}
 

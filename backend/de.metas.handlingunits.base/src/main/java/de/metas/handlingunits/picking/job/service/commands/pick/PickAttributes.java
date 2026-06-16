@@ -21,6 +21,8 @@ class PickAttributes
 {
 	private final static AdMessageKey ERR_NegativeCatchWeight = AdMessageKey.of("de.metas.handlingunits.picking.job.NEGATIVE_CATCH_WEIGHT_ERROR_MSG");
 	private final static AdMessageKey ERR_LMQ_CatchWeightNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG");
+	// Shared by PickingJobPickCommand (authoritative count gate) + PickedHUAttributesUpdater (empty-set write guard).
+	static final AdMessageKey ERR_SerialNoRequired = AdMessageKey.of("de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED");
 
 	@Nullable Quantity catchWeight;
 

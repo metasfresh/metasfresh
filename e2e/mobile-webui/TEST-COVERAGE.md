@@ -120,8 +120,8 @@
 
 | Scenario | Test |
 |---|---|
-| Serial-no product → picking gated until a serial is scanned, then the serial is persisted on the picked HU | `picking/picking_serialNo.spec.js` |
-| "Scan again" → re-scanning replaces the previously scanned serial; the corrected value is the one persisted on the HU | `picking/picking_serialNo.spec.js` |
+| Serial-no product → scan one serial per picked unit ("N of N"), confirm gated until N distinct serials, persisted comma-separated on the picked HU | `picking/picking_serialNo.spec.js` |
+| Duplicate serial scan is silently deduped (count unchanged; must scan N distinct serials) | `picking/picking_serialNo.spec.js` |
 | Misconfigured serial-no product (flag set, no serial-capable attribute set) → no prompt, picks directly | `picking/picking_serialNo.spec.js` |
 
 **3/3 — 100%**

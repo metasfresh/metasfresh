@@ -9,7 +9,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.serialno.SerialNoSet;
-import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -23,12 +22,11 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 @Builder
 class PickedHUAttributesUpdater
 {
-	private static final AdMessageKey ERR_SerialNoRequired = AdMessageKey.of("de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED");
-
 	@NonNull private final IUOMConversionBL uomConversionBL;
 
 	public void updateHUs(
@@ -146,7 +144,7 @@ class PickedHUAttributesUpdater
 				final SerialNoSet serialNos = pickAttributes.getSerialNos();
 				if (serialNos.isEmpty())
 				{
-					throw new AdempiereException(ERR_SerialNoRequired);
+					throw new AdempiereException(PickAttributes.ERR_SerialNoRequired);
 				}
 				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, SerialNoSet.toCommaSeparatedStringOrNull(serialNos));
 			}
@@ -186,15 +184,18 @@ class PickedHUAttributesUpdater
 	@Nullable
 	private static String computeSerialNoFromChildren(final IAttributeStorage huAttributes)
 	{
-		final HashSet<String> childValues = new HashSet<>();
+		// SerialNo is a MULTI-value attribute (one serial per unit, comma-separated): UNION all
+		// children's serials — unlike LotNo/dates, the children do NOT agree on a single value.
+		final LinkedHashSet<String> allSerials = new LinkedHashSet<>();
 		for (final IAttributeStorage childAttributes : huAttributes.getChildAttributeStorages(true))
 		{
 			if (childAttributes.hasAttribute(AttributeConstants.ATTR_SerialNo))
 			{
-				childValues.add(StringUtils.trimBlankToNull(childAttributes.getValueAsString(AttributeConstants.ATTR_SerialNo)));
+				SerialNoSet.ofNullableCommaSeparated(childAttributes.getValueAsString(AttributeConstants.ATTR_SerialNo))
+						.forEach(serialNo -> allSerials.add(serialNo.getValueAsString()));
 			}
 		}
 
-		return childValues.size() == 1 ? childValues.iterator().next() : null;
+		return allSerials.isEmpty() ? null : String.join(",", allSerials);
 	}
 }

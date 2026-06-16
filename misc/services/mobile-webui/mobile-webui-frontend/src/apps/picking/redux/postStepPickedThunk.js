@@ -22,8 +22,8 @@ export const postStepPickedThunk =
     productionDate,
     setLotNo,
     lotNo,
-    setSerialNo,
-    serialNo,
+    setSerialNos,
+    serialNos,
     isCloseTarget = false,
   }) =>
   async (dispatch, getState) => {
@@ -44,8 +44,8 @@ export const postStepPickedThunk =
       productionDate,
       setLotNo,
       lotNo,
-      setSerialNo,
-      serialNo,
+      setSerialNos,
+      serialNos,
       isCloseTarget,
     });
 

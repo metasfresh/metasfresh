@@ -14,7 +14,7 @@ import { generateEAN13 } from '../../utils/ean13';
 //                       → mobile picking prompts to scan a serial and persists it on the picked HU.
 // serialProduct=false → misconfig: IsSerialNoPicked=Y but NO SerialNo-capable attribute set
 //                       → no prompt, no error (settled config-gap behaviour) → picks directly.
-const createMasterdata = async ({ serialProduct }) => {
+const createMasterdata = async ({ serialProduct, orderQty = 1 }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -52,7 +52,7 @@ const createMasterdata = async ({ serialProduct }) => {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P1', qty: 1 }]
+                    lines: [{ product: 'P1', qty: orderQty }]
                 }
             },
         }
@@ -70,55 +70,64 @@ const startPickingJob = async (masterdata) => {
     return { pickingJobId };
 };
 
-test('Serial-no product: confirm gated until serial scanned, then persisted on the picked HU', async ({ page: _page }) => {
+test('Serial-no product: scan one serial per picked unit (N of N), deduped, persisted comma-separated on the HU', async ({ page: _page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Serial number scan when picking');
     allure.severity('critical');
 
-    const masterdata = await createMasterdata({ serialProduct: true });
+    const masterdata = await createMasterdata({ serialProduct: true, orderQty: 3 });
     const { pickingJobId } = await startPickingJob(masterdata);
-    const serialNoTypo = `SN-TYPO-${Date.now()}`; // first (wrong) scan — corrected via "Scan again"
-    const serialNo = `SN-${Date.now()}`;
+    const ts = Date.now();
+    const [s1, s2, s3] = [`SN-${ts}-1`, `SN-${ts}-2`, `SN-${ts}-3`];
+    const expectedSerials = `${s1},${s2},${s3}`; // SerialNoSet keeps scan/insertion order
 
-    await test.step("Pick with serial scan", async () => {
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', color: 'red' });
+    await test.step("Pick qty 3 with one serial per unit", async () => {
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '0 Stk', color: 'red' });
 
         // scanning the product opens GetQuantityDialog because the line's readAttributes contains SerialNo
         await BarcodeScannerComponent.type(masterdata.products.P1.gtin);
         await GetQuantityDialog.waitForDialog();
 
-        // required serial missing → scan button shown, confirm disabled
+        // need 3 serials (one per unit) → confirm disabled until 3 distinct are scanned
         await GetQuantityDialog.expectSerialNoScanButtonVisible();
+        await GetQuantityDialog.expectSerialNoCount({ scanned: 0, total: 3 });
         await GetQuantityDialog.expectDoneDisabled();
 
-        // scan a (wrong) serial → value shown, confirm enabled
-        await GetQuantityDialog.scanSerialNo(serialNoTypo);
-        await GetQuantityDialog.expectSerialNoValue(serialNoTypo);
-        await GetQuantityDialog.expectDoneEnabled();
+        // scan 2 → "2 of 3", still gated
+        await GetQuantityDialog.scanSerialNos([s1, s2]);
+        await GetQuantityDialog.expectSerialNoCount({ scanned: 2, total: 3 });
+        await GetQuantityDialog.expectSerialNoChipCount(2);
+        await GetQuantityDialog.expectDoneDisabled();
 
-        // "Scan again" → the corrected serial replaces the first one
-        await GetQuantityDialog.scanSerialNo(serialNo);
-        await GetQuantityDialog.expectSerialNoValue(serialNo);
+        // scan a duplicate of s1 → silently deduped, count unchanged, still gated
+        await GetQuantityDialog.scanDuplicateSerialNo(s1);
+        await GetQuantityDialog.expectSerialNoCount({ scanned: 2, total: 3 });
+        await GetQuantityDialog.expectDoneDisabled();
+
+        // scan the 3rd distinct → "3 of 3", confirm enabled
+        await GetQuantityDialog.scanSerialNos([s3]);
+        await GetQuantityDialog.expectSerialNoCount({ scanned: 3, total: 3 });
+        await GetQuantityDialog.expectSerialNoChipCount(3);
         await GetQuantityDialog.expectDoneEnabled();
         await GetQuantityDialog.clickDone();
 
         await PickingJobScreen.waitForScreen();
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '1 Stk', waitForColor: 'green' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '3 Stk', waitForColor: 'green' });
 
-        // the picked HU carries the scanned serial (the `pickings` block registers the `vhu1` alias)
+        // the picked HU carries all 3 serials comma-separated (the `pickings` block registers `vhu1`)
         await Backend.expect({
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
-                        P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }] }
+                        P1: { qtyPicked: [{ qtyPicked: "3 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }] }
                     }
                 }
             },
             hus: {
-                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { SerialNo: serialNo } },
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '997 PCE' } },
+                vhu1: { huStatus: 'S', storages: { P1: '3 PCE' }, attributes: { SerialNo: expectedSerials } },
             }
         });
     });
@@ -128,12 +137,12 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "3 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }] }
                 }
             }
         },
         hus: {
-            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { SerialNo: serialNo } },
+            vhu1: { huStatus: 'E', storages: { P1: '3 PCE' }, attributes: { SerialNo: expectedSerials } },
         }
     });
 });

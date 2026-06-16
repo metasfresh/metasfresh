@@ -39,6 +39,7 @@ public class SerialNo implements Comparable<SerialNo>
 		return trimmed != null ? new SerialNo(trimmed) : null;
 	}
 
+	/** @deprecated use {@link #getValueAsString()} — {@code toString()} is for debugging only. */
 	@Override
 	@Deprecated
 	public String toString() {return value;}
