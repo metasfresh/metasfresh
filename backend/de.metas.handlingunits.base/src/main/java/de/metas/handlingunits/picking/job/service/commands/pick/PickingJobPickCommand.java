@@ -565,7 +565,7 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		huService.setGrais(pickedLuId, GRAISet.ofStrings(graiCodes));
+		huService.setGrais(pickedLuId, GRAISet.parseStrings(graiCodes));
 	}
 
 	private void closeLUAndTUPickingTargets()
