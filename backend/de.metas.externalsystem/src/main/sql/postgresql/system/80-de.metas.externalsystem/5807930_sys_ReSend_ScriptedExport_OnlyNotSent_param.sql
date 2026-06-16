@@ -20,7 +20,7 @@
  * #L%
  */
 
--- me03 #30104: ReSend scripted export — add IsOnlyNotSentSuccessfully parameter
+-- ReSend scripted export — add the IsOnlyNotSentSuccessfully parameter
 -- to both M_InOut_ReSend_ScriptedExportConversion (585633) and
 -- C_Invoice_ReSend_ScriptedExportConversion (585637).
 --
