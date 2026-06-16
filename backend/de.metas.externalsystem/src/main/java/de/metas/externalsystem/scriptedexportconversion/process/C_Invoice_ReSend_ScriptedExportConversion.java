@@ -40,8 +40,9 @@ import java.util.List;
 
 /**
  * Re-triggers the scripted-export-conversion for a selection of C_Invoice records.
- * When {@code IsOnlyNotSentSuccessfully=Y} only configs whose last attempt is in error/invalid
- * state are re-sent; otherwise all known configs for each record are triggered.
+ * When {@code IsOnlyNotSentSuccessfully=Y} only configs in error/invalid state are re-sent.
+ * When {@code IsOnlyNotSentSuccessfully=N} configs in any terminal state (including already-Sent)
+ * are re-triggered; in-flight and DontSend configs are always skipped.
  */
 public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {

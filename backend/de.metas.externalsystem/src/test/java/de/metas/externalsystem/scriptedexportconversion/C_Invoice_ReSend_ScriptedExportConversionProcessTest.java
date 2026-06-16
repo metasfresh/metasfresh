@@ -147,7 +147,7 @@ public class C_Invoice_ReSend_ScriptedExportConversionProcessTest
 		verify(scriptedExportServiceMock, times(1))
 				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configB), eq(invoiceId), eq(ExternalSystemInvocationContext.RESEND));
 
-		assertThat(result).contains("2");
+		assertThat(result).contains("#2");
 	}
 
 	// -----------------------------------------------------------------------

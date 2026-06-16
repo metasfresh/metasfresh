@@ -126,13 +126,21 @@ WHERE l.IsActive = 'Y'
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = 543252)
 ;
 
--- German translation for 543252
+-- German translation for 543252 (fr_CH adopts German text verbatim with IsTranslated='N')
 UPDATE AD_Process_Para_Trl
 SET Name         = 'Nur noch nicht erfolgreich gesendete',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-06-16 10:00:02', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Language IN ('de_DE', 'de_CH')
+  AND AD_Process_Para_ID = 543252
+;
+UPDATE AD_Process_Para_Trl
+SET Name         = 'Nur noch nicht erfolgreich gesendete',
+    IsTranslated = 'N',
+    Updated      = TO_TIMESTAMP('2026-06-16 10:00:02', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Language = 'fr_CH'
   AND AD_Process_Para_ID = 543252
 ;
 
@@ -178,7 +186,7 @@ WHERE l.IsActive = 'Y'
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = 543253)
 ;
 
--- German translation for 543253
+-- German translation for 543253 (fr_CH adopts German text verbatim with IsTranslated='N')
 UPDATE AD_Process_Para_Trl
 SET Name         = 'Nur noch nicht erfolgreich gesendete',
     IsTranslated = 'Y',
@@ -187,3 +195,14 @@ SET Name         = 'Nur noch nicht erfolgreich gesendete',
 WHERE AD_Language IN ('de_DE', 'de_CH')
   AND AD_Process_Para_ID = 543253
 ;
+UPDATE AD_Process_Para_Trl
+SET Name         = 'Nur noch nicht erfolgreich gesendete',
+    IsTranslated = 'N',
+    Updated      = TO_TIMESTAMP('2026-06-16 10:00:04', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Language = 'fr_CH'
+  AND AD_Process_Para_ID = 543253
+;
+
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585004);
+

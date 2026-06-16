@@ -139,11 +139,15 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Returns all config IDs that have any export-status row for the given source record,
-	 * excluding {@link ExternalSystemExportStatus#DontSend} rows — those represent configs
-	 * whose WhereClause explicitly excluded the record and must not be re-triggered.
-	 * Use this when re-sending should cover all previously-triggered configs (both succeeded
-	 * and failed), not only those in terminal-failure state.
+	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
+	 * Excluded:
+	 * <ul>
+	 *   <li>{@link ExternalSystemExportStatus#DontSend} — WhereClause explicitly excluded this record; must not be re-triggered.</li>
+	 *   <li>In-flight rows ({@link ExternalSystemExportStatus#Pending}, {@link ExternalSystemExportStatus#Enqueued},
+	 *       {@link ExternalSystemExportStatus#SendingStarted}) — already being processed; re-triggering would cause a duplicate send.</li>
+	 * </ul>
+	 * {@link ExternalSystemExportStatus#Sent} rows <em>are</em> included: re-triggering a successfully-sent record is
+	 * intentional (e.g. the external system lost its data).
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
@@ -151,7 +155,7 @@ public class ExternalSystemExportStatusService
 	{
 		return repo.getLatestBySourceRecord(sourceRecord)
 				.stream()
-				.filter(s -> !s.getStatus().isDontSend())
+				.filter(s -> !s.getStatus().isDontSend() && !s.getStatus().isPending() && !s.getStatus().isProcessing())
 				.map(ScriptedExportConversionStatus::getConfigId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());

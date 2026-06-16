@@ -327,9 +327,12 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Returns all config IDs that have any export-status row for the given source record,
-	 * regardless of the current status (i.e. no terminal-failure filter).
-	 * Use this when re-sending should apply to ALL known configs, not only those in error/invalid state.
+	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
+	 * Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even when previously
+	 * successful); excludes {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and in-flight
+	 * states (Pending, Enqueued, SendingStarted) to avoid duplicate concurrent sends.
+	 *
+	 * @see ExternalSystemExportStatusService#getMatchingConfigIdsBySourceRecord(TableRecordReference)
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(

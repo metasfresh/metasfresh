@@ -147,7 +147,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		verify(scriptedExportServiceMock, times(1))
 				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configB), eq(inoutId), eq(ExternalSystemInvocationContext.RESEND));
 
-		assertThat(result).contains("2");
+		assertThat(result).contains("#2");
 	}
 
 	// -----------------------------------------------------------------------
