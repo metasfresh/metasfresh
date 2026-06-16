@@ -73,7 +73,7 @@ class CarrierAdviseConsistencyServiceTest
 		Services.registerService(IHandlingUnitsBL.class, handlingUnitsBL);
 		Services.registerService(IHandlingUnitsDAO.class, handlingUnitsDAO);
 
-		service = new CarrierAdviseConsistencyService(resolver, shipperRepository);
+		service = CarrierAdviseConsistencyService.newInstanceForUnitTesting(resolver, shipperRepository);
 
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());

@@ -1,5 +1,6 @@
 package de.metas.picking.workflow;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -21,6 +22,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -49,6 +51,15 @@ public class CarrierAdviseConsistencyService
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	@VisibleForTesting
+	public static CarrierAdviseConsistencyService newInstanceForUnitTesting(
+			@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver,
+			@NonNull final ShipperRepository shipperRepository)
+	{
+		Adempiere.assertUnitTestMode();
+		return new CarrierAdviseConsistencyService(huShipmentScheduleResolver, shipperRepository);
+	}
 
 	/**
 	 * Checks every distinct top-level HU that has been picked on the given job.
