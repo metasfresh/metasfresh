@@ -25,7 +25,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
-import de.metas.externalsystem.scriptedexportconversion.process.M_InOut_ReSend_ScriptedExportConversion;
+import de.metas.externalsystem.scriptedexportconversion.process.C_Invoice_ReSend_ScriptedExportConversion;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.JavaProcess;
@@ -45,7 +45,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +67,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Process-level test for {@link M_InOut_ReSend_ScriptedExportConversion}.
+ * Process-level test for {@link C_Invoice_ReSend_ScriptedExportConversion}.
  *
  * <p>Verifies:
  * <ul>
@@ -82,7 +82,7 @@ import static org.mockito.Mockito.when;
  * </ul>
  */
 @ExtendWith(AdempiereTestWatcher.class)
-public class M_InOut_ReSend_ScriptedExportConversionProcessTest
+public class C_Invoice_ReSend_ScriptedExportConversionProcessTest
 {
 	private ExternalSystemScriptedExportConversionService scriptedExportServiceMock;
 
@@ -105,13 +105,13 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	@Test
 	void doIt_twoQualifyingConfigs_invokeCalledOncePerConfig()
 	{
-		// Set up an M_InOut record to act as the process record
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final int inoutId = inout.getM_InOut_ID();
+		// Set up a C_Invoice record to act as the process record
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		InterfaceWrapperHelper.saveRecord(invoice);
+		final int invoiceId = invoice.getC_Invoice_ID();
 
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
-		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inoutId);
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
+		final TableRecordReference sourceRecord = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
 
 		final ExternalSystemScriptedExportConversionConfigId configIdA = ExternalSystemScriptedExportConversionConfigId.ofRepoId(101);
 		final ExternalSystemScriptedExportConversionConfigId configIdB = ExternalSystemScriptedExportConversionConfigId.ofRepoId(102);
@@ -135,7 +135,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
 
 		// Run the process (isOnlyNotSentSuccessfully=false → getMatchingConfigIdsBySourceRecord)
-		final String result = runProcess(inoutId, tableId, false);
+		final String result = runProcess(invoiceId, tableId, false);
 
 		// Assert: resolveConfigAndRecordPendingAsResend called once per config
 		verify(scriptedExportServiceMock, times(1)).resolveConfigAndRecordPendingAsResend(eq(configIdA), any());
@@ -143,9 +143,9 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 
 		// Assert: executeInvokeScriptedExportConversionActionAndGetResult called once per config with RESEND
 		verify(scriptedExportServiceMock, times(1))
-				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configA), eq(inoutId), eq(ExternalSystemInvocationContext.RESEND));
+				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configA), eq(invoiceId), eq(ExternalSystemInvocationContext.RESEND));
 		verify(scriptedExportServiceMock, times(1))
-				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configB), eq(inoutId), eq(ExternalSystemInvocationContext.RESEND));
+				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configB), eq(invoiceId), eq(ExternalSystemInvocationContext.RESEND));
 
 		assertThat(result).contains("#2");
 	}
@@ -156,15 +156,15 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	@Test
 	void doIt_noQualifyingConfigs_returnsZeroCount()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final int inoutId = inout.getM_InOut_ID();
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		InterfaceWrapperHelper.saveRecord(invoice);
+		final int invoiceId = invoice.getC_Invoice_ID();
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
 
 		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(any()))
 				.thenReturn(Collections.emptyList());
 
-		final String result = runProcess(inoutId, tableId, false);
+		final String result = runProcess(invoiceId, tableId, false);
 
 		assertThat(result).contains("#0");
 		verify(scriptedExportServiceMock, times(0)).resolveConfigAndRecordPendingAsResend(any(), any());
@@ -177,11 +177,11 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	@Test
 	void doIt_isOnlyNotSentSuccessfully_usesResendableConfigs()
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
-		InterfaceWrapperHelper.saveRecord(inout);
-		final int inoutId = inout.getM_InOut_ID();
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
-		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inoutId);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		InterfaceWrapperHelper.saveRecord(invoice);
+		final int invoiceId = invoice.getC_Invoice_ID();
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
+		final TableRecordReference sourceRecord = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
 
 		final ExternalSystemScriptedExportConversionConfigId configIdA = ExternalSystemScriptedExportConversionConfigId.ofRepoId(201);
 		final List<ExternalSystemScriptedExportConversionConfigId> resendableConfigIds = Collections.singletonList(configIdA);
@@ -194,7 +194,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemInvocationContext.RESEND)))
 				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
 
-		final String result = runProcess(inoutId, tableId, true /*isOnlyNotSentSuccessfully*/);
+		final String result = runProcess(invoiceId, tableId, true /*isOnlyNotSentSuccessfully*/);
 
 		// Verify the filtered path was used, NOT the all-configs path
 		verify(scriptedExportServiceMock, times(1)).getResendableConfigsBySourceRecord(sourceRecord);
@@ -228,18 +228,18 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	}
 
 	/**
-	 * Instantiates and drives the process for the given M_InOut record.
+	 * Instantiates and drives the process for the given C_Invoice record.
 	 *
 	 * @param isOnlyNotSentSuccessfully value for the {@code IsOnlyNotSentSuccessfully} process parameter
 	 * @return the process summary result string
 	 */
-	private String runProcess(final int inoutId, final int tableId, final boolean isOnlyNotSentSuccessfully)
+	private String runProcess(final int invoiceId, final int tableId, final boolean isOnlyNotSentSuccessfully)
 	{
 		final I_AD_Process adProcess = newInstanceOutOfTrx(I_AD_Process.class);
-		adProcess.setValue(M_InOut_ReSend_ScriptedExportConversion.class.getSimpleName());
-		adProcess.setName(M_InOut_ReSend_ScriptedExportConversion.class.getSimpleName());
+		adProcess.setValue(C_Invoice_ReSend_ScriptedExportConversion.class.getSimpleName());
+		adProcess.setName(C_Invoice_ReSend_ScriptedExportConversion.class.getSimpleName());
 		adProcess.setType(X_AD_Process.TYPE_Java);
-		adProcess.setClassname(M_InOut_ReSend_ScriptedExportConversion.class.getName());
+		adProcess.setClassname(C_Invoice_ReSend_ScriptedExportConversion.class.getName());
 		saveRecord(adProcess);
 		final AdProcessId adProcessId = AdProcessId.ofRepoId(adProcess.getAD_Process_ID());
 
@@ -248,13 +248,13 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_PInstance(pinstance)
-				.setRecord(tableId, inoutId)
+				.setRecord(tableId, invoiceId)
 				.setTitle("Test")
 				.addParameter("IsOnlyNotSentSuccessfully", isOnlyNotSentSuccessfully)
 				.build();
 
 		// Instantiate AFTER mocks are registered (fields resolved at construction via SpringContextHolder)
-		final M_InOut_ReSend_ScriptedExportConversion process = new M_InOut_ReSend_ScriptedExportConversion();
+		final C_Invoice_ReSend_ScriptedExportConversion process = new C_Invoice_ReSend_ScriptedExportConversion();
 
 		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstance(process))
 		{
