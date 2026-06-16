@@ -8,6 +8,7 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -140,13 +141,14 @@ class PickedHUAttributesUpdater
 			}
 			else
 			{
-				// Backend safety net (the mobile UI already disables confirm until a serial is present).
-				final String serialNo = pickAttributes.getSerialNo();
-				if (serialNo == null)
+				// Backend safety net: the serials are validated once, authoritatively, in PickingJobPickCommand
+				// (one distinct serial per picked unit). Here we only guard against an empty set before writing.
+				final SerialNoSet serialNos = pickAttributes.getSerialNos();
+				if (serialNos.isEmpty())
 				{
 					throw new AdempiereException(ERR_SerialNoRequired);
 				}
-				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, serialNo);
+				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, SerialNoSet.toCommaSeparatedStringOrNull(serialNos));
 			}
 		}
 	}

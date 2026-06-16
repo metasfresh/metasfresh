@@ -32,6 +32,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
@@ -69,8 +70,8 @@ public class JsonPickingStepEvent
 	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
 	boolean setLotNo;
 	@Nullable String lotNo;
-	boolean setSerialNo;
-	@Nullable String serialNo;
+	boolean setSerialNos;
+	@Nullable List<String> serialNos;
 	boolean isCloseTarget;
 
 	// Event Type: UNPICK

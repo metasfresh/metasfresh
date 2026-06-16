@@ -418,8 +418,8 @@ public class PickingJobService implements PickingSlotListener
 						.bestBeforeDate(event.getBestBeforeDate())
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
-						.isSetSerialNo(event.isSetSerialNo())
-						.serialNo(event.getSerialNo())
+						.isSetSerialNos(event.isSetSerialNos())
+						.serialNos(event.getSerialNos())
 						.isCloseTarget(event.isCloseTarget())
 						//
 						.build()

@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -32,8 +33,8 @@ class PickAttributes
 	boolean isSetLotNo;
 	@Nullable String lotNo;
 
-	boolean isSetSerialNo;
-	@Nullable String serialNo;
+	boolean isSetSerialNos;
+	@NonNull SerialNoSet serialNos;
 
 	@Builder(toBuilder = true)
 	private PickAttributes(
@@ -44,8 +45,8 @@ class PickAttributes
 			@Nullable final LocalDate productionDate,
 			final boolean isSetLotNo,
 			@Nullable final String lotNo,
-			final boolean isSetSerialNo,
-			@Nullable final String serialNo)
+			final boolean isSetSerialNos,
+			@Nullable final SerialNoSet serialNos)
 	{
 		if (catchWeight != null && catchWeight.signum() <= 0)
 		{
@@ -63,8 +64,8 @@ class PickAttributes
 		this.isSetLotNo = isSetLotNo;
 		this.lotNo = StringUtils.trimBlankToNull(lotNo);
 
-		this.isSetSerialNo = isSetSerialNo;
-		this.serialNo = StringUtils.trimBlankToNull(serialNo);
+		this.isSetSerialNos = isSetSerialNos;
+		this.serialNos = serialNos != null ? serialNos : SerialNoSet.EMPTY;
 	}
 
 	public static PickAttributes ofHUQRCode(@NonNull final IHUQRCode pickFromHUQRCode, @Nullable final UomId catchWeightUomId)
@@ -108,9 +109,9 @@ class PickAttributes
 			builder.isSetLotNo(true).lotNo(fallback.lotNo);
 			changed = true;
 		}
-		if (!isSetSerialNo && fallback.isSetSerialNo)
+		if (!isSetSerialNos && fallback.isSetSerialNos)
 		{
-			builder.isSetSerialNo(true).serialNo(fallback.serialNo);
+			builder.isSetSerialNos(true).serialNos(fallback.serialNos);
 			changed = true;
 		}
 

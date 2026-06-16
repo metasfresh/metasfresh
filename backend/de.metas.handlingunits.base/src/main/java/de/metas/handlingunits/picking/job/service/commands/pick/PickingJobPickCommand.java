@@ -56,6 +56,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetR
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
@@ -104,6 +105,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey INVALID_NUMBER_QR_CODES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.INVALID_NUMBER_QR_CODES_ERROR_MSG");
 	private final static AdMessageKey UNKNOWN_TARGET_LU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.UNKNOWN_TARGET_LU_ERROR_MSG");
 	private final static AdMessageKey ERR_NotEnoughTUsFound = AdMessageKey.of("de.metas.handlingunits.picking.job.NOT_ENOUGH_TUS_ERROR_MSG");
+	private final static AdMessageKey ERR_SerialNoRequired = AdMessageKey.of("de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED");
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
@@ -175,8 +177,8 @@ public class PickingJobPickCommand
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
 			final @Nullable String lotNo,
-			final boolean isSetSerialNo,
-			final @Nullable String serialNo,
+			final boolean isSetSerialNos,
+			final @Nullable SerialNoSet serialNos,
 			final boolean isCloseTarget)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -270,7 +272,7 @@ public class PickingJobPickCommand
 						: null)
 				.isSetBestBeforeDate(isSetBestBeforeDate).bestBeforeDate(bestBeforeDate)
 				.isSetLotNo(isSetLotNo).lotNo(lotNo)
-				.isSetSerialNo(isSetSerialNo).serialNo(serialNo)
+				.isSetSerialNos(isSetSerialNos).serialNos(serialNos)
 				.build();
 
 		this.serialNoPickingEnabled = productService.isSerialNoPickingEnabled(line.getProductId());
@@ -758,6 +760,19 @@ public class PickingJobPickCommand
 
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
+
+		// Authoritative serial-no count check: one distinct serial per picked unit (N serials for N CUs).
+		// Only when the product opts into serial-no picking and the operator actually entered serials
+		// (a whole-TU pick enters none); the picked CU qty is the unit count.
+		if (serialNoPickingEnabled && getPickAttributes().isSetSerialNos())
+		{
+			final SerialNoSet serialNos = getPickAttributes().getSerialNos();
+			if (serialNos.size() != qtyToPickCUs.toBigDecimal().intValueExact())
+			{
+				throw new AdempiereException(ERR_SerialNoRequired);
+			}
+		}
+
 		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId, serialNoPickingEnabled);
 
 		//
