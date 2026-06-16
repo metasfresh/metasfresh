@@ -92,7 +92,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 public class PickingJobPickCommand
 {
@@ -530,15 +529,17 @@ public class PickingJobPickCommand
 
 	/**
 	 * Stamps the event's {@code graiCodes} onto the picked LU's TUs inside the pick transaction.
-	 * Reuses the proven per-LU GRAI-distribution ({@link PickingJobHUService#setGrais}) which distributes
-	 * N GRAIs across the LU's N TUs.
 	 * <p>
-	 * The picked LU id is resolved by scanning the header and every line's effective pick target for the
-	 * first materialised existing-LU target — this covers both SALES_ORDER (header-level) and PRODUCT
-	 * (line-level) aggregation modes.
-	 * <p>
+	 * The picked LU id is resolved via {@link PickingJob#getLuPickingTargetEffective(PickingJobLineId)}
+	 * for the current line ({@link #_lineId}), which handles both aggregation modes:
+	 * <ul>
+	 *   <li>SALES_ORDER / DELIVERY_LOCATION (header-level): the line has no line-level target; the effective
+	 *       lookup falls back to the header LU target.</li>
+	 *   <li>PRODUCT (line-level): the line's own target was just materialised by
+	 *       {@code splitOutPickToHUs()} → {@code updatePickingTarget()}.</li>
+	 * </ul>
 	 * Must be called inside the ambient pick HU context (inside {@code temporarySetNewHContextForProcessing()})
-	 * so the attribute writes are flushed with the pick transaction.
+	 * so the attribute writes commit with the pick transaction.
 	 * No-op when {@code isSetGrais} is false or {@code graiCodes} is empty.
 	 */
 	private void stampGraisIfRequired()
@@ -549,20 +550,18 @@ public class PickingJobPickCommand
 		}
 
 		// Resolve the picked LU from the already-updated _pickingJob state (after splitOutPickToHUs → updatePickingTarget).
-		// Scan header + all lines to cover both SALES_ORDER (header-target) and PRODUCT (line-target) aggregation modes.
-		final HuId pickedLuId = Stream.concat(
-						Stream.of(_pickingJob.getLuPickingTarget(null)),
-						_pickingJob.streamLines().map(line -> _pickingJob.getLuPickingTargetEffective(line.getId())))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+		// getLuPickingTargetEffective(_lineId) covers both aggregation modes: for PRODUCT-agg it returns
+		// the line's own just-materialised LU; for SALES_ORDER/DELIVERY_LOCATION-agg it falls back to the header LU.
+		// Using the current line avoids the findFirst()-over-all-lines pitfall that would stamp the wrong
+		// LU in a multi-line PRODUCT-agg job where a prior line's LU is already materialised.
+		final HuId pickedLuId = _pickingJob.getLuPickingTargetEffective(_lineId)
 				.filter(LUPickingTarget::isExistingLU)
 				.map(LUPickingTarget::getLuIdNotNull)
-				.findFirst()
 				.orElse(null);
 
 		if (pickedLuId == null)
 		{
-			// No materialised LU yet (e.g. CU-only pick without an LU target) — nothing to stamp.
+			// No materialised LU for this line (e.g. CU-only pick without an LU target) — nothing to stamp.
 			return;
 		}
 
