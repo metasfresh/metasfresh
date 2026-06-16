@@ -32,6 +32,7 @@ import de.metas.cache.CCache;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
@@ -134,10 +135,17 @@ public class WarehouseRepository
 
 	private static Locator fromRecord(final I_M_Locator record)
 	{
+		final LocatorId locatorId = LocatorId.ofRecord(record);
+
+		// M_Locator.Value is not a mandatory column, so it may be null/blank in real databases.
+		// Locator.value is @NonNull (used as display caption / QR caption), so fall back to the locator id
+		// rather than letting the whole warehouse-map load fail with an NPE.
+		final String value = StringUtils.trimBlankToNull(record.getValue());
+
 		return Locator.builder()
-				.locatorId(LocatorId.ofRecord(record))
+				.locatorId(locatorId)
 				.active(record.isActive())
-				.value(record.getValue())
+				.value(value != null ? value : "<" + locatorId.getRepoId() + ">")
 				.priorityNo(record.getPriorityNo())
 				.build();
 	}
