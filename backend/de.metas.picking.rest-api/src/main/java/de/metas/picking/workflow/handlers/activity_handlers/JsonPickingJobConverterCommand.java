@@ -119,6 +119,11 @@ public class JsonPickingJobConverterCommand
 				.ifPresent(target -> builder.luPickingTarget(
 						JsonLUPickingTarget.of(target, resolveCarrierAdviseInfo(target.getLuIdNotNull()))));
 
+		pickingJob.getTuPickingTarget(null)
+				.filter(TUPickingTarget::isExistingTU)
+				.ifPresent(target -> builder.tuPickingTarget(
+						JsonTUPickingTarget.of(target, resolveCarrierAdviseInfo(target.getTuIdNotNull()))));
+
 		return builder.build();
 	}
 
