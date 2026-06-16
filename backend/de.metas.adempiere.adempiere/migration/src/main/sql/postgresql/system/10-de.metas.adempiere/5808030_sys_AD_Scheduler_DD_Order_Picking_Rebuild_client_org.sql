@@ -9,5 +9,5 @@ UPDATE AD_Scheduler
 SET AD_Client_ID=1000000,
     AD_Org_ID=1000000,
     Updated=TO_TIMESTAMP('2026-06-16 09:30:00', 'YYYY-MM-DD HH24:MI:SS'),
-    UpdatedBy=0
+    UpdatedBy=100
 WHERE AD_Scheduler_ID=550124;
