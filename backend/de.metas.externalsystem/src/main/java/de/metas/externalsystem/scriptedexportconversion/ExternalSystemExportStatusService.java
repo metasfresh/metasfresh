@@ -140,7 +140,10 @@ public class ExternalSystemExportStatusService
 
 	/**
 	 * Returns all config IDs that have any export-status row for the given source record,
-	 * regardless of the current status (no terminal-failure filter).
+	 * excluding {@link ExternalSystemExportStatus#DontSend} rows — those represent configs
+	 * whose WhereClause explicitly excluded the record and must not be re-triggered.
+	 * Use this when re-sending should cover all previously-triggered configs (both succeeded
+	 * and failed), not only those in terminal-failure state.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
@@ -148,6 +151,7 @@ public class ExternalSystemExportStatusService
 	{
 		return repo.getLatestBySourceRecord(sourceRecord)
 				.stream()
+				.filter(s -> !s.getStatus().isDontSend())
 				.map(ScriptedExportConversionStatus::getConfigId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());

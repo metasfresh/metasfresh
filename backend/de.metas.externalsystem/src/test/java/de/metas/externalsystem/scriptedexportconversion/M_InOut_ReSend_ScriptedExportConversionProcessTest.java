@@ -134,8 +134,8 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemInvocationContext.RESEND)))
 				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
 
-		// Run the process
-		final String result = runProcess(inoutId, tableId);
+		// Run the process (isOnlyNotSentSuccessfully=false → getMatchingConfigIdsBySourceRecord)
+		final String result = runProcess(inoutId, tableId, false);
 
 		// Assert: resolveConfigAndRecordPendingAsResend called once per config
 		verify(scriptedExportServiceMock, times(1)).resolveConfigAndRecordPendingAsResend(eq(configIdA), any());
@@ -164,11 +164,43 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(any()))
 				.thenReturn(Collections.emptyList());
 
-		final String result = runProcess(inoutId, tableId);
+		final String result = runProcess(inoutId, tableId, false);
 
 		assertThat(result).contains("#0");
 		verify(scriptedExportServiceMock, times(0)).resolveConfigAndRecordPendingAsResend(any(), any());
 		verify(scriptedExportServiceMock, times(0)).executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), any());
+	}
+
+	// -----------------------------------------------------------------------
+	// 3. isOnlyNotSentSuccessfully=true → uses getResendableConfigsBySourceRecord
+	// -----------------------------------------------------------------------
+	@Test
+	void doIt_isOnlyNotSentSuccessfully_usesResendableConfigs()
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		InterfaceWrapperHelper.saveRecord(inout);
+		final int inoutId = inout.getM_InOut_ID();
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
+		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inoutId);
+
+		final ExternalSystemScriptedExportConversionConfigId configIdA = ExternalSystemScriptedExportConversionConfigId.ofRepoId(201);
+		final List<ExternalSystemScriptedExportConversionConfigId> resendableConfigIds = Collections.singletonList(configIdA);
+		final ExternalSystemScriptedExportConversionConfig configA = buildDummyConfig(configIdA, tableId);
+
+		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
+				.thenReturn(resendableConfigIds);
+		when(scriptedExportServiceMock.resolveConfigAndRecordPendingAsResend(eq(configIdA), any()))
+				.thenReturn(configA);
+		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemInvocationContext.RESEND)))
+				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
+
+		final String result = runProcess(inoutId, tableId, true /*isOnlyNotSentSuccessfully*/);
+
+		// Verify the filtered path was used, NOT the all-configs path
+		verify(scriptedExportServiceMock, times(1)).getResendableConfigsBySourceRecord(sourceRecord);
+		verify(scriptedExportServiceMock, times(0)).getMatchingConfigIdsBySourceRecord(any());
+		verify(scriptedExportServiceMock, times(1)).resolveConfigAndRecordPendingAsResend(eq(configIdA), any());
+		assertThat(result).contains("1");
 	}
 
 	// -----------------------------------------------------------------------
@@ -197,9 +229,11 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 
 	/**
 	 * Instantiates and drives the process for the given M_InOut record.
-	 * Returns the process summary result string.
+	 *
+	 * @param isOnlyNotSentSuccessfully value for the {@code IsOnlyNotSentSuccessfully} process parameter
+	 * @return the process summary result string
 	 */
-	private String runProcess(final int inoutId, final int tableId)
+	private String runProcess(final int inoutId, final int tableId, final boolean isOnlyNotSentSuccessfully)
 	{
 		final I_AD_Process adProcess = newInstanceOutOfTrx(I_AD_Process.class);
 		adProcess.setValue(M_InOut_ReSend_ScriptedExportConversion.class.getSimpleName());
@@ -216,6 +250,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 				.setAD_PInstance(pinstance)
 				.setRecord(tableId, inoutId)
 				.setTitle("Test")
+				.addParameter("IsOnlyNotSentSuccessfully", isOnlyNotSentSuccessfully)
 				.build();
 
 		// Instantiate AFTER mocks are registered (fields resolved at construction via SpringContextHolder)

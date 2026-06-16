@@ -36,7 +36,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -65,13 +64,12 @@ public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess imple
 	@Override
 	protected String doIt()
 	{
-		int triggered = 0;
+		// Collect IDs first to close the DB cursor before making external-service calls.
+		final List<Integer> invoiceIds = retrieveSelectedRecordsQueryBuilder(I_C_Invoice.class).create().listIds();
 
-		final Iterator<I_C_Invoice> it = retrieveSelectedRecordsQueryBuilder(I_C_Invoice.class).create().iterate(I_C_Invoice.class);
-		while (it.hasNext())
+		int triggered = 0;
+		for (final int c_invoice_id : invoiceIds)
 		{
-			final I_C_Invoice record = it.next();
-			final int c_invoice_id = record.getC_Invoice_ID();
 			final TableRecordReference sourceRecord = TableRecordReference.of(I_C_Invoice.Table_Name, c_invoice_id);
 
 			final List<ExternalSystemScriptedExportConversionConfigId> configIds = isOnlyNotSentSuccessfully

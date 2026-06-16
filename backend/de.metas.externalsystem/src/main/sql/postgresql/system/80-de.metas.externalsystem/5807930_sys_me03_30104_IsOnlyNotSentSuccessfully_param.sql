@@ -39,8 +39,8 @@ VALUES
      TO_TIMESTAMP('2026-06-16 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      'IsOnlyNotSentSuccessfully',
      'de.metas.externalsystem',
-     'Only not yet successfully sent',
-     'Only not yet successfully sent')
+     'Nur noch nicht erfolgreich gesendete',
+     'Nur noch nicht erfolgreich gesendete')
 ;
 
 -- 2) AD_Element_Trl: German translations --------------------------------------------
@@ -73,6 +73,17 @@ WHERE l.IsActive = 'Y'
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = 585004)
 ;
 
+-- AD_Element_Trl: en_US translation
+UPDATE AD_Element_Trl
+SET Name         = 'Only not yet successfully sent',
+    PrintName    = 'Only not yet successfully sent',
+    IsTranslated = 'Y',
+    Updated      = TO_TIMESTAMP('2026-06-16 10:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    UpdatedBy    = 100
+WHERE AD_Language = 'en_US'
+  AND AD_Element_ID = 585004
+;
+
 -- 3) AD_Process_Para for M_InOut_ReSend_ScriptedExportConversion (AD_Process_ID=585633) --------
 INSERT INTO AD_Process_Para
     (AD_Process_Para_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
@@ -88,7 +99,7 @@ VALUES
      585004,
      'IsOnlyNotSentSuccessfully',
      'Only not yet successfully sent',
-     20 /*YesNo*/, 0, 'N', 'N', 10,
+     20 /*YesNo*/, 1, 'N', 'N', 10,
      'de.metas.externalsystem')
 ;
 
@@ -140,7 +151,7 @@ VALUES
      585004,
      'IsOnlyNotSentSuccessfully',
      'Only not yet successfully sent',
-     20 /*YesNo*/, 0, 'N', 'N', 10,
+     20 /*YesNo*/, 1, 'N', 'N', 10,
      'de.metas.externalsystem')
 ;
 
