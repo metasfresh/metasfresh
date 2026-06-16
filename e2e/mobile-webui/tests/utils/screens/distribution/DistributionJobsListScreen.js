@@ -48,9 +48,11 @@ export const DistributionJobsListScreen = {
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        await test.step(`Wait for all expected buttons to be attached`, async () => {
+        await test.step(`Wait for all expected buttons to be visible`, async () => {
             for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+                // 'visible' (not merely 'attached'): assert the worker actually SEES the offered job,
+                // i.e. the launcher list has finished loading (spinner gone) and the button is painted.
+                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
             }
         });
 
@@ -69,17 +71,6 @@ export const DistributionJobsListScreen = {
         // Make sure we have the expected number of buttons
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
-    }),
-
-    // Ensure the offered job buttons are actually PAINTED (not merely attached to the DOM, which is
-    // what expectJobButtons checks) and hold on that rendered state, so a UAT video ends on the
-    // visible result instead of a teardown re-fetch spinner. UAT-recording aid, not a correctness gate.
-    holdOnVisibleJobsForRecording: async (testIds, { holdMs = 1500 } = {}) => await test.step(`${NAME} - Hold on visible jobs for UAT recording`, async () => {
-        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
-        for (const testId of testIds) {
-            await expect(locateJobButtons({ testId })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-        }
-        await page.waitForTimeout(holdMs);
     }),
 
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
@@ -164,7 +155,7 @@ const locateJobButtons = ({ index, testId } = {}) => {
 };
 
 const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
-    await button.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    await button.waitFor({ state: 'visible', timeout: VERY_FAST_ACTION_TIMEOUT });
     await expect(button).toHaveCount(1);
 
     if (expectation.testId != null) {
