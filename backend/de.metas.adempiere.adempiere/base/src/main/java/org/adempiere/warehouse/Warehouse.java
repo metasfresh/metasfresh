@@ -49,7 +49,7 @@ public class Warehouse
 	@NonNull OrgId orgId;
 	@NonNull String name;
 	@Nullable ResourceId plantId;
-	boolean isInTrasit;
+	boolean isInTransit;
 	boolean isReceiveAsSourceHU;
 	boolean isAutoDistributionOrder;
 	@Nullable DistributionNetworkId distributionNetworkId;
@@ -64,7 +64,7 @@ public class Warehouse
 			@NonNull final OrgId orgId,
 			@NonNull final String name,
 			@Nullable final ResourceId plantId,
-			final boolean isInTrasit,
+			final boolean isInTransit,
 			final boolean isReceiveAsSourceHU,
 			final boolean isAutoDistributionOrder,
 			@Nullable final DistributionNetworkId distributionNetworkId,
@@ -76,7 +76,7 @@ public class Warehouse
 		this.orgId = orgId;
 		this.name = name;
 		this.plantId = plantId;
-		this.isInTrasit = isInTrasit;
+		this.isInTransit = isInTransit;
 		this.isReceiveAsSourceHU = isReceiveAsSourceHU;
 		this.isAutoDistributionOrder = isAutoDistributionOrder;
 		this.distributionNetworkId = distributionNetworkId;
@@ -113,7 +113,6 @@ public class Warehouse
 				.filter(Locator::isGroundFloor)
 				.sorted(Comparator.comparing(Locator::getPriorityNo).thenComparing(Locator::getLocatorId))
 				.map(Locator::getLocatorId)
-				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
 }

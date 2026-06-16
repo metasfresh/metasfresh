@@ -3,13 +3,13 @@ package de.metas.distribution.ddorder.replenishment;
 import com.google.common.collect.ImmutableMap;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService.AllocationResult;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
-import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -23,6 +23,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +54,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(AdempiereTestWatcher.class)
 class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 {
-	private static final int WAREHOUSE_ID = 1;
+	private int warehouseId;
 
 	private DDOrderPickingReplenishmentService service;
 
@@ -72,6 +73,14 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 		uomEach = BusinessTestHelper.createUOM("Each", 0, 0);
 		uomCase = BusinessTestHelper.createUOM("Case", 0, 0);
+
+		// Create a real M_Warehouse record so WarehouseRepository can resolve the locators created below.
+		// (IDs are auto-assigned by the POJO store; we derive warehouseId from the created record.)
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setName("TestWarehouse");
+		warehouse.setValue("TW");
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		warehouseId = warehouse.getM_Warehouse_ID();
 
 		// greedyAllocate only uses warehouseBL + uomConversionBL (both Services.get, in-memory);
 		// the constructor-injected collaborators are unused here, so plain mocks suffice.
@@ -99,12 +108,12 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	private LocatorId createLocator(final String value, final int priorityNo)
 	{
 		final I_M_Locator loc = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
-		loc.setM_Warehouse_ID(WAREHOUSE_ID);
+		loc.setM_Warehouse_ID(warehouseId);
 		loc.setValue(value);
 		loc.setPriorityNo(priorityNo);
 		loc.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(loc);
-		return LocatorId.ofRepoId(WAREHOUSE_ID, loc.getM_Locator_ID());
+		return LocatorId.ofRepoId(warehouseId, loc.getM_Locator_ID());
 	}
 
 	/**
@@ -267,5 +276,43 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(result.getAllocation()).containsOnlyKeys(locatorA)
 				.containsEntry(locatorA, each("4"));
 		assertThat(result.getUncovered()).isEqualTo(each("0"));
+	}
+
+	/**
+	 * AC4: when the source warehouse has no ground-floor locators (or all ground-floor locators have zero on-hand),
+	 * {@code greedyAllocate} must return an empty allocation with no exception — no NPE, no fallback to non-ground locators.
+	 */
+	@Test
+	void ac4_noGroundLocators_returnsEmptyAllocation()
+	{
+		// No ground-floor locators → empty on-hand map (mirrors computeRequiredAllocation returning early)
+		final AllocationResult result = service.greedyAllocate(
+				each("10"),
+				ProductQtyOnHandByLocator.EMPTY,
+				availableStockingUom -> availableStockingUom,
+				(locatorId, qty) -> {throw new AssertionError("nothing to skip when on-hand is empty, got " + locatorId);});
+
+		assertThat(result.getAllocation()).isEmpty();
+		assertThat(result.getUncovered()).isEqualTo(each("10")); // demand is entirely uncovered (no stock)
+	}
+
+	/**
+	 * AC4 variant: ground-floor locators exist but have zero on-hand for the product → allocation is empty.
+	 */
+	@Test
+	void ac4_groundLocatorsExistButZeroOnHand_returnsEmptyAllocation()
+	{
+		// Ground locators created, but on-hand map is empty (zero stock for the product)
+		createLocator("10-A", 50); // ground locator with no stock — must NOT appear in allocation
+		createLocator("20-B", 50);
+
+		final AllocationResult result = service.greedyAllocate(
+				each("5"),
+				ProductQtyOnHandByLocator.EMPTY,
+				availableStockingUom -> availableStockingUom,
+				(locatorId, qty) -> {throw new AssertionError("nothing to skip when on-hand is empty, got " + locatorId);});
+
+		assertThat(result.getAllocation()).isEmpty();
+		assertThat(result.getUncovered()).isEqualTo(each("5"));
 	}
 }

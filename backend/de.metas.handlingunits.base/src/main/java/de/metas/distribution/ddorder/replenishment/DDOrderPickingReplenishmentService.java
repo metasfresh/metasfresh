@@ -60,7 +60,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -464,7 +463,7 @@ public class DDOrderPickingReplenishmentService
 		return result.getAllocation();
 	}
 
-	private ProductQtyOnHandByLocator getQtyOnHandByLocator(final @NotNull ProductId productId, final Collection<LocatorId> sourceLocatorIds)
+	private ProductQtyOnHandByLocator getQtyOnHandByLocator(@NonNull final ProductId productId, @NonNull final Collection<LocatorId> sourceLocatorIds)
 	{
 		return ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
 				.getQtyOnHandByLocator(productId, ImmutableSet.copyOf(sourceLocatorIds));

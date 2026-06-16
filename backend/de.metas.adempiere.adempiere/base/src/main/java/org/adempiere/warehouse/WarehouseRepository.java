@@ -46,7 +46,6 @@ import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig, M_Locator
@@ -169,7 +168,7 @@ public class WarehouseRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.name(record.getName())
 				.plantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_ID()))
-				.isInTrasit(record.isInTransit())
+				.isInTransit(record.isInTransit())
 				.isReceiveAsSourceHU(record.isReceiveAsSourceHU())
 				.isAutoDistributionOrder(record.isAutoDistributionOrder())
 				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
@@ -214,14 +213,6 @@ public class WarehouseRepository
 	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(@NonNull final OrgId orgId)
 	{
 		return getWarehouseMap().getInTransitWarehouseIdIfExists(orgId);
-	}
-
-	public Set<LocatorId> getActiveLocatorIds(final @NonNull WarehouseId warehouseId)
-	{
-		return getById(warehouseId).getActiveLocators()
-				.stream()
-				.map(Locator::getLocatorId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public Optional<ResourceId> getPlantId(final WarehouseId warehouseId)

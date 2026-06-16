@@ -995,7 +995,7 @@ public final class CollectionUtils
 				return candidate;
 			}
 		}
-		
+
 		return null; // no eligible candidate other than the given one
 	}
 }

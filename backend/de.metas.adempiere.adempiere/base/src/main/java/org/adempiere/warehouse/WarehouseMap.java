@@ -82,7 +82,7 @@ final class WarehouseMap
 	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(final @NonNull OrgId orgId)
 	{
 		return allActive.stream()
-				.filter(warehouse -> warehouse.isInTrasit() && OrgId.equals(warehouse.getOrgId(), orgId))
+				.filter(warehouse -> warehouse.isInTransit() && OrgId.equals(warehouse.getOrgId(), orgId))
 				.sorted(Comparator.comparing(Warehouse::getWarehouseId))
 				.map(Warehouse::getWarehouseId)
 				.findFirst();

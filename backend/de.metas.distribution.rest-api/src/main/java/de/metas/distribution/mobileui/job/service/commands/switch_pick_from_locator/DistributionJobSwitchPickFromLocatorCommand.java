@@ -89,6 +89,13 @@ public class DistributionJobSwitchPickFromLocatorCommand
 				));
 	}
 
+	/**
+	 * Move the line's pick-from locator to {@code nextLocatorId}, carrying the (legacy, locator-level) reservation along.
+	 * <p>
+	 * {@code MDDOrderLine.beforeSave} forbids changing {@code M_Locator_ID} while {@code QtyReserved != 0}
+	 * ({@code canChangeWarehouse} throws {@code @QtyReserved}). So un-reserve on the old locator (set qty to 0,
+	 * which lets the locator change pass), then re-reserve the same qty on the new locator.
+	 */
 	private void switchLinePickFromLocator(@NonNull final I_DD_OrderLine line, @NonNull final LocatorId nextLocatorId)
 	{
 		final BigDecimal qtyReserved = line.getQtyReserved();
