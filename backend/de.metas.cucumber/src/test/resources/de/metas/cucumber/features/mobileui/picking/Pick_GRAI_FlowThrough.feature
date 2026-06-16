@@ -4,7 +4,7 @@
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profile — atomic pick event
 # Scenario 1: atomic pick with graiCodes; asserts the picked TUs carry the scanned GRAIs.
-# Scenario 2: completion guard — fewer GRAIs than TUs blocks completion.
+# Scenario 2: completion guard — fewer GRAIs than TUs in the atomic pick event blocks completion.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -162,18 +162,11 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
     And start picking job for sales order identified by SO
     And scan picking slot identified by 200.0
     And set picking target as new LU identified by LU
-    And pick lines
-      | PickingLine.byProduct | PickFromHU | QtyPicked |
-      | product               | pickFromLU | 3         |
-    And expect current picking target
-      | Existing_LU |
-      | pickFromLU  |
-
-    # Capture only 2 GRAIs for a 3-TU LU (one TU left without a GRAI).
-    And set picking GRAIs on LU identified by pickFromLU
-      | GRAI                 |
-      | 7613204.00307.000001 |
-      | 7613204.00307.000002 |
+    # Atomic pick: qty=3 TUs but only 2 GRAIs — one TU is left without a GRAI.
+    And pick line with GRAIs:
+      | PickingLine.byProduct | PickFromHU | QtyPicked | GRAI                 |
+      | product               | pickFromLU | 3         | 7613204.00307.000001 |
+      | product               | pickFromLU |           | 7613204.00307.000002 |
 
     # The completion must be rejected by the completion guard with the GRAICountMismatch error (one TU has no GRAI).
     Then complete picking job expecting error

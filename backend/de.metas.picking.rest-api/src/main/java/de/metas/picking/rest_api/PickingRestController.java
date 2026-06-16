@@ -23,18 +23,13 @@
 package de.metas.picking.rest_api;
 
 import de.metas.Profiles;
-import de.metas.common.handlingunits.JsonGRAICodesRequest;
-import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
-import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
@@ -73,7 +68,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -95,7 +89,6 @@ public class PickingRestController
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final PickingJobService pickingJobService;
 
 	private void assertApplicationAccess()
 	{
@@ -347,67 +340,4 @@ public class PickingRestController
 		return pickingMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
 
-	/**
-	 * Returns the GRAIs currently captured on the picking job's picked LU, together with
-	 * {@code tuCount} (the LU's crate count = the number of GRAIs the picker is expected to scan,
-	 * one per TU).
-	 * <p>
-	 * Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI} action). The path
-	 * {@code huId} is validated against the job's picked LUs, so a picking operator can only read the
-	 * GRAIs of an LU they actually picked onto. {@code tuCount} comes from the LU snapshot, so a
-	 * Flow-Through pick of N crates into one aggregate TU reports N (not 1).
-	 *
-	 * @param wfProcessIdStr the picking job's workflow process id (authorization + data scope)
-	 * @param huId           the picked LU's HuId (validated against the job's picked LUs)
-	 * @return the current GRAI codes captured on the picked LU and the LU's crate count
-	 */
-	@GetMapping("/job/{wfProcessId}/lu/{huId}/grai")
-	public JsonGRAICodesResponse getGRAIs(
-			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
-			@PathVariable("huId") final int huId)
-	{
-		assertApplicationAccess();
-
-		final HuId luId = resolvePickedLuId(wfProcessIdStr, huId);
-		return handlingUnitsService.getGRAIs(luId);
-	}
-
-	/**
-	 * Captures the given GRAIs on the picking job's picked LU and returns the refreshed picking
-	 * workflow process. Authorized via the picking application (NOT the HU-Manager {@code ScanGRAI}
-	 * action). The path {@code huId} is validated against the job's picked LUs; the LU snapshot
-	 * distributes the GRAIs across the LU's crate slots (including the N slots of a Flow-Through
-	 * aggregate TU).
-	 *
-	 * @param wfProcessIdStr the picking job's workflow process id (authorization + data scope, returned refreshed)
-	 * @param huId           the picked LU's HuId (validated against the job's picked LUs)
-	 * @param request        the GRAI codes to capture on the picked LU
-	 * @return the refreshed picking workflow process after the GRAIs were stamped
-	 */
-	@PutMapping("/job/{wfProcessId}/lu/{huId}/grai")
-	public JsonWFProcess setGRAIs(
-			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
-			@PathVariable("huId") final int huId,
-			@RequestBody @NonNull final JsonGRAICodesRequest request)
-	{
-		assertApplicationAccess();
-
-		final HuId luId = resolvePickedLuId(wfProcessIdStr, huId);
-		final GRAISet graiSet = GRAISet.parseStrings(request.getGraiCodes());
-		handlingUnitsService.setGRAIs(luId, graiSet);
-
-		return workflowRestController.getWFProcessById(wfProcessIdStr);
-	}
-
-	/**
-	 * Validates the path {@code huId} against the picking job's picked LUs and returns it as a typed
-	 * {@link HuId}. The picked-LU resolution (header-vs-line effective pick target scan) is domain
-	 * logic owned by {@link PickingJobService#resolvePickedLuId(PickingJobId, HuId)}.
-	 */
-	@NonNull
-	private HuId resolvePickedLuId(@NonNull final String wfProcessIdStr, final int huId)
-	{
-		final PickingJobId pickingJobId = WFProcessId.ofString(wfProcessIdStr).getRepoId(PickingJobId::ofRepoId);
-		return pickingJobService.resolvePickedLuId(pickingJobId, HuId.ofRepoId(huId));
-	}
 }

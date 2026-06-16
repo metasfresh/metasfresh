@@ -117,49 +117,6 @@ public class PickingJobService implements PickingSlotListener
 		return pickingJobRepository.getById(pickingJobId, loadingSupportingServices);
 	}
 
-	/**
-	 * Resolves and authorizes the concrete picked LU named by {@code requestedLuId} against the picking
-	 * job's LU pick targets.
-	 * <p>
-	 * When picking onto a <em>new</em> LU the pick target initially carries only the LU packing
-	 * instruction (no {@code luId}); the physical LU is materialised on the first pick and the
-	 * <em>line-level</em> effective pick target then becomes an existing-LU target carrying the concrete
-	 * {@code luId} (the header target keeps the new-LU instruction). So the set of LUs the operator has
-	 * actually picked onto is the set of materialised {@code luId}s across the header and line effective
-	 * targets.
-	 * <p>
-	 * The requested LU is accepted only if it is one of those picked LUs — so a picking operator can only
-	 * read/write the GRAIs of an LU they actually picked onto (NOT an arbitrary {@code huId}), and a
-	 * multi-LU job operates on exactly the LU named (not silently on whichever LU happens to come first).
-	 *
-	 * @throws AdempiereException if {@code requestedLuId} is not one of the job's picked LUs
-	 */
-	@NonNull
-	public HuId resolvePickedLuId(@NonNull final PickingJobId pickingJobId, @NonNull final HuId requestedLuId)
-	{
-		final PickingJob pickingJob = getById(pickingJobId);
-
-		final boolean isPickedLU = Stream.concat(
-						Stream.of(pickingJob.getLuPickingTarget(null)),
-						pickingJob.streamLines().map(line -> pickingJob.getLuPickingTargetEffective(line.getId())))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.filter(LUPickingTarget::isExistingLU)
-				.map(LUPickingTarget::getLuIdNotNull)
-				.anyMatch(requestedLuId::equals);
-
-		if (!isPickedLU)
-		{
-			// defensive scoping guard: the frontend always sends a huId derived from the line's own pick target,
-			// so a legitimate UI never reaches here — only stale UI state / a race / direct API tampering can,
-			// none operator-correctable. So this is a technical error, NOT markAsUserValidationError (cf. the
-			// plain-AdempiereException guards elsewhere in this class), and it needs no translated AD_Message.
-			throw new AdempiereException("HU " + requestedLuId.getRepoId() + " is not a picked LU of picking job " + pickingJobId);
-		}
-
-		return requestedLuId;
-	}
-
 	public PickingJob updateById(@NonNull final PickingJobId pickingJobId, @NonNull final UnaryOperator<PickingJob> updater)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();

@@ -337,32 +337,6 @@ public class MobileUI_Picking_StepDef
 	}
 
 	/**
-	 * Capture N GRAIs (one per TU) on the picked LU via the picking-scoped set-GRAIs endpoint.
-	 * <p>
-	 * The LU identifier is the existing-LU registered by {@code expect current picking target} (column
-	 * {@code Existing_LU}); this step resolves it from {@link #huTable} and binds the scanned GRAIs to it.
-	 * <p>
-	 * <b>@cucumber.columns</b>
-	 * <ul>
-	 *   <li><b>GRAI</b> — (required) one row per GRAI code to assign to the LU (e.g. {@code 7613204.00307.000001}).</li>
-	 * </ul>
-	 *
-	 * @param luIdentifier identifier of the picked LU (resolved via the HU step-def table)
-	 * @param dataTable    one {@code GRAI} column, one row per GRAI to assign
-	 */
-	@When("^set picking GRAIs on LU identified by (.*)$")
-	public void setPickingGraisOnLU(@NonNull final String luIdentifier, @NonNull final DataTable dataTable)
-	{
-		final HuId luId = huTable.getId(luIdentifier);
-		final ImmutableList<String> graiCodes = DataTableRows.of(dataTable).stream()
-				.map(row -> row.getAsString("GRAI"))
-				.collect(ImmutableList.toImmutableList());
-
-		final JsonWFProcess wfProcess = mobileUIPickingClient.setPickingGrais(context.getWfProcessIdNotNull(), luId, graiCodes);
-		context.setWfProcess(wfProcess);
-	}
-
-	/**
 	 * Complete the picking job and assert it is BLOCKED by the completion-time GRAI validator.
 	 * <p>
 	 * <b>@cucumber.columns</b>

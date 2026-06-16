@@ -1,8 +1,6 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.handlingunits.JsonGRAICodesRequest;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -34,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,22 +122,6 @@ public class MobileUIPickingClient
 	public JsonWFProcess complete(final String wfProcessId)
 	{
 		return workflowRestController.setUserConfirmation(wfProcessId, PickingMobileApplication.ACTIVITY_ID_Complete.getAsString());
-	}
-
-	/**
-	 * Capture the given GRAIs on the picked LU via the picking-scoped set-GRAIs endpoint.
-	 *
-	 * @return the refreshed picking workflow process after the GRAIs were stamped
-	 */
-	public JsonWFProcess setPickingGrais(
-			@NonNull final String wfProcessId,
-			@NonNull final HuId luId,
-			@NonNull final List<String> graiCodes)
-	{
-		return pickingRestController.setGRAIs(
-				wfProcessId,
-				luId.getRepoId(),
-				JsonGRAICodesRequest.builder().graiCodes(ImmutableList.copyOf(graiCodes)).build());
 	}
 
 	/**
