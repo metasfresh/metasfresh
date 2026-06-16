@@ -34,6 +34,7 @@ import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonDetail;
@@ -334,15 +335,18 @@ public class NShiftShipmentService
 				.collect(Collectors.toList());
 	}
 
-	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)
+	@VisibleForTesting
+	static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)
 	{
-		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
+		// The label's PkgNo (the AWB) is what we want, but a package's PkgNo can be blank; match by the stable
+		// PkgCSID (fallback PkgTag) so the label is found regardless.
+		final Map<String, JsonShipmentResponseLabel> labelsByPkgKey = response.getLabels() != null
 				? response.getLabels().stream()
-				.filter(label -> label.getPkgNo() != null)
+				.filter(label -> labelPackageKey(label) != null)
 				.collect(Collectors.toMap(
-						JsonShipmentResponseLabel::getPkgNo,
+						NShiftShipmentService::labelPackageKey,
 						Function.identity(),
-						(first, second) -> first)) // In case of duplicate pkgNo, take the first.
+						(first, second) -> first)) // In case of a duplicate key, take the first.
 				: Collections.emptyMap();
 
 		final List<JsonDeliveryOrderParcel> requestParcels = deliveryRequest.getDeliveryOrderParcels();
@@ -355,12 +359,21 @@ public class NShiftShipmentService
 						(requestParcel, responseLine) -> {
 							Check.assumeNotEmpty(responseLine.getPkgs(), "No packages found for line: {}", responseLine);
 							final JsonPackage pkg = responseLine.getPkgs().get(0);
-							final JsonShipmentResponseLabel label = labelsByPkgNo.get(pkg.getPkgNo());
+							final String pkgKey = packageKey(pkg);
+							final JsonShipmentResponseLabel label = pkgKey != null ? labelsByPkgKey.get(pkgKey) : null;
+
+							// Prefer the label's AWB/TrackingURL (blank treated as absent); fall back to the per-line package.
+							final String awb = CoalesceUtil.firstNotBlank(
+									label != null ? label.getPkgNo() : null,
+									pkg.getPkgNo());
+							final String trackingUrl = CoalesceUtil.firstNotBlank(
+									label != null ? label.getTrackingURL() : null,
+									JsonPackage.extractTrackingUrl(pkg));
 
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
-									.awb(pkg.getPkgNo())
-									.trackingUrl(JsonPackage.extractTrackingUrl(pkg))
+									.awb(awb)
+									.trackingUrl(trackingUrl)
 									.labelPdfBase64(JsonShipmentResponseLabel.extractLabel(label))
 									.build();
 						})
@@ -376,6 +389,28 @@ public class NShiftShipmentService
 		extractResolvedServices(response).forEach(responseBuilder::resolvedService);
 
 		return responseBuilder.build();
+	}
+
+	@Nullable
+	private static String labelPackageKey(@NonNull final JsonShipmentResponseLabel label)
+	{
+		if (label.getPkgCSID() != null)
+		{
+			return "csid:" + label.getPkgCSID();
+		}
+		final String pkgTag = StringUtils.trimBlankToNull(label.getPkgTag());
+		return pkgTag != null ? "tag:" + pkgTag : null;
+	}
+
+	@Nullable
+	private static String packageKey(@NonNull final JsonPackage pkg)
+	{
+		if (pkg.getPkgCSID() != null)
+		{
+			return "csid:" + pkg.getPkgCSID();
+		}
+		final String pkgTag = StringUtils.trimBlankToNull(pkg.getPkgTag());
+		return pkgTag != null ? "tag:" + pkgTag : null;
 	}
 
 	@Nullable
