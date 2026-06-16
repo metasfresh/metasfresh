@@ -156,6 +156,6 @@ public class MobileUIPickingClient
 	{
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		Check.assume(request.isSetGrais(), "setGrais must be true for an atomic pick-with-GRAIs call: {}", request);
-		return pickingRestController.postEvent(request);
+		return pickLine(request);
 	}
 }

@@ -462,7 +462,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.lotNo(json.getLotNo())
 				.isCloseTarget(json.isCloseTarget())
 				.isSetGrais(json.isSetGrais())
-				.graiCodes(json.getGraiCodes())
+				.graiCodes(json.getGraiCodes() != null ? ImmutableList.copyOf(json.getGraiCodes()) : null)
 				//
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)

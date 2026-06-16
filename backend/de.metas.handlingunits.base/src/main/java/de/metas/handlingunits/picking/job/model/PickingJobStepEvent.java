@@ -14,8 +14,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.List;
 
 @Value
 @Builder
@@ -49,7 +49,7 @@ public class PickingJobStepEvent
 	@Nullable String lotNo;
 	boolean isCloseTarget;
 	boolean isSetGrais;
-	@Nullable List<String> graiCodes;
+	@Nullable ImmutableList<String> graiCodes;
 
 	//
 	// Event Type: UNPICK
