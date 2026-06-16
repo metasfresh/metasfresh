@@ -62,6 +62,7 @@ import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
@@ -76,6 +77,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -91,6 +93,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class PickingJobService implements PickingSlotListener
 {
+	private static final Logger logger = LogManager.getLogger(PickingJobService.class);
+
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
 	private final static AdMessageKey ONGOING_PICKING_JOBS_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.ONGOING_PICKING_JOBS_ERR_MSG");
@@ -193,6 +197,62 @@ public class PickingJobService implements PickingSlotListener
 				.execute();
 	}
 
+	/**
+	 * Aborts the pre-existing <b>Drafted</b> picking jobs that already cover the demand mass printing is about
+	 * to pick (a job has a line for one of {@code productIds} AND one of {@code scheduleIds}) and that are safe
+	 * to abort, before a new picking job is created.
+	 *
+	 * <p>A candidate job is aborted only when it is <b>unassigned</b> ({@code Picking_User_ID IS NULL}) or
+	 * <b>assigned to {@code pickerId}</b> (the current mass-printing picker). This self-cleans a failed prior
+	 * mass-printing scan's own leftover Draft job (whose lines are assigned to the mass-printing user) and
+	 * avoids the {@code DDOrderPickingReconcile_PickerBusy} error caused by such stale jobs.
+	 *
+	 * <p>A Draft job assigned to a <b>different</b> picker is never aborted. Under normal operation such a job
+	 * is never even a candidate here: a live Draft job holds a PICKING lock on its schedules
+	 * ({@link PickingJobLockService#lockSchedules}, acquired in {@code PickingJobCreateCommand}), and
+	 * {@code MassPrintingService.filterSkipLockedByOtherUser} drops schedules locked by another picker before
+	 * selection. Encountering one here means a lock/job inconsistency — it is logged as a tripwire and left
+	 * untouched (we do not duplicate the lock-based skip).
+	 */
+	public void abortAbortablePickingJobsForSchedules(
+			@NonNull final Set<ProductId> productIds,
+			@NonNull final Set<ShipmentScheduleId> scheduleIds,
+			@NonNull final UserId pickerId)
+	{
+		final ImmutableSet<PickingJobId> candidateJobIds = pickingJobRepository.getDraftedPickingJobIdsByProductsAndSchedules(productIds, scheduleIds);
+		if (candidateJobIds.isEmpty())
+		{
+			return;
+		}
+
+		final PickingJobLoaderSupportingServices loadingSupportServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		// Single batch load of all candidate jobs (avoids a per-job getById round-trip in the loop below).
+		final List<PickingJob> candidateJobs = pickingJobRepository.getByIds(candidateJobIds, loadingSupportServices);
+
+		for (final PickingJob job : candidateJobs)
+		{
+			final UserId jobPickerId = job.getLockedBy();
+			if (jobPickerId != null && !UserId.equals(jobPickerId, pickerId))
+			{
+				// Tripwire: a Draft job of another picker should already have been excluded before selection by
+				// MassPrintingService.filterSkipLockedByOtherUser (via the picking-job schedule lock). Reaching
+				// here means a lock/job inconsistency; leave the job untouched and log it for investigation.
+				logger.warn("Not aborting Draft picking job {} of another picker {} (its schedules should have been lock-skipped before selection)",
+						job.getId(), jobPickerId);
+				continue;
+			}
+
+			try
+			{
+				abort(job);
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed to abort pre-existing picking job {}: {}", job.getId(), ex.getMessage(), ex);
+			}
+		}
+	}
+
 	private PickingJobAbortCommand.PickingJobAbortCommandBuilder abort()
 	{
 		return PickingJobAbortCommand.builder()
@@ -263,6 +323,22 @@ public class PickingJobService implements PickingSlotListener
 						.onlyShipmentScheduleIds(onlyShipmentScheduleIds)
 						.build()
 		);
+	}
+
+	/**
+	 * Lists the picking-job-schedules matching the query, using the same {@code toPickingJobScheduleQuery()}
+	 * resolution as the launcher / {@link #streamPackageable}. Returns {@link PickingJobScheduleCollection#EMPTY}
+	 * when the query is not in job-scheduled-to-workplace mode (no job-schedules apply in warehouse mode).
+	 */
+	@NonNull
+	public PickingJobScheduleCollection listJobSchedules(@NonNull final PickingJobQuery query)
+	{
+		if (!query.isScheduledForWorkplaceOnly())
+		{
+			return PickingJobScheduleCollection.EMPTY;
+		}
+
+		return pickingJobScheduleService.list(query.toPickingJobScheduleQuery());
 	}
 
 	public ADRefList getQtyRejectedReasons()
@@ -719,13 +795,16 @@ public class PickingJobService implements PickingSlotListener
 					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
 			final ImmutableSet<HuId> closedLUIds = closedHUIdsCollector.getLUIds();
-			huService.printLULabels(closedHUIdsCollector.getLUIds());
+			huService.printLULabels(closedLUIds);
+			huService.printTULabels(closedHUIdsCollector.getTopLevelTUIds());
 
 			if (isShipClosedHUs)
 			{
 				if (!closedHUIdsCollector.getTopLevelTUIds().isEmpty())
 				{
-					throw new AdempiereException("Shipping on close top level TUs is not supported yet. Found TUIds: " + closedHUIdsCollector.getTopLevelTUIds() + ". PickingJob: " + pickingJobChanged.getId() + ".");
+					// Auto-ship on TU-close is not yet implemented; shipment will be created at complete-job time.
+					logger.warn("Shipping on close not supported for top-level TUs; skipping shipment for TU IDs={}. PickingJob={}",
+							closedHUIdsCollector.getTopLevelTUIds(), pickingJobChanged.getId());
 				}
 
 				if (!closedLUIds.isEmpty())
@@ -757,6 +836,29 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId)
 	{
 		return pickingJob.getTuPickingTarget(lineId);
+	}
+
+	/**
+	 * @return the set of picked HU ids (VHU level) that are covered by a picking job for any of the given
+	 * shipment schedules — regardless of the job's doc-status. Used by the shipment-reverse restore safety net
+	 * to fire ONLY for picked-qty shipments that originated from a picking job, and never for QtyToDeliver /
+	 * on-the-fly shipments (which have no picking job and whose reverse must clear the HU's BPartner + return it
+	 * to Active stock).
+	 */
+	public ImmutableSet<HuId> getHuIdsCoveredByPickingJobs(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return pickingJobRepository.getPickingJobIdsByScheduleId(shipmentScheduleIds)
+				.values().stream()
+				.flatMap(List::stream)
+				.collect(ImmutableSet.toImmutableSet())
+				.stream()
+				.map(this::getById)
+				.flatMap(pickingJob -> pickingJob.getAllPickedHuIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)

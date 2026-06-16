@@ -288,9 +288,9 @@ class ReconcileQtyReservationsCommandTest
 	@Test
 	void deletesPreExistingZeroQtyReservation_keepingReservedTuCorrect()
 	{
-		// Scenario: a planned-supply reservation was minted with Qty(CU)=0 but QtyTU=3
-		// (planned supply has no on-hand stock, so computeQtyCUToReserve returns 0). On re-completion the line
-		// was reduced to 77, so the OH row (110/10) shrinks to 77/7. The phantom PS row (0/3) must be DELETED,
+		// Scenario: a historically-created planned-supply reservation carries Qty(CU)=0 but QtyTU=3
+		// (such phantom rows were minted before the Qty=0 fix). On re-completion the line was reduced
+		// to 77, so the OH row (110/10) shrinks to 77/7. The phantom PS row (0/3) must be DELETED,
 		// otherwise the reserved QtyTU total stays 10 (7+3) instead of 7.
 		final OrderId orderId = createSalesOrder();
 		final OrderLineId orderLineId = createOrderLine(orderId, new BigDecimal("77"));

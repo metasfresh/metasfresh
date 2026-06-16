@@ -2021,4 +2021,29 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Order.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
+
+
+	/**
+	 * Set Eff. Prod. Date Set.
+	 * If set, the "Eff. Prod. Datum" field is read-only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedProductionDate (boolean IsFixedProductionDate);
+
+	/**
+	 * Get Eff. Prod. Date Set.
+	 * If set, the "Eff. Prod. Datum" field is read-only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedProductionDate();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_IsFixedProductionDate = new ModelColumn<>(I_PP_Order.class, "IsFixedProductionDate", null);
+	String COLUMNNAME_IsFixedProductionDate = "IsFixedProductionDate";
+
 }

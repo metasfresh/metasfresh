@@ -239,7 +239,7 @@ public class RetrieveDbRecordsUtil
 		{
 			if (selectionId == null)
 			{
-				selectionId = query.createSelection();
+				selectionId = query.createSelection().orElse(null);
 				//System.out.println("*** Created selection: " + selectionId + "\n\tSQL: " + query);
 			}
 			else

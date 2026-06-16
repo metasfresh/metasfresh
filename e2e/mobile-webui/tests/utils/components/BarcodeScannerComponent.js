@@ -141,24 +141,48 @@ export const BarcodeScannerComponent = {
 
     // Fills the visible editable input and presses Enter — exercises the manual-typing path
     // (onChange debounce / onKeyUp Enter) in BarcodeScannerComponent. Only valid when
-    // barcodeScanner.showInputText=Y and barcodeScanner.isInputTextReadonly=N.
+    // the mode-engine is in manual mode (defaultMode=manual, mode.manual.enabled=Y).
+    // NOTE: wait on the manual-entry input, NOT on `#input-text`. The hardware off-screen
+    // `#input-text` is rendered by HardwareModePanel only when activeMode === HARDWARE; in
+    // pure manual mode (`mode.hardware.enabled=N` or `defaultMode=manual`) it is not in the
+    // DOM, so `waitToAttach({})` would time out and look like a manual-entry failure.
     typeManually: async (barcode) => await test.step(`${NAME} - Type manually and press Enter`, async () => {
-        await BarcodeScannerComponent.waitToAttach({});
-        await page.locator('#input-text').fill(barcode);
-        await page.keyboard.press('Enter');
+        const input = page.locator('[data-testid="manual-entry-input"]');
+        await input.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+        await input.fill(barcode);
+        await input.press('Enter');
     }),
 
-    // Asserts DOM attributes on #input-text. Pass null as value to assert the attribute is ABSENT.
+    // Asserts DOM attributes on #input-text.
+    //   value === null   → attribute must be ABSENT
+    //   value === true   → attribute must be PRESENT (any value — use for HTML boolean attrs
+    //                      like readonly/disabled where React's rendered value can vary)
+    //   other            → attribute must equal that exact string
     // Example: expectAttributes({ type: 'text', inputmode: 'none', readonly: null })
+    //          expectAttributes({ type: 'text', inputmode: 'none', readonly: true })   // CT60 mode
     expectAttributes: async (expectedAttrs) => await test.step(`${NAME} - Expect attributes: ${JSON.stringify(expectedAttrs)}`, async () => {
         await BarcodeScannerComponent.waitToAttach({});
         for (const [attr, expectedValue] of Object.entries(expectedAttrs)) {
             if (expectedValue === null) {
                 await expect(page.locator('#input-text')).not.toHaveAttribute(attr);
+            } else if (expectedValue === true) {
+                await expect(page.locator('#input-text')).toHaveAttribute(attr, /.*/);
             } else {
                 await expect(page.locator('#input-text')).toHaveAttribute(attr, expectedValue);
             }
         }
+    }),
+
+    // Asserts the device camera <video> element is NOT rendered inside .barcode-scanner.
+    // Used by the hardware-scanner-only deployments (useCamera=N) to guard against a
+    // regression that would silently re-enable the camera capture preview.
+    //
+    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — a
+    // <video> that doesn't appear within seconds is not going to appear, and falling back
+    // to the 120s global assertion timeout would silently consume the test budget on a
+    // genuine regression.
+    expectCameraVideoAbsent: async () => await test.step(`${NAME} - Expect no camera <video> rendered`, async () => {
+        await expect(page.locator('.barcode-scanner video')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,
@@ -181,5 +205,38 @@ export const BarcodeScannerComponent = {
         await BarcodeScannerComponent.waitToAttach({});
         if (present) await expect(page.locator('#input-text')).toHaveClass(new RegExp(`(^|\\s)${present}(\\s|$)`));
         if (absent) await expect(page.locator('#input-text')).not.toHaveClass(new RegExp(`(^|\\s)${absent}(\\s|$)`));
+    }),
+
+    // Asserts the footer (.barcode-scanner-footer) is NOT rendered.
+    // Used by invisible-mode tests — invisible suppresses the footer entirely.
+    expectFooterAbsent: async () => await test.step(`${NAME} - Expect no footer rendered`, async () => {
+        await expect(page.locator('.barcode-scanner-footer')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the manual-entry visible input IS rendered (data-testid="manual-entry-input").
+    expectManualEntryInputPresent: async () => await test.step(`${NAME} - Expect manual-entry input present`, async () => {
+        await expect(page.getByTestId('manual-entry-input')).toBeAttached({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the manual-entry visible input is NOT rendered.
+    expectManualEntryInputAbsent: async () => await test.step(`${NAME} - Expect manual-entry input absent`, async () => {
+        await expect(page.getByTestId('manual-entry-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the manual-entry input does NOT have the readOnly attribute — the user must be able
+    // to type into it (keyboard-enabled). Only meaningful when expectManualEntryInputPresent() passes.
+    expectManualEntryInputNotReadOnly: async () => await test.step(`${NAME} - Expect manual-entry input not readOnly`, async () => {
+        await expect(page.getByTestId('manual-entry-input')).not.toHaveAttribute('readonly', { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Asserts the device camera <video> element IS rendered inside .barcode-scanner.
+    expectCameraVideoPresent: async () => await test.step(`${NAME} - Expect camera <video> rendered`, async () => {
+        await expect(page.locator('.barcode-scanner video')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Clicks a footer button by its testId (e.g. 'barcode-scanner-toggle-hw-camera',
+    // 'barcode-scanner-enter-manually', 'barcode-scanner-back-to-scanner').
+    clickFooterButton: async (testId) => await test.step(`${NAME} - Click footer button '${testId}'`, async () => {
+        await page.getByTestId(testId).tap();
     }),
 }

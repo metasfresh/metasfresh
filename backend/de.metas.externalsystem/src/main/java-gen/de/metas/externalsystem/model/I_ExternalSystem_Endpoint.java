@@ -290,6 +290,75 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_LoginUsername = "LoginUsername";
 
 	/**
+	 * Set OAuth2 Token URL.
+	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOAuthTokenUrl (@Nullable java.lang.String OAuthTokenUrl);
+
+	/**
+	 * Get OAuth2 Token URL.
+	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOAuthTokenUrl();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthTokenUrl = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthTokenUrl", null);
+	String COLUMNNAME_OAuthTokenUrl = "OAuthTokenUrl";
+
+	/**
+	 * Set OAuth2 Scope.
+	 * Optional OAuth2 scope sent with the token request (e.g. "docuware.platform").
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOAuthScope (@Nullable java.lang.String OAuthScope);
+
+	/**
+	 * Get OAuth2 Scope.
+	 * Optional OAuth2 scope sent with the token request (e.g. "docuware.platform").
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOAuthScope();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthScope = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthScope", null);
+	String COLUMNNAME_OAuthScope = "OAuthScope";
+
+	/**
+	 * Set File Upload.
+	 * Send the request body as multipart/form-data (document + file).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFileUpload (boolean IsFileUpload);
+
+	/**
+	 * Get File Upload.
+	 * Send the request body as multipart/form-data (document + file).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFileUpload();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_IsFileUpload = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "IsFileUpload", null);
+	String COLUMNNAME_IsFileUpload = "IsFileUpload";
+
+	/**
 	 * Set Outbound HTTP Endpoint.
 	 * URL to which the data will be sent
 	 *

@@ -22,6 +22,7 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -32,6 +33,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 public interface IHUAssignmentBL extends ISingletonService
@@ -122,4 +124,12 @@ public interface IHUAssignmentBL extends ISingletonService
 	ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull TableRecordReferenceSet recordRefs);
 
 	int retrieveTUCountForModel(Object model);
+
+	/**
+	 * Returns all active {@code M_HU_Assignment} records where {@code M_HU_ID} is one of the given HU IDs
+	 * and the assignment references the table of the given model class.
+	 */
+	List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
+			@NonNull ImmutableSet<HuId> huIds,
+			@NonNull String tableName);
 }

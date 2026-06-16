@@ -52,6 +52,7 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Goods_Type_StepDefData;
@@ -70,6 +71,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
@@ -77,6 +79,9 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
@@ -169,6 +174,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 
 	private final TestContext testContext;
 
@@ -304,16 +310,19 @@ public class M_ShipmentSchedule_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) schedule alias; comma-separated to combine multiple schedules into one shipment call<br>
+	 *   <b>M_Picking_Job_Schedule_ID</b> — (optional, identifier-ref) workstation assignment to ship via; when set, the shipment is
+	 *     generated for the (shipment-schedule, job-schedule) pair and the job schedule is closed out ({@code Processed=Y}),
+	 *     mirroring the production close-out where shipment generation closes the workstation assignment<br>
 	 *   <b>quantityTypeToUse</b> — (optional) D (delivery) or O (ordered); default: BOTH<br>
 	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
 	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
-	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And shipment is generated for the following shipment schedule
-	 *   | M_ShipmentSchedule_ID | M_InOut_ID |
-	 *   | shipmentSchedule_1    | shipment_1 |
+	 *   | M_ShipmentSchedule_ID   | M_InOut_ID |
+	 *   | ss_product, ss_product2 | shipment_1 |
 	 * </pre>
 	 */
 	@And("shipment is generated for the following shipment schedule")
@@ -658,19 +667,40 @@ public class M_ShipmentSchedule_StepDef
 
 	public void generateShipmentForSchedule(@NonNull final DataTableRow row) throws InterruptedException
 	{
-		final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.toCommaSeparatedList()
+				.stream()
+				.map(id -> id.lookupNotNullIdIn(shipmentScheduleTable))
+				.collect(ImmutableSet.toImmutableSet());
 		final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = row.getAsOptionalEnum("quantityTypeToUse", M_ShipmentSchedule_QuantityTypeToUse.class).orElse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		final boolean isCompleteShipment = row.getAsOptionalBoolean("isCompleteShipment").orElseTrue();
 
-		waitUntilValid(60, ImmutableSet.of(shipmentScheduleId));
+		waitUntilValid(60, scheduleIds);
 
-		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(
-				GenerateShipmentsForSchedulesRequest.builder()
-						.shipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
-						.quantityTypeToUse(qtyTypeToUse)
-						.isCompleteShipment(isCompleteShipment)
-						.build()
-		);
+		// When a workstation assignment is given, ship via the (shipment-schedule, job-schedule) pair and close the
+		// assignment out — this is the production close-out: GenerateInOutFromShipmentSchedules.closeSchedules() marks
+		// the linked M_Picking_Job_Schedule as Processed=Y once the shipment is generated.
+		final PickingJobScheduleId jobScheduleId = row.getAsOptionalIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.map(identifier -> identifier.lookupNotNullIdIn(pickingJobScheduleTable))
+				.orElse(null);
+
+		final GenerateShipmentsForSchedulesRequest.GenerateShipmentsForSchedulesRequestBuilder requestBuilder = GenerateShipmentsForSchedulesRequest.builder()
+				.quantityTypeToUse(qtyTypeToUse)
+				.isCompleteShipment(isCompleteShipment);
+
+		if (jobScheduleId != null)
+		{
+			final ShipmentScheduleId shipmentScheduleId = scheduleIds.iterator().next();
+			requestBuilder
+					.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(ShipmentScheduleAndJobScheduleId.of(shipmentScheduleId, jobScheduleId)))
+					.isCloseShipmentSchedules(true);
+		}
+		else
+		{
+			requestBuilder.shipmentScheduleIds(scheduleIds);
+		}
+
+		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(requestBuilder.build());
 
 		final List<StepDefDataIdentifier> shipmentIdentifiers = row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID)
 				.map(StepDefDataIdentifier::toCommaSeparatedList)
@@ -1028,7 +1058,9 @@ public class M_ShipmentSchedule_StepDef
 
 	private void logWorkPackageProgressForShipmentSchedule(@NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).orElse(null);
+		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.map(id -> id.toCommaSeparatedList().get(0)) // support comma-separated; use first for logging context
+				.orElse(null);
 		if (shipmentScheduleIdentifier == null)
 		{
 			logger.info("No shipment schedule identifier present --> Cannot log work package progress!");

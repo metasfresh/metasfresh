@@ -1,0 +1,5 @@
+Method <de.metas.pos.POSOrdersLoaderAndSaver.retrieveOrderRecordById(de.metas.pos.POSOrderId)> calls method <org.adempiere.model.InterfaceWrapperHelper.load(de.metas.util.lang.RepoIdAware, java.lang.Class)> in (POSOrdersLoaderAndSaver.java:165)
+Method <de.metas.pos.POSOrdersLoaderAndSaver.save(de.metas.pos.POSOrder)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (POSOrdersLoaderAndSaver.java:500)
+Method <de.metas.pos.POSOrdersLoaderAndSaver.save(de.metas.pos.POSOrder)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (POSOrdersLoaderAndSaver.java:522)
+Method <de.metas.pos.POSOrdersLoaderAndSaver.save(de.metas.pos.POSOrder)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (POSOrdersLoaderAndSaver.java:547)
+Method <de.metas.pos.POSTerminalService.updateById(de.metas.pos.POSTerminalId, java.util.function.UnaryOperator)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (POSTerminalService.java:202)

@@ -57,6 +57,9 @@ const translations = {
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',
+    qrLoginPlaceholder: 'Scan your login QR code',
+    username: 'Username',
+    password: 'Password',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Password',
@@ -80,6 +83,14 @@ const translations = {
       scanWorkplacePlaceholder: 'Scan workplace...',
       scanWorkstationPlaceholder: 'Scan workstation...',
       scanTrolleyPlaceholder: 'Scan trolley...',
+      scanPrompt: 'Scan barcode',
+      scanInProgress: 'Scanning in progress...',
+      enterManually: 'Enter manually',
+      scanWithCamera: 'Scan with camera',
+      useHardwareScanner: 'Use hardware scanner',
+      manualInputPlaceholder: 'Enter barcode...',
+      manualInputSubmit: 'Submit',
+      cameraError: 'Camera could not be started. Please check camera permissions.',
     },
   },
   activities: {
@@ -146,6 +157,17 @@ const translations = {
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
       noMatchingLines: 'No matching lines found',
+      massPrinting: {
+        triggerButton: 'Mass Print Labels',
+        scanCaption: 'Scan LU',
+        doneButton: 'Done',
+        noResults: 'No eligible products found on this LU',
+        product: 'Product',
+        unitsPacked: 'Units packed',
+        unitsLeftOnLU: 'Units left on LU',
+        unitsOfOpenDemandRemaining: 'Open demand remaining',
+        skippedProducts: 'Skipped products',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',

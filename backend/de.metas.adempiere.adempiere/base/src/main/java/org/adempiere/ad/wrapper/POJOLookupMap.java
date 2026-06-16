@@ -81,6 +81,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -601,11 +602,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	public <T> T getFirstOnly(final String tableName,
-							  final Class<T> clazz,
-							  final IQueryFilter<T> filter,
-							  final Comparator<T> orderByComparator,
-							  final boolean throwExIfMoreThenOneFound,
-							  final String trxName)
+	                          final Class<T> clazz,
+	                          final IQueryFilter<T> filter,
+	                          final Comparator<T> orderByComparator,
+	                          final boolean throwExIfMoreThenOneFound,
+	                          final String trxName)
 	{
 		final List<T> result = getRecords(tableName, clazz, filter, orderByComparator, trxName);
 		if (result.isEmpty())
@@ -729,6 +730,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		POJOLookupMap.resetToDefaultNextIdSupplier();
 		cachedObjects.clear();
+		selectionId2selection.clear();
 	}
 
 	@Override
@@ -1099,11 +1101,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return Services.get(IADPInstanceDAO.class).createSelectionId();
 	}
 
-	public PInstanceId createSelection(final Collection<Integer> selection)
+	public Optional<PInstanceId> createSelection(final Collection<Integer> selection)
 	{
 		final PInstanceId selectionId = PInstanceId.ofRepoId(nextId(I_AD_PInstance.Table_Name));
 		createSelection(selectionId, selection);
-		return selectionId;
+		return Optional.of(selectionId);
 	}
 
 	@SafeVarargs

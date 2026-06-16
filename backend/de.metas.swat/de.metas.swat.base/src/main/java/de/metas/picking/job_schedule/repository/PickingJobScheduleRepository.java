@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -21,9 +22,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.eevolution.model.I_DD_Order;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -32,6 +35,10 @@ import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+/**
+ * Repository Tables: M_Picking_Job_Schedule (query owner); DD_Order (sub-query filter only — see {@link #streamAssignmentsNeedingDDOrder})
+ * Repository Cluster: PickingJobScheduleRepository
+ */
 @Repository
 public class PickingJobScheduleRepository
 {
@@ -42,9 +49,7 @@ public class PickingJobScheduleRepository
 	public static PickingJobScheduleRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class,
-				PickingJobScheduleRepository::new);
+		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class, PickingJobScheduleRepository::new);
 	}
 
 	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
@@ -90,15 +95,31 @@ public class PickingJobScheduleRepository
 		record.setProcessed(from.isProcessed());
 	}
 
-	private static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
+	/**
+	 * Boundary factory: maps an already-loaded {@link I_M_Picking_Job_Schedule} record to its domain object.
+	 * <p>
+	 * Public so that a model interceptor that already holds the record (e.g. {@code M_Picking_Job_Schedule_DDOrderPickingInterceptor})
+	 * can build the domain object without a redundant {@link #getById} reload. Callers that do NOT already hold the record
+	 * must go through {@link #getById}/{@link #findByIdOrNull} rather than loading the record themselves.
+	 */
+	public static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
 	{
 		return PickingJobSchedule.builder()
 				.id(PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.workplaceId(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.active(record.isActive())
 				.processed(record.isProcessed())
 				.build();
+	}
+
+	@Nullable
+	public PickingJobSchedule findByIdOrNull(@NonNull final PickingJobScheduleId id)
+	{
+		final I_M_Picking_Job_Schedule record = load(id, I_M_Picking_Job_Schedule.class);
+		return record != null ? fromRecord(record) : null;
 	}
 
 	public void updateByIds(@NonNull final Set<PickingJobScheduleId> ids, @NonNull final UnaryOperator<PickingJobSchedule> updater)
@@ -203,5 +224,27 @@ public class PickingJobScheduleRepository
 		}
 
 		return queryBuilder.create();
+	}
+
+	/**
+	 * Cross-entity anti-join: streams active, not-yet-processed schedules that are NOT yet referenced by a completed
+	 * DD_Order ({@code M_Picking_Job_Schedule LEFT-anti-JOIN DD_Order} on {@code DD_Order.M_Picking_Job_Schedule_ID}).
+	 * <p>
+	 * {@code completedDDOrdersQuery} is passed in by the caller (the DD_Order reconcile flow) rather than built here,
+	 * so {@code DD_Order} stays a sub-query filter and not a table this repository owns.
+	 */
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
+				.addNotInSubQueryFilter(
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						completedDDOrdersQuery)
+				.create()
+				.stream()
+				.map(PickingJobScheduleRepository::fromRecord);
 	}
 }

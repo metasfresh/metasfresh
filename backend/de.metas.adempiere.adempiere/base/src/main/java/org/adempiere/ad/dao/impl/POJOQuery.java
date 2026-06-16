@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -583,8 +584,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 	@Override
 	public <AT> AT aggregate(final String columnName,
-							 @NonNull final Aggregate aggregateType,
-							 final Class<AT> returnType) throws DBException
+	                         @NonNull final Aggregate aggregateType,
+	                         final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
 		final BiFunction<Object, Object, AT> aggregateOperator;
@@ -946,7 +947,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public PInstanceId createSelection()
+	public Optional<PInstanceId> createSelection()
 	{
 		final List<Integer> ids = listIds();
 		return POJOLookupMap.get().createSelection(ids);

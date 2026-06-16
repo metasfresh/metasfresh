@@ -22,9 +22,18 @@ import java.util.Map;
 @Builder
 public class SysconfigCommand
 {
-	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.of(
-			"mobileui.frontend.barcodeScanner.showInputText", "Y",
-			"mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y");
+	private static final ImmutableMap<String, String> SCANNER_SYSCONFIG_DEFAULTS = ImmutableMap.<String, String>builder()
+			.put("mobileui.frontend.barcodeScanner.showInputText", "Y")
+			.put("mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y")
+			// Reset the per-instance scanner-mode knobs too — a test that flips them (e.g. the
+			// Honeywell CT60 keystroke-wedge contract test) must not leak readOnly=Y or
+			// useCamera=N onto unrelated specs in the same run. Defaults match the framework
+			// fall-backs in BarcodeScannerComponent.jsx (useCamera=true, offscreen/visible
+			// readOnly=false) and the core seed migrations 5807370 / 5807430.
+			.put("mobileui.frontend.barcodeScanner.useCamera", "Y")
+			.put("mobileui.frontend.barcodeScanner.offscreenInput.readOnly", "N")
+			.put("mobileui.frontend.barcodeScanner.visibleInput.readOnly", "N")
+			.build();
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 

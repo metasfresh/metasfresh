@@ -11,6 +11,12 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonGenerateShipmentsResponse;
+import de.metas.frontend_testing.masterdata.shipment.GenerateShipmentsCommand;
+import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
+import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
+import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
@@ -109,15 +115,20 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("expect")
-	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
+	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations)
 	{
-		assertEnabled();
-
-		return AssertExpectationsCommand.builder()
+		// Run in the METASFRESH client/org context (mirroring createMasterdata above; callInContext
+		// also performs the assertEnabled() check). The assertion
+		// queries are client-scoped — e.g. AssertHUExpectationsCommand.assertShipped uses
+		// addOnlyContextClientOrSystem() (AD_Client_ID IN (ctxClient, 0)). createMasterdata creates its
+		// data under ClientId.METASFRESH; without switching into that same context here the request runs
+		// as system (AD_Client_ID=0), so those reads (e.g. the packed-HU → sales-shipment-line lookup)
+		// filter out the METASFRESH-client rows and return empty — making shipped:true assertions fail.
+		return callInContext(() -> AssertExpectationsCommand.builder()
 				.services(services.assertExpectationsCommandServices)
 				.expectations(jsonExpectations)
 				.build()
-				.execute();
+				.execute());
 	}
 
 	@PostMapping("setSysconfigs")
@@ -137,6 +148,24 @@ public class FrontendTestingRestController
 	{
 		return callInContext(() -> GetHUQRCodeCommand.builder()
 				.huQRCodesService(huQRCodesService)
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("reverseShipment")
+	public JsonReverseShipmentResponse reverseShipment(@RequestBody @NonNull final JsonReverseShipmentRequest request)
+	{
+		return callInContext(() -> ReverseShipmentCommand.builder()
+				.request(request)
+				.build()
+				.execute());
+	}
+
+	@PostMapping("generateShipments")
+	public JsonGenerateShipmentsResponse generateShipments(@RequestBody @NonNull final JsonGenerateShipmentsRequest request)
+	{
+		return callInContext(() -> GenerateShipmentsCommand.builder()
 				.request(request)
 				.build()
 				.execute());

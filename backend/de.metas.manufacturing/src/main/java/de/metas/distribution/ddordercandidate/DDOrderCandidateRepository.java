@@ -1,8 +1,10 @@
 package de.metas.distribution.ddordercandidate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.ProductPlanningId;
@@ -13,12 +15,14 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantitys;
+import de.metas.security.permissions.Access;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -37,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -120,6 +125,8 @@ public class DDOrderCandidateRepository
 		record.setDD_NetworkDistributionLine_ID(distributionNetworkAndLineId != null ? distributionNetworkAndLineId.getLineId().getRepoId() : -1);
 		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(from.getProductPlanningId()));
 
+		record.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(from.getInputDataSourceId()));
+
 		DYNATTR_TraceId.setValue(record, from.getTraceId());
 		DYNATTR_GroupId.setValue(record, from.getMaterialDispoGroupId());
 	}
@@ -170,6 +177,7 @@ public class DDOrderCandidateRepository
 				.distributionNetworkAndLineId(DistributionNetworkAndLineId.ofRepoIdsOrNull(record.getDD_NetworkDistribution_ID(), record.getDD_NetworkDistributionLine_ID()))
 				.productPlanningId(ProductPlanningId.ofRepoIdOrNull(record.getPP_Product_Planning_ID()))
 				//
+				.inputDataSourceId(InputDataSourceId.ofRepoIdOrNull(record.getAD_InputDataSource_ID()))
 				.traceId(DYNATTR_TraceId.getValue(record))
 				.materialDispoGroupId(DYNATTR_GroupId.getValue(record))
 				.forwardPPOrderRef(extractForwardPPOrderRef(record))
@@ -262,6 +270,18 @@ public class DDOrderCandidateRepository
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_BOMLine_ID, query.getPpOrderBOMLineId());
 		}
+		if (query.getInputDataSourceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_AD_InputDataSource_ID, query.getInputDataSourceId());
+		}
+		if (query.getUserSelectionFilter() != null)
+		{
+			queryBuilder.filter(query.getUserSelectionFilter());
+		}
+		if (Boolean.TRUE.equals(query.getOnlyPositiveQtyToProcess()))
+		{
+			queryBuilder.addCompareFilter(I_DD_Order_Candidate.COLUMNNAME_QtyToProcess, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		}
 
 		return queryBuilder;
 	}
@@ -294,6 +314,16 @@ public class DDOrderCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, ids)
 				.create()
+				.createSelection()
+				.orElseThrow(() -> new AdempiereException("No records found for " + ids));
+	}
+
+	@VisibleForTesting
+	Optional<PInstanceId> createSelection(@NonNull final DDOrderCandidateQuery query)
+	{
+		return toSqlQuery(query)
+				.create()
+				.setRequiredAccess(Access.READ)
 				.createSelection();
 	}
 

@@ -1008,6 +1008,31 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_WorkingTime = "WorkingTime";
 
 	/**
+	 * Set Work Station.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWorkStation_ID (int WorkStation_ID);
+
+	/**
+	 * Get Work Station.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWorkStation_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getWorkStation();
+
+	void setWorkStation(@Nullable org.compiere.model.I_S_Resource WorkStation);
+
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_WorkStation_ID = new ModelColumn<>(I_PP_Product_Planning.class, "WorkStation_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_WorkStation_ID = "WorkStation_ID";
+
+	/**
 	 * Set Yield %.
 	 * The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
 	 *

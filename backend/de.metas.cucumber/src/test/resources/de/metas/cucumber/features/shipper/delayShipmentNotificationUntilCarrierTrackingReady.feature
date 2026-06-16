@@ -108,17 +108,13 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
     And metasfresh contains Carrier_Goods_Types:
       | Identifier | M_Shipper_ID |
       | cgt1       | nShift       |
-    And metasfresh contains Carrier_Services:
-      | Identifier | M_Shipper_ID |
-      | cs1        | nShift       |
-      | cs2        | nShift       |
 
   @from:cucumber
   Scenario: Shipment mail workpackage is skipped while TrackingURL is absent, then released once TrackingURL is set
 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
-      | cp1                | cgt1                  | cs1                | cs2                 |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
     And the nShift shipment service is stubbed to return a successful shipment creation response
 
     # ── order → shipment pipeline ─────────────────────────────────────────────
@@ -169,8 +165,8 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
   Scenario: Shipment mail workpackage is sent immediately when TrackingURL is already present
 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
-      | cp1                | cgt1                  | cs1                | cs2                 |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
     And the nShift shipment service is stubbed to return a successful shipment creation response
 
     # ── order → shipment pipeline ─────────────────────────────────────────────
@@ -192,8 +188,8 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
       | cso2       | shipment2  |
     # nShift stub already set a TrackingURL — leave it as-is (no clear step needed)
     And validate Carrier_ShipmentOrder_Parcels:
-      | Carrier_ShipmentOrder_ID | awb | TrackingURL |
-      | cso2                     | awb | trackingUrl |
+      | Carrier_ShipmentOrder_ID | awb  | TrackingURL  |
+      | cso2                     | awb1 | trackingUrl1 |
 
     # ── assert: shipment mail WP was NOT held — goes straight past the gate ────
     And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes

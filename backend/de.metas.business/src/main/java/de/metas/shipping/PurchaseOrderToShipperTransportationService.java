@@ -22,6 +22,7 @@
 
 package de.metas.shipping;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -78,6 +79,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
+	@VisibleForTesting
+	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
+
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -89,11 +93,17 @@ public class PurchaseOrderToShipperTransportationService
 	private final ITUDistributionProvider tuDistributionProvider;
 	private final IPackageWeightProvider packageWeightProvider;
 
+	@VisibleForTesting
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
+	{
+		return newInstanceForUnitTesting((o, ol) -> 1);
+	}
+
+	@VisibleForTesting
+	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting(@NonNull final ILUQtyProvider luQtyProvider)
 	{
 		Adempiere.assertUnitTestMode();
 
-		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
 		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> {
 			final ArrayList<BigDecimal> tuDistribution = new ArrayList<>(luCount);
 			for (int i = 0; i < luCount; i++)
@@ -192,20 +202,44 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(orgId)
 				.build();
 
+		final List<I_C_OrderLine> skippedLines = new ArrayList<>();
+		int addedCount = 0;
+
 		for (final I_C_OrderLine ol : orderLinesWithoutLUQty)
 		{
 			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
 			if (requiredLUCount <= 0)
 			{
+				skippedLines.add(ol);
 				continue;
 			}
 
 			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, requiredLUCount);
+			addedCount++;
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
 			final int qtyLUs = ol.getQtyLU().intValueExact();
 			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, qtyLUs);
+			addedCount++;
+		}
+
+		if (!skippedLines.isEmpty())
+		{
+			final String skippedLineNos = skippedLines.stream()
+					.map(ol -> String.valueOf(ol.getLine()))
+					.collect(Collectors.joining(", "));
+
+			if (addedCount == 0)
+			{
+				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos)
+						.markAsUserValidationError();
+			}
+			else
+			{
+				Loggables.addLog("Skipped {} PO line(s) with no LU packing configuration (lines: {})",
+						skippedLines.size(), skippedLineNos);
+			}
 		}
 	}
 

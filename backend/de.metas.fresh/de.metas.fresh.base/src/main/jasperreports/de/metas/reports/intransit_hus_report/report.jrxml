@@ -70,6 +70,10 @@ order by order_docno, production_order_no, documentno]]>
 		<property name="com.jaspersoft.studio.field.name" value="datestartschedule"/>
 		<property name="com.jaspersoft.studio.field.label" value="datestartschedule"/>
 	</field>
+	<field name="pickinginstruction" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="pickinginstruction"/>
+		<property name="com.jaspersoft.studio.field.label" value="pickinginstruction"/>
+	</field>
 	<field name="renderedqrcode" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="renderedqrcode"/>
 		<property name="com.jaspersoft.studio.field.label" value="renderedqrcode"/>
@@ -435,7 +439,7 @@ order by order_docno, production_order_no, documentno]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyentered}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="91" y="0" width="261" height="120" forecolor="#000000" uuid="78d3e216-7346-4356-8a3b-5cd7355eaba8">
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
@@ -449,7 +453,9 @@ order by order_docno, production_order_no, documentno]]>
 					<font fontName="Arial" size="9" isBold="true"/>
 					<paragraph leftIndent="5" spacingBefore="3"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pickinginstruction} != null
+    ? ($F{productname} + "\n\n" + $R{pickinginstruction} + ": " + $F{pickinginstruction})
+    : $F{productname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-16" x="31" y="0" width="60" height="120" forecolor="#000000" uuid="5c46dc41-db2a-4640-ae26-c0c0da4864fc">

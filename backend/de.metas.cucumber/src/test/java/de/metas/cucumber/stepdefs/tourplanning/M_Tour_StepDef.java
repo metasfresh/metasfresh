@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /** Step definitions for M_Tour, M_TourVersion, M_TourVersionLine, and M_DeliveryDay tour planning entities. */
@@ -78,7 +79,7 @@ public class M_Tour_StepDef
 
 		final I_M_Tour tour = InterfaceWrapperHelper.newInstance(I_M_Tour.class);
 		tour.setName(name);
-		saveRecord(tour);
+			saveRecord(tour);
 
 		row.getAsOptionalIdentifier().ifPresent(id -> tourTable.putOrReplace(id, tour));
 	}
@@ -134,5 +135,32 @@ public class M_Tour_StepDef
 		saveRecord(dd);
 
 		row.getAsOptionalIdentifier().ifPresent(id -> deliveryDayTable.putOrReplace(id, dd));
+	}
+
+	/**
+	 * Creates {@link I_M_Tour} records.
+	 * <p>
+	 * Columns:
+	 * <ul>
+	 *     <li>Identifier (required): identifier under which the created M_Tour is stored for later reference.</li>
+	 *     <li>OPT.Name (optional): the tour's name; defaults to the identifier.</li>
+	 * </ul>
+	 * Example:
+	 * <pre>
+	 * Given metasfresh contains M_Tour:
+	 *   | Identifier | OPT.Name  |
+	 *   | tour       | Tour Mon  |
+	 * </pre>
+	 */
+	@Given("metasfresh contains M_Tour:")
+	public void metasfresh_contains_M_Tour(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_Tour tour = newInstance(I_M_Tour.class);
+			tour.setName(row.getAsOptionalString("Name").orElseGet(() -> row.getAsIdentifier().getAsString()));
+			saveRecord(tour);
+
+			row.getAsOptionalIdentifier().ifPresent(identifier -> tourTable.putOrReplace(identifier, tour));
+		});
 	}
 }

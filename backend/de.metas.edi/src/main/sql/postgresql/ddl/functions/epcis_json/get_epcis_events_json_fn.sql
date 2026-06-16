@@ -115,16 +115,33 @@ BEGIN
         RETURN '{}'::jsonb;
     END IF;
 
-    WITH shared_lu_inout AS MATERIALIZED (
+    WITH this_inout_lu AS MATERIALIZED (
+        -- LUs physically touched by THIS shipment (via m_hu_assignment) — typically 1-5 rows.
+        -- Used to bound shared_lu_inout below: without it, shared_lu_inout has no equality
+        -- predicate on m_lu_hu_id and degrades to a full scan of the whole m_hu_assignment
+        -- history (millions of rows) on every call — the dominant per-call cost.
+        SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id
+        FROM m_hu_assignment ha
+                 JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+        WHERE ha.ad_table_id = v_m_inoutline_table_id
+          AND ha.m_lu_hu_id IS NOT NULL
+          AND ha.isactive = 'Y'
+          AND iol.m_inout_id = p_m_inout_id
+    ),
+    shared_lu_inout AS MATERIALIZED (
         -- (lu, m_inout) pairs: every active completed/closed shipment that has goods physically
         -- assigned to an LU. Voided/reversed/in-progress shipments are excluded so they can never
         -- be elected owner (which would otherwise silence the active shipment for that SSCC).
+        -- Scoped to the LUs THIS shipment touches (this_inout_lu): the m_lu_hu_id IN-list lets the
+        -- m_hu_assignment_m_lu_hu_id index drive the scan (a handful of LUs) instead of a full
+        -- table scan. Owner election is unchanged — for each of THIS shipment's LUs we still see
+        -- ALL shipments sharing it (the filter is on m_lu_hu_id, not m_inout_id), so MIN() is exact.
         SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
                  JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
         WHERE ha.ad_table_id = v_m_inoutline_table_id
-          AND ha.m_lu_hu_id IS NOT NULL
+          AND ha.m_lu_hu_id IN (SELECT lu_hu_id FROM this_inout_lu)
           AND ha.isactive = 'Y'
           AND iol.isactive = 'Y'
           AND io.docstatus IN ('CO', 'CL')

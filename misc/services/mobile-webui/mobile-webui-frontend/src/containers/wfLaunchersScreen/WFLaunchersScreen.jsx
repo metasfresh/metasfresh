@@ -18,6 +18,8 @@ import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { useLaunchers } from './useLaunchers';
 import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
 import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
+import { APPLICATION_ID_Picking } from '../../apps/picking';
+import PickingJobsListActions from '../../apps/picking/containers/PickingJobsListActions';
 import { useCurrentTrolley } from '../../api/trolley';
 import { toastError } from '../../utils/toast';
 
@@ -82,7 +84,6 @@ const WFLaunchersScreen = () => {
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => setWorkstationByQRCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkstationPlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
@@ -102,7 +103,6 @@ const WFLaunchersScreen = () => {
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => setWorkplaceByQRCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkplacePlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
@@ -124,7 +124,6 @@ const WFLaunchersScreen = () => {
             setTrolleyByScannedCode(scannedBarcode).catch((axiosError) => toastError({ axiosError }))
           }
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
@@ -164,6 +163,7 @@ const WFLaunchersScreen = () => {
       {applicationId === APPLICATION_ID_Distribution && (
         <DistributionJobsListActions actions={actions} disabled={isLaunchersLoading} />
       )}
+      {applicationId === APPLICATION_ID_Picking && <PickingJobsListActions />}
       {launchers &&
         launchers.map((launcher, index) => {
           const id = `launcher-${index}-button`;
