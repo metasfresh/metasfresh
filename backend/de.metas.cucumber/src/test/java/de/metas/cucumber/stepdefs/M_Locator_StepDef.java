@@ -109,31 +109,24 @@ public class M_Locator_StepDef
 	}
 
 	/**
-	 * Upserts {@code M_Locator} records by warehouse + Value, then stores each locator in the StepDefData table.
+	 * Creates (or updates) {@code M_Locator} records. Existing locators are matched by
+	 * ({@code M_Warehouse_ID}, {@code Value}); a new one is created when none matches.
 	 *
-	 * <p>Required columns:
-	 * <ul>
-	 *   <li>{@code Value} — the locator's unique value within the warehouse; used as the upsert key together
-	 *       with {@code M_Warehouse_ID}.</li>
-	 *   <li>{@code M_Warehouse_ID} — identifier of a previously created warehouse.</li>
-	 * </ul>
-	 *
-	 * <p>Optional columns (absent columns keep the existing value on update, or use the listed default on insert):
-	 * <ul>
-	 *   <li>{@code IsDefault} — {@code Y} / {@code N}; default {@code Y} on new records.</li>
-	 *   <li>{@code IsGroundLocator} — {@code Y} / {@code N}; marks the locator as a ground-floor picking locator
-	 *       (sourced by {@code DDOrderPickingReplenishmentService} when building required allocations). Default
-	 *       {@code N} on new records.</li>
-	 *   <li>{@code PriorityNo} — integer priority used to order ground locators in the greedy allocation; default 50.</li>
-	 *   <li>{@code X}, {@code Y}, {@code Z} — aisle/bin/level coordinates; each defaults to {@code "0"}.</li>
-	 * </ul>
-	 *
-	 * <p>Gherkin usage:
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Warehouse_ID</b> — (required, identifier-ref) the warehouse the locator belongs to<br>
+	 *   <b>Value</b> — (optional) locator Value; auto-suggested when omitted<br>
+	 *   <b>IsDefault</b> — (optional, Y/N) defaults to {@code Y} on create<br>
+	 *   <b>IsGroundLocator</b> — (optional, Y/N) marks the locator as a ground-floor picking locator (sourced by {@code DDOrderPickingReplenishmentService} and the mobile "Lagerort leer" resolver); defaults to {@code N} on create<br>
+	 *   <b>PriorityNo</b> — (optional) order key for ground locators, ascending; defaults to {@code 50} on create<br>
+	 *   <b>X</b> / <b>X1</b> / <b>Y</b> / <b>Z</b> — (optional) warehouse coordinates; each defaults to {@code "0"} on create<br>
+	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains M_Locator:
-	 *   | Identifier | M_Warehouse_ID | Value    | IsGroundLocator | PriorityNo |
-	 *   | locatorA   | stockWH        | loc-A    | Y               | 10         |
-	 *   | locatorB   | stockWH        | loc-B    | Y               | 20         |
+	 *   | Identifier | M_Warehouse_ID | Value | IsGroundLocator | PriorityNo |
+	 *   | locatorA   | stockWH        | loc-A | Y               | 10         |
+	 *   | locatorB   | stockWH        | loc-B | Y               | 20         |
 	 * </pre>
 	 */
 	@And("metasfresh contains M_Locator:")
@@ -179,6 +172,11 @@ public class M_Locator_StepDef
 					if (isNew || x.isPresent())
 					{
 						locatorRecord.setX(x.orElse("0"));
+					}
+					final Optional<String> x1 = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X1);
+					if (isNew || x1.isPresent())
+					{
+						locatorRecord.setX1(x1.orElse("0"));
 					}
 					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Y);
 					if (isNew || y.isPresent())
