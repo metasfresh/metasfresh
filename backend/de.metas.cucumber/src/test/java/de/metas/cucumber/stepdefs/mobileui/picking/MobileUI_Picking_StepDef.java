@@ -205,7 +205,6 @@ public class MobileUI_Picking_StepDef
 		{
 			final LocalDate bestBeforeDate = row.getAsOptionalLocalDate("BestBeforeDate").orElse(null);
 			final String lotNo = row.getAsOptionalString("LotNo").orElse(null);
-			final String serialNo = row.getAsOptionalString("SerialNo").orElse(null);
 			requestBuilder
 					.qtyPicked(row.getAsBigDecimal("QtyPicked"))
 					.qtyRejected(row.getAsOptionalBigDecimal("QtyRejected").orElse(null))
@@ -216,9 +215,7 @@ public class MobileUI_Picking_StepDef
 					.setBestBeforeDate(bestBeforeDate != null)
 					.bestBeforeDate(bestBeforeDate)
 					.setLotNo(lotNo != null)
-					.lotNo(lotNo)
-					.setSerialNo(serialNo != null)
-					.serialNo(serialNo);
+					.lotNo(lotNo);
 		}
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.pickLine(requestBuilder.build());
