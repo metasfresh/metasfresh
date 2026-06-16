@@ -1,0 +1,1 @@
+Method <de.metas.report.jasper.class_loader.images.ImageUtils.createTempImageFile(de.metas.image.AdImageId)> calls method <org.adempiere.model.InterfaceWrapperHelper.load(de.metas.util.lang.RepoIdAware, java.lang.Class)> in (ImageUtils.java:68)
