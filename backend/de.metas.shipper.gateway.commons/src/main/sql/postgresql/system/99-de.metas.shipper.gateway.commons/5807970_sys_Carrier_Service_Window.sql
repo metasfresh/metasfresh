@@ -13,7 +13,7 @@
 -- Reused: AD_Table 542543 Carrier_Service; cols Name=591326 M_Shipper_ID=591324 ExternalId=591325
 --                   IsActive=591320 AD_Org_ID=591317 AD_Client_ID=591316
 --   Elements: Name=469 M_Shipper_ID=455 ExternalId=543939 IsActive=348 AD_Org_ID=113 AD_Client_ID=102
---   Menu: AD_Tree_ID=10, parent 167 (Einstellungen Materialwirtschaft)
+--   Menu: AD_Tree_ID=10, parent 1000016 (Logistik)
 
 -- ============================================================
 -- 1. AD_Element for window/tab caption
@@ -47,11 +47,11 @@ WHERE AD_Element_ID=585002 AND AD_Language='en_US';
 -- 2. AD_Window
 -- ============================================================
 INSERT INTO AD_Window (AD_Window_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-     Name, WindowType, IsSOTrx, IsDefault, IsBetaFunctionality, EntityType, AD_Element_ID)
+     Name, WindowType, IsSOTrx, IsDefault, IsBetaFunctionality, EntityType, AD_Element_ID, InternalName)
 VALUES (542163 /*From ID Server*/, 0, 0, 'Y',
      TO_TIMESTAMP('2026-06-15 12:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-15 12:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Lieferweg-Service', 'M', 'Y', 'N', 'N', 'D', 585002 /*From ID Server*/);
+     'Lieferweg-Service', 'M', 'Y', 'N', 'N', 'D', 585002 /*From ID Server*/, 'Carrier_Service');
 
 INSERT INTO AD_Window_Trl (AD_Language, AD_Window_ID, IsTranslated, Name, Description, Help,
      AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
@@ -368,4 +368,4 @@ INSERT INTO AD_TreeNodeMM (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy
 VALUES (0, 0, 'Y',
      TO_TIMESTAMP('2026-06-15 12:08:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-15 12:08:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     10 /*menu tree*/, 542339 /*new menu*/, 167 /*Einstellungen Materialwirtschaft*/, 24);
+     10 /*menu tree*/, 542339 /*new menu*/, 1000016 /*Logistik*/, 98);

@@ -21,7 +21,7 @@
 --   AD_Table 542608 Carrier_Product_Service_Alloc;   Carrier_Service_ID=592657,   parent FK Carrier_Product_ID=592656
 --   Elements: Name=469 M_Shipper_ID=455 ExternalId=543939 IsActive=348 AD_Org_ID=113 AD_Client_ID=102
 --             Carrier_Goods_Type_ID=584112 Carrier_Service_ID=584113
---   Menu: AD_Tree_ID=10, parent 167 (Einstellungen Materialwirtschaft), after "Lieferweg" (128)
+--   Menu: AD_Tree_ID=10, parent 1000016 (Logistik), alongside the shipment-order windows
 
 -- ============================================================
 -- 1. AD_Element for window/header-tab + child-tab captions
@@ -107,11 +107,11 @@ WHERE AD_Element_ID=585000 AND AD_Language='en_US';
 -- 2. AD_Window
 -- ============================================================
 INSERT INTO AD_Window (AD_Window_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-     Name, WindowType, IsSOTrx, IsDefault, IsBetaFunctionality, EntityType, AD_Element_ID)
+     Name, WindowType, IsSOTrx, IsDefault, IsBetaFunctionality, EntityType, AD_Element_ID, InternalName)
 VALUES (542161 /*From ID Server*/, 0, 0, 'Y',
      TO_TIMESTAMP('2026-06-15 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-15 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     'Lieferweg-Produkt', 'M', 'Y', 'N', 'N', 'D', 584998 /*From ID Server*/);
+     'Lieferweg-Produkt', 'M', 'Y', 'N', 'N', 'D', 584998 /*From ID Server*/, 'Carrier_Product');
 
 INSERT INTO AD_Window_Trl (AD_Language, AD_Window_ID, IsTranslated, Name, Description, Help,
      AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)
@@ -571,7 +571,7 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,
 WHERE AD_Column_ID=591349 /*Carrier_Product.M_Shipper_ID*/;
 
 -- ============================================================
--- 9. AD_Menu + tree placement (parent 167 Einstellungen Materialwirtschaft, after Lieferweg)
+-- 9. AD_Menu + tree placement (parent 1000016 Logistik, alongside the shipment-order windows)
 -- ============================================================
 INSERT INTO AD_Menu (AD_Menu_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
      Name, Action, AD_Window_ID, IsSummary, EntityType, AD_Element_ID, InternalName)
@@ -597,4 +597,4 @@ INSERT INTO AD_TreeNodeMM (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy
 VALUES (0, 0, 'Y',
      TO_TIMESTAMP('2026-06-15 10:08:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
      TO_TIMESTAMP('2026-06-15 10:08:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
-     10 /*menu tree*/, 542337 /*new menu*/, 167 /*Einstellungen Materialwirtschaft*/, 22);
+     10 /*menu tree*/, 542337 /*new menu*/, 1000016 /*Logistik*/, 78);
