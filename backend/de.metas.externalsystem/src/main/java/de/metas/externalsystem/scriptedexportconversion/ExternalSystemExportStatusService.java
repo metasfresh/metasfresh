@@ -139,6 +139,21 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Returns all config IDs that have any export-status row for the given source record,
+	 * regardless of the current status (no terminal-failure filter).
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getLatestBySourceRecord(sourceRecord)
+				.stream()
+				.map(ScriptedExportConversionStatus::getConfigId)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
 	 * Binds the PInstance to the (config, record) status row and transitions it to the in-flight
 	 * {@link ExternalSystemExportStatus#Enqueued} state.
 	 *

@@ -327,6 +327,18 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
+	 * Returns all config IDs that have any export-status row for the given source record,
+	 * regardless of the current status (i.e. no terminal-failure filter).
+	 * Use this when re-sending should apply to ALL known configs, not only those in error/invalid state.
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return exportStatusService.getMatchingConfigIdsBySourceRecord(sourceRecord);
+	}
+
+	/**
 	 * Records a {@link ExternalSystemExportStatus#Pending} log entry for the given config and source record.
 	 * Called by the interceptor's AFTER_COMPLETE branch for each matching config, before scheduling
 	 * the after-commit execution.

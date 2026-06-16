@@ -27,6 +27,7 @@ import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedEx
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -35,22 +36,28 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
- * Re-triggers the scripted-export-conversion for any config with a non-Sent attempt for this C_Invoice.
+ * Re-triggers the scripted-export-conversion for a selection of C_Invoice records.
+ * When {@code IsOnlyNotSentSuccessfully=Y} only configs whose last attempt is in error/invalid
+ * state are re-sent; otherwise all known configs for each record are triggered.
  */
 public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
 	private final ExternalSystemScriptedExportConversionService scriptedExportService =
 			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
 
+	@Param(parameterName = "IsOnlyNotSentSuccessfully")
+	private boolean isOnlyNotSentSuccessfully;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectedIncludedRecords().size() > 1)
+		if (context.getSelectionSize().isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -58,24 +65,31 @@ public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess imple
 	@Override
 	protected String doIt()
 	{
-		final int c_invoice_id = getRecord_ID();
-		final TableRecordReference sourceRecord = TableRecordReference.of(I_C_Invoice.Table_Name, c_invoice_id);
-
-		final List<ExternalSystemScriptedExportConversionConfigId> configIds =
-				scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord);
-
 		int triggered = 0;
-		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
+
+		final Iterator<I_C_Invoice> it = retrieveSelectedRecordsQueryBuilder(I_C_Invoice.class).create().iterate(I_C_Invoice.class);
+		while (it.hasNext())
 		{
-			final ExternalSystemScriptedExportConversionConfig config =
-					scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
+			final I_C_Invoice record = it.next();
+			final int c_invoice_id = record.getC_Invoice_ID();
+			final TableRecordReference sourceRecord = TableRecordReference.of(I_C_Invoice.Table_Name, c_invoice_id);
 
-			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
-					config,
-					c_invoice_id,
-					ExternalSystemInvocationContext.RESEND);
+			final List<ExternalSystemScriptedExportConversionConfigId> configIds = isOnlyNotSentSuccessfully
+					? scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord)
+					: scriptedExportService.getMatchingConfigIdsBySourceRecord(sourceRecord);
 
-			triggered++;
+			for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
+			{
+				final ExternalSystemScriptedExportConversionConfig config =
+						scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
+
+				scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
+						config,
+						c_invoice_id,
+						ExternalSystemInvocationContext.RESEND);
+
+				triggered++;
+			}
 		}
 
 		return "@Processed@ #" + triggered;

@@ -120,8 +120,8 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final ExternalSystemScriptedExportConversionConfig configA = buildDummyConfig(configIdA, tableId);
 		final ExternalSystemScriptedExportConversionConfig configB = buildDummyConfig(configIdB, tableId);
 
-		// Service returns two qualifying configs
-		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
+		// Service returns two qualifying configs (isOnlyNotSentSuccessfully=false by default → getMatchingConfigIdsBySourceRecord)
+		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(sourceRecord))
 				.thenReturn(qualifyingConfigIds);
 
 		// resolveConfigAndRecordPendingAsResend returns the resolved config for each
@@ -161,7 +161,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final int inoutId = inout.getM_InOut_ID();
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
 
-		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(any()))
+		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(any()))
 				.thenReturn(Collections.emptyList());
 
 		final String result = runProcess(inoutId, tableId);
