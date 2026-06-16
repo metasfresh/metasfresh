@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
@@ -14,7 +15,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 
 @Value

@@ -218,10 +218,8 @@ public class MobileUI_Picking_StepDef
 
 	/**
 	 * Atomic pick: sends a single PICK event whose {@code setGrais=true} and {@code graiCodes} are
-	 * populated with the GRAIs listed in the DataTable. This is the TDD RED driver for the
-	 * GRAI-atomicity rework — the GRAI stamp is not yet wired in {@code PickingJobPickCommand}
-	 * (Task 2), so calling this step followed by
-	 * {@link #assertPickedLUTusCarryGrais(String, DataTable)} will FAIL until Task 2 is complete.
+	 * populated with the GRAIs listed in the DataTable. The GRAIs are stamped onto the picked TUs
+	 * inside the same pick transaction.
 	 * <p>
 	 * Each DataTable row represents one GRAI to capture. All rows must share the same
 	 * {@code PickingLine.byProduct} and {@code PickFromHU} values (they are all sent in one
@@ -301,8 +299,8 @@ public class MobileUI_Picking_StepDef
 
 	/**
 	 * Assert that the TUs on the given LU carry exactly the expected GRAIs.
-	 * This step is the RED gate for the atomic pick rework: it fails until
-	 * {@code PickingJobPickCommand} is wired to stamp graiCodes (Task 2).
+	 * Verifies that the atomic pick event's {@code graiCodes} were stamped onto the picked TUs
+	 * inside the pick transaction.
 	 *
 	 * <b>@cucumber.columns</b>
 	 * <ul>

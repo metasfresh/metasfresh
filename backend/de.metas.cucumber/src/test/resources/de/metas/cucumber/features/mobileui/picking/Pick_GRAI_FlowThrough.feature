@@ -3,16 +3,15 @@
 @allure.label.feature:F00230_MobileUI_Picking
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profile — atomic pick event
-## A GRAIRequired=Yes customer forces the picker to capture one GRAI per TU on the picked LU.
-## The rework makes capture ATOMIC: the pick event itself carries graiCodes and the GRAIs are
-## stamped in the same transaction (no separate set-GRAIs call after the pick).
+## A GRAIRequired=Yes customer captures one GRAI per TU on the picked LU.
+## The pick event carries graiCodes and the GRAIs are stamped onto the picked TUs in the
+## same transaction (no separate set-GRAIs call after the pick).
 ##
 ## Scenarios:
-##   Scenario 1 (RED gate): SALES_ORDER aggregation — atomic pick with graiCodes; asserts the
-##     picked TU carries the scanned GRAI. FAILS until Task 2 wires the stamp in
-##     PickingJobPickCommand. This is the intentional TDD RED.
-##   Scenario 2 (guard, stays GREEN): GRAIRequired customer — completing with fewer GRAIs than
-##     TUs is blocked by the completion guard (unchanged by the rework).
+##   Scenario 1: SALES_ORDER aggregation — atomic pick with graiCodes; asserts the picked TU
+##     carries the scanned GRAIs after the pick.
+##   Scenario 2: GRAIRequired customer — completing with fewer GRAIs than TUs is blocked by
+##     the completion guard (unchanged by the rework).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -95,8 +94,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | line1              | pickFromCU |
 
 # ######################################################################################################################
-# SCENARIO 1 — Atomic pick: graiCodes ride on the single pick event; assertion proves the stamp.
-# RED gate: the "TUs carry GRAIs" assertion fails until Task 2 wires the stamp in PickingJobPickCommand.
+# SCENARIO 1 — Atomic pick: graiCodes ride on the single pick event; picked TUs carry the GRAIs.
 # ######################################################################################################################
   @from:cucumber
   Scenario: GRAIRequired customer - atomic pick with graiCodes; picked TUs must carry the scanned GRAIs
@@ -132,14 +130,13 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | Existing_LU |
       | pickedLU    |
 
-    # RED gate: fails until Task 2 wires GRAI stamping inside PickingJobPickCommand.executeInTrx().
+    # The picked TUs must carry the scanned GRAIs.
     Then the TUs on picked LU identified by pickedLU carry GRAIs
       | GRAI                 |
       | 7613204.00307.000001 |
       | 7613204.00307.000002 |
       | 7613204.00307.000003 |
 
-    # Completion succeeds once GRAIs are stamped atomically (RED until Task 2 as well).
     And complete picking job
 
     Then after not more than 60s, M_InOut is found:
@@ -147,8 +144,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | shipmentSchedule                 | shipment              | CO            |
 
 # ######################################################################################################################
-# SCENARIO 2 — Completion guard: fewer GRAIs than TUs still blocks completion.
-# This scenario stays GREEN: uses the existing set-GRAIs-on-LU step (unchanged by rework).
+# SCENARIO 2 — Completion guard: fewer GRAIs than TUs blocks completion.
 # ######################################################################################################################
   @from:cucumber
   Scenario: GRAIRequired customer - completing with fewer GRAIs than TUs is blocked

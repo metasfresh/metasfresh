@@ -145,9 +145,8 @@ public class MobileUIPickingClient
 
 	/**
 	 * Pick a single line atomically, carrying {@code graiCodes} in the same event.
-	 * The actual GRAI-stamping is wired in Task 2; this call merely sends the
-	 * {@code graiCodes} field on the pick event so the RED cucumber can assert
-	 * that the TU carries the GRAI after the pick.
+	 * The pick event's {@code setGrais=true} and {@code graiCodes} fields are forwarded to the
+	 * backend so the stamp can be applied inside the pick transaction.
 	 *
 	 * @param request a PICK event whose {@code setGrais=true} and {@code graiCodes} are populated
 	 * @return the refreshed picking workflow process
