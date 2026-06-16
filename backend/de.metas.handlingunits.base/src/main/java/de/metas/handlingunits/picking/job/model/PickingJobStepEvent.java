@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @Value
 @Builder
@@ -47,6 +48,8 @@ public class PickingJobStepEvent
 	boolean isSetLotNo;
 	@Nullable String lotNo;
 	boolean isCloseTarget;
+	boolean isSetGrais;
+	@Nullable List<String> graiCodes;
 
 	//
 	// Event Type: UNPICK

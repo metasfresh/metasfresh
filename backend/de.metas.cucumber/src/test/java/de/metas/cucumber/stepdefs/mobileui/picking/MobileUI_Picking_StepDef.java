@@ -12,6 +12,9 @@ import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
@@ -55,6 +58,7 @@ public class MobileUI_Picking_StepDef
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull private final HUGraiService huGraiService = SpringContextHolder.instance.getBean(HUGraiService.class);
 	@NonNull private final MobileUIPickingClient mobileUIPickingClient = new MobileUIPickingClient();
 
 	@NonNull private final M_Product_StepDefData productsTable;
@@ -210,6 +214,121 @@ public class MobileUI_Picking_StepDef
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.pickLine(requestBuilder.build());
 		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Atomic pick: sends a single PICK event whose {@code setGrais=true} and {@code graiCodes} are
+	 * populated with the GRAIs listed in the DataTable. This is the TDD RED driver for the
+	 * GRAI-atomicity rework — the GRAI stamp is not yet wired in {@code PickingJobPickCommand}
+	 * (Task 2), so calling this step followed by
+	 * {@link #assertPickedLUTusCarryGrais(String, DataTable)} will FAIL until Task 2 is complete.
+	 * <p>
+	 * Each DataTable row represents one GRAI to capture. All rows must share the same
+	 * {@code PickingLine.byProduct} and {@code PickFromHU} values (they are all sent in one
+	 * atomic pick event); {@code QtyPicked} is taken from the first row.
+	 *
+	 * <b>@cucumber.columns</b>
+	 * <ul>
+	 *   <li><b>PickingLine.byProduct</b> — (optional) product identifier to resolve the picking line</li>
+	 *   <li><b>PickFromHU</b> — (required) HU identifier to scan</li>
+	 *   <li><b>QtyPicked</b> — (required, first row only) number of TUs to pick</li>
+	 *   <li><b>GRAI</b> — (required) the GRAI code for this row; one row per GRAI</li>
+	 * </ul>
+	 *
+	 * <b>@cucumber.example</b>
+	 * <pre>
+	 * And pick line with GRAIs:
+	 *   | PickingLine.byProduct | PickFromHU | QtyPicked | GRAI                 |
+	 *   | product               | pickFromLU | 3         | 7613204.00307.000001 |
+	 *   | product               | pickFromLU | 3         | 7613204.00307.000002 |
+	 *   | product               | pickFromLU | 3         | 7613204.00307.000003 |
+	 * </pre>
+	 *
+	 * @param dataTable each row: PickingLine.byProduct (opt), PickFromHU (req), QtyPicked (req on row 1), GRAI (req)
+	 */
+	@When("pick line with GRAIs:")
+	public void pickLinesWithGrais(@NonNull final DataTable dataTable)
+	{
+		SharedTestContext.put("context", () -> context);
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		assertThat(rows).as("pick line with GRAIs: at least one row expected").isNotEmpty();
+
+		final DataTableRow firstRow = rows.get(0);
+
+		final ImmutableList<String> graiCodes = rows.stream()
+				.map(row -> row.getAsString("GRAI"))
+				.collect(ImmutableList.toImmutableList());
+
+		final JsonPickingStepEvent.JsonPickingStepEventBuilder requestBuilder = JsonPickingStepEvent.builder()
+				.type(JsonPickingStepEvent.EventType.PICK)
+				.wfProcessId(context.getWfProcessIdNotNull())
+				.wfActivityId(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString());
+
+		//
+		// Picking Line (from first row)
+		{
+			String pickingLineId = firstRow.getAsOptionalIdentifier("PickingLine.byProduct")
+					.map(productsTable::getId)
+					.map(context::getPickingLineIdByProductId)
+					.orElse(null);
+			if (pickingLineId == null)
+			{
+				pickingLineId = context.getSinglePickingLineId();
+			}
+			assertThat(pickingLineId).as("pickingLineId").isNotNull();
+			requestBuilder.pickingLineId(pickingLineId);
+		}
+
+		//
+		// Pick from HU (from first row)
+		{
+			final HuId pickFromHUId = huTable.getId(firstRow.getAsIdentifier("PickFromHU"));
+			final HUQRCode pickFromQRCode = huQRCodesService.getQRCodeByHuId(pickFromHUId);
+			requestBuilder.huQRCode(pickFromQRCode.toGlobalQRCodeString());
+		}
+
+		//
+		// Qty + GRAIs (qty from first row)
+		requestBuilder
+				.qtyPicked(firstRow.getAsBigDecimal("QtyPicked"))
+				.setGrais(true)
+				.graiCodes(graiCodes);
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.pickLineWithGrais(requestBuilder.build());
+		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Assert that the TUs on the given LU carry exactly the expected GRAIs.
+	 * This step is the RED gate for the atomic pick rework: it fails until
+	 * {@code PickingJobPickCommand} is wired to stamp graiCodes (Task 2).
+	 *
+	 * <b>@cucumber.columns</b>
+	 * <ul>
+	 *   <li><b>GRAI</b> — (required) expected GRAI code; one row per expected GRAI</li>
+	 * </ul>
+	 *
+	 * @param luIdentifier identifier of the picked LU (resolved via the HU step-def table)
+	 * @param dataTable    one {@code GRAI} column, one row per expected GRAI on the LU's TUs
+	 */
+	@Then("^the TUs on picked LU identified by (.*) carry GRAIs$")
+	public void assertPickedLUTusCarryGrais(@NonNull final String luIdentifier, @NonNull final DataTable dataTable)
+	{
+		final HuId luId = huTable.getId(luIdentifier);
+		final ImmutableList<String> expectedGraiCodes = DataTableRows.of(dataTable).stream()
+				.map(row -> row.getAsString("GRAI"))
+				.collect(ImmutableList.toImmutableList());
+
+		final HUGraiSnapshot snapshot = huGraiService.getSnapshot(luId).orElseThrow();
+		final GRAISet actualGrais = snapshot.getAllGrais();
+		final ImmutableList<String> actualGraiStrings = actualGrais.stream()
+				.map(Object::toString)
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actualGraiStrings)
+				.as("GRAIs on TUs of picked LU %s", luId)
+				.containsExactlyInAnyOrderElementsOf(expectedGraiCodes);
 	}
 
 	@When("complete picking job")

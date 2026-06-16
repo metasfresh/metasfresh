@@ -142,4 +142,20 @@ public class MobileUIPickingClient
 				luId.getRepoId(),
 				JsonGRAICodesRequest.builder().graiCodes(ImmutableList.copyOf(graiCodes)).build());
 	}
+
+	/**
+	 * Pick a single line atomically, carrying {@code graiCodes} in the same event.
+	 * The actual GRAI-stamping is wired in Task 2; this call merely sends the
+	 * {@code graiCodes} field on the pick event so the RED cucumber can assert
+	 * that the TU carries the GRAI after the pick.
+	 *
+	 * @param request a PICK event whose {@code setGrais=true} and {@code graiCodes} are populated
+	 * @return the refreshed picking workflow process
+	 */
+	public JsonWFProcess pickLineWithGrais(@NonNull final JsonPickingStepEvent request)
+	{
+		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
+		Check.assume(request.isSetGrais(), "setGrais must be true for an atomic pick-with-GRAIs call: {}", request);
+		return pickingRestController.postEvent(request);
+	}
 }

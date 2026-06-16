@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.picking;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
@@ -51,6 +52,7 @@ public class MobileUIPickingUserProfile_StepDef
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isAllowCompletingPartialPickingJob);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsCatchWeightTUPickingEnabled).ifPresent(defaultPickingJobOptionsBuilder::isCatchWeightTUPickingEnabled);
+			row.getAsOptionalEnum("PickingJobAggregationType", PickingJobAggregationType.class).ifPresent(defaultPickingJobOptionsBuilder::aggregationType);
 
 			return profile.toBuilder()
 					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
