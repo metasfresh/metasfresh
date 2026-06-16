@@ -68,6 +68,9 @@ export const GetQuantityDialog = {
         const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
             && await page.getByTestId('serialNo-scan-again-button').isVisible();
         await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
+        // Wait for the scan sub-view to mount (its keyboard hook to be active) before dispatching
+        // barcode keystrokes — otherwise the events fire into the unmounted view and are lost.
+        await expect(page.getByTestId('serialNo-scan-cancel-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         await BarcodeScannerComponent.type({ scannedCode: serialNo });
         await expect(page.getByTestId('serialNo-value')).toHaveText(`${serialNo}`, { timeout: SLOW_ACTION_TIMEOUT });
     }),

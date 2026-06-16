@@ -18,8 +18,10 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Description='Wenn aktiviert, muss be
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Serial No Picked', PrintName='Serial No Picked', Description='If enabled, picking this product into a handling unit requires the operator to scan the serial number.', Help='If enabled, picking this product into a handling unit requires the operator to scan the serial number.',Updated=TO_TIMESTAMP('2026-06-16 02:25:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585003 AND AD_Language='en_US'
 ;
 
--- propagate AD_Element_Trl to dependent _Trl tables
+-- propagate AD_Element_Trl to dependent _Trl tables (both translated languages, treated alike)
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(585003,'en_US')
+;
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(585003,'de_DE')
 ;
 
 -- AD_Column (PersonalDataCategory='NP' — technical flag, not personal data)

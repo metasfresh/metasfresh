@@ -79,6 +79,7 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
 
     const masterdata = await createMasterdata({ serialProduct: true });
     const { pickingJobId } = await startPickingJob(masterdata);
+    const serialNo = `SN-${Date.now()}`;
 
     await test.step("Pick with serial scan", async () => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', color: 'red' });
@@ -92,8 +93,8 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
         await GetQuantityDialog.expectDoneDisabled();
 
         // scan the serial → value shown, confirm enabled
-        await GetQuantityDialog.scanSerialNo('SN-0001');
-        await GetQuantityDialog.expectSerialNoValue('SN-0001');
+        await GetQuantityDialog.scanSerialNo(serialNo);
+        await GetQuantityDialog.expectSerialNoValue(serialNo);
         await GetQuantityDialog.expectDoneEnabled();
         await GetQuantityDialog.clickDone();
 
@@ -111,7 +112,7 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
             },
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { SerialNo: 'SN-0001' } },
+                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { SerialNo: serialNo } },
             }
         });
     });
@@ -126,7 +127,7 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
             }
         },
         hus: {
-            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { SerialNo: 'SN-0001' } },
+            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { SerialNo: serialNo } },
         }
     });
 });
