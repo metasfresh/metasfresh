@@ -3,15 +3,8 @@
 @allure.label.feature:F00230_MobileUI_Picking
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profile — atomic pick event
-## A GRAIRequired=Yes customer captures one GRAI per TU on the picked LU.
-## The pick event carries graiCodes and the GRAIs are stamped onto the picked TUs in the
-## same transaction (no separate set-GRAIs call after the pick).
-##
-## Scenarios:
-##   Scenario 1: SALES_ORDER aggregation — atomic pick with graiCodes; asserts the picked TU
-##     carries the scanned GRAIs after the pick.
-##   Scenario 2: GRAIRequired customer — completing with fewer GRAIs than TUs is blocked by
-##     the completion guard (unchanged by the rework).
+## Scenario 1: atomic pick with graiCodes; asserts the picked TUs carry the scanned GRAIs.
+## Scenario 2: completion guard — fewer GRAIs than TUs blocks completion.
 
   Background:
     Given infrastructure and metasfresh are running
