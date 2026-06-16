@@ -252,13 +252,13 @@
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
-| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end ⏸ SKIPPED (post-switch job-Complete doesn't navigate to jobs-list; job completes server-side — me03 #30441) | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" — after switch, scanning an HU from the original locator is rejected with "HU is not at the target trolley" | `distribution/switchPickFromLocator.spec.js` |
-| "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) ⏸ SKIPPED (same post-switch job-Complete navigation — me03 #30441) | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" — ground-locator mode: skips non-ground and no-stock locators, respects priorityNo order, cycles round-robin | `distribution/switchPickFromLocator_groundLocator.spec.js` |
 | "Lagerort leer" — ground-locator mode (AC6): no eligible ground alternative → no-alternative toast, pick-from unchanged | `distribution/switchPickFromLocator_groundLocator_noAlternative.spec.js` |
 
-**13/13 — 100%**
+**11/13 active — 2 skipped (post-switch job-Complete UI navigation, tracked on me03 #30441)**
 
 ### Distribution — HU scanning
 

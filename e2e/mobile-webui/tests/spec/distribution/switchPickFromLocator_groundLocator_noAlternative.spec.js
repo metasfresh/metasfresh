@@ -51,7 +51,7 @@ const createMasterdata = async () => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Switch pick-from locator — no-alternative (AC6): only non-ground or no-P1 alternatives → "Kein weiterer Lagerort verfügbar"', async ({ page }) => {
+test('Switch pick-from locator — no eligible ground alternative (only non-ground or no-P1 locators) → shows the no-alternative toast and leaves the pick-from unchanged', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
