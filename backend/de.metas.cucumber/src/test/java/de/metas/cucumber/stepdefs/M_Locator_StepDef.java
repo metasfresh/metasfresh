@@ -53,6 +53,30 @@ public class M_Locator_StepDef
 	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final TestContext restTestContext;
 
+	/**
+	 * Loads existing {@code M_Locator} records by warehouse + Value and stores them in the StepDefData table
+	 * so they can be referenced by later steps.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code Value} — the locator's unique value within the warehouse; used as the lookup key.</li>
+	 *   <li>{@code M_Warehouse_ID} — identifier of a previously created warehouse.</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code Identifier} — name under which to store the record in StepDefData for later reference.</li>
+	 *   <li>{@code REST.Context.QRCode} — variable name under which to store the locator's QR-code JSON string
+	 *       in the REST test context (used by REST API scenarios that pass QR codes in request headers).</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And load M_Locator:
+	 *   | Value    | M_Warehouse_ID | Identifier  |
+	 *   | Standard | stockWH        | stockLocator |
+	 * </pre>
+	 */
 	@And("load M_Locator:")
 	public void loadLocators(@NonNull final DataTable dataTable)
 	{
@@ -84,6 +108,34 @@ public class M_Locator_StepDef
 				});
 	}
 
+	/**
+	 * Upserts {@code M_Locator} records by warehouse + Value, then stores each locator in the StepDefData table.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code Value} — the locator's unique value within the warehouse; used as the upsert key together
+	 *       with {@code M_Warehouse_ID}.</li>
+	 *   <li>{@code M_Warehouse_ID} — identifier of a previously created warehouse.</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns (absent columns keep the existing value on update, or use the listed default on insert):
+	 * <ul>
+	 *   <li>{@code IsDefault} — {@code Y} / {@code N}; default {@code Y} on new records.</li>
+	 *   <li>{@code IsGroundLocator} — {@code Y} / {@code N}; marks the locator as a ground-floor picking locator
+	 *       (sourced by {@code DDOrderPickingReplenishmentService} when building required allocations). Default
+	 *       {@code N} on new records.</li>
+	 *   <li>{@code PriorityNo} — integer priority used to order ground locators in the greedy allocation; default 50.</li>
+	 *   <li>{@code X}, {@code Y}, {@code Z} — aisle/bin/level coordinates; each defaults to {@code "0"}.</li>
+	 * </ul>
+	 *
+	 * <p>Gherkin usage:
+	 * <pre>
+	 * And metasfresh contains M_Locator:
+	 *   | Identifier | M_Warehouse_ID | Value    | IsGroundLocator | PriorityNo |
+	 *   | locatorA   | stockWH        | loc-A    | Y               | 10         |
+	 *   | locatorB   | stockWH        | loc-B    | Y               | 20         |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
 	{
@@ -111,6 +163,12 @@ public class M_Locator_StepDef
 						locatorRecord.setIsDefault(isDefault.orElse(true));
 					}
 
+					final OptionalBoolean isGroundLocator = row.getAsOptionalBoolean(I_M_Locator.COLUMNNAME_IsGroundLocator);
+					if (isNew || isGroundLocator.isPresent())
+					{
+						locatorRecord.setIsGroundLocator(isGroundLocator.orElse(false));
+					}
+
 					final Optional<Integer> priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
 					if (isNew || priorityNo.isPresent())
 					{
@@ -122,7 +180,7 @@ public class M_Locator_StepDef
 					{
 						locatorRecord.setX(x.orElse("0"));
 					}
-					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
+					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Y);
 					if (isNew || y.isPresent())
 					{
 						locatorRecord.setY(y.orElse("0"));
