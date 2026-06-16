@@ -93,7 +93,10 @@ public class PickingJobProductService
 			return false;
 		}
 
-		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+		// The product's OWN attribute set seeds the picked HU's attributes (NOT IProductBL.getAttributeSetId,
+		// which resolves the product *category*'s set). The HU-storage hasAttribute(SerialNo) check at pick time
+		// remains the authoritative gate; this drives the UI prompt.
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(product.getM_AttributeSet_ID());
 		return attributeDAO.containsAttribute(attributeSetId, serialNoAttributeId);
 	}
 
