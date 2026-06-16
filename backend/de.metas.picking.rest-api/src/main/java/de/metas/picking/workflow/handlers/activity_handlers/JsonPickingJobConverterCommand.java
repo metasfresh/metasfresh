@@ -3,6 +3,7 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
@@ -10,9 +11,11 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
@@ -22,6 +25,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
+import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
 import de.metas.picking.workflow.CarrierAdviseTargetInfo;
 import de.metas.picking.workflow.DisplayValueProvider;
@@ -69,8 +73,9 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final HUCache huCache;
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	/** Memoizes the per-HU carrier-advise resolution so lines sharing the same packed LU resolve it only once. */
+	/** Memoizes the per-HU carrier-advise resolution so lines sharing the same packed top-level HU resolve it only once. */
 	private final Map<HuId, CarrierAdviseTargetInfo> carrierAdviseInfoByHuId = new ConcurrentHashMap<>();
 
 	@Builder
@@ -112,16 +117,30 @@ public class JsonPickingJobConverterCommand
 		pickingJob.getLuPickingTarget(null)
 				.filter(LUPickingTarget::isExistingLU)
 				.ifPresent(target -> builder.luPickingTarget(
-						JsonLUPickingTarget.of(target, resolveCarrierAdviseInfo(target))));
+						JsonLUPickingTarget.of(target, resolveCarrierAdviseInfo(target.getLuIdNotNull()))));
 
 		return builder.build();
 	}
 
-	private CarrierAdviseTargetInfo resolveCarrierAdviseInfo(@NonNull final LUPickingTarget existingLuTarget)
+	/**
+	 * Resolves the carrier-advise info for a picked HU, memoized by its resolved top-level {@code HuId}
+	 * so multiple picked HUs sharing one top-level HU (e.g. several TUs on one LU) resolve it only once.
+	 * <p>
+	 * The picked HU is resolved to its top-level HU exactly like
+	 * {@link de.metas.picking.workflow.PackedHUCarrierAdviseService#advise} and
+	 * {@link de.metas.picking.workflow.CarrierAdviseConsistencyService#assertConsistentForJob}
+	 * (getById → getTopLevelParentAsLUTUCUPair → getTopLevelHU), so the exposed advise info,
+	 * the advise action and the consistency check stay aligned.
+	 */
+	private CarrierAdviseTargetInfo resolveCarrierAdviseInfo(@NonNull final HuId pickedHuId)
 	{
+		final I_M_HU topLevelHU = handlingUnitsBL
+				.getTopLevelParentAsLUTUCUPair(handlingUnitsDAO.getById(pickedHuId))
+				.getTopLevelHU();
+		final HuId topLevelHuId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
 		return carrierAdviseInfoByHuId.computeIfAbsent(
-				existingLuTarget.getLuIdNotNull(),
-				huId -> packedHUCarrierAdviseService.resolveTargetInfo(handlingUnitsDAO.getById(huId)));
+				topLevelHuId,
+				ignored -> packedHUCarrierAdviseService.resolveTargetInfo(topLevelHU));
 	}
 
 	@NonNull
@@ -136,7 +155,7 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> enrichLineLUTarget(
+					.map(line -> enrichLineCarrierAdvise(
 							JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 									.displayGroupKey(group.getKey())
 									.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
@@ -150,16 +169,50 @@ public class JsonPickingJobConverterCommand
 		return ImmutableList.copyOf(result);
 	}
 
+	/**
+	 * Exposes the carrier-advise info on the line so the mobile UI can render the advise button,
+	 * regardless of the line's pick-to structure:
+	 * <ul>
+	 *     <li>existing-LU target — on {@code luPickingTarget}</li>
+	 *     <li>existing-TU target — on {@code tuPickingTarget}</li>
+	 *     <li>no LU/TU target (CU-direct pick) — at line level, keyed on the line's picked HUs</li>
+	 * </ul>
+	 */
 	@NonNull
-	private JsonPickingJobLine.JsonPickingJobLineBuilder enrichLineLUTarget(
+	private JsonPickingJobLine.JsonPickingJobLineBuilder enrichLineCarrierAdvise(
 			@NonNull final JsonPickingJobLine.JsonPickingJobLineBuilder lineBuilder,
 			@NonNull final PickingJobLine line)
 	{
-		return line.getCurrentPickingTarget()
-				.getLuPickingTarget()
+		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+
+		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
 				.filter(LUPickingTarget::isExistingLU)
-				.map(target -> lineBuilder.luPickingTarget(JsonLUPickingTarget.of(target, resolveCarrierAdviseInfo(target))))
-				.orElse(lineBuilder);
+				.orElse(null);
+		if (existingLuTarget != null)
+		{
+			return lineBuilder.luPickingTarget(
+					JsonLUPickingTarget.of(existingLuTarget, resolveCarrierAdviseInfo(existingLuTarget.getLuIdNotNull())));
+		}
+
+		final TUPickingTarget existingTuTarget = currentPickingTarget.getTuPickingTarget()
+				.filter(TUPickingTarget::isExistingTU)
+				.orElse(null);
+		if (existingTuTarget != null)
+		{
+			return lineBuilder.tuPickingTarget(
+					JsonTUPickingTarget.of(existingTuTarget, resolveCarrierAdviseInfo(existingTuTarget.getTuIdNotNull())));
+		}
+
+		// CU-direct: no LU/TU target — resolve from the line's picked HUs (each resolved to its top-level HU).
+		final CarrierAdviseTargetInfo lineInfo = line.getPickedHUIds().stream()
+				.map(this::resolveCarrierAdviseInfo)
+				.filter(CarrierAdviseTargetInfo::isAvailable)
+				.findFirst()
+				.orElse(CarrierAdviseTargetInfo.NONE);
+		return lineBuilder
+				.carrierAdviseAvailable(lineInfo.isAvailable())
+				.carrierAdviseReadOnly(lineInfo.isReadOnly())
+				.carrierProductCaption(lineInfo.getProductCaption());
 	}
 
 	@Nullable

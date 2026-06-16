@@ -22,9 +22,15 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
   const dispatch = useDispatch();
   const [isAdvising, setIsAdvising] = useState(false);
 
-  const { luPickingTarget, tuPickingTarget, allowedPickToStructures, isAllowReopeningLU } = useCurrentPickingTargetInfo(
-    { wfProcessId, activityId, lineId }
-  );
+  const {
+    luPickingTarget,
+    tuPickingTarget,
+    lineCarrierAdviseAvailable,
+    lineCarrierAdviseReadOnly,
+    lineCarrierProductCaption,
+    allowedPickToStructures,
+    isAllowReopeningLU,
+  } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
 
   const { hasClosedLUs } = useHasClosedHUs({ wfProcessId, lineId });
 
@@ -56,9 +62,17 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
       .finally(() => setIsAdvising(false));
   };
 
-  const isCarrierAdviseAvailable = luPickingTarget?.carrierAdviseAvailable === true;
-  const isCarrierAdviseReadOnly = luPickingTarget?.carrierAdviseReadOnly === true;
-  const carrierProductCaption = luPickingTarget?.carrierProductCaption;
+  // Carrier-advise lives on the LU/TU target when one is set, else on the line (CU-direct).
+  const carrierAdviseTarget = luPickingTarget ?? tuPickingTarget;
+  const isCarrierAdviseAvailable = carrierAdviseTarget
+    ? carrierAdviseTarget.carrierAdviseAvailable === true
+    : lineCarrierAdviseAvailable === true;
+  const isCarrierAdviseReadOnly = carrierAdviseTarget
+    ? carrierAdviseTarget.carrierAdviseReadOnly === true
+    : lineCarrierAdviseReadOnly === true;
+  const carrierProductCaption = carrierAdviseTarget
+    ? carrierAdviseTarget.carrierProductCaption
+    : lineCarrierProductCaption;
 
   return (
     <>

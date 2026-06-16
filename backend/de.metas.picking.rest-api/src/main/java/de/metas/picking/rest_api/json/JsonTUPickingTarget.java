@@ -27,6 +27,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.picking.workflow.CarrierAdviseTargetInfo;
 import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,7 +60,18 @@ public class JsonTUPickingTarget
 	 */
 	@Nullable ScannedCode grai;
 
+	boolean carrierAdviseAvailable;
+	boolean carrierAdviseReadOnly;
+	@Nullable String carrierProductCaption;
+
 	public static JsonTUPickingTarget of(@NonNull final TUPickingTarget target)
+	{
+		return of(target, CarrierAdviseTargetInfo.NONE);
+	}
+
+	public static JsonTUPickingTarget of(
+			@NonNull final TUPickingTarget target,
+			@NonNull final CarrierAdviseTargetInfo carrierAdviseInfo)
 	{
 		final GRAI grai = target.getGrai();
 		return builder()
@@ -70,6 +82,9 @@ public class JsonTUPickingTarget
 				.tuId(target.getTuId())
 				.tuQRCode(target.getTuQRCode() != null ? target.getTuQRCode().toGlobalQRCodeString() : null)
 				.grai(grai != null ? grai.toScannedCode() : null)
+				.carrierAdviseAvailable(carrierAdviseInfo.isAvailable())
+				.carrierAdviseReadOnly(carrierAdviseInfo.isReadOnly())
+				.carrierProductCaption(carrierAdviseInfo.getProductCaption())
 				.build();
 	}
 

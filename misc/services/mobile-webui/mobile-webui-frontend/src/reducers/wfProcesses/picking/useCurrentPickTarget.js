@@ -25,6 +25,7 @@ const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId, f
 export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fallbackToHeader = false }) => {
   let luPickingTarget;
   let tuPickingTarget;
+  let line;
 
   let allowedPickToStructures;
   let isAllowReopeningLU;
@@ -33,7 +34,7 @@ export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fall
   // Picking Job Line level
   if (lineId) {
     if (isLineLevelPickTarget({ activity })) {
-      const line = getLineByIdFromActivity(activity, lineId);
+      line = getLineByIdFromActivity(activity, lineId);
       luPickingTarget = line?.luPickingTarget;
       tuPickingTarget = line?.tuPickingTarget;
       allowedPickToStructures = activity.dataStored.allowedPickToStructures;
@@ -79,5 +80,8 @@ export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fall
     isAllowReopeningLU,
     luPickingTarget,
     tuPickingTarget,
+    lineCarrierAdviseAvailable: line?.carrierAdviseAvailable ?? false,
+    lineCarrierAdviseReadOnly: line?.carrierAdviseReadOnly ?? false,
+    lineCarrierProductCaption: line?.carrierProductCaption ?? null,
   };
 };
