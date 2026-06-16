@@ -84,6 +84,26 @@ public class M_Locator_StepDef
 				});
 	}
 
+	/**
+	 * Creates (or updates) {@code M_Locator} records. Existing locators are matched by
+	 * ({@code M_Warehouse_ID}, {@code Value}); a new one is created when none matches.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Warehouse_ID</b> — (required, identifier-ref) the warehouse the locator belongs to<br>
+	 *   <b>Value</b> — (optional) locator Value; auto-suggested when omitted<br>
+	 *   <b>IsDefault</b> — (optional, Y/N) defaults to {@code Y} on create<br>
+	 *   <b>PriorityNo</b> — (optional) defaults to {@code 50} on create<br>
+	 *   <b>X</b> / <b>X1</b> / <b>Y</b> / <b>Z</b> — (optional) warehouse coordinates; each defaults to {@code "0"} on create<br>
+	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_Locator:
+	 *   | M_Locator_ID | M_Warehouse_ID | Value     | X | X1 | Y | Z  |
+	 *   | groundLoc    | warehouse      | groundLoc | 1 | 1  | 1 | 0A |
+	 *   | reserveLoc   | warehouse      | reserveLoc| 1 | 1  | 1 | 0B |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
 	{
@@ -122,7 +142,12 @@ public class M_Locator_StepDef
 					{
 						locatorRecord.setX(x.orElse("0"));
 					}
-					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
+					final Optional<String> x1 = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X1);
+					if (isNew || x1.isPresent())
+					{
+						locatorRecord.setX1(x1.orElse("0"));
+					}
+					final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Y);
 					if (isNew || y.isPresent())
 					{
 						locatorRecord.setY(y.orElse("0"));
