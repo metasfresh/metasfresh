@@ -34,17 +34,17 @@ import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_C_Invoice;
 
 import java.util.List;
 
 /**
- * Re-triggers the scripted-export-conversion for a selection of M_InOut records.
+ * Re-triggers the scripted-export-conversion for a selection of C_Invoice records.
  * When {@code IsOnlyNotSentSuccessfully=Y} only configs in error/invalid state are re-sent.
  * When {@code IsOnlyNotSentSuccessfully=N} configs in any terminal state (including already-Sent)
  * are re-triggered; in-flight and DontSend configs are always skipped.
  */
-public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
+public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
 	private final ExternalSystemScriptedExportConversionService scriptedExportService =
 			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
@@ -66,12 +66,12 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 	protected String doIt()
 	{
 		// Collect IDs first to close the DB cursor before making external-service calls.
-		final List<Integer> inoutIds = retrieveSelectedRecordsQueryBuilder(I_M_InOut.class).create().listIds();
+		final List<Integer> invoiceIds = retrieveSelectedRecordsQueryBuilder(I_C_Invoice.class).create().listIds();
 
 		int triggered = 0;
-		for (final int m_inout_id : inoutIds)
+		for (final int c_invoice_id : invoiceIds)
 		{
-			final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
+			final TableRecordReference sourceRecord = TableRecordReference.of(I_C_Invoice.Table_Name, c_invoice_id);
 
 			final List<ExternalSystemScriptedExportConversionConfigId> configIds = isOnlyNotSentSuccessfully
 					? scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord)
@@ -84,7 +84,7 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 
 				scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
 						config,
-						m_inout_id,
+						c_invoice_id,
 						ExternalSystemInvocationContext.RESEND);
 
 				triggered++;

@@ -327,6 +327,21 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
+	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
+	 * Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even when previously
+	 * successful); excludes {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and in-flight
+	 * states (Pending, Enqueued, SendingStarted) to avoid duplicate concurrent sends.
+	 *
+	 * @see ExternalSystemExportStatusService#getMatchingConfigIdsBySourceRecord(TableRecordReference)
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return exportStatusService.getMatchingConfigIdsBySourceRecord(sourceRecord);
+	}
+
+	/**
 	 * Records a {@link ExternalSystemExportStatus#Pending} log entry for the given config and source record.
 	 * Called by the interceptor's AFTER_COMPLETE branch for each matching config, before scheduling
 	 * the after-commit execution.
