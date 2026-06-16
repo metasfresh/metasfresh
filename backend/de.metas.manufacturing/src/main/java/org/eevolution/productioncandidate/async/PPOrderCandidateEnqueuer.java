@@ -71,17 +71,12 @@ public class PPOrderCandidateEnqueuer
 			throw new AdempiereException("At least one candidateId must be specified");
 		}
 
-		final PInstanceId selectionId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, candidateIds)
 				.create()
-				.createSelection();
-		if (candidateIds.isEmpty())
-		{
-			throw new AdempiereException("No candidates found");
-		}
-
-		return selectionId;
+				.createSelection()
+				.orElseThrow(() -> new AdempiereException("No candidates found"));
 	}
 
 	@NonNull

@@ -36,9 +36,9 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -79,8 +79,8 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CON
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_DOCUMENT_NO;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
@@ -287,7 +287,11 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
-		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, null).getExceptions();
+		// UNKNOWN (not null): the auto-trigger / archive-listener path must propagate a non-null error
+		// context so a downstream failure reaches the scripted-export error listener (createIssue only
+		// notifies it when errorContext != null) and the status row flips to Error. The EDI and Re-send
+		// paths pass EDI / RESEND; auto-trigger has no specific context, so it uses the neutral UNKNOWN.
+		return executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.UNKNOWN).getExceptions();
 	}
 
 	/**
@@ -421,7 +425,7 @@ public class ExternalSystemScriptedExportConversionService
 	public ExternalSystemInvocationResult executeInvokeScriptedExportConversionActionAndGetResult(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId,
-			@Nullable final ExternalSystemInvocationContext errorContext)
+			@NonNull final ExternalSystemInvocationContext errorContext)
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		final TableRecordReference sourceRecord = TableRecordReference.of(config.getTableId(), recordId);
@@ -434,12 +438,8 @@ public class ExternalSystemScriptedExportConversionService
 					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
 					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
 					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-					.addParameter(PARAM_Record_ID, recordId);
-
-			if (errorContext != null)
-			{
-				processInfoBuilder.addParameter(PARAM_ERROR_CONTEXT, errorContext.getCode());
-			}
+					.addParameter(PARAM_Record_ID, recordId)
+					.addParameter(PARAM_ERROR_CONTEXT, errorContext.getCode());
 
 			final ProcessInfo processInfo = processInfoBuilder.buildAndPrepareExecution().executeSync().getProcessInfo();
 			final ProcessExecutionResult result = processInfo.getResult();

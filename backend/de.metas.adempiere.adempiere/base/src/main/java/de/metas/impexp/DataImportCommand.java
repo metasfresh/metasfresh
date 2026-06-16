@@ -263,11 +263,8 @@ final class DataImportCommand
 					.addEqualsFilter(ImportTableDescriptor.COLUMNNAME_I_ErrorMsg, null)
 					.create();
 
-			_recordsToImportSelectionId = query.createSelection();
-			if (_recordsToImportSelectionId == null)
-			{
-				throw new AdempiereException("No records to import for " + query);
-			}
+			_recordsToImportSelectionId = query.createSelection()
+					.orElseThrow(() -> new AdempiereException("No records to import for " + query));
 		}
 
 		return _recordsToImportSelectionId;
