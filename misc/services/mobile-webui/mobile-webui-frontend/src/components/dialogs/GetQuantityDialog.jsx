@@ -283,7 +283,6 @@ const GetQuantityDialog = ({
             <tr>
               <td colSpan="2">
                 <BarcodeScannerComponent
-                  continuousRunning={true}
                   customQRCodeFormats={customQRCodeFormats}
                   onResolvedResult={readQtyFromQrCode}
                 />
