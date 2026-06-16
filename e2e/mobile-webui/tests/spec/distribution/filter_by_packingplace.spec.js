@@ -10,7 +10,7 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 //   - "packing" warehouse holds the packing stations (locators packing_station_1 / _2).
 //   - "storage" warehouse holds reserve + ground pick faces (reserve1/ground1, reserve2/ground2).
 //
-// Workplaces:
+// Workplaces (all created every run; the logged-in user is assigned to one of them per test):
 //   - packing_station_1  IsPackingPlace=Y, warehouse=packing, pick-from=packing_station_1
 //   - packing_station_2  IsPackingPlace=Y, warehouse=packing, pick-from=packing_station_2
 //   - fork_lift_1        IsPackingPlace=N, warehouse=storage, no pick-from
@@ -21,13 +21,13 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 //   - DD3  storage/reserve1  → storage/ground1             (groundfill, intra-storage)
 //   - DD4  storage/reserve2  → storage/ground2             (groundfill, intra-storage)
 //
-// Expected launchers:
-//   - packing_station_1 (Y) → DD1 only (its warehouse=packing + pick-from locator=packing_station_1)
+// Expected launchers per workplace:
+//   - packing_station_1 (Y) → DD1 only (warehouse=packing + pick-from locator=packing_station_1)
 //   - packing_station_2 (Y) → DD2 only
-//   - fork_lift_1 (N)       → DD3, DD4 (its warehouse=storage; no packing-place locator lives in
-//                             storage, so nothing is excluded and the bring-to-packing DD1/DD2 are
-//                             already filtered out by warehouseTo=packing)
-const createMasterdata = async ({ distributionOrders }) => {
+//   - fork_lift_1 (N)       → DD3, DD4 (warehouse=storage; no packing-place locator lives in storage,
+//                             so nothing is excluded; the bring-to-packing DD1/DD2 are already filtered
+//                             out by warehouseTo=packing)
+const createMasterdata = async ({ workplace, distributionOrders }) => {
     const distributionOrdersEffective = {};
     let seqNo = 1;
     Object.keys(distributionOrders)
@@ -48,8 +48,7 @@ const createMasterdata = async ({ distributionOrders }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
-            // login without a workplace; the test scans into each workplace
-            login: { user: { language: "en_US", workplace: null } },
+            login: { user: { language: "en_US", workplace } },
             mobileConfig: {
                 distribution: {
                     orderBys: 'SeqNo,Priority,DatePromised',
@@ -72,56 +71,65 @@ const createMasterdata = async ({ distributionOrders }) => {
     });
 }
 
+const DISTRIBUTION_ORDERS = {
+    "DD1": { warehouseFrom: "storage", locatorFrom: "ground1", warehouseTo: "packing", locatorTo: "packing_station_1" },
+    "DD2": { warehouseFrom: "storage", locatorFrom: "ground2", warehouseTo: "packing", locatorTo: "packing_station_2" },
+    "DD3": { warehouseFrom: "storage", locatorFrom: "reserve1", warehouseTo: "storage", locatorTo: "ground1" },
+    "DD4": { warehouseFrom: "storage", locatorFrom: "reserve2", warehouseTo: "storage", locatorTo: "ground2" },
+};
+
+const openDistributionLaunchers = async (user) => {
+    await LoginScreen.login(user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+};
+
 // noinspection JSUnusedLocalSymbols
-test('Distribution launchers split by Workplace.IsPackingPlace (packing stations vs fork-lift)', async ({ page }) => {
-    // === ALLURE METADATA ===
+test('packing_station_1 (IsPackingPlace=Y) is offered only its own bring-to-packing order DD1', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.feature('F5114: MobileUI Distribution');
     allure.story('Filter distribution by workplace packing-place role');
     allure.severity('normal');
 
-    const masterdata = await createMasterdata({
-        distributionOrders: {
-            "DD1": { warehouseFrom: "storage", locatorFrom: "ground1", warehouseTo: "packing", locatorTo: "packing_station_1" },
-            "DD2": { warehouseFrom: "storage", locatorFrom: "ground2", warehouseTo: "packing", locatorTo: "packing_station_2" },
-            "DD3": { warehouseFrom: "storage", locatorFrom: "reserve1", warehouseTo: "storage", locatorTo: "ground1" },
-            "DD4": { warehouseFrom: "storage", locatorFrom: "reserve2", warehouseTo: "storage", locatorTo: "ground2" },
-        }
-    });
+    const masterdata = await createMasterdata({ workplace: 'wpPacking1', distributionOrders: DISTRIBUTION_ORDERS });
+    await openDistributionLaunchers(masterdata.login.user);
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
+    await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpPacking1.name });
+    await DistributionJobsListScreen.expectJobButtons([
+        { testId: masterdata.distributionOrders.DD1.launcherTestId },
+    ]);
+});
 
-    await test.step('packing_station_1 (IsPackingPlace=Y) is offered only its own bring-to-packing order DD1', async () => {
-        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.wpPacking1.qrCode });
-        await ApplicationsListScreen.startApplication('distribution');
-        await DistributionJobsListScreen.waitForScreen();
-        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpPacking1.name });
-        await DistributionJobsListScreen.expectJobButtons([
-            { testId: masterdata.distributionOrders.DD1.launcherTestId },
-        ]);
-        await DistributionJobsListScreen.goBack();
-    });
+// noinspection JSUnusedLocalSymbols
+test('packing_station_2 (IsPackingPlace=Y) is offered only its own bring-to-packing order DD2', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.feature('F5114: MobileUI Distribution');
+    allure.story('Filter distribution by workplace packing-place role');
+    allure.severity('normal');
 
-    await test.step('packing_station_2 (IsPackingPlace=Y) is offered only its own bring-to-packing order DD2', async () => {
-        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.wpPacking2.qrCode });
-        await ApplicationsListScreen.startApplication('distribution');
-        await DistributionJobsListScreen.waitForScreen();
-        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpPacking2.name });
-        await DistributionJobsListScreen.expectJobButtons([
-            { testId: masterdata.distributionOrders.DD2.launcherTestId },
-        ]);
-        await DistributionJobsListScreen.goBack();
-    });
+    const masterdata = await createMasterdata({ workplace: 'wpPacking2', distributionOrders: DISTRIBUTION_ORDERS });
+    await openDistributionLaunchers(masterdata.login.user);
 
-    await test.step('fork_lift_1 (IsPackingPlace=N) is offered the intra-storage groundfill orders DD3, DD4', async () => {
-        await ApplicationsListScreen.changeWorkplace({ qrCode: masterdata.workplaces.wpForkLift.qrCode });
-        await ApplicationsListScreen.startApplication('distribution');
-        await DistributionJobsListScreen.waitForScreen();
-        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpForkLift.name });
-        await DistributionJobsListScreen.expectJobButtons([
-            { testId: masterdata.distributionOrders.DD3.launcherTestId },
-            { testId: masterdata.distributionOrders.DD4.launcherTestId },
-        ]);
-    });
+    await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpPacking2.name });
+    await DistributionJobsListScreen.expectJobButtons([
+        { testId: masterdata.distributionOrders.DD2.launcherTestId },
+    ]);
+});
+
+// noinspection JSUnusedLocalSymbols
+test('fork_lift_1 (IsPackingPlace=N) is offered the intra-storage groundfill orders DD3, DD4', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.feature('F5114: MobileUI Distribution');
+    allure.story('Filter distribution by workplace packing-place role');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ workplace: 'wpForkLift', distributionOrders: DISTRIBUTION_ORDERS });
+    await openDistributionLaunchers(masterdata.login.user);
+
+    await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.wpForkLift.name });
+    await DistributionJobsListScreen.expectJobButtons([
+        { testId: masterdata.distributionOrders.DD3.launcherTestId },
+        { testId: masterdata.distributionOrders.DD4.launcherTestId },
+    ]);
 });
