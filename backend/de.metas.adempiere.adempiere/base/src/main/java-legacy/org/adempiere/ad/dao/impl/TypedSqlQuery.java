@@ -52,9 +52,11 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -1453,7 +1455,29 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			return null;
 		}
-		return queryOrderBy.getSql();
+
+		// In a no-DB context (e.g. SQL-building unit tests) POInfo cannot be loaded (DBNoConnectionException).
+		// POInfo is only used to expand virtual-column (ColumnSQL) ORDER BY entries — a DB-only feature —
+		// so without a DB there is nothing to expand: fall back to the plain (non-expanded) ORDER BY.
+		final POInfo poInfo;
+		try
+		{
+			poInfo = getPOInfo();
+		}
+		catch (final DBNoConnectionException ignored)
+		{
+			return queryOrderBy.getSql(columnName -> columnName);
+		}
+
+		final String tableNamePrefix = poInfo.getTableName() + ".";
+		return queryOrderBy.getSql(columnName -> {
+			final String columnSql = poInfo.getColumnSqlOrNull(columnName);
+			if (columnSql == null)
+			{
+				return columnName;
+			}
+			return columnSql.replace("@JoinTableNameOrAliasIncludingDot@", tableNamePrefix);
+		});
 	}
 
 	@Override
@@ -1625,7 +1649,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public Optional<PInstanceId> createSelection()
+	public Optional<CreateSelectionResponse> createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
 		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
@@ -1637,13 +1661,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return Optional.empty();
 		}
 
-		return Optional.of(newSelectionId);
+		return Optional.of(CreateSelectionResponse.of(newSelectionId, count));
 	}
 
 	@Override
 	public int deleteDirectly()
 	{
-		if(limit.isNoLimit())
+		if (limit.isNoLimit())
 		{
 			return deleteDirectlyFrom();
 		}
@@ -1665,7 +1689,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
-
 
 	private int deleteDirectlyInSelect()
 	{
@@ -1902,7 +1925,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					//
 					+ "\n INSERT INTO T_Selection (AD_PInstance_ID, T_Selection_ID)"
 					+ "\n SELECT " + insertSelectionId.getRepoId() + ", " + toKeyColumnName + " FROM insert_code"
-					//
+			//
 			;
 		}
 		else

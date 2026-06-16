@@ -1026,7 +1026,30 @@ public interface I_DD_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Picking Job Schedule.
+	 * Set Locator Priority.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setLocatorPriorityNo (int LocatorPriorityNo);
+
+	/**
+	 * Get Locator Priority.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getLocatorPriorityNo();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_LocatorPriorityNo = new ModelColumn<>(I_DD_Order.class, "LocatorPriorityNo", null);
+	String COLUMNNAME_LocatorPriorityNo = "LocatorPriorityNo";
+
+	/**
+	 * Set Picking Job Schedule_(Overridden).
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1035,7 +1058,7 @@ public interface I_DD_Order
 	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
 
 	/**
-	 * Get Picking Job Schedule.
+	 * Get Picking Job Schedule_(Overridden).
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 988399147L;
+	private static final long serialVersionUID = 69509236L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -745,6 +745,17 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public void setLocatorPriorityNo (final int LocatorPriorityNo)
+	{
+		throw new IllegalArgumentException ("LocatorPriorityNo is virtual column");	}
+
+	@Override
+	public int getLocatorPriorityNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LocatorPriorityNo);
 	}
 
 	@Override

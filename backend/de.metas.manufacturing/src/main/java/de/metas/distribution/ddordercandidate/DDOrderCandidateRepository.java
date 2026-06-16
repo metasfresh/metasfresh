@@ -29,6 +29,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.CreateSelectionResponse;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order_Candidate;
@@ -303,7 +304,7 @@ public class DDOrderCandidateRepository
 		}
 	}
 
-	public PInstanceId createSelection(@NonNull final Collection<DDOrderCandidateId> ids)
+	public CreateSelectionResponse createSelection(@NonNull final Collection<DDOrderCandidateId> ids)
 	{
 		if (ids.isEmpty())
 		{
@@ -319,7 +320,7 @@ public class DDOrderCandidateRepository
 	}
 
 	@VisibleForTesting
-	Optional<PInstanceId> createSelection(@NonNull final DDOrderCandidateQuery query)
+	Optional<CreateSelectionResponse> createSelection(@NonNull final DDOrderCandidateQuery query)
 	{
 		return toSqlQuery(query)
 				.create()
