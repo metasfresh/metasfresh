@@ -9,7 +9,7 @@
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
 | Picking | 58 | 62 | 94% |
-| Distribution | 34 | 37 | 92% |
+| Distribution | 35 | 38 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -233,10 +233,11 @@
 | Without workplace set → all distribution jobs visible | `distribution/filter_by_workplace.spec.js` |
 | With workplace set → only jobs whose drop-to locator matches workplace shown | `distribution/filter_by_workplace.spec.js` |
 | Sort by SeqNo when orderBys=SeqNo,Priority,DatePromised | `distribution/sorting.spec.js` |
+| Sort by locator priority when orderBys=LocatorPriority → lower FROM-locator PriorityNo first | `distribution/sort_by_locator_priority.spec.js` |
 | ❌ maxLaunchers cap — list truncated beyond N jobs | — |
 | ❌ maxStartedLaunchers cap | — |
 
-**7/9 — 78%**
+**8/10 — 80%**
 
 ### Distribution — job execution
 
