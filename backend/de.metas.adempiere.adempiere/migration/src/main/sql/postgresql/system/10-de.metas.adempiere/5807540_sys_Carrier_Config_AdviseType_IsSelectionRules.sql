@@ -1,13 +1,13 @@
 -- nShift Carrier_Config: two new columns shown in tab 548455 ("nShift Konfiguration", window 142 "Lieferweg")
 --   AdviseType        Char(1) LIST (Ship/Order), mandatory, default 'S' (Ship) — selects which nShift advise endpoint is used
---   IsSelectionRules  Char(1) YesNo, mandatory, default 'N' — activates nShift Selection Rules during carrier advise
+--   IsSelectionRules  Char(1) YesNo, mandatory, default 'Y' — activates nShift Selection Rules during carrier advise
 --
 -- IDs allocated from idserver.metas.de on 2026-06-12:
 --   AD_Reference   542106  (new list reference "AdviseType" — ValidationType='L', holds Ship/Order)
 --   AD_Ref_List    544261  (Value 'S' / Name 'Ship'  — DEFAULT; written-out name, intentionally NOT translated)
 --   AD_Ref_List    544262  (Value 'O' / Name 'Order'                ; written-out name, intentionally NOT translated)
 --   AD_Element     584987  (AdviseType — label "Lieferweg-Abfrage-Typ" / "Carrier Advise Type", consistent with AD_Process M_ShipmentSchedule_Advise "Lieferweg-Abfrage" / "Carrier Advise")
---   AD_Element     584988  (IsSelectionRules — label "Selection Rules")
+--   AD_Element     584988  (IsSelectionRules — label "Auswahlregeln" / en_US "Selection Rules")
 --   AD_Column      592804  (Carrier_Config.AdviseType)
 --   AD_Column      592805  (Carrier_Config.IsSelectionRules)
 --   AD_Field       780759  (AdviseType field in window 142 / tab 548455)
@@ -154,7 +154,7 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Column_ID=592804
 ;
 
 -- ============================================================
--- IsSelectionRules — label "Selection Rules" (nShift-portal term)
+-- IsSelectionRules — German label "Auswahlregeln" (en_US: nShift-portal term "Selection Rules")
 -- ============================================================
 
 -- AD_Element: IsSelectionRules
@@ -166,7 +166,7 @@ VALUES (0,0,584988 /*From ID Server*/,'IsSelectionRules',
         TO_TIMESTAMP('2026-06-12 10:03:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,
         'Aktiviert die nShift Selection Rules beim Carrier-Advise.','D',
         'Wenn gesetzt, werden beim Carrier-Advise die nShift Selection Rules aktiviert.','Y',
-        'Selection Rules','Selection Rules',
+        'Auswahlregeln','Auswahlregeln',
         TO_TIMESTAMP('2026-06-12 10:03:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
@@ -180,7 +180,7 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Element_ID=584988
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- en_US translation (label stays "Selection Rules" — product term, identical in both languages)
+-- en_US override: label is the nShift product term "Selection Rules" (German base label is "Auswahlregeln")
 UPDATE AD_Element_Trl
 SET Name='Selection Rules',PrintName='Selection Rules',
     Description='Activates the nShift Selection Rules during carrier advise.',
@@ -220,7 +220,7 @@ VALUES (0,0,592805 /*From ID Server*/,584988,20,542540,
         'D',1,'Y','Y','N','N',
         'Y','N','N','N','Y',
         'N','N','N','Y','NP',
-        'Selection Rules',TO_TIMESTAMP('2026-06-12 10:04:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+        'Auswahlregeln',TO_TIMESTAMP('2026-06-12 10:04:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- AD_Column_Trl skeleton
@@ -289,7 +289,7 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Org_ID,AD_Field_ID,AD_Column_ID,AD_Tab_ID,
 VALUES (0,0,780760 /*From ID Server*/,592805,548455,
         TO_TIMESTAMP('2026-06-12 10:06:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'D','Y',
         'Y','N','N','N','N','N','N',
-        'Selection Rules',0,0,0,
+        'Auswahlregeln',0,0,0,
         TO_TIMESTAMP('2026-06-12 10:06:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
@@ -316,6 +316,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_UI_Element_ID,AD_Field_ID,A
 VALUES (0,0,652055 /*From ID Server*/,780760,553597,548455,
         TO_TIMESTAMP('2026-06-12 10:06:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N',
         0,'N',0,'F',
-        'Selection Rules',87,
+        'Auswahlregeln',87,
         TO_TIMESTAMP('2026-06-12 10:06:01','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'M')
 ;
