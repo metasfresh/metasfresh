@@ -71,5 +71,18 @@ class PickAttributesTest
 			);
 		}
 
+		@Test
+		void serialNo()
+		{
+			test(
+					PickAttributes.builder().isSetSerialNo(true).serialNo("serial1").build(),
+					PickAttributes.builder().isSetSerialNo(true).serialNo("serial2").build()
+			);
+			test(
+					PickAttributes.builder().isSetSerialNo(true).serialNo("serial1").build(),
+					PickAttributes.builder().isSetSerialNo(true).serialNo(null).build()
+			);
+		}
+
 	}
 }

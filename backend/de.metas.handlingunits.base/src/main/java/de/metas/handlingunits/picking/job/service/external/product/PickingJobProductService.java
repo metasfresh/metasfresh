@@ -16,6 +16,10 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
@@ -33,6 +37,7 @@ public class PickingJobProductService
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	public static PickingJobProductService newInstanceForUnitTesting()
 	{
@@ -67,6 +72,29 @@ public class PickingJobProductService
 	public String getProductValue(@NonNull final ProductId productId)
 	{
 		return productBL.getProductValue(productId);
+	}
+
+	/**
+	 * @return {@code true} when the product opts into serial-no picking ({@code M_Product.IsSerialNoPicked='Y'})
+	 * AND its attribute set actually supports the {@code SerialNo} attribute. The HU-storage check at pick time
+	 * (in the pick command) remains the authoritative gate; this drives the UI prompt.
+	 */
+	public boolean isSerialNoPickingEnabled(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productBL.getById(productId);
+		if (!product.isSerialNoPicked())
+		{
+			return false;
+		}
+
+		final AttributeId serialNoAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeConstants.ATTR_SerialNo);
+		if (serialNoAttributeId == null)
+		{
+			return false;
+		}
+
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+		return attributeDAO.containsAttribute(attributeSetId, serialNoAttributeId);
 	}
 
 	public ITranslatableString getProductNameTrl(@NonNull final ProductId productId)

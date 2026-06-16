@@ -8,12 +8,14 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
@@ -24,15 +26,18 @@ import java.util.HashSet;
 @Builder
 class PickedHUAttributesUpdater
 {
+	private static final AdMessageKey ERR_SerialNoRequired = AdMessageKey.of("de.metas.handlingunits.picking.job.SERIAL_NO_REQUIRED");
+
 	@NonNull private final IUOMConversionBL uomConversionBL;
 
 	public void updateHUs(
 			@NonNull final LUTUResult result,
 			@NonNull final PickAttributes pickAttributes,
-			@NonNull final ProductId productId)
+			@NonNull final ProductId productId,
+			final boolean serialNoPickingEnabled)
 	{
 		updateCatchWeight(result, pickAttributes, productId);
-		updatePickAttributes(result, pickAttributes);
+		updatePickAttributes(result, pickAttributes, serialNoPickingEnabled);
 	}
 
 	private void updateCatchWeight(@NonNull final LUTUResult result, @NonNull final PickAttributes pickAttributes, @NonNull final ProductId productId)
@@ -44,46 +49,47 @@ class PickedHUAttributesUpdater
 		weightUpdater.updatePackToHUs(result);
 	}
 
-	private void updatePickAttributes(@NonNull final LUTUResult result, final @NonNull PickAttributes pickAttributes)
+	private void updatePickAttributes(@NonNull final LUTUResult result, final @NonNull PickAttributes pickAttributes, final boolean serialNoPickingEnabled)
 	{
-		result.getLus().forEach(lu -> updateLUPickAttributes(lu, pickAttributes));
-		result.getTopLevelTUs().forEach(tu -> updateTUPickAttributes(tu, pickAttributes));
+		result.getLus().forEach(lu -> updateLUPickAttributes(lu, pickAttributes, serialNoPickingEnabled));
+		result.getTopLevelTUs().forEach(tu -> updateTUPickAttributes(tu, pickAttributes, serialNoPickingEnabled));
 	}
 
-	private void updateLUPickAttributes(@NonNull final LU lu, @NonNull PickAttributes pickAttributes)
+	private void updateLUPickAttributes(@NonNull final LU lu, @NonNull PickAttributes pickAttributes, final boolean serialNoPickingEnabled)
 	{
-		lu.getTus().forEach(tu -> updateTUPickAttributes(tu, pickAttributes));
+		lu.getTus().forEach(tu -> updateTUPickAttributes(tu, pickAttributes, serialNoPickingEnabled));
 
-		updateHUPickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU());
+		updateHUPickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU(), serialNoPickingEnabled);
 	}
 
-	private void updateTUPickAttributes(@NonNull final TU tu, @NonNull final PickAttributes pickAttributes)
+	private void updateTUPickAttributes(@NonNull final TU tu, @NonNull final PickAttributes pickAttributes, final boolean serialNoPickingEnabled)
 	{
 		if (tu.isFullTU())
 		{
-			updateHUPickAttributes(tu.toHU(), pickAttributes, false);
+			updateHUPickAttributes(tu.toHU(), pickAttributes, false, serialNoPickingEnabled);
 		}
 		else
 		{
 			for (final TUPart cu : tu.getCUsNotEmpty())
 			{
-				updateCUPickAttributes(cu, pickAttributes);
+				updateCUPickAttributes(cu, pickAttributes, serialNoPickingEnabled);
 			}
-			
-			updateHUPickAttributes(tu.toHU(), pickAttributes, true);
+
+			updateHUPickAttributes(tu.toHU(), pickAttributes, true, serialNoPickingEnabled);
 		}
 	}
 
-	private void updateCUPickAttributes(@NonNull final TUPart cu, @NonNull final PickAttributes pickAttributes)
+	private void updateCUPickAttributes(@NonNull final TUPart cu, @NonNull final PickAttributes pickAttributes, final boolean serialNoPickingEnabled)
 	{
-		updateHUPickAttributes(cu.toHU(), pickAttributes, false);
+		updateHUPickAttributes(cu.toHU(), pickAttributes, false, serialNoPickingEnabled);
 	}
 
-	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean recomputeFromChildren)
+	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean recomputeFromChildren, final boolean serialNoPickingEnabled)
 	{
 		if (!pickAttributes.isSetBestBeforeDate()
 				&& !pickAttributes.isSetProductionDate()
-				&& !pickAttributes.isSetLotNo())
+				&& !pickAttributes.isSetLotNo()
+				&& !serialNoPickingEnabled)
 		{
 			return;
 		}
@@ -124,6 +130,25 @@ class PickedHUAttributesUpdater
 				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, pickAttributes.getLotNo());
 			}
 		}
+		// SerialNo: only when the product opts in (serialNoPickingEnabled) AND the HU storage actually supports the attribute.
+		// A product flagged IsSerialNoPicked=Y whose picked HU lacks the SerialNo attribute is a config gap → no write, no error.
+		if (serialNoPickingEnabled && huAttributes.hasAttribute(AttributeConstants.ATTR_SerialNo))
+		{
+			if (recomputeFromChildren)
+			{
+				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_SerialNo, computeSerialNoFromChildren(huAttributes));
+			}
+			else
+			{
+				// Backend safety net (the mobile UI already disables confirm until a serial is present).
+				final String serialNo = pickAttributes.getSerialNo();
+				if (serialNo == null)
+				{
+					throw new AdempiereException(ERR_SerialNoRequired);
+				}
+				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, serialNo);
+			}
+		}
 	}
 
 	@Nullable
@@ -150,6 +175,21 @@ class PickedHUAttributesUpdater
 			if (childAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 			{
 				childValues.add(StringUtils.trimBlankToNull(childAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber)));
+			}
+		}
+
+		return childValues.size() == 1 ? childValues.iterator().next() : null;
+	}
+
+	@Nullable
+	private static String computeSerialNoFromChildren(final IAttributeStorage huAttributes)
+	{
+		final HashSet<String> childValues = new HashSet<>();
+		for (final IAttributeStorage childAttributes : huAttributes.getChildAttributeStorages(true))
+		{
+			if (childAttributes.hasAttribute(AttributeConstants.ATTR_SerialNo))
+			{
+				childValues.add(StringUtils.trimBlankToNull(childAttributes.getValueAsString(AttributeConstants.ATTR_SerialNo)));
 			}
 		}
 

@@ -136,6 +136,8 @@ public class PickingJobPickCommand
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
 	@NonNull private final PickAttributes _manualPickAttributes;
+	// True when the line's product opts into serial-no picking (M_Product.IsSerialNoPicked) and its attribute set supports SerialNo.
+	private final boolean serialNoPickingEnabled;
 
 	//
 	// State
@@ -174,6 +176,8 @@ public class PickingJobPickCommand
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
 			final @Nullable String lotNo,
+			final boolean isSetSerialNo,
+			final @Nullable String serialNo,
 			final boolean isCloseTarget)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -267,7 +271,10 @@ public class PickingJobPickCommand
 						: null)
 				.isSetBestBeforeDate(isSetBestBeforeDate).bestBeforeDate(bestBeforeDate)
 				.isSetLotNo(isSetLotNo).lotNo(lotNo)
+				.isSetSerialNo(isSetSerialNo).serialNo(serialNo)
 				.build();
+
+		this.serialNoPickingEnabled = productService.isSerialNoPickingEnabled(line.getProductId());
 
 		this.isCloseTarget = isCloseTarget;
 	}
@@ -752,7 +759,7 @@ public class PickingJobPickCommand
 
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
-		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
+		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId, serialNoPickingEnabled);
 
 		//
 		// Add shipment schedule QtyPicked records

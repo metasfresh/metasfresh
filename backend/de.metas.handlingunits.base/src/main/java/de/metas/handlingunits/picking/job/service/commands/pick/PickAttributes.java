@@ -32,6 +32,9 @@ class PickAttributes
 	boolean isSetLotNo;
 	@Nullable String lotNo;
 
+	boolean isSetSerialNo;
+	@Nullable String serialNo;
+
 	@Builder(toBuilder = true)
 	private PickAttributes(
 			@Nullable final Quantity catchWeight,
@@ -40,7 +43,9 @@ class PickAttributes
 			final boolean isSetProductionDate,
 			@Nullable final LocalDate productionDate,
 			final boolean isSetLotNo,
-			@Nullable final String lotNo)
+			@Nullable final String lotNo,
+			final boolean isSetSerialNo,
+			@Nullable final String serialNo)
 	{
 		if (catchWeight != null && catchWeight.signum() <= 0)
 		{
@@ -57,6 +62,9 @@ class PickAttributes
 
 		this.isSetLotNo = isSetLotNo;
 		this.lotNo = StringUtils.trimBlankToNull(lotNo);
+
+		this.isSetSerialNo = isSetSerialNo;
+		this.serialNo = StringUtils.trimBlankToNull(serialNo);
 	}
 
 	public static PickAttributes ofHUQRCode(@NonNull final IHUQRCode pickFromHUQRCode, @Nullable final UomId catchWeightUomId)
@@ -98,6 +106,11 @@ class PickAttributes
 		if (!isSetLotNo && fallback.isSetLotNo)
 		{
 			builder.isSetLotNo(true).lotNo(fallback.lotNo);
+			changed = true;
+		}
+		if (!isSetSerialNo && fallback.isSetSerialNo)
+		{
+			builder.isSetSerialNo(true).serialNo(fallback.serialNo);
 			changed = true;
 		}
 

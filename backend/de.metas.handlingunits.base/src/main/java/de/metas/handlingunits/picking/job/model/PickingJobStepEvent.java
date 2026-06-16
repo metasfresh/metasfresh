@@ -46,6 +46,8 @@ public class PickingJobStepEvent
 	@Nullable LocalDate bestBeforeDate;
 	boolean isSetLotNo;
 	@Nullable String lotNo;
+	boolean isSetSerialNo;
+	@Nullable String serialNo;
 	boolean isCloseTarget;
 
 	//
