@@ -162,4 +162,31 @@ public class AssertExpectationsCommandServices
 	{
 		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
 	}
+
+	public List<I_M_ShipmentSchedule> getShipmentSchedulesByOrderId(@NonNull final OrderId orderId)
+	{
+		final Set<OrderLineId> orderLineIds = getOrderLineIdsByOrderId(orderId);
+		if (orderLineIds.isEmpty())
+		{
+			return java.util.Collections.emptyList();
+		}
+		return Services.get(de.metas.inoutcandidate.api.IShipmentSchedulePA.class).getByOrderLineIds(orderLineIds);
+	}
+
+	public ProductId getProductIdOfShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
+	{
+		return ProductId.ofRepoId(schedule.getM_Product_ID());
+	}
+
+	@javax.annotation.Nullable
+	public String getCarrierProductName(final int carrierProductRepoId)
+	{
+		if (carrierProductRepoId <= 0)
+		{
+			return null;
+		}
+		final org.compiere.model.I_Carrier_Product carrierProduct = org.adempiere.model.InterfaceWrapperHelper.load(
+				carrierProductRepoId, org.compiere.model.I_Carrier_Product.class);
+		return carrierProduct != null ? carrierProduct.getName() : null;
+	}
 }

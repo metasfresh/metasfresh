@@ -51,6 +51,12 @@ public class JsonSalesOrderExpectation
 	@Nullable List<JsonInOutExpectation> shipments;
 
 	/**
+	 * Carrier-advise expectation per shipment schedule of this order. Keyed by the product identifier
+	 * of the schedule's order line (one schedule per order line). Null means no carrier-advise assertion.
+	 */
+	@Nullable java.util.Map<String, JsonCarrierAdviseExpectation> carrierAdvise;
+
+	/**
 	 * Assert the total shipped quantity for this order, summed across all PROCESSED
 	 * (completed) shipment lines (M_InOutLine.MovementQty), regardless of how many
 	 * M_InOut documents the lines belong to.

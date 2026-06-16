@@ -135,6 +135,24 @@ export const PickingJobScreen = {
         }
     }),
 
+    clickAdviseCarrier: async () => await step(`${NAME} - Click advise carrier button`, async () => {
+        const button = page.getByTestId('advise-carrier-button');
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    expectAdviseCarrierButtonVisible: async () => await step(`${NAME} - Expect advise carrier button visible`, async () => {
+        await page.getByTestId('advise-carrier-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectCarrierProductCaption: async ({ caption }) => await step(`${NAME} - Expect carrier product caption contains '${caption}'`, async () => {
+        const button = page.getByTestId('carrier-product-readonly');
+        await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toContainText(caption);
+    }),
+
     pickHU: async ({
                        qrCode,
                        isScanDirectly,

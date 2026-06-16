@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 58 | 62 | 94% |
+| Picking | 62 | 66 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -140,6 +140,17 @@
 | Pick entire LU — LU qty less than ordered qty (partial fulfillment) | `picking/pick_from_LUs.spec.js` |
 
 **3/3 — 100%**
+
+### Order-based picking — carrier advise
+
+| Scenario | Test |
+|---|---|
+| Pick into an LU with a no-gateway carrier-advise shipper → carrier product (= shipper name) shown and resolved on the schedule | `picking/carrierAdvise.spec.js` |
+| Pick into a top-level TU with a no-gateway carrier-advise shipper → carrier product resolved on the schedule | `picking/carrierAdvise.spec.js` |
+| Pick directly into CUs with a no-gateway carrier-advise shipper → carrier product resolved on the schedule | `picking/carrierAdvise.spec.js` |
+| Two orders with different carrier-advise shippers → each resulting shipment carries its own carrier product | `picking/carrierAdvise.spec.js` |
+
+**4/4 — 100%**
 
 ### Order-based picking — mass printing
 
