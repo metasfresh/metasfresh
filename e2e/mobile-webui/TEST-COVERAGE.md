@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 60 | 64 | 94% |
+| Picking | 61 | 65 | 94% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -121,9 +121,10 @@
 | Scenario | Test |
 |---|---|
 | Serial-no product → picking gated until a serial is scanned, then the serial is persisted on the picked HU | `picking/picking_serialNo.spec.js` |
+| "Scan again" → re-scanning replaces the previously scanned serial; the corrected value is the one persisted on the HU | `picking/picking_serialNo.spec.js` |
 | Misconfigured serial-no product (flag set, no serial-capable attribute set) → no prompt, picks directly | `picking/picking_serialNo.spec.js` |
 
-**2/2 — 100%**
+**3/3 — 100%**
 
 ### Order-based picking — HU scanning variants
 

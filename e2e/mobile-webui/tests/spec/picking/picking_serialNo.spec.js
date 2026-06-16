@@ -79,6 +79,7 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
 
     const masterdata = await createMasterdata({ serialProduct: true });
     const { pickingJobId } = await startPickingJob(masterdata);
+    const serialNoTypo = `SN-TYPO-${Date.now()}`; // first (wrong) scan — corrected via "Scan again"
     const serialNo = `SN-${Date.now()}`;
 
     await test.step("Pick with serial scan", async () => {
@@ -92,7 +93,12 @@ test('Serial-no product: confirm gated until serial scanned, then persisted on t
         await GetQuantityDialog.expectSerialNoScanButtonVisible();
         await GetQuantityDialog.expectDoneDisabled();
 
-        // scan the serial → value shown, confirm enabled
+        // scan a (wrong) serial → value shown, confirm enabled
+        await GetQuantityDialog.scanSerialNo(serialNoTypo);
+        await GetQuantityDialog.expectSerialNoValue(serialNoTypo);
+        await GetQuantityDialog.expectDoneEnabled();
+
+        // "Scan again" → the corrected serial replaces the first one
         await GetQuantityDialog.scanSerialNo(serialNo);
         await GetQuantityDialog.expectSerialNoValue(serialNo);
         await GetQuantityDialog.expectDoneEnabled();
