@@ -99,7 +99,7 @@ VALUES
      585004,
      'IsOnlyNotSentSuccessfully',
      'Only not yet successfully sent',
-     20 /*YesNo*/, 1, 'N', 'N', 10,
+     20 /*YesNo*/, 1, 'N', 'Y' /*DefaultValue=Y: default to re-sending ONLY the not-yet-successfully-sent records (safe default; uncheck to force-resend all selected)*/, 10,
      'de.metas.externalsystem')
 ;
 
@@ -159,7 +159,7 @@ VALUES
      585004,
      'IsOnlyNotSentSuccessfully',
      'Only not yet successfully sent',
-     20 /*YesNo*/, 1, 'N', 'N', 10,
+     20 /*YesNo*/, 1, 'N', 'Y' /*DefaultValue=Y: default to re-sending ONLY the not-yet-successfully-sent records (safe default; uncheck to force-resend all selected)*/, 10,
      'de.metas.externalsystem')
 ;
 
