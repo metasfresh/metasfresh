@@ -47,6 +47,7 @@ const GetQuantityDialog = ({
   readAttributes = [],
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
+  serialNo: serialNoParam = '',
   isShowCloseTargetButton = false,
   //
   validateQtyEntered,
@@ -56,6 +57,7 @@ const GetQuantityDialog = ({
 }) => {
   const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
+  const isShowSerialNo = readAttributes.includes(PickAttribute.SerialNo);
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -97,6 +99,17 @@ const GetQuantityDialog = ({
     setLotNo(lotNoNew);
   };
 
+  // SerialNo is captured via a dedicated scan screen (scan-first; manual entry is the BarcodeScannerComponent fallback).
+  const [serialNo, setSerialNo] = useState(serialNoParam);
+  const [showSerialNoScanner, setShowSerialNoScanner] = useState(false);
+  const onSerialNoScanned = (result) => {
+    const scanned = result?.scannedBarcode ?? '';
+    if (scanned) {
+      setSerialNo(scanned);
+    }
+    setShowSerialNoScanner(false);
+  };
+
   const isQtyRejectedRequired = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
     isQtyRejectedRequired && qtyInfos.isValid(qtyInfo)
@@ -108,7 +121,10 @@ const GetQuantityDialog = ({
     (qtyInfo?.isQtyValid &&
       (qtyRejected === 0 || rejectedReason != null) &&
       (!useCatchWeight || catchWeight?.isQtyValid));
-  const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
+  const allValid =
+    (readOnlyParam ||
+      (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid) && (!isShowSerialNo || !!serialNo))) &&
+    !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
   const getConfirmationPrompt = useCallback(
@@ -151,6 +167,7 @@ const GetQuantityDialog = ({
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
+        serialNo: isShowSerialNo ? serialNo : null,
         isCloseTarget: !!isCloseTarget,
       };
       uiTrace.putContext(onQtyChangePayload);
@@ -249,12 +266,14 @@ const GetQuantityDialog = ({
   }, [scaleDevice, useScaleDevice]);
 
   const isCustomView = () => {
-    return showCatchWeightQRCodeReader;
+    return showCatchWeightQRCodeReader || showSerialNoScanner;
   };
 
   const getCustomView = () => {
     if (showCatchWeightQRCodeReader) {
       return getQRCodeCatchWeightView();
+    } else if (showSerialNoScanner) {
+      return getSerialNoScanView();
     } else {
       return <></>;
     }
@@ -301,6 +320,33 @@ const GetQuantityDialog = ({
             className="is-danger"
             onClick={onCloseDialog}
             testId="done-button"
+          />
+        </div>
+      </>
+    );
+  };
+
+  const getSerialNoScanView = () => {
+    return (
+      <>
+        <table className="table">
+          <tbody>
+            <tr>
+              <th>{trl('general.SerialNo')}</th>
+            </tr>
+            <tr>
+              <td colSpan="2">
+                <BarcodeScannerComponent onResolvedResult={onSerialNoScanned} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div className="buttons is-centered">
+          <DialogButton
+            captionKey="general.cancelText"
+            className="is-danger"
+            onClick={() => setShowSerialNoScanner(false)}
+            testId="serialNo-scan-cancel-button"
           />
         </div>
       </>
@@ -430,6 +476,33 @@ const GetQuantityDialog = ({
                       </td>
                     </tr>
                   )}
+                  {isShowSerialNo && (
+                    <tr>
+                      <th className={cx({ 'has-text-danger': !serialNo })}>{trl('general.SerialNo')}</th>
+                      <td>
+                        {serialNo ? (
+                          <div className="field is-grouped">
+                            <span data-testid="serialNo-value" className="serialNo-value">
+                              {serialNo}
+                            </span>
+                            <DialogButton
+                              captionKey="activities.picking.scanSerialNoAgain"
+                              onClick={() => setShowSerialNoScanner(true)}
+                              testId="serialNo-scan-again-button"
+                              disabled={readOnly}
+                            />
+                          </div>
+                        ) : (
+                          <DialogButton
+                            captionKey="activities.picking.scanSerialNo"
+                            onClick={() => setShowSerialNoScanner(true)}
+                            testId="serialNo-scan-button"
+                            disabled={readOnly}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  )}
                   {useCatchWeight && (
                     <tr>
                       <th>{trl('general.CatchWeight')}</th>
@@ -551,6 +624,7 @@ GetQuantityDialog.propTypes = {
   readAttributes: PropTypes.array,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
+  serialNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
 
