@@ -9,6 +9,7 @@ import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentSe
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -19,6 +20,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +60,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	private I_C_UOM uomEach;   // product stocking UOM (e.g. PCE)
 	private I_C_UOM uomCase;   // assignment / demand UOM (e.g. a 6-pack case)
 
-	/** 1 case == 6 each. */
+	/**
+	 * 1 case == 6 each.
+	 */
 	private static final BigDecimal CASE_TO_EACH = new BigDecimal("6");
 
 	@BeforeEach
@@ -80,14 +84,18 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				mock(DDOrderReplenishmentEventPublisher.class),
 				mock(PickingJobScheduleService.class),
 				mock(WorkplaceService.class),
-				mock(DDOrderMoveScheduleService.class));
+				mock(DDOrderMoveScheduleService.class),
+				new WarehouseRepository()
+		);
 	}
 
 	private Quantity each(final String qty) {return Quantity.of(qty, uomEach);}
 
 	private Quantity cases(final String qty) {return Quantity.of(qty, uomCase);}
 
-	/** Creates a real in-memory {@code M_Locator} so the production {@code warehouseBL.getLocatorById} ordering path is exercised. */
+	/**
+	 * Creates a real in-memory {@code M_Locator} so the production {@code warehouseBL.getLocatorById} ordering path is exercised.
+	 */
 	private LocatorId createLocator(final String value, final int priorityNo)
 	{
 		final I_M_Locator loc = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
@@ -99,13 +107,17 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		return LocatorId.ofRepoId(WAREHOUSE_ID, loc.getM_Locator_ID());
 	}
 
-	/** Converts an on-hand qty in EACH into CASE (demand UOM). Throws if the source UOM is not EACH. */
+	/**
+	 * Converts an on-hand qty in EACH into CASE (demand UOM). Throws if the source UOM is not EACH.
+	 */
 	private Quantity convertEachToCase(final Quantity availableStockingUom)
 	{
 		if (!availableStockingUom.getUomId().equals(UomId.ofRepoId(uomEach.getC_UOM_ID())))
 		{
 			throw new NoUOMConversionException(null, availableStockingUom.getUomId(), UomId.ofRepoId(uomCase.getC_UOM_ID()));
 		}
+		
+		//noinspection BigDecimalMethodWithoutRoundingCalled
 		final BigDecimal inCases = availableStockingUom.toBigDecimal().divide(CASE_TO_EACH);
 		return Quantity.of(inCases, uomCase);
 	}
@@ -118,9 +130,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 50);
 
-		final Map<LocatorId, Quantity> onHand = ImmutableMap.of(
+		final ProductQtyOnHandByLocator onHand = ProductQtyOnHandByLocator.ofMap(ImmutableMap.of(
 				locatorA, each("12"),
-				locatorB, each("18"));
+				locatorB, each("18")));
 
 		final AllocationResult result = service.greedyAllocate(
 				cases("4"),
@@ -129,10 +141,11 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				(locatorId, qty) -> {throw new AssertionError("no locator should be skipped, got " + locatorId);});
 
 		assertThat(result.getUncovered()).isEqualTo(cases("0"));
-		assertThat(result.getAllocation()).containsOnlyKeys(locatorA, locatorB);
-		// allocated quantities are in the DEMAND (case) UOM
-		assertThat(result.getAllocation().get(locatorA)).isEqualTo(cases("2"));
-		assertThat(result.getAllocation().get(locatorB)).isEqualTo(cases("2"));
+		assertThat(result.getAllocation())
+				.containsOnlyKeys(locatorA, locatorB)
+				// allocated quantities are in the DEMAND (case) UOM
+				.containsEntry(locatorA, cases("2"))
+				.containsEntry(locatorB, cases("2"));
 	}
 
 	@Test
@@ -141,7 +154,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		// On-hand: 12 each (=2 cases) in A only. Demand 5 cases -> only 2 covered, 3 uncovered.
 		final LocatorId locatorA = createLocator("10-A", 50);
 
-		final Map<LocatorId, Quantity> onHand = ImmutableMap.of(locatorA, each("12"));
+		final ProductQtyOnHandByLocator onHand = ProductQtyOnHandByLocator.ofMap(ImmutableMap.of(locatorA, each("12")));
 
 		final AllocationResult result = service.greedyAllocate(
 				cases("5"),
@@ -149,8 +162,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				this::convertEachToCase,
 				(locatorId, qty) -> {throw new AssertionError("no locator should be skipped, got " + locatorId);});
 
-		assertThat(result.getAllocation()).containsOnlyKeys(locatorA);
-		assertThat(result.getAllocation().get(locatorA)).isEqualTo(cases("2"));
+		assertThat(result.getAllocation()).containsOnlyKeys(locatorA)
+				.containsEntry(locatorA, cases("2"));
 		assertThat(result.getUncovered()).isEqualTo(cases("3"));
 	}
 
@@ -161,9 +174,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 50);
 
-		final Map<LocatorId, Quantity> onHand = ImmutableMap.of(
+		final ProductQtyOnHandByLocator onHand = ProductQtyOnHandByLocator.ofMap(ImmutableMap.of(
 				locatorA, each("10"),
-				locatorB, each("7"));
+				locatorB, each("7")));
 
 		final AllocationResult result = service.greedyAllocate(
 				each("15"),
@@ -171,8 +184,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				availableStockingUom -> availableStockingUom, // same UOM -> identity conversion
 				(locatorId, qty) -> {throw new AssertionError("no locator should be skipped, got " + locatorId);});
 
-		assertThat(result.getAllocation().get(locatorA)).isEqualTo(each("10"));
-		assertThat(result.getAllocation().get(locatorB)).isEqualTo(each("5"));
+		assertThat(result.getAllocation()).containsEntry(locatorA, each("10"))
+				.containsEntry(locatorB, each("5"));
 		assertThat(result.getUncovered()).isEqualTo(each("0"));
 	}
 
@@ -183,9 +196,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 50);
 
-		final Map<LocatorId, Quantity> onHand = ImmutableMap.of(
+		final ProductQtyOnHandByLocator onHand = ProductQtyOnHandByLocator.ofMap(ImmutableMap.of(
 				locatorA, cases("99"), // not EACH -> convertEachToCase throws -> skipped
-				locatorB, each("18"));  // 18 each = 3 cases
+				locatorB, each("18")));  // 18 each = 3 cases
 
 		final Map<LocatorId, Quantity> skipped = new HashMap<>();
 
@@ -196,8 +209,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				skipped::put);
 
 		assertThat(skipped).containsOnlyKeys(locatorA);
-		assertThat(result.getAllocation()).containsOnlyKeys(locatorB);
-		assertThat(result.getAllocation().get(locatorB)).isEqualTo(cases("2"));
+		assertThat(result.getAllocation()).containsOnlyKeys(locatorB)
+				.containsEntry(locatorB, cases("2"));
 		assertThat(result.getUncovered()).isEqualTo(cases("0"));
 	}
 
@@ -218,9 +231,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 10);
 
-		final Map<LocatorId, Quantity> onHand = ImmutableMap.of(
+		final ProductQtyOnHandByLocator onHand = ProductQtyOnHandByLocator.ofMap(ImmutableMap.of(
 				locatorA, each("10"),
-				locatorB, each("10"));
+				locatorB, each("10")));
 
 		// Demand 4 each is fully covered by the first-consumed locator -> only that locator is allocated.
 		final AllocationResult result = service.greedyAllocate(
@@ -229,8 +242,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				availableStockingUom -> availableStockingUom,
 				(locatorId, qty) -> {throw new AssertionError("no locator should be skipped, got " + locatorId);});
 
-		assertThat(result.getAllocation()).containsOnlyKeys(locatorB);
-		assertThat(result.getAllocation().get(locatorB)).isEqualTo(each("4"));
+		assertThat(result.getAllocation()).containsOnlyKeys(locatorB)
+				.containsEntry(locatorB, each("4"));
 		assertThat(result.getUncovered()).isEqualTo(each("0"));
 	}
 
@@ -241,9 +254,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 50);
 
-		final Map<LocatorId, Quantity> onHand = ImmutableMap.of(
+		final ProductQtyOnHandByLocator onHand = ProductQtyOnHandByLocator.ofMap(ImmutableMap.of(
 				locatorA, each("10"),
-				locatorB, each("10"));
+				locatorB, each("10")));
 
 		final AllocationResult result = service.greedyAllocate(
 				each("4"),
@@ -251,8 +264,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				availableStockingUom -> availableStockingUom,
 				(locatorId, qty) -> {throw new AssertionError("no locator should be skipped, got " + locatorId);});
 
-		assertThat(result.getAllocation()).containsOnlyKeys(locatorA);
-		assertThat(result.getAllocation().get(locatorA)).isEqualTo(each("4"));
+		assertThat(result.getAllocation()).containsOnlyKeys(locatorA)
+				.containsEntry(locatorA, each("4"));
 		assertThat(result.getUncovered()).isEqualTo(each("0"));
 	}
 }

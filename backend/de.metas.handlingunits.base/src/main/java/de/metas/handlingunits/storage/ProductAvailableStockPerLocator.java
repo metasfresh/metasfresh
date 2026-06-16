@@ -1,6 +1,5 @@
 package de.metas.handlingunits.storage;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
@@ -10,7 +9,6 @@ import org.adempiere.warehouse.LocatorId;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,13 +32,13 @@ public class ProductAvailableStockPerLocator
 		return new ProductAvailableStockPerLocator(handlingUnitsBL);
 	}
 
-	public Map<LocatorId, Quantity> getQtyOnHandByLocator(
+	public ProductQtyOnHandByLocator getQtyOnHandByLocator(
 			@NonNull final ProductId productId,
 			@NonNull final Set<LocatorId> locatorIds)
 	{
 		if (locatorIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return ProductQtyOnHandByLocator.EMPTY;
 		}
 
 		final List<I_M_HU> hus = handlingUnitsBL.createHUQueryBuilder()
@@ -62,6 +60,6 @@ public class ProductAvailableStockPerLocator
 					qtyByLocator.merge(locatorId, qty, Quantity::add);
 				});
 
-		return qtyByLocator;
+		return ProductQtyOnHandByLocator.ofMap(qtyByLocator);
 	}
 }

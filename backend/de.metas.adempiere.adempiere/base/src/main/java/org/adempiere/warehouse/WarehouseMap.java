@@ -4,11 +4,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 final class WarehouseMap
 {
@@ -74,5 +77,14 @@ final class WarehouseMap
 			throw new AdempiereException("Locator not found by ID: " + locatorRepoId);
 		}
 		return locator;
+	}
+
+	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(final @NonNull OrgId orgId)
+	{
+		return allActive.stream()
+				.filter(warehouse -> warehouse.isInTrasit() && OrgId.equals(warehouse.getOrgId(), orgId))
+				.sorted(Comparator.comparing(Warehouse::getWarehouseId))
+				.map(Warehouse::getWarehouseId)
+				.findFirst();
 	}
 }

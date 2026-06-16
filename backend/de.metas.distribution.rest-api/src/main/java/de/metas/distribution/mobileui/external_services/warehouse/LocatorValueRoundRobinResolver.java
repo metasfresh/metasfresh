@@ -1,58 +1,55 @@
 package de.metas.distribution.mobileui.external_services.warehouse;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
+import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.Warehouse;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class LocatorValueRoundRobinResolver implements NextPickFromLocatorResolver
 {
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final WarehouseRepository warehouseRepository;
 
 	@Override
-	public @NonNull LocatorId resolveNext(@NonNull final LocatorId currentLocatorId)
+	@NonNull
+	public LocatorId resolveNext(@NonNull final LocatorId currentLocatorId, @NonNull ProductId productId)
 	{
-		final List<I_M_Locator> candidates = warehouseDAO.getLocators(currentLocatorId.getWarehouseId()).stream()
-				.filter(I_M_Locator::isActive)
-				.sorted(Comparator.comparing(I_M_Locator::getValue, Comparator.nullsLast(String::compareTo)))
-				.collect(Collectors.toList());
-
-		if (candidates.isEmpty())
+		final Warehouse warehouse = warehouseRepository.getById(currentLocatorId.getWarehouseId());
+		final List<LocatorId> locatorIds = warehouse.getGroundFloorLocatorIdsOrderedByPriority();
+		if (locatorIds.isEmpty())
 		{
 			throw new AdempiereException(MSG_NO_ALTERNATIVE);
 		}
 
-		int currentIdx = -1;
-		for (int i = 0; i < candidates.size(); i++)
-		{
-			if (LocatorId.equals(locatorId(candidates.get(i)), currentLocatorId))
-			{
-				currentIdx = i;
-				break;
-			}
-		}
+		final ProductQtyOnHandByLocator qtyOnHandByLocator = getQtyOnHandByLocator(productId, locatorIds);
 
-		if (currentIdx < 0)
-		{
-			return locatorId(candidates.get(0));
-		}
-		if (candidates.size() == 1)
+		final LocatorId nextLocatorId = CollectionUtils.getNextRoundRobin(locatorIds, currentLocatorId, qtyOnHandByLocator::hasStock);
+		if (nextLocatorId == null)
 		{
 			throw new AdempiereException(MSG_NO_ALTERNATIVE);
 		}
-		return locatorId(candidates.get((currentIdx + 1) % candidates.size()));
+
+		return nextLocatorId;
 	}
 
-	private static LocatorId locatorId(@NonNull final I_M_Locator locator)
+	private ProductQtyOnHandByLocator getQtyOnHandByLocator(@NonNull final ProductId productId, @NonNull final Collection<LocatorId> sourceLocatorIds)
 	{
-		return LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID());
+		final ProductAvailableStockPerLocator productAvailableStockPerLocator = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL);
+		return productAvailableStockPerLocator.getQtyOnHandByLocator(productId, ImmutableSet.copyOf(sourceLocatorIds));
 	}
 }

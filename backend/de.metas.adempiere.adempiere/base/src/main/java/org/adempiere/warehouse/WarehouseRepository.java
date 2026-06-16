@@ -29,18 +29,24 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import de.metas.cache.CCache;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig, M_Locator
@@ -147,6 +153,7 @@ public class WarehouseRepository
 				.active(record.isActive())
 				.value(value != null ? value : "<" + locatorId.getRepoId() + ">")
 				.priorityNo(record.getPriorityNo())
+				.isGroundFloor(record.isGroundLocator())
 				.build();
 	}
 
@@ -159,10 +166,13 @@ public class WarehouseRepository
 		return Warehouse.builder()
 				.warehouseId(warehouseId)
 				.active(record.isActive())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.name(record.getName())
-				.resourceId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_ID()))
+				.isInTrasit(record.isInTransit())
 				.isReceiveAsSourceHU(record.isReceiveAsSourceHU())
 				.isAutoDistributionOrder(record.isAutoDistributionOrder())
+				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
 				.locators(locatorsMap.get(warehouseId))
 				.warehouseSourceHUConfigs(WarehouseSourceHUConfigList.ofCollection(sourceHUConfigsMap.get(warehouseId)))
 				.build();
@@ -193,4 +203,30 @@ public class WarehouseRepository
 	{
 		return getWarehouseMap().getLocatorById(locatorId);
 	}
+
+	@NonNull
+	public WarehouseId getInTransitWarehouseId(@NonNull final OrgId adOrgId)
+	{
+		return getInTransitWarehouseIdIfExists(adOrgId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsInTransit@, @AD_Org_ID@:" + adOrgId.getRepoId() + ")"));
+	}
+
+	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(@NonNull final OrgId orgId)
+	{
+		return getWarehouseMap().getInTransitWarehouseIdIfExists(orgId);
+	}
+
+	public Set<LocatorId> getActiveLocatorIds(final @NonNull WarehouseId warehouseId)
+	{
+		return getById(warehouseId).getActiveLocators()
+				.stream()
+				.map(Locator::getLocatorId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Optional<ResourceId> getPlantId(final WarehouseId warehouseId)
+	{
+		return Optional.ofNullable(getById(warehouseId).getPlantId());
+	}
+
 }

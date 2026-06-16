@@ -71,13 +71,12 @@ class ProductAvailableStockPerLocatorTest
 
 		final ProductAvailableStockPerLocator service = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL);
 
-		final Map<LocatorId, Quantity> result = service.getQtyOnHandByLocator(
-				productId,
-				ImmutableSet.of(locatorA, locatorB, locatorC));
+		final Map<LocatorId, Quantity> result = service.getQtyOnHandByLocator(productId, ImmutableSet.of(locatorA, locatorB, locatorC)).toMap();
 
-		assertThat(result).containsOnlyKeys(locatorA, locatorB);
-		assertThat(result.get(locatorA)).isEqualTo(Quantity.of("10", uomKg));
-		assertThat(result.get(locatorB)).isEqualTo(Quantity.of("7", uomKg));
+		assertThat(result)
+				.containsOnlyKeys(locatorA, locatorB)
+				.containsEntry(locatorA, Quantity.of("10", uomKg))
+				.containsEntry(locatorB, Quantity.of("7", uomKg));
 	}
 
 	@Test
@@ -88,12 +87,11 @@ class ProductAvailableStockPerLocatorTest
 
 		final ProductAvailableStockPerLocator service = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL);
 
-		final Map<LocatorId, Quantity> result = service.getQtyOnHandByLocator(
-				productId,
-				ImmutableSet.of(locatorA));
+		final Map<LocatorId, Quantity> result = service.getQtyOnHandByLocator(productId, ImmutableSet.of(locatorA)).toMap();
 
-		assertThat(result).containsOnlyKeys(locatorA);
-		assertThat(result.get(locatorA)).isEqualTo(Quantity.of("14", uomKg));
+		assertThat(result)
+				.containsOnlyKeys(locatorA)
+				.containsEntry(locatorA, Quantity.of("14", uomKg));
 	}
 
 	@Test
@@ -103,8 +101,7 @@ class ProductAvailableStockPerLocatorTest
 
 		final ProductAvailableStockPerLocator service = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL);
 
-		final Map<LocatorId, Quantity> result = service.getQtyOnHandByLocator(productId, ImmutableSet.of());
-
+		final Map<LocatorId, Quantity> result = service.getQtyOnHandByLocator(productId, ImmutableSet.of()).toMap();
 		assertThat(result).isEmpty();
 	}
 }
