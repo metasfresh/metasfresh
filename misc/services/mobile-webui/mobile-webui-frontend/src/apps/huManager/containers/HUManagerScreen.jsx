@@ -24,6 +24,7 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { trl } from '../../../utils/translations';
 import { useApplicationInfo } from '../../../reducers/applications';
 import { APPLICATION_ID } from '../constants';
+import { toast } from 'react-toastify';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -203,7 +204,10 @@ const useHandlingUnitInfo = () => {
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
   const dispatch = useDispatch();
-  const setHandlingUnitInfo = (handlingUnitInfo) => dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+  const setHandlingUnitInfo = (handlingUnitInfo) => {
+    toast.dismiss();
+    return dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+  };
 
   return [handlingUnitInfo, setHandlingUnitInfo];
 };
