@@ -232,11 +232,12 @@
 | New distribution orders appear in launcher list via websockets | `distribution/launchers_websockets.spec.js` |
 | Without workplace set → all distribution jobs visible | `distribution/filter_by_workplace.spec.js` |
 | With workplace set → only jobs whose drop-to locator matches workplace shown | `distribution/filter_by_workplace.spec.js` |
+| IsPackingPlace=Y workplace → only DD orders targeting its pick-from locator; IsPackingPlace=N workplace → only DD orders NOT targeting any packing-place locator | `distribution/filter_by_packingplace.spec.js` |
 | Sort by SeqNo when orderBys=SeqNo,Priority,DatePromised | `distribution/sorting.spec.js` |
 | ❌ maxLaunchers cap — list truncated beyond N jobs | — |
 | ❌ maxStartedLaunchers cap | — |
 
-**7/9 — 78%**
+**8/10 — 80%**
 
 ### Distribution — job execution
 
