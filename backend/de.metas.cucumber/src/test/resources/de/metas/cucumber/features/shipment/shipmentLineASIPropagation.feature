@@ -86,8 +86,8 @@ Feature: Shipment line ASI propagation
 
     # Wait for shipment schedule
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule | orderLine      | N             |
+      | Identifier       | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | shipmentSchedule | orderLine      | N             | 10           |
 
     # Generate shipment (no HU picking — manual packing / dropship path)
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -167,8 +167,8 @@ Feature: Shipment line ASI propagation
 
     # Wait for shipment schedule
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule | orderLine      | N             |
+      | Identifier       | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | shipmentSchedule | orderLine      | N             | 10           |
 
     # Generate shipment — HU with Herkunft=IT will be picked on-the-fly
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -245,8 +245,8 @@ Feature: Shipment line ASI propagation
     And the order identified by order is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier       | C_OrderLine_ID | IsToRecompute |
-      | shipmentSchedule | orderLine      | N             |
+      | Identifier       | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | shipmentSchedule | orderLine      | N             | 10           |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
