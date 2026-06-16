@@ -55,6 +55,7 @@ public class DistributionJobQueries
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
 				.warehouseToIds(warehouseToIds)
 				.locatorToIds(InSetPredicate.onlyOrAny(query.getLocatorToId()))
+				.excludeLocatorToIds(query.getExcludeLocatorToIds())
 				.salesOrderIds(activeFacetIds.getSalesOrderIds())
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())

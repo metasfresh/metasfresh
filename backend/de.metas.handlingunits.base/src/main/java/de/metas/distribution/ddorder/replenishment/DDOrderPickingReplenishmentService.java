@@ -36,6 +36,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Loggables;
+import de.metas.util.ProgressLogger;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
@@ -790,12 +791,15 @@ public class DDOrderPickingReplenishmentService
 
 	public void rebuildDrift()
 	{
-		// Republish a reconcile event for every active, not-processed assignment on a packing warehouse that has
-		// no live (Completed) DD_Order linked — the watchdog's "drifted" assignments.
-		reconciliationEventPublisher.publishAll(
-				streamAssignmentsNeedingDDOrder()
-						.map(DDOrderReplenishmentRequest::of)
-						.collect(ImmutableSet.toImmutableSet()));
+		final ProgressLogger progress = Loggables.get().newProgress();
+
+		streamAssignmentsNeedingDDOrder()
+				.map(DDOrderReplenishmentRequest::of)
+				.distinct()
+				.peek(progress::itemProcessed)
+				.forEach(reconciliationEventPublisher::publishOne);
+
+		progress.done("Enqueued {} requests");
 	}
 
 	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()

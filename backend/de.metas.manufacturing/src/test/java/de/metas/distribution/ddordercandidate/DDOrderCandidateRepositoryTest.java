@@ -21,6 +21,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -182,6 +183,7 @@ class DDOrderCandidateRepositoryTest
 							.processed(false)
 							.onlyPositiveQtyToProcess(true)
 							.build())
+					.map(CreateSelectionResponse::getSelectionId)
 					.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
@@ -201,6 +203,7 @@ class DDOrderCandidateRepositoryTest
 							.processed(false)
 							.onlyPositiveQtyToProcess(true)
 							.build())
+					.map(CreateSelectionResponse::getSelectionId)
 					.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
@@ -224,6 +227,7 @@ class DDOrderCandidateRepositoryTest
 							.processed(false)
 							.onlyPositiveQtyToProcess(true)
 							.build())
+					.map(CreateSelectionResponse::getSelectionId)
 					.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 			assertThat(ddOrderCandidateRepository.getBySelectionId(selectionId))
