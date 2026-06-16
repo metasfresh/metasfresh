@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { toastError } from '../../../utils/toast';
+import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../../../utils/grai';
 import { getPickingGRAIs, setPickingGRAIs } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 
@@ -87,18 +88,4 @@ export const usePickingGrais = ({ wfProcessId, huId, onSaved }) => {
     clearAllGrais,
     save,
   };
-};
-
-//
-//
-//
-
-const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(0, tuCount) : graiCodes);
-const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
-
-const mergeGraiArrays = (prev, newGrais) => {
-  const existingSet = new Set(prev);
-  const toAdd = newGrais.filter((g) => !existingSet.has(g));
-  if (toAdd.length === 0) return prev;
-  return [...prev, ...toAdd];
 };

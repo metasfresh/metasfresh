@@ -105,3 +105,43 @@ export const isValidGrai = (graiString) => {
   const [companyPrefix, assetType, serial] = parts;
   return companyPrefix.length > 0 && assetType.length > 0 && serial.length > 0;
 };
+
+//
+// GRAI list helpers (shared between picking and HU-Manager hooks)
+//
+
+/**
+ * Return the GRAIs that fill the assigned slots (first `tuCount` entries).
+ * When tuCount is 0 (unknown/unlimited), all captured GRAIs are "assigned".
+ *
+ * @param {string[]} graiCodes - current accumulated list
+ * @param {number} tuCount - expected number of TUs (0 = unlimited)
+ * @returns {string[]}
+ */
+export const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(0, tuCount) : graiCodes);
+
+/**
+ * Return the GRAIs beyond the assigned slots (overflow / extras).
+ * When tuCount is 0, there are no extras.
+ *
+ * @param {string[]} graiCodes - current accumulated list
+ * @param {number} tuCount - expected number of TUs (0 = unlimited)
+ * @returns {string[]}
+ */
+export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
+
+/**
+ * Merge newGrais into the existing list, deduplicating by value.
+ * Preserves existing order; appends new items at the end.
+ * Returns the same array reference if nothing was added (no unnecessary re-render).
+ *
+ * @param {string[]} prev - existing GRAI list
+ * @param {string[]} newGrais - GRAIs to add
+ * @returns {string[]}
+ */
+export const mergeGraiArrays = (prev, newGrais) => {
+  const existingSet = new Set(prev);
+  const toAdd = newGrais.filter((g) => !existingSet.has(g));
+  if (toAdd.length === 0) return prev;
+  return [...prev, ...toAdd];
+};

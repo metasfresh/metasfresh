@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { toastError } from '../../../utils/toast';
+import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../../../utils/grai';
 import * as api from '../api';
 
 export const useGrais = ({ huId }) => {
@@ -87,21 +88,4 @@ export const useGrais = ({ huId }) => {
     sendToBackend,
     loadFromBackend,
   };
-};
-
-//
-//
-//
-//
-//
-//
-
-const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(0, tuCount) : graiCodes);
-const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
-
-const mergeGraiArrays = (prev, newGrais) => {
-  const existingSet = new Set(prev);
-  const toAdd = newGrais.filter((g) => !existingSet.has(g));
-  if (toAdd.length === 0) return prev;
-  return [...prev, ...toAdd];
 };
