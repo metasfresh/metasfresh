@@ -92,6 +92,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 public class PickingJobPickCommand
 {
@@ -135,6 +136,8 @@ public class PickingJobPickCommand
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
+	private final boolean isSetGrais;
+	@Nullable private final ImmutableList<String> graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
 
 	//
@@ -174,7 +177,9 @@ public class PickingJobPickCommand
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
 			final @Nullable String lotNo,
-			final boolean isCloseTarget)
+			final boolean isCloseTarget,
+			final boolean isSetGrais,
+			final @Nullable List<String> graiCodes)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -270,6 +275,8 @@ public class PickingJobPickCommand
 				.build();
 
 		this.isCloseTarget = isCloseTarget;
+		this.isSetGrais = isSetGrais;
+		this.graiCodes = graiCodes != null ? ImmutableList.copyOf(graiCodes) : null;
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -336,6 +343,7 @@ public class PickingJobPickCommand
 		{
 
 			pickedHUs = splitOutPickToHUs();
+			stampGraisIfRequired();
 		}
 
 		changeStep(step -> updateStepFromPickedHUs(step, pickedHUs));
@@ -518,6 +526,47 @@ public class PickingJobPickCommand
 			// Must be called inside the pick transaction so the attribute write commits together with the pick.
 			huService.setGrais(newTuId, GRAISet.of(grai));
 		}
+	}
+
+	/**
+	 * Stamps the event's {@code graiCodes} onto the picked LU's TUs inside the pick transaction.
+	 * Reuses the proven per-LU GRAI-distribution ({@link PickingJobHUService#setGrais}) which distributes
+	 * N GRAIs across the LU's N TUs.
+	 * <p>
+	 * The picked LU id is resolved by scanning the header and every line's effective pick target for the
+	 * first materialised existing-LU target — this covers both SALES_ORDER (header-level) and PRODUCT
+	 * (line-level) aggregation modes.
+	 * <p>
+	 * Must be called inside the ambient pick HU context (inside {@code temporarySetNewHContextForProcessing()})
+	 * so the attribute writes are flushed with the pick transaction.
+	 * No-op when {@code isSetGrais} is false or {@code graiCodes} is empty.
+	 */
+	private void stampGraisIfRequired()
+	{
+		if (!isSetGrais || graiCodes == null || graiCodes.isEmpty())
+		{
+			return;
+		}
+
+		// Resolve the picked LU from the already-updated _pickingJob state (after splitOutPickToHUs → updatePickingTarget).
+		// Scan header + all lines to cover both SALES_ORDER (header-target) and PRODUCT (line-target) aggregation modes.
+		final HuId pickedLuId = Stream.concat(
+						Stream.of(_pickingJob.getLuPickingTarget(null)),
+						_pickingJob.streamLines().map(line -> _pickingJob.getLuPickingTargetEffective(line.getId())))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.findFirst()
+				.orElse(null);
+
+		if (pickedLuId == null)
+		{
+			// No materialised LU yet (e.g. CU-only pick without an LU target) — nothing to stamp.
+			return;
+		}
+
+		huService.setGrais(pickedLuId, GRAISet.ofStrings(graiCodes));
 	}
 
 	private void closeLUAndTUPickingTargets()
