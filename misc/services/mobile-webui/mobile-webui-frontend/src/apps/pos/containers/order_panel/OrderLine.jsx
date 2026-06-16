@@ -40,7 +40,7 @@ export const OrderLine = ({
 
   useEffect(() => {
     if (selected && elementRef?.current?.scrollIntoView) {
-      elementRef.current.scrollIntoView({ behaviour: 'smooth', block: 'end', inline: 'end' });
+      elementRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }
   }, [selected]);
 

@@ -2,7 +2,6 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -15,6 +14,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.config.ReceiveUnitType;
@@ -65,11 +66,14 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.materialReceipt");
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/materialReceipt");
 
+	// Guidance shown when no receiving Gebinde (TU/LU target) can be offered for the product. {0}=product name.
+	private static final AdMessageKey MSG_NoReceivingGebinde = AdMessageKey.of("MaterialReceipt_NoReceivingGebinde");
+
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-	@NonNull private final IBPartnerBL bpartnerBL;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final ProductHazardSymbolService productHazardSymbolService;
 	@NonNull private final ProductAllergensService productAllergensService;
@@ -113,9 +117,9 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				customerId,
 				line.getCatchWeightUOMId() != null);
 
-		final JsonNewTUTargetList tuTargetList = getNewTUTargets(tuPIItemProducts);
-		final JsonNewLUTargetsList newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId);
 		final String adLanguage = jsonOpts.getAdLanguage();
+		final JsonNewTUTargetList tuTargetList = getNewTUTargets(tuPIItemProducts, line.getProductId(), adLanguage);
+		final JsonNewLUTargetsList newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId, adLanguage);
 
 		final String uom;
 		final java.math.BigDecimal qtyToReceive;
@@ -176,13 +180,12 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private JsonNewLUTargetsList getNewLUTargets(
 			@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts,
 			@NonNull final ProductId productId,
-			@Nullable final BPartnerId customerId)
+			@Nullable final BPartnerId customerId,
+			@NonNull final String adLanguage)
 	{
 		if (tuPIItemProducts.isEmpty())
 		{
-			return JsonNewLUTargetsList.emptyBecause("No CU/TU associations found for "
-					+ productBL.getProductName(productId)
-					+ " and " + (customerId != null ? bpartnerBL.getBPartnerName(customerId) : "any customer"));
+			return JsonNewLUTargetsList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));
 		}
 
 		final ArrayList<JsonNewLUTarget> targets = new ArrayList<>();
@@ -239,13 +242,25 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	}
 
 	@NonNull
-	private JsonNewTUTargetList getNewTUTargets(@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts)
+	private JsonNewTUTargetList getNewTUTargets(
+			@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts,
+			@NonNull final ProductId productId,
+			@NonNull final String adLanguage)
 	{
-		return JsonNewTUTargetList.builder()
-				.values(tuPIItemProducts.stream()
-						.map(MaterialReceiptActivityHandler::toJsonNewTUTarget)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		if (tuPIItemProducts.isEmpty())
+		{
+			return JsonNewTUTargetList.emptyBecause(noReceivingGebindeReason(productId, adLanguage));
+		}
+
+		return JsonNewTUTargetList.ofList(tuPIItemProducts.stream()
+				.map(MaterialReceiptActivityHandler::toJsonNewTUTarget)
+				.collect(ImmutableList.toImmutableList()));
+	}
+
+	/** Localized, actionable guidance shown when no receiving Gebinde can be offered for the product. */
+	private String noReceivingGebindeReason(@NonNull final ProductId productId, @NonNull final String adLanguage)
+	{
+		return msgBL.getMsg(adLanguage, MSG_NoReceivingGebinde, new Object[]{productBL.getProductName(productId)});
 	}
 
 	private static JsonNewTUTarget toJsonNewTUTarget(final I_M_HU_PI_Item_Product target)
