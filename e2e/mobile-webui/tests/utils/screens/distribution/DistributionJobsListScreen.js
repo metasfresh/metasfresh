@@ -71,6 +71,17 @@ export const DistributionJobsListScreen = {
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
 
+    // Ensure the offered job buttons are actually PAINTED (not merely attached to the DOM, which is
+    // what expectJobButtons checks) and hold on that rendered state, so a UAT video ends on the
+    // visible result instead of a teardown re-fetch spinner. UAT-recording aid, not a correctness gate.
+    holdOnVisibleJobsForRecording: async (testIds, { holdMs = 1500 } = {}) => await test.step(`${NAME} - Hold on visible jobs for UAT recording`, async () => {
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        for (const testId of testIds) {
+            await expect(locateJobButtons({ testId })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        }
+        await page.waitForTimeout(holdMs);
+    }),
+
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
         const row = await page.locator(
             `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`

@@ -99,6 +99,7 @@ test('packing_station_1 (IsPackingPlace=Y) is offered only its own bring-to-pack
     await DistributionJobsListScreen.expectJobButtons([
         { testId: masterdata.distributionOrders.DD1.launcherTestId },
     ]);
+    await DistributionJobsListScreen.holdOnVisibleJobsForRecording([masterdata.distributionOrders.DD1.launcherTestId]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -115,6 +116,7 @@ test('packing_station_2 (IsPackingPlace=Y) is offered only its own bring-to-pack
     await DistributionJobsListScreen.expectJobButtons([
         { testId: masterdata.distributionOrders.DD2.launcherTestId },
     ]);
+    await DistributionJobsListScreen.holdOnVisibleJobsForRecording([masterdata.distributionOrders.DD2.launcherTestId]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -131,5 +133,9 @@ test('fork_lift_1 (IsPackingPlace=N) is offered the intra-storage groundfill ord
     await DistributionJobsListScreen.expectJobButtons([
         { testId: masterdata.distributionOrders.DD3.launcherTestId },
         { testId: masterdata.distributionOrders.DD4.launcherTestId },
+    ]);
+    await DistributionJobsListScreen.holdOnVisibleJobsForRecording([
+        masterdata.distributionOrders.DD3.launcherTestId,
+        masterdata.distributionOrders.DD4.launcherTestId,
     ]);
 });
