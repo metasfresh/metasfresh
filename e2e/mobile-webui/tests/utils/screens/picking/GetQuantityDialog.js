@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
 import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
+import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -47,6 +48,28 @@ export const GetQuantityDialog = {
 
     expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
+        await expect(page.getByTestId('serialNo-scan-button')).toBeVisible();
+    }),
+
+    expectSerialNoNotVisible: async () => await test.step(`${NAME} - Expect SerialNo controls not visible`, async () => {
+        await expect(page.getByTestId('serialNo-scan-button')).not.toBeVisible();
+        await expect(page.getByTestId('serialNo-scan-again-button')).not.toBeVisible();
+    }),
+
+    expectSerialNoValue: async (expected) => await test.step(`${NAME} - Expect SerialNo value '${expected}'`, async () => {
+        await expect(page.getByTestId('serialNo-value')).toHaveText(`${expected}`);
+    }),
+
+    // Opens the "Scan Serial No" sub-view, simulates a hardware scan of `serialNo`, and returns to the dialog.
+    scanSerialNo: async (serialNo) => await test.step(`${NAME} - Scan SerialNo '${serialNo}'`, async () => {
+        const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
+            && await page.getByTestId('serialNo-scan-again-button').isVisible();
+        await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
+        await BarcodeScannerComponent.type({ scannedCode: serialNo });
+        await expect(page.getByTestId('serialNo-value')).toHaveText(`${serialNo}`, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
