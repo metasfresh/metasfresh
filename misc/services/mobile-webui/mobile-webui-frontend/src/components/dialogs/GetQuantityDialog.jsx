@@ -329,18 +329,14 @@ const GetQuantityDialog = ({
   const getSerialNoScanView = () => {
     return (
       <>
-        <table className="table">
-          <tbody>
-            <tr>
-              <th>{trl('general.SerialNo')}</th>
-            </tr>
-            <tr>
-              <td colSpan="2">
-                <BarcodeScannerComponent onResolvedResult={onSerialNoScanned} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {/* No title row — the scanner's own "Scan Serial No" prompt (below the barcode icon)
+            already labels the view. The component is centered horizontally + vertically. */}
+        <div className="serialNo-scan-view">
+          <BarcodeScannerComponent
+            onResolvedResult={onSerialNoScanned}
+            inputPlaceholderText={trl('activities.picking.scanSerialNo')}
+          />
+        </div>
         <div className="buttons is-centered">
           <DialogButton
             captionKey="general.cancelText"
@@ -478,15 +474,21 @@ const GetQuantityDialog = ({
                   )}
                   {isShowSerialNo && (
                     <tr>
-                      <th className={cx({ 'has-text-danger': !serialNo })}>{trl('general.SerialNo')}</th>
+                      <th>{trl('general.SerialNo')}</th>
                       <td>
                         {serialNo ? (
-                          <div className="field is-grouped">
-                            <span data-testid="serialNo-value" className="serialNo-value">
-                              {serialNo}
+                          <div className="serialNo-scanned">
+                            {/* Value and "Scan again" each on their own full-width line.
+                                The value middle-truncates on overflow (keeps the leading chars
+                                + always-visible last 4, e.g. "SN-0001…6789") — the split spans
+                                still expose the full string as textContent for assertions. */}
+                            <span data-testid="serialNo-value" className="serialNo-value" title={serialNo}>
+                              <span className="serialNo-value-head">{serialNo.slice(0, -4)}</span>
+                              <span className="serialNo-value-tail">{serialNo.slice(-4)}</span>
                             </span>
                             <DialogButton
                               captionKey="activities.picking.scanSerialNoAgain"
+                              className="is-fullwidth"
                               onClick={() => setShowSerialNoScanner(true)}
                               testId="serialNo-scan-again-button"
                               disabled={readOnly}
@@ -495,6 +497,7 @@ const GetQuantityDialog = ({
                         ) : (
                           <DialogButton
                             captionKey="activities.picking.scanSerialNo"
+                            className="is-fullwidth"
                             onClick={() => setShowSerialNoScanner(true)}
                             testId="serialNo-scan-button"
                             disabled={readOnly}

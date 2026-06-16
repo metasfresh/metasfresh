@@ -31,4 +31,44 @@
       }
     }
   }
+
+  // Scanned serial-no cell: value line + "Scan again" line, each full width on its own row.
+  .serialNo-scanned {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+
+    .serialNo-value {
+      display: flex;
+      min-width: 0;
+      max-width: 100%;
+      justify-content: flex-end;
+      font-weight: 600;
+      white-space: nowrap;
+
+      // leading part shrinks + ellipsises; trailing 4 chars stay pinned (middle truncation)
+      .serialNo-value-head {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .serialNo-value-tail {
+        flex: 0 0 auto;
+      }
+    }
+  }
+
+  // Serial-no scan sub-view: center the scanner horizontally + vertically in the dialog body.
+  .serialNo-scan-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+
+    .barcode-scanner {
+      width: 100%;
+    }
+  }
 }

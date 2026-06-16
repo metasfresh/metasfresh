@@ -19,6 +19,11 @@ const createMasterdata = async ({ serialProduct }) => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
+            // Serial-no scanning is a hardware-scanner task — disable camera mode so the scan
+            // view shows only the hardware prompt (no camera toggle), matching the demo UX.
+            sysconfigs: {
+                "mobileui.frontend.barcodeScanner.mode.camera.enabled": "N",
+            },
             mobileConfig: {
                 picking: {
                     aggregationType: "sales_order",
