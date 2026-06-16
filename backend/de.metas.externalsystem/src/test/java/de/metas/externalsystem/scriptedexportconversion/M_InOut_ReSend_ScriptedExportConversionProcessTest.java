@@ -200,7 +200,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		verify(scriptedExportServiceMock, times(1)).getResendableConfigsBySourceRecord(sourceRecord);
 		verify(scriptedExportServiceMock, times(0)).getMatchingConfigIdsBySourceRecord(any());
 		verify(scriptedExportServiceMock, times(1)).resolveConfigAndRecordPendingAsResend(eq(configIdA), any());
-		assertThat(result).contains("1");
+		assertThat(result).contains("#1");
 	}
 
 	// -----------------------------------------------------------------------
