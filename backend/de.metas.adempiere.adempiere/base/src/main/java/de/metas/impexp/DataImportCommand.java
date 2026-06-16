@@ -8,13 +8,13 @@ import de.metas.impexp.parser.ImpDataParser;
 import de.metas.impexp.parser.ImpDataParserFactory;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
@@ -264,9 +264,16 @@ final class DataImportCommand
 					.addEqualsFilter(ImportTableDescriptor.COLUMNNAME_I_ErrorMsg, null)
 					.create();
 
+			// An empty import selection is legitimate (e.g. mocked orchestration tests, or a real file with 0 valid rows):
+			// process zero records rather than throw. Since createSelection() now returns Optional.empty() on an empty result,
+			// mint an empty selection id and register an (empty) selection for it so the downstream validate/process step can proceed.
 			_recordsToImportSelectionId = query.createSelection()
 					.map(CreateSelectionResponse::getSelectionId)
-					.orElseThrow(() -> new AdempiereException("No records to import for " + query));
+					.orElseGet(() -> {
+						final PInstanceId emptySelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
+						query.createSelection(emptySelectionId); // registers an (empty) selection for this id
+						return emptySelectionId;
+					});
 		}
 
 		return _recordsToImportSelectionId;
