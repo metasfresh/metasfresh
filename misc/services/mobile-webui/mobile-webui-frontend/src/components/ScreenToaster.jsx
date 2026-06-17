@@ -1,7 +1,10 @@
 import React from 'react';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import { useLocationChange } from '../hooks/useLocationChange';
 
 const ScreenToaster = () => {
+  useLocationChange(() => toast.dismiss());
+
   return (
     <ToastContainer
       position="bottom-center"
@@ -12,6 +15,8 @@ const ScreenToaster = () => {
       rtl={false}
       pauseOnFocusLoss
       draggable
+      draggableDirection="x"
+      draggablePercent={50}
       pauseOnHover
       theme="dark"
       style={{ marginBottom: '3rem' }}
