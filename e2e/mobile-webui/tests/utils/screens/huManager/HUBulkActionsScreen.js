@@ -27,17 +27,13 @@ export const HUBulkActionsScreen = {
         // Wait for button text to change to "Close scanner" - ensures React re-render complete
         await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
 
-        // Scan the target locator until the move fires (the screen navigates away).
-        // The keyboard-scanner hook attaches its window listener in a useEffect that runs
-        // AFTER the React commit that shows "Close scanner", so a single instantaneous scan
-        // can race ahead of the listener and be dropped — the move never fires and the
-        // bulk-actions screen stays open. A real operator who sees nothing happen just scans
-        // again; we do the same: re-scan while the bulk-actions screen is still present.
+        // The keyboard-scanner hook's window listener attaches asynchronously (useEffect after
+        // the React commit), so a single instantaneous scan can be dropped; re-scan until the
+        // screen navigates away — mirroring an operator who scans again when nothing happens.
         for (let attempt = 1; attempt <= SCAN_TARGET_MAX_ATTEMPTS; attempt++) {
             await BarcodeScannerComponent.type(targetLocator);
 
-            // Scan consumed => the bulk-actions screen navigates away. Check with a short
-            // bounded wait; if it's gone we're done, otherwise re-scan.
+            // Scan accepted → screen navigates away; verify with a bounded wait.
             try {
                 await containerElement().waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
                 break;
