@@ -8,21 +8,21 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ContextualError } from './ContextualError';
 
-export const toastErrorFromObj = (obj) => {
+export const toastErrorFromObj = (obj, toastId) => {
   console.log('toastErrorFromObj', { obj });
   if (!obj) {
     // shall not happen
     console.error('toastErrorFromObj called without any error');
   } else if (isError(obj) || obj instanceof ContextualError) {
-    toastError({ axiosError: obj, context: obj?.context });
+    toastError({ axiosError: obj, context: obj?.context, toastId });
   } else if (typeof obj === 'object') {
     toastError(obj);
   } else {
-    toastError({ plainMessage: `${obj}` });
+    toastError({ plainMessage: `${obj}`, toastId });
   }
 };
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context }) => {
+export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context, toastId }) => {
   let code;
   let message;
   if (axiosError) {
@@ -45,6 +45,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     position: 'bottom-center',
     transition: Bounce,
     bodyStyle: { overflow: 'auto' },
+    toastId,
   });
 
   uiTrace.trace({

@@ -76,6 +76,8 @@ export default defineConfig({
                         '--allow-insecure-localhost', // Allows HTTP on local addresses
                         '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
                         // '--user-data-dir=/tmp/chrome-test-profile' // Ensures fresh profile each time (prevents stored HSTS rules)
+                        '--use-fake-ui-for-media-stream', // Suppress getUserMedia permission dialog in CI (no physical camera)
+                        '--use-fake-device-for-media-stream', // Provide a synthetic camera so getUserMedia() succeeds in CI
                     ],
                 },
             },
