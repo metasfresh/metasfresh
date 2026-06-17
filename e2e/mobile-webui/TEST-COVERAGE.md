@@ -7,9 +7,9 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 5 | 8 | 63% |
+| Barcode Scanner Modes | 7 | 12 | 58% |
 | Picking | 59 | 62 | 95% |
-| Distribution | 27 | 30 | 90% |
+| Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -52,9 +52,10 @@
 
 | Scenario | Test |
 |---|---|
-| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — DataWedge IME contract (visible-input editable, virtual keyboard suppressed via soft hint) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readOnly` present, CSS-hidden, no `<video>` — Honeywell CT60 / Android 11 keystroke-wedge contract (HARD keyboard suppression via `readOnly`; camera disabled) | `barcode_scanner_modes.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ### Scan paths
 
@@ -67,8 +68,11 @@
 | ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
 | ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
 | ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
+| Footer — hardware/camera toggle: renders only when both hw + camera enabled; clicking toggle switches to camera mode and renders `<video>` (feed validation requires physical hardware) | `barcode_scanner_modes.spec.js` |
+| ❌ Footer — "Enter manually": shows only when manual mode enabled and activeMode ≠ MANUAL; clicking sets activeMode to MANUAL | — |
+| ❌ Footer — "Back to scanner": shows when activeMode=MANUAL and at least one of hw/camera enabled; clicking returns to HARDWARE (or CAMERA if only camera enabled) | — |
 
-**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
+**5/10 — 50%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis`, `triggerOnChangeIfLengthGreaterThan`, and two footer buttons not yet covered)
 
 ---
 
@@ -163,14 +167,8 @@
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
-| DO_NOT_CREATE: fully-picked order completed with no shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| DO_NOT_CREATE: partially-picked order (qty still open) → must STAY in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| DO_NOT_CREATE: picked qty fully bound to a draft shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| Reverse (void) an aggregate-HU shipment → recreate must not collide on duplicate QtyPicked rows | `picking/recreate_shipment_after_void.spec.js` |
-| Reverse an aggregate-HU shipment TWICE (recreate via Generate Shipments between) → picked qty must survive every void so the shipment stays recreatable | `picking/recreate_shipment_after_void.spec.js` |
 
-
-**9/9 — 100%**
+**5/5 — 100%**
 
 ### Product-based picking
 
