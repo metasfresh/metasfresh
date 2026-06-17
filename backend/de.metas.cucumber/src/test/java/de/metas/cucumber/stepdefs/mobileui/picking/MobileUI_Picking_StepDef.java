@@ -86,6 +86,31 @@ public class MobileUI_Picking_StepDef
 		context.setWfProcess(wfProcess);
 	}
 
+	/**
+	 * Scans the source HU for a PRODUCT-aggregation picking job.
+	 * <p>
+	 * This step drives the {@code scanPickFromHU} workflow activity, which is the first activity in the
+	 * {@code PRODUCT} aggregation flow ({@code ScanPickFromHU → ScanPickingSlot → PickLines → Complete}).
+	 * It is absent from {@code SALES_ORDER}/{@code DELIVERY_LOCATION} flows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>huIdentifier</b> — (required, identifier-ref) HU to scan as the pick-from source
+	 * @cucumber.example
+	 * <pre>
+	 * When scan pick from HU identified by pickFromLU
+	 * </pre>
+	 */
+	@When("^scan pick from HU identified by (.*)$")
+	public void scanPickFromHU(@NonNull final String huIdentifier)
+	{
+		final HuId huId = huTable.getId(huIdentifier);
+		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(huId);
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.scanPickFromHU(context.getWfProcessIdNotNull(), qrCode);
+		context.setWfProcess(wfProcess);
+	}
+
 	@When("^set picking target as new LU identified by (.*)$")
 	public void setPickingLUTarget(@NonNull final String packingInstructionsIdentifier)
 	{
@@ -137,6 +162,47 @@ public class MobileUI_Picking_StepDef
 					else
 					{
 						assertThat(actualPickingTarget.getLuIdNotNull()).as("actual picking LU target").isEqualTo(luId);
+					}
+				});
+	}
+
+	/**
+	 * Finds the materialised LU picking target from the first picking job line and registers it in the
+	 * HU step-def data under the given identifier. Used for PRODUCT-aggregation jobs where the LU
+	 * target is stored at line level (not header level).
+	 * <p>
+	 * For SALES_ORDER / DELIVERY_LOCATION aggregation, use {@code expect current picking target} instead.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Existing_LU</b> — (required) identifier to register the materialised line-level LU under
+	 * @cucumber.example
+	 * <pre>
+	 * And expect line picking target
+	 *   | Existing_LU |
+	 *   | pickedLU    |
+	 * </pre>
+	 */
+	@When("expect line picking target")
+	public void expectLinePickingTarget(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final String wfProcessId = context.getWfProcessNotNull().getId();
+
+		row.getAsOptionalIdentifier("Existing_LU")
+				.ifPresent(luIdentifier -> {
+					final LUPickingTarget actualPickingTarget = mobileUIPickingClient.getFirstLineLuPickingTarget(wfProcessId).orElse(null);
+					assertThat(actualPickingTarget).as("line-level LU picking target").isNotNull();
+					assertThat(actualPickingTarget.isExistingLU()).as(() -> "line-level LU picking target is existing LU: " + actualPickingTarget).isTrue();
+
+					final HuId luId = huTable.getIdOptional(luIdentifier).orElse(null);
+					if (luId == null)
+					{
+						huTable.put(luIdentifier, handlingUnitsBL.getById(actualPickingTarget.getLuIdNotNull()));
+					}
+					else
+					{
+						assertThat(actualPickingTarget.getLuIdNotNull()).as("line-level LU picking target").isEqualTo(luId);
 					}
 				});
 	}

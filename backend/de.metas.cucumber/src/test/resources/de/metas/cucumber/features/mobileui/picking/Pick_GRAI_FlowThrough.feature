@@ -3,8 +3,9 @@
 @allure.label.feature:F00230_MobileUI_Picking
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profile — atomic pick event
-# Scenario 1: atomic pick with graiCodes; asserts the picked TUs carry the scanned GRAIs.
+# Scenario 1: SALES_ORDER aggregation — atomic pick with graiCodes; asserts picked TUs carry the scanned GRAIs.
 # Scenario 2: completion guard — fewer GRAIs than TUs in the atomic pick event blocks completion.
+# Scenario 3: PRODUCT aggregation — atomic pick with graiCodes; proves the line-level LU target path.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -60,8 +61,8 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | PLV                    | product      | 6.0      | PCE               | Nominal              | Normal                        |
 
     And set mobile UI picking profile
-      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
-      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | PickingJobAggregationType |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | SALES_ORDER               |
 
     # GRAIRequired=Y customer -> the completion guard fires for this LU_TU job.
     # Distinct identity (graiCustomer / GRAI_Dummy_GLN) on purpose: the C_BPartner step upserts by
@@ -172,3 +173,65 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
     Then complete picking job expecting error
       | ErrorCode           |
       | GRAI_COUNT_MISMATCH |
+
+# ######################################################################################################################
+# SCENARIO 3 — PRODUCT aggregation: the line-level LU picking target path.
+# In PRODUCT aggregation the picking job has one extra activity: ScanPickFromHU (before ScanPickingSlot).
+# The flow is: start job -> scan pick-from HU -> scan picking slot -> set LU target -> atomic pick with GRAIs -> complete.
+# The picked LU target is materialised at LINE level (not header), which is the path the original bug hit:
+# header-only resolution returned HTTP 422 for product-agg jobs. This scenario proves the atomic
+# GRAI stamp works end-to-end for the PRODUCT aggregation type.
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: GRAIRequired customer - PRODUCT aggregation - atomic pick with graiCodes; picked TUs must carry the scanned GRAIs
+    When transform CU to new TUs
+      | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                  |
+      | pickFromCU | 12    | TUx4                    | pickFromTU1,pickFromTU2,pickFromTU3 |
+    And aggregate TUs to new LU
+      | sourceTUs                           | newLUs     |
+      | pickFromTU1,pickFromTU2,pickFromTU3 | pickFromLU |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | graiCustomer             | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product                 | 12         | TUx4                                   |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | PickingJobAggregationType |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | PRODUCT                   |
+
+    And start picking job for sales order identified by SO
+    # PRODUCT aggregation: scan the source HU first (the extra ScanPickFromHU activity).
+    And scan pick from HU identified by pickFromLU
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by LU
+    # Atomic pick: qty + 3 GRAIs (one per TU) in a single event.
+    # Each row is one GRAI; pick params (PickFromHU, QtyPicked) are read from the first row.
+    And pick line with GRAIs:
+      | PickingLine.byProduct | PickFromHU | QtyPicked | GRAI                 |
+      | product               | pickFromLU | 3         | 7613204.00307.000004 |
+      | product               | pickFromLU |           | 7613204.00307.000005 |
+      | product               | pickFromLU |           | 7613204.00307.000006 |
+    # PRODUCT aggregation: LU is materialised at line level — register it before asserting GRAIs.
+    And expect line picking target
+      | Existing_LU |
+      | pickedLU    |
+
+    # The picked TUs must carry the scanned GRAIs (LU materialised at line level for PRODUCT aggregation).
+    Then the TUs on picked LU identified by pickedLU carry GRAIs
+      | GRAI                 |
+      | 7613204.00307.000004 |
+      | 7613204.00307.000005 |
+      | 7613204.00307.000006 |
+
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule                 | shipment              | CO            |

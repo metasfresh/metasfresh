@@ -1,11 +1,14 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
@@ -94,6 +97,24 @@ public class MobileUIPickingClient
 		return wfProcess;
 	}
 
+	/**
+	 * Scans the pick-from HU for a product-aggregation picking job (the {@code scanPickFromHU} activity).
+	 * This activity is present only for {@code PRODUCT} aggregation type
+	 * ({@code PickingJobAggregationType.PRODUCT}); it is the first activity in that flow.
+	 */
+	public JsonWFProcess scanPickFromHU(@NonNull final String wfProcessId, @NonNull final HUQRCode huQRCode)
+	{
+		final String activityId = PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU.getAsString();
+
+		final JsonSetScannedBarcodeRequest request = JsonSetScannedBarcodeRequest.builder()
+				.barcode(huQRCode.toGlobalQRCodeString())
+				.build();
+		logger.info("scanPickFromHU: Sending wfProcessId={}, activityId={}, request={}", wfProcessId, activityId, request);
+		final JsonWFProcess wfProcess = workflowRestController.setScannedBarcode(wfProcessId, activityId, request);
+		logger.info("scanPickFromHU: Got response {}", wfProcess);
+		return wfProcess;
+	}
+
 	public JsonWFProcess setPickingTarget(@NonNull final String wfProcessId, LUPickingTarget pickingTarget)
 	{
 		return pickingRestController.setLUPickingTarget(wfProcessId, null, JsonLUPickingTarget.of(pickingTarget));
@@ -110,7 +131,22 @@ public class MobileUIPickingClient
 		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
 		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
 		return pickingJob.getLuPickingTarget(null);
+	}
 
+	/**
+	 * Returns the first line-level LU picking target that is an existing (materialised) LU.
+	 * Used for PRODUCT-aggregation jobs where the LU target lives on the line, not the header.
+	 */
+	public Optional<LUPickingTarget> getFirstLineLuPickingTarget(@NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+		return pickingJob.getLines().stream()
+				.map(PickingJobLine::getCurrentPickingTarget)
+				.map(ct -> ct.getLuPickingTarget().orElse(null))
+				.filter(t -> t != null && t.isExistingLU())
+				.findFirst();
 	}
 
 	public JsonWFProcess pickLine(JsonPickingStepEvent request)
