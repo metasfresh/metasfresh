@@ -210,9 +210,8 @@ public class JsonPickingJobConverterCommand
 	{
 		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
 
-		// Resolve the line's carrier-advise once from its actually-picked HUs (the proven-correct source) —
-		// not the bare LU/TU target container, which may not be where the picked qty is keyed — and expose it
-		// on whichever pick-to shape the line has (existing-LU target, existing-TU target, or CU-direct line).
+		// Resolve from the line's picked HUs, not the bare LU/TU target container (which may not be where the
+		// picked qty is keyed); exposed below on whichever pick-to shape the line has.
 		final CarrierAdviseTargetInfo lineInfo = resolveCarrierAdviseInfoForPickedHUs(line.getPickedHUIds());
 
 		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
