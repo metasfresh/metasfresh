@@ -1,11 +1,11 @@
 -- Run mode: SWING_CLIENT
 --
--- me03 #30119 — Ruecknahme Gebinde (return-package) feature, core (EntityType 'D').
+-- Ruecknahme Gebinde (return-package) feature, core (EntityType 'D').
 --
 -- Creates the standalone general window "Rücknahme Gebinde" over the existing table
 -- C_Order_ReturnPackage (AD_Table 542618), created in migration 5808300. Single header tab
 -- (TabLevel 0) — this is a self-contained general window, NOT the C_Order sub-tab (that
--- sub-tab is separate fm206 work and is intentionally NOT touched here, nor is the vanilla
+-- sub-tab is separate customer-specific work, intentionally NOT in this PR, nor is the vanilla
 -- sales-order window).
 --
 -- Fields shown (sensible order): Geschäftspartner, Auftrag, Palette, geliefert, zurück,

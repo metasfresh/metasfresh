@@ -28,13 +28,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Order_ReturnPackage;
-import org.compiere.model.X_C_Order_ReturnPackage;
 import org.springframework.stereotype.Service;
 
 /**
- * Creates the default "Rücknahme Gebinde" rows (one per pallet type: EUR + H1) for a sales order.
- * The two quantity columns (QtyDeliveredLU = geliefert, QtyReturnedLU = zurück) are left empty;
- * the user types them. See me03 issue 30119.
+ * Creates the default return-package (Rücknahme Gebinde) rows (one per pallet type: EUR + H1) for a sales order.
+ * The two quantity columns (QtyDeliveredLU, QtyReturnedLU) are left empty; the user types them.
  */
 @Service
 public class OrderReturnPackageService
@@ -51,26 +49,29 @@ public class OrderReturnPackageService
 			return;
 		}
 
-		createRow(order, X_C_Order_ReturnPackage.PALLETTYPE_EUR);
-		createRow(order, X_C_Order_ReturnPackage.PALLETTYPE_H1);
+		for (final PalletType palletType : PalletType.values())
+		{
+			createRow(order, palletType);
+		}
 	}
 
 	private boolean hasReturnPackages(final int orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Order_ReturnPackage.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order_ReturnPackage.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.anyMatch();
 	}
 
-	private void createRow(@NonNull final I_C_Order order, @NonNull final String palletType)
+	private void createRow(@NonNull final I_C_Order order, @NonNull final PalletType palletType)
 	{
 		final I_C_Order_ReturnPackage row = InterfaceWrapperHelper.newInstance(I_C_Order_ReturnPackage.class, order);
 		row.setAD_Org_ID(order.getAD_Org_ID());
 		row.setC_Order_ID(order.getC_Order_ID());
 		row.setC_BPartner_ID(order.getC_BPartner_ID());
-		row.setPalletType(palletType);
-		// QtyDeliveredLU (geliefert) and QtyReturnedLU (zurück) are left at their default (0) - the user enters the real counts.
+		row.setPalletType(palletType.getCode());
+		// Quantities default to 0; the user enters the actual counts.
 		InterfaceWrapperHelper.saveRecord(row);
 	}
 }

@@ -24,6 +24,7 @@ package de.metas.order.returnpackage.interceptor;
 
 import de.metas.order.returnpackage.OrderReturnPackageService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
@@ -31,19 +32,14 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 /**
- * On creation of a sales order, auto-creates the two "Rücknahme Gebinde" rows (EUR + H1).
- * See me03 issue 30119.
+ * On creation of a sales order, auto-creates the two return-package (Rücknahme Gebinde) rows (EUR + H1).
  */
 @Interceptor(I_C_Order.class)
 @Component
+@RequiredArgsConstructor
 public class C_Order_ReturnPackage
 {
-	private final OrderReturnPackageService orderReturnPackageService;
-
-	public C_Order_ReturnPackage(@NonNull final OrderReturnPackageService orderReturnPackageService)
-	{
-		this.orderReturnPackageService = orderReturnPackageService;
-	}
+	@NonNull private final OrderReturnPackageService orderReturnPackageService;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createReturnPackages(@NonNull final I_C_Order order)

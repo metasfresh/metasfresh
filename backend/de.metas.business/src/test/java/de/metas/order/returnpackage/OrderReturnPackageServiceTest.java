@@ -40,7 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OrderReturnPackageServiceTest
 {
 	private static final int ORG_ID = 100;
-	private static final int BPARTNER_ID = 200;
 
 	private OrderReturnPackageService service;
 

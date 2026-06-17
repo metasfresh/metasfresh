@@ -1,11 +1,11 @@
 -- Run mode: SWING_CLIENT
 --
--- me03 #30119 — Ruecknahme Gebinde (return-package) feature, core (EntityType 'D').
+-- Ruecknahme Gebinde (return-package) feature, core (EntityType 'D').
 --
 -- Creates the general table C_Order_ReturnPackage (Name 'Rücknahme Gebinde'), a child of C_Order.
 -- Depends on the pallet-type reference list AD_Reference 542107 created in migration 5808290.
 --
--- Per-row design (issue #30119, "Reading B"): QtyDeliveredLU AND QtyReturnedLU are BOTH stored,
+-- Per-row design ("Reading B"): QtyDeliveredLU AND QtyReturnedLU are BOTH stored,
 -- user-editable manual quantity columns — neither is virtual / calculated. Users set them at the
 -- order stage from the known LU quantities to be shipped / received.
 --
@@ -126,6 +126,21 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 -- 2026-06-17T09:00:25.000Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Return Package', PrintName='Return Package',Updated=TO_TIMESTAMP('2026-06-17 09:00:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585006 AND AD_Language='en_US'
 ;
+-- 2026-06-17T09:00:25.100Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585006 AND AD_Language='de_DE'
+;
+-- 2026-06-17T09:00:25.200Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585006 AND AD_Language='de_CH'
+;
+-- 2026-06-17T09:00:25.300Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585006,'en_US')
+;
+-- 2026-06-17T09:00:25.400Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585006,'de_DE')
+;
+-- 2026-06-17T09:00:25.500Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585006,'de_CH')
+;
 
 -- Column: C_Order_ReturnPackage.C_Order_ReturnPackage_ID (key)
 -- 2026-06-17T09:00:26.000Z
@@ -174,6 +189,21 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 -- 2026-06-17T09:00:37.000Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Pallet', PrintName='Pallet', Description='Pallet type of the return package (EUR or H1).',Updated=TO_TIMESTAMP('2026-06-17 09:00:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585007 AND AD_Language='en_US'
 ;
+-- 2026-06-17T09:00:37.100Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585007 AND AD_Language='de_DE'
+;
+-- 2026-06-17T09:00:37.200Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585007 AND AD_Language='de_CH'
+;
+-- 2026-06-17T09:00:37.300Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585007,'en_US')
+;
+-- 2026-06-17T09:00:37.400Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585007,'de_DE')
+;
+-- 2026-06-17T09:00:37.500Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585007,'de_CH')
+;
 
 -- Column: C_Order_ReturnPackage.PalletType (list, AD_Reference_Value_ID=542107)
 -- 2026-06-17T09:00:38.000Z
@@ -198,6 +228,21 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 -- 2026-06-17T09:00:43.000Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='delivered', PrintName='delivered', Description='Delivered quantity of the return package.',Updated=TO_TIMESTAMP('2026-06-17 09:00:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585008 AND AD_Language='en_US'
 ;
+-- 2026-06-17T09:00:43.100Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585008 AND AD_Language='de_DE'
+;
+-- 2026-06-17T09:00:43.200Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585008 AND AD_Language='de_CH'
+;
+-- 2026-06-17T09:00:43.300Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585008,'en_US')
+;
+-- 2026-06-17T09:00:43.400Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585008,'de_DE')
+;
+-- 2026-06-17T09:00:43.500Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585008,'de_CH')
+;
 
 -- Column: C_Order_ReturnPackage.QtyDeliveredLU (Quantity)
 -- 2026-06-17T09:00:44.000Z
@@ -221,6 +266,21 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 -- 2026-06-17T09:00:49.000Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='returned', PrintName='returned', Description='Returned quantity of the return package.',Updated=TO_TIMESTAMP('2026-06-17 09:00:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585009 AND AD_Language='en_US'
+;
+-- 2026-06-17T09:00:49.100Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585009 AND AD_Language='de_DE'
+;
+-- 2026-06-17T09:00:49.200Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:00:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=585009 AND AD_Language='de_CH'
+;
+-- 2026-06-17T09:00:49.300Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585009,'en_US')
+;
+-- 2026-06-17T09:00:49.400Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585009,'de_DE')
+;
+-- 2026-06-17T09:00:49.500Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585009,'de_CH')
 ;
 
 -- Column: C_Order_ReturnPackage.QtyReturnedLU (Quantity)

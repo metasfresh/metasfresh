@@ -1,6 +1,6 @@
 -- Run mode: SWING_CLIENT
 --
--- me03 #30119 — Ruecknahme Gebinde (return-package) feature, core (EntityType 'D').
+-- Ruecknahme Gebinde (return-package) feature, core (EntityType 'D').
 --
 -- This script creates the pallet-type reference list used by the new column
 -- C_Order_ReturnPackage.PalletType (created in the next migration 5808300).
@@ -47,4 +47,24 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Name,Description, IsTra
 
 -- 2026-06-17T08:00:08.000Z
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='H1', Updated=TO_TIMESTAMP('2026-06-17 08:00:08','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544267
+;
+
+-- Mark the German (de_DE, de_CH) translations as translated too (labels are identical to the base text).
+-- 2026-06-17T08:00:09.000Z
+UPDATE AD_Reference_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 08:00:09','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Reference_ID=542107
+;
+-- 2026-06-17T08:00:10.000Z
+UPDATE AD_Reference_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 08:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Reference_ID=542107
+;
+-- 2026-06-17T08:00:11.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 08:00:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544266
+;
+-- 2026-06-17T08:00:12.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 08:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=544266
+;
+-- 2026-06-17T08:00:13.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 08:00:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544267
+;
+-- 2026-06-17T08:00:14.000Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 08:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=544267
 ;
