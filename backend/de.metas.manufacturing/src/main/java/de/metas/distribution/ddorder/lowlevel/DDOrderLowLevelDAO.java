@@ -477,6 +477,10 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// Limit: pushed down so iterateAndStream's T_Query_Selection INSERT stays bounded (NO_LIMIT => no-op).
+		queryBuilder.setLimit(query.getLimit());
+
+		//
 		return queryBuilder;
 	}
 

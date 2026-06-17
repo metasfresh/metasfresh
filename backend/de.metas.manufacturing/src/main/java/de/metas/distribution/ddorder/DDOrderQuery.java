@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
@@ -41,6 +42,13 @@ public class DDOrderQuery
 	@Nullable Set<Quantity> qtysEntered;
 	@Nullable Set<ResourceId> plantIds;
 	@Nullable Set<DDOrderId> onlyDDOrderIds;
+
+	/**
+	 * Max number of records to fetch. Pushed down into the SQL query (and thus into the {@code T_Query_Selection}
+	 * INSERT built by guaranteed iterators), so an unbounded selection is never materialized.
+	 * Defaults to {@link QueryLimit#NO_LIMIT} to keep existing callers unchanged.
+	 */
+	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 
 	//
 	//
